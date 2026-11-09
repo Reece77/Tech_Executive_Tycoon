@@ -54,6 +54,7 @@ def test_create_list_get(client: TestClient) -> None:
         "busy": False,
         "mode": "campaign",  # M15b (30.2-30.3): a campaign has no score until December
         "score": None,
+        "mod_name": None,  # M25: a game without a mod
     }
 
     def stable(body: dict[str, Any]) -> dict[str, Any]:

@@ -114,8 +114,12 @@ def get_hall_of_fame(
         turn = venture.ended_turn if venture is not None else state.turn
         out = history_views.hall_of_fame(session, company, turn, data)
     from tst.api.founder_views import legacy_out
+    from tst.mods.store import save_mod
 
-    return out.model_copy(update={"legacy": legacy_out(state, data)})  # M24 (32.6)
+    mod = save_mod(_path(settings, save_id))  # M25: a modded game's records stand apart
+    return out.model_copy(
+        update={"legacy": legacy_out(state, data), "mod_name": mod.name if mod else None}
+    )
 
 
 @router.get(

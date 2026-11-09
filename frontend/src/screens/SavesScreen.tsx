@@ -67,6 +67,17 @@ function columns(scenarioName: (id: string) => string, open: (d: Dialog) => void
       meta: { term: 'game_mode' },
       cell: ({ getValue }) => humanize(getValue() ?? 'campaign'),
     }),
+    helper.accessor((s) => s.mod_name ?? '', {
+      id: 'mod',
+      header: 'Mod', // M25: modded games are flagged and earn no achievements
+      meta: { term: 'field.mod_name' },
+      cell: ({ row }) =>
+        row.original.mod_name ? (
+          <span data-testid={`save-mod-${row.original.save_id}`}>⚙ {row.original.mod_name}</span>
+        ) : (
+          '—'
+        ),
+    }),
     helper.accessor('score', {
       header: 'Score', // M15b (30.1): none for Sandbox games
       meta: { term: 'kpi.company_score' },

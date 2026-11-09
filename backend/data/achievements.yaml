@@ -1,0 +1,61 @@
+# Achievements (M25 section 2): milestones across all your games, kept in the profile file in
+# the saves folder (tst/profile). They have no effect on any game. Checked after each committed
+# turn and player action, from public state only; Sandbox and modded games earn none, and
+# scenario wins count only in scenario mode. Not game data: not hashed into saves.
+#
+# Each achievement: key; title; description; kind (a fact in tst/profile/facts.py); for a
+# number fact, threshold (earned at or above it; units in the fact's name: cents, count,
+# months, points, fraction); for a set fact, param (earned when the set holds it); hidden (the
+# screen shows "???" until earned). Keys are permanent: renaming one re-locks it for everyone.
+achievements:
+  # --- First steps ---------------------------------------------------------------------------
+  - { key: first_launch, title: "Ship it", description: "Launch your first product.", kind: products_launched, threshold: 1 }
+  - { key: three_launches, title: "Product line", description: "Have launched three products.", kind: products_launched, threshold: 3 }
+  - { key: first_hire, title: "Not alone", description: "Grow to a team of two.", kind: headcount, threshold: 2 }
+  - { key: first_customer, title: "Someone paid", description: "Win your first paying customer.", kind: customers, threshold: 1 }
+  - { key: thousand_customers, title: "A thousand strong", description: "Hold 1,000 customers across your products.", kind: customers, threshold: 1000 }
+  - { key: million_customers, title: "Household name", description: "Hold 1,000,000 customers.", kind: customers, threshold: 1000000 }
+  # --- Revenue ---------------------------------------------------------------------------------
+  - { key: arr_1m, title: "First million", description: "Reach $1M ARR.", kind: arr_cents, threshold: 100000000 }
+  - { key: arr_10m, title: "Ten million", description: "Reach $10M ARR.", kind: arr_cents, threshold: 1000000000 }
+  - { key: arr_100m, title: "Centaur", description: "Reach $100M ARR.", kind: arr_cents, threshold: 10000000000 }
+  - { key: arr_1b, title: "Billion-dollar run rate", description: "Reach $1B ARR.", kind: arr_cents, threshold: 100000000000, hidden: true }
+  - { key: profitable_year_one, title: "Profitable from the start", description: "Have a month with revenue and no burn in your company's first year.", kind: profitable_in_first_year }
+  # --- Funding ---------------------------------------------------------------------------------
+  - { key: seed_round, title: "Seeded", description: "Close a seed round.", kind: rounds_closed, param: seed }
+  - { key: series_a, title: "Series A", description: "Close a Series A.", kind: rounds_closed, param: a }
+  - { key: series_b, title: "Series B", description: "Close a Series B.", kind: rounds_closed, param: b }
+  - { key: series_c, title: "Series C", description: "Close a Series C.", kind: rounds_closed, param: c }
+  - { key: series_d, title: "Series D", description: "Close a Series D.", kind: rounds_closed, param: d }
+  - { key: ipo, title: "Ring the bell", description: "Take your company public.", kind: listed }
+  - { key: cap_10b, title: "Decacorn", description: "Reach a $10B market cap as a listed company.", kind: market_cap_cents, threshold: 1000000000000 }
+  - { key: cap_100b, title: "Big tech", description: "Reach a $100B market cap.", kind: market_cap_cents, threshold: 10000000000000, hidden: true }
+  - { key: cash_100m, title: "War chest", description: "Hold $100M in cash.", kind: cash_cents, threshold: 10000000000 }
+  # --- Growth ----------------------------------------------------------------------------------
+  - { key: stage_2, title: "Scaling up", description: "Reach stage 2.", kind: stage, threshold: 2 }
+  - { key: stage_3, title: "Grown up", description: "Reach stage 3.", kind: stage, threshold: 3 }
+  - { key: team_100, title: "A hundred people", description: "Grow to 100 staff.", kind: headcount, threshold: 100 }
+  - { key: team_1000, title: "A thousand people", description: "Grow to 1,000 staff.", kind: headcount, threshold: 1000 }
+  - { key: ten_years, title: "Ten years in", description: "Run one company for ten years.", kind: months_running, threshold: 120 }
+  - { key: score_80, title: "Top of the table", description: "Reach a company score of 80.", kind: company_score, threshold: 80 }
+  # --- Technology and infrastructure -----------------------------------------------------------
+  - { key: caused_era, title: "First mover", description: "Cause an era first.", kind: eras_caused, threshold: 1 }
+  - { key: datacentre_80, title: "Full house", description: "Run a data centre over 80% use.", kind: datacentre_use, threshold: 0.8 }
+  - { key: own_chip_device, title: "Vertically integrated", description: "Ship your own chip in your own device.", kind: own_chip_in_own_device }
+  # --- Deals -----------------------------------------------------------------------------------
+  - { key: bought_rival, title: "Consolidator", description: "Buy a rival.", kind: acquisitions, threshold: 1 }
+  - { key: clean_integration, title: "Nobody left", description: "Integrate an acquisition and keep every key person for a year.", kind: clean_integrations, threshold: 1 }
+  - { key: holding_five, title: "Conglomerate", description: "Own five subsidiaries through a holding company.", kind: subsidiaries, threshold: 5 }
+  - { key: exited, title: "Exit", description: "Sell your company.", kind: exits, threshold: 1 }
+  - { key: serial_founder, title: "Serial founder", description: "Sell a company, then found another.", kind: refounded, hidden: true }
+  # --- Character -------------------------------------------------------------------------------
+  - { key: downturn_no_layoffs, title: "Weathered the storm", description: "Live through a downturn without firing anyone.", kind: downturn_without_layoffs }
+  - { key: promises_kept, title: "A person of their word", description: "Keep five public promises.", kind: promises_kept, threshold: 5 }
+  - { key: burnout_back, title: "Came back", description: "Burn out, and recover.", kind: burnout_recovered, hidden: true }
+  - { key: foundation_10m, title: "Philanthropist", description: "Have your foundation grant $10M in a year.", kind: foundation_grant_cents, threshold: 1000000000 }
+  # --- Scenarios (scenario mode only) ----------------------------------------------------------
+  - { key: won_ai_lab, title: "The AI lab", description: "Win the AI lab scenario.", kind: scenario_won, param: ai_lab }
+  - { key: won_mobile_first, title: "Mobile first", description: "Win the Mobile first scenario.", kind: scenario_won, param: mobile_first }
+  - { key: won_survive_2022, title: "Survivor", description: "Win Survive 2022.", kind: scenario_won, param: survive_2022 }
+  - { key: won_chip_startup, title: "The chip startup", description: "Win the chip startup scenario.", kind: scenario_won, param: chip_startup }
+  - { key: won_turnaround, title: "Turnaround", description: "Win the turnaround scenario.", kind: scenario_won, param: turnaround }

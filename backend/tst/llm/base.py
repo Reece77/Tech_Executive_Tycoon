@@ -11,8 +11,10 @@ from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
 type ModelKind = Literal["events", "story"]
-# coo: M7b, 17.3; rival_story: M15b addendum 12
-type TextKind = Literal["headlines", "minutes", "exit_line", "coo", "exec_report", "rival_story"]
+# coo: M7b, 17.3; rival_story: M15b addendum 12; explain: M25 (Ask why)
+type TextKind = Literal[
+    "headlines", "minutes", "exit_line", "coo", "exec_report", "rival_story", "explain"
+]
 
 # The JSON the LLM returns for an event (spec 12, formulas.md 16.5). Cash values are dollars.
 EVENT_SCHEMA: dict[str, Any] = {

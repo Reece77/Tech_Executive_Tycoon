@@ -11,6 +11,7 @@ import { useDebouncedValue } from '@mantine/hooks';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ModePicker, type ModeChoice } from '../components/ModePicker';
+import { useMods } from '../hooks/mods';
 import { LoadError, Loading } from '../components/ScreenState';
 import {
   useCreateSave,
@@ -161,6 +162,8 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const [seed, setSeed] = useState('');
   const [showSeed, setShowSeed] = useState(false);
   const [mode, setMode] = useState<ModeChoice>({ kind: 'campaign' }); // M15b (30.2-30.3)
+  const mods = useMods(); // M25: a data-editor mod for the new game
+  const [mod, setMod] = useState<string | null>(null);
 
   const backgroundDef = meta.backgrounds.find((b) => b.key === background) ?? firstBackground;
   const skillLabel = useMemo(
@@ -228,6 +231,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         hq_city: hq,
         sandbox: mode.kind === 'sandbox' ? mode.sandbox : null,
         historical: mode.kind === 'historical' ? mode.key : null,
+        mod,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -323,6 +327,22 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
           ))}
         </CardGrid>
         <ModePicker meta={meta} value={mode} onChange={setMode} />
+        {(mods.data ?? []).length > 0 && (
+          <Select
+            label="Mod"
+            description="Start with a mod from the Data editor. Modded games earn no achievements."
+            placeholder="No mod"
+            data={(mods.data ?? []).map((m) => ({
+              value: m.name,
+              label: m.description ? `${m.name}: ${m.description}` : m.name,
+            }))}
+            value={mod}
+            onChange={setMod}
+            clearable
+            data-testid="mod-select"
+            w={420}
+          />
+        )}
         <UnstyledButton
           type="button"
           onClick={() => setShowSeed((v) => !v)}

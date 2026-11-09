@@ -1,6 +1,7 @@
 import { Alert } from '@mantine/core';
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
+import { AchievementToasts } from '../components/AchievementToast';
 import { CooPanel } from '../components/CooPanel';
 import { CriticalEventModal } from '../components/EventCard';
 import { HolidayDialog, HolidayStrip } from '../components/Holiday';
@@ -85,6 +86,7 @@ export function GameLayout() {
         onCoo={() => setCooOpen(true)}
       />
       {cooOpen && <CooPanel saveId={saveId} onClose={() => setCooOpen(false)} />}
+      <AchievementToasts saveId={saveId} />
       <HolidayStrip saveId={saveId} />
       {holidayOpen && holiday.data && (
         <HolidayDialog

@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { ExplainTile } from '../components/Explain';
 import { KpiTile } from '../components/KpiTile';
 import { RegionsPanel } from '../components/RegionsPanel';
 import { BreakdownTip, Term } from '../components/Term';
@@ -226,6 +227,8 @@ function Tiles({ p }: { p: Product }) {
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
       <KpiTile
         term="kpi.mrr"
+        explain="product_mrr"
+        explainEntity={p.product_id}
         label="MRR"
         value={formatMoneyWhole(p.mrr_cents)}
         note={
@@ -237,13 +240,24 @@ function Tiles({ p }: { p: Product }) {
       />
       <KpiTile
         term="kpi.customers"
+        explain="customers"
+        explainEntity={p.product_id}
         label={noun}
         value={formatCount(p.customers)}
         note={`${formatFlow(p.new_last_month, '+')} new, ${formatFlow(p.churned_last_month, '-')} lost${seriesScope(p)}`}
         testId="product-customers-total"
       />
+      <ExplainTile
+        metric="churn"
+        entity={p.product_id}
+        label="Churn"
+        term="kpi.churn"
+        testId="product-churn"
+      />
       <KpiTile
         term="quality"
+        explain="quality"
+        explainEntity={p.product_id}
         label="Quality"
         value={formatScore(p.quality)}
         note={
@@ -263,6 +277,8 @@ function Tiles({ p }: { p: Product }) {
       />
       <KpiTile
         term="kpi.hosting"
+        explain="cost_line"
+        explainEntity="6300_compute"
         label="Hosting"
         value={formatMoneyWhole(p.hosting_cents)}
         note="this month"

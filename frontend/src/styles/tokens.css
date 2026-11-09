@@ -344,3 +344,28 @@ a {
   border-bottom-color: var(--tst-accent);
   font-weight: 600;
 }
+
+/* M25: the Explain affordance beside a number. */
+.tst-explain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  padding: 0;
+  border: 1px solid var(--tst-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tst-muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.tst-explain:hover,
+.tst-explain:focus-visible {
+  color: var(--tst-accent);
+  border-color: var(--tst-accent);
+}
