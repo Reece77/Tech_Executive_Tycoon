@@ -111,7 +111,12 @@ def sign_wafer(
 ) -> HardwareActionOut:
     path = _path(settings, save_id)
     action = SignWaferContract(
-        _founder_id(_state(path)), body.product_id, body.foundry, body.wafers, body.months
+        _founder_id(_state(path)),
+        body.product_id,
+        body.foundry,
+        body.wafers,
+        body.months,
+        body.node,
     )
     return _act(path, data, action)
 

@@ -227,6 +227,8 @@ from tst.sim.exploration.pipeline import (
     TakeLicence,
     apply_exploration,
 )
+from tst.sim.fabs.actions import ACTION_TYPES as FAB_ACTION_TYPES
+from tst.sim.fabs.actions import BuildFab, FabAction, UpgradeFab, apply_fab
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.group.actions import (
     AnswerGroupPitch,
@@ -303,6 +305,7 @@ type Action = (
     | GroupAction  # M16
     | ExplorationAction  # M18
     | RefiningAction  # M20
+    | FabAction  # M21
     | MiningAction  # M19
 )
 
@@ -310,6 +313,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **INVESTING_ACTION_TYPES,  # M26 (37)
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **REFINING_ACTION_TYPES,  # M20 (36.1)
+    **FAB_ACTION_TYPES,  # M21 (38.2)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -423,6 +427,7 @@ __all__ = [
     "AppointExecutive",
     "AssignUnit",
     "BackStartup",
+    "BuildFab",
     "BuildFacility",
     "BuildRefinery",
     "BuyOutMinorities",
@@ -512,6 +517,7 @@ __all__ = [
     "TradeShares",
     "UnassignUnit",
     "UpdatePlan",
+    "UpgradeFab",
     "VentureInvest",
     "WithdrawOffer",
     "action_from_payload",
@@ -735,6 +741,8 @@ def apply_action(
             out = apply_exploration(state, action, rng, ledger_balances, balance, data)
         case BuildRefinery() | SignRefiningDeal():  # M20 (36.1)
             out = apply_refining(state, action, ledger_balances, balance, data)
+        case BuildFab() | UpgradeFab():  # M21 (38.2)
+            out = apply_fab(state, action, ledger_balances, balance, data)
         case (
             FoundSubsidiary()
             | TransferAsset()

@@ -50,6 +50,7 @@ from tst.sim.data_models import (
 )
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.exploration.config import GeologyFile
+from tst.sim.fabs.config import NodesFile
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
 from tst.sim.ledger import ENGINE_ACCOUNTS
@@ -90,6 +91,7 @@ POWER_HISTORY_FILE = "power_history.yaml"  # M17 (formulas.md 33.5)
 SUPPLIERS_FILE = "suppliers.yaml"  # M17 (formulas.md 33.4)
 GEOLOGY_FILE = "geology.yaml"  # M18 (formulas.md 34.1)
 NATIONALIZATION_FILE = "nationalization_history.yaml"  # M19 (formulas.md 35.4)
+NODES_FILE = "nodes.yaml"  # M21 (formulas.md 38.1, 38.3)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -113,6 +115,7 @@ DATA_FILES = (
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
     NAMES_FILE,
+    NODES_FILE,
     PERSONALITY_FILE,
     POWER_HISTORY_FILE,
     REGIONS_FILE,
@@ -525,6 +528,40 @@ def mining_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+def fab_problems(balance: Balance, data: GameData) -> list[str]:
+    """M21 (38): rival foundries sit in known regions and back known contract foundries; the
+    fab kind's roles exist; the materials name known goods; the EUV tools good exists."""
+    problems: list[str] = []
+    if data.nodes is None:
+        return problems
+    regions = set(data.region_keys)
+    foundries = set(balance.chips.contract.foundries)
+    for f in data.nodes.foundries:
+        if f.region not in regions:
+            problems.append(f"foundry {f.key!r}: unknown region {f.region!r}")
+        if f.contract not in foundries:
+            problems.append(f"foundry {f.key!r}: {f.contract!r} is not in chips.contract.foundries")
+    fm = balance.fab.materials
+    if fm.substrate_good not in balance.refining.goods:
+        problems.append(
+            f"fab.materials.substrate_good {fm.substrate_good!r} is not a refining good"
+        )
+    if data.commodities is not None:
+        known = {c.key for c in data.commodities.goods}
+        if bad := sorted(set(fm.mix) - known):
+            problems.append(f"fab.materials.mix: unknown commodities {bad}")
+    if "fab" in balance.facility.kinds:
+        roles = {r.key for r in data.roles}
+        if bad := sorted(set(balance.facility.kinds["fab"].staff_roles) - roles):
+            problems.append(f"facility.kinds.fab staff_roles {bad} are not roles")
+    if data.components is not None and EUV_GOOD not in {g.key for g in data.components.goods}:
+        problems.append(f"{COMPONENTS_FILE} has no {EUV_GOOD!r} good")
+    return problems
+
+
+EUV_GOOD = "euv_tools"  # M21 (38.2): components_history.yaml key of EUV tools
+
+
 def research_problems(balance: Balance, data: GameData) -> list[str]:
     """M11 (21): domains' skills, categories, eras' domains and boosts, and personalities
     all name things the other files define."""
@@ -645,6 +682,7 @@ def load_all(
     nationalization = _validate(
         NationalizationHistory, parsed[NATIONALIZATION_FILE], NATIONALIZATION_FILE
     )
+    nodes = _validate(NodesFile, parsed[NODES_FILE], NODES_FILE)
     game_data = _validate(
         GameData,
         {
@@ -689,6 +727,7 @@ def load_all(
             "suppliers": suppliers,
             "geology": geology,
             "nationalization": nationalization,
+            "nodes": nodes,
         },
         "seed data cross-check",
     )
@@ -702,6 +741,8 @@ def load_all(
         raise DataLoadError(
             f"{NATIONALIZATION_FILE}, {BALANCE_FILE} mining: " + "; ".join(problems)
         )
+    if problems := fab_problems(balance, game_data):
+        raise DataLoadError(f"{NODES_FILE}, {BALANCE_FILE} fab: " + "; ".join(problems))
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

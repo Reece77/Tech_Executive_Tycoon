@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
+from tst.db.fab_io import load_fabs, sync_fabs
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.group_io import load_group, sync_group
@@ -575,6 +576,7 @@ def load_state(session: Session) -> GameState:
     state = load_commodities(session, state, has_table)  # M17 (0041)
     state = load_exploration(session, state, has_table)  # M18 (0041)
     state = load_refining(session, state, has_table)  # M20 (0045)
+    state = load_fabs(session, state, has_table)  # M21 (0046)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
@@ -1169,6 +1171,7 @@ def _load_hardware(session: Session, state: GameState) -> GameState:
             used=r.used,
             charged_cents=r.charged_cents,
             status=r.status,  # type: ignore[arg-type]
+            node=r.node,
         )
         for r in session.scalars(
             select(ProductionContractRow)
@@ -1950,6 +1953,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_commodities(session, old, new, has_table)  # M17 (0041)
     sync_exploration(session, old, new, has_table)  # M18 (0041)
     sync_refining(session, old, new, has_table)  # M20 (0045)
+    sync_fabs(session, old, new, has_table)  # M21 (0046)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)

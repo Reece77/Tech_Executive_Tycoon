@@ -1,0 +1,180 @@
+# Process nodes and rival foundries (docs/formulas.md 38.1, 38.3; M21, v3 lane A).
+# Data: docs/v3-research/v3-data-dossier.md 3.3-3.4 and 4. Tags (the dossier's): V verified
+# against the cited source, D derived from verified figures, R widely reported (recalled, not
+# re-fetched), A an assumption for gameplay (no public figure). Every number carries one.
+#
+# nodes (in generation order: a node's position is its generation, 65 nm = 0):
+#   first: the month of first volume per historical foundry (dossier 4; a foundry that skipped
+#     the class has none). Months are "YYYY-MM"; a year-only or quarter date is read as the
+#     month named in the comment.
+#   euv: EUV required (5 nm and below; 7 nm has a DUV route: `duv_route`).
+#   capital_cents: capital per wafer-per-year, cents (CSET for 16, 10, 7 nm, V; +10% a node
+#     beyond, A; mature nodes back-derived from the dossier's fab costs so a 50,000-wafer fab's
+#     capex x fab.capex_scale lands on them, A).
+#   wafer_cents / price_month: the market price of one 300 mm wafer at the node, and the month
+#     that price was read (the foundry_wafer index then is the reference: 38.1).
+#
+# future (38.1, ADR-0019 15): nodes after 2025 arrive in seeded windows ("YYYY-MM" to
+#   "YYYY-MM", inclusive), drawn like eras' (stream era_window, key FUTURE_NODE_KEY + j). Their
+#   wafer price and capital per wafer-per-year are the previous node's x a draw in
+#   fab.future_wafer_mult and fab.future_capital_mult (dossier 4's reading, D).
+#
+# foundries (38.3): the rival foundries, with their region, the historical first volume they
+#   reach each node at (in `nodes`), their capacity in thousand 300 mm-equivalent wafer starts
+#   a month by year (R from annual reports where marked; A otherwise), the share of it open to
+#   foundry customers (TSMC, Samsung and Intel reach nodes on `nodes`' `first` dates; the others
+#   carry their own `reaches`), the last node they go to (`stops_at`) and how many months behind the
+#   leader they reach a node after 2025 (`lag`, drawn on stream fab).
+#
+# euv: ASML, the single supplier (dossier 3.4): EUV scanners shipped a year (R, ASML annual
+#   reports) and the price of one (dossier 3.4: about $120M c.2020, V).
+
+nodes:
+  - key: n65
+    label: 65 nm
+    first: { tsmc: "2006-01", samsung: "2007-01", intel: "2006-01" } # R: TSMC 2006, Samsung 2006-07, Intel products Jan 2006
+    euv: false
+    capital_cents: 300000 # $3,000 per wafer-per-year (A: a 50k fab x scale = the dossier's "$3B-class" 300 mm fab)
+    wafer_cents: 160000 # $1,600 (A: mature-node; the dossier has none)
+    price_month: "2015-01"
+    tag: R
+  - key: n40
+    label: 40/45 nm
+    first: { tsmc: "2009-01", samsung: "2009-01", intel: "2007-11" } # R: TSMC 40 nm 2009 ramp, Samsung 45 nm 2009, Intel 45 nm Nov 2007 (Penryn)
+    euv: false
+    capital_cents: 350000 # $3,500 (A: the dossier's $3-4B fab)
+    wafer_cents: 200000 # $2,000 at UMC (dossier 4, V: mature-node price, 2025-26)
+    price_month: "2025-06"
+    tag: R
+  - key: n28
+    label: 28/32 nm
+    first: { tsmc: "2011-10", samsung: "2012-01", intel: "2010-01" } # R: TSMC Q4 2011, Samsung 2011-12, Intel 32 nm Jan 2010 (Westmere)
+    euv: false
+    capital_cents: 440000 # $4,400 (A: the dossier's $5-6B 28 nm fab; M21 tuning from $4,500 for 38.5 target 2: under $6B with the most overrun)
+    wafer_cents: 300000 # $3,000 TSMC 28 nm (dossier 4, V: 2024 roundup)
+    price_month: "2024-06"
+    tag: R
+  - key: n20
+    label: 20/22 nm
+    first: { tsmc: "2014-09", samsung: "2014-06", intel: "2012-04" } # R: TSMC 20SoC (A8 Sep 2014), Samsung 2014, Intel 22 nm FinFET Apr 2012 (Ivy Bridge)
+    euv: false
+    capital_cents: 600000 # $6,000 (A: the dossier's $6-7B fab)
+    wafer_cents: 360000 # $3,600 (A: between 28 and 16 nm)
+    price_month: "2020-06"
+    tag: R
+  - key: n16
+    label: 16/14 nm
+    first: { tsmc: "2015-07", samsung: "2015-01", intel: "2014-09" } # V: TSMC 16FF+ Q3 2015 (CSET); Samsung 14LPE early 2015 (V/R); Intel 14 nm Core M 5 Sep 2014 (V)
+    euv: false
+    capital_cents: 1122000 # $11,220 (CSET, V)
+    wafer_cents: 398400 # $3,984 (CSET 2020, V)
+    price_month: "2020-06"
+    tag: V
+  - key: n10
+    label: 10 nm
+    first: { tsmc: "2017-04", samsung: "2016-10", intel: "2019-06" } # V: TSMC Q2 2017 (CSET); R: Samsung 10LPE Oct 2016; Intel Ice Lake volume 2019
+    euv: false
+    capital_cents: 1316900 # $13,169 (CSET, V)
+    wafer_cents: 599200 # $5,992 (CSET, V)
+    price_month: "2020-06"
+    tag: V
+  - key: n7
+    label: 7 nm
+    first: { tsmc: "2018-04", samsung: "2019-08", intel: "2023-12" } # V: TSMC N7 Apr 2018 (DUV); Samsung 7LPP Exynos 9825 Aug 2019; Intel 4 Dec 2023
+    euv: false # N7 by DUV; N7+, 7LPP and Intel 4 use EUV: the game's EUV route (duv_route the other)
+    duv_route: true # 38.1: a DUV route at fab.duv.yield_mult and fab.duv.cost_mult
+    capital_cents: 1426700 # $14,267 (CSET, V)
+    wafer_cents: 934600 # $9,346 (CSET, V)
+    price_month: "2020-06"
+    tag: V
+  - key: n5
+    label: 5 nm
+    first: { tsmc: "2020-04", samsung: "2020-06", intel: "2024-06" } # R: TSMC N5 volume 2020 (A14); V: Samsung 5LPE 2020; R: Intel 3 2024 (Xeon 6)
+    euv: true
+    capital_cents: 1569400 # $15,694: 7 nm +10% (A)
+    wafer_cents: 1698800 # $16,988 (CSET 2020, V)
+    price_month: "2020-06"
+    tag: V
+  - key: n3
+    label: 3 nm
+    first: { tsmc: "2022-12", samsung: "2022-06" } # V: TSMC N3 29 Dec 2022; Samsung 3 nm GAA Jun 2022. Intel skipped the class (Intel 3 is 5 nm-class)
+    euv: true
+    capital_cents: 1726300 # $17,263: +10% (A)
+    wafer_cents: 2000000 # about $20,000 (dossier 4, V)
+    price_month: "2023-06"
+    tag: V
+  - key: n2
+    label: 2 nm
+    first: { tsmc: "2025-10", samsung: "2025-10", intel: "2025-11" } # V: TSMC N2 Q4 2025; R: Samsung SF2 2025 (read Oct); V: Intel 18A Fab 52 HVM late 2025 (read Nov)
+    euv: true
+    capital_cents: 1898900 # $18,989: +10% (A)
+    wafer_cents: 3000000 # about $30,000 TSMC N2 (2025 reports, V)
+    price_month: "2025-10"
+    tag: V
+
+future:
+  - { key: a16, label: A16 (1.6 nm), window: ["2026-07", "2027-12"] } # A: TSMC's announced 2H 2026 A16, widened
+  - { key: a14, label: A14 (1.4 nm), window: ["2028-01", "2029-06"] } # A: TSMC's announced 2028 A14, widened
+  - { key: a10, label: A10 (1 nm), window: ["2030-01", "2031-12"] } # A: the first seeded "sub-1nm" step's predecessor
+  - { key: a7, label: A7 (0.7 nm), window: ["2032-06", "2034-06"] } # A: seeded sub-1nm step
+  - { key: a5, label: A5 (0.5 nm), window: ["2035-01", "2037-06"] } # A: seeded sub-1nm step
+  - { key: a3, label: A3 (0.3 nm), window: ["2037-06", "2040-06"] } # A: seeded sub-1nm step (a long campaign or sandbox)
+
+foundries:
+  - key: tsmc
+    name: TSMC
+    region: east_asia
+    contract: tsmc # chips.contract.foundries key it backs (M12b's wafer contracts)
+    capacity: { 2010: 420, 2013: 600, 2016: 850, 2019: 1050, 2021: 1180, 2023: 1330, 2025: 1450 } # R: 11.3M 8-inch-eq wafers in 2010 (= 0.42M 12-inch a month, D) to about 16-17M 12-inch-eq a year in 2024-25 (TSMC annual reports)
+    open_share: 1.0
+    lag: [0, 2] # months behind the first to a node after 2025 (A: the leader)
+  - key: samsung
+    name: Samsung Foundry
+    region: east_asia
+    contract: samsung
+    capacity: { 2010: 120, 2015: 200, 2020: 300, 2025: 400 } # A: logic only (Samsung reports no foundry capacity; memory excluded)
+    open_share: 0.6 # A: the rest is Samsung's own Exynos
+    lag: [0, 12]
+  - key: intel
+    name: Intel
+    region: north_america
+    contract: intel
+    capacity: { 2010: 350, 2015: 400, 2020: 450, 2025: 500 } # A: an IDM's logic capacity
+    open_share: 0.0 # an IDM: its fabs run its own chips until Intel Foundry Services
+    open_from: { month: "2021-03", share: 0.05 } # R: IFS announced March 2021 (A: the share)
+    lag: [0, 18]
+  - key: globalfoundries
+    name: GlobalFoundries
+    region: north_america # R: US HQ (Mubadala-owned), fabs in Dresden, Singapore, New York
+    contract: globalfoundries
+    reaches: { n65: "2009-03", n40: "2010-06", n28: "2012-06", n20: "2014-09", n16: "2016-01" } # R: AMD's fabs (65 nm), 28 nm 2012, 14LPP 2016 (Samsung-licensed); 22FDX 2014-15 read as the 20 nm class
+    stops_at: n16 # R: abandoned 7 nm in August 2018 (dossier 3.3): stays at 14/12 nm
+    capacity: { 2010: 170, 2015: 190, 2020: 200, 2025: 210 } # R: about 2.3M 12-inch-eq a year in 2024 (D: 0.19M a month)
+    open_share: 1.0
+    lag: [0, 0]
+  - key: umc
+    name: UMC
+    region: east_asia
+    contract: umc
+    reaches: { n65: "2006-06", n40: "2010-01", n28: "2013-06", n16: "2017-03" } # R: UMC 28 nm 2013, 14 nm 2017 (its 22 nm came after, as a 28 nm shrink: not a class of its own here); mature nodes (dossier 3.3)
+    stops_at: n16 # R: UMC stopped leading-edge development in 2018 (dossier: "mature nodes")
+    capacity: { 2010: 200, 2015: 260, 2020: 320, 2025: 360 } # R: about 4.3M 12-inch-eq a year in 2024 (D: 0.36M a month)
+    open_share: 1.0
+    lag: [0, 0]
+  - key: smic
+    name: SMIC
+    region: east_asia
+    contract: smic
+    reaches: { n65: "2009-06", n40: "2012-01", n28: "2015-06", n16: "2019-11", n7: "2022-07" } # R: 28 nm 2015, 14 nm Q4 2019, 7 nm-class (N+2) by DUV multipatterning from 2022 (dossier 3.3)
+    duv_only: true # its 7 nm-class is DUV (38.3): yield and cost as fab.duv
+    capacity: { 2010: 70, 2015: 120, 2020: 230, 2025: 450 } # R: 0.95M 8-inch-eq a month in 2024 (D: 0.42M 12-inch)
+    open_share: 1.0
+    lag: [36, 72] # A: without EUV tools, years behind the leader
+    euv_gate: n7 # A: past this node it needs EUV it cannot buy (M22 may change that): stops here unless EUV opens
+
+euv:
+  supplier: ASML # dossier 3.4: sole EUV supplier
+  shipments: { 2017: 10, 2018: 18, 2019: 26, 2020: 31, 2021: 42, 2022: 40, 2023: 53, 2024: 44, 2025: 48 } # R: ASML annual reports (EUV systems shipped)
+  shipments_growth: 0.05 # A: a year after 2025
+  tool_cents: 12000000000 # $120M a tool c.2020 (dossier 3.4, V); indexed by the euv_tools good
+  first_month: "2019-01" # V: EUV in high-volume manufacturing from 2019 (dossier 3.4)

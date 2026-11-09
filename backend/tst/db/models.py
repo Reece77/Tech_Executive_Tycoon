@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 45  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045
+SCHEMA_VERSION = 46  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 
 
 class Base(DeclarativeBase):
@@ -1320,6 +1320,7 @@ class ProductionContractRow(Base):
     used: Mapped[float] = mapped_column(Float, nullable=False)
     charged_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
+    node: Mapped[str | None] = mapped_column(String(16), nullable=True)  # M21 (38.1; 0046)
 
 
 class ProductionMonthRow(Base):
@@ -2097,6 +2098,18 @@ class RivalBidRow(Base):
 
 
 # --- M20 (formulas.md 36; migration 0045): refining and wafers -----------------------------
+
+
+class FabRow(Base):
+    """A fab's own state beside its facility row (38.2; 0046): node, quoted capex, EUV tools,
+    yield, capex parts, a conversion, its latest month and history. The true capex (with the
+    hidden overrun) is the facility row's `capex_cents`."""
+
+    __tablename__ = "fab"
+
+    facility_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
 class RefineryRow(Base):

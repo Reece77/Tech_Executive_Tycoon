@@ -343,7 +343,7 @@ def run_markets(
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
     deals = any(d.status == "active" for d in state.commodity_deals)  # M17 (33.3)
-    supplied = bool(state.own_supply)  # M20 (36.1-36.2): own-group materials and wafers
+    supplied = bool(state.own_supply) or bool(state.fabs)  # M20 (36.1-36.2), M21 (38.2)
     if plan is not None or cm_sold or state.production or running or deals or supplied:
         before = {row.product_id: row.lost_units for row in state.production}
         state, made = production.settle(state, plan, cm_sold, balance, data)
