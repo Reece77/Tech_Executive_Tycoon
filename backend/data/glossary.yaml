@@ -179,6 +179,9 @@ terms:
   account.6950_lobbying: "What the company spends each month lobbying regulators, by region (M24). Builds influence, and a risk of scandal."
   account.9300_personal_spending: "The founder's own spending: grants from the foundation's endowment. In the founder's personal book, never the company's."
   account.9400_personal_income: "The founder's own income: share sales, dividends, exits and salary after tax. In the founder's personal book, never the company's."
+  account.9410_investment_gains: "Gains on the founder's own investments: angel exits above cost, shares sold above cost and the family office's good months. In the founder's personal book, never the company's."
+  account.9420_investment_losses: "Losses on the founder's own investments: failed startups written off, shares sold below cost and the family office's bad months. In the founder's personal book, never the company's."
+  account.9430_dividends_received: "Dividends listed rivals paid on the founder's own shares. In the founder's personal book, never the company's."
   account.7000_interest: "Interest on debt."
   account.8000_income_tax: "Income tax."
   # M8: divisions, executives and new markets (formulas.md 18)
@@ -368,7 +371,7 @@ terms:
   founder.region: "A region whose regulators the company lobbies."
   founder.monthly: "What the company spends on lobbying there each month (6950 Lobbying)."
   founder.scandals: "Lobbying scandals that have broken in the region."
-  founder.legacy: "Your legacy: the best company score you reached, plus your lifetime giving, plus twice Visionary and Beloved, less Ruthless and Reckless. Every company you ran counts."
+  founder.legacy: "Your legacy: the best company score you reached, plus your lifetime giving, plus twice Visionary and Beloved, less Ruthless and Reckless, plus your net worth at the end (25 points a decade above $1M). Every company you ran counts."
   press_moment: "An interview the press asks for after a launch, an earnings report, an era, an outage or breach, layoffs or a rival's jab. You answer bold, measured or no comment, and may make a public promise that month. At most two a quarter."
   press.bold: "A bold answer lifts every product's brand for six months and can draw a named rival's CEO into a feud. If results contradict it within six months, credibility falls."
   press.measured: "A measured answer lifts the brand a little, with no risk."

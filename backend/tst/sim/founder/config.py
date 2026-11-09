@@ -62,9 +62,86 @@ class StressBalance(_Frozen):
 
 
 class PersonalBalance(_Frozen):
-    """32.2: the founder's own book."""
+    """32.2: the founder's own book; 37.3: public shares and insider trading (M26)."""
 
     tax_rate: float = Field(ge=0, lt=1)  # on the founder's salary
+    trade_energy: int = Field(ge=0)  # to buy or sell listed shares
+    trade_cost: float = Field(ge=0, lt=1)  # share of a trade's value paid in costs
+    rival_shares: int = Field(gt=0)  # notional shares outstanding of a listed rival
+    filing_share: float = Field(gt=0, le=1)  # own-company sales above this share in a month
+    filing_sentiment: float = Field(le=0)  # a public filing's sentiment change
+    insider_months: int = Field(ge=1)  # news this soon after a trade makes it an insider trade
+    sec_p: float = Field(ge=0, le=1)  # an insider trade's investigation probability
+    investigation_months: int = Field(ge=1)  # an investigation opens within this many months
+    finding_months: int = Field(ge=1)  # months from an investigation to its finding
+    risk_per_trade: float = Field(ge=0)  # hidden regulatory risk an insider trade adds
+    fine_mult: float = Field(ge=0)  # a finding's fine: this x the gain
+    finding_cred: float = Field(le=0)  # credibility points
+    finding_reckless: float = Field(ge=0)  # trait points
+    finding_board: float = Field(le=0)  # board confidence points on every seat
+    coi_cred: float = Field(le=0)  # an undisclosed conflict found later: credibility
+    coi_board: float = Field(le=0)  # and board confidence on every seat
+    coi_found_p: float = Field(ge=0, le=1)  # chance an undisclosed conflict is found
+    coi_found_months: int = Field(ge=1)  # found within this many months
+    deny_cred: float = Field(le=0)  # denying a finding: credibility points more
+    dividend_yield: float = Field(ge=0, lt=1)  # a profitable listed rival's yearly dividend
+    legacy_points: float = Field(ge=0)  # 37.5: legacy points per decade of net worth
+    legacy_unit_dollars: int = Field(gt=0)  # net worth per unit in the legacy log term
+
+
+class AngelBalance(_Frozen):
+    """37.2: the founder's angel and venture investing (M26)."""
+
+    energy: int = Field(ge=0)  # to join a startup's round
+    back_energy: int = Field(ge=0)  # to back a new startup
+    min_cheque_cents: int = Field(gt=0)  # the smallest cheque backing a new startup
+    round_min_cents: int = Field(gt=0)  # the smallest cheque into a round
+    round_window_months: int = Field(ge=1)  # a round stays open to the founder this long
+    round_dilution: float = Field(gt=0, lt=1)  # a round sells this share: post = raised / this
+    seed_stake: tuple[float, float]  # backing a new startup: the stake, by cheque size
+    seed_full_cents: int = Field(gt=0)  # a cheque this large takes the top of seed_stake
+    known_hw: float = Field(gt=0)  # a person's mean skill half-width at or below this: known
+    skill_runway: float = Field(ge=0)  # a backed founder's true skill above 10: share of cash
+    team: tuple[int, int]  # a backed startup's team, besides its founder
+    network_size: int = Field(ge=0)  # people who left the player's companies kept in the network
+
+    @model_validator(mode="after")
+    def _check(self) -> AngelBalance:
+        lo, hi = self.seed_stake
+        if not 0 < lo <= hi < 1:
+            raise ValueError("angel.seed_stake must be 0 < low <= high < 1")
+        if self.seed_full_cents <= self.min_cheque_cents:
+            raise ValueError("angel.seed_full_cents must be above angel.min_cheque_cents")
+        if not 0 <= self.team[0] <= self.team[1]:
+            raise ValueError("angel.team must be 0 <= low <= high")
+        return self
+
+
+class MandateBalance(_Frozen):
+    """One family-office mandate (37.4): its share in the market index (the rest in cash at
+    the base rate) and its monthly noise."""
+
+    index: float = Field(ge=0, le=2)
+    vol: float = Field(ge=0)  # sd of the month's noise
+
+
+class FamilyOfficeBalance(_Frozen):
+    """37.4: the family office (M26)."""
+
+    min_cents: int = Field(gt=0)  # personal wealth needed to form one
+    energy: int = Field(ge=0)  # to form one
+    move_energy: int = Field(ge=0)  # to move cash in or out
+    fee: float = Field(ge=0, lt=1)  # a year, on the balance
+    alpha: float  # a month per skill point above alpha_mid
+    alpha_mid: float = Field(ge=1, le=20)  # tunable-exempt: the 1-20 attribute scale
+    mandates: dict[str, MandateBalance]
+    index_months: int = Field(ge=1)  # months of the index and returns kept
+
+    @model_validator(mode="after")
+    def _check(self) -> FamilyOfficeBalance:
+        if sorted(self.mandates) != sorted(("conservative", "balanced", "aggressive")):
+            raise ValueError("family_office.mandates must be conservative, balanced, aggressive")
+        return self
 
 
 class FoundationBalance(_Frozen):

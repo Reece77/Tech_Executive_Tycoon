@@ -59,4 +59,10 @@ personal_accounts:
   - { code: 9100_personal_cash, name: Personal cash, type: asset }
   - { code: 9200_foundation_endowment, name: Foundation endowment, type: asset }
   - { code: 9300_personal_spending, name: Personal spending and grants, type: expense }
+  - { code: 9110_angel_investments, name: Angel investments, type: asset }
+  - { code: 9120_public_shares, name: Public shares, type: asset }
+  - { code: 9130_family_office, name: Family office, type: asset }
   - { code: 9400_personal_income, name: Personal income, type: revenue }
+  - { code: 9410_investment_gains, name: Investment gains, type: revenue }
+  - { code: 9420_investment_losses, name: Investment losses, type: expense }
+  - { code: 9430_dividends_received, name: Dividends received, type: revenue }

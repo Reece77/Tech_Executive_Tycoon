@@ -4,6 +4,7 @@
 import { Alert, Button } from '@mantine/core';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AttributeRange } from '../components/AttributeRange';
+import { PersonalInvestPanel } from '../components/InvestmentsTab';
 import { KpiTile } from '../components/KpiTile';
 import { RivalDealPanel } from '../components/RivalDealPanel';
 import { RivalLeaderPanel } from '../components/RivalLeaderPanel';
@@ -57,6 +58,7 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
         {r.style_text} Founded {r.founded_label}.{r.failed ? ' Closed.' : ''}
       </p>
       <RivalLeaderPanel saveId={saveId} rivalId={r.company_id} />
+      <PersonalInvestPanel saveId={saveId} companyId={r.company_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile
           term="kpi.rival_staff"

@@ -147,7 +147,18 @@ EFFECT_TYPES: Final = (
     "mining_step",
 )
 PRESS_STEPS: Final = ("bold", "measured", "deflect")
-FOUNDER_STEPS: Final = ("rest", "delegate", "push_on", "apologize", "drop_lobbyists", "fight")
+FOUNDER_STEPS: Final = (
+    "rest",
+    "delegate",
+    "push_on",
+    "apologize",
+    "drop_lobbyists",
+    "fight",
+    "disclose",  # M26 (37.2): a conflict of interest
+    "conceal",
+    "accept_finding",  # M26 (37.3): an insider-trading finding
+    "deny_finding",
+)
 GROUP_STEPS: Final = ("correct_price", "defend_price")
 EXPLORATION_STEPS: Final = ("consult", "benefit", "push_on")  # M18 (34.3)
 MINING_STEPS: Final = (  # M19 (35.4): accidents, takeovers, price crashes

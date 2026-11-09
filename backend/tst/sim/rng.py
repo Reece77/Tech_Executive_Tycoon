@@ -81,6 +81,10 @@ STREAM_IDS: Final = MappingProxyType(
         # generator a region a month drawing a uniform per commodity, then kind and months
         # (M19, 35.4)
         "region_risk": 52,
+        # key: (0, trade_id) an insider trade's investigation, (1, stake_id) a concealed
+        # conflict's discovery, (2,) the family office's monthly noise, (3,) its manager
+        # (M26, 37.2-37.4)
+        "personal": 53,
         "misc": 99,
     }
 )

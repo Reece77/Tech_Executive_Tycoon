@@ -108,6 +108,17 @@ from tst.sim.actions.hiring import (
     open_search,
     withdraw_offer,
 )
+from tst.sim.actions.investing import (
+    INVESTING_ACTION_TYPES,
+    BackStartup,
+    FormFamilyOffice,
+    InvestingAction,
+    JoinRound,
+    MoveFamilyOffice,
+    SetOfficeMandate,
+    TradeShares,
+    apply_investing,
+)
 from tst.sim.actions.mna import MNA_ACTION_TYPES, MnaAction, apply_mna
 from tst.sim.actions.org import (
     ClosePlan,
@@ -281,12 +292,14 @@ type Action = (
     | PressAction
     | ReplaceLeaver
     | FounderAction  # M24
+    | InvestingAction  # M26
     | GroupAction  # M16
     | ExplorationAction  # M18
     | MiningAction  # M19
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
+    **INVESTING_ACTION_TYPES,  # M26 (37)
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
@@ -400,6 +413,7 @@ __all__ = [
     "AppointCeo",
     "AppointExecutive",
     "AssignUnit",
+    "BackStartup",
     "BuildFacility",
     "BuyOutMinorities",
     "BuyStake",
@@ -419,11 +433,13 @@ __all__ = [
     "DissolveUnit",
     "Draws",
     "Fire",
+    "FormFamilyOffice",
     "FormHolding",
     "GiveRaise",
     "GiveToFoundation",
     "HireBanks",
     "Interview",
+    "JoinRound",
     "LaunchInRegion",
     "LaunchProduct",
     "LeaseOffice",
@@ -431,6 +447,7 @@ __all__ = [
     "LicenseOut",
     "MakeOffer",
     "MakePromise",
+    "MoveFamilyOffice",
     "MovePerson",
     "MoveUnit",
     "NameNominee",
@@ -460,6 +477,7 @@ __all__ = [
     "SetMandate",
     "SetMarketing",
     "SetMarketingSplit",
+    "SetOfficeMandate",
     "SetPolicy",
     "SetPrice",
     "SetProductDivision",
@@ -480,6 +498,7 @@ __all__ = [
     "StopProject",
     "SunsetProduct",
     "TakeLoan",
+    "TradeShares",
     "UnassignUnit",
     "UpdatePlan",
     "VentureInvest",
@@ -670,6 +689,15 @@ def apply_action(
             out = make_promise(state, action, balance, data)
         case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
             out = apply_founder(state, action, balance, data)  # M24 (32)
+        case (
+            JoinRound()
+            | BackStartup()
+            | TradeShares()
+            | FormFamilyOffice()
+            | MoveFamilyOffice()
+            | SetOfficeMandate()
+        ):  # M26 (37)
+            out = apply_investing(state, action, rng, draws, ledger_balances, balance, data)
         case (
             FormHolding()
             | SetMandate()

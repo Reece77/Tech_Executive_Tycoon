@@ -28,6 +28,7 @@ from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.group_io import load_group, sync_group
+from tst.db.investing_io import investing_people, live_investing, load_investing, sync_investing
 from tst.db.mappers import (
     candidate_from_row,
     candidate_to_row,
@@ -418,6 +419,7 @@ def load_state(session: Session) -> GameState:
         | {p.owner_id for p in plans}
         | {s.person_id for s in seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
+        | set(investing_people(session, has_table))  # M26 (37.2, 37.4)
     )
 
     people, reveals = load_people(session, live_ids)
@@ -568,6 +570,7 @@ def load_state(session: Session) -> GameState:
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
     state = load_group(session, state, has_table)  # M16 (0039)
+    state = load_investing(session, state, has_table)  # M26 (0043)
     state = load_commodities(session, state, has_table)  # M17 (0041)
     state = load_exploration(session, state, has_table)  # M18 (0041)
     state = load_mining(session, state, has_table)  # M19 (0043)
@@ -1941,6 +1944,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
     sync_group(session, old, new, has_table)  # M16 (0039)
+    sync_investing(session, old, new, has_table)  # M26 (0043)
     sync_commodities(session, old, new, has_table)  # M17 (0041)
     sync_exploration(session, old, new, has_table)  # M18 (0041)
     sync_mining(session, old, new, has_table)  # M19 (0043)
@@ -2357,6 +2361,7 @@ def live_view(state: GameState) -> GameState:
         | {p.owner_id for p in plans}
         | {s.person_id for s in state.seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
+        | live_investing(state)  # M26 (37.2, 37.4)
     )
     products = tuple(p for p in state.products if p.status != "retired")
     product_ids = {p.id for p in products}
