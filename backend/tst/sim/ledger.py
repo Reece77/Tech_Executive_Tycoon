@@ -52,6 +52,11 @@ NCI_SHARE: Final = "4990_nci_share_of_profit"  # outsiders' share, consolidated 
 PREPAID: Final = "1200_prepaid"  # offtake prepayments not yet drawn (M17, 33.3)
 EXPLORATION: Final = "6600_exploration"  # exploration spending, expensed (M18, 34.2)
 MATERIALS_SALES: Final = "4410_materials_sales"  # refined goods sold at spot or contract (M20)
+MINERAL_PROPERTIES: Final = "1520_mineral_properties"  # mines' capitalized cost (M19, 35.2)
+ARO: Final = "2610_asset_retirement_obligation"  # mines' reclamation provision (M19, 35.3)
+COMMODITY_REVENUE: Final = "4400_revenue_commodities"  # mines' sales (M19, 35.3)
+DEPLETION: Final = "6750_depletion"  # units-of-production depletion (M19, 35.3)
+ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -88,6 +93,11 @@ ENGINE_ACCOUNTS: Final = (
     PREPAID,
     EXPLORATION,
     MATERIALS_SALES,
+    MINERAL_PROPERTIES,
+    ARO,
+    COMMODITY_REVENUE,
+    DEPLETION,
+    ROYALTIES,
 )
 
 

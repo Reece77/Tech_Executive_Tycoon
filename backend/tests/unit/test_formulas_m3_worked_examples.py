@@ -55,10 +55,11 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
     assert sorted(by_function["none"]) == [
         "finance_manager",
         "geologist",
+        "mining_engineer",
         "operations_manager",
         "process_engineer",
         "recruiter",
-    ]  # M18: geologist; M20: process engineer
+    ]  # M18: geologist; M19: mining engineer; M20: process engineer
 
 
 def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:

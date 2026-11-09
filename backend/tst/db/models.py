@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 43  # M25: 0040; M17: 0041; M18: 0042; M20: 0043
+SCHEMA_VERSION = 44  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M20: 0044
 
 
 class Base(DeclarativeBase):
@@ -1982,8 +1982,45 @@ class DrillHoleRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+# --- M19 (formulas.md 35; migration 0043): mining operations ---------------------------------
+
+
+class MineRow(Base):
+    """A mine (35.2-35.4; 0043), keyed by its facility's id. `data` holds the hidden_* fields
+    (the overrun and the deposit's truth: ADR-0007), read only by the sim, never by the API."""
+
+    __tablename__ = "mine"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MineDealRow(Base):
+    """A contract or offtake a mine signed as seller (35.3; 0043)."""
+
+    __tablename__ = "mine_deal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mine_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class RivalBidRow(Base):
+    """A rival's bid for a group project or mine (35.5; 0043)."""
+
+    __tablename__ = "mine_rival_bid"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M20 (formulas.md 36; migration 0044): refining and wafers -----------------------------
+
+
 class RefineryRow(Base):
-    """A refinery's own state beside its facility row (36; 0043): recipe, quoted capex, curbs,
+    """A refinery's own state beside its facility row (36; 0044): recipe, quoted capex, curbs,
     incidents, its latest month and history. The true capex (with the hidden overrun) is the
     facility row's `capex_cents`."""
 
@@ -1995,7 +2032,7 @@ class RefineryRow(Base):
 
 
 class RefiningDealRow(Base):
-    """A refinery contract (36.1; 0043): buy an input or sell an output at a fixed price."""
+    """A refinery contract (36.1; 0044): buy an input or sell an output at a fixed price."""
 
     __tablename__ = "refining_deal"
 
@@ -2005,7 +2042,7 @@ class RefiningDealRow(Base):
 
 
 class RefiningSupplyRow(Base):
-    """One of the latest month's own-group supply lots (36.1-36.2; 0043), in order `n`."""
+    """One of the latest month's own-group supply lots (36.1-36.2; 0044), in order `n`."""
 
     __tablename__ = "refining_supply"
 

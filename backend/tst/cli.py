@@ -3246,6 +3246,131 @@ def sell_project_cmd(save: SaveOpt, project: ProjectOpt) -> None:
     typer.echo(f"Sold to {sold.sold_to} for {format_money(sold.sale_cents)}")
 
 
+# --- M19: mining operations (formulas.md 35) --------------------------------------------
+
+
+def _mines_table(path: Path, data: LoadedData) -> None:
+    from tst.api import mining_views
+
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        balances = repository.ledger_balances(session)
+    out = mining_views.mines_out(state, balances, data)
+    for c in out.companies:
+        typer.echo(f"{c.name} ({c.role}, id {c.id}): cash {format_money(c.cash_cents)}")
+    if not out.mines:
+        typer.echo("No mines.")
+    for m in out.mines:
+        cost = f"{m.cost_usd_t:,.0f}" if m.cost_usd_t is not None else "-"
+        capex = format_money(m.revised_cents if m.revised_cents is not None else m.estimate_cents)
+        typer.echo(
+            f"#{m.id} {m.name} [{m.status}], {m.company_name}: {m.subtype_label}, "
+            f"{m.capacity_t:,.0f} t/yr; capex {capex}"
+            + (" (estimate)" if m.revised_cents is None else "")
+            + f"; built {m.construction_done}/{m.construction_months} months; staff "
+            f"{m.staff}/{m.staff_needed}"
+        )
+        if m.history:
+            last = m.history[-1]
+            typer.echo(
+                f"   {last.label}: {last.output_t:,.0f} t at grade {last.grade:.4f}; price "
+                f"${m.price_usd_t:,.0f}/t, cost ${cost}/t; margin "
+                f"{format_money(last.margin_cents)}"
+            )
+        if m.reserves_low_t is not None and m.reserves_high_t is not None:
+            typer.echo(
+                f"   reserves (est.) {m.reserves_low_t:,.0f}-{m.reserves_high_t:,.0f} t; "
+                f"reclamation owed {format_money(m.reclamation_owed_cents)}"
+            )
+    for q in out.quotes:
+        typer.echo(
+            f"Project {q.project_id} {q.label} ({q.commodity_label}, {q.company_name}): "
+            + (
+                f"{q.subtype_label}, {q.capacity_low_t:,.0f}-{q.capacity_high_t:,.0f} t/yr, "
+                f"capex {format_money(q.estimate_cents)} at {q.design_t:,.0f} t/yr, overrun "
+                f"{q.overrun_low:.0%}-{q.overrun_high:.0%}"
+                if q.allowed
+                else q.reason
+            )
+        )
+    for b in out.bids:
+        typer.echo(f"Bid {b.id}: {b.bidder} offers {format_money(b.cents)} for {b.asset}")
+
+
+@app.command("mines")
+def mines_cmd(save: SaveOpt) -> None:
+    """The group's mines (35): construction, output, grade, cost against price, reserves as
+    ranges, staff; permitted projects to build on; rivals' bids."""
+    path, data, _ = _game(save)
+    _mines_table(path, data)
+
+
+@app.command("found-subsidiary")
+def found_subsidiary_cmd(
+    save: SaveOpt,
+    name: Annotated[str, typer.Option("--name", help="The new company's name")],
+    region: Annotated[str, typer.Option("--region", help="A region key")],
+    cents: Annotated[int, typer.Option("--cents", min=1, help="Cash injection, in cents")],
+) -> None:
+    """Found a wholly owned subsidiary with a cash injection from the group (35.1)."""
+    from tst.sim.mining.actions import FoundSubsidiary
+
+    path, data, state = _game(save)
+    state = _run(path, data, FoundSubsidiary(_founder(state), name, region, cents)).new_state
+    typer.echo(f"Founded {name}; {_energy(state, data)}")
+    _mines_table(path, data)
+
+
+@app.command("transfer-asset")
+def transfer_asset_cmd(
+    save: SaveOpt,
+    to: Annotated[int, typer.Option("--to", help="The receiving group company's id")],
+    project: Annotated[int | None, typer.Option("--project", help="A project's id")] = None,
+    facility: Annotated[int | None, typer.Option("--facility", help="A facility's id")] = None,
+) -> None:
+    """Move a project or a facility to another group company at book value (35.1)."""
+    from tst.sim.mining.actions import TransferAsset
+
+    path, data, state = _game(save)
+    _run(path, data, TransferAsset(_founder(state), to, project, facility))
+    typer.echo("Transferred")
+    _mines_table(path, data)
+
+
+@app.command("build-mine")
+def build_mine_cmd(
+    save: SaveOpt,
+    project: ProjectOpt,
+    capacity: Annotated[
+        float | None, typer.Option("--capacity", help="t a year (default: the design)")
+    ] = None,
+) -> None:
+    """Build a mine on a permitted project (35.2)."""
+    from tst.sim.mining.actions import BuildMine
+
+    path, data, state = _game(save)
+    state = _run(path, data, BuildMine(_founder(state), project, capacity)).new_state
+    typer.echo(f"Mine ordered; {_energy(state, data)}")
+    _mines_table(path, data)
+
+
+@app.command("care-maintenance")
+def care_maintenance_cmd(
+    save: SaveOpt,
+    mine: Annotated[int, typer.Option("--mine", help="A mine's id")],
+    restart: Annotated[bool, typer.Option(help="Restart a mine on care and maintenance")] = False,
+) -> None:
+    """Put a producing mine on care and maintenance, or restart one (35.4)."""
+    from tst.sim.mining.actions import CareMaintenance
+
+    path, data, state = _game(save)
+    state = _run(path, data, CareMaintenance(_founder(state), mine, restart)).new_state
+    typer.echo(
+        ("Restarting" if restart else "On care and maintenance") + f"; {_energy(state, data)}"
+    )
+    _mines_table(path, data)
+
+
 # --- M25: Explain, achievements and mods ---------------------------------------------------
 
 

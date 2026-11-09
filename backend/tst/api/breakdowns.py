@@ -23,7 +23,12 @@ from tst.sim.research.levels import IDENTITY, TechFactor
 from tst.sim.state import GameState
 
 EVENT_MEMO = "Event:"  # memo prefix of event cash effects (tst.sim.events.effects)
-REVENUE = ("4000_revenue_subscriptions", "4100_revenue_licenses", "4200_revenue_services")
+REVENUE = (
+    "4000_revenue_subscriptions",
+    "4100_revenue_licenses",
+    "4200_revenue_services",
+    "4400_revenue_commodities",  # M19 (35.3)
+)
 PAYROLL = ("6000_salaries", "6010_benefits", "2100_accrued_payroll")
 MARKETING = ("6400_marketing",)
 FINANCING = ("2500_debt", "2600_safes", "3000_common_equity", "3100_preferred_equity")

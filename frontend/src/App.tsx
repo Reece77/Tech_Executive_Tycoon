@@ -9,6 +9,7 @@ import { HistoryScreen } from './screens/HistoryScreen';
 import { EventRedirect, InboxScreen } from './screens/InboxScreen';
 import { ExplorationScreen } from './screens/ExplorationScreen';
 import { RefineriesScreen } from './screens/RefineriesScreen';
+import { MinesScreen } from './screens/MinesScreen';
 import { HardwareScreen } from './screens/HardwareScreen';
 import { InfrastructureScreen } from './screens/InfrastructureScreen';
 import { MainMenu } from './screens/MainMenu';
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="products/hardware" element={<HardwareScreen />} />
           <Route path="products/exploration" element={<ExplorationScreen />} />
           <Route path="products/refineries" element={<RefineriesScreen />} />
+          <Route path="products/mines" element={<MinesScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />
           <Route path="finance" element={<FinanceScreen />} />

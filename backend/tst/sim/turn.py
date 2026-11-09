@@ -48,6 +48,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.public import public_month
+from tst.sim.mining import phase as mining
 from tst.sim.mna.closing import mna_month
 from tst.sim.mna.integration import integration_month
 from tst.sim.mna.rivals import rival_deals
@@ -262,6 +263,9 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
     # M20 (36): refineries run, upstream first, and hand their output to the group or market.
     state, entries, logs = refining_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M19 (35.2, 35.4-35.5): mines' construction, resource nationalism, rivals' bids.
+    state, entries, logs = mining.build_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*logs)
 
 
@@ -270,7 +274,10 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     out = products.run_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
-    return ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
+    ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
+    # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
+    state, entries, logs = mining.operate_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    return replace(ctx, state=state).post(*entries).log(*logs)
 
 
 def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:

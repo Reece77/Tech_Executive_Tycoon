@@ -275,3 +275,62 @@ def test_refinery_contracts_lock_the_price_and_take_first() -> None:
             game.loaded.balance,
             game.loaded.game_data,
         )
+
+
+def test_a_group_mine_feeds_the_refinery_in_place_of_spot() -> None:
+    """At M19's merge (36.1, 35.3): a lithium mine's output replaces the converter's spot
+    concentrate this month (its purchase reversed at the concentrate price; inside one company
+    no transfer), and next month that volume keeps 100% allocation."""
+    from tst.sim.ledger import CASH, COGS
+    from tst.sim.refining.mines import feed_from_mine, start_month
+
+    lg = m20.loaded()
+    game = m20.game_at(1, ym_to_turn(2016, 1) - 1)
+    fid = m20.build(game, "li_converter", "latin_america", 10_000)
+    m20.play(game, 20)
+    state = replace(game.state, turn=game.state.turn - 1)  # the month just played
+    pm = _plant(game, fid).month
+    assert pm is not None and pm.input_spot > 0
+    tonnes = 100.0  # of mine product: concentrate for 100 t of carbonate
+    state, taken, entries = feed_from_mine(
+        state,
+        m20.PLAYER,
+        "lithium_carbonate",
+        tonnes,
+        500_000,
+        "cost",
+        None,
+        {m20.PLAYER},
+        "Salar mine",
+        lg.balance,
+        lg.game_data,
+    )
+    assert taken == pytest.approx(tonnes)
+    ref = refinery_of(state, fid)
+    assert ref is not None and ref.month is not None
+    conc = tonnes * lg.balance.refining.recipes["li_converter"].input_per_output
+    assert ref.month.input_spot == pytest.approx(pm.input_spot - conc)
+    assert ref.month.input_group == pytest.approx(pm.input_group + conc)
+    assert ref.mine_fed == pytest.approx(conc)
+    cash = sum(x.amount for e in entries for x in e.lines if x.account == CASH)
+    cogs = sum(x.amount for e in entries for x in e.lines if x.account == COGS)
+    assert cash == -cogs > 0  # one company: only the spot purchase is reversed
+    assert all(not e.lines or {x.account for x in e.lines} == {CASH, COGS} for e in entries)
+    nxt = start_month(state)
+    ref = refinery_of(nxt, fid)
+    assert ref is not None and ref.mine_protected == pytest.approx(conc) and ref.mine_fed == 0
+    # a mine elsewhere in nobody's group feeds nothing
+    other, taken, _ = feed_from_mine(
+        state,
+        99,
+        "lithium_carbonate",
+        tonnes,
+        500_000,
+        "cost",
+        None,
+        {99},
+        "Rival",
+        lg.balance,
+        lg.game_data,
+    )
+    assert taken == 0

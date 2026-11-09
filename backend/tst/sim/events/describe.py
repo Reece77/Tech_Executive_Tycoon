@@ -127,6 +127,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return EXPLORATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "refining_step":  # M20 (36.4)
             return REFINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "mining_step":  # M19 (35.4)
+            return MINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -143,6 +145,20 @@ REFINING_STEP_TEXT: dict[str, str] = {  # M20 (36.4): never a hidden chance
     "stop": "stop the plant and investigate: two months without output, and the fine is halved",
     "compensate": "compensate the people affected: $5M on top of the fine; persona Beloved +3",
     "contest": "contest the findings: the fine, a chance of legal costs, and persona Ruthless +5",
+}
+MINING_STEP_TEXT: dict[str, str] = {  # M19 (35.4): never a hidden chance or overrun
+    "investigate": "stop and investigate: three months without output and a smaller fine",
+    "compensate": "compensate the victims and the community: $15M; your persona Beloved rises",
+    "contest": "contest it in court: legal risk of a larger fine; your persona Ruthless rises",
+    "partner": "accept a state partner: it buys 30-51% of the mine at book value",
+    "fight": "fight it: the mine is seized and arbitration takes years, the award uncertain",
+    "sell_out": "sell out to the state at half the mine's book value",
+    "care": "care and maintenance: no output, a third of the fixed cost, a costly restart",
+    "hedge": "hedge: an offtake on half the mine's capacity at today's price",
+    "keep": "keep running and wait for the price",
+    "consult": "consult the community: $500k and a month of lost output",
+    "benefit": "sign a benefit agreement: $3M; fewer protests from now on",
+    "push_on": "push on: legal risk of a blockade, and persona Ruthless +5",
 }
 EXPLORATION_STEP_TEXT: dict[str, str] = {  # M18 (34.3): never a hidden chance
     "consult": "consult the community: $500k and three more months before the decision",

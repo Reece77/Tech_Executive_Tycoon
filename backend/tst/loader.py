@@ -54,6 +54,7 @@ from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
+from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
@@ -88,6 +89,7 @@ COMMODITY_HISTORY_FILE = "commodities_history.yaml"  # M17 (formulas.md 33.1)
 POWER_HISTORY_FILE = "power_history.yaml"  # M17 (formulas.md 33.5)
 SUPPLIERS_FILE = "suppliers.yaml"  # M17 (formulas.md 33.4)
 GEOLOGY_FILE = "geology.yaml"  # M18 (formulas.md 34.1)
+NATIONALIZATION_FILE = "nationalization_history.yaml"  # M19 (formulas.md 35.4)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -109,6 +111,7 @@ DATA_FILES = (
     INVESTORS_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
+    NATIONALIZATION_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
     POWER_HISTORY_FILE,
@@ -324,9 +327,10 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             )
         refined = {r.output_good for r in balance.refining.recipes.values() if r.kind == key}
         if (
-            kind.output_good not in balance.compute.goods
+            kind.generic
+            and kind.output_good not in balance.compute.goods
             and kind.output_good != balance.hardware.output_good
-            and kind.output_good not in refined
+            and kind.output_good not in refined  # M20: a refinery makes its recipe's good
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -496,6 +500,31 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+def mining_problems(balance: Balance, data: GameData) -> list[str]:
+    """M19 (35): mining's commodities, skills and roles exist, and every history event names
+    a region and an explorable commodity."""
+    problems: list[str] = []
+    mb = balance.mining
+    if data.geology is not None:
+        known = {c.key for c in data.geology.commodities}
+        if bad := sorted(set(mb.strategic) ^ known):
+            problems.append(f"mining.strategic must name geology.yaml's commodities: {bad}")
+        for e in data.nationalization.events if data.nationalization else ():
+            if e.commodity is not None and e.commodity not in known:
+                problems.append(f"{e.title}: unknown commodity {e.commodity!r}")
+    regions = set(data.region_keys)
+    for e in data.nationalization.events if data.nationalization else ():
+        if e.region not in regions:
+            problems.append(f"{e.title}: unknown region {e.region!r}")
+    if bad := sorted(set(mb.staff_skills) - set(data.skill_keys)):
+        problems.append(f"mining.staff_skills {bad} are not skills")
+    if "mine" in balance.facility.kinds:
+        roles = {r.key for r in data.roles}
+        if bad := sorted(set(balance.facility.kinds["mine"].staff_roles) - roles):
+            problems.append(f"facility.kinds.mine staff_roles {bad} are not roles")
+    return problems
+
+
 def research_problems(balance: Balance, data: GameData) -> list[str]:
     """M11 (21): domains' skills, categories, eras' domains and boosts, and personalities
     all name things the other files define."""
@@ -613,6 +642,9 @@ def load_all(
     power_history = _validate(PowerHistoryFile, parsed[POWER_HISTORY_FILE], POWER_HISTORY_FILE)
     suppliers = _validate(SuppliersFile, parsed[SUPPLIERS_FILE], SUPPLIERS_FILE)
     geology = _validate(GeologyFile, parsed[GEOLOGY_FILE], GEOLOGY_FILE)
+    nationalization = _validate(
+        NationalizationHistory, parsed[NATIONALIZATION_FILE], NATIONALIZATION_FILE
+    )
     game_data = _validate(
         GameData,
         {
@@ -656,6 +688,7 @@ def load_all(
             "power_history": power_history,
             "suppliers": suppliers,
             "geology": geology,
+            "nationalization": nationalization,
         },
         "seed data cross-check",
     )
@@ -665,6 +698,10 @@ def load_all(
         raise DataLoadError(f"{VOICES_FILE}: rules name unknown personality traits {bad}")
     if problems := geology_problems(balance, game_data):
         raise DataLoadError(f"{GEOLOGY_FILE}: " + "; ".join(problems))
+    if problems := mining_problems(balance, game_data):
+        raise DataLoadError(
+            f"{NATIONALIZATION_FILE}, {BALANCE_FILE} mining: " + "; ".join(problems)
+        )
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

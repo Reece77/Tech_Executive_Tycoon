@@ -13,7 +13,7 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import LedgerEntry
 from tst.sim.log import LogItem
-from tst.sim.refining import events, plants
+from tst.sim.refining import events, mines, plants
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -24,6 +24,7 @@ def refining_month(
     if not state.refineries and not state.refining_deals and not state.own_supply:
         return state, (), ()
     state = replace(state, own_supply=())
+    state = mines.start_month(state)
     state, logs = plants.end_deals(state)
     state, more = events.events_month(state, rng, balance, data)
     logs += more

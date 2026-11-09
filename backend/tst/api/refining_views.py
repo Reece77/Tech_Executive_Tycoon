@@ -159,7 +159,7 @@ def _goods(state: GameState, data: LoadedData) -> list[RefiningGoodOut]:
 
 def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
     """The group's value chain (36: mine -> refinery -> wafer -> chip -> device): its plants
-    by output, and the products that use them. M19's mines join it at merge."""
+    by output, the group's mines (M19) and the products that use them."""
     b, d = data.balance, data.game_data
     group = group_of(state, state.player.id)
     links: list[ChainLinkOut] = []
@@ -175,6 +175,29 @@ def _chain(state: GameState, data: LoadedData) -> list[ChainLinkOut]:
     ]
     chip_products = [p for p in products if chips.is_chip(p, d)]
     device_products = [p for p in products if p.category in b.hardware.bom]
+    from tst.sim.mining.actions import mine_name  # M19's mines head the chain (36, 35.3)
+
+    for mine in state.mines:
+        if mine.company_id not in group or mine.status == "closed":
+            continue
+        feeds = [
+            lifecycle.facility_name(g, b, d)
+            for other, g in plants
+            if (spec := b.refining.goods.get(recipe_of(other, b).input_good or "")) is not None
+            and spec.source == mine.commodity
+            and spec.priced_by == "share"
+        ]
+        if mine.buyer_id is not None:
+            feeds.append(state.company(mine.buyer_id).name)
+        links.append(
+            ChainLinkOut(
+                stage="mine",
+                company=state.company(mine.company_id).name,
+                name=mine_name(mine, d),
+                detail=f"{mine.commodity}: {mine.capacity_t:,.0f} t a year, {mine.status}",
+                supplies=feeds,
+            )
+        )
     for ref, f in plants:
         r = recipe_of(ref, b)
         feeds = [

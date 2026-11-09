@@ -342,7 +342,8 @@ def _run_plant(
         )
         left = max(0.0, need - group_in - contract_in)
         alloc = rg.allocation(state, r.input_good, balance, data)
-        spot_in = left * alloc
+        mined = min(left, ref.mine_protected)  # the group's mines' volume keeps 100%
+        spot_in = mined + (left - mined) * alloc
         short = left - spot_in
         spot_cents = spot_in * in_market
         got = group_in + contract_in + spot_in

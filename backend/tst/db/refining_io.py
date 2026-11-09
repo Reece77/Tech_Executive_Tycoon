@@ -1,4 +1,4 @@
-"""Loading and syncing M20's records (formulas.md 36; migration 0043). Each record keeps its
+"""Loading and syncing M20's records (formulas.md 36; migration 0044). Each record keeps its
 dataclass fields in a JSON `data` column (tst.db.mna_io); a refinery's latest month is a nested
 object."""
 
@@ -35,7 +35,7 @@ def refinery_from(row: RefineryRow) -> Refinery:
 def load_refining(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every refining record (0043); a save from before M20 has none."""
+    """Every refining record (0044); a save from before M20 has none."""
     if not has_table(session, RefineryRow):
         return state
     refineries = tuple(

@@ -310,6 +310,8 @@ def operating_lines(
     assembly plants with the cost of goods (26.2)."""
     centres = plants = 0
     for f in state.company_facilities(company_id):
+        if not kind_of(f, balance).generic:
+            continue  # M19: a mine's costs post with its own month (tst.sim.mining)
         cost = (
             power.operating_cents(state, f, balance, data)
             if data is not None

@@ -568,3 +568,20 @@ Tuned (M17's keys only): `commodity.mixes.device_bom.share` 0.15 → 0.033 (43% 
 | Ranges hold their confidence | 90% | `tests/property/test_m18_estimates.py`, 30 seeds (grade after 8/20/40 holes, sample, tonnage) |
 
 Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8–9). T2 is read per dollar of discovery spend (Decision 10, for review); per dollar of all spend it is 1.42x on the combined code, under the band's 1.5x. M17's §33.6 targets re-run on the combined code: history 0 months off, phone +7.3% at the lithium peak, hedging +3.1 to +3.3 points, cheapest power 0.85x, shocks 7-10 of 10 seeds per good with the longest run above 3.0 at 24 months; golden snapshots unchanged.
+
+## M19: mining operations (§35.6)
+
+### M19 Mines (2026-11-09, v3 lane A; merges before M20)
+
+`tools/m19_targets.py` (`tst/balance/m19.py`; nightly `tests/balance/test_m19_balance.py`). T1-T2: on each seed, up to three mines per commodity (copper, lithium, cobalt, NdPr) built in January of 2012-2020 (by seed) on definitive studies whose NPV midpoint is positive, full crews of skill 12, run to the end of their lives (events answered: investigate, state partner, keep running, benefit agreement).
+
+| Target | Band | Seeds 1-10 | Seeds 11-40 |
+| --- | --- | --- | --- |
+| T1 good bets on average, bad ones often | median IRR 10-20%; >= 25% below 5% | 10.1%; 32% (75 mines) | 10.9%; 28% (220 mines) |
+| T2 copper costs | median AISC $1.5-3.0/lb; high grade in the bottom quartile | $2.19/lb; highest-grade quartile's median $1.68 < bottom quartile's top $1.93 (14 mines) | $2.20/lb; $1.53 < $1.88 (49 mines) |
+| T3 accidents at real rates | 0.1-0.5% a mine-year at average safety; skill 15 <= 0.6x skill 8 | open pit 0.20%, underground 0.40%, brine 0.10%; 0.53x | same (the formula's exact expectation) |
+| T4 nationalization bites | an event hits a high-risk region's mines in 2026-2039 on 3-7 of 10 seeds | 5 of 10 (lithium mines in Africa and Latin America) | 16 of 30 (53%) |
+| T5 integration steadies costs | BOM-cost volatility 2021-2024 <= 0.5x a spot buyer's | 0.11 median, 0.13 at most (8 seeds) | 0.12 median, 0.16 at most (24 seeds) |
+| T6 nothing else moves | a company that never mines plays exactly as before | golden snapshots unchanged; identical with and without the mining phases (24 months, 2 seeds) | — |
+
+Tuned (`mining.*` only; before → after in the brief's Decision 21): `sustaining_share` 0.02 → 0.07, `overrun.definitive` [0, 0.3] → [0, 0.5], `overrun.pre_feasibility` [0, 0.45] → [0, 0.55], `nationalization.monthly_base` 0.0045 → 0.0035, `accident.skill_slope` 0.04 → 0.07.

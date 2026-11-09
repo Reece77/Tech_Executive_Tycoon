@@ -234,6 +234,21 @@ from tst.sim.group.actions import (
 )
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.mining.actions import ACTION_TYPES as MINING_ACTION_TYPES
+from tst.sim.mining.actions import (
+    AnswerRivalBid,
+    BuildMine,
+    CareMaintenance,
+    CloseMine,
+    FoundSubsidiary,
+    MiningAction,
+    SetMineSafety,
+    SetMineSales,
+    SignMineSale,
+    StaffMine,
+    TransferAsset,
+    apply_mining,
+)
 from tst.sim.mna.antitrust import AcceptRemedy
 from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDiligence
 from tst.sim.mna.integration import SetDirective
@@ -276,11 +291,13 @@ type Action = (
     | GroupAction  # M16
     | ExplorationAction  # M18
     | RefiningAction  # M20
+    | MiningAction  # M19
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **REFINING_ACTION_TYPES,  # M20 (36.1)
+    **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -690,6 +707,19 @@ def apply_action(
             out = apply_exploration(state, action, rng, ledger_balances, balance, data)
         case BuildRefinery() | SignRefiningDeal():  # M20 (36.1)
             out = apply_refining(state, action, ledger_balances, balance, data)
+        case (
+            FoundSubsidiary()
+            | TransferAsset()
+            | BuildMine()
+            | SetMineSales()
+            | StaffMine()
+            | SetMineSafety()
+            | SignMineSale()
+            | CareMaintenance()
+            | CloseMine()
+            | AnswerRivalBid()
+        ):  # M19 (35)
+            out = apply_mining(state, action, rng, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

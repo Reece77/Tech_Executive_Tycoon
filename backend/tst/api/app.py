@@ -23,6 +23,7 @@ from tst.api.routers import (
     history,
     holiday,
     meta,
+    mining,
     mna,
     modes,
     mods,
@@ -106,6 +107,7 @@ def create_app() -> FastAPI:
     app.include_router(commodities.router)  # M17
     app.include_router(exploration.router)  # M18
     app.include_router(refining.router)  # M20
+    app.include_router(mining.router)  # M19
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
     app.include_router(mods.router)  # M25

@@ -3,11 +3,23 @@
 # Values approximate 2010 tech pay relative to the US, softened for gameplay.
 # Candidate region weights are a tunable and live in balance.yaml (people.region_weights).
 # Drafted for M1a; M1a adds the schema and loads this file.
+# M19 (formulas.md 35.3, 35.4; dossier 5):
+#   royalty_rate: the host government's royalty on a mine's revenue (6960). Assumptions from
+#     typical regimes: US federal land none but state severance 2-5% (4%); EU and UK 2-4% (3%);
+#     China resource tax 2-10% (5%); Indonesia 5-10% on nickel and copper (7%); Chile's 2023
+#     copper royalty and Peru's 1-12% (6%); DRC 3.5% then 10% on cobalt as a "strategic
+#     substance" from June 2018 (dossier 5, R) and Zimbabwe 5-7% (8%); Western Australia 5% on
+#     spodumene concentrate (5%).
+#   resource_nationalism: 0-1, how likely a government takes a stake in or bans exports of
+#     strategic minerals (assumption from dossier 5's 2010-2025 record: Latin America (Mexico
+#     2022, Bolivia, Chile 2023) and Africa (DRC 2018 and 2025, Zimbabwe 2022, Namibia 2023)
+#     highest; Indonesia's ore bans (2014, 2020) for South and Southeast Asia; China's export
+#     controls on processing for East Asia; North America, Europe and Oceania low).
 regions:
-  - { key: north_america, label: North America, salary_multiplier_bp: 10000 }
-  - { key: europe, label: Europe, salary_multiplier_bp: 8500 }
-  - { key: east_asia, label: East Asia, salary_multiplier_bp: 8000 }
-  - { key: south_southeast_asia, label: South and Southeast Asia, salary_multiplier_bp: 5500 }
-  - { key: latin_america, label: Latin America, salary_multiplier_bp: 6000 }
-  - { key: africa, label: Africa, salary_multiplier_bp: 5500 }
-  - { key: oceania, label: Oceania, salary_multiplier_bp: 9000 }
+  - { key: north_america, label: North America, salary_multiplier_bp: 10000, royalty_rate: 0.04, resource_nationalism: 0.05 }
+  - { key: europe, label: Europe, salary_multiplier_bp: 8500, royalty_rate: 0.03, resource_nationalism: 0.03 }
+  - { key: east_asia, label: East Asia, salary_multiplier_bp: 8000, royalty_rate: 0.05, resource_nationalism: 0.3 }
+  - { key: south_southeast_asia, label: South and Southeast Asia, salary_multiplier_bp: 5500, royalty_rate: 0.07, resource_nationalism: 0.5 }
+  - { key: latin_america, label: Latin America, salary_multiplier_bp: 6000, royalty_rate: 0.06, resource_nationalism: 0.6 }
+  - { key: africa, label: Africa, salary_multiplier_bp: 5500, royalty_rate: 0.08, resource_nationalism: 0.7 }
+  - { key: oceania, label: Oceania, salary_multiplier_bp: 9000, royalty_rate: 0.05, resource_nationalism: 0.03 }

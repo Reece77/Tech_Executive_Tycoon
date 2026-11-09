@@ -91,6 +91,7 @@ LEGACY_KEY = 3  # tunable-exempt: rival_key tag of a company without a stored id
 INCUMBENT_KEY, ENTRANT_KEY, STARTUP_KEY = 0, 1, 2  # tunable-exempt: rival_key tags
 VENTURE_KEY = 4  # tunable-exempt: rival_key tag of a player venture after the first (M15r)
 HOLDING_KEY = 5  # tunable-exempt: rival_key tag of the player's holding company (M16, 31.2)
+SUBSIDIARY_KEY = 6  # tunable-exempt: rival_key tag of a subsidiary founded from scratch (M19, 35.1)
 
 
 def player_key(company_id: int, rival_key: tuple[int, ...]) -> tuple[int, ...]:

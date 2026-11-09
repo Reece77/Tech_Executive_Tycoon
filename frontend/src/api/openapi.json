@@ -17923,6 +17923,959 @@
         }
       }
     },
+    "/api/saves/{save_id}/mines": {
+      "get": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Get Mines",
+        "description": "The group's mines (construction, output, grade, cost against price, reserves as ranges,\nstaff, events, closure), permitted projects to build on, assets to move, rivals' bids,\nresource-nationalism events and rival miners (35).",
+        "operationId": "getMines",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/subsidiaries": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Found Subsidiary",
+        "description": "35.1: a new, wholly owned subsidiary with a cash injection from the group.",
+        "operationId": "foundSubsidiary",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoundSubsidiaryIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/transfer": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Transfer Asset",
+        "description": "35.1: move a project or a facility to another group company at book value.",
+        "operationId": "transferAsset",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/build": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Build Mine",
+        "description": "35.2: build a mine on a permitted project.",
+        "operationId": "buildMine",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildMineIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/sales": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Set Mine Sales",
+        "description": "35.3: spot, or a group company at a transfer price.",
+        "operationId": "setMineSales",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MineSalesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/staff": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Staff Mine",
+        "operationId": "staffMine",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MineStaffIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/safety": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Set Mine Safety",
+        "operationId": "setMineSafety",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MineSafetyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/deals": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Sign Mine Sale",
+        "description": "35.3: a fixed-price contract or an offtake, the mine as seller.",
+        "operationId": "signMineSale",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MineSaleDealIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/care": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Care Maintenance",
+        "description": "35.4: care and maintenance, or a restart.",
+        "operationId": "careMaintenance",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/{mine_id}/close": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Close Mine",
+        "operationId": "closeMine",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "mine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Mine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mines/bids/{bid_id}": {
+      "post": {
+        "tags": [
+          "mining"
+        ],
+        "summary": "Answer Rival Bid",
+        "description": "35.5: accept or decline a rival's bid.",
+        "operationId": "answerRivalBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Bid Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BidAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MinesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/explain/{metric}": {
       "get": {
         "tags": [
@@ -19878,6 +20831,19 @@
         ],
         "title": "BankOut"
       },
+      "BidAnswerIn": {
+        "properties": {
+          "accept": {
+            "type": "boolean",
+            "title": "Accept"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accept"
+        ],
+        "title": "BidAnswerIn"
+      },
       "BidIn": {
         "properties": {
           "company_id": {
@@ -20326,6 +21292,30 @@
         ],
         "title": "BuildIn"
       },
+      "BuildMineIn": {
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "title": "Project Id"
+          },
+          "capacity_t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity T"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "title": "BuildMineIn"
+      },
       "BuildPreviewOut": {
         "properties": {
           "power_cents": {
@@ -20765,6 +21755,17 @@
           "secondary_energy"
         ],
         "title": "CapitalOut"
+      },
+      "CareIn": {
+        "properties": {
+          "restart": {
+            "type": "boolean",
+            "title": "Restart",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "CareIn"
       },
       "CashFlowOut": {
         "properties": {
@@ -26658,6 +27659,29 @@
         "title": "FoundAgainIn",
         "description": "Found a new company after an exit (M15b addendum 10)."
       },
+      "FoundSubsidiaryIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "cents": {
+            "type": "integer",
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "region",
+          "cents"
+        ],
+        "title": "FoundSubsidiaryIn"
+      },
       "FoundationFormOut": {
         "properties": {
           "can_create": {
@@ -32095,6 +33119,1002 @@
           "detail"
         ],
         "title": "MessageOut"
+      },
+      "MineDealOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "signed_label": {
+            "type": "string",
+            "title": "Signed Label"
+          },
+          "end_label": {
+            "type": "string",
+            "title": "End Label"
+          },
+          "volume_t_year": {
+            "type": "number",
+            "title": "Volume T Year"
+          },
+          "floor_usd_t": {
+            "type": "number",
+            "title": "Floor Usd T"
+          },
+          "ceiling_usd_t": {
+            "type": "number",
+            "title": "Ceiling Usd T"
+          },
+          "delivered_t": {
+            "type": "number",
+            "title": "Delivered T"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "buyer",
+          "signed_label",
+          "end_label",
+          "volume_t_year",
+          "floor_usd_t",
+          "ceiling_usd_t",
+          "delivered_t",
+          "running"
+        ],
+        "title": "MineDealOut"
+      },
+      "MineMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "output_t": {
+            "type": "number",
+            "title": "Output T"
+          },
+          "grade": {
+            "type": "number",
+            "title": "Grade",
+            "description": "The month's reconciled grade (public once mined)"
+          },
+          "price_usd_t": {
+            "type": "number",
+            "title": "Price Usd T"
+          },
+          "cost_usd_t": {
+            "type": "number",
+            "title": "Cost Usd T",
+            "description": "Cash cost a t: operations, royalties and sustaining"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "margin_cents": {
+            "type": "integer",
+            "title": "Margin Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "output_t",
+          "grade",
+          "price_usd_t",
+          "cost_usd_t",
+          "revenue_cents",
+          "margin_cents"
+        ],
+        "title": "MineMonthOut"
+      },
+      "MineOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "project_id": {
+            "type": "integer",
+            "title": "Project Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "commodity": {
+            "type": "string",
+            "title": "Commodity"
+          },
+          "commodity_label": {
+            "type": "string",
+            "title": "Commodity Label"
+          },
+          "subtype": {
+            "type": "string",
+            "title": "Subtype"
+          },
+          "subtype_label": {
+            "type": "string",
+            "title": "Subtype Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "The feasibility study it was built on"
+          },
+          "capacity_t": {
+            "type": "number",
+            "title": "Capacity T",
+            "description": "Product a year at the design grade"
+          },
+          "ordered_label": {
+            "type": "string",
+            "title": "Ordered Label"
+          },
+          "ready_label": {
+            "type": "string",
+            "title": "Ready Label"
+          },
+          "construction_months": {
+            "type": "integer",
+            "title": "Construction Months"
+          },
+          "construction_done": {
+            "type": "integer",
+            "title": "Construction Done"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "The study's capex for this capacity"
+          },
+          "overrun_low": {
+            "type": "number",
+            "title": "Overrun Low",
+            "description": "The study level's overrun range: public"
+          },
+          "overrun_high": {
+            "type": "number",
+            "title": "Overrun High"
+          },
+          "revised_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revised Cents",
+            "description": "The whole capex once the cost to complete is revised; None before"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents"
+          },
+          "book_cents": {
+            "type": "integer",
+            "title": "Book Cents"
+          },
+          "reclamation_owed_cents": {
+            "type": "integer",
+            "title": "Reclamation Owed Cents"
+          },
+          "reclamation_provisioned_cents": {
+            "type": "integer",
+            "title": "Reclamation Provisioned Cents"
+          },
+          "product_t": {
+            "type": "number",
+            "title": "Product T"
+          },
+          "reserves_low_t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reserves Low T",
+            "description": "The resource estimate's range of product left (est. ore less ore mined, at the design grade and recovery); never the truth"
+          },
+          "reserves_high_t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reserves High T"
+          },
+          "last_output_t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Output T"
+          },
+          "last_grade": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Grade"
+          },
+          "design_grade": {
+            "type": "number",
+            "title": "Design Grade"
+          },
+          "price_usd_t": {
+            "type": "number",
+            "title": "Price Usd T"
+          },
+          "price_usd_lb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Usd Lb",
+            "description": "Copper's price a pound"
+          },
+          "cost_usd_t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd T",
+            "description": "Last producing month's all-in cost a t"
+          },
+          "cost_usd_lb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd Lb"
+          },
+          "expected_cost_usd_t": {
+            "type": "number",
+            "title": "Expected Cost Usd T",
+            "description": "The all-in sustaining cost a t at capacity and the design grade"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "safety": {
+            "type": "string",
+            "title": "Safety"
+          },
+          "buyer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Id"
+          },
+          "buyer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Name"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          },
+          "state_share": {
+            "type": "number",
+            "title": "State Share"
+          },
+          "ban_until_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ban Until Label"
+          },
+          "below_cost_months": {
+            "type": "integer",
+            "title": "Below Cost Months"
+          },
+          "accidents": {
+            "type": "integer",
+            "title": "Accidents"
+          },
+          "open_event": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Event",
+            "description": "accident | takeover | crash awaiting an answer"
+          },
+          "arbitration_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arbitration Label"
+          },
+          "closed_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Label"
+          },
+          "close_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Close Reason"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/MineMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/MineDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "company_id",
+          "company_name",
+          "project_id",
+          "region",
+          "region_label",
+          "commodity",
+          "commodity_label",
+          "subtype",
+          "subtype_label",
+          "status",
+          "level",
+          "capacity_t",
+          "ordered_label",
+          "ready_label",
+          "construction_months",
+          "construction_done",
+          "estimate_cents",
+          "overrun_low",
+          "overrun_high",
+          "revised_cents",
+          "capex_paid_cents",
+          "book_cents",
+          "reclamation_owed_cents",
+          "reclamation_provisioned_cents",
+          "product_t",
+          "reserves_low_t",
+          "reserves_high_t",
+          "last_output_t",
+          "last_grade",
+          "design_grade",
+          "price_usd_t",
+          "price_usd_lb",
+          "cost_usd_t",
+          "cost_usd_lb",
+          "expected_cost_usd_t",
+          "staff",
+          "staff_needed",
+          "coverage",
+          "unit_id",
+          "safety",
+          "buyer_id",
+          "buyer_name",
+          "price_kind",
+          "margin",
+          "state_share",
+          "ban_until_label",
+          "below_cost_months",
+          "accidents",
+          "open_event",
+          "arbitration_label",
+          "closed_label",
+          "close_reason",
+          "history",
+          "deals"
+        ],
+        "title": "MineOut"
+      },
+      "MineQuoteOut": {
+        "properties": {
+          "project_id": {
+            "type": "integer",
+            "title": "Project Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "commodity": {
+            "type": "string",
+            "title": "Commodity"
+          },
+          "commodity_label": {
+            "type": "string",
+            "title": "Commodity Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "subtype": {
+            "type": "string",
+            "title": "Subtype"
+          },
+          "subtype_label": {
+            "type": "string",
+            "title": "Subtype Label"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "design_t": {
+            "type": "number",
+            "title": "Design T"
+          },
+          "capacity_low_t": {
+            "type": "number",
+            "title": "Capacity Low T"
+          },
+          "capacity_high_t": {
+            "type": "number",
+            "title": "Capacity High T"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "At the design capacity"
+          },
+          "capex_scale": {
+            "type": "number",
+            "title": "Capex Scale"
+          },
+          "construction_low": {
+            "type": "integer",
+            "title": "Construction Low"
+          },
+          "construction_high": {
+            "type": "integer",
+            "title": "Construction High"
+          },
+          "overrun_low": {
+            "type": "number",
+            "title": "Overrun Low"
+          },
+          "overrun_high": {
+            "type": "number",
+            "title": "Overrun High"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "npv_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv Low Cents"
+          },
+          "npv_mid_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv Mid Cents"
+          },
+          "npv_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv High Cents"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "label",
+          "company_id",
+          "company_name",
+          "commodity",
+          "commodity_label",
+          "region",
+          "subtype",
+          "subtype_label",
+          "level",
+          "design_t",
+          "capacity_low_t",
+          "capacity_high_t",
+          "estimate_cents",
+          "capex_scale",
+          "construction_low",
+          "construction_high",
+          "overrun_low",
+          "overrun_high",
+          "staff_needed",
+          "npv_low_cents",
+          "npv_mid_cents",
+          "npv_high_cents",
+          "allowed",
+          "reason"
+        ],
+        "title": "MineQuoteOut"
+      },
+      "MineSafetyIn": {
+        "properties": {
+          "safety": {
+            "type": "string",
+            "title": "Safety"
+          }
+        },
+        "type": "object",
+        "required": [
+          "safety"
+        ],
+        "title": "MineSafetyIn"
+      },
+      "MineSaleDealIn": {
+        "properties": {
+          "deal_kind": {
+            "type": "string",
+            "title": "Deal Kind"
+          },
+          "volume_t_year": {
+            "type": "number",
+            "title": "Volume T Year"
+          },
+          "months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months"
+          },
+          "years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deal_kind",
+          "volume_t_year"
+        ],
+        "title": "MineSaleDealIn"
+      },
+      "MineSalesIn": {
+        "properties": {
+          "buyer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer Id"
+          },
+          "price_kind": {
+            "type": "string",
+            "title": "Price Kind",
+            "default": "market"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin"
+          }
+        },
+        "type": "object",
+        "title": "MineSalesIn"
+      },
+      "MineStaffIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "MineStaffIn"
+      },
+      "MinesActionOut": {
+        "properties": {
+          "mines": {
+            "$ref": "#/components/schemas/MinesOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mines",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "MinesActionOut"
+      },
+      "MinesOut": {
+        "properties": {
+          "turn_label": {
+            "type": "string",
+            "title": "Turn Label"
+          },
+          "group_stage": {
+            "type": "integer",
+            "title": "Group Stage"
+          },
+          "found_min_stage": {
+            "type": "integer",
+            "title": "Found Min Stage"
+          },
+          "found_min_cents": {
+            "type": "integer",
+            "title": "Found Min Cents"
+          },
+          "found_energy": {
+            "type": "integer",
+            "title": "Found Energy"
+          },
+          "build_energy": {
+            "type": "integer",
+            "title": "Build Energy"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/MiningCompanyOut"
+            },
+            "type": "array",
+            "title": "Companies"
+          },
+          "mines": {
+            "items": {
+              "$ref": "#/components/schemas/MineOut"
+            },
+            "type": "array",
+            "title": "Mines"
+          },
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/MineQuoteOut"
+            },
+            "type": "array",
+            "title": "Quotes"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/TransferAssetOut"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/UnitOptionOut"
+            },
+            "type": "array",
+            "title": "Units"
+          },
+          "bids": {
+            "items": {
+              "$ref": "#/components/schemas/RivalBidOut"
+            },
+            "type": "array",
+            "title": "Bids"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/RegionEventOut"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionRiskOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalMinerOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "transfer_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Transfer Kinds"
+          },
+          "safety_levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Safety Levels"
+          },
+          "contract_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Contract Months"
+          },
+          "offtake_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Offtake Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_label",
+          "group_stage",
+          "found_min_stage",
+          "found_min_cents",
+          "found_energy",
+          "build_energy",
+          "companies",
+          "mines",
+          "quotes",
+          "assets",
+          "units",
+          "bids",
+          "events",
+          "regions",
+          "rivals",
+          "transfer_kinds",
+          "safety_levels",
+          "contract_months",
+          "offtake_years"
+        ],
+        "title": "MinesOut"
+      },
+      "MiningCompanyOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "operating | holding | subsidiary"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "role",
+          "region",
+          "cash_cents"
+        ],
+        "title": "MiningCompanyOut"
       },
       "MnaActionOut": {
         "properties": {
@@ -38690,6 +40710,94 @@
         ],
         "title": "RefiningPowerOut"
       },
+      "RegionEventOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "commodity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commodity"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "seeded": {
+            "type": "boolean",
+            "title": "Seeded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "region",
+          "region_label",
+          "commodity",
+          "kind",
+          "months",
+          "title",
+          "seeded"
+        ],
+        "title": "RegionEventOut"
+      },
+      "RegionRiskOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "royalty_rate": {
+            "type": "number",
+            "title": "Royalty Rate"
+          },
+          "resource_nationalism": {
+            "type": "number",
+            "title": "Resource Nationalism"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "royalty_rate",
+          "resource_nationalism"
+        ],
+        "title": "RegionRiskOut"
+      },
       "RegionSegmentOut": {
         "properties": {
           "segment": {
@@ -39121,6 +41229,63 @@
         ],
         "title": "ResearchOut"
       },
+      "RivalBidOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "bidder": {
+            "type": "string",
+            "title": "Bidder"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "mine_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mine Id"
+          },
+          "cents": {
+            "type": "integer",
+            "title": "Cents"
+          },
+          "expires_label": {
+            "type": "string",
+            "title": "Expires Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "bidder",
+          "asset",
+          "project_id",
+          "mine_id",
+          "cents",
+          "expires_label"
+        ],
+        "title": "RivalBidOut"
+      },
       "RivalLeadOut": {
         "properties": {
           "company_id": {
@@ -39270,6 +41435,59 @@
           "feud"
         ],
         "title": "RivalLeaderOut"
+      },
+      "RivalMinerOut": {
+        "properties": {
+          "supplier": {
+            "type": "string",
+            "title": "Supplier"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "commodity": {
+            "type": "string",
+            "title": "Commodity"
+          },
+          "commodity_label": {
+            "type": "string",
+            "title": "Commodity Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "start_share": {
+            "type": "number",
+            "title": "Start Share"
+          },
+          "capacity_share": {
+            "type": "number",
+            "title": "Capacity Share"
+          },
+          "output_share": {
+            "type": "number",
+            "title": "Output Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "supplier",
+          "name",
+          "commodity",
+          "commodity_label",
+          "region",
+          "region_label",
+          "start_share",
+          "capacity_share",
+          "output_share"
+        ],
+        "title": "RivalMinerOut"
       },
       "RivalMoveOut": {
         "properties": {
@@ -43436,6 +45654,80 @@
         ],
         "title": "TraitOut"
       },
+      "TransferAssetOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "project | facility"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "book_cents": {
+            "type": "integer",
+            "title": "Book Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "label",
+          "company_id",
+          "company_name",
+          "book_cents"
+        ],
+        "title": "TransferAssetOut"
+      },
+      "TransferIn": {
+        "properties": {
+          "to_company_id": {
+            "type": "integer",
+            "title": "To Company Id"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "facility_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facility Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_company_id"
+        ],
+        "title": "TransferIn"
+      },
       "TransferPriceIn": {
         "properties": {
           "seller_id": {
@@ -43558,6 +45850,47 @@
           "office_id"
         ],
         "title": "UnitOfficeIn"
+      },
+      "UnitOptionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "mining_engineers": {
+            "type": "integer",
+            "title": "Mining Engineers"
+          },
+          "staffs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Staffs",
+            "description": "The facility it staffs, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "company_name",
+          "mining_engineers",
+          "staffs"
+        ],
+        "title": "UnitOptionOut"
       },
       "UnitOut": {
         "properties": {

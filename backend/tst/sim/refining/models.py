@@ -80,6 +80,8 @@ class Refinery:
     incident_turn: int | None = None  # an incident event awaiting its answer
     incidents: int = 0
     last_depreciated_cents: int = 0  # the facility's accumulated depreciation last month
+    mine_fed: float = 0.0  # input units the group's mines supplied this month (M19 merge)
+    mine_protected: float = 0.0  # last month's: input that keeps 100% allocation this month
     month: PlantMonth | None = None  # the latest month
     history: tuple[tuple[int, float, float, float], ...] = ()  # (turn, output, unit, market)
 

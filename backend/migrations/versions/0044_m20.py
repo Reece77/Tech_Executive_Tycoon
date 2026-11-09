@@ -4,8 +4,8 @@ incidents, its latest month and history), `refining_deal` refinery contracts, an
 `refining_supply` the month's own-group supply lots, each record's fields in a JSON `data`
 column (data-dictionary.md); account 4410. Existing saves have no refineries: nothing to fill.
 
-Revision ID: 0043_m20
-Revises: 0042_m18
+Revision ID: 0044_m20
+Revises: 0043_m19
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0043_m20"
-down_revision: str | None = "0042_m18"
+revision: str = "0044_m20"
+down_revision: str | None = "0043_m19"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -52,7 +52,7 @@ def upgrade() -> None:
             ),
             {"c": code, "n": name, "t": kind},
         )
-    op.execute("UPDATE save_meta SET schema_version = 43")
+    op.execute("UPDATE save_meta SET schema_version = 44")
 
 
 def downgrade() -> None:
@@ -62,4 +62,4 @@ def downgrade() -> None:
         "DELETE FROM account WHERE code = '4410_materials_sales' AND NOT EXISTS "
         "(SELECT 1 FROM ledger_line WHERE account_code = '4410_materials_sales')"
     )
-    op.execute("UPDATE save_meta SET schema_version = 42")
+    op.execute("UPDATE save_meta SET schema_version = 43")

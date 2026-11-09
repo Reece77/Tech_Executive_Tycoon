@@ -7,6 +7,7 @@ accounts:
   - { code: 1100_receivables, name: Accounts receivable, type: asset }
   - { code: 1200_prepaid, name: Prepaid expenses, type: asset }
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
+  - { code: 1520_mineral_properties, name: Mineral properties, type: asset } # M19 (35.2-35.3): a mine's capex and its project's moved exploration spend, less units-of-production depletion credited here
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
   - { code: 1810_investment_subsidiaries, name: Investment in subsidiaries, type: asset } # M14 (28.5): a kept brand's book equity at closing, less cash swept since; replaced by its net assets in consolidation
@@ -17,6 +18,7 @@ accounts:
   - { code: 2100_accrued_payroll, name: Accrued payroll, type: liability }
   - { code: 2500_debt, name: Debt, type: liability }
   - { code: 2600_safes, name: SAFEs and convertible notes, type: liability }
+  - { code: 2610_asset_retirement_obligation, name: Asset retirement obligation, type: liability } # M19 (35.3): mines' reclamation, provisioned a tonne from first output, paid over mining.reclamation_months after closure (35.3's '2600': SAFEs already hold 2600)
   # Equity
   - { code: 3000_common_equity, name: Common equity, type: equity }
   - { code: 3100_preferred_equity, name: Preferred equity, type: equity }
@@ -25,6 +27,7 @@ accounts:
   - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
+  - { code: 4400_revenue_commodities, name: Commodity sales, type: revenue } # M19 (35.3): a mine's output sold at spot, into contracts and offtakes
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it
   - { code: 4410_materials_sales, name: Materials sales, type: revenue } # M20 (36.1): refined materials and wafers sold at spot or under contract
   - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
@@ -44,8 +47,10 @@ accounts:
   - { code: 6500_research_development, name: Research and development, type: expense }
   - { code: 6600_exploration, name: Exploration, type: expense } # M18 (34.2): desk studies, licences, surveys, sampling, drilling, estimates, feasibility and permits, expensed as spent
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
+  - { code: 6750_depletion, name: Depletion, type: expense } # M19 (35.3): mineral properties' units-of-production depletion, and write-offs at closure
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900
+  - { code: 6960_royalties, name: Royalties and state shares, type: expense } # M19 (35.3, 35.4): host governments' royalties on mines' revenue, and a state partner's share of a mine's cash margin
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }
 

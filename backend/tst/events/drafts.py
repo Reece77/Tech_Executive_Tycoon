@@ -115,8 +115,9 @@ def template_draft(
                 "founder_step",
                 "group_step",
                 "exploration_step",
+                "mining_step",
                 "refining_step",
-            ):  # M16, M18, M20 too
+            ):  # M16, M18, M19, M20 too
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(
