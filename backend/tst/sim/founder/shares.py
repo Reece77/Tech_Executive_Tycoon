@@ -33,7 +33,9 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.finance.captable import person_shares
 from tst.sim.finance.models import CapEntry
+from tst.sim.founder import draws
 from tst.sim.founder.angel import group_ids
+from tst.sim.founder.draws import personal_draws
 from tst.sim.founder.events import queue
 from tst.sim.founder.investing_models import PersonalTrade, PublicHolding
 from tst.sim.founder.models import (
@@ -322,7 +324,7 @@ def trades_month(
         if agreed:
             price = share_price_cents(state, t.company_id, balances, balance, data) or t.price_cents
             move = price - t.price_cents if t.side == "buy" else t.price_cents - price
-            gen = rng.stream(t.turn, "personal", 0, t.id)
+            gen = personal_draws(rng, t.turn, draws.TRADE, t.id)
             opens = None
             if float(gen.random()) < pb.sec_p:
                 opens = turn + 1 + int(float(gen.random()) * pb.investigation_months)

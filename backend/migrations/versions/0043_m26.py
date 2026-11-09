@@ -3,7 +3,7 @@
 stakes in private startups, `personal_trade` trades of listed shares (with the hidden
 regulatory risk and investigation draw, ADR-0007), `public_holding` listed shares held,
 `family_office` the founder's family office, `wealth_point` net worth by month and
-`market_index` the market index; each record's fields in a JSON `data` column
+`market_index` the market index, `founder_network` people who left the player's companies; each record's fields in a JSON `data` column
 (data-dictionary.md). The personal accounts 9110-9430 live in data (accounts.yaml), not in
 the company chart.
 
@@ -34,6 +34,7 @@ TABLES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("family_office", ("person_id",)),
     ("wealth_point", ("person_id", "turn")),
     ("market_index", ("turn",)),
+    ("founder_network", ("person_id",)),
 )
 
 

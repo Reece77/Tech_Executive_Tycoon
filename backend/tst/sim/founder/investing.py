@@ -33,6 +33,7 @@ def investing_month(
         return state, (), ()
     logs: list[LogItem] = []
     state, rounds = angel.record_month_rounds(state, entries, balance)
+    state = angel.network_month(state, balance)
     if state.angel_stakes:
         state, stake_logs = angel.stakes_month(state, rounds, balance, data)
         logs += stake_logs

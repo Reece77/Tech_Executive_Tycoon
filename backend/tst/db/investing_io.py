@@ -5,7 +5,7 @@ concealed conflict's discovery) are stored with their record; the API never read
 
 from __future__ import annotations
 
-from collections.abc import Callable, Hashable
+from collections.abc import Callable
 from dataclasses import replace
 from typing import Any
 
@@ -17,6 +17,7 @@ from tst.db.models import (
     AngelStakeRow,
     FamilyOfficeRow,
     MarketIndexRow,
+    NetworkRow,
     PersonalTradeRow,
     PublicHoldingRow,
     StartupRoundRow,
@@ -26,6 +27,7 @@ from tst.sim.founder.investing_models import (
     AngelStake,
     FamilyOffice,
     IndexPoint,
+    NetworkEntry,
     PersonalTrade,
     PublicHolding,
     StartupRound,
@@ -42,11 +44,26 @@ TABLES: tuple[tuple[str, Any, Any, tuple[str, ...]], ...] = (
     ("family_offices", FamilyOfficeRow, FamilyOffice, ("person_id",)),
     ("wealth_points", WealthPointRow, WealthPoint, ("person_id", "turn")),
     ("market_index", MarketIndexRow, IndexPoint, ("turn",)),
+    ("network", NetworkRow, NetworkEntry, ("person_id",)),
 )
 
 
-def _key(record: Any, keys: tuple[str, ...]) -> Hashable:
+def _key(record: Any, keys: tuple[str, ...]) -> tuple[Any, ...]:
     return tuple(getattr(record, k) for k in keys)
+
+
+def investing_people(session: Session, has_table: Callable[[Session, Any], bool]) -> list[int]:
+    """People M26 keeps loaded without an employment (37.2, 37.4): the founder's network and
+    family-office managers."""
+    if not has_table(session, FamilyOfficeRow):
+        return []
+    managers = [int(r.data["manager_id"]) for r in session.scalars(select(FamilyOfficeRow))]
+    return managers + list(session.scalars(select(NetworkRow.person_id)))
+
+
+def live_investing(state: GameState) -> set[int]:
+    """The same set from a state (state_io.live_view)."""
+    return {o.manager_id for o in state.family_offices} | {e.person_id for e in state.network}
 
 
 def load_investing(
@@ -62,7 +79,7 @@ def load_investing(
             from_data(cls, r.data, **{k: getattr(r, k) for k in keys})
             for r in session.scalars(select(row_cls).order_by(*order))
         )
-    return replace(state, **loaded)
+    return replace(state, **loaded)  # type: ignore[arg-type]
 
 
 def sync_investing(
@@ -75,7 +92,7 @@ def sync_investing(
         before = {_key(r, keys): r for r in getattr(old, name)}
         after = {_key(r, keys): r for r in getattr(new, name)}
         for k in before.keys() - after.keys():  # the index keeps its last months only
-            cond = [getattr(row_cls, c) == v for c, v in zip(keys, k, strict=True)]  # type: ignore[arg-type]
+            cond = [getattr(row_cls, c) == v for c, v in zip(keys, k, strict=True)]
             session.execute(delete(row_cls).where(*cond))
         for k, record in after.items():
             if before.get(k) != record:

@@ -26,16 +26,17 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
-from tst.sim.founder.models import Foundation, FounderLife, Influence, PersonalEntry
 from tst.sim.founder.investing_models import (
     AngelStake,
     FamilyOffice,
     IndexPoint,
+    NetworkEntry,
     PersonalTrade,
     PublicHolding,
     StartupRound,
     WealthPoint,
 )
+from tst.sim.founder.models import Foundation, FounderLife, Influence, PersonalEntry
 from tst.sim.geo.models import (
     MarketingSplit,
     Office,
@@ -309,6 +310,7 @@ class GameState:
     family_offices: tuple[FamilyOffice, ...] = ()
     wealth_points: tuple[WealthPoint, ...] = ()
     market_index: tuple[IndexPoint, ...] = ()
+    network: tuple[NetworkEntry, ...] = ()  # by person id
     # M16 (31.1): every holding of one company by another, open or ended, sorted by id
     ownerships: tuple[Ownership, ...] = ()
     holdings: tuple[Holding, ...] = ()  # M16 (31.2): the player's holding company, if formed
@@ -1442,6 +1444,16 @@ def with_family_office(state: GameState, office: FamilyOffice) -> GameState:
 
 def with_wealth_point(state: GameState, point: WealthPoint) -> GameState:
     return replace(state, wealth_points=(*state.wealth_points, point))
+
+
+def with_network(state: GameState, entries: list[NetworkEntry], keep: int) -> GameState:
+    """`entries` join the founder's network; only the `keep` most recent stay (37.2)."""
+    if not entries:
+        return state
+    merged = {e.person_id: e for e in state.network}
+    merged.update({e.person_id: e for e in entries})
+    kept = sorted(merged.values(), key=lambda e: (e.turn, e.person_id))[-keep:]
+    return replace(state, network=tuple(sorted(kept, key=lambda e: e.person_id)))
 
 
 def with_index_point(state: GameState, point: IndexPoint, keep: int) -> GameState:

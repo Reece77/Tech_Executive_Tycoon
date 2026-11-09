@@ -1368,6 +1368,7 @@ angel: # 37.2: the founder's own angel and venture investing (M26)
   known_hw: 2.5 # attribute points: a person whose skills' mean revealed half-width is at most this counts as known
   skill_runway: 0.0 # a backed founder's true mean skill above 10: share of extra founding cash per point (0: none; M26 tuning key)
   team: [3, 8] # a backed startup's team besides its founder (15.4's 3 to 8)
+  network_size: 40 # people: the most recent leavers of your companies kept in your network (M26 decision; saves keep their records loaded)
 
 family_office: # 37.4: the founder's family office (M26)
   min_cents: 5000000000 # cents ($50M) of personal wealth (cash + investments at value) to form one

@@ -1899,6 +1899,16 @@ class MarketIndexRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+class NetworkRow(Base):
+    """Someone in the founder's network: they left the player's companies (37.2). Their
+    person record stays loaded while they are listed here."""
+
+    __tablename__ = "founder_network"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 # --- The holding company and its subsidiaries (M16, formulas.md 31; 0039) --------------------
 
 

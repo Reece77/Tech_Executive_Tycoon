@@ -15442,6 +15442,577 @@
         }
       }
     },
+    "/api/saves/{save_id}/founder/investments": {
+      "get": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Get Investments",
+        "description": "Net worth, angel stakes, open rounds, the network, holdings, trades and the family\noffice (37.7).",
+        "operationId": "getInvestments",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/angel": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Join Round",
+        "description": "Put personal cash into a startup's open round (37.2).",
+        "operationId": "joinRound",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinRoundIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/back-startup": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Back Startup",
+        "description": "Back a new startup led by someone from your network (37.2).",
+        "operationId": "backStartup",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackStartupIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/shares": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Trade Shares",
+        "description": "Buy or sell a listed company's shares with personal cash (37.3).",
+        "operationId": "tradeShares",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/family-office": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Form Family Office",
+        "description": "Form the family office with a mandate (37.4).",
+        "operationId": "formFamilyOffice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeMandateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/family-office/move": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Move Family Office",
+        "description": "Move personal cash into the family office, or out of it (37.4).",
+        "operationId": "moveFamilyOffice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/founder/family-office/mandate": {
+      "post": {
+        "tags": [
+          "investing"
+        ],
+        "summary": "Set Office Mandate",
+        "description": "Change the family office's mandate (37.4).",
+        "operationId": "setOfficeMandate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeMandateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvestmentsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/group": {
       "get": {
         "tags": [
@@ -18807,6 +19378,128 @@
         ],
         "title": "AnalystOut"
       },
+      "AngelStakeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "acquired",
+              "listed",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "stake_pct": {
+            "type": "number",
+            "title": "Stake Pct"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents",
+            "description": "Stake x the last round's post-money"
+          },
+          "proceeds_cents": {
+            "type": "integer",
+            "title": "Proceeds Cents"
+          },
+          "backed": {
+            "type": "boolean",
+            "title": "Backed"
+          },
+          "founder_known": {
+            "type": "boolean",
+            "title": "Founder Known",
+            "description": "Backed with a founder whose skills you knew"
+          },
+          "since_label": {
+            "type": "string",
+            "title": "Since Label"
+          },
+          "closed_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed Label"
+          },
+          "cash_band": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash Band",
+            "description": "deep pockets | comfortable | tight"
+          },
+          "funding": {
+            "items": {
+              "$ref": "#/components/schemas/StartupRoundOut"
+            },
+            "type": "array",
+            "title": "Funding"
+          },
+          "conflict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conflict",
+            "description": "disclosed | concealed | found, once raised"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "category_label",
+          "status",
+          "stake_pct",
+          "cost_cents",
+          "value_cents",
+          "proceeds_cents",
+          "backed",
+          "founder_known",
+          "since_label",
+          "closed_label",
+          "cash_band",
+          "funding",
+          "conflict"
+        ],
+        "title": "AngelStakeOut"
+      },
       "AppealWeightsOut": {
         "properties": {
           "quality": {
@@ -19190,6 +19883,30 @@
         ],
         "title": "AuthorityOut",
         "description": "A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision\nquality or the holder's score (24.4)."
+      },
+      "BackStartupIn": {
+        "properties": {
+          "founder_id": {
+            "type": "integer",
+            "title": "Founder Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "founder_id",
+          "category",
+          "cents"
+        ],
+        "title": "BackStartupIn"
       },
       "BackgroundOut": {
         "properties": {
@@ -20235,6 +20952,24 @@
           "burn_cents"
         ],
         "title": "CashFlowOut"
+      },
+      "CategoryOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "CategoryOptionOut"
       },
       "CategoryOut": {
         "properties": {
@@ -21986,7 +22721,7 @@
           },
           "history": {
             "items": {
-              "$ref": "#/components/schemas/IndexPointOut"
+              "$ref": "#/components/schemas/tst__api__schemas__facilities__IndexPointOut"
             },
             "type": "array",
             "title": "History",
@@ -25510,6 +26245,126 @@
         ],
         "title": "FacilityOut"
       },
+      "FamilyOfficeFormOut": {
+        "properties": {
+          "can_form": {
+            "type": "boolean",
+            "title": "Can Form"
+          },
+          "min_cents": {
+            "type": "integer",
+            "title": "Min Cents"
+          },
+          "wealth_cents": {
+            "type": "integer",
+            "title": "Wealth Cents",
+            "description": "Cash plus investments at value, outside your company"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          },
+          "move_energy": {
+            "type": "integer",
+            "title": "Move Energy"
+          },
+          "mandates": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mandates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_form",
+          "min_cents",
+          "wealth_cents",
+          "energy",
+          "move_energy",
+          "mandates"
+        ],
+        "title": "FamilyOfficeFormOut"
+      },
+      "FamilyOfficeOut": {
+        "properties": {
+          "formed_label": {
+            "type": "string",
+            "title": "Formed Label"
+          },
+          "mandate": {
+            "type": "string",
+            "title": "Mandate"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "title": "Balance Cents"
+          },
+          "manager_id": {
+            "type": "integer",
+            "title": "Manager Id"
+          },
+          "manager_name": {
+            "type": "string",
+            "title": "Manager Name"
+          },
+          "manager_skill_low": {
+            "type": "integer",
+            "title": "Manager Skill Low",
+            "description": "The manager's finance skill, revealed range"
+          },
+          "manager_skill_high": {
+            "type": "integer",
+            "title": "Manager Skill High"
+          },
+          "returns": {
+            "items": {
+              "$ref": "#/components/schemas/OfficeReturnOut"
+            },
+            "type": "array",
+            "title": "Returns",
+            "description": "The last 24 months, oldest first"
+          },
+          "trailing_year_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trailing Year Pct"
+          },
+          "index_year_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index Year Pct",
+            "description": "The market index over the same year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "formed_label",
+          "mandate",
+          "balance_cents",
+          "manager_id",
+          "manager_name",
+          "manager_skill_low",
+          "manager_skill_high",
+          "returns",
+          "trailing_year_pct",
+          "index_year_pct"
+        ],
+        "title": "FamilyOfficeOut"
+      },
       "FeudOut": {
         "properties": {
           "rival_id": {
@@ -28822,6 +29677,57 @@
         ],
         "title": "HolderOut"
       },
+      "HoldingOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "own": {
+            "type": "boolean",
+            "title": "Own",
+            "description": "Your own company (these shares sit on its cap table)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "shares",
+          "price_cents",
+          "value_cents",
+          "cost_cents",
+          "own"
+        ],
+        "title": "HoldingOut"
+      },
       "HolidayIn": {
         "properties": {
           "months": {
@@ -29136,35 +30042,6 @@
         ],
         "title": "InboxOut"
       },
-      "IndexPointOut": {
-        "properties": {
-          "turn": {
-            "type": "integer",
-            "title": "Turn"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label",
-            "description": "Mon YYYY"
-          },
-          "index": {
-            "type": "number",
-            "title": "Index"
-          },
-          "allocation": {
-            "type": "number",
-            "title": "Allocation"
-          }
-        },
-        "type": "object",
-        "required": [
-          "turn",
-          "label",
-          "index",
-          "allocation"
-        ],
-        "title": "IndexPointOut"
-      },
       "InfluenceOut": {
         "properties": {
           "region": {
@@ -29369,6 +30246,192 @@
           "break_even_utilization"
         ],
         "title": "InfrastructureOut"
+      },
+      "InvestingRulesOut": {
+        "properties": {
+          "join_energy": {
+            "type": "integer",
+            "title": "Join Energy"
+          },
+          "back_energy": {
+            "type": "integer",
+            "title": "Back Energy"
+          },
+          "trade_energy": {
+            "type": "integer",
+            "title": "Trade Energy"
+          },
+          "round_min_cents": {
+            "type": "integer",
+            "title": "Round Min Cents"
+          },
+          "min_cheque_cents": {
+            "type": "integer",
+            "title": "Min Cheque Cents"
+          },
+          "seed_stake_low_pct": {
+            "type": "number",
+            "title": "Seed Stake Low Pct"
+          },
+          "seed_stake_high_pct": {
+            "type": "number",
+            "title": "Seed Stake High Pct"
+          },
+          "seed_full_cents": {
+            "type": "integer",
+            "title": "Seed Full Cents"
+          },
+          "trade_cost_pct": {
+            "type": "number",
+            "title": "Trade Cost Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "join_energy",
+          "back_energy",
+          "trade_energy",
+          "round_min_cents",
+          "min_cheque_cents",
+          "seed_stake_low_pct",
+          "seed_stake_high_pct",
+          "seed_full_cents",
+          "trade_cost_pct"
+        ],
+        "title": "InvestingRulesOut"
+      },
+      "InvestmentsActionOut": {
+        "properties": {
+          "investments": {
+            "$ref": "#/components/schemas/InvestmentsOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "investments",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "InvestmentsActionOut"
+      },
+      "InvestmentsOut": {
+        "properties": {
+          "personal_cash_cents": {
+            "type": "integer",
+            "title": "Personal Cash Cents"
+          },
+          "net_worth": {
+            "$ref": "#/components/schemas/NetWorthOut"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/NetWorthPointOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Month ends, oldest first"
+          },
+          "stakes": {
+            "items": {
+              "$ref": "#/components/schemas/AngelStakeOut"
+            },
+            "type": "array",
+            "title": "Stakes"
+          },
+          "open_rounds": {
+            "items": {
+              "$ref": "#/components/schemas/OpenRoundOut"
+            },
+            "type": "array",
+            "title": "Open Rounds"
+          },
+          "network": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkPersonOut"
+            },
+            "type": "array",
+            "title": "Network"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOptionOut"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "Where a new startup can start"
+          },
+          "holdings": {
+            "items": {
+              "$ref": "#/components/schemas/HoldingOut"
+            },
+            "type": "array",
+            "title": "Holdings"
+          },
+          "listed": {
+            "items": {
+              "$ref": "#/components/schemas/ListedOut"
+            },
+            "type": "array",
+            "title": "Listed"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/TradeOut"
+            },
+            "type": "array",
+            "title": "Trades",
+            "description": "Newest first"
+          },
+          "family_office": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyOfficeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "family_office_form": {
+            "$ref": "#/components/schemas/FamilyOfficeFormOut"
+          },
+          "index": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__investing__IndexPointOut"
+            },
+            "type": "array",
+            "title": "Index",
+            "description": "The market index, the last 60 months"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/InvestingRulesOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "personal_cash_cents",
+          "net_worth",
+          "history",
+          "stakes",
+          "open_rounds",
+          "network",
+          "categories",
+          "holdings",
+          "listed",
+          "trades",
+          "family_office",
+          "family_office_form",
+          "index",
+          "rules"
+        ],
+        "title": "InvestmentsOut"
       },
       "IpoOut": {
         "properties": {
@@ -29626,6 +30689,25 @@
         ],
         "title": "JobPeriodOut",
         "description": "One stretch of a former employee's time at the company (23.6, M10b)."
+      },
+      "JoinRoundIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "cents"
+        ],
+        "title": "JoinRoundIn"
       },
       "KeyPersonOut": {
         "properties": {
@@ -30292,6 +31374,18 @@
           "grants_cents": {
             "type": "integer",
             "title": "Grants Cents"
+          },
+          "wealth": {
+            "type": "number",
+            "title": "Wealth",
+            "description": "M26 (37.5): points from net worth",
+            "default": 0.0
+          },
+          "net_worth_cents": {
+            "type": "integer",
+            "title": "Net Worth Cents",
+            "description": "Net worth at the last month end",
+            "default": 0
           }
         },
         "type": "object",
@@ -30417,6 +31511,46 @@
           "signed"
         ],
         "title": "LicenseOut"
+      },
+      "ListedOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "own": {
+            "type": "boolean",
+            "title": "Own"
+          },
+          "window_open": {
+            "type": "boolean",
+            "title": "Window Open",
+            "description": "Own company: closed in the month before earnings"
+          },
+          "sensitive": {
+            "type": "boolean",
+            "title": "Sensitive",
+            "description": "A trade now would be in a sensitive window"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "price_cents",
+          "own",
+          "window_open",
+          "sensitive"
+        ],
+        "title": "ListedOut"
       },
       "LoanIn": {
         "properties": {
@@ -31870,6 +33004,20 @@
         ],
         "title": "MoraleTermOut"
       },
+      "MoveIn": {
+        "properties": {
+          "cents": {
+            "type": "integer",
+            "title": "Cents",
+            "description": "Into the office if positive, out of it if negative"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cents"
+        ],
+        "title": "MoveIn"
+      },
       "MovePersonIn": {
         "properties": {
           "unit_id": {
@@ -31911,6 +33059,113 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
+      },
+      "NetWorthOut": {
+        "properties": {
+          "total_cents": {
+            "type": "integer",
+            "title": "Total Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "angel_cents": {
+            "type": "integer",
+            "title": "Angel Cents",
+            "description": "Angel stakes at their startups' last round price"
+          },
+          "public_cents": {
+            "type": "integer",
+            "title": "Public Cents",
+            "description": "Listed shares at the share price"
+          },
+          "family_office_cents": {
+            "type": "integer",
+            "title": "Family Office Cents"
+          },
+          "own_stake_cents": {
+            "type": "integer",
+            "title": "Own Stake Cents",
+            "description": "Your stake in your own company: at market once listed, else 28.1's value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_cents",
+          "cash_cents",
+          "angel_cents",
+          "public_cents",
+          "family_office_cents",
+          "own_stake_cents"
+        ],
+        "title": "NetWorthOut"
+      },
+      "NetWorthPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "total_cents": {
+            "type": "integer",
+            "title": "Total Cents"
+          },
+          "own_stake_cents": {
+            "type": "integer",
+            "title": "Own Stake Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "total_cents",
+          "own_stake_cents"
+        ],
+        "title": "NetWorthPointOut"
+      },
+      "NetworkPersonOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "former",
+              "candidate"
+            ],
+            "title": "Source"
+          },
+          "known": {
+            "type": "boolean",
+            "title": "Known",
+            "description": "You know their skills well (narrow revealed ranges)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "source",
+          "known"
+        ],
+        "title": "NetworkPersonOut"
       },
       "NewGameMetaOut": {
         "properties": {
@@ -32341,6 +33596,24 @@
         ],
         "title": "OfferPreviewOut"
       },
+      "OfficeMandateIn": {
+        "properties": {
+          "mandate": {
+            "type": "string",
+            "enum": [
+              "conservative",
+              "balanced",
+              "aggressive"
+            ],
+            "title": "Mandate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mandate"
+        ],
+        "title": "OfficeMandateIn"
+      },
       "OfficeOut": {
         "properties": {
           "office_id": {
@@ -32458,6 +33731,29 @@
         ],
         "title": "OfficeOut"
       },
+      "OfficeReturnOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "return_pct": {
+            "type": "number",
+            "title": "Return Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "return_pct"
+        ],
+        "title": "OfficeReturnOut"
+      },
       "OfftakeIn": {
         "properties": {
           "good": {
@@ -32493,6 +33789,56 @@
           "volume_year"
         ],
         "title": "OfftakeIn"
+      },
+      "OpenRoundOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "raised_cents": {
+            "type": "integer",
+            "title": "Raised Cents"
+          },
+          "post_cents": {
+            "type": "integer",
+            "title": "Post Cents"
+          },
+          "max_cents": {
+            "type": "integer",
+            "title": "Max Cents",
+            "description": "The most your cheque can be: the round's size"
+          },
+          "held_pct": {
+            "type": "number",
+            "title": "Held Pct",
+            "description": "Your stake now (0 if none)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "category_label",
+          "date_label",
+          "raised_cents",
+          "post_cents",
+          "max_cents",
+          "held_pct"
+        ],
+        "title": "OpenRoundOut"
       },
       "OptionsOut": {
         "properties": {
@@ -40285,6 +41631,36 @@
         ],
         "title": "StartProjectIn"
       },
+      "StartupRoundOut": {
+        "properties": {
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "raised_cents": {
+            "type": "integer",
+            "title": "Raised Cents"
+          },
+          "post_cents": {
+            "type": "integer",
+            "title": "Post Cents",
+            "description": "The round's price (post-money)"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "founded | funded | venture | angel | backed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date_label",
+          "raised_cents",
+          "post_cents",
+          "source"
+        ],
+        "title": "StartupRoundOut"
+      },
       "StatementLineOut": {
         "properties": {
           "account": {
@@ -41751,6 +43127,110 @@
         ],
         "title": "TimelineOut"
       },
+      "TradeIn": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side"
+          },
+          "shares": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "side",
+          "shares"
+        ],
+        "title": "TradeIn"
+      },
+      "TradeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "filed": {
+            "type": "boolean",
+            "title": "Filed",
+            "description": "A public filing (an own-company sale above 1%)"
+          },
+          "sensitive": {
+            "type": "boolean",
+            "title": "Sensitive",
+            "description": "Made in a sensitive window"
+          },
+          "investigation": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "finding"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Investigation",
+            "description": "Shown once an investigation has opened"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "date_label",
+          "company_id",
+          "company",
+          "side",
+          "shares",
+          "price_cents",
+          "filed",
+          "sensitive",
+          "investigation"
+        ],
+        "title": "TradeOut"
+      },
       "TraitCauseOut": {
         "properties": {
           "turn": {
@@ -42266,6 +43746,35 @@
         ],
         "title": "WaferContractIn"
       },
+      "tst__api__schemas__facilities__IndexPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Mon YYYY"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "index",
+          "allocation"
+        ],
+        "title": "IndexPointOut"
+      },
       "tst__api__schemas__facilities__RegionOptionOut": {
         "properties": {
           "key": {
@@ -42370,6 +43879,29 @@
           "name"
         ],
         "title": "NamedOut"
+      },
+      "tst__api__schemas__investing__IndexPointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "level"
+        ],
+        "title": "IndexPointOut"
       },
       "tst__api__schemas__press__CauseOut": {
         "properties": {

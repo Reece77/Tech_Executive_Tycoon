@@ -32,8 +32,10 @@ import numpy as np
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
+from tst.sim.founder import draws
+from tst.sim.founder.draws import personal_draws
 from tst.sim.founder.events import queue
-from tst.sim.founder.investing_models import STAKE_FULL, AngelStake, StartupRound
+from tst.sim.founder.investing_models import STAKE_FULL, AngelStake, NetworkEntry, StartupRound
 from tst.sim.founder.models import ANGEL, GAINS, LOSSES, PERSONAL_CASH, PUBLIC_SHARES
 from tst.sim.founder.personal import cash_cents
 from tst.sim.founder.wealth import post, shares_outstanding
@@ -54,6 +56,7 @@ from tst.sim.state import (
     with_angel_stake,
     with_candidate,
     with_employment,
+    with_network,
     with_public_holding,
     with_startup_round,
 )
@@ -252,23 +255,23 @@ def group_ids(state: GameState) -> set[int]:
 
 
 def network(state: GameState) -> list[Person]:
-    """37.2: people the founder could back. Those who left the player's companies and work
-    for no company in the group, and candidates in the player's own searches. (The Hall of
-    Fame holds past games' founders, not colleagues: M26 decision.) By person id."""
+    """37.2: people the founder could back: those who left the player's companies (the last
+    angel.network_size, `state.network`) and work for no company in the group, and
+    candidates in the player's own searches. (The Hall of Fame holds past games' founders,
+    not colleagues: M26 decision.) By person id."""
     mine = group_ids(state)
     founder = state.founder_of(state.player.id)
-    seen: set[int] = set()
-    for e in state.employments:
-        if e.company_id in mine and e.status == "ended" and e.end_reason != "retired":
-            seen.add(e.person_id)
-    for c in state.open_candidates(state.player.id):
-        seen.add(c.person_id)
+    seen = {e.person_id for e in state.network}
+    seen |= {c.person_id for c in state.open_candidates(state.player.id)}
     out: list[Person] = []
     for pid in sorted(seen):
         job = state.employment_of(pid)
         if job is not None and job.company_id in mine:
             continue
-        person = state.person(pid)
+        try:
+            person = state.person(pid)
+        except KeyError:
+            continue
         if person.is_founder or (founder is not None and pid == founder.id):
             continue
         if job is not None:
@@ -277,6 +280,23 @@ def network(state: GameState) -> list[Person]:
                 continue
         out.append(person)
     return out
+
+
+def network_month(state: GameState, balance: Balance) -> GameState:
+    """Phase 12: people whose employment at the player's group ended this month join the
+    founder's network (37.2)."""
+    mine = group_ids(state)
+    founder = state.founder_of(state.player.id)
+    left = [
+        NetworkEntry(e.person_id, state.turn)
+        for e in state.employments
+        if e.company_id in mine
+        and e.status == "ended"
+        and e.end_turn == state.turn
+        and e.end_reason != "retired"
+        and (founder is None or e.person_id != founder.id)
+    ]
+    return with_network(state, left, balance.angel.network_size)
 
 
 def known_well(state: GameState, person_id: int, data: GameData, balance: Balance) -> bool:
@@ -489,7 +509,7 @@ def answer_conflict(state: GameState, step: str, rng: RngFactory, balance: Balan
             continue
         found: int | None = None
         if step == "conceal":
-            gen = rng.stream(stake.coi_turn, "personal", 1, stake.id)
+            gen = personal_draws(rng, stake.coi_turn, draws.CONFLICT, stake.id)
             if float(gen.random()) < pb.coi_found_p:
                 found = state.turn + 1 + int(float(gen.random()) * pb.coi_found_months)
         state = with_angel_stake(state, replace(stake, coi_answer=step, coi_found_turn=found))

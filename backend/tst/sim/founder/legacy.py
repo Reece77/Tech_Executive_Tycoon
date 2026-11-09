@@ -1,6 +1,8 @@
 """The legacy score (docs/formulas.md 32.6, M24): at the game's end and in the Hall of Fame.
 `legacy = best company score reached (30.1) + 100 x log10(1 + lifetime grants / $1M)
-+ 2 x (Visionary + Beloved) - (Ruthless + Reckless)`, across a serial founder's companies."""
++ 2 x (Visionary + Beloved) - (Ruthless + Reckless)`, across a serial founder's companies,
+plus M26's wealth term `personal.legacy_points x log10(1 + net worth / unit)` (37.5) from the
+last month-end net worth."""
 
 from __future__ import annotations
 
@@ -24,6 +26,8 @@ class Legacy:
     giving: float
     persona: float
     grants_cents: int
+    wealth: float = 0.0  # M26 (37.5)
+    net_worth_cents: int = 0
 
 
 def founder_companies(state: GameState) -> tuple[int, ...]:
@@ -60,11 +64,18 @@ def legacy_of(state: GameState, balance: Balance) -> Legacy:
     )
     best_score = best.score if best is not None else 0
     giving, persona = legacy_parts(best_score, grants, traits, balance)
+    from tst.sim.founder.wealth import legacy_wealth
+
+    points = [w for w in state.wealth_points if w.person_id == person_id]
+    worth = points[-1].total_cents if points else 0
+    wealth = legacy_wealth(worth, balance)
     return Legacy(
-        total=round(best_score + giving + persona),
+        total=round(best_score + giving + persona + wealth),
         best_score=best_score,
         best_company_id=best.company_id if best is not None else None,
         giving=giving,
         persona=persona,
         grants_cents=grants,
+        wealth=wealth,
+        net_worth_cents=worth,
     )

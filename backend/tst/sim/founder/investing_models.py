@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Final, Literal
 
-STAKE_FULL: Final = 1_000_000  # stakes are kept in millionths of the company (ppm)
+STAKE_FULL: Final = 1_000_000  # tunable-exempt: stakes are kept in millionths (ppm)
 
 type RoundSource = Literal["founded", "funded", "venture", "angel", "backed"]
 type StakeStatus = Literal["open", "acquired", "listed", "failed"]
@@ -137,3 +137,12 @@ class IndexPoint:
     level: float
     month_return: float
     caps: tuple[tuple[int, int], ...] = ()  # (company_id, market cap) of every listed company
+
+
+@dataclass(frozen=True, slots=True)
+class NetworkEntry:
+    """Someone who left the player's companies (37.2): in the founder's network from `turn`,
+    the last angel.network_size kept. Their person record stays loaded while they are."""
+
+    person_id: int
+    turn: int

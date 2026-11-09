@@ -20,6 +20,8 @@ from fractions import Fraction
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
+from tst.sim.founder import draws
+from tst.sim.founder.draws import personal_draws
 from tst.sim.founder.investing_models import MANDATES, FamilyOffice, IndexPoint
 from tst.sim.founder.models import FAMILY_OFFICE, GAINS, LOSSES, PERSONAL_CASH
 from tst.sim.founder.personal import cash_cents
@@ -99,7 +101,7 @@ def form(
             f"a family office needs ${fb.min_cents // 100:,} of personal wealth outside your "
             "company"
         )
-    gen = rng.stream(state.turn, "personal", 3)
+    gen = personal_draws(rng, state.turn, draws.MANAGER)
     pid, ids = state.next_ids.take("rival_person")
     (manager,) = generate_pool(
         gen,
@@ -185,7 +187,7 @@ def office_month(
 
     for office in state.family_offices:
         held = family_office_cents(state, office.person_id)
-        z = float(rng.stream(state.turn, "personal", 2).standard_normal())
+        z = float(personal_draws(rng, state.turn, draws.OFFICE).standard_normal())
         skill = state.person(office.manager_id).skills[MANAGER_SKILL]
         cash_r = base_rate(state, data) / PCT / MONTHS_A_YEAR
         r = monthly_return(index_return(state), cash_r, skill, z, office.mandate, balance)

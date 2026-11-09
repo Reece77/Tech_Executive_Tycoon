@@ -103,6 +103,7 @@ class AngelBalance(_Frozen):
     known_hw: float = Field(gt=0)  # a person's mean skill half-width at or below this: known
     skill_runway: float = Field(ge=0)  # a backed founder's true skill above 10: share of cash
     team: tuple[int, int]  # a backed startup's team, besides its founder
+    network_size: int = Field(ge=0)  # people who left the player's companies kept in the network
 
     @model_validator(mode="after")
     def _check(self) -> AngelBalance:
@@ -132,7 +133,7 @@ class FamilyOfficeBalance(_Frozen):
     move_energy: int = Field(ge=0)  # to move cash in or out
     fee: float = Field(ge=0, lt=1)  # a year, on the balance
     alpha: float  # a month per skill point above alpha_mid
-    alpha_mid: float = Field(ge=1, le=20)
+    alpha_mid: float = Field(ge=1, le=20)  # tunable-exempt: the 1-20 attribute scale
     mandates: dict[str, MandateBalance]
     index_months: int = Field(ge=1)  # months of the index and returns kept
 

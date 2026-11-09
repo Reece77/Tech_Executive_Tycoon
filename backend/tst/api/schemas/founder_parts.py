@@ -34,3 +34,5 @@ class LegacyOut(BaseModel):
     giving: float
     persona: float
     grants_cents: int
+    wealth: float = Field(0.0, description="M26 (37.5): points from net worth")
+    net_worth_cents: int = Field(0, description="Net worth at the last month end")

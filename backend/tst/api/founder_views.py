@@ -215,6 +215,8 @@ def legacy_out(state: GameState, data: LoadedData) -> LegacyOut:
         giving=round(out.giving, 1),
         persona=round(out.persona, 1),
         grants_cents=out.grants_cents,
+        wealth=round(out.wealth, 1),
+        net_worth_cents=out.net_worth_cents,
     )
 
 
