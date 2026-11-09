@@ -33,8 +33,8 @@ def production_month(
     entries = [*entries, *ended]
     logs = [*logs, *notes]
     for facility in state.facilities:
-        if facility.status == "closed":
-            continue
+        if facility.status == "closed" or not balance.facility.kinds[facility.kind].generic:
+            continue  # M19: a mine's capex and depletion are tst.sim.mining's
         state, more, notes = lifecycle.facility_month(state, facility, balance, data)
         entries += more
         logs += notes

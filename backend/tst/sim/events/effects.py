@@ -347,6 +347,12 @@ def apply_choice(
             state, posted, logged = exploration_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "mining_step" and effect.stat:  # M19 (35.4): a mine event's answer
+            from tst.sim.mining.risk import mining_step
+
+            state, posted, logged = mining_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step
 

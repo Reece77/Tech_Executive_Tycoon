@@ -835,6 +835,20 @@ facility:
       variable_cents: 300 # cents a unit run (26.2)
       sizes: [5000, 20000, 50000, 100000] # units a month a build may choose (M12b decision)
       outages: false # plants have no outages (22.5 is data centres only)
+    mine: # M19 (35.2): a mine on the shared facility record; its own rules are in tst/sim/mining (module mining)
+      label: Mine
+      unit: t/yr # tonnes of product a year (the deposit's commodity)
+      input_good: equipment # nominal: a mine's capex is its feasibility study's estimate (35.2), not an index
+      output_good: mined # the deposit's commodity (module mining)
+      capex_per_unit_cents: 2500000 # nominal $25,000 a t/yr (copper's intensity, dossier 6); a build uses the study's estimate
+      build_months: 30 # nominal: construction is drawn by subtype (mining.subtypes)
+      opex_per_unit_cents: 0 # costs are the mine's own (35.3)
+      life_months: 180 # nominal: depletion is units-of-production (35.3)
+      staff_per: 10000 # t/yr per mining engineer (mining.staff_per_kt 0.1)
+      staff_roles: [mining_engineer]
+      staff_skill: mining_engineering
+      outages: false
+      module: mining # skipped by the generic capex, depreciation, operating cost and sale (tst.sim.mining owns them)
   sizes: [100, 500, 2000, 10000] # CU a build may choose (22.2)
   build_energy: 12 # founder energy to order a build (22.2)
   close_energy: 12 # founder energy to close or sell one (22.2)
@@ -1523,3 +1537,87 @@ exploration: # 34.2-34.3: the pipeline, its costs and times (dossier 6, scaled t
     share: { surveyed: 0.0, sampled: 0.02, drilled: 0.05, estimated: 0.08, scoping: 0.12, pre_feasibility: 0.2, definitive: 0.3, permitted: 0.45 } # a buyer pays this share of the project's NPV at the deck at the low end of its revealed ranges (M18 decision: narrower ranges fetch more), 34.2
     anomaly_cents: 50000000 # $500k for a strong anomaly with no grade work yet
     energy: 3
+
+mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marked (V/D); every other number is an assumption, tuned only for 35.6
+  found: # 35.1: founding a subsidiary from scratch
+    energy: 5
+    min_stage: 3 # the group's stage at least this
+    min_cents: 100000000 # $1M: the smallest cash injection
+  build_energy: 10 # 35.2
+  close_energy: 5
+  care_energy: 3 # care and maintenance, or a restart
+  sale_energy: 2 # a mine's sales choices: spot, the group, a contract or offtake
+  capacity_range: [0.75, 1.25] # a mine's capacity (t of product a year) is chosen in this x the study's design capacity (tonnes x grade x recovery / feasibility life)
+  capex_scale: 0.7 # capex x (capacity / design) ** this: the six-tenths rule, softened
+  overrun: # 35.2: a hidden overrun drawn once at the build order, uniform in this share over the estimate, by study level (dossier 6: 20-60% overruns are common, Lynas +60%)
+    scoping: [0.0, 0.6]
+    pre_feasibility: [0.0, 0.45]
+    definitive: [0.0, 0.3]
+  reveal_at: 0.5 # the cost to complete is revised (the overrun shown) once this share of construction has passed; until then capex is paid at the estimate's monthly rate
+  underground_depth_m: 250 # a hard-rock deposit whose top is deeper than this is mined underground; shallower ones and placers open pit
+  subtypes: # 35.2: construction (whole months, drawn), ramp (share of capacity in production years 1, 2, ...), accident base (35.4), cost split
+    open_pit: { label: Open pit, construction_months: [24, 36], ramp: [0.4, 0.75, 1.0], accident_base: 0.002, fixed_share: 0.45, opex_mult: 1.0 } # dossier 6: construction 2-4 years
+    underground: { label: Underground, construction_months: [36, 48], ramp: [0.4, 0.75, 1.0], accident_base: 0.004, fixed_share: 0.55, opex_mult: 1.15 } # deeper, dearer to run
+    brine: { label: Brine, construction_months: [36, 36], ramp: [0.2, 0.4, 0.6, 0.8, 1.0], accident_base: 0.001, fixed_share: 0.5, opex_mult: 1.0 } # dossier 6: brine +2-4 years ramp (35.2: 3 years then 2 more)
+  staff_per_kt: 0.1 # mining engineers needed a thousand t a year of capacity (at least 1): the key technical staff; the site workforce is in the fixed cost
+  staff_skills: [mining_engineering, operations] # 35.2: a mining engineer's skill is the mean of these
+  grade_noise: 0.08 # log-sd of a month's reconciled grade around the grade profile (revealed as mined)
+  profile_share: 0.3 # the grade profile: the deposit's true grade x exp(this x the drill position's log deviation) as the pit moves through the ore body (M18's 66 positions)
+  energy_share: 0.3 # share of the variable cost that is energy, x the region's power index (M17)
+  sustaining_share: 0.02 # sustaining capex a year, x the initial capex (counted in the all-in sustaining cost; posted with operating costs)
+  reclamation_per_t_cents: { open_pit: 8000, underground: 5000, brine: 3000 } # 35.3: provisioned a t of product to 2610 from the first output ($80, $50, $30)
+  reclamation_months: 24 # 35.3: paid over 2 years after closure
+  strategic: { copper: 0.5, lithium_carbonate: 1.0, cobalt: 1.0, ndpr_oxide: 1.0, quartz_hp: 0.3, tin: 0.4, tantalum: 0.7 } # 35.4: a commodity's strategic weight for nationalization (battery and magnet metals highest)
+  accident: # 35.4: chance a month = subtype accident_base / 12 x f(s, c) / f(skill_ref, 1) x safety factor, f = max(floor, skill_base - skill_slope s) x max(floor, cover_base - c)
+    skill_base: 1.6
+    skill_slope: 0.07 # 35.4 says 0.04; 0.04 cuts skill 15's rate by only 22% against skill 8 (35.6 target 3 needs 40%)
+    cover_base: 1.3
+    floor: 0.1
+    skill_ref: 10 # "average safety": a full crew of skill 10 at normal spend
+    safety_factor: { low: 1.5, normal: 1.0, high: 0.6 }
+    safety_cost: { low: 0.9, normal: 1.0, high: 1.15 } # x the mine's fixed cost
+    fine_cents: 500000000 # $5M fine, always
+    stop_months: 3 # stop and investigate: months of lost output ...
+    stop_fine_share: 0.5 # ... and a smaller fine
+    compensate_cents: 1500000000 # compensate: $15M to the victims and community ...
+    beloved: 5 # ... persona Beloved +5 (M24)
+    ruthless: 5 # contest: persona Ruthless +5 ...
+    contest_risk: 0.4 # ... and a 40% chance the court rules against: the fine x contest_fine_mult
+    contest_fine_mult: 3
+    brand_hit: 5 # brand points off every product of the mine's group
+    credibility_hit: 8 # credibility points off the group's listed company (M14b)
+  nationalization: # 35.4: history to December 2025 (nationalization_history.yaml), then seeded on stream region_risk
+    monthly_base: 0.0045 # a (region, commodity) event a month = this x resource_nationalism x strategic weight (35.6 target 4)
+    ban_share: 0.5 # of seeded events, export bans; the rest state takeovers
+    ban_months: [6, 24]
+    ban_price_share: 0.7 # during a ban the mine sells inside its own region at this share of spot
+    partner_share: [0.30, 0.51] # accept a state partner: it buys this stake at book value
+    sell_out_share: 0.5 # sell out: the state pays this share of book value
+    arbitration_months: [24, 60] # fight: the mine is seized; arbitration takes this long ...
+    arbitration_legal_cents: 50000000 # ... at $500k a month in legal costs ...
+    award_win: 0.5 # ... and the award goes the company's way with this chance ...
+    award_share: [0.6, 1.0] # ... paying this share of the mine's book value at seizure
+    rival_cut: 0.2 # a takeover or ban cuts the rivals' capacity of the commodity in the region by this share for its length
+  crash: # 35.4: the commodity's price below the mine's all-in cost this many months running
+    months_below: 3
+    care_fixed: 0.3 # care and maintenance: output 0, fixed cost x this
+    restart_months: 6 # a restart takes this long ...
+    restart_cents_per_kt: 50000000 # ... and $500k a thousand t a year of capacity
+    hedge_share: 0.5 # hedge: an offtake on this share of capacity at the current price
+    hedge_years: 3
+  sale: # 35.3: the mine as seller
+    contract_months: [6, 36] # a fixed-price sale contract
+    offtake_years: [3, 10] # an offtake with a buyer
+    collar: 0.2 # the offtake's floor and ceiling: the price at signing x (1 -/+ this)
+  rivals: # 35.5: suppliers' abstract mine capacity per region (from their production share), following prices
+    lag_months: 36 # expansions arrive 3 years after a spike
+    spike: 1.3 # a year's mean price index above this starts an expansion ...
+    expand: 0.15 # ... of this share of capacity
+    crash: 0.8 # a month's price index below this cuts output ...
+    cut: 0.1 # ... by this share (until the price recovers)
+    floor: 0.5 # capacity never below this share of its start ...
+    cap: 2.5 # ... nor above this
+    buy_share: 1.1 # a rival's bid for a permitted project: x M18's sale price
+    buy_monthly: 0.02 # chance a month that a rival bids for one of the group's permitted projects
+    mine_bid: 0.9 # a rival's offer for an operating mine, x its book value (M14's deal code)
+  transfer_kinds: [cost, cost_plus, market] # 31.6's transfer prices for a mine's group sales

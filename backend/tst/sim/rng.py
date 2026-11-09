@@ -74,6 +74,13 @@ STREAM_IDS: Final = MappingProxyType(
         # (5, project, level), permits (6, project), protests (7, project), sales (8, project),
         # minor events (9, project) (M18, 34.2-34.3)
         "exploration": 49,
+        # key (facility id, tag[, ...]): a mine's construction months (0), overrun (1), grade
+        # noise (2), accident (3), choices' draws (4) (M19, 35.2-35.4); refining 51 is M20's
+        "mining": 50,
+        # key (region index,): after 2025, nationalization and export-ban events, one
+        # generator a region a month drawing a uniform per commodity, then kind and months
+        # (M19, 35.4)
+        "region_risk": 52,
         "misc": 99,
     }
 )

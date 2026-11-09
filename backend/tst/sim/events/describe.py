@@ -125,6 +125,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return GROUP_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "exploration_step":  # M18 (34.3)
             return EXPLORATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "mining_step":  # M19 (35.4)
+            return MINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -136,6 +138,17 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",
     "defend_price": "the prices stand; so do the complaint's legal costs and discount",
+}
+MINING_STEP_TEXT: dict[str, str] = {  # M19 (35.4): never a hidden chance or overrun
+    "investigate": "stop and investigate: three months without output and a smaller fine",
+    "compensate": "compensate the victims and the community: $15M; your persona Beloved rises",
+    "contest": "contest it in court: legal risk of a larger fine; your persona Ruthless rises",
+    "partner": "accept a state partner: it buys 30-51% of the mine at book value",
+    "fight": "fight it: the mine is seized and arbitration takes years, the award uncertain",
+    "sell_out": "sell out to the state at half the mine's book value",
+    "care": "care and maintenance: no output, a third of the fixed cost, a costly restart",
+    "hedge": "hedge: an offtake on half the mine's capacity at today's price",
+    "keep": "keep running and wait for the price",
 }
 EXPLORATION_STEP_TEXT: dict[str, str] = {  # M18 (34.3): never a hidden chance
     "consult": "consult the community: $500k and three more months before the decision",

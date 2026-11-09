@@ -16,6 +16,7 @@ from tst.sim.events.data import (
     EXPLORATION_STEPS,
     FOUNDER_STEPS,
     GROUP_STEPS,
+    MINING_STEPS,
     MODIFIER_STATS,
     PRESS_STEPS,
     PUBLIC_STEPS,
@@ -75,6 +76,8 @@ def allowed_effects(
             continue  # M16 (31.6): only a group template's own answers
         if effect == "exploration_step" and "exploration_step" not in template_types:
             continue  # M18 (34.3): only an exploration template's own answers
+        if effect == "mining_step" and "mining_step" not in template_types:
+            continue  # M19 (35.4): only a mining template's own answers
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -161,6 +164,7 @@ def validate_event(
                 "founder_step",
                 "group_step",
                 "exploration_step",
+                "mining_step",
             ):  # engine steps
                 stat = item.get("stat")
                 steps = {
@@ -169,6 +173,7 @@ def validate_event(
                     "founder_step": FOUNDER_STEPS,
                     "group_step": GROUP_STEPS,
                     "exploration_step": EXPLORATION_STEPS,
+                    "mining_step": MINING_STEPS,
                 }[kind]
                 if stat not in steps:
                     dropped += 1

@@ -443,3 +443,77 @@ templates:
   project_sold:
     title: "Project sold: {block}"
     body: "{buyer} bought {block} for {price}."
+
+  # --- M19 (formulas.md 35): mining operations ---
+  subsidiary_founded:
+    title: "{name} is founded"
+    body: "A new, wholly owned subsidiary based in {region}, with {amount_cents} of share capital. Move projects and facilities into it from the Mines screen, and give it a mandate on the Group screen."
+  asset_transferred:
+    title: "{asset} moved to {to}"
+    body: "Transferred inside the group at book value ({amount_cents})."
+  mine_ordered:
+    title: "Mine ordered: {mine}"
+    body: "Construction starts now and should take about {years} years. The feasibility study puts capex at {capex_cents}; the cost to complete is revised halfway through."
+  mine_cost_revised:
+    title: "Cost to complete revised: {mine}"
+    body: "Halfway through construction the engineers put the whole build at {capex_cents} ({pct} against the study's estimate)."
+  mine_built:
+    title: "Mine built: {mine}"
+    body: "Construction is done at {capex_cents}. Output ramps up over the first years; staff it with mining engineers."
+  mine_first_output:
+    title: "First output: {mine}"
+    body: "The mine produced {output} t of product in its first month."
+  mine_price_below_cost:
+    title: "Below cost: {mine}"
+    body: "The price ({price}) has been under the mine's all-in cost for {months} months."
+  mine_accident:
+    title: "Accident: {mine}"
+    body: "An accident at the mine brought a {fine_cents} fine, and the group's brand and credibility have taken a hit."
+  mine_court_lost:
+    title: "The court ruled against you: {mine}"
+    body: "Contesting the accident failed: a larger fine on top of the first."
+  mine_care:
+    title: "Care and maintenance: {mine}"
+    body: "Output stops; a skeleton crew keeps the site safe at a third of the fixed cost. A restart takes months and money."
+  mine_restarting:
+    title: "Restart under way: {mine}"
+    body: "The crews are coming back; output resumes when the restart is done."
+  mine_restarted:
+    title: "Mine restarted: {mine}"
+    body: "The mine is producing again."
+  mine_closed:
+    title: "Mine closed: {mine}"
+    body: "What was left of its book value is written off; reclamation of {reclamation_cents} is paid over the next two years."
+  mine_depleted:
+    title: "Reserves exhausted: {mine}"
+    body: "The ore body is mined out and the mine closes. Reclamation of {reclamation_cents} is paid over the next two years."
+  mine_reclaimed:
+    title: "Site reclaimed: {mine}"
+    body: "The reclamation obligation of {reclamation_cents} is paid in full."
+  mine_export_ban:
+    title: "Export ban: {mine}"
+    body: "{title}. For {months} months the mine may sell only inside its region, at a discount, and not to group companies abroad."
+  mine_takeover_threat:
+    title: "Takeover threat: {mine}"
+    body: "{title}."
+  mine_state_partner:
+    title: "State partner: {mine}"
+    body: "The state bought {pct} of the mine at book value and takes that share of its cash margin."
+  mine_seized:
+    title: "Seized: {mine}"
+    body: "The state has taken the mine. Arbitration should take about {months} months."
+  mine_sold_to_state:
+    title: "Sold to the state: {mine}"
+    body: "The state paid {amount_cents} for the mine and takes over its reclamation."
+  mine_award:
+    title: "Arbitration award: {mine}"
+    body: "The tribunal ruled for you: the state pays {amount_cents}."
+  mine_award_lost:
+    title: "Arbitration lost: {mine}"
+    body: "The tribunal ruled for the state. Nothing more is owed to you."
+  rival_bid:
+    title: "{bidder} bids for {asset}"
+    body: "{bidder} offers {amount_cents}. The offer is open for three months on the Mines screen."
+  rival_bid_accepted:
+    title: "Sold: {asset}"
+    body: "The sale closed at {amount_cents}."
