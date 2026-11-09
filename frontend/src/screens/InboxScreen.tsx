@@ -482,6 +482,16 @@ function MessageDetail({
             Open Rankings
           </Button>
         )}
+        {item.link_kind === 'mine' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/products/mines`}
+            h={44}
+            data-testid="view-mines"
+          >
+            Open Mines
+          </Button>
+        )}
         {item.link_kind === 'history' && (
           <Button component={Link} to={`/game/${saveId}/history`} h={44} data-testid="view-history">
             Open History

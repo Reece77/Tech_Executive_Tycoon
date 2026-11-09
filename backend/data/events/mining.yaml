@@ -1,0 +1,112 @@
+# Mine event templates (docs/formulas.md 35.4, M19): queued by the engine by template id (trigger
+# mining) when a mine has an accident or spill, when a government moves to take a stake in the
+# region's mines of a strategic commodity, or when the commodity's price has been under the
+# mine's all-in cost for three months. The answer is applied by the engine (mining_step); the
+# Mines screen names the mine. Accidents always cost a fine, brand and credibility before the
+# answer. Tone: grounded realism (ADR-0011). The first choice is what happens when it is left
+# unanswered at Continue.
+templates:
+  - id: mine_tailings_failure
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "A tailings dam has failed at one of your mines"
+    body: >-
+      A wall of {company}'s tailings storage facility gave way overnight. Slurry has reached the
+      river below the mine, the regulator has issued a fine and the footage is on every news
+      channel. Villages downstream want answers, and so does your board.
+    choices:
+      - key: A
+        label: "Stop the mine and investigate before anything else"
+        effects: [{ type: mining_step, target: company, stat: investigate }]
+      - key: B
+        label: "Compensate everyone affected, fully and fast"
+        effects: [{ type: mining_step, target: company, stat: compensate }]
+      - key: C
+        label: "Contest liability: the design met every standard"
+        effects: [{ type: mining_step, target: company, stat: contest }]
+
+  - id: mine_fatal_accident
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "A fatal accident at one of your mines"
+    body: >-
+      Two contractors died when a haul road collapsed at a {company} mine. The inspectorate has
+      fined the operation and opened an inquiry, the union is calling for a stoppage, and the
+      families are waiting to hear from you.
+    choices:
+      - key: A
+        label: "Stop and investigate with the inspectorate"
+        effects: [{ type: mining_step, target: company, stat: investigate }]
+      - key: B
+        label: "Compensate the families and the crew generously"
+        effects: [{ type: mining_step, target: company, stat: compensate }]
+      - key: C
+        label: "Contest the findings and keep the mine running"
+        effects: [{ type: mining_step, target: company, stat: contest }]
+
+  - id: mine_takeover
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "The government wants a stake in your mine"
+    body: >-
+      The host government has declared the mineral strategic and wants the state to hold a large
+      share of every mine that produces it. Ministers say {company} can stay as an operator on
+      their terms, sell out, or take its chances in international arbitration.
+    choices:
+      - key: A
+        label: "Accept a state partner at book value"
+        effects: [{ type: mining_step, target: company, stat: partner }]
+      - key: B
+        label: "Refuse and go to international arbitration"
+        effects: [{ type: mining_step, target: company, stat: fight }]
+      - key: C
+        label: "Sell out to the state and leave"
+        effects: [{ type: mining_step, target: company, stat: sell_out }]
+
+  - id: mine_price_crash
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "Your mine is losing money on every tonne"
+    body: >-
+      For three months running the price has been below what it costs {company} to mine, process
+      and ship a tonne, royalties and sustaining capital included. The site manager wants a
+      decision: mothball the mine, lock in a price, or ride it out.
+    choices:
+      - key: A
+        label: "Put the mine on care and maintenance"
+        effects: [{ type: mining_step, target: company, stat: care }]
+      - key: B
+        label: "Hedge: sell half the output forward at today's price"
+        effects: [{ type: mining_step, target: company, stat: hedge }]
+      - key: C
+        label: "Keep running and wait for the price to recover"
+        effects: [{ type: mining_step, target: company, stat: keep }]
+
+  - id: mine_protest
+    category: mining
+    trigger: mining
+    severities: [critical]
+    weight: 1.0
+    title: "A community protest at your mine"
+    body: >-
+      Families from the villages around one of {company}'s mines have blocked the haul road. They
+      want a say over the water the mine draws, more of the jobs, and a share of what it earns.
+      The regional governor has asked the company to respond this week.
+    choices:
+      - key: A
+        label: "Stop and consult the community"
+        effects: [{ type: mining_step, target: company, stat: consult }]
+      - key: B
+        label: "Offer a benefit agreement: jobs, a water plan, a share of royalties"
+        effects: [{ type: mining_step, target: company, stat: benefit }]
+      - key: C
+        label: "Push on: the permit is valid and the road is ours"
+        effects: [{ type: mining_step, target: company, stat: push_on }]

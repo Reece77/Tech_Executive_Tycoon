@@ -58,6 +58,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.mining.models import Mine, MineDeal, RivalBid
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking, Venture
 from tst.sim.money import Cents
@@ -308,7 +309,15 @@ class GameState:
     desk_studies: tuple[DeskStudy, ...] = ()
     projects: tuple[Project, ...] = ()
     holes: tuple[Hole, ...] = ()
+    # M19 (35): mines by facility id (closed ones too, until reclaimed and after), the deals
+    # they sign as sellers by id, and rivals' bids for the group's projects and mines by id
+    mines: tuple[Mine, ...] = ()
+    mine_deals: tuple[MineDeal, ...] = ()
+    rival_bids: tuple[RivalBid, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
+
+    def mine(self, mine_id: int) -> Mine | None:
+        return next((m for m in self.mines if m.id == mine_id), None)
 
     def company(self, company_id: int) -> CompanyState:
         for company in self.companies:
@@ -1141,6 +1150,18 @@ def with_regional_segment(state: GameState, seg: RegionalSegment) -> GameState:
             state.regional_segments, seg, lambda s: (s.product_id, s.region, s.segment)
         ),
     )
+
+
+def with_mine(state: GameState, mine: Mine) -> GameState:
+    return replace(state, mines=_upsert(state.mines, mine, lambda m: m.id))
+
+
+def with_mine_deal(state: GameState, deal: MineDeal) -> GameState:
+    return replace(state, mine_deals=_upsert(state.mine_deals, deal, lambda d: d.id))
+
+
+def with_rival_bid(state: GameState, bid: RivalBid) -> GameState:
+    return replace(state, rival_bids=_upsert(state.rival_bids, bid, lambda b: b.id))
 
 
 def with_facility(state: GameState, facility: Facility) -> GameState:

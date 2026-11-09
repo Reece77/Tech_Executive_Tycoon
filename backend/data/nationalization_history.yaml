@@ -1,0 +1,26 @@
+# Resource nationalism to December 2025 (docs/formulas.md 35.4; docs/v3-research/v3-data-dossier.md
+# section 5, whose V/R tags are kept in each source). The same on every seed. After last_month,
+# events are seeded on stream region_risk (balance.yaml mining.nationalization).
+#
+#   kind: nationalization (a state takeover: the state asks for a stake in mines of the commodity
+#     in the region, a critical event) or export_ban (the region's mines of the commodity may sell
+#     only inside the region for `months`).
+#   commodity: a geology.yaml commodity; null when the game has no such commodity (nickel,
+#     bauxite): news on the Mines screen only.
+#   region: the regions.yaml region of the country.
+#
+# Not here: DRC's 2018 Mining Code (cobalt a "strategic substance", 10% royalty: a royalty, in
+# regions.yaml's africa royalty_rate) and China's processing-technology and rare-earth export
+# controls (export controls as policy are M22's).
+last_month: "2025-12"
+events:
+  - { month: "2014-01", region: south_southeast_asia, country: Indonesia, commodity: null, kind: export_ban, months: 36, title: "Indonesia bans raw mineral ore exports (nickel, bauxite)", source: "dossier 5, Jan 2014 (R); relaxed Jan 2017" }
+  - { month: "2020-01", region: south_southeast_asia, country: Indonesia, commodity: null, kind: export_ban, months: 72, title: "Indonesia's nickel ore export ban, brought forward from 2022", source: "dossier 5, Jan 2020 (V year, R month)" }
+  - { month: "2022-04", region: latin_america, country: Mexico, commodity: lithium_carbonate, kind: nationalization, title: "Mexico nationalises lithium (LitioMx)", source: "dossier 5, Apr 2022 (V)" }
+  - { month: "2022-12", region: africa, country: Zimbabwe, commodity: lithium_carbonate, kind: export_ban, months: 37, title: "Zimbabwe bans exports of unprocessed lithium ore", source: "dossier 5, Dec 2022 (V)" }
+  - { month: "2023-01", region: latin_america, country: Bolivia, commodity: lithium_carbonate, kind: nationalization, title: "Bolivia keeps lithium in state hands: YLB picks its partners", source: "dossier 5, Jan 2023 (R): YLB's CATL-led consortium, later Uranium One and CBC" }
+  - { month: "2023-04", region: latin_america, country: Chile, commodity: lithium_carbonate, kind: nationalization, title: "Chile's National Lithium Strategy: state majority in strategic salars", source: "dossier 5, Apr 2023 (V)" }
+  - { month: "2023-06", region: africa, country: Namibia, commodity: lithium_carbonate, kind: export_ban, months: 31, title: "Namibia bans exports of unprocessed lithium", source: "dossier 5, Jun 2023 (V year, R month)" }
+  - { month: "2023-06", region: africa, country: Namibia, commodity: cobalt, kind: export_ban, months: 31, title: "Namibia bans exports of unprocessed cobalt", source: "dossier 5, Jun 2023 (V year, R month)" }
+  - { month: "2023-06", region: africa, country: Namibia, commodity: ndpr_oxide, kind: export_ban, months: 31, title: "Namibia bans exports of unprocessed rare earths", source: "dossier 5, Jun 2023 (V year, R month)" }
+  - { month: "2025-02", region: africa, country: DR Congo, commodity: cobalt, kind: export_ban, months: 8, title: "DR Congo's temporary cobalt export ban", source: "dossier 5, 22 Feb 2025 (V month, R day); extended, then replaced by quotas on 16 Oct 2025 (V)" }

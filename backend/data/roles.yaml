@@ -204,3 +204,16 @@ roles:
     work_style_weights: { builder: 2, operator: 3, researcher: 5, seller: 0 }
     interest_weights: { ai: 0, hardware: 1, crypto: 0, climate: 3, security: 0, gaming: 0, mining: 8, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
     salary_band_mid_cents: { junior: 6000000, mid: 8200000, senior: 10500000, staff: 12800000, principal: 15000000, exec: 17500000 }
+
+  # --- M19 (formulas.md 35.2): mining operations, appended ---
+  - key: mining_engineer
+    label: Mining engineer
+    product_function: none
+    summary: "Plans and runs a mine: pit and stope design, the mill, maintenance and safety. Their skill is the mean of mining engineering and operations."
+    why_hire: "Hire one to staff a mine (one per 10,000 t a year of capacity, at least one): coverage and skill set its reliability and cut its accident rate (35.4)."
+    primary: [mining_engineering, operations]
+    secondary: [geology, data, leadership, procurement]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 0, hardware: 1, crypto: 0, climate: 2, security: 0, gaming: 0, mining: 8, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 6500000, mid: 8800000, senior: 11000000, staff: 13500000, principal: 16000000, exec: 18500000 }

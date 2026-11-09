@@ -9,6 +9,7 @@ import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { Term } from '../../components/Term';
 import { useFormHolding, useGroup, useGroupAction, type GroupEntity } from '../../hooks/group';
+import { useMines } from '../../hooks/mining';
 import { formatBpPercent, formatMoneyShort } from '../../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
 
@@ -286,6 +287,7 @@ export function GroupTab({ saveId }: { saveId: string }) {
           </Alert>
         )}
       </Panel>
+      <GroupMines saveId={saveId} />
       {g.discount && (
         <Panel title="Conglomerate discount" testId="group-discount">
           <Term term="group.discount">
@@ -431,5 +433,28 @@ export function GroupTab({ saveId }: { saveId: string }) {
         </Panel>
       )}
     </>
+  );
+}
+
+/** M19 (35): the group's mines by company, from the Mines screen's read model. */
+function GroupMines({ saveId }: { saveId: string }) {
+  const mines = useMines(saveId);
+  const list = mines.data?.mines ?? [];
+  if (list.length === 0) return null;
+  return (
+    <Panel title="Mines" testId="group-mines">
+      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
+        {list.map((m) => (
+          <li key={m.id} data-testid="group-mine">
+            {m.name}: {m.company_name}, {m.status}
+            {m.state_share > 0 ? `, state partner ${Math.round(m.state_share * 100)}%` : ''}; book{' '}
+            {formatMoneyShort(m.book_cents)}
+          </li>
+        ))}
+      </ul>
+      <Link to={`/game/${saveId}/products/mines`} style={{ fontSize: 13 }}>
+        Open Mines
+      </Link>
+    </Panel>
   );
 }

@@ -317,3 +317,14 @@ class ExplorationRuleError(SimError):
 
 class UnknownExplorationProjectError(NotFoundError):  # M18
     code = "unknown_exploration_project"
+
+
+class MiningRuleError(SimError):
+    """A subsidiary, transfer, mine build, sale or choice the mining rules do not allow (M19,
+    formulas.md 35). The message never names a hidden overrun or a deposit's truth."""
+
+    code = "mining_rule"
+
+
+class UnknownMineError(NotFoundError):  # M19
+    code = "unknown_mine"

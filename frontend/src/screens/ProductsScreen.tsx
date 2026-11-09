@@ -89,6 +89,13 @@ export function ProductsScreen() {
             >
               Exploration
             </Link>
+            <Link
+              to={`/game/${saveId}/products/mines`}
+              style={{ fontSize: 13 }}
+              data-testid="mines-link"
+            >
+              Mines
+            </Link>
             <Button
               variant="default"
               style={{ marginLeft: 'auto' }}

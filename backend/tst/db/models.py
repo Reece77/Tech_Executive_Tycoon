@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 42  # M25: 0040; M17: 0041; M18: 0042
+SCHEMA_VERSION = 43  # M25: 0040; M17: 0041; M18: 0042; M19: 0043
 
 
 class Base(DeclarativeBase):
@@ -1979,4 +1979,38 @@ class DrillHoleRow(Base):
 
     project_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M19 (formulas.md 35; migration 0043): mining operations ---------------------------------
+
+
+class MineRow(Base):
+    """A mine (35.2-35.4; 0043), keyed by its facility's id. `data` holds the hidden_* fields
+    (the overrun and the deposit's truth: ADR-0007), read only by the sim, never by the API."""
+
+    __tablename__ = "mine"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MineDealRow(Base):
+    """A contract or offtake a mine signed as seller (35.3; 0043)."""
+
+    __tablename__ = "mine_deal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mine_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class RivalBidRow(Base):
+    """A rival's bid for a group project or mine (35.5; 0043)."""
+
+    __tablename__ = "mine_rival_bid"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
