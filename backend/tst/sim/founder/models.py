@@ -18,7 +18,25 @@ PERSONAL_CASH: Final = "9100_personal_cash"
 ENDOWMENT: Final = "9200_foundation_endowment"
 PERSONAL_SPENDING: Final = "9300_personal_spending"
 PERSONAL_INCOME: Final = "9400_personal_income"
-PERSONAL_ACCOUNTS: Final = (PERSONAL_CASH, ENDOWMENT, PERSONAL_SPENDING, PERSONAL_INCOME)
+# M26 (37.1): the founder's investments, their gains and losses, and dividends received.
+ANGEL: Final = "9110_angel_investments"
+PUBLIC_SHARES: Final = "9120_public_shares"
+FAMILY_OFFICE: Final = "9130_family_office"
+GAINS: Final = "9410_investment_gains"
+LOSSES: Final = "9420_investment_losses"
+DIVIDENDS: Final = "9430_dividends_received"
+PERSONAL_ACCOUNTS: Final = (
+    PERSONAL_CASH,
+    ANGEL,
+    PUBLIC_SHARES,
+    FAMILY_OFFICE,
+    ENDOWMENT,
+    PERSONAL_SPENDING,
+    PERSONAL_INCOME,
+    GAINS,
+    LOSSES,
+    DIVIDENDS,
+)
 PERSONAL_PREFIX: Final = "9"  # every personal account's code starts with this digit
 
 type IncomeSource = Literal["secondary", "dividend", "exit", "salary"]

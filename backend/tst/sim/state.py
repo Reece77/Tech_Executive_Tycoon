@@ -26,6 +26,16 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.founder.investing_models import (
+    AngelStake,
+    FamilyOffice,
+    IndexPoint,
+    NetworkEntry,
+    PersonalTrade,
+    PublicHolding,
+    StartupRound,
+    WealthPoint,
+)
 from tst.sim.founder.models import Foundation, FounderLife, Influence, PersonalEntry
 from tst.sim.geo.models import (
     MarketingSplit,
@@ -292,6 +302,17 @@ class GameState:
     personal_book: tuple[PersonalEntry, ...] = ()
     foundations: tuple[Foundation, ...] = ()
     influence: tuple[Influence, ...] = ()
+    # M26 (37): startups' rounds, the founder's angel stakes and trades (each by id), public
+    # holdings by (person_id, company_id), family offices by person id, net worth at each
+    # month end and the market index (oldest first, the last family_office.index_months).
+    startup_rounds: tuple[StartupRound, ...] = ()
+    angel_stakes: tuple[AngelStake, ...] = ()
+    public_holdings: tuple[PublicHolding, ...] = ()
+    personal_trades: tuple[PersonalTrade, ...] = ()
+    family_offices: tuple[FamilyOffice, ...] = ()
+    wealth_points: tuple[WealthPoint, ...] = ()
+    market_index: tuple[IndexPoint, ...] = ()
+    network: tuple[NetworkEntry, ...] = ()  # by person id
     # M16 (31.1): every holding of one company by another, open or ended, sorted by id
     ownerships: tuple[Ownership, ...] = ()
     holdings: tuple[Holding, ...] = ()  # M16 (31.2): the player's holding company, if formed
@@ -1388,6 +1409,90 @@ def with_influence(state: GameState, record: Influence) -> GameState:
     return replace(
         state, influence=_upsert(state.influence, record, lambda i: (i.company_id, i.region))
     )
+
+
+# --- M26 (37): the founder's investments --------------------------------------------------
+
+
+def next_record_id(items: tuple[Any, ...]) -> int:
+    """The next id for an M26 record kept by id: never reused, as records are never removed."""
+    return max((i.id for i in items), default=0) + 1
+
+
+def with_startup_round(state: GameState, record: StartupRound) -> GameState:
+    return replace(state, startup_rounds=_upsert(state.startup_rounds, record, _ID))
+
+
+def rounds_of(state: GameState, company_id: int) -> list[StartupRound]:
+    return [r for r in state.startup_rounds if r.company_id == company_id]
+
+
+def with_angel_stake(state: GameState, stake: AngelStake) -> GameState:
+    return replace(state, angel_stakes=_upsert(state.angel_stakes, stake, _ID))
+
+
+def angel_stake_of(state: GameState, person_id: int, company_id: int) -> AngelStake | None:
+    return next(
+        (
+            s
+            for s in state.angel_stakes
+            if s.person_id == person_id and s.company_id == company_id and s.status == "open"
+        ),
+        None,
+    )
+
+
+def holding_in(state: GameState, person_id: int, company_id: int) -> PublicHolding | None:
+    return next(
+        (
+            h
+            for h in state.public_holdings
+            if h.person_id == person_id and h.company_id == company_id
+        ),
+        None,
+    )
+
+
+def with_public_holding(state: GameState, holding: PublicHolding) -> GameState:
+    return replace(
+        state,
+        public_holdings=_upsert(
+            state.public_holdings, holding, lambda h: (h.person_id, h.company_id)
+        ),
+    )
+
+
+def with_trade(state: GameState, trade: PersonalTrade) -> GameState:
+    return replace(state, personal_trades=_upsert(state.personal_trades, trade, _ID))
+
+
+def family_office_of(state: GameState, person_id: int) -> FamilyOffice | None:
+    return next((f for f in state.family_offices if f.person_id == person_id), None)
+
+
+def with_family_office(state: GameState, office: FamilyOffice) -> GameState:
+    return replace(
+        state,
+        family_offices=_upsert(state.family_offices, office, attrgetter("person_id")),
+    )
+
+
+def with_wealth_point(state: GameState, point: WealthPoint) -> GameState:
+    return replace(state, wealth_points=(*state.wealth_points, point))
+
+
+def with_network(state: GameState, entries: list[NetworkEntry], keep: int) -> GameState:
+    """`entries` join the founder's network; only the `keep` most recent stay (37.2)."""
+    if not entries:
+        return state
+    merged = {e.person_id: e for e in state.network}
+    merged.update({e.person_id: e for e in entries})
+    kept = sorted(merged.values(), key=lambda e: (e.turn, e.person_id))[-keep:]
+    return replace(state, network=tuple(sorted(kept, key=lambda e: e.person_id)))
+
+
+def with_index_point(state: GameState, point: IndexPoint, keep: int) -> GameState:
+    return replace(state, market_index=(*state.market_index, point)[-keep:])
 
 
 def with_personal_entries(state: GameState, *entries: PersonalEntry) -> GameState:

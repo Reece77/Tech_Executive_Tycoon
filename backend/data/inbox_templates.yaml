@@ -48,6 +48,45 @@ templates:
   burnout_started: # M24 (32.1)
     title: "You are burning out"
     body: "Stress has reached {stress}. Your monthly energy is down by 30% until it falls below 40; answer the event to take a month off, delegate or push on."
+  angel_invested: # M26 (37.2)
+    title: "You invested in {company}"
+    body: "Your cheque of {amount_cents} from personal cash bought {pct} of {company}. Information rights show its key people (as ranges), its cash and its rounds."
+  angel_backed: # M26 (37.2)
+    title: "You backed {company}"
+    body: "{founder} has founded {company} with your {amount_cents} as its founding cash; you hold {pct}."
+  angel_exit: # M26 (37.2)
+    title: "{company} was acquired: your stake paid {amount_cents}"
+    body: "Your angel stake in {company} reached your personal cash. A purchase by your own group is a related-party deal: {related}."
+  angel_listed: # M26 (37.2)
+    title: "{company} listed: your stake is now shares"
+    body: "Your angel stake became {shares} shares, held in your own name."
+  angel_written_off: # M26 (37.2)
+    title: "{company} failed: your stake is written off"
+    body: "The {amount_cents} you put into {company} is lost."
+  conflict_found: # M26 (37.2)
+    title: "Your hidden stake in {company} has come out"
+    body: "The press found the personal stake you did not disclose. Credibility and the board's confidence fall."
+  shares_traded: # M26 (37.3)
+    title: "{side} {shares} {company} shares"
+    body: "The trade was worth {amount_cents}, with your personal cash.{sensitive}"
+  shares_filing: # M26 (37.3)
+    title: "Your share sale is a public filing"
+    body: "You sold {shares} of your own company's shares this month, more than 1% of them. The market has noticed."
+  insider_investigation: # M26 (37.3)
+    title: "Regulators investigate your trades in {company}"
+    body: "An investigation into trading ahead of news has opened. A finding, if there is one, takes months."
+  insider_finding: # M26 (37.3)
+    title: "The regulator finds you traded on inside information"
+    body: "You pay {amount_cents} in fines and disgorged gains. The board voted {votes} of {seats} to remove you. {outcome}"
+  dividend_received: # M26 (37.3)
+    title: "Dividend from {company}"
+    body: "{amount_cents} on your shares reached your personal cash."
+  family_office_formed: # M26 (37.4)
+    title: "Your family office is formed"
+    body: "{manager} manages it under a {mandate} mandate. Move personal cash in to invest it."
+  family_office_moved: # M26 (37.4)
+    title: "{memo}"
+    body: "{amount_cents} moved between your personal cash and the family office."
   founder_shares_sold: # M24 (32.2): the founder sells their own shares once listed
     title: "You sold {shares} of your shares"
     body: "The sale raised {net_cents} after fees for your personal account. The company's cash does not change."

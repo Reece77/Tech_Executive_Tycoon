@@ -1,0 +1,79 @@
+# Personal investing event templates (docs/formulas.md 37.2-37.3, M26): queued by the engine by
+# id (trigger founder_life, founder.investing); the director never draws them. Answers are
+# founder_step effects the engine applies; the LLM may word them, never change the choices,
+# and never sees a trade's regulatory risk or an investigation's chance or timing (37.7).
+# Tone: grounded realism (ADR-0011). The first choice is what happens when it is left
+# unanswered at Continue.
+templates:
+  - id: personal_conflict
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "Your own money is on both sides of the table"
+    body: >-
+      {founder} holds a personal stake in a startup that {company} is buying, or that now
+      competes with it. The general counsel asks whether you will tell the board and step out
+      of the decision.
+    choices:
+      - key: A
+        label: "Disclose the stake and recuse yourself"
+        effects: [{ type: founder_step, target: founder, stat: disclose }]
+      - key: B
+        label: "Say nothing; it is a small stake"
+        effects: [{ type: founder_step, target: founder, stat: conceal }]
+
+  - id: personal_filing
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "Your share sale is on the public record"
+    body: >-
+      {founder}'s sale of {company} shares this month was large enough to need a public
+      filing. Analysts have read it, and some ask what the founder knows that they do not.
+    choices:
+      - key: A
+        label: "Let the filing speak for itself"
+        do_nothing: true
+      - key: B
+        label: "Tell the press it is personal planning"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.2 }
+
+  - id: personal_investigation
+    category: founder
+    trigger: founder_life
+    severities: [major]
+    weight: 1.0
+    title: "The regulator asks about your trading"
+    body: >-
+      Securities regulators have opened an investigation into share trades {founder} made
+      shortly before news the market did not yet have. Lawyers say a finding would take
+      months; the board has been told.
+    choices:
+      - key: A
+        label: "Cooperate fully"
+        do_nothing: true
+      - key: B
+        label: "Hire the best defence money can buy"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.3 }
+
+  - id: personal_finding
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "The regulator finds against you"
+    body: >-
+      The investigation is over: regulators found that {founder} traded on news the market did
+      not have. The fine and the disgorged gain are paid from your own money, the story is
+      everywhere, and {company}'s board is voting on whether you stay.
+    choices:
+      - key: A
+        label: "Accept the finding and apologize"
+        effects: [{ type: founder_step, target: founder, stat: accept_finding }]
+      - key: B
+        label: "Say you did nothing wrong"
+        effects: [{ type: founder_step, target: founder, stat: deny_finding }]

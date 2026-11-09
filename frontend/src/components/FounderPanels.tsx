@@ -1,7 +1,8 @@
 // The founder's life on their profile (M24, formulas.md 32): Personal (the founder's own book,
 // apart from the company's, and selling shares once listed), Foundation (create, give, grants
 // and their effects), Persona (the four traits with their causes) and Government affairs
-// (influence by region, lobbying spend, exposure as a word). Values come from the API only.
+// (influence by region, lobbying spend, exposure as a word), and M26's Investments (37).
+// Values come from the API only.
 import {
   Alert,
   Button,
@@ -24,12 +25,14 @@ import {
 import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { DataTable } from './DataTable';
+import { InvestmentsTab } from './InvestmentsTab';
 import { Panel } from './ScreenState';
 import { Term } from './Term';
 
-type Tab = 'personal' | 'foundation' | 'persona' | 'government';
+type Tab = 'personal' | 'investments' | 'foundation' | 'persona' | 'government';
 const TABS: { value: Tab; label: string }[] = [
   { value: 'personal', label: 'Personal' },
+  { value: 'investments', label: 'Investments' },
   { value: 'foundation', label: 'Foundation' },
   { value: 'persona', label: 'Persona' },
   { value: 'government', label: 'Government affairs' },
@@ -58,6 +61,7 @@ export function FounderPanels({ saveId }: { saveId: string }) {
         data-testid="founder-tabs"
       />
       {tab === 'personal' && <PersonalTab saveId={saveId} f={founder.data} />}
+      {tab === 'investments' && <InvestmentsTab saveId={saveId} />}
       {tab === 'foundation' && <FoundationTab saveId={saveId} f={founder.data} />}
       {tab === 'persona' && <PersonaTab f={founder.data} />}
       {tab === 'government' && <GovernmentTab saveId={saveId} f={founder.data} />}
@@ -440,6 +444,8 @@ export function LegacyPanel({ legacy }: { legacy: Founder['legacy'] | null | und
       <Line label="Giving" value={signed(legacy.giving)} />
       <Line label="Persona" value={signed(legacy.persona)} />
       <Line label="Lifetime grants" value={formatMoneyWhole(legacy.grants_cents)} />
+      <Line label="Wealth" value={signed(legacy.wealth ?? 0)} />
+      <Line label="Net worth" value={formatMoneyWhole(legacy.net_worth_cents ?? 0)} />
     </Panel>
   );
 }

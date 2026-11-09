@@ -134,5 +134,13 @@ def test_a_venture_investment_buys_a_share_of_a_round(loaded: LoadedData) -> Non
         and r.person_id in {e.person_id for e in game.state.staff(startup)}
         for r in game.state.reveals
     )
+    # M26 (37.2): the round's price is shared with the founder's cheques; nothing else moves
+    (rnd,) = game.state.startup_rounds
+    assert (rnd.company_id, rnd.raised_cents, rnd.post_cents, rnd.source) == (
+        startup,
+        cents,
+        pre + cents,
+        "venture",
+    )
     with pytest.raises(GroupRuleError):
         game.act(VentureInvest(1, startup, pre * 10))  # far past 25%

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import typer
 
@@ -2914,6 +2914,176 @@ def lobby_cmd(
             f"{format_money(r.monthly_cents)}/month  exposure {r.exposure}  "
             f"scandals {r.scandals}"
         )
+
+
+# --- The founder's own investments (M26, formulas.md 37) --------------------------------------
+
+
+def _investments(path: Path, data: LoadedData) -> Any:
+    from tst.api.investing_views import investments_out
+
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        balances = repository.ledger_balances(session)
+    return investments_out(state, balances, data)
+
+
+@app.command("angel")
+def angel_cmd(
+    save: SaveOpt,
+    startup: Annotated[int | None, typer.Option(help="The startup's company id")] = None,
+    amount: Annotated[
+        int | None, typer.Option("--cents", help="Personal cash into its open round, cents")
+    ] = None,
+) -> None:
+    """Angel investing (37.2): open rounds and your stakes; join one with --startup --cents."""
+    from tst.sim.actions.investing import JoinRound
+
+    path, data, state = _game(save)
+    if startup is not None or amount is not None:
+        if startup is None or amount is None:
+            raise typer.BadParameter("give both --startup and --cents")
+        state = _run(path, data, JoinRound(_founder(state), startup, amount)).new_state
+        typer.echo(f"Invested {format_money(amount)}; {_energy(state, data)}")
+    out = _investments(path, data)
+    for r in out.open_rounds:
+        typer.echo(
+            f"open  {r.company_id:>5} {r.company:<20} {r.category_label:<22} "
+            f"raised {format_money(r.raised_cents)} at {format_money(r.post_cents)} post"
+        )
+    for st in out.stakes:
+        typer.echo(
+            f"stake {st.company_id:>5} {st.company:<20} {st.status:<8} {st.stake_pct:6.2f}%  "
+            f"cost {format_money(st.cost_cents)}  value {format_money(st.value_cents)}"
+        )
+    if not out.open_rounds and not out.stakes:
+        typer.echo("No open rounds and no stakes.")
+
+
+@app.command("back-startup")
+def back_startup_cmd(
+    save: SaveOpt,
+    founder: Annotated[int | None, typer.Option(help="A person id from your network")] = None,
+    category: Annotated[str | None, typer.Option(help="categories.yaml key")] = None,
+    amount: Annotated[
+        int | None, typer.Option("--cents", help="Your cheque, cents (its founding cash)")
+    ] = None,
+) -> None:
+    """Back a new startup (37.2): your network; back one with --founder --category --cents."""
+    from tst.sim.actions.investing import BackStartup
+
+    path, data, state = _game(save)
+    if founder is not None or category is not None or amount is not None:
+        if founder is None or category is None or amount is None:
+            raise typer.BadParameter("give --founder, --category and --cents")
+        action = BackStartup(_founder(state), founder, category, amount)
+        state = _run(path, data, action).new_state
+        stake = state.angel_stakes[-1]
+        typer.echo(
+            f"Backed {state.company(stake.company_id).name} with {format_money(amount)} for "
+            f"{stake.stake_ppm / 10_000:.1f}%; {_energy(state, data)}"
+        )
+        return
+    out = _investments(path, data)
+    if not out.network:
+        typer.echo("Your network is empty: people who left your company and your candidates.")
+    for p in out.network:
+        known = "known" if p.known else "     "
+        typer.echo(f"{p.person_id:>6} {p.name:<24} {p.role_label:<24} {p.source:<9} {known}")
+
+
+@app.command("shares")
+def shares_cmd(
+    save: SaveOpt,
+    company: Annotated[int | None, typer.Option(help="A listed company's id")] = None,
+    buy: Annotated[bool, typer.Option("--buy", help="Buy --count shares")] = False,
+    sell: Annotated[bool, typer.Option("--sell", help="Sell --count shares")] = False,
+    count: Annotated[int | None, typer.Option(help="Shares")] = None,
+) -> None:
+    """Public shares (37.3): listed companies and your holdings; trade with --company --buy or
+    --sell --count."""
+    from tst.sim.actions.investing import TradeShares
+
+    path, data, state = _game(save)
+    if company is not None:
+        if buy == sell or count is None:
+            raise typer.BadParameter("give --buy or --sell, and --count")
+        side: Literal["buy", "sell"] = "buy" if buy else "sell"
+        state = _run(path, data, TradeShares(_founder(state), company, side, count)).new_state
+        trade = state.personal_trades[-1]
+        flag = " (in a sensitive window)" if trade.sensitive_target_id is not None else ""
+        typer.echo(
+            f"{'Bought' if buy else 'Sold'} {count:,} at {format_money(trade.price_cents)}"
+            f"{flag}; {_energy(state, data)}"
+        )
+    out = _investments(path, data)
+    for h in out.holdings:
+        typer.echo(
+            f"held  {h.company_id:>5} {h.company:<22} {h.shares:>14,}  "
+            f"value {format_money(h.value_cents)}  cost {format_money(h.cost_cents)}"
+        )
+    for c in out.listed:
+        mark = " (own)" if c.own else ""
+        closed = " window closed" if not c.window_open else ""
+        typer.echo(
+            f"list  {c.company_id:>5} {c.company:<22} {format_money(c.price_cents)}{mark}{closed}"
+        )
+
+
+@app.command("family-office")
+def family_office_cmd(
+    save: SaveOpt,
+    form: Annotated[bool, typer.Option("--form", help="Form the family office")] = False,
+    mandate: Annotated[
+        str | None, typer.Option(help="conservative, balanced or aggressive")
+    ] = None,
+    move: Annotated[
+        int | None, typer.Option(help="Cents into the office (negative: out of it)")
+    ] = None,
+) -> None:
+    """The family office (37.4): form it with --form --mandate, change --mandate, --move cents."""
+    from tst.sim.actions.investing import FormFamilyOffice, MoveFamilyOffice, SetOfficeMandate
+
+    path, data, state = _game(save)
+    if form:
+        state = _run(path, data, FormFamilyOffice(_founder(state), mandate or "balanced")).new_state
+    elif mandate is not None:
+        state = _run(path, data, SetOfficeMandate(_founder(state), mandate)).new_state
+    if move is not None:
+        state = _run(path, data, MoveFamilyOffice(_founder(state), move)).new_state
+    out = _investments(path, data)
+    office = out.family_office
+    if office is None:
+        f = out.family_office_form
+        typer.echo(
+            f"No family office. Needs {format_money(f.min_cents)} of personal wealth; you have "
+            f"{format_money(f.wealth_cents)}."
+        )
+        return
+    typer.echo(
+        f"Family office ({office.mandate}): {format_money(office.balance_cents)}; manager "
+        f"{office.manager_name} (finance {office.manager_skill_low}-{office.manager_skill_high})"
+    )
+    if office.trailing_year_pct is not None:
+        typer.echo(
+            f"Last 12 months {office.trailing_year_pct:+.1f}% (index {office.index_year_pct})"
+        )
+
+
+@app.command("net-worth")
+def net_worth_cmd(save: SaveOpt) -> None:
+    """Your net worth and its parts (37.5)."""
+    path, data, _ = _game(save)
+    n = _investments(path, data).net_worth
+    for label, cents_ in (
+        ("Personal cash", n.cash_cents),
+        ("Angel stakes", n.angel_cents),
+        ("Public shares", n.public_cents),
+        ("Family office", n.family_office_cents),
+        ("Your company stake", n.own_stake_cents),
+        ("Net worth", n.total_cents),
+    ):
+        typer.echo(f"{label:<20} {format_money(cents_):>18}")
 
 
 # --- The group (M16, formulas.md 31) ----------------------------------------------------------

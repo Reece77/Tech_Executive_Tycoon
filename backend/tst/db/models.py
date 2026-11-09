@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 44  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M20: 0044
+SCHEMA_VERSION = 45  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045
 
 
 class Base(DeclarativeBase):
@@ -1829,6 +1829,86 @@ class InfluenceRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+# --- The founder's own investments (M26, formulas.md 37; 0044) ------------------------------
+
+
+class StartupRoundRow(Base):
+    """A rival startup's funding round, its price (post-money) and source (37.2)."""
+
+    __tablename__ = "startup_round"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class AngelStakeRow(Base):
+    """The founder's stake in one private startup (37.2). `data` holds a concealed
+    conflict's hidden discovery month too (never in the API)."""
+
+    __tablename__ = "angel_stake"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PersonalTradeRow(Base):
+    """One trade of listed shares by the founder (37.3). `data` holds the hidden regulatory
+    risk and the investigation's draw and timing too (never in the API)."""
+
+    __tablename__ = "personal_trade"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PublicHoldingRow(Base):
+    """Listed shares the founder holds and their book cost (37.3)."""
+
+    __tablename__ = "public_holding"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class FamilyOfficeRow(Base):
+    """The founder's family office: manager, mandate and monthly returns (37.4)."""
+
+    __tablename__ = "family_office"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class WealthPointRow(Base):
+    """The founder's net worth and its parts at a month end (37.5)."""
+
+    __tablename__ = "wealth_point"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MarketIndexRow(Base):
+    """The market index at a month end, with every listed company's cap (37.4)."""
+
+    __tablename__ = "market_index"
+
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class NetworkRow(Base):
+    """Someone in the founder's network: they left the player's companies (37.2). Their
+    person record stays loaded while they are listed here."""
+
+    __tablename__ = "founder_network"
+
+    person_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 # --- The holding company and its subsidiaries (M16, formulas.md 31; 0039) --------------------
 
 
@@ -1982,7 +2062,7 @@ class DrillHoleRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
-# --- M19 (formulas.md 35; migration 0043): mining operations ---------------------------------
+# --- M19 (formulas.md 35; migration 0044): mining operations ---------------------------------
 
 
 class MineRow(Base):
@@ -2016,11 +2096,11 @@ class RivalBidRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
-# --- M20 (formulas.md 36; migration 0044): refining and wafers -----------------------------
+# --- M20 (formulas.md 36; migration 0045): refining and wafers -----------------------------
 
 
 class RefineryRow(Base):
-    """A refinery's own state beside its facility row (36; 0044): recipe, quoted capex, curbs,
+    """A refinery's own state beside its facility row (36; 0045): recipe, quoted capex, curbs,
     incidents, its latest month and history. The true capex (with the hidden overrun) is the
     facility row's `capex_cents`."""
 
@@ -2032,7 +2112,7 @@ class RefineryRow(Base):
 
 
 class RefiningDealRow(Base):
-    """A refinery contract (36.1; 0044): buy an input or sell an output at a fixed price."""
+    """A refinery contract (36.1; 0045): buy an input or sell an output at a fixed price."""
 
     __tablename__ = "refining_deal"
 
@@ -2042,7 +2122,7 @@ class RefiningDealRow(Base):
 
 
 class RefiningSupplyRow(Base):
-    """One of the latest month's own-group supply lots (36.1-36.2; 0044), in order `n`."""
+    """One of the latest month's own-group supply lots (36.1-36.2; 0045), in order `n`."""
 
     __tablename__ = "refining_supply"
 

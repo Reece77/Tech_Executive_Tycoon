@@ -3352,6 +3352,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/founder/investments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Investments
+         * @description Net worth, angel stakes, open rounds, the network, holdings, trades and the family
+         *     office (37.7).
+         */
+        get: operations["getInvestments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/angel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Join Round
+         * @description Put personal cash into a startup's open round (37.2).
+         */
+        post: operations["joinRound"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/back-startup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Back Startup
+         * @description Back a new startup led by someone from your network (37.2).
+         */
+        post: operations["backStartup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trade Shares
+         * @description Buy or sell a listed company's shares with personal cash (37.3).
+         */
+        post: operations["tradeShares"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/family-office": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Form Family Office
+         * @description Form the family office with a mandate (37.4).
+         */
+        post: operations["formFamilyOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/family-office/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Family Office
+         * @description Move personal cash into the family office, or out of it (37.4).
+         */
+        post: operations["moveFamilyOffice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/founder/family-office/mandate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Office Mandate
+         * @description Change the family office's mandate (37.4).
+         */
+        post: operations["setOfficeMandate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/group": {
         parameters: {
             query?: never;
@@ -4704,6 +4845,56 @@ export interface components {
             /** Target Cents */
             target_cents: number;
         };
+        /** AngelStakeOut */
+        AngelStakeOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Category Label */
+            category_label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "acquired" | "listed" | "failed";
+            /** Stake Pct */
+            stake_pct: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /**
+             * Worth Cents
+             * @description Stake x the last round's post-money
+             */
+            worth_cents: number;
+            /** Proceeds Cents */
+            proceeds_cents: number;
+            /** Backed */
+            backed: boolean;
+            /**
+             * Founder Known
+             * @description Backed with a founder whose skills you knew
+             */
+            founder_known: boolean;
+            /** Since Label */
+            since_label: string;
+            /** Closed Label */
+            closed_label: string | null;
+            /**
+             * Cash Band
+             * @description deep pockets | comfortable | tight
+             */
+            cash_band: string | null;
+            /** Funding */
+            funding: components["schemas"]["StartupRoundOut"][];
+            /**
+             * Conflict
+             * @description disclosed | concealed | found, once raised
+             */
+            conflict: string | null;
+        };
         /**
          * AppealWeightsOut
          * @description How a segment's buyers weigh the four scores (formulas.md 11.6); they sum to 1.
@@ -4868,6 +5059,15 @@ export interface components {
              * @description What the seat does with authority
              */
             acts_on: string;
+        };
+        /** BackStartupIn */
+        BackStartupIn: {
+            /** Founder Id */
+            founder_id: number;
+            /** Category */
+            category: string;
+            /** Cents */
+            cents: number;
         };
         /** BackgroundOut */
         BackgroundOut: {
@@ -5364,6 +5564,13 @@ export interface components {
              * @description -(operating) when negative, else 0 (14.1)
              */
             burn_cents: number;
+        };
+        /** CategoryOptionOut */
+        CategoryOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
         };
         /** CategoryOut */
         CategoryOut: {
@@ -6195,7 +6402,7 @@ export interface components {
              * History
              * @description Past months up to this one, oldest first
              */
-            history: components["schemas"]["IndexPointOut"][];
+            history: components["schemas"]["tst__api__schemas__facilities__IndexPointOut"][];
         };
         /**
          * ContinueUntilOut
@@ -7663,6 +7870,56 @@ export interface components {
              */
             sale_value_cents: number;
         };
+        /** FamilyOfficeFormOut */
+        FamilyOfficeFormOut: {
+            /** Can Form */
+            can_form: boolean;
+            /** Min Cents */
+            min_cents: number;
+            /**
+             * Wealth Cents
+             * @description Cash plus investments at value, outside your company
+             */
+            wealth_cents: number;
+            /** Energy */
+            energy: number;
+            /** Move Energy */
+            move_energy: number;
+            /** Mandates */
+            mandates: string[];
+        };
+        /** FamilyOfficeOut */
+        FamilyOfficeOut: {
+            /** Formed Label */
+            formed_label: string;
+            /** Mandate */
+            mandate: string;
+            /** Balance Cents */
+            balance_cents: number;
+            /** Manager Id */
+            manager_id: number;
+            /** Manager Name */
+            manager_name: string;
+            /**
+             * Manager Skill Low
+             * @description The manager's finance skill, revealed range
+             */
+            manager_skill_low: number;
+            /** Manager Skill High */
+            manager_skill_high: number;
+            /**
+             * Returns
+             * @description The last 24 months, oldest first
+             */
+            returns: components["schemas"]["OfficeReturnOut"][];
+            /** Trailing Year Pct */
+            trailing_year_pct: number | null;
+            /**
+             * Index Year Pct
+             * @description The market index over the same year
+             */
+            index_year_pct: number | null;
+        };
         /** FeudOut */
         FeudOut: {
             /** Rival Id */
@@ -8976,6 +9233,26 @@ export interface components {
              */
             is_founder?: boolean;
         };
+        /** HoldingOut */
+        HoldingOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Shares */
+            shares: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Worth Cents */
+            worth_cents: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /**
+             * Own
+             * @description Your own company (these shares sit on its cap table)
+             */
+            own: boolean;
+        };
         /** HolidayIn */
         HolidayIn: {
             /**
@@ -9108,20 +9385,6 @@ export interface components {
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
-        /** IndexPointOut */
-        IndexPointOut: {
-            /** Turn */
-            turn: number;
-            /**
-             * Label
-             * @description Mon YYYY
-             */
-            label: string;
-            /** Index */
-            index: number;
-            /** Allocation */
-            allocation: number;
-        };
         /** InfluenceOut */
         InfluenceOut: {
             /** Region */
@@ -9203,6 +9466,73 @@ export interface components {
              * @description Use at which a general CU costs spot
              */
             break_even_utilization: number;
+        };
+        /** InvestingRulesOut */
+        InvestingRulesOut: {
+            /** Join Energy */
+            join_energy: number;
+            /** Back Energy */
+            back_energy: number;
+            /** Trade Energy */
+            trade_energy: number;
+            /** Round Min Cents */
+            round_min_cents: number;
+            /** Min Cheque Cents */
+            min_cheque_cents: number;
+            /** Seed Stake Low Pct */
+            seed_stake_low_pct: number;
+            /** Seed Stake High Pct */
+            seed_stake_high_pct: number;
+            /** Seed Full Cents */
+            seed_full_cents: number;
+            /** Trade Cost Pct */
+            trade_cost_pct: number;
+        };
+        /** InvestmentsActionOut */
+        InvestmentsActionOut: {
+            investments: components["schemas"]["InvestmentsOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** InvestmentsOut */
+        InvestmentsOut: {
+            /** Personal Cash Cents */
+            personal_cash_cents: number;
+            net_worth: components["schemas"]["NetWorthOut"];
+            /**
+             * History
+             * @description Month ends, oldest first
+             */
+            history: components["schemas"]["NetWorthPointOut"][];
+            /** Stakes */
+            stakes: components["schemas"]["AngelStakeOut"][];
+            /** Open Rounds */
+            open_rounds: components["schemas"]["OpenRoundOut"][];
+            /** Network */
+            network: components["schemas"]["NetworkPersonOut"][];
+            /**
+             * Categories
+             * @description Where a new startup can start
+             */
+            categories: components["schemas"]["CategoryOptionOut"][];
+            /** Holdings */
+            holdings: components["schemas"]["HoldingOut"][];
+            /** Listed */
+            listed: components["schemas"]["ListedOut"][];
+            /**
+             * Trades
+             * @description Newest first
+             */
+            trades: components["schemas"]["TradeOut"][];
+            family_office: components["schemas"]["FamilyOfficeOut"] | null;
+            family_office_form: components["schemas"]["FamilyOfficeFormOut"];
+            /**
+             * Index
+             * @description The market index, the last 60 months
+             */
+            index: components["schemas"]["tst__api__schemas__investing__IndexPointOut"][];
+            rules: components["schemas"]["InvestingRulesOut"];
         };
         /** IpoOut */
         IpoOut: {
@@ -9293,6 +9623,13 @@ export interface components {
             to_label: string;
             /** Months */
             months: number;
+        };
+        /** JoinRoundIn */
+        JoinRoundIn: {
+            /** Company Id */
+            company_id: number;
+            /** Cents */
+            cents: number;
         };
         /** KeyPersonOut */
         KeyPersonOut: {
@@ -9559,6 +9896,18 @@ export interface components {
             persona: number;
             /** Grants Cents */
             grants_cents: number;
+            /**
+             * Wealth
+             * @description M26 (37.5): points from net worth
+             * @default 0
+             */
+            wealth?: number;
+            /**
+             * Net Worth Cents
+             * @description Net worth at the last month end
+             * @default 0
+             */
+            net_worth_cents?: number;
         };
         /** LicenceIn */
         LicenceIn: {
@@ -9604,6 +9953,27 @@ export interface components {
             royalty_months_left: number;
             /** Signed */
             signed: string;
+        };
+        /** ListedOut */
+        ListedOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Own */
+            own: boolean;
+            /**
+             * Window Open
+             * @description Own company: closed in the month before earnings
+             */
+            window_open: boolean;
+            /**
+             * Sensitive
+             * @description A trade now would be in a sensitive window
+             */
+            sensitive: boolean;
         };
         /** LoanIn */
         LoanIn: {
@@ -10640,6 +11010,14 @@ export interface components {
             /** Value */
             value: number;
         };
+        /** MoveIn */
+        MoveIn: {
+            /**
+             * Cents
+             * @description Into the office if positive, out of it if negative
+             */
+            cents: number;
+        };
         /** MovePersonIn */
         MovePersonIn: {
             /**
@@ -10655,6 +11033,60 @@ export interface components {
              * @description A department, or null for the company root
              */
             parent_id: number | null;
+        };
+        /** NetWorthOut */
+        NetWorthOut: {
+            /** Total Cents */
+            total_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /**
+             * Angel Cents
+             * @description Angel stakes at their startups' last round price
+             */
+            angel_cents: number;
+            /**
+             * Public Cents
+             * @description Listed shares at the share price
+             */
+            public_cents: number;
+            /** Family Office Cents */
+            family_office_cents: number;
+            /**
+             * Own Stake Cents
+             * @description Your stake in your own company: at market once listed, else 28.1's value
+             */
+            own_stake_cents: number;
+        };
+        /** NetWorthPointOut */
+        NetWorthPointOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Total Cents */
+            total_cents: number;
+            /** Own Stake Cents */
+            own_stake_cents: number;
+        };
+        /** NetworkPersonOut */
+        NetworkPersonOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "former" | "candidate";
+            /**
+             * Known
+             * @description You know their skills well (narrow revealed ranges)
+             */
+            known: boolean;
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
@@ -10819,6 +11251,14 @@ export interface components {
              */
             reasons: string[];
         };
+        /** OfficeMandateIn */
+        OfficeMandateIn: {
+            /**
+             * Mandate
+             * @enum {string}
+             */
+            mandate: "conservative" | "balanced" | "aggressive";
+        };
         /** OfficeOut */
         OfficeOut: {
             /**
@@ -10864,6 +11304,15 @@ export interface components {
              */
             close_penalty_cents?: number | null;
         };
+        /** OfficeReturnOut */
+        OfficeReturnOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Return Pct */
+            return_pct: number;
+        };
         /** OfftakeIn */
         OfftakeIn: {
             /** Good */
@@ -10879,6 +11328,31 @@ export interface components {
              * @default 0
              */
             prepay?: number;
+        };
+        /** OpenRoundOut */
+        OpenRoundOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Category Label */
+            category_label: string;
+            /** Date Label */
+            date_label: string;
+            /** Raised Cents */
+            raised_cents: number;
+            /** Post Cents */
+            post_cents: number;
+            /**
+             * Max Cents
+             * @description The most your cheque can be: the round's size
+             */
+            max_cents: number;
+            /**
+             * Held Pct
+             * @description Your stake now (0 if none)
+             */
+            held_pct: number;
         };
         /**
          * OptionsOut
@@ -14732,6 +15206,23 @@ export interface components {
              */
             budget_cents?: number | null;
         };
+        /** StartupRoundOut */
+        StartupRoundOut: {
+            /** Date Label */
+            date_label: string;
+            /** Raised Cents */
+            raised_cents: number;
+            /**
+             * Post Cents
+             * @description The round's price (post-money)
+             */
+            post_cents: number;
+            /**
+             * Source
+             * @description founded | funded | venture | angel | backed
+             */
+            source: string;
+        };
         /** StatementLineOut */
         StatementLineOut: {
             /** Account */
@@ -15392,6 +15883,53 @@ export interface components {
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
         };
+        /** TradeIn */
+        TradeIn: {
+            /** Company Id */
+            company_id: number;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Shares */
+            shares: number;
+        };
+        /** TradeOut */
+        TradeOut: {
+            /** Id */
+            id: number;
+            /** Date Label */
+            date_label: string;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "buy" | "sell";
+            /** Shares */
+            shares: number;
+            /** Price Cents */
+            price_cents: number;
+            /**
+             * Filed
+             * @description A public filing (an own-company sale above 1%)
+             */
+            filed: boolean;
+            /**
+             * Sensitive
+             * @description Made in a sensitive window
+             */
+            sensitive: boolean;
+            /**
+             * Investigation
+             * @description Shown once an investigation has opened
+             */
+            investigation: ("open" | "finding") | null;
+        };
         /** TraitCauseOut */
         TraitCauseOut: {
             /** Turn */
@@ -15628,6 +16166,20 @@ export interface components {
             /** Months */
             months: number;
         };
+        /** IndexPointOut */
+        tst__api__schemas__facilities__IndexPointOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Label
+             * @description Mon YYYY
+             */
+            label: string;
+            /** Index */
+            index: number;
+            /** Allocation */
+            allocation: number;
+        };
         /** RegionOptionOut */
         tst__api__schemas__facilities__RegionOptionOut: {
             /** Key */
@@ -15668,6 +16220,15 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /** IndexPointOut */
+        tst__api__schemas__investing__IndexPointOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Level */
+            level: number;
         };
         /** CauseOut */
         tst__api__schemas__press__CauseOut: {
@@ -26809,6 +27370,436 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FounderActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getInvestments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    joinRound: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JoinRoundIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    backStartup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackStartupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    tradeShares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    formFamilyOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfficeMandateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    moveFamilyOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setOfficeMandate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfficeMandateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvestmentsActionOut"];
                 };
             };
             /** @description Bad Request */

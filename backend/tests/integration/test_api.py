@@ -280,6 +280,20 @@ MNA_FORBIDDEN_NAMES = frozenset(
 # pitch's `risk` word is public, so test_api_founder checks the founder's schemas for it).
 FOUNDER_FORBIDDEN_NAMES = frozenset({"scandal_risk", "scandal_chance", "second_story", "risk_rate"})
 
+# M26 (37.7): never a trade's regulatory risk, the news month or investigation month drawn
+# for it, its gain before a finding, a concealed conflict's discovery month, or a family-office
+# manager's true skill ("risk" alone is a pitch's public risk words, M13b).
+INVESTING_FORBIDDEN_NAMES = frozenset(
+    {
+        "regulatory_risk",
+        "public_turn",
+        "investigate_turn",
+        "gain_cents",
+        "coi_found_turn",
+        "manager_skill",
+    }
+)
+
 # M18 (34.5): never a block's depth, distance to infrastructure, permitting difficulty or
 # community sensitivity, a permit's decision month, or a team's range factor (which would
 # reveal its true skill); true_* and hidden_* fields are caught by the prefixes.
@@ -308,6 +322,7 @@ def forbidden(name: str) -> bool:
         or name in EVENT_FORBIDDEN_NAMES
         or name in MNA_FORBIDDEN_NAMES
         or name in FOUNDER_FORBIDDEN_NAMES
+        or name in INVESTING_FORBIDDEN_NAMES
         or name in EXPLORATION_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )

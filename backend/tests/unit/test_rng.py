@@ -98,6 +98,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "mining": 50,  # M19 (35.2-35.4)
         "refining": 51,  # M20 (36.1, 36.4)
         "region_risk": 52,  # M19 (35.4)
+        "personal": 53,  # M26 (37)
         "misc": 99,
     }
 

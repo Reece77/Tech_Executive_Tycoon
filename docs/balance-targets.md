@@ -585,6 +585,19 @@ Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8
 | T6 nothing else moves | a company that never mines plays exactly as before | golden snapshots unchanged; identical with and without the mining phases (24 months, 2 seeds) | — |
 
 Tuned (`mining.*` only; before → after in the brief's Decision 21): `sustaining_share` 0.02 → 0.07, `overrun.definitive` [0, 0.3] → [0, 0.5], `overrun.pre_feasibility` [0, 0.45] → [0, 0.55], `nationalization.monthly_base` 0.0045 → 0.0035, `accident.skill_slope` 0.04 → 0.07.
+## M26: the founder's life, part 2: personal investing (§37.6)
+
+`uv run --project backend python tools/m26_targets.py` (10 seeds; nightly `tests/balance/test_m26_balance.py`).
+
+| Target | Value | Band |
+| --- | --- | --- |
+| 1 Angel skew ($250k into every new startup for 10 years) | median 0.13x; top decile 17.4x (90th percentile 9.1x); portfolio 2.69x | < 1.0; > 10x; 0.8-3.0 |
+| 2 Known founders (5-year survival) | 34% vs 23%: 1.48x | >= 1.3x |
+| 3 Family office 2010-2025 | index 32.0%/yr; balanced 29.2% (largest miss 3.7 points); aggressive/conservative vol 2.56x | within 4 points; >= 1.5x |
+| 4 Insider trading | investigated on 10 of 10 seeds | 6-10 |
+| 5 Nothing else moves | identical on 3 of 3 seeds; goldens unchanged | identical |
+
+Tuned: `angel.round_dilution` 0.2 -> 0.12; `family_office.mandates` (conservative 0.3 -> 0.4, balanced 0.6/0.01 -> 0.95/0.005, aggressive vol 0.02 -> 0.03). Target 1's top decile is its mean (M26 brief, decision 16).
 
 ## M20: refining and wafers (§36.5)
 

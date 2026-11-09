@@ -28,7 +28,8 @@ def test_the_library(loaded: LoadedData) -> None:
         "finance": 9,  # M16: the minority complaint (31.6)
         "board": 6,
         "rivals": 4,
-        "founder": 17,  # M7a: early days (early_days); M24: burnout, scandal, first grants
+        "founder": 21,  # M7a: early days (early_days); M24: burnout, scandal, first grants;
+        # M26: conflict, filing, investigation, finding
         "lender": 2,  # M10: queued by the debt phase (20.3)
         "public": 11,  # M13: IPO chain and public life (25); M14: takeover_offer
         "press": 10,  # M14b: press moments, queued by the engine (29.1)
