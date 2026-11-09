@@ -317,3 +317,9 @@ class ExplorationRuleError(SimError):
 
 class UnknownExplorationProjectError(NotFoundError):  # M18
     code = "unknown_exploration_project"
+
+
+class RefiningRuleError(SimError):
+    """A refinery build or contract the refining rules do not allow (M20, formulas.md 36)."""
+
+    code = "refining_rule"

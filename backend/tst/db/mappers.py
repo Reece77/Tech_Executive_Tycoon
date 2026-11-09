@@ -868,7 +868,14 @@ def event_from_row(row: EventRow) -> GameEvent:
 
 
 # Engine steps: the stat names the answer the engine applies (events.data's *_STEPS).
-ENGINE_STEPS = ("public_step", "press_step", "founder_step", "group_step", "exploration_step")
+ENGINE_STEPS = (
+    "public_step",
+    "press_step",
+    "founder_step",
+    "group_step",
+    "exploration_step",
+    "refining_step",
+)
 
 
 def _effect_json(e: Effect) -> dict[str, Any]:

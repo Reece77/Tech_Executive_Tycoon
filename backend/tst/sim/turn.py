@@ -67,6 +67,7 @@ from tst.sim.people.growth import grow_person
 from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
+from tst.sim.refining.phase import refining_month
 from tst.sim.research.eras import arrive_eras
 from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
@@ -258,6 +259,9 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
     # M18 (34.2-34.3): exploration stages report, holes are drilled, permits run.
     state, entries, logs = exploration_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M20 (36): refineries run, upstream first, and hand their output to the group or market.
+    state, entries, logs = refining_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*logs)
 
 

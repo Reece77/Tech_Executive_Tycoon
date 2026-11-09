@@ -3830,6 +3830,115 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/refineries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Refineries
+         * @description The group's plants (inputs, outputs, yield, power cost, unit cost against market,
+         *     margin), recipes, prices, contracts, this month's own supply and the value chain (36).
+         */
+        get: operations["getRefineries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/refineries/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quote Refinery
+         * @description What a plant would cost to build and to run at full output now (36.1).
+         */
+        get: operations["quoteRefinery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/refineries/build": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Refinery */
+        post: operations["buildRefinery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/refineries/deal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Refining Deal */
+        post: operations["signRefiningDeal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/refineries/{facility_id}/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Staff Refinery */
+        post: operations["staffRefinery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/refineries/{facility_id}/sell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sell Refinery */
+        post: operations["sellRefinery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/explain/{metric}": {
         parameters: {
             query?: never;
@@ -4880,6 +4989,21 @@ export interface components {
              */
             can_afford: boolean;
         };
+        /** BuildRefineryIn */
+        BuildRefineryIn: {
+            /** Recipe */
+            recipe: string;
+            /** Region */
+            region: string;
+            /** Capacity */
+            capacity: number;
+            /** Host Id */
+            host_id?: number | null;
+            /** City */
+            city?: string | null;
+            /** Company Id */
+            company_id?: number | null;
+        };
         /** BuybackIn */
         BuybackIn: {
             /** Amount Cents */
@@ -5206,6 +5330,25 @@ export interface components {
              * @description How much is known, as words
              */
             learned_label: string;
+        };
+        /** ChainLinkOut */
+        ChainLinkOut: {
+            /**
+             * Stage
+             * @description mine | refinery | wafer | chip | device
+             */
+            stage: string;
+            /** Company */
+            company: string;
+            /** Name */
+            name: string;
+            /** Detail */
+            detail: string;
+            /**
+             * Supplies
+             * @description Names of the links it feeds
+             */
+            supplies: string[];
         };
         /** ChangePreviewOut */
         ChangePreviewOut: {
@@ -10501,6 +10644,29 @@ export interface components {
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
         };
+        /** OwnSupplyOut */
+        OwnSupplyOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Seller */
+            seller: string;
+            /** Buyer */
+            buyer: string;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Product */
+            product: string | null;
+            /** Volume */
+            volume: number;
+            /** Taken */
+            taken: number;
+            /** Unit Cents */
+            unit_cents: number;
+            /** Market Cents */
+            market_cents: number;
+        };
         /**
          * OwnershipEventOut
          * @description One step of "your ownership over time" (M4b).
@@ -12198,6 +12364,365 @@ export interface components {
              */
             years: number[];
         };
+        /** RecipeOut */
+        RecipeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Kind */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Unit */
+            unit: string;
+            /** Sizes */
+            sizes: number[];
+            /** Input Good */
+            input_good: string | null;
+            /** Input Label */
+            input_label: string | null;
+            /** Input Per Output */
+            input_per_output: number;
+            /** Output Good */
+            output_good: string;
+            /** Output Label */
+            output_label: string;
+            /** Output Unit */
+            output_unit: string;
+            /** Yield */
+            yield: number;
+            /** Mwh Per Unit */
+            mwh_per_unit: number;
+            /** Build Months */
+            build_months: number;
+            /** Life Months */
+            life_months: number;
+            /** Ramp Months */
+            ramp_months: number;
+            /** Staff Per */
+            staff_per: number;
+            /**
+             * Capex Per Unit Cents
+             * @description Quoted capex per capacity unit this month
+             */
+            capex_per_unit_cents: number;
+            /** Semi Grade */
+            semi_grade: boolean;
+            /** Curbs */
+            curbs: boolean;
+            /** Incident Rate */
+            incident_rate: number;
+        };
+        /** RefineriesActionOut */
+        RefineriesActionOut: {
+            refineries: components["schemas"]["RefineriesOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** RefineriesOut */
+        RefineriesOut: {
+            /** Plants */
+            plants: components["schemas"]["RefineryPlantOut"][];
+            /** Recipes */
+            recipes: components["schemas"]["RecipeOut"][];
+            /** Goods */
+            goods: components["schemas"]["RefiningGoodOut"][];
+            /** Deals */
+            deals: components["schemas"]["RefiningDealOut"][];
+            /** Supply */
+            supply: components["schemas"]["OwnSupplyOut"][];
+            /** Chain */
+            chain: components["schemas"]["ChainLinkOut"][];
+            /** Power */
+            power: components["schemas"]["RefiningPowerOut"][];
+            /**
+             * Process Level
+             * @description The player company's process level (36.3)
+             */
+            process_level: number;
+            /** Semi Min Level */
+            semi_min_level: number;
+            /** Deal Months Low */
+            deal_months_low: number;
+            /** Deal Months High */
+            deal_months_high: number;
+            /** Build Energy */
+            build_energy: number;
+            /** Deal Energy */
+            deal_energy: number;
+        };
+        /** RefineryHistoryOut */
+        RefineryHistoryOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /** Output */
+            output: number;
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+            /** Market Cents */
+            market_cents: number;
+        };
+        /** RefineryMonthOut */
+        RefineryMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Output */
+            output: number;
+            /**
+             * Capacity
+             * @description What it could make this month with all its input
+             */
+            capacity: number;
+            /** Yield */
+            yield: number;
+            /** Input Group */
+            input_group: number;
+            /** Input Contract */
+            input_contract: number;
+            /** Input Spot */
+            input_spot: number;
+            /** Input Short */
+            input_short: number;
+            /** Input Cents */
+            input_cents: number;
+            /** Power Cents */
+            power_cents: number;
+            /** Power Index */
+            power_index: number;
+            /** Other Cents */
+            other_cents: number;
+            /** Fixed Cents */
+            fixed_cents: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /** Staff Cents */
+            staff_cents: number;
+            /** To Group */
+            to_group: number;
+            /** To Contract */
+            to_contract: number;
+            /** To Spot */
+            to_spot: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /**
+             * Market Cents
+             * @description The output's market price, cents a unit
+             */
+            market_cents: number;
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+            /**
+             * Margin
+             * @description Operating margin at market price
+             */
+            margin: number | null;
+        };
+        /** RefineryPlantOut */
+        RefineryPlantOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Name */
+            name: string;
+            /** Recipe */
+            recipe: string;
+            /** Recipe Label */
+            recipe_label: string;
+            /** Kind */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Status
+             * @description building | live | closed
+             */
+            status: string;
+            /** Capacity */
+            capacity: number;
+            /** Unit */
+            unit: string;
+            /**
+             * Output Unit
+             * @description The output good's volume unit
+             */
+            output_unit: string;
+            /** Input Good */
+            input_good: string | null;
+            /** Input Label */
+            input_label: string | null;
+            /** Output Good */
+            output_good: string;
+            /** Output Label */
+            output_label: string;
+            /** Ready Turn */
+            ready_turn: number;
+            /** Ready Label */
+            ready_label: string;
+            /**
+             * Estimate Cents
+             * @description The quoted capex
+             */
+            estimate_cents: number;
+            /**
+             * Capex Paid Cents
+             * @description Capex paid so far (an overrun shows here)
+             */
+            capex_paid_cents: number;
+            /** Book Value Cents */
+            book_value_cents: number;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Coverage */
+            coverage: number;
+            /** Unit Id */
+            unit_id: number | null;
+            /** Stated Yield */
+            stated_yield: number;
+            /** Semi Grade */
+            semi_grade: boolean;
+            /** Curbed Until */
+            curbed_until: string | null;
+            /** Curb Run */
+            curb_run: number | null;
+            /** Stopped Until */
+            stopped_until: string | null;
+            /** Incident Open */
+            incident_open: boolean;
+            /** Incidents */
+            incidents: number;
+            /** Host Id */
+            host_id: number | null;
+            month: components["schemas"]["RefineryMonthOut"] | null;
+            /** History */
+            history: components["schemas"]["RefineryHistoryOut"][];
+        };
+        /** RefineryQuoteOut */
+        RefineryQuoteOut: {
+            /** Recipe */
+            recipe: string;
+            /** Region */
+            region: string;
+            /** Capacity */
+            capacity: number;
+            /**
+             * Capex Cents
+             * @description The estimate; the true cost may run over
+             */
+            capex_cents: number;
+            /** Monthly Capex Cents */
+            monthly_capex_cents: number;
+            /** Build Months */
+            build_months: number;
+            /** Staff Needed */
+            staff_needed: number;
+            /** Power Index */
+            power_index: number;
+            /** Yield */
+            yield: number;
+            /** Input Cents */
+            input_cents: number;
+            /** Power Cents */
+            power_cents: number;
+            /** Other Cents */
+            other_cents: number;
+            /** Fixed Cents */
+            fixed_cents: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /**
+             * Unit Cost Cents
+             * @description A unit at full output now, before staff
+             */
+            unit_cost_cents: number;
+            /** Market Cents */
+            market_cents: number;
+            /** Margin */
+            margin: number;
+        };
+        /** RefiningDealIn */
+        RefiningDealIn: {
+            /**
+             * Side
+             * @description buy | sell
+             */
+            side: string;
+            /** Good */
+            good: string;
+            /** Months */
+            months: number;
+            /**
+             * Volume
+             * @description Volume units a month
+             */
+            volume: number;
+        };
+        /** RefiningDealOut */
+        RefiningDealOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Side */
+            side: string;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Unit */
+            unit: string;
+            /** Signed Turn */
+            signed_turn: number;
+            /** End Label */
+            end_label: string;
+            /** Monthly Volume */
+            monthly_volume: number;
+            /** Price Cents */
+            price_cents: number;
+            /** Taken */
+            taken: number;
+            /** Last Taken */
+            last_taken: number;
+            /** Charged Cents */
+            charged_cents: number;
+            /** Status */
+            status: string;
+        };
+        /** RefiningGoodOut */
+        RefiningGoodOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Allocation */
+            allocation: number;
+        };
+        /** RefiningPowerOut */
+        RefiningPowerOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Index */
+            index: number;
+        };
         /** RegionSegmentOut */
         RegionSegmentOut: {
             /** Segment */
@@ -13450,6 +13975,11 @@ export interface components {
         };
         /** StaffIn */
         StaffIn: {
+            /** Unit Id */
+            unit_id: number | null;
+        };
+        /** StaffRefineryIn */
+        StaffRefineryIn: {
             /** Unit Id */
             unit_id: number | null;
         };
@@ -27029,6 +27559,372 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRefineries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineriesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quoteRefinery: {
+        parameters: {
+            query: {
+                recipe: string;
+                region: string;
+                capacity: number;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineryQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildRefinery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildRefineryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineriesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signRefiningDeal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefiningDealIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineriesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    staffRefinery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffRefineryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineriesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellRefinery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefineriesActionOut"];
                 };
             };
             /** @description Bad Request */

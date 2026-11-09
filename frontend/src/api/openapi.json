@@ -17414,6 +17414,515 @@
         }
       }
     },
+    "/api/saves/{save_id}/refineries": {
+      "get": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Get Refineries",
+        "description": "The group's plants (inputs, outputs, yield, power cost, unit cost against market,\nmargin), recipes, prices, contracts, this month's own supply and the value chain (36).",
+        "operationId": "getRefineries",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineriesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/refineries/quote": {
+      "get": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Quote Refinery",
+        "description": "What a plant would cost to build and to run at full output now (36.1).",
+        "operationId": "quoteRefinery",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "recipe",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Recipe"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "capacity",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Capacity"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineryQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/refineries/build": {
+      "post": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Build Refinery",
+        "operationId": "buildRefinery",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRefineryIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineriesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/refineries/deal": {
+      "post": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Sign Refining Deal",
+        "operationId": "signRefiningDeal",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefiningDealIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineriesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/refineries/{facility_id}/staff": {
+      "post": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Staff Refinery",
+        "operationId": "staffRefinery",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffRefineryIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineriesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/refineries/{facility_id}/sell": {
+      "post": {
+        "tags": [
+          "refining"
+        ],
+        "summary": "Sell Refinery",
+        "operationId": "sellRefinery",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefineriesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/explain/{metric}": {
       "get": {
         "tags": [
@@ -19946,6 +20455,62 @@
         ],
         "title": "BuildPreviewOut"
       },
+      "BuildRefineryIn": {
+        "properties": {
+          "recipe": {
+            "type": "string",
+            "title": "Recipe"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "host_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host Id"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe",
+          "region",
+          "capacity"
+        ],
+        "title": "BuildRefineryIn"
+      },
       "BuybackIn": {
         "properties": {
           "amount_cents": {
@@ -20660,6 +21225,44 @@
         ],
         "title": "CeoProfileOut",
         "description": "What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed\nby public appearances, poach approaches and diligence. Never true values."
+      },
+      "ChainLinkOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage",
+            "description": "mine | refinery | wafer | chip | device"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "supplies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supplies",
+            "description": "Names of the links it feeds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "company",
+          "name",
+          "detail",
+          "supplies"
+        ],
+        "title": "ChainLinkOut"
       },
       "ChangePreviewOut": {
         "properties": {
@@ -33294,6 +33897,71 @@
         ],
         "title": "OverviewOut"
       },
+      "OwnSupplyOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "seller": {
+            "type": "string",
+            "title": "Seller"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "volume": {
+            "type": "number",
+            "title": "Volume"
+          },
+          "taken": {
+            "type": "number",
+            "title": "Taken"
+          },
+          "unit_cents": {
+            "type": "number",
+            "title": "Unit Cents"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "seller",
+          "buyer",
+          "good",
+          "good_label",
+          "product",
+          "volume",
+          "taken",
+          "unit_cents",
+          "market_cents"
+        ],
+        "title": "OwnSupplyOut"
+      },
       "OwnershipEventOut": {
         "properties": {
           "turn": {
@@ -37092,6 +37760,933 @@
         "title": "RankingsOut",
         "description": "The latest January's industry rankings (30.4)."
       },
+      "RecipeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Sizes"
+          },
+          "input_good": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Good"
+          },
+          "input_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Label"
+          },
+          "input_per_output": {
+            "type": "number",
+            "title": "Input Per Output"
+          },
+          "output_good": {
+            "type": "string",
+            "title": "Output Good"
+          },
+          "output_label": {
+            "type": "string",
+            "title": "Output Label"
+          },
+          "output_unit": {
+            "type": "string",
+            "title": "Output Unit"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "mwh_per_unit": {
+            "type": "number",
+            "title": "Mwh Per Unit"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "ramp_months": {
+            "type": "integer",
+            "title": "Ramp Months"
+          },
+          "staff_per": {
+            "type": "number",
+            "title": "Staff Per"
+          },
+          "capex_per_unit_cents": {
+            "type": "integer",
+            "title": "Capex Per Unit Cents",
+            "description": "Quoted capex per capacity unit this month"
+          },
+          "semi_grade": {
+            "type": "boolean",
+            "title": "Semi Grade"
+          },
+          "curbs": {
+            "type": "boolean",
+            "title": "Curbs"
+          },
+          "incident_rate": {
+            "type": "number",
+            "title": "Incident Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "kind",
+          "kind_label",
+          "unit",
+          "sizes",
+          "input_good",
+          "input_label",
+          "input_per_output",
+          "output_good",
+          "output_label",
+          "output_unit",
+          "yield",
+          "mwh_per_unit",
+          "build_months",
+          "life_months",
+          "ramp_months",
+          "staff_per",
+          "capex_per_unit_cents",
+          "semi_grade",
+          "curbs",
+          "incident_rate"
+        ],
+        "title": "RecipeOut"
+      },
+      "RefineriesActionOut": {
+        "properties": {
+          "refineries": {
+            "$ref": "#/components/schemas/RefineriesOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refineries",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "RefineriesActionOut"
+      },
+      "RefineriesOut": {
+        "properties": {
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/RefineryPlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "recipes": {
+            "items": {
+              "$ref": "#/components/schemas/RecipeOut"
+            },
+            "type": "array",
+            "title": "Recipes"
+          },
+          "goods": {
+            "items": {
+              "$ref": "#/components/schemas/RefiningGoodOut"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/RefiningDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "supply": {
+            "items": {
+              "$ref": "#/components/schemas/OwnSupplyOut"
+            },
+            "type": "array",
+            "title": "Supply"
+          },
+          "chain": {
+            "items": {
+              "$ref": "#/components/schemas/ChainLinkOut"
+            },
+            "type": "array",
+            "title": "Chain"
+          },
+          "power": {
+            "items": {
+              "$ref": "#/components/schemas/RefiningPowerOut"
+            },
+            "type": "array",
+            "title": "Power"
+          },
+          "process_level": {
+            "type": "number",
+            "title": "Process Level",
+            "description": "The player company's process level (36.3)"
+          },
+          "semi_min_level": {
+            "type": "number",
+            "title": "Semi Min Level"
+          },
+          "deal_months_low": {
+            "type": "integer",
+            "title": "Deal Months Low"
+          },
+          "deal_months_high": {
+            "type": "integer",
+            "title": "Deal Months High"
+          },
+          "build_energy": {
+            "type": "integer",
+            "title": "Build Energy"
+          },
+          "deal_energy": {
+            "type": "integer",
+            "title": "Deal Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plants",
+          "recipes",
+          "goods",
+          "deals",
+          "supply",
+          "chain",
+          "power",
+          "process_level",
+          "semi_min_level",
+          "deal_months_low",
+          "deal_months_high",
+          "build_energy",
+          "deal_energy"
+        ],
+        "title": "RefineriesOut"
+      },
+      "RefineryHistoryOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "output": {
+            "type": "number",
+            "title": "Output"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "output",
+          "unit_cost_cents",
+          "market_cents"
+        ],
+        "title": "RefineryHistoryOut"
+      },
+      "RefineryMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "output": {
+            "type": "number",
+            "title": "Output"
+          },
+          "capacity": {
+            "type": "number",
+            "title": "Capacity",
+            "description": "What it could make this month with all its input"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "input_group": {
+            "type": "number",
+            "title": "Input Group"
+          },
+          "input_contract": {
+            "type": "number",
+            "title": "Input Contract"
+          },
+          "input_spot": {
+            "type": "number",
+            "title": "Input Spot"
+          },
+          "input_short": {
+            "type": "number",
+            "title": "Input Short"
+          },
+          "input_cents": {
+            "type": "integer",
+            "title": "Input Cents"
+          },
+          "power_cents": {
+            "type": "integer",
+            "title": "Power Cents"
+          },
+          "power_index": {
+            "type": "number",
+            "title": "Power Index"
+          },
+          "other_cents": {
+            "type": "integer",
+            "title": "Other Cents"
+          },
+          "fixed_cents": {
+            "type": "integer",
+            "title": "Fixed Cents"
+          },
+          "depreciation_cents": {
+            "type": "integer",
+            "title": "Depreciation Cents"
+          },
+          "staff_cents": {
+            "type": "integer",
+            "title": "Staff Cents"
+          },
+          "to_group": {
+            "type": "number",
+            "title": "To Group"
+          },
+          "to_contract": {
+            "type": "number",
+            "title": "To Contract"
+          },
+          "to_spot": {
+            "type": "number",
+            "title": "To Spot"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents",
+            "description": "The output's market price, cents a unit"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin",
+            "description": "Operating margin at market price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "output",
+          "capacity",
+          "yield",
+          "input_group",
+          "input_contract",
+          "input_spot",
+          "input_short",
+          "input_cents",
+          "power_cents",
+          "power_index",
+          "other_cents",
+          "fixed_cents",
+          "depreciation_cents",
+          "staff_cents",
+          "to_group",
+          "to_contract",
+          "to_spot",
+          "revenue_cents",
+          "market_cents",
+          "unit_cost_cents",
+          "margin"
+        ],
+        "title": "RefineryMonthOut"
+      },
+      "RefineryPlantOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "recipe": {
+            "type": "string",
+            "title": "Recipe"
+          },
+          "recipe_label": {
+            "type": "string",
+            "title": "Recipe Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "building | live | closed"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "output_unit": {
+            "type": "string",
+            "title": "Output Unit",
+            "description": "The output good's volume unit"
+          },
+          "input_good": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Good"
+          },
+          "input_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Label"
+          },
+          "output_good": {
+            "type": "string",
+            "title": "Output Good"
+          },
+          "output_label": {
+            "type": "string",
+            "title": "Output Label"
+          },
+          "ready_turn": {
+            "type": "integer",
+            "title": "Ready Turn"
+          },
+          "ready_label": {
+            "type": "string",
+            "title": "Ready Label"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "The quoted capex"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents",
+            "description": "Capex paid so far (an overrun shows here)"
+          },
+          "book_value_cents": {
+            "type": "integer",
+            "title": "Book Value Cents"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "stated_yield": {
+            "type": "number",
+            "title": "Stated Yield"
+          },
+          "semi_grade": {
+            "type": "boolean",
+            "title": "Semi Grade"
+          },
+          "curbed_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curbed Until"
+          },
+          "curb_run": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Curb Run"
+          },
+          "stopped_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stopped Until"
+          },
+          "incident_open": {
+            "type": "boolean",
+            "title": "Incident Open"
+          },
+          "incidents": {
+            "type": "integer",
+            "title": "Incidents"
+          },
+          "host_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Host Id"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RefineryMonthOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RefineryHistoryOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "name",
+          "recipe",
+          "recipe_label",
+          "kind",
+          "kind_label",
+          "region",
+          "region_label",
+          "status",
+          "capacity",
+          "unit",
+          "output_unit",
+          "input_good",
+          "input_label",
+          "output_good",
+          "output_label",
+          "ready_turn",
+          "ready_label",
+          "estimate_cents",
+          "capex_paid_cents",
+          "book_value_cents",
+          "staff",
+          "staff_needed",
+          "coverage",
+          "unit_id",
+          "stated_yield",
+          "semi_grade",
+          "curbed_until",
+          "curb_run",
+          "stopped_until",
+          "incident_open",
+          "incidents",
+          "host_id",
+          "month",
+          "history"
+        ],
+        "title": "RefineryPlantOut"
+      },
+      "RefineryQuoteOut": {
+        "properties": {
+          "recipe": {
+            "type": "string",
+            "title": "Recipe"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents",
+            "description": "The estimate; the true cost may run over"
+          },
+          "monthly_capex_cents": {
+            "type": "integer",
+            "title": "Monthly Capex Cents"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          },
+          "power_index": {
+            "type": "number",
+            "title": "Power Index"
+          },
+          "yield": {
+            "type": "number",
+            "title": "Yield"
+          },
+          "input_cents": {
+            "type": "number",
+            "title": "Input Cents"
+          },
+          "power_cents": {
+            "type": "number",
+            "title": "Power Cents"
+          },
+          "other_cents": {
+            "type": "number",
+            "title": "Other Cents"
+          },
+          "fixed_cents": {
+            "type": "number",
+            "title": "Fixed Cents"
+          },
+          "depreciation_cents": {
+            "type": "number",
+            "title": "Depreciation Cents"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents",
+            "description": "A unit at full output now, before staff"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents"
+          },
+          "margin": {
+            "type": "number",
+            "title": "Margin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipe",
+          "region",
+          "capacity",
+          "capex_cents",
+          "monthly_capex_cents",
+          "build_months",
+          "staff_needed",
+          "power_index",
+          "yield",
+          "input_cents",
+          "power_cents",
+          "other_cents",
+          "fixed_cents",
+          "depreciation_cents",
+          "unit_cost_cents",
+          "market_cents",
+          "margin"
+        ],
+        "title": "RefineryQuoteOut"
+      },
+      "RefiningDealIn": {
+        "properties": {
+          "side": {
+            "type": "string",
+            "title": "Side",
+            "description": "buy | sell"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "volume": {
+            "type": "number",
+            "title": "Volume",
+            "description": "Volume units a month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "side",
+          "good",
+          "months",
+          "volume"
+        ],
+        "title": "RefiningDealIn"
+      },
+      "RefiningDealOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "side": {
+            "type": "string",
+            "title": "Side"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "signed_turn": {
+            "type": "integer",
+            "title": "Signed Turn"
+          },
+          "end_label": {
+            "type": "string",
+            "title": "End Label"
+          },
+          "monthly_volume": {
+            "type": "number",
+            "title": "Monthly Volume"
+          },
+          "price_cents": {
+            "type": "number",
+            "title": "Price Cents"
+          },
+          "taken": {
+            "type": "number",
+            "title": "Taken"
+          },
+          "last_taken": {
+            "type": "number",
+            "title": "Last Taken"
+          },
+          "charged_cents": {
+            "type": "integer",
+            "title": "Charged Cents"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "side",
+          "good",
+          "good_label",
+          "unit",
+          "signed_turn",
+          "end_label",
+          "monthly_volume",
+          "price_cents",
+          "taken",
+          "last_taken",
+          "charged_cents",
+          "status"
+        ],
+        "title": "RefiningDealOut"
+      },
+      "RefiningGoodOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "price_cents": {
+            "type": "number",
+            "title": "Price Cents"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "price_cents",
+          "allocation"
+        ],
+        "title": "RefiningGoodOut"
+      },
+      "RefiningPowerOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "index"
+        ],
+        "title": "RefiningPowerOut"
+      },
       "RegionSegmentOut": {
         "properties": {
           "segment": {
@@ -40095,6 +41690,26 @@
           "unit_id"
         ],
         "title": "StaffIn"
+      },
+      "StaffRefineryIn": {
+        "properties": {
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id"
+        ],
+        "title": "StaffRefineryIn"
       },
       "StageIn": {
         "properties": {

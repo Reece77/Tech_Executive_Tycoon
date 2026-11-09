@@ -204,3 +204,16 @@ roles:
     work_style_weights: { builder: 2, operator: 3, researcher: 5, seller: 0 }
     interest_weights: { ai: 0, hardware: 1, crypto: 0, climate: 3, security: 0, gaming: 0, mining: 8, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
     salary_band_mid_cents: { junior: 6000000, mid: 8200000, senior: 10500000, staff: 12800000, principal: 15000000, exec: 17500000 }
+
+  # --- M20 (formulas.md 36.1): refining, appended ---
+  - key: process_engineer
+    label: Process engineer
+    product_function: none
+    summary: "Runs a refinery's chemistry and furnaces: smelting, purification, conversion and separation. Staffs smelters, polysilicon and wafer plants, converters, refineries and separators."
+    why_hire: "Hire one for every few thousand tonnes of a refinery's capacity: coverage sets how much it runs, and their manufacturing skill sets reliability and how often a plant has an incident (36.4)."
+    primary: [manufacturing, data]
+    secondary: [operations, procurement, security, leadership]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 0, hardware: 4, crypto: 0, climate: 3, security: 0, gaming: 0, mining: 4, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 5800000, mid: 7800000, senior: 10000000, staff: 12200000, principal: 14400000, exec: 16800000 }

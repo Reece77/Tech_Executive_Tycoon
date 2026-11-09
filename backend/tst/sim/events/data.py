@@ -29,6 +29,7 @@ CATEGORIES: Final = (
     "public",  # M13: the IPO chain and public life (25), queued by the engine, never drawn
     "press",  # M14b: press moments (29.1), queued by the engine, never drawn
     "exploration",  # M18: protests and permit challenges (34.3), queued by the engine
+    "refining",  # M20: plant incidents (36.4), queued by the engine
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -78,6 +79,8 @@ FOUNDER_TRIGGER: Final = "founder_life"
 GROUP_TRIGGER: Final = "group"
 # M18 (34.3): protests and permit challenges, queued by the engine by template id.
 EXPLORATION_TRIGGER: Final = "exploration"
+# M20 (36.4): plant incidents, queued by the engine by template id.
+REFINING_TRIGGER: Final = "refining"
 SCHEDULED: Final = (
     "storyline",
     "follow_up",
@@ -87,6 +90,7 @@ SCHEDULED: Final = (
     FOUNDER_TRIGGER,
     GROUP_TRIGGER,
     EXPLORATION_TRIGGER,
+    REFINING_TRIGGER,
 )
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
@@ -102,7 +106,8 @@ CRITICAL_TRIGGERS: Final = (
     FOUNDER_TRIGGER,
     GROUP_TRIGGER,
     EXPLORATION_TRIGGER,
-)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3
+    REFINING_TRIGGER,
+)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 36.4
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -138,11 +143,14 @@ EFFECT_TYPES: Final = (
     "group_step",
     # M18 (34.3): a protest's answer (EXPLORATION_STEPS), applied by the engine.
     "exploration_step",
+    # M20 (36.4): a plant incident's answer (REFINING_STEPS), applied by the engine.
+    "refining_step",
 )
 PRESS_STEPS: Final = ("bold", "measured", "deflect")
 FOUNDER_STEPS: Final = ("rest", "delegate", "push_on", "apologize", "drop_lobbyists", "fight")
 GROUP_STEPS: Final = ("correct_price", "defend_price")
 EXPLORATION_STEPS: Final = ("consult", "benefit", "push_on")  # M18 (34.3)
+REFINING_STEPS: Final = ("stop", "compensate", "contest")  # M20 (36.4)
 PUBLIC_STEPS: Final = (
     "file",  # 25.2 step 2: the S-1 goes in on time
     "file_late",  # a metric is restated: ipo.filing_delay_months later
@@ -178,6 +186,7 @@ VALUELESS: Final = (
     "founder_step",
     "group_step",
     "exploration_step",
+    "refining_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
@@ -206,6 +215,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "founder_step": ("founder",),
     "group_step": ("company",),
     "exploration_step": ("company",),
+    "refining_step": ("company",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -273,6 +283,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     FOUNDER_TRIGGER: frozenset(),  # M24: company and founder only
     GROUP_TRIGGER: frozenset(),  # M16: company and founder only
     EXPLORATION_TRIGGER: frozenset(),  # M18: company and founder only
+    REFINING_TRIGGER: frozenset(),  # M20: company and founder only
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -340,6 +351,9 @@ class EffectSpec(_Frozen):
         elif self.type == "exploration_step":
             if self.stat not in EXPLORATION_STEPS or self.months is not None:
                 raise ValueError(f"an exploration_step needs a stat in {list(EXPLORATION_STEPS)}")
+        elif self.type == "refining_step":
+            if self.stat not in REFINING_STEPS or self.months is not None:
+                raise ValueError(f"a refining_step needs a stat in {list(REFINING_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -502,6 +516,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             FOUNDER_TRIGGER,
             GROUP_TRIGGER,
             EXPLORATION_TRIGGER,
+            REFINING_TRIGGER,
         ):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:

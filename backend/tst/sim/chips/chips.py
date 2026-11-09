@@ -77,13 +77,40 @@ def index_wafer_cents(
     return ch.types[chip_type].wafer_cents * index * ch.contract.foundries[foundry].price_mult
 
 
+def own_wafers(state: GameState, product_id: int) -> tuple[float, float, float]:
+    """M20 (36.2): this month's own-group wafers for the product's wafer starts: (wafers, mean
+    transfer price, market wafer price), in cents. (0, 0, 0) without a wafer plant."""
+    lots = [s for s in state.own_supply if s.product_id == product_id and s.turn == state.turn]
+    volume = sum(s.volume for s in lots)
+    if volume <= 0:
+        return 0.0, 0.0, 0.0
+    price = sum(s.volume * s.unit_cents for s in lots) / volume
+    return volume, price, lots[0].market_cents
+
+
+def own_wafer_share(state: GameState, product_id: int) -> float:
+    """The share of the product's wafer starts on the group's own wafers (36.2)."""
+    volume = own_wafers(state, product_id)[0]
+    if volume <= 0:
+        return 0.0
+    starts = sum(c.units for c in wafer_contracts(state, product_id))
+    return min(1.0, volume / starts) if starts > 0 else 0.0
+
+
 def wafer_cents(state: GameState, product: Product, balance: Balance, data: GameData) -> float:
     """The product's wafer price: its running contracts' locked prices weighted by wafer
-    starts, else this month's price at the first foundry."""
+    starts, else this month's price at the first foundry. M20 (36.2): the share of starts on
+    the group's own wafers pays the group's wafer price for the substrate instead of the
+    market's (a fabless company without a wafer plant pays exactly what it did)."""
     contracts = wafer_contracts(state, product.id)
     wafers = sum(c.units for c in contracts)
     if wafers:
-        return sum(c.units * c.price_cents for c in contracts) / wafers
+        price = sum(c.units * c.price_cents for c in contracts) / wafers
+        share = own_wafer_share(state, product.id)
+        if share > 0:
+            _, own, market = own_wafers(state, product.id)
+            price -= share * (market - own)
+        return price
     chip_type = data.category(product.category).chip_type
     assert chip_type is not None
     first = next(iter(balance.chips.contract.foundries))
@@ -109,6 +136,9 @@ def wafers_delivered(
     share = delivered_share(
         state, balance.chips.good, contract.signed_turn, data, advanced=t.advanced_node
     )
+    own = own_wafer_share(state, contract.product_id)  # M20 (36.2): own wafers keep 100%
+    if own > 0:
+        share = own + (1 - own) * share
     return contract.units * share
 
 

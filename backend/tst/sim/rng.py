@@ -74,6 +74,9 @@ STREAM_IDS: Final = MappingProxyType(
         # (5, project, level), permits (6, project), protests (7, project), sales (8, project),
         # minor events (9, project) (M18, 34.2-34.3)
         "exploration": 49,
+        # key (tag, facility id): a refinery's capex overrun (0), incident (1), power curb (2)
+        # and an incident answer's legal draw (3) (M20, 36.1, 36.4)
+        "refining": 51,
         "misc": 99,
     }
 )

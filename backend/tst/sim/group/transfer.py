@@ -136,11 +136,11 @@ def transfer_month(
         if not {flow.seller_id, flow.buyer_id} <= group:  # one left the group: the flow ends
             state = with_flow(state, replace(flow, ended_turn=turn))
             continue
-        account = GOOD_ACCOUNT[flow.good]
-        market = spend.get((flow.buyer_id, account), 0)
+        account = GOOD_ACCOUNT.get(flow.good)  # M20: materials flows are priced by refining
+        market = spend.get((flow.buyer_id, account), 0) if account is not None else 0
         seller, buyer = state.company(flow.seller_id).name, state.company(flow.buyer_id).name
         price = 0
-        if market > 0:
+        if market > 0 and account is not None:
             cost = round(exact(gb.supply_cost) * market)
             price = gf.transfer_price_cents(flow.kind, cost, market, balance, flow.margin)
             entries += [

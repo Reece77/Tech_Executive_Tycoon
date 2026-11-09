@@ -58,6 +58,7 @@ from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 
+POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
 BALANCE_FILE = "balance.yaml"
 SCENARIOS_FILE = "scenarios.yaml"
 ACCOUNTS_FILE = "accounts.yaml"
@@ -321,8 +322,11 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             raise DataLoadError(
                 f"{where}: input_good {kind.input_good!r} is not in {COMPONENTS_FILE}"
             )
-        if kind.output_good not in balance.compute.goods and (
-            kind.output_good != balance.hardware.output_good
+        refined = {r.output_good for r in balance.refining.recipes.values() if r.kind == key}
+        if (
+            kind.output_good not in balance.compute.goods
+            and kind.output_good != balance.hardware.output_good
+            and kind.output_good not in refined
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -333,6 +337,8 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             raise DataLoadError(f"{where}: staff_skill {kind.staff_skill!r} is not a skill")
     _check_hardware(balance, data, goods)
     _check_commodities(balance, data)
+    if problems := refining_problems(balance, data, goods, roles):
+        raise DataLoadError(f"{BALANCE_FILE}: refining: " + "; ".join(problems))
     key = balance.compute.capacity_category
     capacity = [c.key for c in data.categories if c.capacity_market]
     if capacity != [key]:
@@ -340,6 +346,46 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             f"{CATEGORIES_FILE}: the one capacity_market category must be compute.capacity_category"
             f" {key!r}, found {capacity}"
         )
+
+
+def refining_problems(
+    balance: Balance, data: GameData, components: set[str], roles: set[str]
+) -> list[str]:
+    """M20 (formulas.md 36): recipes run known refinery kinds on known goods; derived goods
+    are priced off commodities; curbs name regions; the process domain exists."""
+    rb = balance.refining
+    problems: list[str] = []
+    commodities = {g.key for g in data.commodities.goods} if data.commodities else set()
+    known = commodities | set(rb.goods)
+    for key, spec in rb.goods.items():
+        if spec.source not in commodities:
+            problems.append(f"goods.{key}: source {spec.source!r} is not a commodity")
+        if spec.allocation_from is not None and spec.allocation_from not in components:
+            problems.append(f"goods.{key}: allocation_from {spec.allocation_from!r} is unknown")
+        poly = spec.priced_by == "divisor" and spec.source == "polysilicon"
+        if poly and abs(spec.value - balance.commodity.semi_poly_multiple) > POLY_TOLERANCE:
+            problems.append(f"goods.{key}: the divisor must be commodity.semi_poly_multiple")
+    for key, r in rb.recipes.items():
+        if r.kind not in balance.facility.kinds:
+            problems.append(f"recipes.{key}: kind {r.kind!r} is not in facility.kinds")
+        if r.output_good not in known:
+            problems.append(f"recipes.{key}: output_good {r.output_good!r} is unknown")
+        if r.input_good is not None and r.input_good not in known:
+            problems.append(f"recipes.{key}: input_good {r.input_good!r} is unknown")
+    for kind in rb.kinds:
+        if (
+            kind in balance.facility.kinds
+            and not set(balance.facility.kinds[kind].staff_roles) <= roles
+        ):
+            problems.append(f"facility.kinds.{kind}: staff roles are unknown")
+    regions = set(data.region_keys)
+    if bad := sorted(set(rb.curb.monthly) - regions):
+        problems.append(f"curb.monthly: unknown regions {bad}")
+    if bad := sorted({c.region for c in rb.curb.history} - regions):
+        problems.append(f"curb.history: unknown regions {bad}")
+    if data.tech is not None and rb.domain not in {d.key for d in data.tech.domains}:
+        problems.append(f"domain {rb.domain!r} is not in tech_frontier.yaml")
+    return problems
 
 
 def _check_commodities(balance: Balance, data: GameData) -> None:

@@ -3378,5 +3378,105 @@ def commodity_contract(
     typer.echo(f"  {_energy(result.new_state, data)}")
 
 
+# --- M20 (formulas.md 36): refineries -------------------------------------------------------
+
+
+def _recipe_key(kind: str, data: LoadedData) -> str:
+    """A recipe key, or a kind with one recipe (`--kind silicon_smelter`)."""
+    rb = data.balance.refining
+    if kind in rb.recipes:
+        return kind
+    keys = rb.recipes_of(kind)
+    if len(keys) == 1:
+        return keys[0]
+    if keys:
+        raise _fail(f"{kind} has recipes {', '.join(keys)}: name one")
+    raise _fail(f"unknown refinery kind {kind!r}")
+
+
+@app.command("recipe")
+def recipe_cmd(
+    save: SaveOpt,
+    kind: Annotated[str, typer.Option("--kind", help="A refinery kind or recipe key")],
+    region: Annotated[str | None, typer.Option("--region", help="Cost it in this region")] = None,
+) -> None:
+    """A refinery recipe (36.1): inputs, yield, power and a unit's cost now against market, in
+    every region (or one)."""
+    from tst.api import refining_views
+
+    _, data, state = _game(save)
+    key = _recipe_key(kind, data)
+    r = data.balance.refining.recipes[key]
+    k = data.balance.facility.kinds[r.kind]
+    size = (k.sizes or data.balance.facility.sizes)[0]
+    typer.echo(
+        f"{r.label} ({key}, {k.label}): {r.input_good or 'its host plant'} -> {r.output_good}, "
+        f"yield {r.yield_:g}, {r.mwh_per_unit:g} MWh a unit, built in {k.build_months} months"
+    )
+    for reg in [region] if region else data.game_data.region_keys:
+        q = refining_views.quote_out(state, key, reg, size, data)
+        unit = format_money(round(q.unit_cost_cents))
+        typer.echo(
+            f"  {reg}: power x{q.power_index:.2f}, unit cost {unit}"
+            f" vs market {format_money(round(q.market_cents))} (margin {q.margin:+.1%}); capex"
+            f" {format_money(q.capex_cents)} for {size:,} {k.unit}"
+        )
+
+
+@app.command("build-refinery")
+def build_refinery_cmd(
+    save: SaveOpt,
+    kind: Annotated[str, typer.Option("--kind", help="A refinery kind or recipe key")],
+    region: Annotated[str, typer.Option("--region", help="A region key")],
+    capacity: Annotated[int, typer.Option("--capacity", help="One of the kind's sizes")],
+    host: Annotated[int | None, typer.Option("--host", help="A by-product line's host plant")] = (
+        None
+    ),
+) -> None:
+    """Order a refinery (36.1): capex quoted now (it may run over), energy 12."""
+    from tst.sim.refining.actions import BuildRefinery
+
+    path, data, state = _game(save)
+    key = _recipe_key(kind, data)
+    result = _run(path, data, BuildRefinery(_founder(state), key, region, capacity, host))
+    ref = max(result.new_state.refineries, key=lambda x: x.facility_id)
+    f = result.new_state.facility(ref.facility_id)
+    assert f is not None
+    typer.echo(
+        f"Plant {f.id} ordered: {key} in {region}, {capacity:,} capacity, estimated "
+        f"{format_money(ref.estimate_cents)}, ready {format_turn(f.ready_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("refineries")
+def refineries_cmd(save: SaveOpt) -> None:
+    """The group's refineries (36): output, yield, unit cost against market, margin."""
+    from tst.api import refining_views
+
+    _, data, state = _game(save)
+    out = refining_views.refineries_out(state, data)
+    if not out.plants:
+        typer.echo("No refineries.")
+    for p in out.plants:
+        line = f"{p.id} {p.name} [{p.status}] {p.capacity:,} {p.unit}"
+        line += f", staff {p.staff}/{p.staff_needed}"
+        if p.status == "building":
+            line += f", ready {p.ready_label}, paid {format_money(p.capex_paid_cents)}"
+            line += f" of an estimated {format_money(p.estimate_cents)}"
+        typer.echo(line)
+        m = p.month
+        if m is not None:
+            margin = f"{m.margin:+.1%}" if m.margin is not None else "-"
+            typer.echo(
+                f"  {format_turn(m.turn)}: {m.output:,.1f} {p.output_unit} (yield {m.yield_:.2f}),"
+                f" unit {format_money(round(m.unit_cost_cents))} vs market"
+                f" {format_money(round(m.market_cents))}, margin {margin}; power"
+                f" {format_money(m.power_cents)} at x{m.power_index:.2f}"
+            )
+    for x in out.supply:
+        typer.echo(f"  supply: {x.volume:,.1f} {x.good} {x.seller} -> {x.buyer} {x.product or ''}")
+
+
 if __name__ == "__main__":
     app()

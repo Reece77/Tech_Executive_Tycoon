@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 MANDATES: Final = ("grow", "margin", "return_cash")  # 31.4
 FLOWS: Final = ("cost", "cost_plus", "market")  # 31.6 transfer-price kinds
-GOODS: Final = ("compute", "chips")  # 31.6: what one group company supplies another
+GOODS: Final = ("compute", "chips", "materials")  # 31.6; materials: refined goods and wafers (M20)
 # 31.4: a kept brand's directive (28.5) as a mandate
 DIRECTIVE_MANDATE: Final = {"grow": "grow", "harvest": "return_cash", "defend": "margin"}
 

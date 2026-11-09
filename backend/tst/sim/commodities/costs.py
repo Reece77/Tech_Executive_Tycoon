@@ -160,6 +160,13 @@ def allocation_for(
         and d.good == good
         and d.running(state.turn)
         and protected(d, start)
+    ) + sum(  # M20 (36.1): the group's own refined supply this month is protected
+        s.volume
+        for s in state.own_supply
+        if s.buyer_id == company_id
+        and s.good == good
+        and s.turn == state.turn
+        and s.product_id is None
     )
     share = min(1.0, covered / used) if covered and used > 0 else (1.0 if covered else 0.0)
     return share + (1 - share) * month.allocation

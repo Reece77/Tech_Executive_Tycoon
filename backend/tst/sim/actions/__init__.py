@@ -239,6 +239,13 @@ from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDili
 from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
+from tst.sim.refining.actions import ACTION_TYPES as REFINING_ACTION_TYPES
+from tst.sim.refining.actions import (
+    BuildRefinery,
+    RefiningAction,
+    SignRefiningDeal,
+    apply_refining,
+)
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -268,10 +275,12 @@ type Action = (
     | FounderAction  # M24
     | GroupAction  # M16
     | ExplorationAction  # M18
+    | RefiningAction  # M20
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
+    **REFINING_ACTION_TYPES,  # M20 (36.1)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -384,6 +393,7 @@ __all__ = [
     "AppointExecutive",
     "AssignUnit",
     "BuildFacility",
+    "BuildRefinery",
     "BuyOutMinorities",
     "BuyStake",
     "Buyback",
@@ -455,6 +465,7 @@ __all__ = [
     "SignContract",
     "SignManufacturingContract",
     "SignOfftake",
+    "SignRefiningDeal",
     "SignWaferContract",
     "SpinOff",
     "StaffFacility",
@@ -677,6 +688,8 @@ def apply_action(
             | RelinquishProject()
         ):  # M18 (34.2)
             out = apply_exploration(state, action, rng, ledger_balances, balance, data)
+        case BuildRefinery() | SignRefiningDeal():  # M20 (36.1)
+            out = apply_refining(state, action, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

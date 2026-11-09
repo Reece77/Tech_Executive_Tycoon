@@ -37,6 +37,7 @@ from tst.sim.products.estimates import shown_team
 from tst.sim.products.models import SELLING, Product, ProductMonth, ProductSegment
 from tst.sim.products.setup import regional_monthly_growth
 from tst.sim.products.team import Team, product_team
+from tst.sim.refining import phase as refining_phase
 from tst.sim.research import eras
 from tst.sim.research.levels import first_mover_appeal
 from tst.sim.rng import RngFactory
@@ -342,11 +343,13 @@ def run_markets(
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
     deals = any(d.status == "active" for d in state.commodity_deals)  # M17 (33.3)
-    if plan is not None or cm_sold or state.production or running or deals:  # M12b (26.2)
+    supplied = bool(state.own_supply)  # M20 (36.1-36.2): own-group materials and wafers
+    if plan is not None or cm_sold or state.production or running or deals or supplied:
         before = {row.product_id: row.lost_units for row in state.production}
         state, made = production.settle(state, plan, cm_sold, balance, data)
         state, hedged = offtake.settle_month(state, balance, data)
-        entries_out = (*entries_out, *made, *hedged)
+        state, taken = refining_phase.settle_month(state, balance, data)
+        entries_out = (*entries_out, *made, *hedged, *taken)
         more_logs += production_notes(state, plan, before)
     return MarketOutcome(
         state=state,

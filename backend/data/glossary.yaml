@@ -155,6 +155,7 @@ terms:
   account.4000_revenue_subscriptions: "Recurring subscription revenue from your products."
   account.4100_revenue_licenses: "Revenue from licences."
   account.4200_revenue_services: "Revenue from services work."
+  account.4400_materials_sales: "Refined materials and wafers your plants sold at spot or under contract (M20). Supply to your own group is not here."
   account.4300_intercompany_sales: "What this company sold to another company of the group at the transfer price. Removed in the group's consolidated statements."
   account.4900_other_income: "Money in from events and other one-off gains."
   account.4910_share_of_associates: "The group's share of the profit of companies it holds 20-50% of (the equity method). Shown below the operating result."
@@ -683,6 +684,12 @@ terms:
   exploration.category: "Resource categories: inferred from 8 holes, indicated from 20, measured from 40. Feasibility studies need a category."
   exploration.range: "Every estimate is a range at the stated confidence. More holes and better geologists narrow it; the truth is never shown."
   exploration.permit: "A permit takes 1-7 years by region, with protests along the way; it ends in a permit or a refusal."
+  # --- M20 (36): refining ------------------------------------------------------------------
+  refining.process: "Your process level: the world's know-how plus your research lead in process. Semiconductor polysilicon and wafers need 40; below it their yield halves."
+  refining.unit_cost: "A unit of output's full cost: input, power at the region's index, other costs, the fixed cost, depreciation and the plant's staff."
+  refining.margin: "Operating margin at market price: (market value - cost) / market value. Refining's margins are thin; the payoff is control of supply."
+  refining.yield: "Output per unit of input. Semiconductor grades halve it below the process level they need."
+  refining.curb: "A power curb: a region rations electricity and smelters and polysilicon plants run at 50-70% for a month or three."
   # --- M25: Explain, achievements and the data editor ---------------------------------------
   explain.driver: "One line of the number's breakdown: what it is made of, or what moved it."
   explain.amount: "That line's size, in the number's own unit."

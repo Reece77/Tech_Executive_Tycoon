@@ -31,6 +31,7 @@ from tst.api.routers import (
     products,
     profile,
     public,
+    refining,
     research,
     rivals,
     saves,
@@ -104,6 +105,7 @@ def create_app() -> FastAPI:
     app.include_router(group.router)  # M16
     app.include_router(commodities.router)  # M17
     app.include_router(exploration.router)  # M18
+    app.include_router(refining.router)  # M20
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
     app.include_router(mods.router)  # M25

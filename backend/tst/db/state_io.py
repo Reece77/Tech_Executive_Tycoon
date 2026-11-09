@@ -167,6 +167,7 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.db.modes_io import load_modes, sync_modes
+from tst.db.refining_io import load_refining, sync_refining
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
 from tst.sim.finance.macro import MacroMonth
@@ -569,6 +570,7 @@ def load_state(session: Session) -> GameState:
     state = load_group(session, state, has_table)  # M16 (0039)
     state = load_commodities(session, state, has_table)  # M17 (0041)
     state = load_exploration(session, state, has_table)  # M18 (0041)
+    state = load_refining(session, state, has_table)  # M20 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1941,6 +1943,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_group(session, old, new, has_table)  # M16 (0039)
     sync_commodities(session, old, new, has_table)  # M17 (0041)
     sync_exploration(session, old, new, has_table)  # M18 (0041)
+    sync_refining(session, old, new, has_table)  # M20 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

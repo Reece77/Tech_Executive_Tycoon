@@ -347,6 +347,12 @@ def apply_choice(
             state, posted, logged = exploration_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "refining_step" and effect.stat:  # M20 (36.4): a plant incident's answer
+            from tst.sim.refining.events import refining_step
+
+            state, posted, logged = refining_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step
 
