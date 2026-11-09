@@ -1,4 +1,4 @@
-"""Loading and syncing M17's records (formulas.md 33.3; migration 0040): commodity contracts
+"""Loading and syncing M17's records (formulas.md 33.3; migration 0041): commodity contracts
 and offtake agreements, each record's fields in a JSON `data` column (tst.db.mna_io)."""
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ KEYS = ("id", "company_id")
 def load_commodities(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every deal (0040); a save from before M17 has none."""
+    """Every deal (0041); a save from before M17 has none."""
     if not has_table(session, CommodityDealRow):
         return state
     deals = tuple(

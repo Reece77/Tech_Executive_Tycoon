@@ -1,3 +1,4 @@
+import { Explain } from '../components/Explain';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import {
@@ -37,6 +38,8 @@ function MarketDemand({ m }: { m: Market }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 12 }}>
         <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>
           Market size {formatMoneyShort(m.size_cents_year ?? 0)} a year
+          <Explain metric="market_size" entity={m.category} label="Market size" />
+          <Explain metric="market_customers" entity={m.category} label="Market customers" />
         </h2>
         <span className="tst-muted" style={{ fontSize: 13 }}>
           customers × typical price × 12, growing about {Math.round(m.annual_growth * 100)}% a year

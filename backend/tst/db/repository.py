@@ -434,6 +434,10 @@ def create_save(
                     current_turn=state.turn,
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
+                    # M25: a mod's name, merged-data hash and overlay copy; None without one
+                    mod_name=data.mod_name,
+                    mod_hash=data.mod_hash,
+                    mod_overlay=data.mod_overlay,
                     next_person_id=state.next_ids.person,
                     next_search_id=state.next_ids.search,
                     next_offer_id=state.next_ids.offer,
@@ -943,6 +947,9 @@ def _after_commit(
         update_index(save_path, result.new_state)
     except Exception:
         log.exception("Turn %d committed; its backup or index update failed", committed)
+    from tst.profile.check import check_quietly  # M25: achievements, outside the game
+
+    check_quietly(save_path, data)
 
 
 # --- Player actions (ADR-0014) --------------------------------------------------------------
@@ -1000,6 +1007,9 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
         )
         _tidy_inbox(session, state, result.new_state, data)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
+    from tst.profile.check import check_quietly  # M25: achievements, outside the game
+
+    check_quietly(save_path, data)
     return result
 
 

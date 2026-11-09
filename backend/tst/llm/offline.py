@@ -67,7 +67,13 @@ class MockLLMAdapter:
 
     def generate_text(self, prompt: TextPrompt) -> Completion:
         self.calls.append(prompt)
-        text = mock_coo_answer(prompt.user) if prompt.kind == "coo" else prompt.fallback
+        text = (
+            mock_coo_answer(prompt.user)
+            if prompt.kind == "coo"
+            else f"[mock] {prompt.fallback}"
+            if prompt.kind == "explain"  # M25: the template explanation, marked
+            else prompt.fallback
+        )
         return Completion(text, self._usage(prompt.system, prompt.user, text))
 
 

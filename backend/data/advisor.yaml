@@ -1,0 +1,9 @@
+# The chief of staff's Explain panel and "Ask why" (M25, spec 16, formulas.md 16.5 and 17.3).
+# UI and LLM settings, not game data: outside the sim and not hashed into saves (ADR-0008).
+explain:
+  history_months: 12 # months; the trend shown beside a number's breakdown and sent to Ask why
+  events_months: 6 # months; related events (titles and choices) sent to Ask why
+  drivers_named: 2 # count; drivers the template explanation names, largest change first
+ask:
+  max_question_chars: 300 # characters in the player's question
+  max_answer_words: 150 # words in the chief of staff's answer

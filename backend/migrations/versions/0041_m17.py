@@ -7,8 +7,8 @@ existing 1200_prepaid account.
 Existing saves: no deals; commodity and power months start from history at the next turn
 (a save past 2025 steps from December 2025's history, as M12a's goods do).
 
-Revision ID: 0040_m17
-Revises: 0039_m16
+Revision ID: 0041_m17
+Revises: 0040_m25
 """
 
 from __future__ import annotations
@@ -18,8 +18,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0040_m17"
-down_revision: str | None = "0039_m16"
+revision: str = "0041_m17"
+down_revision: str | None = "0040_m25"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -34,11 +34,11 @@ def upgrade() -> None:
         sa.Column("data", sa.JSON(), nullable=False),
     )
     op.create_index("ix_commodity_deal_company", "commodity_deal", ["company_id"])
-    op.execute("UPDATE save_meta SET schema_version = 40")
+    op.execute("UPDATE save_meta SET schema_version = 41")
 
 
 def downgrade() -> None:
-    op.execute("UPDATE save_meta SET schema_version = 39")
+    op.execute("UPDATE save_meta SET schema_version = 40")
     op.drop_index("ix_commodity_deal_company", table_name="commodity_deal")
     op.drop_table("commodity_deal")
     with op.batch_alter_table("supply_month") as batch:

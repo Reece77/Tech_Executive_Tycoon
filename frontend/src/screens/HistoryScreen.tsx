@@ -1,5 +1,5 @@
 import { LegacyPanel } from '../components/FounderPanels';
-import { Button, NativeSelect, SegmentedControl, TextInput } from '@mantine/core';
+import { Alert, Button, NativeSelect, SegmentedControl, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
@@ -609,6 +609,12 @@ function FameTab({ saveId, companyId }: { saveId: string; companyId?: number }) 
   );
   return (
     <>
+      {f.mod_name && (
+        <Alert color="yellow" title="Modded records" data-testid="fame-modded">
+          This game started with the mod “{f.mod_name}”: its records are a separate, modded list and
+          earn no achievements.
+        </Alert>
+      )}
       <LegacyPanel legacy={f.legacy} />
       <div
         style={{

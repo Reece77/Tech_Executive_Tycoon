@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
+import { Explain } from '../components/Explain';
 import { ActiveEffects } from '../components/ActiveEffects';
 import { FounderPanels } from '../components/FounderPanels';
 import { RelationshipsPanel } from '../components/Relationships';
@@ -73,7 +74,7 @@ export function PersonScreen() {
   );
 }
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
+function Stat({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div>
       <div className="tst-muted" style={{ fontSize: 12 }}>
@@ -174,7 +175,13 @@ function ProfileBody({
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28 }}>
           {emp && !p.is_founder && (
-            <Stat label="Salary">
+            <Stat
+              label={
+                <>
+                  Salary <Explain metric="salary" entity={p.person_id} label="Salary" />
+                </>
+              }
+            >
               <BreakdownTip
                 breakdown={emp.salary_breakdown}
                 title="Salary against the market"
@@ -201,6 +208,12 @@ function ProfileBody({
             <div style={{ minWidth: 160 }}>
               <div className="tst-muted" style={{ fontSize: 12 }}>
                 Morale
+                {emp && !p.is_founder && (
+                  <>
+                    <Explain metric="morale" entity={p.person_id} label="Morale" />
+                    <Explain metric="rating" entity={p.person_id} label="Rating" />
+                  </>
+                )}
               </div>
               <MoraleBar morale={p.morale} height={8} large />
             </div>

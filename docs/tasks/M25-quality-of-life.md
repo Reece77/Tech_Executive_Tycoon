@@ -62,8 +62,25 @@ Click Explain on three numbers that surprised you in your last game, and ask you
 
 ## Decisions made
 
-_(Agent fills in.)_
+1. **Branch.** Built on `claude/m25-qol-implementation-yspnvi` (the session's designated branch for `m25-qol`).
+2. **Advisor settings are not in `balance.yaml`.** `Balance` lives in `tst/sim/data_models.py`, which this lane may not edit, so the Explain and Ask why numbers (12 months of trend, 6 months of events, 2 drivers named, 300-character questions, 150-word answers) are in a new `backend/data/advisor.yaml`, validated at startup and not hashed into saves (like `glossary.yaml`); achievements' thresholds are in `achievements.yaml`.
+3. **26 metrics** cover the main screens (Overview and top bar, Products and Product, Market, People and Person, Finance, Competitors). `tst/advisor/coverage.py` maps every numeric field of those screens' response models to a metric or an exemption with its reason (stage numbers, counts of listed items, the player's own settings, statement totals whose lines explain as cost lines); `tests/unit/test_m25_coverage.py` scans them.
+4. **Drivers.** Additive breakdowns (cash, burn, MRR/ARR, payroll, revenue by segment, a cost line by memo, market customers by product) name each line's change, which sums to the number's change. Churn is split over its §11.7 factors from public scores (the appeal gap to the best product, the low-quality multiplier, and "base churn and everything else") by log shares, which also sum exactly; runway over cash and burn the same way. Numbers with no month-by-month split (morale, average morale, price, market size) name their largest current terms instead.
+5. **The chief of staff** is the Ask my COO person (17.3), else the founder's notebook: there is no Chief of staff role in `roles.yaml`, and adding one would change hiring pools and the golden snapshots. Ask why's answers are not stored (Ask my COO keeps its own); each call is logged in `llm_call_log`.
+6. **Achievements are checked after player actions too**, not only after turns: launching is an action that makes a product live at once, so its toast shows when you launch (e2e (b)). 43 achievements; condition kinds are the fields of `tst/profile/kinds.Facts` (a number at or above a threshold, a flag, or a set holding a param). "A downturn without layoffs" keeps a small per-save watch in the profile (the downturn's first month). "Your own chip in your own device" reads `production.own_chips`. Market cap is the share price times shares, never the hidden fair value.
+7. **One profile per player**, `saves/profiles/<TST_PROFILE or default>.json`; an achievement is earned once across all games, which is what makes a replayed turn award nothing twice.
+8. **Mod format.** `mod_format: 1`, a description and `files`, the changed values in each file's own shape. Lists of records match by `key`, `id`, `name`, `segment` or `region` (the first every item has, unique); other lists replace whole. A new identity appends. The merged data's hash is SHA-256 of canonical JSON of every data file after the merge; `data_hashes` stays the base files' own.
+9. **The editor withholds hidden-named fields.** The editor serves data files, not a game, but every field the API's hidden-name rule forbids (`cash_months`, `share_bp`, `noise`, `cap`, `strength`, ...) is left out of its forms and values and a change to one is refused, so no API response weakens ADR-0007's guard. `tst/mods/hidden.py` mirrors `tests/integration/test_api.py`'s rule and a test checks every name in the editable files against it. Consequence: a rival's starting cash and share, and formula keys with those names, can be changed only by hand in a mod file (the loader still validates them).
+10. **Editable files.** The brief's six (incumbents, entrants, categories, cities, scenarios, balance) first, then any data file the loader reads that is not in the not-editable list (accounts, names, skills, roles, histories, templates and so on: game structure rather than tuning). M17's and M18's new files therefore appear automatically, with a form inferred from their values until their models are added to `tst/mods/schema.MODELS`.
+11. **Hall of Fame.** It is per save; a modded save's records carry the mod's name and show a "Modded records" banner (the separate list), and the Saves list has a Mod column.
+12. **Migration `0040_m25`** adds the three nullable `save_meta` columns; `SCHEMA_VERSION` is 40. M17 and M18 merge later and re-parent their migrations onto it (decision rule 8).
 
 ## Follow-ups
 
-_(Agent fills in.)_
+- A Chief of staff role (roles.yaml, hiring, morale), answering Ask why before the COO.
+- Keep a short history of Ask why answers per save, as Ask my COO does.
+- Editor: add and remove records (a new rival or city) from the screen; today an overlay can append one only when written by hand.
+- Editor: add M17's and M18's file models to `tst/mods/schema.MODELS` once they merge, for typed forms.
+- Reece: decide whether the editor should show tuning keys whose names the hidden-value rule forbids (decision 9).
+- Achievements for the legacy score and the company score's rankings; a profile switcher in Settings.
+- Explain on the remaining v2 and v3 screens (Infrastructure, Hardware, Research, Group), which the glossary audit covers but the Explain scan does not yet.
