@@ -334,8 +334,9 @@ class WaferRun:
 
 
 def wafer_run(seed: int) -> WaferRun:
-    """Target 3: a fabless AI-accelerator company with its own 300 mm wafer plant (enough for
-    its starts) from January 2015 to December 2025, against a twin without one."""
+    """Target 3: chip_game's company with its own 300 mm wafer plant in East Asia (enough for
+    its starts) from January 2015 to December 2025, its wafers signed a year at a time,
+    against a twin without one. The saving is read once the plant's ramp is done."""
     from tst.sim.chips import chips
 
     lg = loaded()
@@ -363,7 +364,13 @@ def wafer_run(seed: int) -> WaferRun:
             delivered = sum(chips.wafers_delivered(state, c, b, d) for c in contracts)
             vol, price, market = chips.own_wafers(state, pid)
             share = vol / starts if starts else 0.0
-            saving = 1 - price / market if vol > 0 and market > 0 else float("nan")
+            ramped = (
+                state.turn - ym_to_turn(2015, 1) + 1
+                >= b.refining.recipes["wafer_plant"].ramp_months
+            )
+            saving = (
+                1 - price / market if vol > 0 and market > 0 and ramped else float("nan")
+            )  # a running plant, as target 1: not its ramp-up months
             rows.append((share, saving, delivered / starts if starts else 0.0, state.turn))
         out[own] = rows
     lo, hi = ym_to_turn(2021, 1), ym_to_turn(2022, 12)
@@ -451,3 +458,177 @@ def _byproduct_run(recipe: str, seed: int) -> PlantRun:
         units.append(ref.month.unit_cost_cents)
         markets.append(ref.month.market_cents)
     return PlantRun(recipe, "north_america", tuple(margins), tuple(units), tuple(markets))
+
+
+# --- By-products in a ban (target 4) ---------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class BanReading:
+    """One gallium export-ban shock (after 2025): the chip mix's cost against the 12 months
+    before it, for the group with a gallium recovery line and for a spot buyer; and the same
+    for the mix's gallium line alone."""
+
+    seed: int
+    start: int
+    group_rise: float  # the mix's largest rise during the ban
+    spot_rise: float
+    group_gallium_rise: float
+    spot_gallium_rise: float
+
+
+def _mix_cost(state: GameState, own: bool) -> tuple[float, float]:
+    """(the chip mix's index, its gallium line's index) this month: the wafer mix's commodities
+    at spot (33.2), with the share of gallium the group's line supplied at its cost."""
+    from tst.sim.commodities import commodity
+
+    lg = loaded()
+    b, d = lg.balance, lg.game_data
+    mix = b.commodity.mixes[b.chips.good]
+    total = gallium = 0.0
+    for g, w in mix.weights.items():
+        idx = commodity.index_now(state, g, d)
+        if own and g == "gallium":
+            lots = [s for s in state.own_supply if s.good == g and s.turn == state.turn]
+            use = sum(s.volume for s in lots)
+            if use > 0:
+                own_cents = sum(s.volume * s.unit_cents for s in lots) / use
+                mean = commodity.mean_of(d, g) * d.commodities.good(g).usd_per_unit * 100  # type: ignore[union-attr]
+                idx = own_cents / mean
+        total += w * idx
+        if g == "gallium":
+            gallium = idx
+    return total, gallium
+
+
+def ban_run(seed: int) -> list[BanReading]:
+    """Target 4: the device maker with its own SoC (chip_game), from December 2025 to December
+    2039, with a gallium recovery line on a silicon smelter in East Asia, against the same
+    company buying spot (the same seed's prices: the mix differs only in the line)."""
+    from tst.sim.commodities import commodity
+
+    lg = loaded()
+    game, _ = chip_game(seed, (2025, 12), months=200)
+    host = build(game, "silicon_smelter", "east_asia", 10_000)
+    build(game, "byproduct_gallium", "east_asia", 25, host_id=host)
+    rows: list[tuple[int, bool, float, float, float, float]] = []
+    while game.state.turn <= ym_to_turn(2039, 12):
+        play(game)
+        state = replace(game.state, turn=game.state.turn - 1)
+        month = commodity.current(state, "gallium", lg.game_data)
+        banned = month.in_shock(state.turn) and month.shock_kind == "export_ban"
+        g_mix, g_ga = _mix_cost(state, own=True)
+        s_mix, s_ga = _mix_cost(state, own=False)
+        rows.append((state.turn, banned, g_mix, s_mix, g_ga, s_ga))
+    out: list[BanReading] = []
+    for i, (turn, banned, *_rest) in enumerate(rows):
+        if not banned or (i > 0 and rows[i - 1][1]):
+            continue
+        before = rows[max(0, i - 12) : i]
+        during = []
+        j = i
+        while j < len(rows) and rows[j][1]:
+            during.append(rows[j])
+            j += 1
+        if len(before) < 6:
+            continue
+
+        def rise(k: int, before=before, during=during) -> float:
+            normal = st.mean(r[k] for r in before)
+            return max(r[k] for r in during) / normal - 1
+
+        out.append(BanReading(seed, turn, rise(2), rise(3), rise(4), rise(5)))
+    return out
+
+
+# --- The report (tools/m20_targets.py) -------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Results:
+    seeds: tuple[int, ...]
+    margins: dict[str, PlantRun]
+    power: PowerRun
+    wafers: list[WaferRun]
+    bans: list[BanReading]
+    ban_seeds: int  # seeds with at least one gallium export ban in 2026-2039
+
+
+def _wafer_seed(seed: int) -> WaferRun:
+    return wafer_run(seed)
+
+
+def _ban_seed(seed: int) -> list[BanReading]:
+    return ban_run(seed)
+
+
+def run(seeds: tuple[int, ...], jobs: int = 1) -> Results:
+    from concurrent.futures import ProcessPoolExecutor
+
+    with ProcessPoolExecutor(max_workers=max(1, jobs)) as pool:
+        wafer_jobs = [pool.submit(_wafer_seed, s) for s in seeds[:3]]
+        ban_jobs = [pool.submit(_ban_seed, s) for s in seeds]
+        margin_job = pool.submit(margin_runs, seeds[0])
+        power_job = pool.submit(power_run, seeds[0])
+        bans_by_seed = [j.result() for j in ban_jobs]
+        return Results(
+            seeds=seeds,
+            margins=margin_job.result(),
+            power=power_job.result(),
+            wafers=[j.result() for j in wafer_jobs],
+            bans=[b for bs in bans_by_seed for b in bs],
+            ban_seeds=sum(1 for bs in bans_by_seed if bs),
+        )
+
+
+def _mark(ok: bool) -> str:
+    return "met" if ok else "MISSED"
+
+
+def report(r: Results) -> str:
+    out = ["formulas.md 36.5 targets (M20)", ""]
+    ok1 = all(0.02 <= p.median_margin <= 0.15 for p in r.margins.values())
+    out.append(
+        "1. Thin margins: each kind's median operating margin, 2015-2025 at market prices "
+        f"(North America, input at spot, after the ramp): 2-15%  {_mark(ok1)}"
+    )
+    for key, p in r.margins.items():
+        out.append(
+            f"   {key}: median {p.median_margin:+.1%}, range {min(p.margins):+.1%} to "
+            f"{max(p.margins):+.1%} ({len(p.margins)} months)"
+        )
+    ok2 = 0.20 <= r.power.saving <= 0.40
+    out.append(
+        f"2. Power decides smelters: a silicon smelter in {r.power.cheapest} costs "
+        f"{r.power.saving:.1%} less a tonne than one in Europe (mean 2015-2025): 20-40%  "
+        f"{_mark(ok2)}"
+    )
+    savings = [w.mean_saving for w in r.wafers]
+    held = [min(w.shortage_delivered) for w in r.wafers]
+    spot = [min(w.spot_shortage_delivered) for w in r.wafers]
+    ok3 = all(0.10 <= s <= 0.25 for s in savings) and all(h >= 1 - 1e-9 for h in held)
+    out.append(
+        "3. Control pays for chipmakers: own 300 mm wafers' price (cost inside the company) "
+        f"against the market's, mean 2015-2025: {', '.join(f'{s:.1%}' for s in savings)} below "
+        f"(10-25%); allocation in the 2021-2022 shortage {', '.join(f'{h:.0%}' for h in held)} "
+        f"(a spot twin {', '.join(f'{x:.0%}' for x in spot)})  {_mark(ok3)}"
+    )
+    ga_ok = r.bans and all(
+        b.group_gallium_rise <= 0.10 and b.spot_gallium_rise >= 0.30 for b in r.bans
+    )
+    out.append(
+        f"4. By-products matter in bans: {len(r.bans)} gallium export bans in 2026-2039 on "
+        f"{r.ban_seeds} of {len(r.seeds)} seeds; the chip mix's gallium cost (M20 decision, for "
+        f"review): group within 10%, spot at least +30%  {_mark(bool(ga_ok))}"
+    )
+    for b in r.bans:
+        out.append(
+            f"   seed {b.seed}, from turn {b.start}: gallium group {b.group_gallium_rise:+.1%}, "
+            f"spot {b.spot_gallium_rise:+.1%}; the whole chip mix group {b.group_rise:+.1%}, "
+            f"spot {b.spot_rise:+.1%}"
+        )
+    out.append(
+        "5. Nothing else moves: golden snapshots (10 seeds x 24 months) unchanged; "
+        "tests/unit/test_m20_plants.py::test_a_fabless_company_without_a_wafer_plant_pays_what_it_did"
+    )
+    return "\n".join(out)

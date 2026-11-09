@@ -2935,3 +2935,31 @@ Semiconductor polysilicon and wafers need a **process** research level (a new R&
 4. **By-products matter in bans:** in a gallium export-ban shock, a group with a gallium recovery line keeps its chip mix cost within 10% of normal while a spot buyer's rises by at least 30%.
 5. **Nothing else moves:** a company that never refines plays exactly as before.
 
+
+### 36.6 Worked examples (M20)
+
+A unit's cost at full output (formulas.py): input price × input a unit + MWh × `refining.power_cents_per_mwh` ($68) × the region's power index + other + fixed a capacity unit a year over a year's output + depreciation (capex over the kind's life) over a year's output. Equipment index 1.0, no overrun, staff left out (`tests/unit/test_m20_formulas.py`).
+
+| Recipe | Input at | Unit cost at power 1.0 | At 1.5 |
+| --- | --- | --- | --- |
+| Silicon smelter (a tonne) | quartz $40/t × 2.5 = $100 | $100 + $816 power + $1,386 other + $120 fixed + $150 depreciation = **$2,572** | **$2,980** |
+| Semiconductor polysilicon (a kg) | silicon metal $2,800/t × 0.00125 t = $3.50 | **$52.90** | **$56.30** |
+| Solar polysilicon (a kg) | silicon metal $2,800/t × 0.00111 t = $3.11 | **$9.54** | **$11.58** |
+| 300 mm wafer | semiconductor polysilicon $65/kg × 0.5 kg = $32.50 | **$66.42** | **$66.93** |
+| Lithium converter (a tonne) | concentrate $7,000/t × 1.176 = $8,235 | **$11,336** | **$11,438** |
+| Cobalt refinery (a tonne) | hydroxide $28,000/t × 1.111 = $31,111 | **$33,977** | **$34,113** |
+| Rare-earth separator (a kg NdPr) | concentrate $6,000/t × 0.005 t = $30 | **$46.18** | **$46.52** |
+| Gallium line (a kg) | its host's stream | **$499.73** | **$501.43** |
+| Germanium line (a kg) | its host's stream | **$1,174.73** | **$1,176.43** |
+
+### 36.7 Implementation notes (M20)
+
+- **Plants** are facilities of eight kinds on M12a's lifecycle (`facility.kinds`, capex at the equipment index, depreciation), with their own state in `Refinery` (`tst/sim/refining`). A recipe (`refining.recipes`) names the input good and how much a unit of output takes at the stated yield, power per unit, other cost a unit and fixed cost a capacity unit a year (4% of capex). Capacity is a year's output (tonnes; wafers for the wafer plant); a month makes `capacity / 12 × ramp × reliability × curb`, reliability as a data centre's (22.2: no staff, no output), ramped linearly over the recipe's `ramp_months` from completion. A by-product line needs one of the company's plants in the region as its host and takes no bought input.
+- **Overrun** (M19's rule, 35.2): the quote is the estimate; the true capex is the estimate × (1 + u), u uniform in `refining.overrun` (0-25%, vendor quotes being firmer than a mining study), drawn once on stream `refining` key `(0, facility id)`. The API shows the estimate and what has been paid, never the true capex; the overrun shows as it is paid.
+- **Goods.** M17's commodities at their monthly price; concentrates (`refining.goods`) at `concentrate_share` × the refined price (per unit of contained product: lithium concentrate in tonnes of carbonate equivalent, cobalt hydroxide in tonnes of cobalt, rare-earth concentrate in tonnes of oxide at 0.12 × 1,000 kg × the NdPr price a kg) with the refined good's allocation; solar polysilicon at the semiconductor price / `commodity.semi_poly_multiple`; a 300 mm wafer at $110 × (0.45 + 0.55 × the polysilicon index) with foundry wafers' allocation.
+- **The month** (phase 4, after the facilities' month and exploration; plants in `refining.order`, upstream first). Input from the group's plants' output made earlier this month at the transfer price (the plant's full unit cost inside one company; M16's `materials` flow between companies, cost by default), then the company's buy contracts (100% allocation if signed before the shortage, else the good's; take-or-pay 30% of what a contract could deliver but did not), then spot at the good's allocation. Costs post to 5000: bought input, power at the region's index, other and fixed. Output goes to the group's later plants, then to its products (a wafer plant's wafers to the group's chip products' wafer starts in product order; commodities to the group's companies' use last month), then the seller's sell contracts, then spot (`4400_materials_sales`).
+- **Own supply in products** (phase 5, after M17's deals). A wafer lot lowers the chip's wafer price by the share of starts it covers × (market wafer − transfer price), and those starts get 100% allocation (36.2); a commodity lot counts as protected volume in the buyer's allocation (33.1). After production a lot is taken up to what the buyer used (commodities after M17's deals took theirs); the buyer's market-price purchase is reversed (and, between companies, the transfer price moves 5900 → 4300); the rest sells at spot.
+- **Process** (36.3): the domain `process` (start 25, +1 a year: 40 in 2025 without research); semiconductor polysilicon and wafers below level 40 run at half yield (twice the input a unit, half the output).
+- **Curbs** (36.4): history first (`refining.curb.history`: East Asia, September-October 2021, at 60%); from 2026 each live curbed-kind plant starts one with its region's monthly chance (three uniforms, key `(2, facility id)`), at 50-70% for 1-3 months.
+- **Incidents** (36.4): rare-earth and polysilicon plants (`incident_rate` a year: 3%, 2%, 1.5%) × `(1.6 − 0.04 × staff skill) × (1.3 − coverage)`, at most one a company a month (key `(1, facility id)`): a critical event (`data/events/refining.yaml`, effect `refining_step`). Brand (3 points on every product) and credibility (4) fall at once; stop and investigate (two months at zero, half the $2M fine), compensate ($5M and the fine; Beloved +3) or contest (the fine, Ruthless +5, 40% chance of $8M legal costs, key `(3, facility id)`).
+- **Measuring target 4** (M20 decision, for review): the chip mix's **gallium line** (what the mix pays for gallium) for the group with a gallium recovery line against a spot buyer, at the largest point of each seeded gallium export ban in 2026-2039 against the 12 months before it; the whole chip mix is printed beside it. The whole mix cannot rise 30% for a spot buyer when gallium weighs 0.15 in it (33.2) and an export ban raises gallium 50-150% (33.1), and it moves with polysilicon, neon and germanium, which a gallium line does not touch.

@@ -279,7 +279,7 @@ function PlantPanel({
             .slice(-6)
             .map(
               (h) =>
-                `${h.label} ${formatMoneyWhole(h.unit_cost_cents)}/${formatMoneyWhole(h.market_cents)}`,
+                `${h.label} ${formatMoneyWhole(Math.round(h.unit_cost_cents))}/${formatMoneyWhole(Math.round(h.market_cents))}`,
             )
             .join(' · ')}
         </p>

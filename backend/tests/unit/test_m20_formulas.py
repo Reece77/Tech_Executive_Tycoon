@@ -12,15 +12,15 @@ from tst.sim.refining import formulas as rf
 # recipe -> (input price, cents a unit), {power index: unit cost in cents} at full output, with
 # fixed cost and depreciation spread over a year's output (formulas.md 36.6)
 WORKED = {
-    "silicon_smelter": (4_000, {1.0: 262_100.0, 1.5: 302_900.0}),
-    "poly_plant_semi": (280_000, {1.0: 5_940.0, 1.5: 6_280.0}),
-    "poly_plant": (280_000, {1.0: 1_174.1111, 1.5: 1_378.1111}),
-    "wafer_plant": (6_500, {1.0: 7_098.6667, 1.5: 7_149.6667}),
-    "li_converter": (700_000, {1.0: 1_073_029.42, 1.5: 1_083_229.42}),
-    "co_refinery": (2_800_000, {1.0: 3_424_111.08, 1.5: 3_437_711.08}),
-    "ree_separator": (600_000, {1.0: 4_558.0, 1.5: 4_592.0}),
-    "byproduct_gallium": (0, {1.0: 50_673.3333, 1.5: 50_843.3333}),
-    "byproduct_germanium": (0, {1.0: 118_273.3333, 1.5: 118_443.3333}),
+    "silicon_smelter": (4_000, {1.0: 257_200.0, 1.5: 298_000.0}),
+    "poly_plant_semi": (280_000, {1.0: 5_290.0, 1.5: 5_630.0}),
+    "poly_plant": (280_000, {1.0: 954.1111, 1.5: 1_158.1111}),
+    "wafer_plant": (6_500, {1.0: 6_642.0, 1.5: 6_693.0}),
+    "li_converter": (700_000, {1.0: 1_133_629.42, 1.5: 1_143_829.42}),
+    "co_refinery": (2_800_000, {1.0: 3_397_711.08, 1.5: 3_411_311.08}),
+    "ree_separator": (600_000, {1.0: 4_618.0, 1.5: 4_652.0}),
+    "byproduct_gallium": (0, {1.0: 49_973.3333, 1.5: 50_143.3333}),
+    "byproduct_germanium": (0, {1.0: 117_473.3333, 1.5: 117_643.3333}),
 }
 
 
