@@ -4995,8 +4995,11 @@ export interface components {
             recipe: string;
             /** Region */
             region: string;
-            /** Capacity */
-            capacity: number;
+            /**
+             * Size
+             * @description One of the kind's sizes
+             */
+            size: number;
             /** Host Id */
             host_id?: number | null;
             /** City */
@@ -12459,8 +12462,8 @@ export interface components {
             turn: number;
             /** Label */
             label: string;
-            /** Output */
-            output: number;
+            /** Made */
+            made: number;
             /** Unit Cost Cents */
             unit_cost_cents: number;
             /** Market Cents */
@@ -12470,13 +12473,16 @@ export interface components {
         RefineryMonthOut: {
             /** Turn */
             turn: number;
-            /** Output */
-            output: number;
             /**
-             * Capacity
+             * Made
+             * @description Output this month, in the output good's units
+             */
+            made: number;
+            /**
+             * Possible
              * @description What it could make this month with all its input
              */
-            capacity: number;
+            possible: number;
             /** Yield */
             yield: number;
             /** Input Group */
@@ -12549,8 +12555,11 @@ export interface components {
              * @description building | live | closed
              */
             status: string;
-            /** Capacity */
-            capacity: number;
+            /**
+             * Size
+             * @description Capacity built, in `unit`
+             */
+            size: number;
             /** Unit */
             unit: string;
             /**
@@ -12616,8 +12625,8 @@ export interface components {
             recipe: string;
             /** Region */
             region: string;
-            /** Capacity */
-            capacity: number;
+            /** Size */
+            size: number;
             /**
              * Capex Cents
              * @description The estimate; the true cost may run over
@@ -27662,7 +27671,7 @@ export interface operations {
             query: {
                 recipe: string;
                 region: string;
-                capacity: number;
+                size: number;
             };
             header?: never;
             path: {

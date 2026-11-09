@@ -112,12 +112,12 @@ function PlantsTable({ plants, onSelect }: { plants: Plant[]; onSelect: (id: num
         }),
         plantHelper.accessor('recipe_label', { header: 'Recipe' }),
         plantHelper.accessor('status', { header: 'Status' }),
-        plantHelper.accessor((p) => p.month?.output ?? 0, {
+        plantHelper.accessor((p) => p.month?.made ?? 0, {
           id: 'output',
           header: 'Output',
           cell: ({ row }) =>
             row.original.month
-              ? `${qty(row.original.month.output)} ${row.original.output_unit}`
+              ? `${qty(row.original.month.made)} ${row.original.output_unit}`
               : '—',
         }),
         plantHelper.accessor((p) => p.month?.unit_cost_cents ?? 0, {
@@ -223,7 +223,7 @@ function PlantPanel({
         />
         <Fact
           label="Capacity"
-          value={`${p.capacity.toLocaleString()} ${p.unit}; staff ${p.staff} of ${p.staff_needed} (${pct(p.coverage)})`}
+          value={`${p.size.toLocaleString()} ${p.unit}; staff ${p.staff} of ${p.staff_needed} (${pct(p.coverage)})`}
         />
         <Fact
           label="Yield"
@@ -246,7 +246,7 @@ function PlantPanel({
           <>
             <Fact
               label="Latest month"
-              value={`${qty(m.output)} ${p.output_unit} of ${qty(m.capacity)} possible`}
+              value={`${qty(m.made)} ${p.output_unit} of ${qty(m.possible)} possible`}
               testId="plant-output"
             />
             <Fact

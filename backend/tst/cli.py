@@ -3459,7 +3459,7 @@ def refineries_cmd(save: SaveOpt) -> None:
     if not out.plants:
         typer.echo("No refineries.")
     for p in out.plants:
-        line = f"{p.id} {p.name} [{p.status}] {p.capacity:,} {p.unit}"
+        line = f"{p.id} {p.name} [{p.status}] {p.size:,} {p.unit}"
         line += f", staff {p.staff}/{p.staff_needed}"
         if p.status == "building":
             line += f", ready {p.ready_label}, paid {format_money(p.capex_paid_cents)}"
@@ -3469,7 +3469,7 @@ def refineries_cmd(save: SaveOpt) -> None:
         if m is not None:
             margin = f"{m.margin:+.1%}" if m.margin is not None else "-"
             typer.echo(
-                f"  {format_turn(m.turn)}: {m.output:,.1f} {p.output_unit} (yield {m.yield_:.2f}),"
+                f"  {format_turn(m.turn)}: {m.made:,.1f} {p.output_unit} (yield {m.yield_:.2f}),"
                 f" unit {format_money(round(m.unit_cost_cents))} vs market"
                 f" {format_money(round(m.market_cents))}, margin {margin}; power"
                 f" {format_money(m.power_cents)} at x{m.power_index:.2f}"

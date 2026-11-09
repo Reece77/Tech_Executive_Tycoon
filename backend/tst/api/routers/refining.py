@@ -61,11 +61,11 @@ def get_refineries(save_id: str, settings: SettingsDep, data: DataDep) -> Refine
     operation_id="quoteRefinery",
 )
 def quote_refinery(
-    save_id: str, recipe: str, region: str, capacity: int, settings: SettingsDep, data: DataDep
+    save_id: str, recipe: str, region: str, size: int, settings: SettingsDep, data: DataDep
 ) -> RefineryQuoteOut:
     """What a plant would cost to build and to run at full output now (36.1)."""
     state = _state(_path(settings, save_id))
-    return refining_views.quote_out(state, recipe, region, capacity, data)
+    return refining_views.quote_out(state, recipe, region, size, data)
 
 
 @router.post(
@@ -80,7 +80,7 @@ def build_refinery(
     path = _path(settings, save_id)
     actor = _founder_id(_state(path))
     action = BuildRefinery(
-        actor, body.recipe, body.region, body.capacity, body.host_id, body.city, body.company_id
+        actor, body.recipe, body.region, body.size, body.host_id, body.city, body.company_id
     )
     return _act(path, data, action)
 

@@ -41,6 +41,8 @@ def _month(pm: PlantMonth | None) -> RefineryMonthOut | None:
         return None
     values = asdict(pm)
     values["yield"] = values.pop("yield_")
+    values["made"] = values.pop("output")
+    values["possible"] = values.pop("capacity")
     return RefineryMonthOut(**values, margin=pm.margin)
 
 
@@ -64,7 +66,7 @@ def plant_out(
         region=facility.region,
         region_label=d.region(facility.region).label,
         status=facility.status,
-        capacity=facility.capacity,
+        size=facility.capacity,
         unit=kind.unit,
         output_unit=rg.volume_unit(r.output_good, b, d),
         input_good=r.input_good,
@@ -93,7 +95,7 @@ def plant_out(
         month=_month(ref.month),
         history=[
             RefineryHistoryOut(
-                turn=t, label=format_turn(t), output=o, unit_cost_cents=u, market_cents=m
+                turn=t, label=format_turn(t), made=o, unit_cost_cents=u, market_cents=m
             )
             for t, o, u, m in ref.history
         ],
@@ -312,7 +314,7 @@ def quote_out(
     return RefineryQuoteOut(
         recipe=recipe,
         region=region,
-        capacity=capacity,
+        size=capacity,
         capex_cents=q.capex_cents,
         monthly_capex_cents=q.monthly_capex_cents,
         build_months=q.build_months,

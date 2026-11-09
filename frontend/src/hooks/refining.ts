@@ -36,7 +36,7 @@ export function useRefineryQuote(
         await api.GET('/api/saves/{save_id}/refineries/quote', {
           params: {
             path: { save_id: saveId },
-            query: { recipe, region, capacity: capacity ?? 0 },
+            query: { recipe, region, size: capacity ?? 0 },
           },
         }),
       ),
@@ -58,7 +58,7 @@ async function apply(saveId: string, a: RefiningAction) {
           body: {
             recipe: a.recipe,
             region: a.region,
-            capacity: a.capacity,
+            size: a.capacity,
             host_id: a.hostId ?? null,
           },
         }),

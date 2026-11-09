@@ -12,8 +12,8 @@ from tst.api.schemas.people import EnergyOut
 
 class RefineryMonthOut(BaseModel):
     turn: int
-    output: float
-    capacity: float = Field(description="What it could make this month with all its input")
+    made: float = Field(description="Output this month, in the output good's units")
+    possible: float = Field(description="What it could make this month with all its input")
     yield_: float = Field(alias="yield")
     input_group: float
     input_contract: float
@@ -40,7 +40,7 @@ class RefineryMonthOut(BaseModel):
 class RefineryHistoryOut(BaseModel):
     turn: int
     label: str
-    output: float
+    made: float
     unit_cost_cents: float
     market_cents: float
 
@@ -57,7 +57,7 @@ class RefineryPlantOut(BaseModel):
     region: str
     region_label: str
     status: str = Field(description="building | live | closed")
-    capacity: int
+    size: int = Field(description="Capacity built, in `unit`")
     unit: str
     output_unit: str = Field(description="The output good's volume unit")
     input_good: str | None
@@ -183,7 +183,7 @@ class RefineriesOut(BaseModel):
 class RefineryQuoteOut(BaseModel):
     recipe: str
     region: str
-    capacity: int
+    size: int
     capex_cents: int = Field(description="The estimate; the true cost may run over")
     monthly_capex_cents: int
     build_months: int
@@ -205,7 +205,7 @@ class RefineryQuoteOut(BaseModel):
 class BuildRefineryIn(BaseModel):
     recipe: str
     region: str
-    capacity: int
+    size: int = Field(description="One of the kind's sizes")
     host_id: int | None = None
     city: str | None = None
     company_id: int | None = None

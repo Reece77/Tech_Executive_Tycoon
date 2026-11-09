@@ -17524,12 +17524,12 @@
             }
           },
           {
-            "name": "capacity",
+            "name": "size",
             "in": "query",
             "required": true,
             "schema": {
               "type": "integer",
-              "title": "Capacity"
+              "title": "Size"
             }
           }
         ],
@@ -20465,9 +20465,10 @@
             "type": "string",
             "title": "Region"
           },
-          "capacity": {
+          "size": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Size",
+            "description": "One of the kind's sizes"
           },
           "host_id": {
             "anyOf": [
@@ -20507,7 +20508,7 @@
         "required": [
           "recipe",
           "region",
-          "capacity"
+          "size"
         ],
         "title": "BuildRefineryIn"
       },
@@ -38022,9 +38023,9 @@
             "type": "string",
             "title": "Label"
           },
-          "output": {
+          "made": {
             "type": "number",
-            "title": "Output"
+            "title": "Made"
           },
           "unit_cost_cents": {
             "type": "number",
@@ -38039,7 +38040,7 @@
         "required": [
           "turn",
           "label",
-          "output",
+          "made",
           "unit_cost_cents",
           "market_cents"
         ],
@@ -38051,13 +38052,14 @@
             "type": "integer",
             "title": "Turn"
           },
-          "output": {
+          "made": {
             "type": "number",
-            "title": "Output"
+            "title": "Made",
+            "description": "Output this month, in the output good's units"
           },
-          "capacity": {
+          "possible": {
             "type": "number",
-            "title": "Capacity",
+            "title": "Possible",
             "description": "What it could make this month with all its input"
           },
           "yield": {
@@ -38149,8 +38151,8 @@
         "type": "object",
         "required": [
           "turn",
-          "output",
-          "capacity",
+          "made",
+          "possible",
           "yield",
           "input_group",
           "input_contract",
@@ -38220,9 +38222,10 @@
             "title": "Status",
             "description": "building | live | closed"
           },
-          "capacity": {
+          "size": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Size",
+            "description": "Capacity built, in `unit`"
           },
           "unit": {
             "type": "string",
@@ -38399,7 +38402,7 @@
           "region",
           "region_label",
           "status",
-          "capacity",
+          "size",
           "unit",
           "output_unit",
           "input_good",
@@ -38438,9 +38441,9 @@
             "type": "string",
             "title": "Region"
           },
-          "capacity": {
+          "size": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Size"
           },
           "capex_cents": {
             "type": "integer",
@@ -38505,7 +38508,7 @@
         "required": [
           "recipe",
           "region",
-          "capacity",
+          "size",
           "capex_cents",
           "monthly_capex_cents",
           "build_months",
