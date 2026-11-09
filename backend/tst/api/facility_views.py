@@ -25,6 +25,7 @@ from tst.api.schemas.facilities import (
 )
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
+from tst.sim.commodities import power
 from tst.sim.facilities import compute, goods, lifecycle
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities.models import Facility, GoodMonth
@@ -126,7 +127,8 @@ def spot_out(state: GameState, data: LoadedData) -> list[SpotOut]:
     return out
 
 
-def _monthly_cost(facility: Facility, turn: int, data: LoadedData) -> int:
+def _monthly_cost(state: GameState, facility: Facility, data: LoadedData) -> int:
+    turn = state.turn
     kind = data.balance.facility.kinds[facility.kind]
     dep = ff.cumulative_depreciation_cents(
         facility.capex_cents,
@@ -145,7 +147,7 @@ def _monthly_cost(facility: Facility, turn: int, data: LoadedData) -> int:
         kind.life_months,
         turn - 1,
     )
-    return dep + lifecycle.operating_cents(facility, turn, data.balance)
+    return dep + power.operating_cents(state, facility, data.balance, data.game_data)
 
 
 def facility_out(
@@ -157,7 +159,7 @@ def facility_out(
     live = facility.live_capacity(turn)
     own, sold = alloc.own.get(facility.id, 0.0), alloc.sold.get(facility.id, 0.0)
     staffing = lifecycle.staffing(state, facility, b)
-    cost = _monthly_cost(facility, turn, data)
+    cost = _monthly_cost(state, facility, data)
     used = own + sold
     building = turn < facility.ready_turn
     unit = state.unit(facility.unit_id) if facility.unit_id is not None else None
@@ -189,6 +191,13 @@ def facility_out(
         unit_id=facility.unit_id,
         unit_name=unit.name if unit else None,
         monthly_cost_cents=cost,
+        power_index=power.kind_index(state, facility.kind, facility.region, b, d),
+        power_cents=round(
+            power.opex_cents(
+                kind.opex_per_unit_cents,
+                power.kind_index(state, facility.kind, facility.region, b, d),
+            )
+        ),
         cost_per_used_cents=round(cost / used) if used > 0 and not building else None,
         spot_cents=round(compute.spot_unit_cents(state, kind.output_good, b, d)),
         book_value_cents=facility.book_value_cents,
@@ -381,8 +390,12 @@ def build_preview(
     b, d = data.balance, data.game_data
     q = lifecycle.quote(state, company, kind, region, capacity, b, d, contract_id)
     k = b.facility.kinds[kind]
-    full = ff.monthly_cost_cents(capacity, q.capex_cents, k.life_months, k.opex_per_unit_cents)
+    power_index = power.kind_index(state, kind, region, b, d)  # M17 (33.5)
+    opex = round(power.opex_cents(k.opex_per_unit_cents, power_index))
+    full = ff.monthly_cost_cents(capacity, q.capex_cents, k.life_months, opex)
     return BuildPreviewOut(
+        power_index=power_index,
+        power_cents=opex,
         kind=kind,
         region=region,
         units=capacity,

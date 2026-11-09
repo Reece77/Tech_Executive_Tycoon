@@ -17,6 +17,12 @@ from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
 from tst.mods.overlay import canonical_hash, merge
 from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
+from tst.sim.commodities.config import (
+    CommoditiesFile,
+    CommoditiesHistoryFile,
+    PowerHistoryFile,
+    SuppliersFile,
+)
 from tst.sim.data_models import (
     INSTRUMENTS,
     MENTOR_TAG,
@@ -75,6 +81,10 @@ TECH_FILE = "tech_frontier.yaml"  # M11 (formulas.md 21.1-21.3)
 ERAS_FILE = "eras.yaml"  # M11 (formulas.md 21.4)
 BANKS_FILE = "banks.yaml"  # M13 (formulas.md 25.2)
 VOICES_FILE = "exec_voices.yaml"  # M13b (formulas.md 27.2)
+COMMODITIES_FILE = "commodities.yaml"  # M17 (formulas.md 33.1)
+COMMODITY_HISTORY_FILE = "commodities_history.yaml"  # M17 (formulas.md 33.1)
+POWER_HISTORY_FILE = "power_history.yaml"  # M17 (formulas.md 33.5)
+SUPPLIERS_FILE = "suppliers.yaml"  # M17 (formulas.md 33.4)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -83,6 +93,8 @@ DATA_FILES = (
     BALANCE_FILE,
     CATEGORIES_FILE,
     CITIES_FILE,
+    COMMODITIES_FILE,
+    COMMODITY_HISTORY_FILE,
     COMPONENTS_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
@@ -95,10 +107,12 @@ DATA_FILES = (
     MACRO_HISTORY_FILE,
     NAMES_FILE,
     PERSONALITY_FILE,
+    POWER_HISTORY_FILE,
     REGIONS_FILE,
     ROLES_FILE,
     SCENARIOS_FILE,
     SKILLS_FILE,
+    SUPPLIERS_FILE,
     TAGS_FILE,
     TECH_FILE,
 )
@@ -315,6 +329,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
         if kind.staff_skill not in data.skill_keys:
             raise DataLoadError(f"{where}: staff_skill {kind.staff_skill!r} is not a skill")
     _check_hardware(balance, data, goods)
+    _check_commodities(balance, data)
     key = balance.compute.capacity_category
     capacity = [c.key for c in data.categories if c.capacity_market]
     if capacity != [key]:
@@ -322,6 +337,50 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             f"{CATEGORIES_FILE}: the one capacity_market category must be compute.capacity_category"
             f" {key!r}, found {capacity}"
         )
+
+
+def _check_commodities(balance: Balance, data: GameData) -> None:
+    """M17 (formulas.md 33): the commodity files agree on the goods, in the same order; the
+    mixes, volatilities and suppliers name known goods; power covers every region, in
+    regions.yaml order; power is paid by known facility kinds."""
+    if data.commodities is None or data.commodity_history is None:
+        return
+    keys = [g.key for g in data.commodities.goods]
+    if [g.key for g in data.commodity_history.goods] != keys:
+        raise DataLoadError(
+            f"{COMMODITY_HISTORY_FILE}: goods must be {COMMODITIES_FILE}'s, in the same order"
+        )
+    cb = balance.commodity
+    if sorted(cb.vol) != sorted(keys):
+        raise DataLoadError(f"{BALANCE_FILE}: commodity.vol must cover exactly {keys}")
+    components = {g.key for g in data.components.goods} if data.components else set()
+    for good, mix in cb.mixes.items():
+        if good not in components:
+            raise DataLoadError(
+                f"{BALANCE_FILE}: commodity.mixes.{good} is not in {COMPONENTS_FILE}"
+            )
+        if bad := sorted(set(mix.weights) - set(keys)):
+            raise DataLoadError(f"{BALANCE_FILE}: commodity.mixes.{good} names {bad}")
+    if data.power_history is not None:
+        if [r.key for r in data.power_history.regions] != list(data.region_keys):
+            raise DataLoadError(
+                f"{POWER_HISTORY_FILE}: regions must be {REGIONS_FILE}'s, in the same order"
+            )
+        base = data.power_history.region(balance.power.base_region)
+        if any(v != 1.0 for v, _ in base.years.values()):
+            raise DataLoadError(f"{POWER_HISTORY_FILE}: the base region must be 1.0 every year")
+    if bad := sorted(set(balance.power.paid_by) - set(balance.facility.kinds)):
+        raise DataLoadError(f"{BALANCE_FILE}: power.paid_by names unknown kinds {bad}")
+    if data.suppliers is not None:
+        regions = set(data.region_keys)
+        for s in data.suppliers.suppliers:
+            if s.region not in regions:
+                raise DataLoadError(f"{SUPPLIERS_FILE}: {s.key!r} region {s.region!r}")
+            if bad := sorted(set(s.goods) - set(keys)):
+                raise DataLoadError(f"{SUPPLIERS_FILE}: {s.key!r} sells unknown goods {bad}")
+        for good in keys:
+            if not any(good in s.goods for s in data.suppliers.suppliers):
+                raise DataLoadError(f"{SUPPLIERS_FILE}: no supplier sells {good!r}")
 
 
 def _check_hardware(balance: Balance, data: GameData, goods: set[str]) -> None:
@@ -479,6 +538,12 @@ def load_all(
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
     banks = _validate(BanksFile, parsed[BANKS_FILE], BANKS_FILE)
     voices = _validate(VoicesFile, parsed[VOICES_FILE], VOICES_FILE)
+    commodities = _validate(CommoditiesFile, parsed[COMMODITIES_FILE], COMMODITIES_FILE)
+    commodity_history = _validate(
+        CommoditiesHistoryFile, parsed[COMMODITY_HISTORY_FILE], COMMODITY_HISTORY_FILE
+    )
+    power_history = _validate(PowerHistoryFile, parsed[POWER_HISTORY_FILE], POWER_HISTORY_FILE)
+    suppliers = _validate(SuppliersFile, parsed[SUPPLIERS_FILE], SUPPLIERS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -517,6 +582,10 @@ def load_all(
             "eras": eras,
             "banks": banks.banks,
             "voices": voices.voices,
+            "commodities": commodities,
+            "commodity_history": commodity_history,
+            "power_history": power_history,
+            "suppliers": suppliers,
         },
         "seed data cross-check",
     )

@@ -3594,6 +3594,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/commodities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Commodities
+         * @description The Commodities tab: twelve commodities' prices to this month, power by region, the
+         *     company's contracts and offtakes, and the suppliers (33).
+         */
+        get: operations["getCommodities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/commodities/offtakes/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Quote Offtake
+         * @description An offtake's collar, year-1 value and prepayment at this month's spot (33.3).
+         */
+        post: operations["quoteOfftake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/commodities/offtakes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Offtake
+         * @description Sign an offtake agreement (energy 5, 33.3).
+         */
+        post: operations["signOfftake"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/commodities/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Contract
+         * @description Sign a fixed-price commodity contract (energy 6, 33.3).
+         */
+        post: operations["signCommodityContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/explain/{metric}": {
         parameters: {
             query?: never;
@@ -4583,6 +4664,18 @@ export interface components {
         };
         /** BuildPreviewOut */
         BuildPreviewOut: {
+            /**
+             * Power Cents
+             * @description M17 (33.5): operating cost a CU a month at the region's power index
+             * @default 0
+             */
+            power_cents?: number;
+            /**
+             * Power Index
+             * @description M17 (33.5): the region's power index on operating cost (North America 1.0)
+             * @default 1
+             */
+            power_index?: number;
             /** Kind */
             kind: string;
             /** Region */
@@ -5326,6 +5419,216 @@ export interface components {
              */
             quality: number | null;
         };
+        /** CommoditiesActionOut */
+        CommoditiesActionOut: {
+            commodities: components["schemas"]["CommoditiesOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** CommoditiesOut */
+        CommoditiesOut: {
+            /** Goods */
+            goods: components["schemas"]["CommodityOut"][];
+            /** Power */
+            power: components["schemas"]["PowerOut"][];
+            /** Deals */
+            deals: components["schemas"]["CommodityDealOut"][];
+            /** Suppliers */
+            suppliers: components["schemas"]["SupplierOut"][];
+            /**
+             * Collar
+             * @description Offtake floor and ceiling: signing price -/+ this share
+             */
+            collar: number;
+            /** Prepay Max */
+            prepay_max: number;
+            /**
+             * Offtake Years
+             * @description [min, max]
+             */
+            offtake_years: number[];
+            /**
+             * Contract Months
+             * @description [min, max]
+             */
+            contract_months: number[];
+            /** Offtake Take Or Pay */
+            offtake_take_or_pay: number;
+            /** Contract Take Or Pay */
+            contract_take_or_pay: number;
+            /** Offtake Energy */
+            offtake_energy: number;
+            /** Contract Energy */
+            contract_energy: number;
+        };
+        /** CommodityContractIn */
+        CommodityContractIn: {
+            /** Good */
+            good: string;
+            /** Months */
+            months: number;
+            /** Volume Year */
+            volume_year: number;
+        };
+        /**
+         * CommodityCostLineOut
+         * @description One commodity's part of a unit's cost (33.2): the product cost breakdown.
+         */
+        CommodityCostLineOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /**
+             * Weight
+             * @description Its weight in the product's commodity mix
+             */
+            weight: number;
+            /**
+             * Index
+             * @description Its price index this month (1.0 = normal)
+             */
+            index: number;
+            /**
+             * Spot Cents
+             * @description Its cost in one unit at spot
+             */
+            spot_cents: number;
+            /**
+             * Hedged Share
+             * @description Share of your use covered by contracts and offtakes
+             */
+            hedged_share: number;
+            /**
+             * Deal Cents
+             * @description Its cost in one unit after your deals
+             */
+            deal_cents: number;
+        };
+        /** CommodityDealOut */
+        CommodityDealOut: {
+            /** Deal Id */
+            deal_id: number;
+            /**
+             * Kind
+             * @description contract or offtake
+             */
+            kind: string;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Supplier */
+            supplier: string | null;
+            /** Supplier Name */
+            supplier_name: string | null;
+            /** Signed */
+            signed: string;
+            /** Ends */
+            ends: string;
+            /** Volume Year */
+            volume_year: number;
+            /** Signing Price */
+            signing_price: number;
+            /** Floor */
+            floor: number;
+            /** Ceiling */
+            ceiling: number;
+            /**
+             * Price Now
+             * @description What it pays at this month's spot
+             */
+            price_now: number;
+            /** Prepaid Cents */
+            prepaid_cents: number;
+            /** Prepaid Left Cents */
+            prepaid_left_cents: number;
+            /**
+             * Status
+             * @description active, ended or breached
+             */
+            status: string;
+            /** Taken */
+            taken: number;
+            /** Last Taken */
+            last_taken: number;
+            /**
+             * Hedge Cents
+             * @description Cost of goods saved against spot so far
+             */
+            hedge_cents: number;
+            /**
+             * Charged Cents
+             * @description Take-or-pay so far
+             */
+            charged_cents: number;
+        };
+        /** CommodityOut */
+        CommodityOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /**
+             * Unit
+             * @description The price unit, e.g. $/t or US cents/lb
+             */
+            unit: string;
+            /**
+             * Volume Unit
+             * @description What contracts and offtakes buy: t, kg or lot
+             */
+            volume_unit: string;
+            /**
+             * Price
+             * @description This month's price, in `unit`
+             */
+            price: number;
+            /** Index */
+            index: number;
+            /**
+             * Change 12M
+             * @description Index against twelve months before, as a fraction
+             */
+            change_12m: number;
+            /** Allocation */
+            allocation: number;
+            /**
+             * Long Run
+             * @description The 2015-2025 median price, in `unit`
+             */
+            long_run: number;
+            /** Top Country */
+            top_country: string;
+            /**
+             * Top Share
+             * @description Its largest country's share of production or refining
+             */
+            top_share: number;
+            /**
+             * Note
+             * @description Shortage, a running shock, or full allocation, in words
+             */
+            note: string;
+            /**
+             * Use Month
+             * @description Your company's use last month, in volume units
+             */
+            use_month: number;
+            /**
+             * Peak Price
+             * @description The highest price in the history shown
+             */
+            peak_price: number;
+            /**
+             * Peak Label
+             * @description Its month
+             */
+            peak_label: string;
+            /** History */
+            history: components["schemas"]["PricePointOut"][];
+        };
         /** ComponentOut */
         ComponentOut: {
             /** Good */
@@ -5675,6 +5978,27 @@ export interface components {
              * @description Your own overlapping product, offered instead (M15b)
              */
             own_remedy_product?: string | null;
+        };
+        /** DealQuoteOut */
+        DealQuoteOut: {
+            /** Good */
+            good: string;
+            /** Supplier */
+            supplier: string | null;
+            /** Months */
+            months: number;
+            /** Volume Year */
+            volume_year: number;
+            /** Price */
+            price: number;
+            /** Floor */
+            floor: number;
+            /** Ceiling */
+            ceiling: number;
+            /** Year Value Cents */
+            year_value_cents: number;
+            /** Prepaid Cents */
+            prepaid_cents: number;
         };
         /**
          * DecisionOut
@@ -6520,6 +6844,18 @@ export interface components {
              * @description Depreciation plus operating cost a month
              */
             monthly_cost_cents: number;
+            /**
+             * Power Cents
+             * @description M17 (33.5): operating cost a CU a month at the region's power index
+             * @default 0
+             */
+            power_cents?: number;
+            /**
+             * Power Index
+             * @description M17 (33.5): the region's power index on operating cost (North America 1.0)
+             * @default 1
+             */
+            power_index?: number;
             /**
              * Cost Per Used Cents
              * @description Monthly cost / units used; null if none
@@ -8782,6 +9118,11 @@ export interface components {
              * @default true
              */
             sells_units?: boolean;
+            /**
+             * Commodity Lines
+             * @description M17 (33.2): each commodity's part of a unit's cost, at spot and after deals
+             */
+            commodity_lines?: components["schemas"]["CommodityCostLineOut"][];
         };
         /** MarketMonthOut */
         MarketMonthOut: {
@@ -9318,6 +9659,22 @@ export interface components {
              * @description What closing the lease now costs; null for flexible space
              */
             close_penalty_cents?: number | null;
+        };
+        /** OfftakeIn */
+        OfftakeIn: {
+            /** Good */
+            good: string;
+            /** Supplier */
+            supplier: string;
+            /** Years */
+            years: number;
+            /** Volume Year */
+            volume_year: number;
+            /**
+             * Prepay
+             * @default 0
+             */
+            prepay?: number;
         };
         /**
          * OptionsOut
@@ -10430,6 +10787,20 @@ export interface components {
              */
             product_costs_cents: number;
         };
+        /** PowerOut */
+        PowerOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Index
+             * @description Industrial power against North America (1.0)
+             */
+            index: number;
+            /** History */
+            history: components["schemas"]["PricePointOut"][];
+        };
         /** PresetOut */
         PresetOut: {
             /** Key */
@@ -10496,6 +10867,28 @@ export interface components {
             available: boolean;
             /** Note */
             note: string;
+        };
+        /** PricePointOut */
+        PricePointOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /**
+             * Price
+             * @description In the good's unit
+             */
+            price: number;
+            /**
+             * Index
+             * @description Price / the 2010-2019 mean (1.0 = normal)
+             */
+            index: number;
+            /**
+             * Allocation
+             * @description Share spot buyers get (1.0 outside shortages)
+             */
+            allocation: number;
         };
         /**
          * PricePreviewOut
@@ -12885,6 +13278,50 @@ export interface components {
             cash_cents: number;
             /** Staff */
             staff: number;
+        };
+        /** SupplierGoodOut */
+        SupplierGoodOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /**
+             * Share
+             * @description Rough share of world production or refining
+             */
+            share: number;
+            /**
+             * Open
+             * @description It signs offtakes for this good this month
+             */
+            open: boolean;
+        };
+        /** SupplierOut */
+        SupplierOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Listing */
+            listing: string;
+            /**
+             * Reliability
+             * @description Chance it keeps delivering through a severe shock
+             */
+            reliability: number;
+            /** Goods */
+            goods: components["schemas"]["SupplierGoodOut"][];
+            /** Revenue 2010 Usd M */
+            revenue_2010_usd_m: number | null;
+            /**
+             * Revenue Note
+             * @description The 2010 revenue as printed, and its check
+             */
+            revenue_note: string | null;
         };
         /** SupportPoolOut */
         SupportPoolOut: {
@@ -25367,6 +25804,250 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCommodities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommoditiesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quoteOfftake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfftakeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signOfftake: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfftakeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommoditiesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signCommodityContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommodityContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommoditiesActionOut"];
                 };
             };
             /** @description Bad Request */

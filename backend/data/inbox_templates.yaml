@@ -381,3 +381,16 @@ templates:
   cm_started:
     title: "Selling spare plant capacity"
     body: "{product} now sells your assembly plants' spare capacity to other device makers."
+  # --- M17 (formulas.md 33.3) ---
+  commodity_deal_signed:
+    title: "{deal} signed"
+    body: "{volume} at {price}, fixed until {end}. Volume you have not used by then is charged at {take_or_pay} of its value."
+  offtake_signed:
+    title: "{deal} signed"
+    body: "{volume} until {end}, priced at spot inside a collar of {floor} to {ceiling}. You pay for at least {take_or_pay} of each month's volume. Prepaid: {prepaid_cents}."
+  commodity_deal_ended:
+    title: "{deal} ended"
+    body: "It has run its term: {taken} units taken, saving {hedge_cents} against spot. Take-or-pay at the end: {charge_cents}."
+  offtake_breached:
+    title: "{deal} broken by the supplier"
+    body: "The supplier stopped delivering after {taken} units, having saved you {hedge_cents} against spot. What is left of any prepayment has been returned. You now buy this commodity at spot."

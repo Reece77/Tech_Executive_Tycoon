@@ -18,10 +18,13 @@ import { MarketTable } from '../components/MarketTable';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useEras, useMarket } from '../hooks/api';
 import { useTableViews } from '../hooks/useTableViews';
+import { CommoditiesTab } from './CommoditiesTab';
 import { formatMoneyShort } from '../lib/format';
 import { formatCount, segmentSummary } from '../lib/products';
 
 type Market = components['schemas']['MarketOut'];
+
+const COMMODITIES = 'commodities'; // the Commodities tab's slot in the category route (M17)
 
 /** The category's size a year and its customers by month, with era arrivals marked (27.3,
  * 27.4). Display only: every number comes from the API. */
@@ -113,16 +116,17 @@ export function MarketScreen() {
   const { saveId = '', category = '' } = useParams();
   const navigate = useNavigate();
   const categories = useCategories(saveId);
-  const key = category || categories.data?.[0]?.key || '';
+  const commodities = category === COMMODITIES; // M17: the Commodities tab (33)
+  const key = commodities ? '' : category || categories.data?.[0]?.key || '';
   const [region, setRegion] = useState<string | null>(null); // null: the home region (M9)
   const market = useMarket(saveId, key, region);
-  const regions = market.data?.regions ?? [];
+  const shown = commodities ? undefined : market.data; // a disabled query keeps its last data
+  const regions = shown?.regions ?? [];
 
   if (categories.isPending) return <Loading />;
   if (categories.error)
     return <LoadError title="Could not load the markets" error={categories.error} />;
-  const growth =
-    market.data?.annual_growth ?? categories.data.find((c) => c.key === key)?.annual_growth;
+  const growth = shown?.annual_growth ?? categories.data.find((c) => c.key === key)?.annual_growth;
   return (
     <>
       <Link to={`/game/${saveId}/products`} style={{ fontSize: 13, textDecoration: 'none' }}>
@@ -142,7 +146,15 @@ export function MarketScreen() {
               {c.label}
             </button>
           ))}
-          <MarketEras saveId={saveId} />
+          <button
+            type="button"
+            aria-pressed={commodities}
+            onClick={() => navigate(`/game/${saveId}/products/markets/${COMMODITIES}`)}
+            data-testid="category-commodities"
+          >
+            Commodities
+          </button>
+          {!commodities && <MarketEras saveId={saveId} />}
         </div>
         {regions.length > 0 && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
@@ -150,7 +162,7 @@ export function MarketScreen() {
             <select
               aria-label="Region"
               data-testid="market-region"
-              value={market.data?.region ?? ''}
+              value={shown?.region ?? ''}
               onChange={(e) => {
                 const picked = regions.find((r) => r.key === e.target.value);
                 setRegion(picked === undefined || picked.home ? null : picked.key);
@@ -172,10 +184,13 @@ export function MarketScreen() {
         )}
       </div>
       <MacroStrip saveId={saveId} />
-      {market.error && <LoadError title="Could not load the market" error={market.error} />}
-      {market.isPending && <Loading />}
-      {market.data && <MarketDemand m={market.data} />}
-      {market.data?.segments.map((s) => (
+      {commodities && <CommoditiesTab saveId={saveId} />}
+      {!commodities && market.error && (
+        <LoadError title="Could not load the market" error={market.error} />
+      )}
+      {!commodities && market.isPending && <Loading />}
+      {shown && <MarketDemand m={shown} />}
+      {shown?.segments.map((s) => (
         <section
           key={s.segment}
           aria-label={s.label}
@@ -198,7 +213,7 @@ export function MarketScreen() {
           />
         </section>
       ))}
-      <p className="tst-muted" style={{ margin: 0, fontSize: 12 }}>
+      <p className="tst-muted" style={{ margin: 0, fontSize: 12 }} hidden={commodities}>
         Share of buyers counts only customers who use a product in this segment. Competitors&apos;
         scores are public. Until competitors start making decisions (M5) their products keep these
         scores.

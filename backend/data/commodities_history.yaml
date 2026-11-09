@@ -1,0 +1,311 @@
+# Commodity price history to December 2025 (docs/formulas.md 33.1, M17, lane A).
+# Data: docs/v3-research/v3-data-dossier.md 1.1 (annual table), 1.2 (quartz, neon) and 1.3
+# (shocks). The same on every seed; after 2025 each good moves by a seeded log-price AR(1)
+# with shocks (stream `commodity`, key (0, good_index) in this file's order: append new goods
+# and never reorder).
+#
+# years: each year's value [price, source tag], held for every month of that year. Tags (the
+#   dossier's): V verified against the cited source, D derived from verified figures, R
+#   recalled (spot-check before relying on it), e the source's own estimate, A an assumption
+#   (no public series; the basis is in the comment).
+# shocks: dossier 1.3 shocks placed in their months. Inside [first, last point] a month's price
+#   is geometric between the points (a constant monthly rate), replacing the held annual
+#   value; outside, the annual value holds. The loader rejects a year without a value.
+# allocation: months a good was short (spot buyers get that share; 100% outside them).
+# Prices are in each good's `unit`; commodities.yaml converts a unit to dollars per volume unit.
+goods:
+  # High-purity quartz (crucible grade). No public series (dossier 1.2): USGS ground HPQ
+  # ranges 2021-2025, midpoint (D); flat at the 2021 level before (formulas 33.1).
+  - key: quartz_hp
+    unit: $/t
+    years:
+      2010: [8250, D] # 2021 level held back (33.1)
+      2011: [8250, D]
+      2012: [8250, D]
+      2013: [8250, D]
+      2014: [8250, D]
+      2015: [8250, D]
+      2016: [8250, D]
+      2017: [8250, D]
+      2018: [8250, D]
+      2019: [8250, D]
+      2020: [8250, D]
+      2021: [8250, D] # USGS 500-16,000 (V), midpoint
+      2022: [8750, D] # USGS 500-17,000
+      2023: [10250, D] # USGS 500-20,000
+      2024: [8750, D] # USGS 500-17,000
+      2025: [6250, D] # USGS 500-12,000 e
+    shocks:
+      # Hurricane Helene shut Spruce Pine for several weeks (late September 2024, R); size A
+      - { label: Hurricane Helene at Spruce Pine, source: R, points: { "2024-09": 8750, "2024-10": 13125, "2024-11": 13125, "2024-12": 8750 } }
+    allocation:
+      - { start: "2024-10", end: "2024-11", share: 0.60 } # A: weeks of lost output
+
+  # Silicon metal, USGS US average (dossier 1.1 SiM). 2014 is USGS's revised 140 (V).
+  - key: silicon_metal
+    unit: ¢/lb
+    years:
+      2010: [140, V]
+      2011: [158, V]
+      2012: [127, V]
+      2013: [122, V]
+      2014: [140, V]
+      2015: [127, V]
+      2016: [91, V]
+      2017: [116.6, V]
+      2018: [134.2, V]
+      2019: [105.7, V]
+      2020: [96.8, V]
+      2021: [220.3, V]
+      2022: [361.9, V] # China's "dual control" power curbs (1.3)
+      2023: [179.7, V]
+      2024: [170.3, V]
+      2025: [130, e]
+
+  # Polysilicon, solar grade spot (Bernreuter to 2019; dagger years are rough levels from key
+  # points, D). The good's price is semiconductor grade: this x commodity.semi_poly_multiple
+  # (an assumption, 33.1); its index is the same.
+  - key: polysilicon
+    unit: $/kg
+    years:
+      2010: [60, V]
+      2011: [56, V]
+      2012: [22, V]
+      2013: [17, V]
+      2014: [20.5, V]
+      2015: [16, V]
+      2016: [15, V]
+      2017: [16, V]
+      2018: [13, V]
+      2019: [9, V]
+      2020: [9, D] # trough $6.75 Jun, $12.45 Sep, $10.40 Dec (V)
+      2021: [25, D] # rose from about $10 to $41.65 (Oct, China mono-dense)
+      2022: [32, D] # peak $39 Aug
+      2023: [12, D] # $22.70 Jan to $7.72 Dec
+      2024: [7, D]
+      2025: [7, D] # $6.88 on 3 Dec 2025
+    shocks:
+      # the 2011-2012 crash: $79/kg (Mar 2011) to under $30 (late 2011) to $15.35-15.90 (Dec 2012), V
+      - { label: Polysilicon glut, source: V, points: { "2011-01": 60, "2011-03": 79, "2011-12": 30, "2012-12": 15.6 } }
+      # dual-control power curbs: about $10 to $41.65 (Oct 2021), peak $39 (Aug 2022), V
+      - { label: Dual-control power curbs, source: V, points: { "2021-01": 10, "2021-10": 41.65, "2022-08": 39, "2022-12": 25 } }
+
+  # Gallium, high-purity refined (USGS). 2010-2014 are year-end prices used as annual (33.1).
+  - key: gallium
+    unit: $/kg
+    years:
+      2010: [600, V]
+      2011: [688, V]
+      2012: [529, V]
+      2013: [502, V]
+      2014: [362, V]
+      2015: [317, V]
+      2016: [690, V]
+      2017: [477, V]
+      2018: [508, V]
+      2019: [570, V]
+      2020: [596, V]
+      2021: [625, V]
+      2022: [560, V]
+      2023: [450, V]
+      2024: [500, e]
+      2025: [580, D] # MCS 2026 import unit value only (footnote c)
+    allocation:
+      - { start: "2023-08", end: "2023-12", share: 0.80 } # China's export licensing from 1 Aug 2023 (V); share A
+      - { start: "2024-12", end: "2025-12", share: 0.75 } # China bans Ga/Ge exports to the US, Dec 2024 (V); share A
+
+  # Germanium metal (USGS; 2010-2014 year-end zone-refined, then annual 99.999%).
+  - key: germanium
+    unit: $/kg
+    years:
+      2010: [1200, V]
+      2011: [1450, V]
+      2012: [1640, V]
+      2013: [1900, V]
+      2014: [1900, V]
+      2015: [1792, V]
+      2016: [1087, V]
+      2017: [1082, V]
+      2018: [1543, V]
+      2019: [1236, V]
+      2020: [1046, V]
+      2021: [1187, V]
+      2022: [1294, V]
+      2023: [1392, V]
+      2024: [1991, V]
+      2025: [4100, e] # about 2x after China's December 2024 ban (1.3)
+    allocation:
+      - { start: "2023-08", end: "2023-12", share: 0.80 } # export licensing (V); share A
+      - { start: "2024-12", end: "2025-12", share: 0.67 } # US imports down about 67% in 2025 (V); share A
+
+  # Copper, LME cash (USGS). 2014 and 2025 are USGS estimates.
+  - key: copper
+    unit: ¢/lb
+    years:
+      2010: [341.7, V]
+      2011: [399.8, V]
+      2012: [360.6, V]
+      2013: [332.3, V]
+      2014: [315, e]
+      2015: [249.5, V]
+      2016: [220.6, V]
+      2017: [279.5, V]
+      2018: [296.0, V]
+      2019: [272.4, V]
+      2020: [279.8, V]
+      2021: [422.5, V]
+      2022: [399.8, V]
+      2023: [384.8, V]
+      2024: [414.7, V]
+      2025: [440, e]
+
+  # Tin, IMF global price (via FRED).
+  - key: tin
+    unit: $/t
+    years:
+      2010: [20367, V]
+      2011: [26051, V]
+      2012: [21109, V]
+      2013: [22282, V]
+      2014: [21899, V]
+      2015: [16067, V]
+      2016: [17934, V]
+      2017: [20061, V]
+      2018: [20145, V]
+      2019: [18661, V]
+      2020: [17125, V]
+      2021: [32387, V]
+      2022: [31383, V]
+      2023: [25912, V]
+      2024: [30059, V]
+      2025: [34058, V]
+
+  # Tantalite ore (USGS: Ryan's Notes to 2013, CRU from 2014). The 2011 spike is in the annual values.
+  - key: tantalum
+    unit: $/kg Ta2O5
+    years:
+      2010: [120, V]
+      2011: [275, V]
+      2012: [239, V]
+      2013: [260, V]
+      2014: [221, V]
+      2015: [193, V]
+      2016: [193, V]
+      2017: [193, V]
+      2018: [214, V]
+      2019: [161, V]
+      2020: [158, V]
+      2021: [158, V]
+      2022: [196, V]
+      2023: [170, V]
+      2024: [167, V]
+      2025: [180, V]
+
+  # Cobalt cathode, US spot (USGS). The 2017-2018 EV-hype spike is in the annual values.
+  - key: cobalt
+    unit: $/lb
+    years:
+      2010: [20.85, V]
+      2011: [17.99, V]
+      2012: [14.07, V]
+      2013: [12.89, V]
+      2014: [14.40, e]
+      2015: [13.44, V]
+      2016: [12.01, V]
+      2017: [26.97, V]
+      2018: [37.43, V]
+      2019: [16.95, V]
+      2020: [16.00, e]
+      2021: [24.21, V]
+      2022: [30.78, V]
+      2023: [17.20, V]
+      2024: [16.77, V]
+      2025: [21, e]
+    shocks:
+      # DRC export ban, February 2025 (V): $16.77 (2024) to $21 (2025e)
+      - { label: DRC cobalt export ban, source: V, points: { "2025-01": 16.77, "2025-02": 18, "2025-06": 22.5, "2025-12": 22.5 } }
+    allocation:
+      - { start: "2025-02", end: "2025-12", share: 0.85 } # A: the ban's months
+
+  # Lithium carbonate, battery grade (USGS contract price; MCS 2026 series from 2021, footnote b).
+  - key: lithium_carbonate
+    unit: $/t
+    years:
+      2010: [5180, V]
+      2011: [5180, V]
+      2012: [6060, V]
+      2013: [6800, V]
+      2014: [6600, V]
+      2015: [6500, V]
+      2016: [8650, V]
+      2017: [15000, V]
+      2018: [17000, V]
+      2019: [12700, V]
+      2020: [8000, e]
+      2021: [11700, V]
+      2022: [63700, V]
+      2023: [39000, V]
+      2024: [11800, V]
+      2025: [9000, e]
+    shocks:
+      # the super-spike (1.3): rising through 2021 to a November 2022 peak, then back down
+      # through 2023. Contract averages 11,700 (2021), 63,700 (2022), 39,000 (2023), V; the
+      # monthly shape and the peak (spot ran far above contract, footnote b) are A, set so
+      # each year's mean stays near its annual value.
+      - { label: Lithium super-spike, source: A, points: { "2021-01": 8000, "2021-06": 10000, "2021-12": 20000, "2022-04": 55000, "2022-11": 80000, "2022-12": 72000, "2023-06": 40000, "2023-12": 18000 } }
+
+  # Rare-earth oxide: Nd oxide 2010-2020 (2010-2014 year-end ranges, midpoint, D), NdPr oxide
+  # from 2021 (USGS MCS 2026), China FOB.
+  - key: ndpr_oxide
+    unit: $/kg
+    years:
+      2010: [87.5, D] # 86-89 year-end
+      2011: [195, D] # 190-200 year-end
+      2012: [77.5, D]
+      2013: [67.5, D]
+      2014: [58, D]
+      2015: [48, V]
+      2016: [40, V]
+      2017: [50, V]
+      2018: [50, V]
+      2019: [45, V]
+      2020: [47, e]
+      2021: [92, V]
+      2022: [124, V] # the NdPr peak
+      2023: [75, V]
+      2024: [55, V]
+      2025: [69, e] # China's April and October 2025 controls
+    shocks:
+      # China's quota cut (Jul 2010) and the 2011 bubble (1.3): Dy oxide rose 6.9x from January
+      # to an August 2011 peak (V); Nd's path is A (a smaller rise to 3x, ending the year at
+      # its 190-200 year-end range).
+      - { label: Rare-earth bubble, source: A, points: { "2010-07": 60, "2010-12": 87.5, "2011-08": 260, "2011-12": 195, "2012-06": 100, "2012-12": 77.5 } }
+    allocation:
+      - { start: "2010-07", end: "2011-12", share: 0.80 } # China's export quota cuts (R); share A
+
+  # Neon, semiconductor grade. No public series (dossier 1.2): an index, 1.0 to 2021, x10
+  # March-June 2022 easing to x2 by December 2022, 1.2 from 2023 (formulas 33.1, proxies).
+  - key: neon
+    unit: index
+    years:
+      2010: [1.0, A]
+      2011: [1.0, A]
+      2012: [1.0, A]
+      2013: [1.0, A]
+      2014: [1.0, A]
+      2015: [1.0, A]
+      2016: [1.0, A]
+      2017: [1.0, A]
+      2018: [1.0, A]
+      2019: [1.0, A]
+      2020: [1.0, A]
+      2021: [1.0, A]
+      2022: [1.0, A]
+      2023: [1.2, A]
+      2024: [1.2, A]
+      2025: [1.2, A]
+    shocks:
+      # Russia invades Ukraine, 24 Feb 2022; China neon about 10x in March (V)
+      - { label: Ukraine neon shock, source: V, points: { "2022-02": 1.0, "2022-03": 10.0, "2022-06": 10.0, "2022-12": 2.0 } }
+    allocation:
+      - { start: "2022-03", end: "2022-06", share: 0.60 } # Ingas and Cryoin halted (V); share A

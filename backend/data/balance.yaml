@@ -1376,3 +1376,51 @@ group: # 31: the holding company and its subsidiaries (M16, v3)
     synergy: 0.15 # less this x the share of group revenue that is intra-group
     min: 0.10 # the discount at least
     max: 0.25 # and at most
+
+# --- Commodities, offtake and regional power (formulas.md 33, M17, lane A) -----------------
+commodity:
+  phi: 0.6 # annual persistence of each good's log price toward its long-run level after 2025 (33.1; M17 tuning from 0.9, 33.6 target 5: at 0.9 lithium's trend stayed above index 3.0 for 103 months, at 0.6 at most 24 on seeds 1-10 and 25 on 11-40)
+  vol: # annual volatility of the log price after 2025: the history's own (robust sd of 2011-2025 annual log changes, MAD x 1.4826, so the shocks below are not counted twice; quartz and neon, flat in history, use the plain sd), 33.1
+    quartz_hp: 0.10
+    silicon_metal: 0.28
+    polysilicon: 0.28
+    gallium: 0.15
+    germanium: 0.15
+    copper: 0.13
+    tin: 0.16
+    tantalum: 0.15
+    cobalt: 0.28
+    lithium_carbonate: 0.42
+    ndpr_oxide: 0.30
+    neon: 0.05
+  semi_poly_multiple: 5 # semiconductor-grade polysilicon = solar spot x this (33.1; an assumption, dossier 1.1 suggests 2-4x)
+  ban_concentration: 0.60 # one country's share of production or refining above which export bans are likelier (33.1)
+  gap_months: 24 # months after a shock ends before the same good can start another (M17 decision)
+  shocks: # after 2025, stream `commodity`: one start draw a month per good against the kinds' summed chance (33.1)
+    export_ban: { monthly: 0.002, concentrated_mult: 3, rise: [0.5, 1.5], allocation: [0.5, 0.8], months: [6, 18] } # chance a month (x3 above ban_concentration), price rise (fraction), spot allocation, months
+    demand_boom: { monthly: 0.003, rise: [0.3, 1.0], allocation: [0.85, 1.0], months: [12, 30] } # the same fields
+    supply_disruption: { monthly: 0.003, rise: [0.2, 0.6], allocation: [0.6, 0.9], months: [3, 12] } # the same fields
+  mixes: # what commodities cost the player (33.2): the cost good's index becomes (1 - share) x its own index + share x the mix's index
+    device_bom: { share: 0.033, weights: { lithium_carbonate: 0.30, cobalt: 0.25, copper: 0.20, ndpr_oxide: 0.10, tin: 0.10, tantalum: 0.05 } } # w (fraction) and weights (sum 1), 33.2; M17 tuning from 0.15 (33.6 target 2: 0.15 raised the reference phone 43% at the lithium peak; 0.033 gives 7.3%, and target 3's hedge 3.3 points)
+    server_bom: { share: 0.08, weights: { copper: 0.6, tin: 0.2, tantalum: 0.2 } } # the same, 33.2
+    foundry_wafer: { share: 0.10, mode: scale, weights: { polysilicon: 0.5, neon: 0.2, gallium: 0.15, germanium: 0.15 } } # v and the chip mix; the wafer price x ((1 - v) + v x the mix), 33.2
+  contract_energy: 6 # founder energy to sign a commodity contract (33.3, as M12a's)
+  contract_months: [6, 36] # months a fixed-price commodity contract may run (33.3)
+  contract_take_or_pay: 0.30 # share of an unused contracted volume's value charged at the end (33.3, as M12a's 22.4)
+  history_months: 36 # months of price history the API shows behind the current one (as supply.history_months)
+
+offtake:
+  energy: 5 # founder energy to sign an offtake agreement (33.3)
+  years: [3, 10] # years an offtake runs (33.3)
+  collar: 0.25 # floor and ceiling = the price at signing x (1 -/+ this), 33.3
+  prepay_max: 0.30 # most of year 1's value that may be prepaid; prepaid volume keeps 100% allocation in shocks (33.3)
+  take_or_pay: 0.70 # share of each month's contracted volume paid for at the offtake price even if not taken (33.3)
+  breach:
+    spot_over_ceiling: 2.0 # a shock is severe for a supplier when spot >= the collar's ceiling x this (M17 decision)
+    monthly_scale: 0.10 # breach chance a severe month = (1 - the supplier's reliability) x this (33.3; M17 decision)
+
+power:
+  phi: 0.9 # annual persistence of a region's log power index toward its 2010-2019 mean after 2025 (33.5)
+  vol: 0.08 # annual volatility of a region's log power index after 2025 (33.5; M17 decision, about the spread of Europe's 2010-2025 ratio outside 2022)
+  base_region: north_america # held at 1.0 in every month: M12a's tuning (33.5)
+  paid_by: [data_centre_general, data_centre_gpu] # facility kinds whose operating cost is x their region's index (33.5; fabs and refineries later)

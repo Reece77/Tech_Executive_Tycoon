@@ -1,14 +1,18 @@
 """The facilities phase (phase 4, production and capacity; docs/formulas.md 22).
 
-In order: each market good's month (22.4); contracts that ended settle take-or-pay; each
-facility's month by id (capex, going live, depreciation; 22.2); then each player company's
-Cloud hosting product takes its quality and features (22.3); then hardware's month (M12b,
-26.2): plants' yields, contracts ending, the contract-manufacturing product's quality.
-Operating costs post with phase 6's monthly costs, and outages roll in phase 6 (22.5).
+In order: each market good's month (22.4), with M17's commodities and power (33.1, 33.5);
+contracts that ended settle take-or-pay; each facility's month by id (capex, going live,
+depreciation; 22.2); then each player company's Cloud hosting product takes its quality and
+features (22.3); then hardware's month (M12b, 26.2): plants' yields, contracts ending, the
+contract-manufacturing product's quality. Operating costs post with phase 6's monthly costs,
+and outages roll in phase 6 (22.5).
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
+
+from tst.sim.commodities import commodity, offtake
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import cloud, goods, lifecycle
 from tst.sim.hardware.phase import hardware_month
@@ -21,8 +25,13 @@ from tst.sim.state import GameState, player_companies
 def production_month(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
+    extra = commodity.months(state, rng, balance, data)  # M17: from last month's (33.1)
     state = goods.supply_phase(state, rng, balance, data)
+    state = replace(state, supply=state.supply + extra)
     state, entries, logs = lifecycle.settle_contracts(state, balance, data)
+    state, ended, notes = offtake.start_of_month(state, rng, balance, data)  # M17 (33.3)
+    entries = [*entries, *ended]
+    logs = [*logs, *notes]
     for facility in state.facilities:
         if facility.status == "closed":
             continue

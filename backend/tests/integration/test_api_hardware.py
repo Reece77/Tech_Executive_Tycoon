@@ -79,8 +79,9 @@ def test_device_contract_plant_and_cm(setup: tuple[Client, Path, Path], loaded: 
     phone = _pid(path, "Pebble Phone")
     panel = api.get(f"{BASE}/products/{phone}/manufacturing")
     assert [line["line"] for line in panel["lines"]] == ["Bill of materials", "Chip", "Assembly"]
-    assert panel["unit_cost_cents"] == 23_300 and not panel["can_launch_source"]
-    assert panel["gross_margin"] == pytest.approx((38_000 - 23_300) / 38_000)
+    # 26.7's $233 with the BOM's commodities at January 2010's spot (M17, 33.2): $232.54
+    assert panel["unit_cost_cents"] == 23_254 and not panel["can_launch_source"]
+    assert panel["gross_margin"] == pytest.approx((38_000 - 23_254) / 38_000)
     body = {
         "product_id": phone,
         "manufacturer": "foxconn",

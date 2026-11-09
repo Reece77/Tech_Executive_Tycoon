@@ -16425,6 +16425,328 @@
         }
       }
     },
+    "/api/saves/{save_id}/commodities": {
+      "get": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Get Commodities",
+        "description": "The Commodities tab: twelve commodities' prices to this month, power by region, the\ncompany's contracts and offtakes, and the suppliers (33).",
+        "operationId": "getCommodities",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommoditiesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/commodities/offtakes/quote": {
+      "post": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Quote Offtake",
+        "description": "An offtake's collar, year-1 value and prepayment at this month's spot (33.3).",
+        "operationId": "quoteOfftake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfftakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DealQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/commodities/offtakes": {
+      "post": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Sign Offtake",
+        "description": "Sign an offtake agreement (energy 5, 33.3).",
+        "operationId": "signOfftake",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfftakeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommoditiesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/commodities/contracts": {
+      "post": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Sign Contract",
+        "description": "Sign a fixed-price commodity contract (energy 6, 33.3).",
+        "operationId": "signCommodityContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommodityContractIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommoditiesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/explain/{metric}": {
       "get": {
         "tags": [
@@ -18788,6 +19110,18 @@
       },
       "BuildPreviewOut": {
         "properties": {
+          "power_cents": {
+            "type": "integer",
+            "title": "Power Cents",
+            "description": "M17 (33.5): operating cost a CU a month at the region's power index",
+            "default": 0
+          },
+          "power_index": {
+            "type": "number",
+            "title": "Power Index",
+            "description": "M17 (33.5): the region's power index on operating cost (North America 1.0)",
+            "default": 1.0
+          },
           "kind": {
             "type": "string",
             "title": "Kind"
@@ -20500,6 +20834,417 @@
         "title": "CmOut",
         "description": "Selling spare plant capacity (26.2)."
       },
+      "CommoditiesActionOut": {
+        "properties": {
+          "commodities": {
+            "$ref": "#/components/schemas/CommoditiesOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "commodities",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "CommoditiesActionOut"
+      },
+      "CommoditiesOut": {
+        "properties": {
+          "goods": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityOut"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "power": {
+            "items": {
+              "$ref": "#/components/schemas/PowerOut"
+            },
+            "type": "array",
+            "title": "Power"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "suppliers": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierOut"
+            },
+            "type": "array",
+            "title": "Suppliers"
+          },
+          "collar": {
+            "type": "number",
+            "title": "Collar",
+            "description": "Offtake floor and ceiling: signing price -/+ this share"
+          },
+          "prepay_max": {
+            "type": "number",
+            "title": "Prepay Max"
+          },
+          "offtake_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Offtake Years",
+            "description": "[min, max]"
+          },
+          "contract_months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Contract Months",
+            "description": "[min, max]"
+          },
+          "offtake_take_or_pay": {
+            "type": "number",
+            "title": "Offtake Take Or Pay"
+          },
+          "contract_take_or_pay": {
+            "type": "number",
+            "title": "Contract Take Or Pay"
+          },
+          "offtake_energy": {
+            "type": "integer",
+            "title": "Offtake Energy"
+          },
+          "contract_energy": {
+            "type": "integer",
+            "title": "Contract Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "goods",
+          "power",
+          "deals",
+          "suppliers",
+          "collar",
+          "prepay_max",
+          "offtake_years",
+          "contract_months",
+          "offtake_take_or_pay",
+          "contract_take_or_pay",
+          "offtake_energy",
+          "contract_energy"
+        ],
+        "title": "CommoditiesOut"
+      },
+      "CommodityContractIn": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "volume_year": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Volume Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "months",
+          "volume_year"
+        ],
+        "title": "CommodityContractIn"
+      },
+      "CommodityCostLineOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight",
+            "description": "Its weight in the product's commodity mix"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "Its price index this month (1.0 = normal)"
+          },
+          "spot_cents": {
+            "type": "number",
+            "title": "Spot Cents",
+            "description": "Its cost in one unit at spot"
+          },
+          "hedged_share": {
+            "type": "number",
+            "title": "Hedged Share",
+            "description": "Share of your use covered by contracts and offtakes"
+          },
+          "deal_cents": {
+            "type": "number",
+            "title": "Deal Cents",
+            "description": "Its cost in one unit after your deals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "weight",
+          "index",
+          "spot_cents",
+          "hedged_share",
+          "deal_cents"
+        ],
+        "title": "CommodityCostLineOut",
+        "description": "One commodity's part of a unit's cost (33.2): the product cost breakdown."
+      },
+      "CommodityDealOut": {
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "title": "Deal Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "contract or offtake"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "supplier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier"
+          },
+          "supplier_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Name"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          },
+          "ends": {
+            "type": "string",
+            "title": "Ends"
+          },
+          "volume_year": {
+            "type": "number",
+            "title": "Volume Year"
+          },
+          "signing_price": {
+            "type": "number",
+            "title": "Signing Price"
+          },
+          "floor": {
+            "type": "number",
+            "title": "Floor"
+          },
+          "ceiling": {
+            "type": "number",
+            "title": "Ceiling"
+          },
+          "price_now": {
+            "type": "number",
+            "title": "Price Now",
+            "description": "What it pays at this month's spot"
+          },
+          "prepaid_cents": {
+            "type": "integer",
+            "title": "Prepaid Cents"
+          },
+          "prepaid_left_cents": {
+            "type": "integer",
+            "title": "Prepaid Left Cents"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active, ended or breached"
+          },
+          "taken": {
+            "type": "number",
+            "title": "Taken"
+          },
+          "last_taken": {
+            "type": "number",
+            "title": "Last Taken"
+          },
+          "hedge_cents": {
+            "type": "integer",
+            "title": "Hedge Cents",
+            "description": "Cost of goods saved against spot so far"
+          },
+          "charged_cents": {
+            "type": "integer",
+            "title": "Charged Cents",
+            "description": "Take-or-pay so far"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deal_id",
+          "kind",
+          "good",
+          "good_label",
+          "supplier",
+          "supplier_name",
+          "signed",
+          "ends",
+          "volume_year",
+          "signing_price",
+          "floor",
+          "ceiling",
+          "price_now",
+          "prepaid_cents",
+          "prepaid_left_cents",
+          "status",
+          "taken",
+          "last_taken",
+          "hedge_cents",
+          "charged_cents"
+        ],
+        "title": "CommodityDealOut"
+      },
+      "CommodityOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "The price unit, e.g. $/t or US cents/lb"
+          },
+          "volume_unit": {
+            "type": "string",
+            "title": "Volume Unit",
+            "description": "What contracts and offtakes buy: t, kg or lot"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price",
+            "description": "This month's price, in `unit`"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index"
+          },
+          "change_12m": {
+            "type": "number",
+            "title": "Change 12M",
+            "description": "Index against twelve months before, as a fraction"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation"
+          },
+          "long_run": {
+            "type": "number",
+            "title": "Long Run",
+            "description": "The 2015-2025 median price, in `unit`"
+          },
+          "top_country": {
+            "type": "string",
+            "title": "Top Country"
+          },
+          "top_share": {
+            "type": "number",
+            "title": "Top Share",
+            "description": "Its largest country's share of production or refining"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Shortage, a running shock, or full allocation, in words"
+          },
+          "use_month": {
+            "type": "number",
+            "title": "Use Month",
+            "description": "Your company's use last month, in volume units"
+          },
+          "peak_price": {
+            "type": "number",
+            "title": "Peak Price",
+            "description": "The highest price in the history shown"
+          },
+          "peak_label": {
+            "type": "string",
+            "title": "Peak Label",
+            "description": "Its month"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/PricePointOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "unit",
+          "volume_unit",
+          "price",
+          "index",
+          "change_12m",
+          "allocation",
+          "long_run",
+          "top_country",
+          "top_share",
+          "note",
+          "use_month",
+          "peak_price",
+          "peak_label",
+          "history"
+        ],
+        "title": "CommodityOut"
+      },
       "ComponentOut": {
         "properties": {
           "good": {
@@ -21328,6 +22073,66 @@
           "remedy_product"
         ],
         "title": "DealOut"
+      },
+      "DealQuoteOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "supplier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "volume_year": {
+            "type": "number",
+            "title": "Volume Year"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price"
+          },
+          "floor": {
+            "type": "number",
+            "title": "Floor"
+          },
+          "ceiling": {
+            "type": "number",
+            "title": "Ceiling"
+          },
+          "year_value_cents": {
+            "type": "integer",
+            "title": "Year Value Cents"
+          },
+          "prepaid_cents": {
+            "type": "integer",
+            "title": "Prepaid Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "supplier",
+          "months",
+          "volume_year",
+          "price",
+          "floor",
+          "ceiling",
+          "year_value_cents",
+          "prepaid_cents"
+        ],
+        "title": "DealQuoteOut"
       },
       "DecisionOut": {
         "properties": {
@@ -23174,6 +23979,18 @@
             "type": "integer",
             "title": "Monthly Cost Cents",
             "description": "Depreciation plus operating cost a month"
+          },
+          "power_cents": {
+            "type": "integer",
+            "title": "Power Cents",
+            "description": "M17 (33.5): operating cost a CU a month at the region's power index",
+            "default": 0
+          },
+          "power_index": {
+            "type": "number",
+            "title": "Power Index",
+            "description": "M17 (33.5): the region's power index on operating cost (North America 1.0)",
+            "default": 1.0
           },
           "cost_per_used_cents": {
             "anyOf": [
@@ -28733,6 +29550,14 @@
             "title": "Sells Units",
             "description": "False for a software product: no bill of materials (empty)",
             "default": true
+          },
+          "commodity_lines": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityCostLineOut"
+            },
+            "type": "array",
+            "title": "Commodity Lines",
+            "description": "M17 (33.2): each commodity's part of a unit's cost, at spot and after deals"
           }
         },
         "type": "object",
@@ -30041,6 +30866,42 @@
           "crowded_morale"
         ],
         "title": "OfficeOut"
+      },
+      "OfftakeIn": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "supplier": {
+            "type": "string",
+            "title": "Supplier"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          },
+          "volume_year": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Volume Year"
+          },
+          "prepay": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Prepay",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "supplier",
+          "years",
+          "volume_year"
+        ],
+        "title": "OfftakeIn"
       },
       "OptionsOut": {
         "properties": {
@@ -32512,6 +33373,38 @@
         "title": "PortfolioOut",
         "description": "The Products screen's tiles: the company's revenue and product costs."
       },
+      "PowerOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "Industrial power against North America (1.0)"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/PricePointOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "index",
+          "history"
+        ],
+        "title": "PowerOut"
+      },
       "PresetOut": {
         "properties": {
           "key": {
@@ -32665,6 +33558,42 @@
           "note"
         ],
         "title": "PriceOptionOut"
+      },
+      "PricePointOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price": {
+            "type": "number",
+            "title": "Price",
+            "description": "In the good's unit"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "Price / the 2010-2019 mean (1.0 = normal)"
+          },
+          "allocation": {
+            "type": "number",
+            "title": "Allocation",
+            "description": "Share spot buyers get (1.0 outside shortages)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "price",
+          "index",
+          "allocation"
+        ],
+        "title": "PricePointOut"
       },
       "PricePreviewOut": {
         "properties": {
@@ -38271,6 +39200,108 @@
           "staff"
         ],
         "title": "SubsidiaryOut"
+      },
+      "SupplierGoodOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Rough share of world production or refining"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "description": "It signs offtakes for this good this month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "share",
+          "open"
+        ],
+        "title": "SupplierGoodOut"
+      },
+      "SupplierOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "listing": {
+            "type": "string",
+            "title": "Listing"
+          },
+          "reliability": {
+            "type": "number",
+            "title": "Reliability",
+            "description": "Chance it keeps delivering through a severe shock"
+          },
+          "goods": {
+            "items": {
+              "$ref": "#/components/schemas/SupplierGoodOut"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "revenue_2010_usd_m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue 2010 Usd M"
+          },
+          "revenue_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue Note",
+            "description": "The 2010 revenue as printed, and its check"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region",
+          "region_label",
+          "listing",
+          "reliability",
+          "goods",
+          "revenue_2010_usd_m",
+          "revenue_note"
+        ],
+        "title": "SupplierOut"
       },
       "SupportPoolOut": {
         "properties": {

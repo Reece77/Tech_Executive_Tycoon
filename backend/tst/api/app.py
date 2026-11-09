@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
 from tst.api.routers import (
+    commodities,
     coo,
     events,
     explain,
@@ -100,6 +101,7 @@ def create_app() -> FastAPI:
     app.include_router(modes.router)  # M15b
     app.include_router(founder.router)  # M24
     app.include_router(group.router)  # M16
+    app.include_router(commodities.router)  # M17
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
     app.include_router(mods.router)  # M25

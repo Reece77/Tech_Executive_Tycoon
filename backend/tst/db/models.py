@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 40
+SCHEMA_VERSION = 41
 
 
 class Base(DeclarativeBase):
@@ -1266,6 +1266,7 @@ class SupplyMonthRow(Base):
     shock_months: Mapped[int] = mapped_column(Integer, nullable=False)
     shock_rise: Mapped[float] = mapped_column(Float, nullable=False)
     shock_allocation: Mapped[float] = mapped_column(Float, nullable=False)
+    shock_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)  # M17 (33.1)
 
 
 class SupplyContractRow(Base):
@@ -1911,4 +1912,16 @@ class TransferFlowRow(Base):
     __tablename__ = "group_transfer_flow"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class CommodityDealRow(Base):
+    """A company's commodity contract or offtake agreement (formulas.md 33.3; 0041). Its
+    fields are in `data` (tst.db.commodity_io)."""
+
+    __tablename__ = "commodity_deal"
+    __table_args__ = (Index("ix_commodity_deal_company", "company_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

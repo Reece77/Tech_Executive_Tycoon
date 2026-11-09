@@ -533,3 +533,21 @@ T3 follows the product manager's ruling of 2026-11-07: three new Reckless source
 Tuned (`group.*` only): `group.mandate.grow_payout` 0.5 and `grow_keep_months` 6 set the cash ratio (1.0 gave 1.2x, 0.4 gave 2.5–3.1x with the larger brands of a first fixture); `supply_cost`, `discount.synergy` and `discount.per_segment` were tried at 0.3 / 0.5 / 0.02 without moving T3's integrated half (1 of 10) and are left at 0.80 and §31.7's 0.15 and 0.03. A marketing multiplier per mandate had no effect (the brands' products carry no marketing budget) and was removed.
 
 **Reece's ruling (2026-11-08): merge with these misses recorded** as known misses for a later ruling. T3's integrated half and T4's revenue band are open (see the brief's follow-ups): the lost in-group saving is small next to what a spin-off gains, and T4's revenue gap comes from the grow/harvest brand styles the directive mapping fixes.
+
+## M17: commodities, offtake and regional power (§33.6)
+
+### M17 Commodities and power (2026-11-08, v3 lane A, merges before M18)
+
+`tools/m17_targets.py` (`tst/balance/m17.py`), nightly `tests/balance/test_m17_balance.py`, seeds 1–10.
+
+| Target | Band | Value |
+| --- | --- | --- |
+| 1 history holds | every month equal to the file; nothing ahead in the API | 0 months off on 10 seeds; `tests/integration/test_api_commodities.py` (planted future rows never shown) |
+| 2 reference phone at the lithium peak against 2020 | +3–8% | +7.3% (Nov 2022: $249.15 against $232.11) |
+| 3 lithium and cobalt offtakes from 2020, 2022 gross margin vs spot | ≥ +3 points | +3.1 to +3.3 on 10/10; no breaches |
+| 4 cheapest region's data-centre opex per CU | ≤ 0.85 × North America | 0.85 (South and Southeast Asia); §22.7 target 4 for North America +15.6 points (unchanged) |
+| 5 a shock in 2026–2039, per good; index above 3.0 | 6–10 of 10; ≤ 36 months | 7–10 of 10; 24 months (seeds 11–40: 22–29 of 30, 25 months) |
+| 6 software-only | golden snapshots unchanged | unchanged |
+
+Tuned (M17's keys only): `commodity.mixes.device_bom.share` 0.15 → 0.033 (43% at 0.15; at 0.025 target 3 was +2.5), `commodity.phi` 0.9 → 0.6 (103 months above 3.0 at 0.9). M12b's §26.6 on this branch: T2 32.5% on 10/10, T3 0.69 / 0.66 / 1.35, T4a +8.4, T4b −49%, T5 30% on 10/10, T6 100%; M12a's §22.7 all as before.
+

@@ -8,6 +8,7 @@ is shown but never the staff's skill behind it (ADR-0007).
 
 from __future__ import annotations
 
+from tst.api import commodity_views
 from tst.api.facility_views import Stored, components_out
 from tst.api.schemas.hardware import (
     BomLineOut,
@@ -194,15 +195,25 @@ def manufacturing_out(state: GameState, product: Product, data: LoadedData) -> M
                 )
             )
         has_source = bool(chips.wafer_contracts(state, product.id))
+        per_chip = t.wafer_cents / (t.per_wafer * y)
+        commodity_lines = commodity_views.cost_lines(
+            state, product.company_id, b.chips.good, per_chip, data
+        )
     else:
         bom = b.hardware.bom[product.category]
         chip_type = bom.chip_type
         index = goods.index_now(state, bom.good, d)
         good_label = d.components.good(bom.good).label.lower() if d.components else bom.good
+        commodity_lines = commodity_views.cost_lines(
+            state, product.company_id, bom.good, bom.base_cents, data
+        )
+        with_mix = " with its commodities at spot" if commodity_lines else ""
         lines.append(
             BomLineOut(
                 line="Bill of materials",
-                detail=f"{format_cents(bom.base_cents)} x the {good_label} index {index:.2f}",
+                detail=(
+                    f"{format_cents(bom.base_cents)} x the {good_label} index {index:.2f}{with_mix}"
+                ),
                 cents=round(production.unit_bom_cents(state, product, b, d)),
             )
         )
@@ -257,6 +268,7 @@ def manufacturing_out(state: GameState, product: Product, data: LoadedData) -> M
         internal_units=row.internal_units if row else 0.0,
         cogs_cents=row.cogs_cents if row else 0,
         can_launch_source=has_source,
+        commodity_lines=commodity_lines,
     )
 
 

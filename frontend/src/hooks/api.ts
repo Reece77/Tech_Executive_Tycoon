@@ -98,6 +98,8 @@ export type ProductRegion = Schemas['ProductRegionOut'];
 export type Infrastructure = Schemas['InfrastructureOut']; // M12a
 export type Facility = Schemas['FacilityOut'];
 export type Hardware = Schemas['HardwareOut']; // M12b
+export type Commodities = Schemas['CommoditiesOut']; // M17
+export type CommodityCostLine = Schemas['CommodityCostLineOut'];
 export type Manufacturing = Schemas['ManufacturingOut'];
 export type Plant = Schemas['PlantOut'];
 export type HardwareChip = Schemas['ChipOut'];
@@ -216,6 +218,7 @@ export const keys = {
   geo: (saveId: string) => ['saves', saveId, 'geo'] as const,
   infrastructure: (saveId: string) => ['saves', saveId, 'infrastructure'] as const,
   hardware: (saveId: string) => ['saves', saveId, 'hardware'] as const,
+  commodities: (saveId: string) => ['saves', saveId, 'commodities'] as const, // M17
   manufacturing: (saveId: string, productId: number) =>
     ['saves', saveId, 'manufacturing', productId] as const,
   public: (saveId: string) => ['saves', saveId, 'public'] as const, // M13
@@ -2293,6 +2296,60 @@ export function useHardwareAction(saveId: string) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: (a: HardwareAction) => applyHardware(saveId, a),
+    onSuccess: invalidate,
+  });
+}
+
+// --- M17 (formulas.md 33): commodities, offtake and regional power ---------------------------
+
+export function useCommodities(saveId: string) {
+  return useQuery({
+    queryKey: keys.commodities(saveId),
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/commodities', path(saveId))),
+  });
+}
+
+export type OfftakeBody = Schemas['OfftakeIn'];
+
+export function useOfftakeQuote(saveId: string) {
+  return useMutation({
+    mutationFn: async (body: OfftakeBody) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/commodities/offtakes/quote', {
+          ...path(saveId),
+          body,
+        }),
+      ),
+  });
+}
+
+export type CommodityAction =
+  | ({ kind: 'offtake' } & OfftakeBody)
+  | { kind: 'contract'; good: string; months: number; volume_year: number };
+
+export function useCommodityAction(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (a: CommodityAction) => {
+      if (a.kind === 'offtake') {
+        const body = {
+          good: a.good,
+          supplier: a.supplier,
+          years: a.years,
+          volume_year: a.volume_year,
+          prepay: a.prepay,
+        };
+        return unwrap(
+          await api.POST('/api/saves/{save_id}/commodities/offtakes', { ...path(saveId), body }),
+        );
+      }
+      return unwrap(
+        await api.POST('/api/saves/{save_id}/commodities/contracts', {
+          ...path(saveId),
+          body: { good: a.good, months: a.months, volume_year: a.volume_year },
+        }),
+      );
+    },
     onSuccess: invalidate,
   });
 }
