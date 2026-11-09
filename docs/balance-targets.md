@@ -553,18 +553,18 @@ Tuned (M17's keys only): `commodity.mixes.device_bom.share` 0.15 → 0.033 (43% 
 
 ## M18: prospecting and exploration (§34.6)
 
-### M18 Exploration (2026-11-09, v3 lane B; on the M17 stub deck until M17 merges)
+### M18 Exploration (2026-11-09, v3 lane B; on the combined code with M17's price deck and suppliers)
 
 `tools/m18_targets.py` (`tst/balance/m18.py`), seeds 1–30. The scripted explorer is a stage-3 company with six geologists (geology and data at the team's skill) that desk-studies twelve (region, commodity) pairs, licenses the four best high-band blocks of each, surveys, samples anomalies, drills 20 holes where the sample's upper grade could pay, scopes, infills to 40 holes, goes to a definitive study when the scoping NPV midpoint is positive, applies for the permit and answers protests with a benefit agreement; seven years of search, played to year 14.
 
 | Target | Band | Value |
 | --- | --- | --- |
 | T1 estimates converge (skill-10 team, every deposit) | 20 holes ±15%, 40 holes ±8% (median) | ±14.2%, ±7.5% |
-| T2 geologists matter (skill 15 vs 8) | 1.5–2.5x feasible projects per dollar; ranges 25–40% narrower | 1.72x per dollar of discovery spend (1.52x per dollar of all spend); 39% narrower |
-| T3 a gamble (skill-12 team) | $20–60M per feasible, permitted project over 3–8 years; ≥ 40% of surveyed blocks end in nothing | $46M median; 7.2 years licence to permit; 83% end in nothing (1 in 6 surveyed blocks becomes feasible) |
-| T4 geography is real | the leading region on ≥ 7 of 10 seeds | copper Latin America 25/30, lithium Oceania 29/30, cobalt Africa 29/30, rare earths East Asia 28/30 |
+| T2 geologists matter (skill 15 vs 8) | 1.5–2.5x feasible projects per dollar; ranges 25–40% narrower | 1.59x per dollar of discovery spend (1.42x per dollar of all spend); 39% narrower. On the M17 stub deck before the merge: 1.72x (1.52x) |
+| T3 a gamble (skill-12 team) | $20–60M per feasible, permitted project over 3–8 years; ≥ 40% of surveyed blocks end in nothing | $42M median; 7.0 years licence to permit; 84% end in nothing (1 in 6 surveyed blocks becomes feasible); stub deck: $46M, 7.2 years, 83% |
+| T4 geography is real | the leading region on ≥ 7 of 10 seeds | copper Latin America 27/30, lithium Oceania 26/30, cobalt Africa 29/30, rare earths East Asia 29/30 |
 | T5 permits vary | North America ≥ 1.5x Latin America (median) | 64 vs 36 months (1.79x) |
 | T6 nothing else moves | a company that never explores plays exactly as before | golden snapshots unchanged; identical with and without geology (24 months, 2 seeds) |
 | Ranges hold their confidence | 90% | `tests/property/test_m18_estimates.py`, 30 seeds (grade after 8/20/40 holes, sample, tonnage) |
 
-Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8–9). T2 is read per dollar of discovery spend (Decision 10, for review).
+Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8–9). T2 is read per dollar of discovery spend (Decision 10, for review); per dollar of all spend it is 1.42x on the combined code, under the band's 1.5x. M17's §33.6 targets re-run on the combined code: history 0 months off, phone +7.3% at the lithium peak, hedging +3.1 to +3.3 points, cheapest power 0.85x, shocks 7-10 of 10 seeds per good with the longest run above 3.0 at 24 months; golden snapshots unchanged.
