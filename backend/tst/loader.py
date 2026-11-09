@@ -49,6 +49,7 @@ from tst.sim.data_models import (
     TagsFile,
 )
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
+from tst.sim.exploration.config import GeologyFile
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
 from tst.sim.ledger import ENGINE_ACCOUNTS
@@ -85,6 +86,7 @@ COMMODITIES_FILE = "commodities.yaml"  # M17 (formulas.md 33.1)
 COMMODITY_HISTORY_FILE = "commodities_history.yaml"  # M17 (formulas.md 33.1)
 POWER_HISTORY_FILE = "power_history.yaml"  # M17 (formulas.md 33.5)
 SUPPLIERS_FILE = "suppliers.yaml"  # M17 (formulas.md 33.4)
+GEOLOGY_FILE = "geology.yaml"  # M18 (formulas.md 34.1)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -100,6 +102,7 @@ DATA_FILES = (
     ENTRANTS_FILE,
     ERAS_FILE,
     VOICES_FILE,
+    GEOLOGY_FILE,
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
@@ -428,6 +431,25 @@ def _check_hardware(balance: Balance, data: GameData, goods: set[str]) -> None:
             raise DataLoadError(f"{CATEGORIES_FILE}: {c.key!r} lacks chips.price_segment")
 
 
+def geology_problems(balance: Balance, data: GameData) -> list[str]:
+    """M18 (34.1): geology.yaml's regions are regions.yaml's, and the geologist role exists."""
+    problems: list[str] = []
+    if data.geology is None:
+        return problems
+    regions = set(data.region_keys)
+    if set(data.geology.regions) != regions:
+        problems.append(
+            f"regions must be exactly regions.yaml's: missing "
+            f"{sorted(regions - set(data.geology.regions))}, unknown "
+            f"{sorted(set(data.geology.regions) - regions)}"
+        )
+    if balance.exploration.geologist_role not in {r.key for r in data.roles}:
+        problems.append(
+            f"exploration.geologist_role {balance.exploration.geologist_role!r} not in roles.yaml"
+        )
+    return problems
+
+
 def research_problems(balance: Balance, data: GameData) -> list[str]:
     """M11 (21): domains' skills, categories, eras' domains and boosts, and personalities
     all name things the other files define."""
@@ -544,6 +566,7 @@ def load_all(
     )
     power_history = _validate(PowerHistoryFile, parsed[POWER_HISTORY_FILE], POWER_HISTORY_FILE)
     suppliers = _validate(SuppliersFile, parsed[SUPPLIERS_FILE], SUPPLIERS_FILE)
+    geology = _validate(GeologyFile, parsed[GEOLOGY_FILE], GEOLOGY_FILE)
     game_data = _validate(
         GameData,
         {
@@ -586,6 +609,7 @@ def load_all(
             "commodity_history": commodity_history,
             "power_history": power_history,
             "suppliers": suppliers,
+            "geology": geology,
         },
         "seed data cross-check",
     )
@@ -593,6 +617,8 @@ def load_all(
     traits = {t.key for t in game_data.personality}
     if bad := sorted({v.rule.trait for v in game_data.voices if v.rule} - traits):
         raise DataLoadError(f"{VOICES_FILE}: rules name unknown personality traits {bad}")
+    if problems := geology_problems(balance, game_data):
+        raise DataLoadError(f"{GEOLOGY_FILE}: " + "; ".join(problems))
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

@@ -1,0 +1,160 @@
+# Geology (docs/formulas.md 34.1, M18, lane B): where each explorable commodity is found, how
+# its deposits are shaped, and what each region's ground costs to explore and permit.
+# Data: docs/v3-research/v3-data-dossier.md section 2 (production shares, c. 2020-2024) and
+# section 6 (project economics). Gallium and germanium are refining by-products (M20), and
+# silicon metal, polysilicon and neon are made, not mined, so none of them is explored here.
+#
+# Order is significant: deposits at game start are drawn region by region in regions.yaml
+# order and, within a block, commodity by commodity in this file's order (stream geology,
+# ADR-0013), so append and never reorder.
+#
+# commodities (keys are M17's commodities.yaml keys, so the price deck can be read for each):
+#   label, grade_unit: how a grade is shown (pct: percent of ore; ppm: parts per million).
+#   kinds: deposit types and their relative weights (hard_rock, brine, placer); a region can
+#     override them under regions.<r>.kinds.<commodity>.
+#   grade_median, grade_sd: lognormal true grade (a fraction of ore that is saleable product,
+#     e.g. 0.006 = 0.6% Cu), median and log-sd. Assumptions sized from typical deposits.
+#   tonnage_median_mt, tonnage_sd: lognormal ore tonnage in millions of tonnes (game scale: a
+#     mid-size deposit, smaller than the world's giants).
+#   hole_sd: hole-to-hole log-sd of assays around the deposit's grade (formulas.md 34.2): how
+#     patchy the ore is (assumption; M18 tuning x1.35 for 34.6 target 1).
+#   recovery: [lo, hi] uniform true metallurgical recovery (assumption).
+#   capex_per_tpy_usd: capital intensity, dollars per tonne a year of saleable product at the
+#     median grade and mid recovery (dossier 6: copper $20-30k, lithium carbonate $30-45k;
+#     others assumptions). Mines and mills are sized by ore, so a poorer deposit costs more per
+#     tonne of product: capex and operating cost scale with ore moved (formulas.md 34.2).
+#   opex_per_t_usd: operating cost per tonne of product at the median grade (dossier 6: copper
+#     AISC $1.5-3.0/lb, i.e. about $3,300-6,600/t; others assumptions).
+#   trace_grade: the grade a hole reports where no deposit of the commodity exists (assays
+#     find background mineralisation, never nothing).
+commodities:
+  - { key: copper, label: Copper, grade_unit: pct, kinds: { hard_rock: 1.0 }, grade_median: 0.0065, grade_sd: 0.45, tonnage_median_mt: 90, tonnage_sd: 0.8, hole_sd: 0.57, recovery: [0.80, 0.92], capex_per_tpy_usd: 25000, opex_per_t_usd: 4400, trace_grade: 0.0004 }
+  - { key: lithium_carbonate, label: Lithium, grade_unit: pct, kinds: { hard_rock: 0.6, brine: 0.4 }, grade_median: 0.022, grade_sd: 0.45, tonnage_median_mt: 20, tonnage_sd: 0.8, hole_sd: 0.51, recovery: [0.60, 0.85], capex_per_tpy_usd: 36000, opex_per_t_usd: 6000, trace_grade: 0.0015 }
+  - { key: cobalt, label: Cobalt, grade_unit: pct, kinds: { hard_rock: 1.0 }, grade_median: 0.0028, grade_sd: 0.45, tonnage_median_mt: 40, tonnage_sd: 0.8, hole_sd: 0.61, recovery: [0.70, 0.90], capex_per_tpy_usd: 60000, opex_per_t_usd: 17000, trace_grade: 0.0002 }
+  - { key: ndpr_oxide, label: Rare earths (NdPr), grade_unit: pct, kinds: { hard_rock: 0.7, placer: 0.3 }, grade_median: 0.009, grade_sd: 0.45, tonnage_median_mt: 18, tonnage_sd: 0.8, hole_sd: 0.54, recovery: [0.55, 0.80], capex_per_tpy_usd: 150000, opex_per_t_usd: 26000, trace_grade: 0.0006 }
+  - { key: quartz_hp, label: High-purity quartz, grade_unit: pct, kinds: { hard_rock: 1.0 }, grade_median: 0.25, grade_sd: 0.40, tonnage_median_mt: 1.5, tonnage_sd: 0.7, hole_sd: 0.41, recovery: [0.40, 0.65], capex_per_tpy_usd: 9000, opex_per_t_usd: 3500, trace_grade: 0.02 }
+  - { key: tin, label: Tin, grade_unit: pct, kinds: { hard_rock: 0.6, placer: 0.4 }, grade_median: 0.006, grade_sd: 0.45, tonnage_median_mt: 15, tonnage_sd: 0.8, hole_sd: 0.61, recovery: [0.60, 0.80], capex_per_tpy_usd: 40000, opex_per_t_usd: 11000, trace_grade: 0.0004 }
+  - { key: tantalum, label: Tantalum, grade_unit: ppm, kinds: { hard_rock: 0.7, placer: 0.3 }, grade_median: 0.0003, grade_sd: 0.45, tonnage_median_mt: 20, tonnage_sd: 0.8, hole_sd: 0.61, recovery: [0.55, 0.75], capex_per_tpy_usd: 300000, opex_per_t_usd: 95000, trace_grade: 0.00002 }
+
+# regions (regions.yaml keys):
+#   prospectivity: 0-1 per commodity, from dossier 2's mining shares (D/V there), each with its
+#     basis. The chance a block holds a deposit of the commodity is prospectivity x
+#     geology.deposit_rate, and its size and grade scale with it (geology.size_lift).
+#   licence_fee_cents: an exploration licence on one block for geology.licence_years years
+#     (assumption: Australian and Canadian claims are cheap, African and Latin American
+#     concessions dearer once fees and community levies are counted).
+#   permit_years: [lo, hi] years a permit takes for a block of average difficulty (dossier 6:
+#     US and Canada slowest, 2-7 years overall; the US 19.1 years discovery-to-production vs
+#     15.5 global). Scaled by the block's hidden permitting difficulty.
+#   cost_index: survey and drilling costs relative to North America (assumption: remote and
+#     high-wage ground costs more).
+#   sensitivity: the mean hidden community sensitivity of the region's blocks, 0-1 (assumption).
+#   refusal: the chance a permit is refused for a block of average difficulty (assumption).
+regions:
+  north_america:
+    prospectivity: { copper: 0.35, lithium_carbonate: 0.15, cobalt: 0.06, ndpr_oxide: 0.40, quartz_hp: 0.90, tin: 0.03, tantalum: 0.05 }
+    basis:
+      copper: "US 5%, Canada and Mexico a further few percent of mine copper (dossier 2, D)"
+      lithium_carbonate: "Nevada and Quebec projects; under 2% of 2024 mine output (dossier 2)"
+      cobalt: "Canada 1% (dossier 2, D)"
+      ndpr_oxide: "US 12% (Mountain Pass, dossier 2, D)"
+      quartz_hp: "Spruce Pine, NC dominant for crucible grade (dossier 2, R)"
+      tin: "no significant mine output (dossier 2)"
+      tantalum: "no significant mine output (dossier 2)"
+    licence_fee_cents: 2500000
+    permit_years: [4.0, 7.0]
+    cost_index: 1.0
+    sensitivity: 0.55
+    refusal: 0.15
+  europe:
+    prospectivity: { copper: 0.25, lithium_carbonate: 0.08, cobalt: 0.08, ndpr_oxide: 0.06, quartz_hp: 0.40, tin: 0.04, tantalum: 0.04 }
+    basis:
+      copper: "Russia 4%, Kazakhstan 3% (dossier 2, D; both counted with Europe)"
+      lithium_carbonate: "Portugal and Serbia deposits; negligible output (dossier 2)"
+      cobalt: "Russia 3% (dossier 2, D)"
+      ndpr_oxide: "Russia about 1% (dossier 2, D)"
+      quartz_hp: "Norway and Russia (dossier 2, R)"
+      tin: "negligible (dossier 2)"
+      tantalum: "negligible (dossier 2)"
+    licence_fee_cents: 3500000
+    permit_years: [3.0, 6.0]
+    cost_index: 1.1
+    sensitivity: 0.60
+    refusal: 0.18
+  east_asia:
+    prospectivity: { copper: 0.25, lithium_carbonate: 0.30, cobalt: 0.04, ndpr_oxide: 0.95, quartz_hp: 0.20, tin: 0.60, tantalum: 0.12 }
+    basis:
+      copper: "China 8% (dossier 2, D)"
+      lithium_carbonate: "China 17% (dossier 2, D)"
+      cobalt: "negligible mine output (dossier 2)"
+      ndpr_oxide: "China 71% (dossier 2, D)"
+      quartz_hp: "China, lower grade (dossier 2, R)"
+      tin: "China 24% (dossier 2, D)"
+      tantalum: "China 3% (dossier 2, D)"
+    licence_fee_cents: 3000000
+    permit_years: [1.0, 3.0]
+    cost_index: 0.8
+    sensitivity: 0.30
+    refusal: 0.10
+  south_southeast_asia:
+    prospectivity: { copper: 0.20, lithium_carbonate: 0.04, cobalt: 0.35, ndpr_oxide: 0.25, quartz_hp: 0.25, tin: 0.75, tantalum: 0.05 }
+    basis:
+      copper: "Indonesia 4% (dossier 2, D)"
+      lithium_carbonate: "negligible (dossier 2)"
+      cobalt: "Indonesia 12%, a nickel by-product (dossier 2, D)"
+      ndpr_oxide: "Burma 7%, Thailand and India about 1% each (dossier 2, D)"
+      quartz_hp: "India (dossier 2, R)"
+      tin: "Indonesia 19%, Burma 7%, Vietnam 4% (dossier 2, D)"
+      tantalum: "negligible (dossier 2)"
+    licence_fee_cents: 2000000
+    permit_years: [1.5, 4.0]
+    cost_index: 0.75
+    sensitivity: 0.50
+    refusal: 0.15
+  latin_america:
+    prospectivity: { copper: 0.95, lithium_carbonate: 0.35, cobalt: 0.03, ndpr_oxide: 0.08, quartz_hp: 0.10, tin: 0.65, tantalum: 0.15 }
+    basis:
+      copper: "Chile 24%, Peru 12% (dossier 2, D)"
+      lithium_carbonate: "Chile 20%, Argentina 8%, Brazil 4% (dossier 2, D); brine: set below Oceania's 37% share by more than the shares differ, as brine fields are few and slow (assumption, M18 tuning 0.45 -> 0.35 for 34.6 target 4)"
+      cobalt: "negligible (dossier 2)"
+      ndpr_oxide: "Brazil's ionic clays; under 1% (dossier 2)"
+      quartz_hp: "minor (dossier 2)"
+      tin: "Peru 11%, Brazil 9%, Bolivia 7% (dossier 2, D)"
+      tantalum: "Brazil 4% (dossier 2, D)"
+    kinds: { lithium_carbonate: { brine: 0.85, hard_rock: 0.15 } }
+    licence_fee_cents: 4000000
+    permit_years: [2.0, 4.0]
+    cost_index: 0.9
+    sensitivity: 0.60
+    refusal: 0.12
+  africa:
+    prospectivity: { copper: 0.55, lithium_carbonate: 0.25, cobalt: 0.95, ndpr_oxide: 0.12, quartz_hp: 0.10, tin: 0.30, tantalum: 0.95 }
+    basis:
+      copper: "DR Congo 13%, Zambia 4% (dossier 2, D)"
+      lithium_carbonate: "Zimbabwe 9% (dossier 2, D)"
+      cobalt: "DR Congo 75% (dossier 2, D)"
+      ndpr_oxide: "Nigeria and Madagascar about 1% each (dossier 2, D)"
+      quartz_hp: "minor (dossier 2)"
+      tin: "DR Congo 9% (dossier 2, D)"
+      tantalum: "DR Congo 51%, Nigeria 16%, Rwanda 15% (dossier 2, D)"
+    licence_fee_cents: 4500000
+    permit_years: [1.5, 4.0]
+    cost_index: 1.15
+    sensitivity: 0.65
+    refusal: 0.12
+  oceania:
+    prospectivity: { copper: 0.30, lithium_carbonate: 0.95, cobalt: 0.08, ndpr_oxide: 0.35, quartz_hp: 0.15, tin: 0.12, tantalum: 0.12 }
+    basis:
+      copper: "Australia about 4% (dossier 2, D from USGS tonnages)"
+      lithium_carbonate: "Australia 37%, spodumene (dossier 2, D)"
+      cobalt: "Australia 2% (dossier 2, D)"
+      ndpr_oxide: "Australia 8% (Mt Weld, dossier 2, D)"
+      quartz_hp: "minor (dossier 2)"
+      tin: "Australia 4% (dossier 2, D)"
+      tantalum: "Australia 2% (dossier 2, D)"
+    kinds: { lithium_carbonate: { hard_rock: 0.95, brine: 0.05 } }
+    licence_fee_cents: 1500000
+    permit_years: [2.0, 4.0]
+    cost_index: 1.05
+    sensitivity: 0.45
+    refusal: 0.10

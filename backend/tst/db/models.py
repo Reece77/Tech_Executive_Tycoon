@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 41
+SCHEMA_VERSION = 42  # M25: 0040; M17: 0041; M18: 0042
 
 
 class Base(DeclarativeBase):
@@ -1924,4 +1924,59 @@ class CommodityDealRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M18 (formulas.md 34; migration 0042): exploration ---------------------------------------
+
+
+class GeoBlockRow(Base):
+    """A block and its hidden deposit (34.1; 0042). `data` holds the true_* fields: hidden
+    values (ADR-0007), read only by the sim, never by the API."""
+
+    __tablename__ = "exploration_block"
+
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    idx: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class SupplierLicenceRow(Base):
+    """A supplier's exploration licence (34.4; 0042)."""
+
+    __tablename__ = "exploration_supplier_licence"
+
+    region: Mapped[str] = mapped_column(String(32), primary_key=True)
+    block: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class DeskStudyRow(Base):
+    """A desk study and its heat-map bands (34.2; 0042)."""
+
+    __tablename__ = "exploration_desk_study"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class ExplorationProjectRow(Base):
+    """A licensed block's pipeline (34.2; 0042): revealed results, and the hidden permit
+    month (`hidden_due_turn`)."""
+
+    __tablename__ = "exploration_project"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class DrillHoleRow(Base):
+    """A drill hole's assay (34.2; 0042): public once drilled."""
+
+    __tablename__ = "exploration_hole"
+
+    project_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

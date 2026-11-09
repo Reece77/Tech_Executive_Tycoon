@@ -114,7 +114,8 @@ def template_draft(
                 "press_step",
                 "founder_step",
                 "group_step",
-            ):  # M16 too
+                "exploration_step",
+            ):  # M16, M18 too
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(

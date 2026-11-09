@@ -191,3 +191,16 @@ roles:
     work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
     interest_weights: { ai: 0, hardware: 5, crypto: 0, climate: 2, security: 0, gaming: 0, mining: 1, policy: 1, design: 1, fintech: 0, consumer: 1, enterprise: 2, open_source: 0 }
     salary_band_mid_cents: { junior: 5200000, mid: 7000000, senior: 9000000, staff: 11000000, principal: 13000000, exec: 15200000 }
+
+  # --- M18 (formulas.md 34.2): exploration, appended ---
+  - key: geologist
+    label: Geologist
+    product_function: none
+    summary: "Finds and measures mineral deposits: desk studies, surveys, sampling, drilling and resource estimates. Field geology is their geology skill; geophysics and resource estimation draw on geology and data together."
+    why_hire: "Hire one before exploring: every exploration stage needs a geologist free, and the team's skill narrows every estimate range (34.2). Mining cities (Perth, Santiago, Johannesburg, Toronto) have the deepest pools."
+    primary: [geology, data]
+    secondary: [mining_engineering, communication, operations, judgment_of_talent]
+    work_style: researcher
+    work_style_weights: { builder: 2, operator: 3, researcher: 5, seller: 0 }
+    interest_weights: { ai: 0, hardware: 1, crypto: 0, climate: 3, security: 0, gaming: 0, mining: 8, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 6000000, mid: 8200000, senior: 10500000, staff: 12800000, principal: 15000000, exec: 17500000 }

@@ -16747,6 +16747,673 @@
         }
       }
     },
+    "/api/saves/{save_id}/exploration": {
+      "get": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Get Exploration",
+        "description": "Regions and their blocks with heat-map bands and licences, desk studies, and every\nproject's pipeline, ranges, permit and sale quote (34.5).",
+        "operationId": "getExploration",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/desk-study": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Start Desk Study",
+        "description": "A desk study of one commodity in one region: a heat map of its blocks (34.2).",
+        "operationId": "startDeskStudy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeskStudyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/licence": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Take Licence",
+        "description": "An exploration licence on a free block: a project (34.2).",
+        "operationId": "takeLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/projects/{project_id}/renew": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Renew Licence",
+        "operationId": "renewLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/projects/{project_id}/stage": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Start Stage",
+        "description": "Start a survey, sampling, a resource estimate, a feasibility study or the permit.",
+        "operationId": "startExplorationStage",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StageIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/projects/{project_id}/drill": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Order Drilling",
+        "description": "A programme of holes, drilled a few a month and paid hole by hole (34.2).",
+        "operationId": "orderDrilling",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrillIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/projects/{project_id}/sell": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Sell Project",
+        "description": "Sell the project to a supplier at its quote (34.2).",
+        "operationId": "sellProject",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/exploration/projects/{project_id}/relinquish": {
+      "post": {
+        "tags": [
+          "exploration"
+        ],
+        "summary": "Relinquish Project",
+        "operationId": "relinquishProject",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplorationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/explain/{metric}": {
       "get": {
         "tags": [
@@ -22211,6 +22878,78 @@
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
       },
+      "DeskStudyIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "commodity": {
+            "type": "string",
+            "title": "Commodity"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "commodity"
+        ],
+        "title": "DeskStudyIn"
+      },
+      "DeskStudyOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "commodity": {
+            "type": "string",
+            "title": "Commodity"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "done_turn": {
+            "type": "integer",
+            "title": "Done Turn"
+          },
+          "done": {
+            "type": "boolean",
+            "title": "Done"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "region",
+          "commodity",
+          "start_turn",
+          "done_turn",
+          "done"
+        ],
+        "title": "DeskStudyOut"
+      },
       "DiligenceIn": {
         "properties": {
           "company_id": {
@@ -22827,6 +23566,49 @@
         ],
         "title": "DomainRivalsOut"
       },
+      "DrillHoleOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "assay": {
+            "type": "number",
+            "title": "Assay",
+            "description": "The hole's grade, a fraction of ore (public once drilled)"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "turn",
+          "assay",
+          "cost_cents"
+        ],
+        "title": "DrillHoleOut"
+      },
+      "DrillIn": {
+        "properties": {
+          "holes": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Holes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "holes"
+        ],
+        "title": "DrillIn"
+      },
       "DriverOut": {
         "properties": {
           "label": {
@@ -23334,6 +24116,35 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "EstimateRangeOut": {
+        "properties": {
+          "low": {
+            "type": "number",
+            "title": "Low"
+          },
+          "mid": {
+            "type": "number",
+            "title": "Mid"
+          },
+          "high": {
+            "type": "number",
+            "title": "High"
+          },
+          "pct": {
+            "type": "number",
+            "title": "Pct",
+            "description": "The half-width shown as +/- this share of the midpoint"
+          }
+        },
+        "type": "object",
+        "required": [
+          "low",
+          "mid",
+          "high",
+          "pct"
+        ],
+        "title": "EstimateRangeOut"
       },
       "EventChoiceOut": {
         "properties": {
@@ -23900,6 +24711,565 @@
           "percent",
           "months"
         ]
+      },
+      "ExplorationActionOut": {
+        "properties": {
+          "exploration": {
+            "$ref": "#/components/schemas/ExplorationOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exploration",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ExplorationActionOut"
+      },
+      "ExplorationOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "description": "The stated confidence of every range"
+          },
+          "desk_cost_cents": {
+            "type": "integer",
+            "title": "Desk Cost Cents"
+          },
+          "desk_months": {
+            "type": "integer",
+            "title": "Desk Months"
+          },
+          "max_programme": {
+            "type": "integer",
+            "title": "Max Programme"
+          },
+          "commodities": {
+            "items": {
+              "$ref": "#/components/schemas/GeoCommodityOut"
+            },
+            "type": "array",
+            "title": "Commodities"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/GeoRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "explorers": {
+            "items": {
+              "$ref": "#/components/schemas/ExplorerOut"
+            },
+            "type": "array",
+            "title": "Explorers"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/GeoBlockOut"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "desk_studies": {
+            "items": {
+              "$ref": "#/components/schemas/DeskStudyOut"
+            },
+            "type": "array",
+            "title": "Desk Studies"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ExplorationProjectOut"
+            },
+            "type": "array",
+            "title": "Projects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "confidence",
+          "desk_cost_cents",
+          "desk_months",
+          "max_programme",
+          "commodities",
+          "regions",
+          "explorers",
+          "blocks",
+          "desk_studies",
+          "projects"
+        ],
+        "title": "ExplorationOut"
+      },
+      "ExplorationProjectOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "block": {
+            "type": "integer",
+            "title": "Block"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active | permitted | refused | sold | relinquished | lapsed"
+          },
+          "commodity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commodity"
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage",
+            "description": "The stage running now"
+          },
+          "stage_due_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Due Turn"
+          },
+          "holes_left": {
+            "type": "integer",
+            "title": "Holes Left"
+          },
+          "licence_turn": {
+            "type": "integer",
+            "title": "Licence Turn"
+          },
+          "expires_turn": {
+            "type": "integer",
+            "title": "Expires Turn"
+          },
+          "renewals": {
+            "type": "integer",
+            "title": "Renewals"
+          },
+          "renewable": {
+            "type": "boolean",
+            "title": "Renewable"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "reading": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reading",
+            "description": "Survey: none | weak | strong"
+          },
+          "deposit_chance_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deposit Chance Low",
+            "description": "The stated chance of a deposit under this reading"
+          },
+          "deposit_chance_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deposit Chance High"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind",
+            "description": "hard_rock | brine | placer, as the survey reads it"
+          },
+          "sample_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "holes": {
+            "items": {
+              "$ref": "#/components/schemas/DrillHoleOut"
+            },
+            "type": "array",
+            "title": "Holes"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The running grade estimate from the holes"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "inferred | indicated | measured"
+          },
+          "est_grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "est_tonnage_mt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "The latest feasibility study's level"
+          },
+          "capex_usd": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "opex_usd_per_t": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recovery": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstimateRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "npv_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv Low Cents"
+          },
+          "npv_mid_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv Mid Cents"
+          },
+          "npv_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Npv High Cents"
+          },
+          "permit_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permit Start"
+          },
+          "permit_years_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permit Years Low",
+            "description": "The region's typical years (never the decision month)"
+          },
+          "permit_years_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permit Years High"
+          },
+          "protests": {
+            "type": "integer",
+            "title": "Protests"
+          },
+          "protest_open": {
+            "type": "boolean",
+            "title": "Protest Open"
+          },
+          "benefit_agreement": {
+            "type": "boolean",
+            "title": "Benefit Agreement"
+          },
+          "pushes": {
+            "type": "integer",
+            "title": "Pushes"
+          },
+          "permit_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permit Turn"
+          },
+          "sale_quote_cents": {
+            "type": "integer",
+            "title": "Sale Quote Cents",
+            "description": "What a supplier would pay now (0: no buyer)"
+          },
+          "buyer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buyer"
+          },
+          "sold_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold To"
+          },
+          "sale_cents": {
+            "type": "integer",
+            "title": "Sale Cents"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/StageOptionOut"
+            },
+            "type": "array",
+            "title": "Options"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "company",
+          "region",
+          "block",
+          "label",
+          "status",
+          "commodity",
+          "stage",
+          "stage_due_turn",
+          "holes_left",
+          "licence_turn",
+          "expires_turn",
+          "renewals",
+          "renewable",
+          "spent_cents",
+          "reading",
+          "kind",
+          "sample_grade",
+          "holes",
+          "grade",
+          "category",
+          "est_grade",
+          "est_tonnage_mt",
+          "level",
+          "capex_usd",
+          "opex_usd_per_t",
+          "recovery",
+          "npv_low_cents",
+          "npv_mid_cents",
+          "npv_high_cents",
+          "permit_start",
+          "protests",
+          "protest_open",
+          "benefit_agreement",
+          "pushes",
+          "permit_turn",
+          "sale_quote_cents",
+          "buyer",
+          "sold_to",
+          "sale_cents",
+          "options"
+        ],
+        "title": "ExplorationProjectOut"
+      },
+      "ExplorerOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "geologists": {
+            "type": "integer",
+            "title": "Geologists"
+          },
+          "busy": {
+            "type": "integer",
+            "title": "Busy",
+            "description": "Desk studies and geology stages running (one a geologist)"
+          },
+          "gate": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gate",
+            "description": "What stands between it and exploring; empty: it may"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "geologists",
+          "busy",
+          "gate"
+        ],
+        "title": "ExplorerOut"
       },
       "FacilityOut": {
         "properties": {
@@ -25580,6 +26950,84 @@
         ],
         "title": "GeoActionOut"
       },
+      "GeoBlockOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "0-based; shown as index + 1"
+          },
+          "holder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holder",
+            "description": "Who holds its licence: a supplier or a company"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id",
+            "description": "The group's open project on it, if any"
+          },
+          "bands": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Bands",
+            "description": "commodity -> low | medium | high from the group's latest desk study"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "index",
+          "holder",
+          "project_id",
+          "bands"
+        ],
+        "title": "GeoBlockOut"
+      },
+      "GeoCommodityOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "grade_unit": {
+            "type": "string",
+            "title": "Grade Unit",
+            "description": "pct | ppm: how a grade is shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "grade_unit"
+        ],
+        "title": "GeoCommodityOut"
+      },
       "GeoOut": {
         "properties": {
           "hq_city": {
@@ -25658,6 +27106,71 @@
           "relocation_cents"
         ],
         "title": "GeoOut"
+      },
+      "GeoRegionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "prospectivity": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Prospectivity",
+            "description": "0-1 per commodity: the region's public geology (34.1)"
+          },
+          "basis": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Basis"
+          },
+          "licence_fee_cents": {
+            "type": "integer",
+            "title": "Licence Fee Cents"
+          },
+          "permit_years_low": {
+            "type": "number",
+            "title": "Permit Years Low"
+          },
+          "permit_years_high": {
+            "type": "number",
+            "title": "Permit Years High"
+          },
+          "survey_cost_cents": {
+            "type": "integer",
+            "title": "Survey Cost Cents"
+          },
+          "hole_cost_low_cents": {
+            "type": "integer",
+            "title": "Hole Cost Low Cents"
+          },
+          "hole_cost_high_cents": {
+            "type": "integer",
+            "title": "Hole Cost High Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "prospectivity",
+          "basis",
+          "licence_fee_cents",
+          "permit_years_low",
+          "permit_years_high",
+          "survey_cost_cents",
+          "hole_cost_low_cents",
+          "hole_cost_high_cents"
+        ],
+        "title": "GeoRegionOut"
       },
       "GiftIn": {
         "properties": {
@@ -28792,6 +30305,36 @@
         ],
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
+      },
+      "LicenceIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "block": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Block"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "block"
+        ],
+        "title": "LicenceIn"
       },
       "LicenseIn": {
         "properties": {
@@ -38552,6 +40095,72 @@
           "unit_id"
         ],
         "title": "StaffIn"
+      },
+      "StageIn": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "survey",
+              "sampling",
+              "estimate",
+              "scoping",
+              "pre_feasibility",
+              "definitive",
+              "permitting"
+            ],
+            "title": "Stage"
+          },
+          "commodity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commodity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage"
+        ],
+        "title": "StageIn"
+      },
+      "StageOptionOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "cost_cents",
+          "months",
+          "allowed"
+        ],
+        "title": "StageOptionOut"
       },
       "StageReachedOut": {
         "properties": {

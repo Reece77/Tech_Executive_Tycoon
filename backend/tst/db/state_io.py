@@ -24,6 +24,7 @@ from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, ins
 from sqlalchemy.orm import Session
 
 from tst.db.commodity_io import load_commodities, sync_commodities
+from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.group_io import load_group, sync_group
@@ -567,6 +568,7 @@ def load_state(session: Session) -> GameState:
     state = load_founder(session, state, has_table)  # M24 (0037)
     state = load_group(session, state, has_table)  # M16 (0039)
     state = load_commodities(session, state, has_table)  # M17 (0041)
+    state = load_exploration(session, state, has_table)  # M18 (0041)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
     state = _load_public(session, state)
@@ -1938,6 +1940,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_founder(session, old, new, has_table)  # M24 (0037)
     sync_group(session, old, new, has_table)  # M16 (0039)
     sync_commodities(session, old, new, has_table)  # M17 (0041)
+    sync_exploration(session, old, new, has_table)  # M18 (0041)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
     _sync_public(session, old, new)

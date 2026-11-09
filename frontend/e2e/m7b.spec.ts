@@ -105,6 +105,7 @@ test('(c) search History for a hired person and open their profile', async ({ pa
   const hire = people.find((p) => !p.is_founder);
   if (!hire) throw new Error('the fixture hires three engineers');
   await page.goto(`/game/${save}/inbox`);
+  await expect(page.getByTestId('game-date')).toBeVisible(); // the hotkeys are listening
   await page.keyboard.press('9');
   await expect(page).toHaveURL(/\/history$/);
   await expect(page.getByTestId('history-search')).toBeVisible();

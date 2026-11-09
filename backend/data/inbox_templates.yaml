@@ -394,3 +394,52 @@ templates:
   offtake_breached:
     title: "{deal} broken by the supplier"
     body: "The supplier stopped delivering after {taken} units, having saved you {hedge_cents} against spot. What is left of any prepayment has been returned. You now buy this commodity at spot."
+  # --- M18 (formulas.md 34.2-34.3): exploration ---
+  desk_study_done:
+    title: "Desk study done: {commodity} in {region}"
+    body: "The geologists have mapped {region} for {commodity}: {high} blocks look highly prospective. The heat map is on the Exploration screen."
+  licence_taken:
+    title: "Exploration licence: {block}"
+    body: "The licence on {block} cost {fee} and runs five years, renewable once. A survey is the next step."
+  survey_done:
+    title: "Survey done: {block}"
+    body: "The geophysics and geochemistry read a {reading} anomaly ({commodity}). See the stated chance of a deposit on the project."
+  sampling_done:
+    title: "Sampling done: {block}"
+    body: "The first samples give a grade range of about ±{pct}%. Drilling narrows it."
+  drilling_done:
+    title: "Drilling done: {block}"
+    body: "{holes} holes drilled; the grade estimate is now ±{pct}%."
+  estimate_done:
+    title: "Resource estimate: {block}"
+    body: "The resource is classed {category}, with tonnage and grade ranges on the project."
+  study_done:
+    title: "{level} study done: {block}"
+    body: "The study puts the project's NPV at about {npv} at the price deck, inside a range shown on the project."
+  protest_started:
+    title: "Trouble near {block}"
+    body: "The community near {block} is organising against the project. Expect to answer it next month."
+  injunction:
+    title: "Injunction: {block}"
+    body: "Pushing on brought a court injunction: legal costs, and the permit decision moves back months."
+  permit_granted:
+    title: "Permit granted: {block}"
+    body: "{block} is permitted: a project ready to build (from M19) or to sell."
+  permit_refused:
+    title: "Permit refused: {block}"
+    body: "The regulator refused the permit for {block}. The project is over."
+  licence_lapsed:
+    title: "Licence lapsed: {block}"
+    body: "The licence on {block} ran out and the block is free again."
+  bonanza_intercept:
+    title: "Bonanza intercept: {block}"
+    body: "Hole {hole} on {block} came back far above the running estimate. The news is out."
+  dry_streak:
+    title: "Dry holes: {block}"
+    body: "The last {holes} holes on {block} came back well under the running estimate."
+  drilling_accident:
+    title: "Drilling accident: {block}"
+    body: "An accident on {block}'s rig brought a {fine} fine; drilling pauses a month."
+  project_sold:
+    title: "Project sold: {block}"
+    body: "{buyer} bought {block} for {price}."

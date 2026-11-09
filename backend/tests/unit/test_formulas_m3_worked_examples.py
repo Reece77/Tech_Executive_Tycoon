@@ -52,7 +52,12 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
     )
     assert sorted(by_function["seller"]) == ["account_executive", "sales_representative"]
     assert by_function["marketer"] == ["marketer"]
-    assert sorted(by_function["none"]) == ["finance_manager", "operations_manager", "recruiter"]
+    assert sorted(by_function["none"]) == [
+        "finance_manager",
+        "geologist",
+        "operations_manager",
+        "recruiter",
+    ]  # M18: geologist
 
 
 def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:

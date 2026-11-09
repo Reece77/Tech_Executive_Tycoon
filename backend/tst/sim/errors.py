@@ -306,3 +306,14 @@ class CommodityRuleError(SimError):
     the game has not reached (M17, formulas.md 33)."""
 
     code = "commodity_rule"
+
+
+class ExplorationRuleError(SimError):
+    """A desk study, licence, pipeline stage, permit or sale the exploration rules do not allow
+    (M18, formulas.md 34). The message never names a deposit's hidden truth (34.5)."""
+
+    code = "exploration_rule"
+
+
+class UnknownExplorationProjectError(NotFoundError):  # M18
+    code = "unknown_exploration_project"

@@ -15,6 +15,16 @@ from typing import Any, Final
 
 WITHHELD_NAMES: Final = frozenset(
     {
+        # M18 (34.5): a block's physical truths and a team's range factor
+        "decision_turn",
+        "depth_m",
+        "due_turn",
+        "factor",
+        "infra_km",
+        "permit_difficulty",
+        "range_factor",
+        "sensitivity",
+        "team_factor",
         "acceptance_probability",
         "affinity",
         "anthropic_api_key",

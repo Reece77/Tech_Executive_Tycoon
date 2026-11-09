@@ -93,6 +93,8 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "group": 45,  # M16 (31)
         "founder_life": 46,  # M24 (32.5)
         "commodity": 47,  # M17 (33.1, 33.3, 33.5)
+        "geology": 48,  # M18 (34.1)
+        "exploration": 49,  # M18 (34.2-34.3)
         "misc": 99,
     }
 

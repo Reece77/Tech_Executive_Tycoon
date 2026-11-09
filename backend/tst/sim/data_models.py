@@ -30,6 +30,7 @@ from tst.sim.events.data import (
     VALUELESS,
     EventTemplate,
 )
+from tst.sim.exploration.config import ExplorationBalance, GeologyBalance, GeologyFile
 from tst.sim.facilities.config import (
     ComponentsHistoryFile,
     ComputeBalance,
@@ -1262,6 +1263,8 @@ class Balance(_Frozen):
     commodity: CommodityBalance  # M17 (formulas.md 33.1-33.3)
     offtake: OfftakeBalance  # M17 (formulas.md 33.3)
     power: PowerBalance  # M17 (formulas.md 33.5)
+    geology: GeologyBalance  # M18 (formulas.md 34.1)
+    exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1951,6 +1954,7 @@ class GameData(_Frozen):
     commodity_history: CommoditiesHistoryFile | None = None  # M17 (33.1): their prices
     power_history: PowerHistoryFile | None = None  # M17 (33.5): power by region
     suppliers: SuppliersFile | None = None  # M17 (33.4): offtake counterparties
+    geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

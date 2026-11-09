@@ -14,7 +14,8 @@ AFRICA = ("lagos", "nairobi", "cape_town")
 def test_every_region_has_a_city_and_africa_has_three(loaded: LoadedData) -> None:
     data = loaded.game_data
     assert {c.region for c in data.cities} == set(data.region_keys)
-    assert [c.key for c in data.cities if c.region == "africa"] == list(AFRICA)
+    africa = [c.key for c in data.cities if c.region == "africa"]
+    assert africa == [*AFRICA, "johannesburg"]  # M18: a mining city, appended
     # appended: the M9 cities keep their places (their order is part of old saves)
     assert [c.key for c in data.cities][:15][-1] == "sydney"
 

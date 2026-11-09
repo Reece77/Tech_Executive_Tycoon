@@ -341,6 +341,12 @@ def apply_choice(
 
             state, logged = group_step(state, event, effect.stat)
             logs += logged
+        elif t == "exploration_step" and effect.stat:  # M18 (34.3): a protest's answer
+            from tst.sim.exploration.phase import exploration_step
+
+            state, posted, logged = exploration_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step
 

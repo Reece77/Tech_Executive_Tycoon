@@ -123,6 +123,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return PRESS_STEP_TEXT.get(effect.stat, effect.stat)
         case "group_step":  # M16 (31.6)
             return GROUP_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "exploration_step":  # M18 (34.3)
+            return EXPLORATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -134,6 +136,11 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",
     "defend_price": "the prices stand; so do the complaint's legal costs and discount",
+}
+EXPLORATION_STEP_TEXT: dict[str, str] = {  # M18 (34.3): never a hidden chance
+    "consult": "consult the community: $500k and three more months before the decision",
+    "benefit": "sign a benefit agreement: $3M; better odds and fewer protests",
+    "push_on": "push on: no delay now, but legal risk, worse odds, and persona Ruthless +5",
 }
 FOUNDER_STEP_TEXT: dict[str, str] = {
     "rest": "you take this month off: no energy this month, and stress falls",

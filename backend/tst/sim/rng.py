@@ -67,6 +67,13 @@ STREAM_IDS: Final = MappingProxyType(
         # key (0, good_index) for a commodity, (1, region_index) for power: prices after 2025
         # and shocks; (2, offtake_id) for a supplier's breach draw (M17, 33.1, 33.3, 33.5)
         "commodity": 47,
+        # key (region index, block index[, tag]): hidden deposits at game start (M18, 34.1)
+        "geology": 48,
+        # key (tag, ...): desk studies (0, study), surveys (1, project), sampling (2, project),
+        # holes (3, region index, block index, hole), estimates (4, project), studies
+        # (5, project, level), permits (6, project), protests (7, project), sales (8, project),
+        # minor events (9, project) (M18, 34.2-34.3)
+        "exploration": 49,
         "misc": 99,
     }
 )
