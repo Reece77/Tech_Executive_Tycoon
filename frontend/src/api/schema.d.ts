@@ -3825,6 +3825,8 @@ export interface paths {
         /**
          * Get File
          * @description One file's form: its spec, base values, comments, and its values under `mod`.
+         *     `spoilers` ("Show spoiler fields", off by default) includes the fields the API's
+         *     hidden-name rule names; a data file holds no game's state either way.
          */
         get: operations["getDataFile"];
         put?: never;
@@ -9345,6 +9347,12 @@ export interface components {
             description?: string;
             /** Changes */
             changes: components["schemas"]["ModChangeIn"][];
+            /**
+             * Spoilers
+             * @description Show spoiler fields is on: changes may name them
+             * @default false
+             */
+            spoilers?: boolean;
         };
         /** ModOut */
         ModOut: {
@@ -26325,7 +26333,9 @@ export interface operations {
     };
     listMods: {
         parameters: {
-            query?: never;
+            query?: {
+                spoilers?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -26339,6 +26349,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -26367,6 +26386,7 @@ export interface operations {
         parameters: {
             query?: {
                 mod?: string | null;
+                spoilers?: boolean;
             };
             header?: never;
             path: {
@@ -26425,7 +26445,9 @@ export interface operations {
     };
     getMod: {
         parameters: {
-            query?: never;
+            query?: {
+                spoilers?: boolean;
+            };
             header?: never;
             path: {
                 name: string;

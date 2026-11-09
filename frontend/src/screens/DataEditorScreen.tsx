@@ -359,13 +359,15 @@ function Fields({ ctx, path, spec, value }: { ctx: Ctx; path: string[]; spec: Sp
 function FileForm({
   file,
   mod,
+  spoilers,
   ctx,
 }: {
   file: string;
   mod: string | null;
+  spoilers: boolean;
   ctx: Omit<Ctx, 'file'>;
 }) {
-  const query = useDataFile(file, mod);
+  const query = useDataFile(file, mod, spoilers);
   if (query.isPending) return <Loading />;
   if (query.error || !query.data)
     return <LoadError title="Could not load the file" error={query.error} />;
@@ -378,7 +380,10 @@ function FileForm({
 }
 
 export function DataEditorScreen() {
-  const mods = useMods();
+  // "Show spoiler fields" (PM ruling 2026-11-08): off by default; on, the editor shows and
+  // edits the data files' fields that the game keeps hidden in play.
+  const [spoilers, setSpoilers] = useState(false);
+  const mods = useMods(spoilers);
   const files = useDataFiles();
   const save = useSaveMod();
   const remove = useDeleteMod();
@@ -416,7 +421,8 @@ export function DataEditorScreen() {
           Edit rivals, markets, cities, scenarios and balance values, then save them as a named mod.
           A new game can start with a mod; the save keeps its own copy, so editing the mod later
           never changes it. Modded games earn no achievements and are flagged on the Saves list and
-          in the Hall of Fame. Values the game keeps hidden are not shown here.
+          in the Hall of Fame. Values the game keeps hidden in play are shown only with Show spoiler
+          fields on.
         </Alert>
         <Panel title="Mod" testId="mod-panel">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
@@ -451,7 +457,7 @@ export function DataEditorScreen() {
               loading={save.isPending}
               onClick={() =>
                 save.mutate(
-                  { name, description, changes: [...edits.values()] },
+                  { name, description, changes: [...edits.values()], spoilers },
                   { onSuccess: (m) => setLoaded(m.name) },
                 )
               }
@@ -459,6 +465,13 @@ export function DataEditorScreen() {
             >
               Save mod
             </Button>
+            <Switch
+              label="Show spoiler fields"
+              description="Values the game keeps hidden in play"
+              checked={spoilers}
+              onChange={(e) => setSpoilers(e.currentTarget.checked)}
+              data-testid="spoiler-toggle"
+            />
             {loaded && (
               <Button
                 variant="default"
@@ -515,7 +528,7 @@ export function DataEditorScreen() {
             </Tabs.List>
             {files.data.map((f) => (
               <Tabs.Panel key={f.file} value={f.file} pt="md">
-                <FileForm file={f.file} mod={loaded} ctx={{ edits, setEdit }} />
+                <FileForm file={f.file} mod={loaded} spoilers={spoilers} ctx={{ edits, setEdit }} />
               </Tabs.Panel>
             ))}
           </Tabs>

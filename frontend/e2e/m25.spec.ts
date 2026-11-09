@@ -118,3 +118,19 @@ test('(d) a modded save is flagged and earns no achievements', async ({ page }) 
     profile.achievements.filter((a: { save: string | null }) => a.save === modded.save_id),
   ).toEqual([]);
 });
+
+test('(e) spoiler fields show only behind the toggle (PM ruling 2026-11-08)', async ({ page }) => {
+  await page.goto('/mods');
+  await page.getByTestId('editor-file-incumbents.yaml').click();
+  const form = page.getByTestId('editor-form-incumbents.yaml');
+  await form.getByText('companies').first().click();
+  await page.getByTestId('open-companies/@name=Salesforce').click();
+  const cash = page.getByTestId('field-companies/@name=Salesforce/cash_months');
+  await expect(page.getByTestId('field-companies/@name=Salesforce/stage')).toBeVisible();
+  await expect(cash).toHaveCount(0); // off by default
+  await page.getByTestId('spoiler-toggle').check();
+  const shown = page.getByTestId('editor-form-incumbents.yaml');
+  await shown.getByText('companies').first().click();
+  await page.getByTestId('open-companies/@name=Salesforce').click();
+  await expect(page.getByTestId('field-companies/@name=Salesforce/cash_months')).toBeVisible();
+});
