@@ -2842,3 +2842,96 @@ Heat-map bands, licences, every estimate as a range with its category, holes dri
 - **Permits.** The decision month is drawn at application: the region's years (uniform in `permit_years`) × the block's hidden difficulty; never shown (the API shows the region's typical years). Monthly while pending: a protest (a critical event, one a company a month) with chance `protest_rate × sensitivity / 0.5`, halved by a benefit agreement; the decision waits while one is open. Refusal chance: the region's `refusal` × difficulty, x (1 − `benefit_odds`) with an agreement, + `refusal_on_push` per push.
 - **Sale.** A supplier of the commodity (based in the region first; the copper majors where nobody supplies it) pays `sale.share[stage]` of the NPV at the deck at the **low end** of the revealed ranges (the latest study's low NPV, else the estimate's, holes' or sample's low grade with typical costs), so narrowing ranges raises the price (M18 decision).
 - **Measuring target 2** (M18 decision, for review): "per dollar" is per dollar of discovery spend (desk studies, licences, surveys, sampling, drilling and estimates; the dossier's "$111M per discovery" counts exploration spend), with the ratio per dollar of all spend printed beside it. Target 3 is read for a team at skill 12; target 4 counts deposits whose true NPV at the deck is above zero, a tie counting for no region.
+
+## 35. Mining operations (M19, v3 lane A)
+
+Reece's decisions (2026-11-06): **critical mine events** are accidents and spills, protests and permits, nationalization, and price crashes. Builds on M18's permitted projects, M17's commodity prices and suppliers, M16's subsidiaries, and the generic facility model (ADR-0020). Principle: **a mine is a long, risky bet on a price you don't control.**
+
+### 35.1 Founding a subsidiary (playtest gap from M18)
+
+**Found a subsidiary** (energy 5, stage 3 or more): a new, 100%-owned company with a name, a region and an initial cash injection from the parent (an intercompany transfer), ready for a mandate (M16). Exploration projects, licences and facilities can be transferred into it at book value. This lets the player run "<Name> Mining" as its own business.
+
+### 35.2 Building a mine
+
+- **From a permitted project** (M18) with a feasibility study of any level: **Build mine** (energy 10). The mine is a facility kind, `mine`, with subtypes `open_pit`, `underground` and `brine`, a capacity (units of the commodity a year) chosen within the study's range, and the deposit's (hidden) reserves.
+- **Capex** is the study's estimate × a hidden **overrun** drawn once (stream `mining`, id 50, key: facility id): 0–60%, narrower for a definitive study (`mining.overrun` by study level). It is spent over **construction** (open pit 2–3 years, underground 3–4, brine 3 plus a 2-year ramp) and capitalized to `1520 mineral properties`; M18's exploration and study spend on that project moves there too.
+- **Ramp-up:** output reaches 40%, 75% and 100% of capacity over the first three years (brine: over 2 more).
+- **Staff:** a new role `mining_engineer` (existing skills: engineering and operations), at `mining.staff_per_kt` per thousand units of capacity; coverage and skill set reliability (as data centres', §22.2) and the accident rate (§35.4).
+
+### 35.3 Running a mine
+
+- **Output** each month: `capacity × ramp × reliability`, limited by remaining reserves. Each month's **grade** comes from the deposit's true grade profile with noise (revealed as mined: the mine's reconciled grade is public).
+- **Operating cost:** fixed (staff, site) plus variable per unit (energy at the region's power index, consumables), set so a typical copper mine's all-in sustaining cost sits at $1.5–3.0 a pound (dossier §6), lower for high grade.
+- **Royalties** to the host government at the region's `royalty_rate` (new region field), posted to `6960 royalties`.
+- **Depletion** of mineral properties per unit mined (units-of-production), to `6750 depletion`.
+- **Revenue:** output sold at M17's monthly price (spot), into contracts and offtakes the mine signs as seller, or **to its own group at the transfer price** (M16 §31.6): own-group supply feeds the group's BOM and wafer costs at that price instead of the market's.
+- **Closure:** at reserves' end or by choice; a **reclamation obligation** provisioned from the start of production (`2600 asset retirement obligation`, at `mining.reclamation_per_unit`) is paid over 2 years after closure.
+
+### 35.4 Critical mine events
+
+| Event | Trigger | Choices |
+| --- | --- | --- |
+| **Accident or spill** (tailings failure, fatal accident) | monthly probability `mining.accident_base` (0.1–0.5% a mine-year by subtype) × `(1.6 − 0.04 × staff skill) × (1.3 − coverage)` × safety spend factor | stop and investigate (months of lost output, smaller fine), compensate (money, persona Beloved), contest (legal risk, persona Ruthless); always: brand −, credibility −, a fine |
+| **Protest or permit** | the deposit's hidden community sensitivity, region, expansions | consult, benefit agreement, push on (M18's choices) |
+| **Nationalization** | the region's `resource_nationalism` (new region field) × the commodity's strategic weight; history to 2025 (Bolivia lithium; Zimbabwe's lithium ore export ban, Dec 2022; Chile's national lithium strategy, Apr 2023; Indonesia's nickel ore ban, Jan 2020; DRC's cobalt export ban, Feb 2025), then seeded | accept a state partner (sell 30–51% at book value), fight (arbitration over years; a seeded award), sell out (at a discount); an export ban instead cuts the mine's sales to its own region |
+| **Price crash** | the commodity's price below the mine's all-in cost for 3 months | care and maintenance (output 0, fixed cost × 0.3, restart cost and 6 months), hedge (offtake at the current price), keep running |
+
+Draws on stream `mining` (accidents, crashes' timing comes from M17's prices) and stream `region_risk` (id 52, key: region index) for nationalization.
+
+### 35.5 Rival miners
+
+M17's suppliers become operating rivals for their commodities: each has abstract mine capacity per region (from its production share), output following prices (cutting in crashes, expanding after spikes with a 3-year lag), and can buy the player's projects (M18 §34.2) or sell its mines (M14's deal code, with mines as products' equivalents).
+
+### 35.6 Balance targets (M19 acceptance, printed)
+
+1. **Mines are good bets on average, bad ones often:** a mine built on a definitive study at the deck's price returns a median project IRR of 10–20% over its life; at least 25% return below 5%.
+2. **Costs are real:** copper mines' all-in sustaining cost $1.5–3.0 a pound (median), with high-grade mines in the bottom quartile.
+3. **Accidents happen at real rates:** 0.1–0.5% per mine-year at average safety; skill-15 crews cut it by at least 40% against skill 8.
+4. **Nationalization bites where it should:** in 2026–2039, at least one nationalization or export-ban event hits a high-risk region's mines on 3–7 of 10 seeds.
+5. **Integration steadies costs:** a device maker owning a lithium and cobalt supply at transfer price has a BOM-cost volatility (2021–2024) at most half a spot buyer's.
+6. **Nothing else moves:** a company that never mines plays exactly as before.
+
+## 36. Refining and wafers (M20, v3 lane B)
+
+The middle of the chain: turning ores and concentrates into the materials chips and devices use. Facility kinds with **recipes** (inputs → outputs, yield, power per unit), owned like any facility, selling to the market (M17's goods) or the group (transfer price). Principle: **refining is a thin-margin, power-hungry business that pays off through control, not profit.**
+
+### 36.1 Refinery kinds and recipes
+
+| Kind | Inputs → output | Yield | Power (MWh/t, ×region index) | Notes |
+| --- | --- | --- | --- | --- |
+| `silicon_smelter` | quartz → silicon metal | 0.4 | 11–13 | submerged-arc furnaces; power is most of the cost |
+| `poly_plant` | silicon metal → polysilicon (solar) | 0.9 | 50–70 | |
+| `poly_plant_semi` | silicon metal → semiconductor polysilicon | 0.8 | 90–110 | needs process research (§36.3) |
+| `wafer_plant` | semiconductor polysilicon → 300 mm wafers | 2,000 wafers/t (indicative) | per wafer | crystal growth, slicing, polishing |
+| `li_converter` | spodumene or brine concentrate → lithium carbonate | 0.85 | moderate | |
+| `co_refinery` | cobalt hydroxide → cobalt cathode | 0.9 | moderate | |
+| `ree_separator` | mixed rare-earth concentrate → NdPr oxide | 0.2 (NdPr share) | moderate | complex chemistry; long ramp |
+| `byproduct_recovery` | an add-on to a smelter or refinery: gallium (from alumina refining) or germanium (from zinc) | small | small | a gallium or germanium line on an existing plant |
+
+- Inputs come from the owner's group (its mines, at transfer price), contracts, or spot (M17), with allocation in shocks. Ores and concentrates are new goods priced off their refined product (`refining.concentrate_share` of the refined price by commodity).
+- **Capex** per unit of capacity, `refining.capex` by kind (silicon smelter about $3,000 per t/yr; lithium conversion about $20,000; rare-earth separation the highest), with M19's overrun rule; construction 2–3 years; staff role `process_engineer` (existing skills: engineering, chemistry or data).
+- **Operating cost:** inputs + power (the region's index from M17) + fixed staff and site; margins thin, set by `refining.margin` targets per kind.
+
+### 36.2 Wafers for chips
+
+- A group that owns a `wafer_plant` supplies its own fabless chip designs (M12b) and, from M21, its own fabs, at transfer price: the wafer cost in §26.3 uses the group's wafer cost instead of the market wafer price for its own volume.
+- Spare wafers sell to the market (foundries buy at the wafer price) or contract.
+
+### 36.3 Purity and process research
+
+Semiconductor polysilicon and wafers need a **process** research level (a new R&D domain in M11's tree, `process`, levels 1–100, with its own baseline from 2010) of at least `refining.semi_min_level` (40); below it, yield halves. M21's fab nodes will build on the same domain.
+
+### 36.4 Events
+
+- **Power curbs** (history: China's "dual control" curbs, Sep–Oct 2021, then seeded): smelters and poly plants in the affected region run at 50–70% for 1–3 months.
+- **Plant incidents:** a fire or chemical release (a critical event for rare-earth and polysilicon plants), with choices as M19's accidents.
+- Draws on stream `refining` (id 51, key: facility id).
+
+### 36.5 Balance targets (M20 acceptance, printed)
+
+1. **Thin margins:** each kind's median operating margin over 2015–2025 at market prices is 2–15%, wider during its commodity's shocks.
+2. **Power decides smelters:** a silicon smelter in the cheapest-power region costs 20–40% less per tonne than one in Europe.
+3. **Control pays for chipmakers:** a fabless chip company with its own wafer plant has a wafer cost 10–25% below the market price on average, and keeps 100% allocation in shortages.
+4. **By-products matter in bans:** in a gallium export-ban shock, a group with a gallium recovery line keeps its chip mix cost within 10% of normal while a spot buyer's rises by at least 30%.
+5. **Nothing else moves:** a company that never refines plays exactly as before.
+
