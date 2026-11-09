@@ -1794,6 +1794,40 @@ A drill hole's assay (34.2): public once drilled; never changes.
 | `n` | INTEGER | no | The hole's number within the project, from 1. |
 | `data` | JSON | no | `turn`, `assay` (a fraction of ore), `factor` (the team's range factor when drilled: hidden), `cost_cents`. |
 
+## Mining operations (migration `0043_m19`, M19)
+
+Each record keeps its dataclass fields in a JSON `data` column (`tst/db/mining_io.py`). A mine is also a `facility` row of kind `mine` (balance.yaml `facility.kinds.mine`, module `mining`): owner, region, capacity (t a year, rounded), status, the staffing unit and the study's capex estimate; the generic capex, depreciation, operating cost and sale skip it. A founded subsidiary is a `company` row (`is_player` false, no personality, `rival_key` (6, n)) with its parent in `company_parent` and its holding in `ownership`. New accounts: `1520_mineral_properties` (asset: a mine's capex as paid and its project's capitalized exploration spend, less depletion, write-offs and stakes sold), `2610_asset_retirement_obligation` (liability: reclamation provisioned a tonne from first output, paid after closure; 2600 is SAFEs'), `4400_revenue_commodities` (revenue: a mine's spot, contract and offtake sales), `6750_depletion` (expense: units-of-production depletion and closure write-offs), `6960_royalties` (expense: royalties and a state partner's share of the cash margin). `save_meta.schema_version` is 43.
+
+### mine
+
+A mine (formulas.md 35.2-35.4), by its facility's id. The hidden_* fields are true values (ADR-0007): read by the sim only; the API never reads them.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key: the mine's facility id. |
+| `company_id` | INTEGER | no | The group company that owns it. |
+| `data` | JSON | no | `project_id` (M18's project), `region`, `block`, `commodity` (geology.yaml key), `subtype` (open_pit, underground, brine), `level` (the study it was built on), `capacity_t` (product a year at the design grade), `design_grade`, `design_recovery` (the study's centres), `ordered_turn`, `ready_turn` (first production month), `estimate_cents` (the study's capex for this capacity), `hidden_overrun` (share over the estimate, hidden until revised), `hidden_ore_mt`, `hidden_grade`, `hidden_recovery` (the deposit's truth), `status` (building, producing, care, restarting, seized, closed), `revised_cents` (the whole capex once revised; null before), `capex_paid_cents`, `moved_cents` (exploration spend capitalized at the build), `depleted_cents` (1520 credited: depletion, write-offs, a state stake), `ore_mined_mt`, `product_t`, `first_output_turn`, `buyer_id`, `price_kind`, `margin` (group sales at the transfer price; null buyer: spot), `safety` (low, normal, high), `aro_cents`, `aro_paid_cents` (reclamation provisioned and paid), `closed_turn`, `close_reason` (depleted, chosen, sold_to_state, seized, sold), `below_months` (months running under the all-in cost), `crash_turn`, `crash_answered`, `care_since`, `restart_due`, `stopped_until` (no output through this month: an investigation, consultation or blockade), `accident_turn`, `accidents`, `protest_turn`, `protests`, `benefit` (a community benefit agreement), `state_share` (a state partner's stake), `ban_until` (an export ban's last month), `takeover_turn`, `arbitration_due`, `seized_book_cents`; `*_turn` fields of an open event are the month it is shown; `history` (the last 24 months, each `[turn, output_t, grade, price_usd_t, cost_usd_t, revenue_cents, margin_cents]`: revealed as mined). |
+
+### mine_deal
+
+A sale a mine signs as seller (35.3).
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `mine_id` | INTEGER | no | The mine. |
+| `data` | JSON | no | `kind` (contract: a fixed price; offtake: a collar around the price at signing), `buyer`, `signed_turn`, `end_turn` (last month covered), `volume_t_year`, `signing_usd_t`, `floor_usd_t`, `ceiling_usd_t`, `delivered_t`, `last_usd_t`. |
+
+### mine_rival_bid
+
+A rival miner's bid for a group project or mine (35.5), open three months.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `company_id` | INTEGER | no | The group company holding the asset. |
+| `data` | JSON | no | `supplier` (suppliers.yaml key), `project_id` or `mine_id`, `cents`, `turn`, `expires_turn`, `status` (open, accepted, declined, lapsed). |
+
 ## M25: files beside the saves (not tables)
 
 `saves/profiles/<profile>.json` (M25 section 2, `tst/profile/store.py`): the player profile's achievements across every save; the profile is `TST_PROFILE` (default `default`). Written atomically under a lock after each committed turn and player action; never read by the sim and never part of a save. Keys: `version` (1), `profile`, `earned` (`{achievement key: {save, company, turn, date_label, earned_at (UTC ISO), seen}}`; `seen` is false until its toast has shown), `watch` (`{save slug: {downturn_from}}`: the month a running downturn began, for "a downturn without layoffs"). Sandbox and modded games add nothing. Achievements are defined in `backend/data/achievements.yaml` (key, title, description, kind, threshold or param, hidden), validated at startup and not hashed into saves.

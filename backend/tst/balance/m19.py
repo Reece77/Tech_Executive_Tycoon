@@ -541,14 +541,14 @@ def unchanged(loaded: LoadedData, seeds: tuple[int, ...], turns: int = 24) -> bo
     for seed in seeds:
         runs = []
         for off in (False, True):
-            turn_module.mining = _Off if off else real  # type: ignore[assignment]
+            setattr(turn_module, "mining", _Off if off else real)  # noqa: B010
             try:
                 game = start_game(loaded, seed)
                 for _ in range(turns):
                     game.turn()
                 runs.append(game.snapshots)
             finally:
-                turn_module.mining = real
+                setattr(turn_module, "mining", real)  # noqa: B010
         if runs[0] != runs[1]:
             return False
     return True

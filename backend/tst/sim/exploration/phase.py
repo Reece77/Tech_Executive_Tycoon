@@ -244,15 +244,18 @@ def _permit_month(
     chance = pb.protest_rate * block.true_sensitivity / SENSITIVITY_MID
     if project.benefit:
         chance *= 1 - pb.benefit_odds
-    if project.company_id not in protesting and u_protest < chance:
-        protesting.add(project.company_id)
+    # one protest a month for the whole group: each is the player's event (see below)
+    if state.player.id not in protesting and u_protest < chance:
+        protesting.add(state.player.id)
         template = xp.EVENT_TEMPLATES[int(u_kind * len(xp.EVENT_TEMPLATES))]
         qid, ids = state.next_ids.take("queued")
         state = with_queued(
             replace(state, next_ids=ids),
             QueuedEvent(
                 id=qid,
-                company_id=project.company_id,
+                # the player's company: the director shows only its queue, whichever group
+                # company holds the project (M19 fix: a subsidiary's protest never showed)
+                company_id=state.player.id,
                 template_id=template,
                 due_turn=turn + 1,
                 source_event_id=None,
@@ -283,8 +286,10 @@ def _permit_month(
 
 
 def _project_for_event(state: GameState, event: GameEvent) -> Project | None:
+    """The group project whose protest the event shows (queued to the player's company)."""
+    group = {c.id for c in xp.explorers(state)}
     for p in sorted(state.projects, key=lambda p: p.id):
-        if p.company_id == event.company_id and p.protest_turn == event.turn and p.is_open:
+        if p.company_id in group and p.protest_turn == event.turn and p.is_open:
             return p
     return None
 

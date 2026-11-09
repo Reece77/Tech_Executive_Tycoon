@@ -374,3 +374,67 @@ def test_an_event_step_without_its_mine_does_nothing(loaded: LoadedData) -> None
         game.state, event, "partner", loaded.balance, loaded.game_data
     )
     assert state == game.state and entries == [] and logs == []
+
+
+def test_a_subsidiarys_protest_reaches_the_player(loaded: LoadedData) -> None:
+    """M19 integration fix in M18's exploration phase: a protest on a project held by a group
+    subsidiary is queued to the player's company (the director shows only its queue) and its
+    answer reaches the project."""
+    from tst.sim.exploration.phase import exploration_month, exploration_step
+
+    tuned = replace(
+        loaded,
+        balance=loaded.balance.model_copy(
+            update={
+                "exploration": loaded.balance.exploration.model_copy(
+                    update={
+                        "permitting": loaded.balance.exploration.permitting.model_copy(
+                            update={"protest_rate": 1.0}
+                        )
+                    }
+                )
+            }
+        ),
+    )
+    run = m19.miner(tuned, 18)
+    run.act(FoundSubsidiary(run.founder, "Vale Mining", "oceania", SUB_CENTS))
+    sub = run.state.companies[-1].id
+    project = m19.permitted_project(run, "copper")
+    t = run.state.turn
+    project = replace(
+        project, status="active", stage="permitting", permit_start=t, hidden_due_turn=t + 30
+    )
+    run.state = replace(
+        run.state,
+        projects=tuple(project if p.id == project.id else p for p in run.state.projects),
+    )
+    assert run.act(TransferAsset(run.founder, sub, project_id=project.id)) is not None, run.log
+    sure = tuple(  # a fully sensitive community: a protest this month for certain
+        replace(b, true_sensitivity=1.0)
+        if (b.region, b.index) == (project.region, project.block)
+        else b
+        for b in run.state.geo_blocks
+    )
+    run.state = replace(run.state, geo_blocks=sure)
+    state, _, _ = exploration_month(run.state, run.rng, tuned.balance, tuned.game_data)
+    queued = [
+        q for q in state.queued if q.template_id in ("community_blockade", "permit_challenge")
+    ]
+    assert queued and queued[0].company_id == m19.PLAYER
+    p = next(x for x in state.projects if x.id == project.id)
+    assert p.company_id == sub and p.protest_turn == t + 1
+    event = GameEvent(
+        id=0,
+        company_id=m19.PLAYER,
+        turn=t + 1,
+        template_id=queued[0].template_id,
+        category="exploration",
+        severity="critical",
+        trigger="exploration",
+        strength=1.0,
+    )
+    after, _, _ = exploration_step(
+        replace(state, turn=t + 1), event, "benefit", tuned.balance, tuned.game_data
+    )
+    answered = next(x for x in after.projects if x.id == project.id)
+    assert answered.protest_turn is None and answered.benefit
