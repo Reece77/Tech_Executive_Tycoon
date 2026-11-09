@@ -15,7 +15,7 @@ from tst.balance import m22
 def test_39_4_targets() -> None:
     r = m22.run(m22.SEEDS, os.cpu_count() or 1)
     print(m22.report(r))
-    checked, misses, follows = r.t1
+    _checked, misses, follows = r.t1
     assert misses == 0 and follows  # target 1
     assert all(0.15 <= x.loss <= 0.30 for x in r.t2)  # target 2
     assert all(0.05 <= x.loss_variant <= 0.15 for x in r.t2)

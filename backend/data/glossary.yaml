@@ -156,6 +156,8 @@ terms:
   account.4100_revenue_licenses: "Revenue from licences."
   account.4200_revenue_services: "Revenue from services work."
   account.4410_materials_sales: "Refined materials and wafers your plants sold at spot or under contract (M20). Supply to your own group is not here."
+  account.5100_tariffs: "Tariffs on devices, servers and chips made in a taxed country and sold in the taxing one, such as Section 301's on Chinese electronics sold in the US (M22). Part of the cost of revenue."
+  account.5110_local_partner_share: "The local partner's share of the revenue from a market that needs one, such as cloud in China (M22). Part of the cost of revenue."
   account.4300_intercompany_sales: "What this company sold to another company of the group at the transfer price. Removed in the group's consolidated statements."
   account.4900_other_income: "Money in from events and other one-off gains."
   account.4910_share_of_associates: "The group's share of the profit of companies it holds 20-50% of (the equity method). Shown below the operating result."
