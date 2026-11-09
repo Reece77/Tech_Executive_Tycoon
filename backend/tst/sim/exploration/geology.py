@@ -14,7 +14,7 @@ import numpy as np
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.exploration.config import GeologyFile
-from tst.sim.exploration.draws import geology_draws
+from tst.sim.exploration.draws import GEOLOGY_TURN, geology_draws
 from tst.sim.exploration.m17 import buyers_of
 from tst.sim.exploration.models import GeoBlock, SupplierLicence
 from tst.sim.rng import RngFactory
@@ -127,7 +127,11 @@ def supplier_licences(
         }
         for c, commodity in enumerate(geo.commodities):
             own = sorted(  # its suppliers, those based in the region first
-                (s for s in buyers_of(data, commodity.key) if commodity.key in s.goods),
+                (
+                    s
+                    for s in buyers_of(data, commodity.key, GEOLOGY_TURN)
+                    if commodity.key in s.goods
+                ),
                 key=lambda s: s.region != region,
             )
             if not own:

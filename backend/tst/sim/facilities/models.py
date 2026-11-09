@@ -72,6 +72,7 @@ class GoodMonth:
     shock_months: int = 0
     shock_rise: float = 0.0
     shock_allocation: float = 1.0
+    shock_kind: str | None = None  # M17 (33.1): a commodity shock's kind (export_ban, ...)
 
     def in_shock(self, turn: int) -> bool:
         return self.shock_turn is not None and turn < self.shock_turn + self.shock_months

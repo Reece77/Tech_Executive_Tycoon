@@ -25,8 +25,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 
 from tst.sim.chips import chips
+from tst.sim.commodities import costs
 from tst.sim.data_models import Balance, GameData
-from tst.sim.facilities import goods
 from tst.sim.facilities.lifecycle import facility_name, staffing
 from tst.sim.facilities.models import Facility
 from tst.sim.hardware import formulas as hf
@@ -127,6 +127,7 @@ class ProductionPlan:
     chip_type: dict[int, str] = field(default_factory=dict)  # device product -> its chip type
     company_of: dict[int, int] = field(default_factory=dict)
     own_chip_of: dict[tuple[int, str], int] = field(default_factory=dict)  # (company, type)
+    unit_cap: dict[int, float] = field(default_factory=dict)  # M17: units left in a shortage
 
     def is_capped(self, product_id: int) -> bool:
         return product_id in self.capped
@@ -141,7 +142,10 @@ class ProductionPlan:
             self.plant_left[f] * self.plant_yield[f] / slots
             for f in self.plants_of.get(company, [])
         )
-        return plant + sum(self.contract_left[c] for c in self.contracts_of.get(product_id, []))
+        made = plant + sum(self.contract_left[c] for c in self.contracts_of.get(product_id, []))
+        if product_id in self.unit_cap:  # M17: a commodity shortage (33.1)
+            return min(made, self.unit_cap[product_id])
+        return made
 
     def take(self, product_id: int, units: float) -> float:
         """Make up to `units`: plants first, then contracts by id; a device takes its chips.
@@ -152,6 +156,8 @@ class ProductionPlan:
             self.chips_left[product_id] -= got
             use.market += got
             return got
+        if product_id in self.unit_cap:  # M17: a commodity shortage (33.1)
+            units = min(units, self.unit_cap[product_id])
         left = units
         company = self.company_of[product_id]
         slots = self.slots.get(product_id, 1)
@@ -177,6 +183,8 @@ class ProductionPlan:
             if left <= EPS:
                 break
         made = units - max(0.0, left)
+        if product_id in self.unit_cap:
+            self.unit_cap[product_id] = max(0.0, self.unit_cap[product_id] - made)
         self._chips_for(product_id, made)
         return made
 
@@ -195,6 +203,33 @@ class ProductionPlan:
 
     def lose(self, product_id: int, units: float) -> None:
         self.usage.setdefault(product_id, _Usage()).lost += units
+
+
+def _commodity_caps(
+    state: GameState, plan: ProductionPlan, balance: Balance, data: GameData
+) -> None:
+    """M17 (33.1, 33.3): in a commodity shortage a product makes at most its mix's weighted
+    allocation of what it could; a chip product's wafer starts fall the same way."""
+    uses: dict[int, dict[str, float]] = {}
+    for pid in sorted(plan.capped):
+        product = state.product(pid)
+        assert product is not None
+        company = plan.company_of[pid]
+        good = (
+            balance.chips.good
+            if pid in plan.chips_left
+            else balance.hardware.bom[product.category].good
+        )
+        if company not in uses:
+            uses[company] = costs.company_use(state, company, balance, data)
+        share = costs.product_allocation(state, company, good, uses[company], balance, data)
+        if share >= 1:
+            continue
+        if pid in plan.chips_left:
+            plan.chips_left[pid] *= share
+            plan.chips_capacity[pid] *= share
+        else:
+            plan.unit_cap[pid] = plan.available(pid) * share
 
 
 def build_plan(state: GameState, balance: Balance, data: GameData) -> ProductionPlan | None:
@@ -236,6 +271,7 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
             plan.contracts_of[p.id] = ids
     if not plan.capped:
         return None
+    _commodity_caps(state, plan, balance, data)
     for pid in plan.capped:
         plan.capacity[pid] = plan.available(pid)
     return plan
@@ -245,8 +281,9 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
 
 
 def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: GameData) -> float:
+    """The BOM at this month's index with its commodities at spot (26.2, 33.2)."""
     bom = balance.hardware.bom[product.category]
-    return hf.bom_cents(bom.base_cents, goods.index_now(state, bom.good, data))
+    return hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
 
 
 def plant_unit_cents(state: GameState, plant: Facility, balance: Balance) -> float:

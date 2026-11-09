@@ -1773,10 +1773,6 @@ def sell_plant_capacity(save: SaveOpt) -> None:
     typer.echo(f"  {_energy(result.new_state, data)}")
 
 
-if __name__ == "__main__":
-    app()
-
-
 # --- Rivals (M5, formulas.md 15) --------------------------------------------------------------
 
 
@@ -3306,3 +3302,81 @@ def mods_cmd() -> None:
     for m in found:
         files = ", ".join(sorted(m.files)) or "no changes"
         typer.echo(f"{m.name:<24} {files}" + (f"  {m.description}" if m.description else ""))
+
+
+# --- Commodities (M17, formulas.md 33) --------------------------------------------------------
+
+
+@app.command("commodities")
+def commodities(save: SaveOpt) -> None:
+    """Commodity prices to this month, power by region, your contracts and offtakes (33)."""
+    from tst.api.commodity_views import commodities_out
+    from tst.api.routers.facilities import _stored
+
+    path, data, state = _game(save)
+    out = commodities_out(state, data, _stored(path, state, data), state.player.id)
+    for g in out.goods:
+        typer.echo(
+            f"{g.label:<34} {g.price:>12,.2f} {g.unit:<12} index {g.index:.2f} "
+            f"({g.change_12m:+.0%} in 12 months), {g.note}; you used {g.use_month:,.2f} "
+            f"{g.volume_unit} last month"
+        )
+    typer.echo(
+        "Power (x North America): " + ", ".join(f"{p.label} {p.index:.2f}" for p in out.power)
+    )
+    for d in out.deals:
+        who = f" with {d.supplier_name}" if d.supplier_name else ""
+        typer.echo(
+            f"Deal {d.deal_id} ({d.kind}{who}, {d.status}): {d.good_label} "
+            f"{d.volume_year:,.1f} a year, collar {d.floor:,.2f}-{d.ceiling:,.2f}, pays "
+            f"{d.price_now:,.2f} now; saved {format_money(d.hedge_cents)}, take-or-pay "
+            f"{format_money(d.charged_cents)}, prepaid left {format_money(d.prepaid_left_cents)};"
+            f" {d.signed}-{d.ends}"
+        )
+
+
+@app.command("offtake")
+def offtake_cmd(
+    save: SaveOpt,
+    good: Annotated[str, typer.Option(help="Commodity key, e.g. lithium_carbonate")],
+    supplier: Annotated[str, typer.Option(help="Supplier key, e.g. sqm")],
+    years: Annotated[int, typer.Option(help="3 to 10")],
+    volume: Annotated[float, typer.Option(help="Volume units a year (t, kg or lot)")],
+    prepay: Annotated[float, typer.Option(help="Share of year 1's value paid now, 0-0.3")] = 0.0,
+) -> None:
+    """Sign an offtake agreement inside a collar; take-or-pay 70%; energy 5 (33.3)."""
+    from tst.sim.actions.commodities import SignOfftake
+
+    path, data, state = _game(save)
+    result = _run(path, data, SignOfftake(_founder(state), good, supplier, years, volume, prepay))
+    deal = max(result.new_state.commodity_deals, key=lambda x: x.id)
+    typer.echo(
+        f"Offtake {deal.id}: {volume:,.1f} a year of {good} from {supplier} until "
+        f"{format_turn(deal.end_turn)}, collar {deal.floor:,.2f}-{deal.ceiling:,.2f}, prepaid "
+        f"{format_money(deal.prepaid_cents)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("commodity-contract")
+def commodity_contract(
+    save: SaveOpt,
+    good: Annotated[str, typer.Option(help="Commodity key")],
+    months: Annotated[int, typer.Option(help="6 to 36")],
+    volume: Annotated[float, typer.Option(help="Volume units a year")],
+) -> None:
+    """Fix a commodity's price for 6-36 months; take-or-pay at the end; energy 6 (33.3)."""
+    from tst.sim.actions.commodities import SignCommodityContract
+
+    path, data, state = _game(save)
+    result = _run(path, data, SignCommodityContract(_founder(state), good, months, volume))
+    deal = max(result.new_state.commodity_deals, key=lambda x: x.id)
+    typer.echo(
+        f"Contract {deal.id}: {volume:,.1f} a year of {good} at {deal.signing_price:,.2f} "
+        f"until {format_turn(deal.end_turn)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+if __name__ == "__main__":
+    app()

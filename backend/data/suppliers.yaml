@@ -1,0 +1,198 @@
+# Commodity suppliers (docs/formulas.md 33.4, M17, lane A): the counterparties of offtake
+# agreements. In M17 they are counterparties only (no products or pools); M19 and M20 turn the
+# relevant ones into rival mining and refining companies.
+#
+# From dossier 3.1 and 3.2, plus producers the dossier names in section 2 so that every good has
+# at least two suppliers (marked "added"; no revenue is given for those).
+#   region: regions.yaml key of the headquarters. goods: good -> rough share of world production
+#     or refining the supplier holds (A: an assumption for gameplay unless a comment says
+#     otherwise). reliability: 0-1, the chance it keeps delivering through a severe shock; a
+#     breach's monthly chance is (1 - reliability) x offtake.breach.monthly_scale (A).
+#   from / until: months it can sign (a good may carry its own: { share, from, until }) (inclusive; open when absent). An offtake still running in
+#     the month after `until` ends as a breach (Ingas and Cryoin, February 2022).
+#   revenue_2010: the dossier's 2010 revenue in US$ millions, as_printed in the source's own
+#     currency, its source and tag. M17 sub-task 1 spot-checked every value the dossier tagged R
+#     (recalled) against a published source (2026-11-08): tag "checked" with the source, or
+#     "unverified" with why. The session's network could not open sec.gov or company PDFs
+#     directly, so each check reads the figure from search results quoting the source.
+suppliers:
+  # --- 3.1 Mining and primary producers --------------------------------------------------------
+  - key: freeport
+    name: Freeport-McMoRan
+    region: north_america
+    listing: NYSE
+    goods: { copper: 0.08, cobalt: { share: 0.10, until: "2016-10" } } # sold Tenke Fungurume to CMOC in November 2016 (dossier, R)
+    reliability: 0.92
+    revenue_2010: { usd_m: 18982, as_printed: "Revenues $18,982 million (FY2010)", tag: checked, source: "Freeport-McMoRan 2010 Form 10-K, https://www.sec.gov/Archives/edgar/data/0000831259/000083125911000014/fcx123110-10k.htm" } # dossier R ~$19.0B: matches
+  - key: bhp
+    name: BHP Billiton
+    region: oceania
+    listing: ASX/LSE/NYSE
+    goods: { copper: 0.07 }
+    reliability: 0.95
+    revenue_2010: { usd_m: 52798, as_printed: "Revenue US$52,798 million (year ended 30 June 2010)", tag: checked, source: "BHP Billiton results for the year ended 30 June 2010, https://www.bhp.com/-/media/bhp/documents/investors/news/2010/100825bhpbillitonresultsyearended30june2010.pdf" } # dossier R ~$52.8B: matches
+  - key: rio_tinto
+    name: Rio Tinto
+    region: europe
+    listing: LSE/ASX/NYSE
+    goods: { copper: 0.04, lithium_carbonate: { share: 0.08, from: "2025-03" } } # bought Arcadium Lithium in 2025 (dossier, R)
+    reliability: 0.95
+    revenue_2010: { usd_m: 56576, as_printed: "Consolidated sales revenue US$56,576 million; gross sales revenue US$60.32 billion (2010)", tag: checked, source: "Rio Tinto 2010 full-year results as reported by SteelOrbis (https://www.steelorbis.com/steel-news/latest-news/rio-tintos-net-profit-rises-194-percent-in-2010-582106.htm); 2010 Form 20-F https://www.sec.gov/Archives/edgar/data/0000863064/000095012311025507/u10506e20vf.htm" } # dossier R ~$60B was gross sales (matches); the IFRS revenue line, used here, is $56.6B
+  - key: glencore
+    name: Glencore
+    region: europe
+    listing: Private until the May 2011 IPO (LSE/HKEX)
+    goods: { copper: 0.05, cobalt: 0.20 }
+    reliability: 0.90
+    revenue_2010: { usd_m: 145000, as_printed: "about $145B (2011's $186B was +28%)", tag: D, source: "dossier 3.1" }
+  - key: codelco
+    name: Codelco
+    region: latin_america
+    listing: State-owned
+    goods: { copper: 0.10 }
+    reliability: 0.93
+    revenue_2010: { usd_m: 16066, as_printed: "Total sales US$16,066 million (copper 14,715; molybdenum 720; other 631), 2010", tag: checked, source: "Codelco Annual Report 2010, https://codelco.com/memoria2010/en/codelco-main-company-and-pride-of-chile/economic-financial-results/" } # dossier R ~$16B: matches
+  - key: albemarle
+    name: Albemarle
+    region: north_america
+    listing: NYSE
+    goods: { lithium_carbonate: { share: 0.15, from: "2015-01" } } # lithium only after buying Rockwood (Chemetall), January 2015
+    reliability: 0.92
+    revenue_2010: { usd_m: 2363, as_printed: "Net sales $2,362,764 thousand (2010)", tag: checked, source: "Albemarle Q4 and full-year 2010 results, Exhibit 99.1, https://sec.gov/Archives/edgar/data/915913/000119312511012978/dex991.htm" } # dossier R ~$2.4B: matches
+  - key: sqm
+    name: SQM
+    region: latin_america
+    listing: NYSE/Santiago
+    goods: { lithium_carbonate: 0.25 }
+    reliability: 0.90
+    revenue_2010: { usd_m: 1830, as_printed: "Revenues US$1,830.4 million (2010)", tag: checked, source: "SQM reports earnings for 2010, https://prnewswire.co.uk/news-releases/sqm-reports-earnings-for-2010-156115625.html" } # dossier R ~$1.8B: matches
+  - key: lynas
+    name: Lynas
+    region: oceania
+    listing: ASX
+    goods: { ndpr_oxide: { share: 0.08, from: "2013-01" } } # first LAMP feed in 2012 (dossier, R); first product revenue FY2013
+    reliability: 0.82
+    revenue_2010: { usd_m: 0, as_printed: "pre-revenue (not yet in production in FY2011; first product revenue A$0.9M in FY2013)", tag: unverified, source: "no primary 2010 figure found; indirect: https://www.engineeringnews.co.za/article/lynas-reports-first-profits-in-2013-2013-09-16" } # dossier R "pre-revenue": consistent, not confirmed from a filing
+  - key: molycorp
+    name: Molycorp
+    region: north_america
+    listing: NYSE (IPO July 2010)
+    goods: { ndpr_oxide: 0.03 }
+    from: "2010-07"
+    until: "2015-06" # Chapter 11 in 2015 (dossier, R)
+    reliability: 0.75
+    revenue_2010: { usd_m: 35.2, as_printed: "Net sales $35,157 thousand (2010)", tag: checked, source: "Molycorp 2010 Form 10-K, https://www.sec.gov/Archives/edgar/data/0001489137/000095012311023641/d79946e10vk.htm" } # dossier R ~$0.04B: differs; the 10-K's $35.2M used
+  - key: mp_materials
+    name: MP Materials
+    region: north_america
+    listing: NYSE (via SPAC, November 2020)
+    goods: { ndpr_oxide: 0.12 }
+    from: "2020-07" # formulas 33.4: from July 2020
+    reliability: 0.88
+    revenue_2010: null # did not exist in 2010 (bought Mountain Pass in 2017)
+  - key: umicore
+    name: Umicore
+    region: europe
+    listing: Euronext Brussels
+    goods: { cobalt: 0.10, germanium: 0.15 }
+    reliability: 0.93
+    revenue_2010: { usd_m: 12900, as_printed: "about $12.9B including metal value (revenue excluding metal about EUR 2B)", tag: V, source: "dossier 3.1" }
+  - key: china_northern_re
+    name: China Northern Rare Earth
+    region: east_asia
+    listing: Shanghai
+    goods: { ndpr_oxide: 0.40 }
+    reliability: 0.85
+    revenue_2010: { usd_m: 777, as_printed: "CNY 5.26 billion (2010, up 102.8%)", tag: checked, source: "China Daily, 7 April 2011, https://covid-19.chinadaily.com.cn/business/2011-04/07/content_12283805.htm; converted at CNY 6.77 a dollar" } # dossier n/a; found while spot-checking (secondary source)
+
+  # --- 3.2 Silicon, polysilicon and wafers -----------------------------------------------------
+  - key: wacker
+    name: Wacker Chemie
+    region: europe
+    listing: Frankfurt
+    goods: { polysilicon: 0.20 } # leading semiconductor-grade supplier
+    reliability: 0.95
+    revenue_2010: { usd_m: 6300, as_printed: "EUR 4.75B (polysilicon external sales EUR 1,177.5M)", tag: V, source: "dossier 3.2" }
+  - key: hemlock
+    name: Hemlock Semiconductor
+    region: north_america
+    listing: Private JV (Dow Corning majority, Shin-Etsu, Mitsubishi Materials)
+    goods: { polysilicon: 0.15 }
+    reliability: 0.93
+    revenue_2010: { usd_m: null, as_printed: "not disclosed (parent Dow Corning: $6.00B sales in 2010)", tag: unverified, source: "https://www.prnewswire.com/news-releases/dow-corning-reports-record-sales-and-profits-in-2010-115270959.html" }
+  - key: gcl_poly
+    name: GCL-Poly Energy
+    region: east_asia
+    listing: HKEX
+    goods: { polysilicon: 0.25 } # solar grade mostly
+    reliability: 0.85
+    revenue_2010: { usd_m: 2400, as_printed: "HK$18.47B", tag: V, source: "dossier 3.2" }
+  - key: oci
+    name: OCI
+    region: east_asia
+    listing: KRX
+    goods: { polysilicon: 0.08 }
+    reliability: 0.88
+    revenue_2010: { usd_m: 2864, as_printed: "KRW 3.311 trillion consolidated (2010)", tag: unverified, source: "one Korean news report only; converted at KRW 1,156 a dollar" } # dossier n/a; single source
+  - key: shin_etsu
+    name: Shin-Etsu Chemical
+    region: east_asia
+    listing: TSE
+    goods: {} # silicon wafers (world #1): a wafer maker, not an M17 commodity (M20)
+    reliability: 0.95
+    revenue_2010: { usd_m: 9900, as_printed: "about $9.9B (FY March 2011)", tag: V, source: "dossier 3.2" }
+  - key: sumco
+    name: SUMCO
+    region: east_asia
+    listing: TSE
+    goods: {} # silicon wafers (#2)
+    reliability: 0.93
+    revenue_2010: { usd_m: 3200, as_printed: "about $3.2B", tag: V, source: "dossier 3.2" }
+  - key: siltronic
+    name: Siltronic
+    region: europe
+    listing: Wacker subsidiary (IPO June 2015)
+    goods: {}
+    reliability: 0.93
+    revenue_2010: { usd_m: 1350, as_printed: "EUR 1,018.7M", tag: V, source: "dossier 3.2" }
+  - key: memc
+    name: MEMC Electronic Materials
+    region: north_america
+    listing: NYSE
+    goods: { polysilicon: 0.05 }
+    until: "2016-11" # its wafer arm was bought by GlobalWafers in December 2016 (dossier, R)
+    reliability: 0.85
+    revenue_2010: { usd_m: 2239, as_printed: "GAAP net sales $2,239.2 million (2010)", tag: checked, source: "MEMC fourth-quarter and full-year 2010 results, https://prnewswire.com/news-releases/memc-reports-fourth-quarter-and-full-year-2010-results-115044819.html" } # dossier R ~$2.2B: matches
+  - key: globalwafers
+    name: GlobalWafers
+    region: east_asia
+    listing: TPEx (2015)
+    goods: {}
+    from: "2011-10" # spun out of Sino-American Silicon Products in 2011 (dossier, R)
+    reliability: 0.92
+    revenue_2010: { usd_m: null, as_printed: "part of Sino-American Silicon Products in 2010 (SAS full-year figure not found; monthly reports sum to about NT$19.5-20.5B)", tag: unverified, source: "https://apps.digitimes.com/news/a20110103PD215.html" } # dossier R "part of SAS": consistent; no SAS annual figure verified
+
+  # --- Added (dossier 2 names them as producers) ----------------------------------------------
+  - { key: sibelco, name: Sibelco, region: europe, listing: Private, goods: { quartz_hp: 0.40 }, reliability: 0.90, revenue_2010: null } # Spruce Pine HPQ producer (dossier 2, R)
+  - { key: quartz_corp, name: The Quartz Corp, region: europe, listing: Private, goods: { quartz_hp: 0.35 }, reliability: 0.88, revenue_2010: null } # Spruce Pine HPQ producer (dossier 2, R)
+  - { key: globe_metals, name: Globe Specialty Metals, region: north_america, listing: Nasdaq, goods: { silicon_metal: 0.04 }, reliability: 0.88, revenue_2010: null } # added: a US silicon metal producer
+  - { key: elkem, name: Elkem, region: europe, listing: Private (China National Bluestar from 2011), goods: { silicon_metal: 0.04 }, reliability: 0.90, revenue_2010: null } # added: Norway is 3% of silicon (dossier 2)
+  - { key: tokuyama, name: Tokuyama, region: east_asia, listing: TSE, goods: { polysilicon: 0.05 }, reliability: 0.92, revenue_2010: null } # semiconductor-grade poly (dossier 1.1, 2)
+  - { key: chalco, name: Chalco, region: east_asia, listing: Shanghai/HKEX/NYSE, goods: { gallium: 0.30 }, reliability: 0.80, revenue_2010: null } # added: gallium is an alumina by-product, China 99%
+  - { key: dowa, name: Dowa, region: east_asia, listing: TSE, goods: { gallium: 0.03 }, reliability: 0.92, revenue_2010: null } # added: Japan refines and recycles gallium (dossier 2, R)
+  - { key: teck, name: Teck, region: north_america, listing: TSX/NYSE, goods: { germanium: 0.05 }, reliability: 0.92, revenue_2010: null } # Trail, Canada (dossier 2, R)
+  - { key: yunnan_germanium, name: Yunnan Lincang Xinyuan Germanium, region: east_asia, listing: Shenzhen, goods: { germanium: 0.15 }, reliability: 0.80, revenue_2010: null } # added: China 68% of refining
+  - { key: pt_timah, name: PT Timah, region: south_southeast_asia, listing: IDX, goods: { tin: 0.10 }, reliability: 0.85, revenue_2010: null } # added: Indonesia 19% of tin
+  - { key: yunnan_tin, name: Yunnan Tin, region: east_asia, listing: Shenzhen, goods: { tin: 0.15 }, reliability: 0.85, revenue_2010: null } # added: China 24% of tin
+  - { key: msc, name: Malaysia Smelting Corporation, region: south_southeast_asia, listing: Bursa Malaysia, goods: { tin: 0.08 }, reliability: 0.88, revenue_2010: null } # added: Malaysia refines tin (dossier 2, R)
+  - { key: gam, name: Global Advanced Metals, region: oceania, listing: Private, goods: { tantalum: 0.10 }, reliability: 0.85, revenue_2010: null } # added: Australia 2% of tantalum, conflict-free supply
+  - { key: ningxia_tantalum, name: Ningxia Orient Tantalum, region: east_asia, listing: Shenzhen, goods: { tantalum: 0.10 }, reliability: 0.85, revenue_2010: null } # added: China processes tantalum (dossier 2, R)
+  - { key: cmoc, name: CMOC, region: east_asia, listing: Shanghai/HKEX, goods: { cobalt: 0.10 }, from: "2016-11", reliability: 0.85, revenue_2010: null } # bought Tenke Fungurume in 2016 (dossier 3.1)
+  - { key: rockwood, name: Rockwood (Chemetall), region: north_america, listing: NYSE, goods: { lithium_carbonate: 0.15 }, until: "2014-12", reliability: 0.92, revenue_2010: null } # Albemarle's lithium before January 2015
+  - { key: tianqi, name: Tianqi Lithium, region: east_asia, listing: Shenzhen (2010), goods: { lithium_carbonate: 0.12 }, reliability: 0.85, revenue_2010: null } # added: China converts 58-65%
+  - { key: ganfeng, name: Ganfeng Lithium, region: east_asia, listing: Shenzhen (2010), goods: { lithium_carbonate: 0.12 }, reliability: 0.85, revenue_2010: null } # added: China converts 58-65%
+  - { key: linde, name: Linde, region: europe, listing: Frankfurt, goods: { neon: 0.10 }, reliability: 0.95, revenue_2010: null } # neon purification (dossier 2, R)
+  - { key: air_liquide, name: Air Liquide, region: europe, listing: Euronext Paris, goods: { neon: 0.10 }, reliability: 0.95, revenue_2010: null } # neon purification (dossier 2, R)
+  - { key: air_products, name: Air Products, region: north_america, listing: NYSE, goods: { neon: 0.08 }, reliability: 0.94, revenue_2010: null } # neon purification (dossier 2, R)
+  - { key: ingas, name: Ingas, region: europe, listing: Private, goods: { neon: 0.30 }, until: "2022-02", reliability: 0.80, revenue_2010: null } # Mariupol, halted after 24 February 2022 (dossier 1.2, V)
+  - { key: cryoin, name: Cryoin, region: europe, listing: Private, goods: { neon: 0.20 }, until: "2022-02", reliability: 0.80, revenue_2010: null } # Odesa, halted (dossier 1.2, V)

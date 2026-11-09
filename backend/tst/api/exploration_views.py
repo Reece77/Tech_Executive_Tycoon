@@ -90,7 +90,7 @@ def project_out(state: GameState, project: Project, data: LoadedData) -> Explora
     sb = b.exploration.survey
     est = xp.running_estimate(state, project, b, d)
     chance = sb.bands.get(project.reading) if project.reading else None
-    buyer = xp.buyer_for(project, d)
+    buyer = xp.buyer_for(project, d, state.turn)
     quote = (
         xp.sale_price_cents(state, project, b, d)
         if project.status in ("active", "permitted")

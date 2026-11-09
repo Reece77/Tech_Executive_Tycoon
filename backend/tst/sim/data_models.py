@@ -13,6 +13,15 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.chips.config import ChipsBalance
+from tst.sim.commodities.config import (
+    CommoditiesFile,
+    CommoditiesHistoryFile,
+    CommodityBalance,
+    OfftakeBalance,
+    PowerBalance,
+    PowerHistoryFile,
+    SuppliersFile,
+)
 from tst.sim.events.data import (
     EFFECT_TYPES,
     LOAN_EFFECTS,
@@ -1251,6 +1260,9 @@ class Balance(_Frozen):
     persona: PersonaBalance  # M24 (formulas.md 32.4)
     influence: InfluenceBalance  # M24 (formulas.md 32.5)
     group: GroupBalance  # M16 (formulas.md 31)
+    commodity: CommodityBalance  # M17 (formulas.md 33.1-33.3)
+    offtake: OfftakeBalance  # M17 (formulas.md 33.3)
+    power: PowerBalance  # M17 (formulas.md 33.5)
     geology: GeologyBalance  # M18 (formulas.md 34.1)
     exploration: ExplorationBalance  # M18 (formulas.md 34.2-34.3)
 
@@ -1938,6 +1950,10 @@ class GameData(_Frozen):
     eras: ErasFile = ErasFile()  # M11 (21.4)
     banks: tuple[Bank, ...] = ()  # M13 (25.2): lead underwriters
     voices: tuple[Voice, ...] = ()  # M13b (27.2): executives' report voices
+    commodities: CommoditiesFile | None = None  # M17 (33.1): the twelve commodity goods
+    commodity_history: CommoditiesHistoryFile | None = None  # M17 (33.1): their prices
+    power_history: PowerHistoryFile | None = None  # M17 (33.5): power by region
+    suppliers: SuppliersFile | None = None  # M17 (33.4): offtake counterparties
     geology: GeologyFile | None = None  # M18 (34.1): regions' geology; None = no exploration
 
     def bank(self, key: str) -> Bank:

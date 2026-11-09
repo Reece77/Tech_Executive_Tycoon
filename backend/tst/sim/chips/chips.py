@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from tst.sim.chips import formulas as cf
 from tst.sim.chips.config import ChipTypeDef
+from tst.sim.commodities import costs
 from tst.sim.data_models import Balance, CategoryDef, GameData
-from tst.sim.facilities import goods
 from tst.sim.hardware.models import ProductionContract
 from tst.sim.hardware.supply import delivered_share
 from tst.sim.products.models import Product
@@ -73,7 +73,7 @@ def index_wafer_cents(
 ) -> float:
     """A wafer at this month's foundry_wafer index from a foundry (what a contract locks)."""
     ch = balance.chips
-    index = goods.index_now(state, ch.good, data)
+    index = costs.cost_index(state, ch.good, data, balance)  # M17: x the chip mix (33.2)
     return ch.types[chip_type].wafer_cents * index * ch.contract.foundries[foundry].price_mult
 
 

@@ -10,6 +10,7 @@ from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
 
+from tst.sim.commodities.models import CommodityDeal
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
@@ -298,6 +299,7 @@ class GameState:
     group_listings: tuple[GroupListing, ...] = ()  # M16 (31.5): carve-outs and spin-offs
     personal_stakes: tuple[PersonalStake, ...] = ()  # M16 (31.5): the founder's own shares
     transfer_flows: tuple[TransferFlow, ...] = ()  # M16 (31.6): intra-group supply, by id
+    commodity_deals: tuple[CommodityDeal, ...] = ()  # M17 (33.3): contracts and offtakes, by id
     # M18 (34): every block's hidden truth, by (region order, index) (empty in saves made
     # before M18 and in hand-built states: nothing to explore); suppliers' licences; desk
     # studies, projects and drill holes by id ((project_id, n) for holes).
@@ -1147,6 +1149,10 @@ def with_facility(state: GameState, facility: Facility) -> GameState:
 
 def with_contract(state: GameState, contract: SupplyContract) -> GameState:
     return replace(state, contracts=_upsert(state.contracts, contract, lambda c: c.id))
+
+
+def with_commodity_deal(state: GameState, deal: CommodityDeal) -> GameState:
+    return replace(state, commodity_deals=_upsert(state.commodity_deals, deal, lambda d: d.id))
 
 
 def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:

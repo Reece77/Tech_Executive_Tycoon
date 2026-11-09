@@ -7,8 +7,8 @@ assays (34.2), each record's fields in a JSON `data` column (data-dictionary.md)
 Existing saves: their geology is drawn now, exactly as a new game of the same seed draws it at
 turn 0 (stream `geology`), so a save from before M18 can explore too.
 
-Revision ID: 0041_m18
-Revises: 0040_m25 (re-parented onto M17's migration when M17 merges)
+Revision ID: 0042_m18
+Revises: 0041_m17
 """
 
 from __future__ import annotations
@@ -19,8 +19,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0041_m18"
-down_revision: str | None = "0040_m25"
+revision: str = "0042_m18"
+down_revision: str | None = "0041_m17"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -58,7 +58,7 @@ def upgrade() -> None:
             {"c": code, "n": name, "t": kind},
         )
     _backfill(conn)
-    op.execute("UPDATE save_meta SET schema_version = 41")
+    op.execute("UPDATE save_meta SET schema_version = 42")
 
 
 def _backfill(conn: sa.Connection) -> None:
@@ -99,4 +99,4 @@ def downgrade() -> None:
         "DELETE FROM account WHERE code = '6600_exploration' AND NOT EXISTS "
         "(SELECT 1 FROM ledger_line WHERE account_code = '6600_exploration')"
     )
-    op.execute("UPDATE save_meta SET schema_version = 40")
+    op.execute("UPDATE save_meta SET schema_version = 41")

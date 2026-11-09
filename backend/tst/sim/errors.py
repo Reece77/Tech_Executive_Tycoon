@@ -301,6 +301,13 @@ class UnknownCompanyError(NotFoundError):  # M16: the company switcher's company
     code = "unknown_company"
 
 
+class CommodityRuleError(SimError):
+    """A commodity contract or offtake the rules do not allow, or a price asked for a month
+    the game has not reached (M17, formulas.md 33)."""
+
+    code = "commodity_rule"
+
+
 class ExplorationRuleError(SimError):
     """A desk study, licence, pipeline stage, permit or sale the exploration rules do not allow
     (M18, formulas.md 34). The message never names a deposit's hidden truth (34.5)."""

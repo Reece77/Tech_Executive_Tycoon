@@ -1,4 +1,4 @@
-"""Loading and syncing M18's records (formulas.md 34; migration 0041). Each record keeps its
+"""Loading and syncing M18's records (formulas.md 34; migration 0042). Each record keeps its
 dataclass fields in a JSON `data` column (tst.db.mna_io)."""
 
 from __future__ import annotations

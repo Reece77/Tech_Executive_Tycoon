@@ -59,9 +59,9 @@ Engineering and data decisions the spec, ADRs and brief did not settle (CLAUDE.m
 14. **Protests** are queued at most one a company a month; the decision waits while one is open. Consult: $500k and 3 months. Benefit agreement: $3M, refusal chance and protest chance × 0.5. Push on: persona Ruthless +5 (M24's `raise_trait`), a 25% chance of an injunction ($1M, 6 months), +10 points of refusal chance per push. The event links to its project by (company, month shown).
 15. **Minor events** (accident, bonanza intercept, dry streak) are inbox items, the accident with a fine and a month's pause; no choices.
 16. **Account 6600_exploration** (expense) takes every exploration cost; a sale posts to `4930_gain_on_disposal` (exploration is expensed, so the book value is nil).
-17. **Saves from before M18** get their geology at migration 0041, drawn as a new game of the same seed would draw it.
+17. **Saves from before M18** get their geology at migration 0042, drawn as a new game of the same seed would draw it.
 18. **M17 interface until it merges:** `tst/sim/exploration/m17.py` holds `deck(state, key, data, balance)` with M17's signature returning the dossier's 2015–2025 medians, and a list of M17's miners; it is the one module switched at the merge.
-19. **Migrations:** M25 merged first with `0040_m25`; M18's `0041_m18` revises it, and is re-parented onto M17's migration at the merge.
+19. **Migrations:** M25 merged first with `0040_m25`; M18's `0042_m18` revises it, and is re-parented onto M17's migration at the merge.
 
 ## Follow-ups
 

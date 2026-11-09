@@ -14,6 +14,7 @@ from fractions import Fraction
 
 from tst.sim.calendar import format_turn
 from tst.sim.chips.chips import gpu_capex_factor
+from tst.sim.commodities import power
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import goods
@@ -302,17 +303,22 @@ def operating_cents(facility: Facility, turn: int, balance: Balance) -> Cents:
 
 
 def operating_lines(
-    state: GameState, company_id: int, balance: Balance
+    state: GameState, company_id: int, balance: Balance, data: GameData | None = None
 ) -> list[tuple[str, str, Cents, int | None]]:
     """Phase 6's lines for facilities' operating costs (memo, account, amount, division):
-    corporate; data centres with compute (22.2), assembly plants with the cost of goods
-    (26.2)."""
+    corporate; data centres with compute (22.2) at their region's power index (M17, 33.5),
+    assembly plants with the cost of goods (26.2)."""
     centres = plants = 0
     for f in state.company_facilities(company_id):
+        cost = (
+            power.operating_cents(state, f, balance, data)
+            if data is not None
+            else operating_cents(f, state.turn, balance)
+        )
         if kind_of(f, balance).output_good in balance.compute.goods:
-            centres += operating_cents(f, state.turn, balance)
+            centres += cost
         else:
-            plants += operating_cents(f, state.turn, balance)
+            plants += cost
     lines: list[tuple[str, str, Cents, int | None]] = []
     if centres:
         lines.append(("Data centre operations", COMPUTE, centres, None))

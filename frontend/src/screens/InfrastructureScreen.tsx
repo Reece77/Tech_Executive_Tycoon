@@ -303,6 +303,16 @@ function FacilitiesTable({
             );
           },
         }),
+        helper.accessor('power_cents', {
+          header: 'Power per CU',
+          meta: { term: 'infra.power' },
+          cell: ({ row }) => (
+            <span className="tst-num" data-testid="power-per-cu">
+              {formatMoneyWhole(row.original.power_cents ?? 0)}{' '}
+              <span className="tst-muted">× {(row.original.power_index ?? 1).toFixed(2)}</span>
+            </span>
+          ),
+        }),
         helper.accessor('cost_per_used_cents', {
           header: 'Cost per used CU',
           meta: { term: 'infra.cost_per_used' },
@@ -505,6 +515,12 @@ function BuildDialog({
               <span className="tst-num">
                 {formatMoneyWhole(p.cost_per_unit_full_cents)} (spot{' '}
                 {formatMoneyWhole(p.spot_cents)})
+              </span>
+            </div>
+            <div className="tst-row">
+              <span>Power a CU a month</span>
+              <span className="tst-num" data-testid="build-power">
+                {formatMoneyWhole(p.power_cents ?? 0)} (region × {(p.power_index ?? 1).toFixed(2)})
               </span>
             </div>
             <div className="tst-row">

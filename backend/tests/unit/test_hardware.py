@@ -19,10 +19,11 @@ from tst.sim.actions import (
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import ym_to_turn
 from tst.sim.chips import chips
+from tst.sim.commodities import costs
 from tst.sim.decisions import Decisions
 from tst.sim.errors import FacilityRuleError, ProductRuleError
 from tst.sim.facilities import formulas as ff
-from tst.sim.facilities import lifecycle
+from tst.sim.facilities import goods, lifecycle
 from tst.sim.facilities.models import Facility
 from tst.sim.hardware import production
 from tst.sim.hardware.models import ProductionContract
@@ -138,9 +139,13 @@ def test_units_sell_once_and_are_capped(loaded: LoadedData) -> None:
     seg = out.state.product_segment(pid, "consumer")
     assert seg is not None and seg.customers == pytest.approx(1_000)
     assert _lines(out.entries, REVENUE_SUBSCRIPTIONS) == -(1_000 * 40_000)
-    # BOM $180 x index 1, a bought SoC $40, the $13 fee: $233 a unit (26.7)
-    assert _lines(out.entries, COGS) == (1_000 * 23_300)
-    assert row.cogs_cents == 1_000 * 23_300
+    # BOM $180 x index 1, a bought SoC $40, the $13 fee: $233 a unit (26.7); M17 (33.2): the
+    # BOM's index blends in its commodities at January 2010's spot (their index, not 1.0)
+    index = costs.cost_index(out.state, "device_bom", data, balance)
+    assert index != 1.0 and index == pytest.approx(1.0, abs=0.01)
+    unit = 18_000 * index + 4_000 + 1_300
+    assert _lines(out.entries, COGS) == pytest.approx(1_000 * unit, abs=2)
+    assert row.cogs_cents == _lines(out.entries, COGS)
     # next month the same customers do not pay again: only new units book revenue
     nxt = replace(out.state, turn=out.state.turn + 1)
     out2 = phases.run_markets(nxt, RngFactory(4), balance, data)
@@ -278,7 +283,11 @@ def test_bom_follows_the_index(loaded: LoadedData) -> None:
     product = state.product(_pid(state, "Pebble Phone"))
     assert product is not None
     bom = production.unit_bom_cents(state, product, loaded.balance, loaded.game_data)
-    assert bom == pytest.approx(18_000 * 0.7978, rel=1e-3)
+    # the components index of April 2022 (26.2), blended with its commodities (M17, 33.2)
+    assert goods.index_now(state, "device_bom", loaded.game_data) == pytest.approx(0.7978)
+    mix = loaded.balance.commodity.mixes["device_bom"]
+    spot = costs.mix_index(state, mix, loaded.game_data)
+    assert bom == pytest.approx(18_000 * costs.apply_mix(0.7978, mix, spot), rel=1e-3)
 
 
 # --- Sub-task 4: assembly plants -------------------------------------------------------------
@@ -487,7 +496,10 @@ def test_sign_wafer_contract(loaded: LoadedData) -> None:
     chip = _pid(state, "Pebble Silicon")
     state = _act(state, SignWaferContract(_founder(state), chip, "samsung", 100, 24), loaded)
     (c,) = state.production_contracts
-    assert c.kind == "wafer" and c.price_cents == pytest.approx(900_000 * 0.95)
+    # Samsung's 0.95 on the wafer price, x the chip mix at spot (M17, 33.2)
+    mix = loaded.balance.commodity.mixes["foundry_wafer"]
+    scale = costs.apply_mix(1.0, mix, costs.mix_index(state, mix, loaded.game_data))
+    assert c.kind == "wafer" and c.price_cents == pytest.approx(900_000 * 0.95 * scale)
 
 
 def test_advanced_node_crunch(loaded: LoadedData) -> None:

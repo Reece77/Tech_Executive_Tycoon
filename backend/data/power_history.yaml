@@ -1,0 +1,170 @@
+# Industrial power price by region to December 2025 (docs/formulas.md 33.5, M17, lane A).
+# An index: the region's industrial electricity price / North America's in the same year, so
+# North America is 1.0 in every month (M12a's data-centre tuning is North American and stays
+# unchanged, 22.7 target 4). After 2025 every other region moves by a seeded log AR(1) toward its
+# 2010-2019 mean (stream `commodity`, key (1, region_index) in regions.yaml order); North America
+# stays 1.0.
+#
+# Research (M17 sub-task 1, 2026-11-08). The session's network could not open eia.gov,
+# ec.europa.eu, iea.org or statista.com, so every sourced figure below was read from search
+# results quoting the source, not from the page itself. Tags: S a sourced figure, D derived
+# from sourced figures, A an assumption. As the brief directs, formulas 33.5's default levels
+# are used where sources are thin (every A row below), and those defaults are marked A.
+#
+# North America (the base): US average industrial retail price, cents/kWh, EIA Electric Power
+#   Annual Table 2.4 (https://www.eia.gov/electricity/annual/pdf/epa.pdf), S: 2010 6.77, 2011 6.82,
+#   2012 6.67, 2013 6.89, 2014 7.10, 2015 6.91, 2016 6.76, 2017 6.88, 2018 6.92, 2019 6.81,
+#   2020 6.67, 2021 7.18, 2022 8.32, 2023 8.04, 2024 8.13; 2025 about 8.6 (A, preliminary).
+# Europe: EU average non-household price, 500-2,000 MWh band, excluding VAT and recoverable taxes
+#   (Eurostat nrg_pc_205 releases, https://ec.europa.eu/eurostat/web/products-eurostat-news/w/ddn-20260508-2
+#   and .../ddn-20250506-2), S: 2023 H1 EUR 0.2151, H2 0.2003; 2024 H1 0.1885, H2 0.1941; 2025 H1
+#   0.1903, H2 0.1837; 2022 H2 0.2104. Annual means at ECB EUR/USD (2024 1.0824, S; other years A)
+#   against the US: 2022 2.40, 2023 2.79, 2024 2.55, 2025 2.46 (D). Cross-check: BusinessEurope
+#   puts 2024 at EUR 0.199 against the US's EUR 0.075 (2.65, S;
+#   https://www.businesseurope.eu/media-room/data-hub/high-cost-of-energy/). 2010-2021 sources
+#   were thin: 33.5's 1.5 (A), 1.8 in 2021 as the gas crisis began (A).
+# East Asia: Japan, Korea (KEPCO industrial: 2019 KRW 106.46, 2021 105.48, 2023 153.7, S), China
+#   ($0.084 in 2019, $0.088 in 2024, S, china-briefing.com) and Taiwan; the four-economy ratio could
+#   not be built from sources for most years, so 33.5's 1.2 (A).
+# South and Southeast Asia: no sourced industrial series found (India, Indonesia, Vietnam,
+#   Thailand, Malaysia tariffs were only estimates): 33.5's 0.85 (A). The research's own rough
+#   estimate was higher (about 1.1-1.3x the US); recorded in the M17 brief's decisions.
+# Latin America: only Brazil's constant-price IEA series (124 to 95 USD/MWh, 2011-2021, S) was
+#   found: 33.5's 0.9 (A).
+# Africa: Eskom's standard average tariff (all customers), ZAR c/kWh by financial year: 2019 110,
+#   2021/22 134.30, 2024/25 195.95, 2025/26 220.92 (S, https://www.ourpower.co.za/tools/eskom-tariff-history);
+#   2022/23 147.2, 2023/24 173.8 (D). Against the US at approximate rand rates: 2019 1.12, 2021
+#   1.26, 2022 1.08, 2023 1.17, 2024 1.31, 2025 1.43 (D). 2010-2018 thin: 33.5's 1.1 (A); 2020
+#   between (A).
+# Oceania: Australian industrial prices were only estimates: 33.5's 1.3 (A).
+regions:
+  - key: north_america
+    years:
+      2010: [1.0, S]
+      2011: [1.0, S]
+      2012: [1.0, S]
+      2013: [1.0, S]
+      2014: [1.0, S]
+      2015: [1.0, S]
+      2016: [1.0, S]
+      2017: [1.0, S]
+      2018: [1.0, S]
+      2019: [1.0, S]
+      2020: [1.0, S]
+      2021: [1.0, S]
+      2022: [1.0, S]
+      2023: [1.0, S]
+      2024: [1.0, S]
+      2025: [1.0, S]
+  - key: europe
+    years:
+      2010: [1.5, A]
+      2011: [1.5, A]
+      2012: [1.5, A]
+      2013: [1.5, A]
+      2014: [1.5, A]
+      2015: [1.5, A]
+      2016: [1.5, A]
+      2017: [1.5, A]
+      2018: [1.5, A]
+      2019: [1.5, A]
+      2020: [1.5, A]
+      2021: [1.8, A]
+      2022: [2.40, D]
+      2023: [2.79, D]
+      2024: [2.55, D]
+      2025: [2.46, D]
+    shocks:
+      # the 2022 gas crisis: the second half ran higher than the year (H2 2022 alone 2.66 against
+      # the US, D); the path between the points is A
+      - { label: European energy crisis, source: D, points: { "2021-12": 1.8, "2022-03": 2.2, "2022-09": 2.9, "2022-12": 2.66 } }
+  - key: east_asia
+    years:
+      2010: [1.2, A]
+      2011: [1.2, A]
+      2012: [1.2, A]
+      2013: [1.2, A]
+      2014: [1.2, A]
+      2015: [1.2, A]
+      2016: [1.2, A]
+      2017: [1.2, A]
+      2018: [1.2, A]
+      2019: [1.2, A]
+      2020: [1.2, A]
+      2021: [1.2, A]
+      2022: [1.2, A]
+      2023: [1.2, A]
+      2024: [1.2, A]
+      2025: [1.2, A]
+  - key: south_southeast_asia
+    years:
+      2010: [0.85, A]
+      2011: [0.85, A]
+      2012: [0.85, A]
+      2013: [0.85, A]
+      2014: [0.85, A]
+      2015: [0.85, A]
+      2016: [0.85, A]
+      2017: [0.85, A]
+      2018: [0.85, A]
+      2019: [0.85, A]
+      2020: [0.85, A]
+      2021: [0.85, A]
+      2022: [0.85, A]
+      2023: [0.85, A]
+      2024: [0.85, A]
+      2025: [0.85, A]
+  - key: latin_america
+    years:
+      2010: [0.9, A]
+      2011: [0.9, A]
+      2012: [0.9, A]
+      2013: [0.9, A]
+      2014: [0.9, A]
+      2015: [0.9, A]
+      2016: [0.9, A]
+      2017: [0.9, A]
+      2018: [0.9, A]
+      2019: [0.9, A]
+      2020: [0.9, A]
+      2021: [0.9, A]
+      2022: [0.9, A]
+      2023: [0.9, A]
+      2024: [0.9, A]
+      2025: [0.9, A]
+  - key: africa
+    years:
+      2010: [1.1, A]
+      2011: [1.1, A]
+      2012: [1.1, A]
+      2013: [1.1, A]
+      2014: [1.1, A]
+      2015: [1.1, A]
+      2016: [1.1, A]
+      2017: [1.1, A]
+      2018: [1.1, A]
+      2019: [1.12, D]
+      2020: [1.19, A]
+      2021: [1.26, D]
+      2022: [1.08, D]
+      2023: [1.17, D]
+      2024: [1.31, D]
+      2025: [1.43, D]
+  - key: oceania
+    years:
+      2010: [1.3, A]
+      2011: [1.3, A]
+      2012: [1.3, A]
+      2013: [1.3, A]
+      2014: [1.3, A]
+      2015: [1.3, A]
+      2016: [1.3, A]
+      2017: [1.3, A]
+      2018: [1.3, A]
+      2019: [1.3, A]
+      2020: [1.3, A]
+      2021: [1.3, A]
+      2022: [1.3, A]
+      2023: [1.3, A]
+      2024: [1.3, A]
+      2025: [1.3, A]

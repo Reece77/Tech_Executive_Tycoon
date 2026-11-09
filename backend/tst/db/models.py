@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 41  # M25: 0040; M18: 0041 (M17's re-parents at its merge)
+SCHEMA_VERSION = 42  # M25: 0040; M17: 0041; M18: 0042
 
 
 class Base(DeclarativeBase):
@@ -1266,6 +1266,7 @@ class SupplyMonthRow(Base):
     shock_months: Mapped[int] = mapped_column(Integer, nullable=False)
     shock_rise: Mapped[float] = mapped_column(Float, nullable=False)
     shock_allocation: Mapped[float] = mapped_column(Float, nullable=False)
+    shock_kind: Mapped[str | None] = mapped_column(String(32), nullable=True)  # M17 (33.1)
 
 
 class SupplyContractRow(Base):
@@ -1914,11 +1915,23 @@ class TransferFlowRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
-# --- M18 (formulas.md 34; migration 0041): exploration ---------------------------------------
+class CommodityDealRow(Base):
+    """A company's commodity contract or offtake agreement (formulas.md 33.3; 0041). Its
+    fields are in `data` (tst.db.commodity_io)."""
+
+    __tablename__ = "commodity_deal"
+    __table_args__ = (Index("ix_commodity_deal_company", "company_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    company_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M18 (formulas.md 34; migration 0042): exploration ---------------------------------------
 
 
 class GeoBlockRow(Base):
-    """A block and its hidden deposit (34.1; 0041). `data` holds the true_* fields: hidden
+    """A block and its hidden deposit (34.1; 0042). `data` holds the true_* fields: hidden
     values (ADR-0007), read only by the sim, never by the API."""
 
     __tablename__ = "exploration_block"
@@ -1929,7 +1942,7 @@ class GeoBlockRow(Base):
 
 
 class SupplierLicenceRow(Base):
-    """A supplier's exploration licence (34.4; 0041)."""
+    """A supplier's exploration licence (34.4; 0042)."""
 
     __tablename__ = "exploration_supplier_licence"
 
@@ -1939,7 +1952,7 @@ class SupplierLicenceRow(Base):
 
 
 class DeskStudyRow(Base):
-    """A desk study and its heat-map bands (34.2; 0041)."""
+    """A desk study and its heat-map bands (34.2; 0042)."""
 
     __tablename__ = "exploration_desk_study"
 
@@ -1949,7 +1962,7 @@ class DeskStudyRow(Base):
 
 
 class ExplorationProjectRow(Base):
-    """A licensed block's pipeline (34.2; 0041): revealed results, and the hidden permit
+    """A licensed block's pipeline (34.2; 0042): revealed results, and the hidden permit
     month (`hidden_due_turn`)."""
 
     __tablename__ = "exploration_project"
@@ -1960,7 +1973,7 @@ class ExplorationProjectRow(Base):
 
 
 class DrillHoleRow(Base):
-    """A drill hole's assay (34.2; 0041): public once drilled."""
+    """A drill hole's assay (34.2; 0042): public once drilled."""
 
     __tablename__ = "exploration_hole"
 

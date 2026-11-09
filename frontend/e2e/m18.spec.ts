@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { continueMonth, pressContinue } from './helpers';
+import { continueMonth, pressContinue } from './helpers.ts';
 
 // M18 flows (formulas.md 34): (a) a desk study, a licence and a survey on a fixture; (b) drill
 // 20 holes and watch the grade range narrow; (c) a protest during permitting with its

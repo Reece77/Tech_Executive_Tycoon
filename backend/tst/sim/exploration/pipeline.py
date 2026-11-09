@@ -652,12 +652,12 @@ def sale_price_cents(state: GameState, project: Project, balance: Balance, data:
     return price
 
 
-def buyer_for(project: Project, data: GameData) -> tuple[str, str] | None:
+def buyer_for(project: Project, data: GameData, turn: int) -> tuple[str, str] | None:
     """The supplier that buys a project: the first of the commodity's buyers headquartered in
     its region, else the first (from public facts only: the commodity and the region)."""
     if project.commodity is None:
         return None
-    buyers = buyers_of(data, project.commodity)
+    buyers = buyers_of(data, project.commodity, turn)
     if not buyers:
         return None
     local = [b for b in buyers if b.region == project.region]
@@ -673,7 +673,7 @@ def sell_project(
     if project.status not in ("active", "permitted"):
         raise ExplorationRuleError(f"the project is {project.status}")
     price = sale_price_cents(state, project, balance, data)
-    buyer = buyer_for(project, data)
+    buyer = buyer_for(project, data, state.turn)
     if price <= 0 or buyer is None:
         raise ExplorationRuleError("no supplier would pay for the project at this stage")
     state = _energy(state, action.actor_id, action.kind, balance, balance.exploration.sale.energy)
