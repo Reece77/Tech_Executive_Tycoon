@@ -88,6 +88,11 @@ STREAM_IDS: Final = MappingProxyType(
         # conflict's discovery, (2,) the family office's monthly noise, (3,) its manager
         # (M26, 37.2-37.4)
         "personal": 53,
+        # 54: fab (M21, lane A)
+        # key (0,): the month's tension draws after 2025 (a normal, then escalation, détente
+        # and rule uniforms); (1, licence id): a licence decision; (2, company id): an entity
+        # listing (M22, 39.1-39.3)
+        "geopolitics": 55,
         "misc": 99,
     }
 )

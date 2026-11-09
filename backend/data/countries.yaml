@@ -1,0 +1,155 @@
+# Countries and blocs (docs/formulas.md 39.1, M22; docs/v3-research/v3-data-dossier.md section 5).
+# The same on every seed. Every country the game uses: cities.yaml names one per city, facilities
+# and subsidiaries sit in one, commodities.yaml's top_country and suppliers name one.
+#
+#   key: stable id (never rename; saves store it).
+#   label: shown name. aliases: other spellings used by commodities.yaml (top_country).
+#   region: the regions.yaml region it sits in.
+#   bloc: us_aligned, china or non_aligned in January 2010.
+#   bloc_history: later membership changes as [month, bloc] (the month it takes effect).
+#   demand_share: the country's share of its region's demand (the shares of a region's
+#     countries sum to 1). An assumption from 2010s GDP and ICT spending shares (World Bank, R);
+#     a restricted destination's customers are this share of the region's (39.3, M22 decision).
+#   default: the region's default country (a facility or subsidiary with no city sits there).
+# Order is significant only for display.
+countries:
+  # North America
+  - { key: us, label: United States, aliases: [United States, USA], region: north_america, bloc: us_aligned, demand_share: 0.88, default: true }
+  - { key: canada, label: Canada, region: north_america, bloc: us_aligned, demand_share: 0.08 }
+  - { key: mexico, label: Mexico, region: north_america, bloc: us_aligned, demand_share: 0.04 }
+  # Europe
+  - { key: uk, label: United Kingdom, region: europe, bloc: us_aligned, demand_share: 0.18 }
+  - { key: germany, label: Germany, region: europe, bloc: us_aligned, demand_share: 0.22, default: true }
+  - { key: netherlands, label: Netherlands, region: europe, bloc: us_aligned, demand_share: 0.06 }
+  - { key: ireland, label: Ireland, region: europe, bloc: us_aligned, demand_share: 0.02 }
+  - { key: france, label: France, region: europe, bloc: us_aligned, demand_share: 0.16 }
+  - { key: israel, label: Israel, region: europe, bloc: us_aligned, demand_share: 0.03 }
+  - { key: rest_of_eu, label: Rest of the EU, region: europe, bloc: us_aligned, demand_share: 0.25 }
+  - { key: ukraine, label: Ukraine, aliases: [Ukraine], region: europe, bloc: non_aligned, demand_share: 0.01, bloc_history: [["2022-03", us_aligned]] } # aligned with the West after February 2022 (R)
+  - { key: russia, label: Russia, region: europe, bloc: non_aligned, demand_share: 0.07, bloc_history: [["2022-03", china]] } # sanctions from March 2022 (R): counted with the China bloc for seeded bloc-wide rules
+  # East Asia
+  - { key: china, label: China, aliases: [China], region: east_asia, bloc: china, demand_share: 0.55, default: true }
+  - { key: japan, label: Japan, region: east_asia, bloc: us_aligned, demand_share: 0.25 }
+  - { key: south_korea, label: South Korea, region: east_asia, bloc: us_aligned, demand_share: 0.12 }
+  - { key: taiwan, label: Taiwan, region: east_asia, bloc: us_aligned, demand_share: 0.08 }
+  # South and Southeast Asia
+  - { key: india, label: India, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.45, default: true }
+  - { key: singapore, label: Singapore, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.08 }
+  - { key: indonesia, label: Indonesia, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.17 }
+  - { key: malaysia, label: Malaysia, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.10 }
+  - { key: vietnam, label: Vietnam, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.10 }
+  - { key: thailand, label: Thailand, region: south_southeast_asia, bloc: non_aligned, demand_share: 0.10 }
+  # Latin America
+  - { key: brazil, label: Brazil, region: latin_america, bloc: non_aligned, demand_share: 0.45, default: true }
+  - { key: chile, label: Chile, region: latin_america, bloc: non_aligned, demand_share: 0.10 }
+  - { key: argentina, label: Argentina, region: latin_america, bloc: non_aligned, demand_share: 0.15 }
+  - { key: peru, label: Peru, region: latin_america, bloc: non_aligned, demand_share: 0.07 }
+  - { key: bolivia, label: Bolivia, region: latin_america, bloc: non_aligned, demand_share: 0.03 }
+  - { key: colombia, label: Colombia, region: latin_america, bloc: non_aligned, demand_share: 0.20 }
+  # Africa
+  - { key: south_africa, label: South Africa, region: africa, bloc: non_aligned, demand_share: 0.30, default: true }
+  - { key: nigeria, label: Nigeria, region: africa, bloc: non_aligned, demand_share: 0.25 }
+  - { key: kenya, label: Kenya, region: africa, bloc: non_aligned, demand_share: 0.10 }
+  - { key: drc, label: DR Congo, aliases: [DR Congo, DRC], region: africa, bloc: non_aligned, demand_share: 0.05 }
+  - { key: zimbabwe, label: Zimbabwe, region: africa, bloc: non_aligned, demand_share: 0.03 }
+  - { key: namibia, label: Namibia, region: africa, bloc: non_aligned, demand_share: 0.02 }
+  - { key: rest_of_africa, label: Rest of Africa, region: africa, bloc: non_aligned, demand_share: 0.25 }
+  # Oceania
+  - { key: australia, label: Australia, region: oceania, bloc: us_aligned, demand_share: 0.85, default: true }
+  - { key: new_zealand, label: New Zealand, region: oceania, bloc: us_aligned, demand_share: 0.15 }
+
+# Where the game's named suppliers, contract manufacturers and foundries sit (their country of
+# operation for the goods they sell; suppliers.yaml gives only a region). Unlisted suppliers sit
+# in their region's default country.
+sites:
+  # suppliers.yaml (M17)
+  freeport: us
+  bhp: australia
+  rio_tinto: uk
+  glencore: rest_of_eu
+  codelco: chile
+  albemarle: us
+  sqm: chile
+  lynas: australia
+  molycorp: us
+  mp_materials: us
+  umicore: rest_of_eu
+  china_northern_re: china
+  wacker: germany
+  hemlock: us
+  gcl_poly: china
+  oci: south_korea
+  shin_etsu: japan
+  sumco: japan
+  siltronic: germany
+  memc: us
+  globalwafers: taiwan
+  sibelco: us # Spruce Pine
+  quartz_corp: us # Spruce Pine
+  globe_metals: us
+  elkem: rest_of_eu
+  tokuyama: japan
+  chalco: china
+  dowa: japan
+  teck: canada
+  yunnan_germanium: china
+  pt_timah: indonesia
+  yunnan_tin: china
+  msc: malaysia
+  gam: australia
+  ningxia_tantalum: china
+  cmoc: china
+  rockwood: us
+  tianqi: china
+  ganfeng: china
+  linde: germany
+  air_liquide: france
+  air_products: us
+  ingas: ukraine
+  cryoin: ukraine
+  # hardware.contract.manufacturers: where their contracts' units are assembled is the contract's
+  # city; these are their home countries (M12b)
+  foxconn: taiwan
+  pegatron: taiwan
+  # chips.contract.foundries (M12b): where the wafers are made
+  tsmc: taiwan
+  samsung: south_korea
+
+# Rivals' home countries (incumbents.yaml and entrants.yaml names). Unlisted rivals sit in their
+# headquarters city's country. Used for the entity list and the World screen.
+rivals:
+  Tencent: china
+  Alibaba: china
+  Baidu: china
+  Lenovo: china
+  Infosys: india
+  Kaspersky: russia
+  SAP: germany
+  Samsung: south_korea
+  Foxconn: taiwan
+  Pegatron: taiwan
+  Zoho: india
+  Atlassian: australia
+  Check Point: israel
+
+# Tension between the US-aligned and China blocs, 0-100 (39.1). To December 2025 the history,
+# the same on every seed: an assumption scaled from the dossier 5 timeline (quiet to 2017;
+# the Section 301 tariffs and ZTE in 2018; Huawei 2019; the FDPR and SMIC 2020; October 2022's
+# rules; 2023's tool deals and gallium licensing; December 2024's bans; Busan's truce in
+# October-November 2025). Values hold from their month until the next.
+tension_history:
+  - ["2010-01", 22]
+  - ["2010-09", 26] # the rare-earth halt to Japan
+  - ["2012-03", 28] # the WTO case
+  - ["2014-08", 25]
+  - ["2016-01", 27]
+  - ["2018-04", 40] # ZTE's denial order
+  - ["2018-07", 50] # Section 301 tranches
+  - ["2019-05", 60] # Huawei listed
+  - ["2020-05", 65] # the FDPR to Huawei
+  - ["2020-12", 68] # SMIC listed
+  - ["2022-10", 75] # the October 2022 rules
+  - ["2023-07", 78] # gallium and germanium licensing
+  - ["2024-12", 82] # the December 2024 bans
+  - ["2025-04", 85] # tariff escalation and April's rare-earth controls
+  - ["2025-11", 72] # the Busan truce

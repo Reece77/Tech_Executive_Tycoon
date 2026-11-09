@@ -228,6 +228,15 @@ from tst.sim.exploration.pipeline import (
     apply_exploration,
 )
 from tst.sim.geo.cities import settle_home_cities
+from tst.sim.geopolitics.actions import ACTION_TYPES as GEOPOLITICS_ACTION_TYPES
+from tst.sim.geopolitics.actions import (
+    GeopoliticsAction,
+    LaunchVariant,
+    RequestLicence,
+    SetGreyRoute,
+    TakeLocalPartner,
+    apply_geopolitics,
+)
 from tst.sim.group.actions import (
     AnswerGroupPitch,
     BuyOutMinorities,
@@ -303,6 +312,7 @@ type Action = (
     | GroupAction  # M16
     | ExplorationAction  # M18
     | RefiningAction  # M20
+    | GeopoliticsAction  # M22
     | MiningAction  # M19
 )
 
@@ -310,6 +320,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **INVESTING_ACTION_TYPES,  # M26 (37)
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **REFINING_ACTION_TYPES,  # M20 (36.1)
+    **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -452,6 +463,7 @@ __all__ = [
     "JoinRound",
     "LaunchInRegion",
     "LaunchProduct",
+    "LaunchVariant",
     "LeaseOffice",
     "LicenseIn",
     "LicenseOut",
@@ -471,6 +483,7 @@ __all__ = [
     "RepayLoan",
     "ReplaceLeaver",
     "ReplaceSubsidiaryCeo",
+    "RequestLicence",
     "Scout",
     "ScoutSearch",
     "SecondaryOffering",
@@ -481,6 +494,7 @@ __all__ = [
     "SellStake",
     "SetAuthority",
     "SetCeoAuthority",
+    "SetGreyRoute",
     "SetGuidance",
     "SetLeader",
     "SetLobbying",
@@ -509,6 +523,7 @@ __all__ = [
     "StopProject",
     "SunsetProduct",
     "TakeLoan",
+    "TakeLocalPartner",
     "TradeShares",
     "UnassignUnit",
     "UpdatePlan",
@@ -735,6 +750,8 @@ def apply_action(
             out = apply_exploration(state, action, rng, ledger_balances, balance, data)
         case BuildRefinery() | SignRefiningDeal():  # M20 (36.1)
             out = apply_refining(state, action, ledger_balances, balance, data)
+        case RequestLicence() | SetGreyRoute() | LaunchVariant() | TakeLocalPartner():  # M22
+            out = apply_geopolitics(state, action, balance, data)
         case (
             FoundSubsidiary()
             | TransferAsset()

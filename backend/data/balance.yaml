@@ -1843,3 +1843,79 @@ mining: # 35: building and running mines (M19, v3 lane A). Dossier 6 where marke
     buy_monthly: 0.02 # chance a month that a rival bids for one of the group's permitted projects
     mine_bid: 0.9 # a rival's offer for an operating mine, x its book value (M14's deal code)
   transfer_kinds: [cost, cost_plus, market] # 31.6's transfer prices for a mine's group sales
+
+# --- Geopolitics and export controls (formulas.md 39, M22, v3 lane B) ----------------------------
+# Data: countries.yaml (blocs, tension history), export_controls.yaml (dossier 5 rules), tariffs.yaml.
+# Stream geopolitics (id 55, ADR-0013): key (0,) the month's tension draws after 2025 (a normal,
+# then uniforms for an escalation, a détente and the rule each picks, every month in that order);
+# (1, licence id) a licence decision; (2, company id) an entity listing. A = an assumption.
+geopolitics:
+  tension: # 39.1: after December 2025, t' = mean + phi x (t - mean) + sd x z, held to 0-100
+    mean: 65 # A: the 2019-2025 average of the history
+    phi: 0.96 # A: monthly persistence (a half-life of about 17 months)
+    sd: 2.0 # A: points a month
+  escalation: # 39.2: an escalation starts with chance base + slope x (tension - pivot), at least 0
+    base: 0.013 # A: about one in six years at the pivot (M22 tuning from 0.008 for 39.4 target 6)
+    slope: 0.0004 # A: per tension point above the pivot
+    pivot: 65
+    jump: 10 # tension points it adds; it also adds a rule from export_controls.yaml seeded
+    gap_months: 12 # no escalation or détente within a year of the last
+  detente: # 39.2: chance base - slope x (tension - pivot), at least 0
+    base: 0.013 # A: about one in six years at the pivot (M22 tuning from 0.008 for 39.4 target 6)
+    slope: 0.0004
+    pivot: 65
+    jump: 12 # tension points it removes
+    gap_months: 12
+    suspend_months: 12 # a détente suspends one rule in force for a year (as November 2025's)
+  licence: # 39.3: approval = the rule's approval x (1 + influence x I / 100), at most 1
+    influence: 0.3 # 39.3: M24's influence in the imposing country's region (32.5)
+    decision_months: 2 # A: months from the request to the decision
+    term_months: 24 # A: an approved licence's months (or until the rule ends)
+    energy: 3 # A: founder energy to request one
+  variant: # 39.3: a compliant variant under the threshold (NVIDIA's A800, H20)
+    energy: 5 # 39.3
+    quality_penalty: 10 # 39.3: its quality cap is the parent's less this, in the restricted market
+    keep: 0.7 # A (M22 decision): the share of a restricted destination's buyers who will take a cut-down chip; the rest wind down as if blocked (39.4 target 2)
+  exit_rate: 0.25 # A: the share of a blocked destination's remaining customers who leave each month
+  buy: # 39.3: buying controlled inputs from a restricting actor
+    premium: { ban: 0.60, licence: 0.25, quota: 0.40 } # A: the price premium on the exposed volume (rerouted and grey supply); 39.4 target 3
+    licence_allowed: 0.80 # A: share of the exposed volume a licence regime still delivers (a ban 0, a quota its share)
+  listing: # 39.3: the entity list
+    grey_monthly: 0.04 # A: chance a month of listing while selling a controlled good unlicensed through distributors
+    owned_share: 0.5 # 39.3: a company at least this share owned by a listed company risks listing
+    owned_monthly: 0.05 # A: its chance a month while no affiliates rule is in force (one is: listed at once)
+    appeal_cents: 50000000 # A: $500k of legal and lobbying costs to appeal a listing (6950)
+    appeal_chance: 0.15 # A: chance an appeal gets the company off the list
+  lobby: # an event's "lobby" answer: a one-off spend in the actor's region (6950) that adds M24 influence
+    cents: 20000000 # A: $200k
+    influence: 5 # A: influence points in the region (0-100)
+  local_partner: # 39.3: markets that require a local partner for entry
+    categories: [cloud_hosting] # 39.3: cloud in China
+    countries: [china]
+    share: 0.5 # 39.3: 50% local; the partner takes this share of the market's revenue (5110)
+    energy: 3 # A: founder energy to form the partnership
+  goods: # 39.2: the controlled goods export_controls.yaml names
+    ai_chips: { label: Advanced AI chips, kind: product, chip_types: [ai_accelerator] }
+    hbm: { label: High-bandwidth memory, kind: input, chip_types: [ai_accelerator], weight: 0.5 } # A: accelerators that lose HBM run at half on older memory
+    us_components: { label: US-origin components, kind: input, chip_types: [mobile_soc, server_cpu, ai_accelerator], weight: 1.0 } # listed entities lose them all
+    chip_equipment: { label: Chipmaking equipment, kind: facility } # M21's fabs
+    euv_tools: { label: EUV and advanced DUV tools, kind: facility } # M21's euv_tools
+    fab_services: { label: Foundry services at 16/14 nm and below, kind: service } # M21's foundry
+    gallium: { label: Gallium, kind: commodity, commodity: gallium }
+    germanium: { label: Germanium, kind: commodity, commodity: germanium }
+    rare_earths: { label: Rare earths and magnets, kind: commodity, commodity: ndpr_oxide }
+    cobalt: { label: Cobalt, kind: commodity, commodity: cobalt }
+    lithium: { label: Lithium, kind: commodity, commodity: lithium_carbonate }
+    silicon: { label: Silicon, kind: news }
+    graphite: { label: Graphite, kind: news }
+    antimony: { label: Antimony, kind: news }
+    minor_metals: { label: "Tungsten, tellurium, bismuth, molybdenum and indium", kind: news }
+    nickel_ore: { label: Nickel ore, kind: news }
+    bauxite: { label: Bauxite, kind: news }
+    re_technology: { label: Rare-earth processing technology, kind: news }
+    battery_technology: { label: Battery and lithium processing technology, kind: news }
+  tariff_goods: # 39.3: tariffs.yaml goods -> categories.yaml keys
+    devices: [devices]
+    servers: [servers]
+    chips: [chips_mobile_soc, chips_server_cpu, chips_ai_accelerator]
+  actor_regions: { us_aligned: north_america, china: east_asia, non_aligned: south_southeast_asia } # a bloc actor's influence region (a country actor's is its own region)

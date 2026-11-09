@@ -1878,6 +1878,20 @@ The latest month's own-group supply lots (36.1-36.2), replaced each month.
 | `n` | INTEGER | no | Primary key: the lot's order. |
 | `data` | JSON | no | `turn`, `facility_id` (the plant), `seller_id`, `buyer_id`, `good`, `volume`, `unit_cents` (the transfer price), `market_cents`, `product_id` (a wafer lot's chip product; null for commodities), `taken` (what the buyer used after production; the rest sold at spot). |
 
+## Geopolitics and export controls (migration `0046_m22`, M22)
+
+Countries, blocs, export controls and tariffs are data (`countries.yaml`, `export_controls.yaml`, `tariffs.yaml`; formulas.md 39), the same on every seed; `cities.yaml` gains `country` on every city. What play adds lives in `geo_record`, one row a record (`tst/db/geopolitics_io.py`). Accounts `5100_tariffs` and `5110_local_partner_share` (expense, cost of revenue). RNG stream `geopolitics` (55). Balance keys `geopolitics.*`. Existing saves have no records; history applies to them from data. `save_meta.schema_version` is 46. Never stored ahead of its month: a seeded tension month, an escalation's rule and a détente's suspension are added in phase 12 for the next month only.
+
+### geo_record
+
+Every geopolitical record, one row each, rewritten by collection when it changes.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position (keeps each collection's order). |
+| `kind` | VARCHAR | no | The collection: `tension` (`turn`, `value` 0-100, `shock` `none`/`escalation`/`detente`: seeded months after 2025), `seeded_rules` (`rule_key` an export_controls.yaml `seeded` key, `start_turn`, `end_turn`), `suspensions` (`rule_key`, `start_turn`, `end_turn`: a seeded détente's), `licences` (`id`, `company_id`, `product_id`, `rule_key`, `country`, `requested_turn`, `decide_turn`, `status` `pending`/`approved`/`denied`/`expired`/`grey`, `until_turn`), `variants` (`product_id`, `turn`: a compliant variant's launch), `entity_listings` (`company_id`, `actor` a country or bloc, `turn`, `reason`), `sites` (`kind` `company`/`facility`, `id`, `country`, `local_partner`), `exits` (`product_id`, `region`, `segment`, `remaining` customers in closed destinations still on the books, `share` the blocked share last month), `geo_notices` (`turn`, `company_id`, `template_id`, `rule_key`: what a geopolitical event's {rule} names). |
+| `data` | JSON | no | The record's fields, as listed under `kind`. |
+
 ## M25: files beside the saves (not tables)
 
 `saves/profiles/<profile>.json` (M25 section 2, `tst/profile/store.py`): the player profile's achievements across every save; the profile is `TST_PROFILE` (default `default`). Written atomically under a lock after each committed turn and player action; never read by the sim and never part of a save. Keys: `version` (1), `profile`, `earned` (`{achievement key: {save, company, turn, date_label, earned_at (UTC ISO), seen}}`; `seen` is false until its toast has shown), `watch` (`{save slug: {downturn_from}}`: the month a running downturn began, for "a downturn without layoffs"). Sandbox and modded games add nothing. Achievements are defined in `backend/data/achievements.yaml` (key, title, description, kind, threshold or param, hidden), validated at startup and not hashed into saves.

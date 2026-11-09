@@ -1,0 +1,121 @@
+# Geopolitics event templates (docs/formulas.md 39.2-39.3, M22): queued by the engine by template
+# id (trigger geopolitics) when an export rule is announced, a détente suspends one, or the
+# company is put on an entity list. {rule} names the rule or détente. Only companies the rule
+# touches hear of it: one that sells or makes controlled goods, or buys controlled inputs (a
+# critical event when it is hit directly), or has hardware, chips, fabs, refineries or mines (a
+# major event); a software company in North America and Europe hears nothing (39.4 target 7).
+# The answer is applied by the engine (geopolitics_step). Tone: grounded realism (ADR-0011). The
+# first choice is what happens when a major event is left unanswered at Continue.
+templates:
+  - id: geo_rule_announced
+    category: geopolitics
+    trigger: geopolitics
+    severities: [major]
+    weight: 1.0
+    title: "New export rules: {rule}"
+    body: >-
+      Trade officials have announced {rule}. Nothing {company} sells or buys is cut off yet, but
+      the compliance team has flagged it: the rules in force, and what they would touch, are on
+      the World screen.
+    choices:
+      - key: A
+        label: "Note it and carry on"
+        do_nothing: true
+      - key: B
+        label: "Brief lobbyists in the capital"
+        effects: [{ type: geopolitics_step, target: company, stat: lobby }]
+
+  - id: geo_sales_hit
+    category: geopolitics
+    trigger: geopolitics
+    severities: [critical]
+    weight: 1.0
+    title: "{rule} cuts off {company}'s sales"
+    body: >-
+      {rule} reaches some of {company}'s customers abroad. From the date it takes effect the
+      company may not ship controlled goods to them without a licence, and sales teams want to
+      know what to tell those customers today.
+    choices:
+      - key: A
+        label: "Comply and stop the restricted sales"
+        effects: [{ type: geopolitics_step, target: company, stat: comply }]
+      - key: B
+        label: "Apply for export licences"
+        effects: [{ type: geopolitics_step, target: company, stat: licence }]
+      - key: C
+        label: "Keep selling through distributors"
+        effects: [{ type: geopolitics_step, target: company, stat: grey }]
+
+  - id: geo_sales_hit_chips
+    category: geopolitics
+    trigger: geopolitics
+    severities: [critical]
+    weight: 1.0
+    title: "{rule} cuts off {company}'s chip sales"
+    body: >-
+      {rule} puts {company}'s advanced chips above the performance threshold for some customers
+      abroad. Engineering says a cut-down version under the threshold could ship in weeks; the
+      lawyers say a licence application is the clean route, and slow.
+    choices:
+      - key: A
+        label: "Apply for export licences"
+        effects: [{ type: geopolitics_step, target: company, stat: licence }]
+      - key: B
+        label: "Launch a compliant variant under the threshold"
+        effects: [{ type: geopolitics_step, target: company, stat: variant }]
+      - key: C
+        label: "Keep selling through distributors"
+        effects: [{ type: geopolitics_step, target: company, stat: grey }]
+
+  - id: geo_supply_hit
+    category: geopolitics
+    trigger: geopolitics
+    severities: [critical]
+    weight: 1.0
+    title: "{rule} squeezes {company}'s supply"
+    body: >-
+      {rule} restricts materials {company} buys. Suppliers are already quoting higher prices and
+      warning of short deliveries; buyers outside the restricting country are scrambling for
+      the same tonnes.
+    choices:
+      - key: A
+        label: "Absorb the cost and look for other sources"
+        effects: [{ type: geopolitics_step, target: company, stat: absorb }]
+      - key: B
+        label: "Lobby for relief"
+        effects: [{ type: geopolitics_step, target: company, stat: lobby }]
+
+  - id: geo_detente
+    category: geopolitics
+    trigger: geopolitics
+    severities: [major]
+    weight: 1.0
+    title: "A détente: {rule}"
+    body: >-
+      Talks between Washington and Beijing ended better than expected: {rule}. Traders call it
+      a pause rather than a peace, and the compliance team asks whether to plan around it.
+    choices:
+      - key: A
+        label: "Welcome it and plan for the pause"
+        do_nothing: true
+      - key: B
+        label: "Brief lobbyists to make it last"
+        effects: [{ type: geopolitics_step, target: company, stat: lobby }]
+
+  - id: geo_listed
+    category: geopolitics
+    trigger: geopolitics
+    severities: [critical]
+    weight: 1.0
+    title: "{company} is put on an entity list"
+    body: >-
+      {company} has been added to {rule}. Suppliers in the listing country may no longer ship it
+      controlled goods, foundries there are cancelling wafer starts, and the press wants a
+      statement by the end of the day.
+    choices:
+      - key: A
+        label: "Accept the listing and adapt"
+        effects: [{ type: geopolitics_step, target: company, stat: accept }]
+      - key: B
+        label: "Appeal the listing"
+        effects: [{ type: geopolitics_step, target: company, stat: appeal }]

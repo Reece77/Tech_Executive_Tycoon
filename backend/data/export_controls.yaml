@@ -1,0 +1,87 @@
+# Export controls (docs/formulas.md 39.2-39.3, M22; docs/v3-research/v3-data-dossier.md section 5).
+# Every dossier 5 rule, with its effective month and the dossier's source tag: V = confirmed in a
+# fetched source; R = widely reported, the day to be verified before it appears in game text
+# (game text names the month only). The same on every seed. After last_month, new rules come
+# from `seeded` with escalations (balance.yaml geopolitics.escalation).
+#
+#   key: stable id (saves store it). title: shown on the World screen and in events.
+#   month: the month it takes effect. announced: the month it is announced (default: month);
+#     nothing about a rule reaches the API before its announced month (39.3, M22 brief).
+#   end: the last month it applies (omitted: in force until a détente suspends it).
+#   actor: who imposes it: a countries.yaml key, or a bloc (us_aligned, china, non_aligned).
+#   by_ownership: true when it also binds companies owned >= 50% by a company in the actor's
+#     jurisdiction wherever they sit (39.3 regional entities); false: territorial, so a
+#     subsidiary in another country can be the compliant seller.
+#   goods: controlled goods (balance.yaml geopolitics.goods keys).
+#   to: the destinations: countries (keys), blocs, entities (names), or [all] for every
+#     country outside the actor's jurisdiction.
+#   regime: ban, licence (approval: the base chance a licence request is approved) or quota
+#     (quota: the share of normal volume allowed).
+#   threshold: for ai_chips, the quality at and above which a chip is controlled.
+#   voids_variants: compliant variants launched before this rule are controlled again (the
+#     October 2023 update closed the A800/H800 route; April 2025's H20 licence).
+#   via: m19 when the effect is M19's resource-nationalism event (nationalization_history.yaml);
+#     the rule is shown here and nothing else applies it twice.
+#   news: true for goods the game does not trade (nickel ore, bauxite, tungsten, technology):
+#     shown on the World screen and in events, with no other effect.
+last_month: "2025-12"
+rules:
+  - { key: cn_re_quota_2010, title: "China cuts rare-earth export quotas", month: "2010-07", actor: china, goods: [rare_earths], to: [all], regime: quota, quota: 0.6, end: "2014-12", by_ownership: false, tag: R, source: "dossier 5, Jul 2010 (R): H2 2010 quota cut, about 40% lower for the year" }
+  - { key: cn_re_japan_2010, title: "Rare-earth shipments to Japan halted", month: "2010-09", actor: china, goods: [rare_earths], to: [japan], regime: ban, end: "2010-11", by_ownership: false, tag: V, source: "dossier 5, Sep 2010 (V): alleged unofficial halt after the Senkaku collision" }
+  - { key: wto_re_case_2012, title: "US, EU and Japan take China's rare-earth curbs to the WTO", month: "2012-03", actor: us_aligned, goods: [rare_earths], to: [china], regime: licence, approval: 1.0, end: "2012-03", news: true, by_ownership: false, tag: V, source: "dossier 5, Mar 2012 (V year, R month)" }
+  - { key: id_ore_ban_2014, title: "Indonesia bans raw mineral ore exports", month: "2014-01", actor: indonesia, goods: [nickel_ore, bauxite], to: [all], regime: ban, end: "2016-12", via: m19, news: true, by_ownership: false, tag: R, source: "dossier 5, Jan 2014 (R); relaxed Jan 2017" }
+  - { key: wto_re_ruling_2014, title: "WTO rules against China's rare-earth restrictions", month: "2014-03", actor: us_aligned, goods: [rare_earths], to: [china], regime: licence, approval: 1.0, end: "2014-08", news: true, by_ownership: false, tag: V, source: "dossier 5, Mar/Aug 2014 (V year, R months)" }
+  - { key: cn_re_quota_2014, title: "China's 2014 rare-earth quota: 31,000 tonnes", month: "2014-01", actor: china, goods: [rare_earths], to: [all], regime: quota, quota: 0.8, end: "2014-12", by_ownership: false, tag: V, source: "dossier 5, 2014 (V): 27,383 t light, 3,617 t heavy" }
+  - { key: cn_re_quota_end_2015, title: "China drops rare-earth export quotas", month: "2015-01", actor: china, goods: [rare_earths], to: [all], regime: licence, approval: 1.0, end: "2015-04", news: true, by_ownership: false, tag: V, source: "dossier 5, Jan 2015 (V); export tax removed May 2015 (R)" }
+  - { key: us_zte_2018, title: "US denial order on ZTE", month: "2018-04", actor: us, goods: [us_components, ai_chips], to: [{ entity: ZTE }], regime: ban, end: "2018-06", by_ownership: true, tag: R, source: "dossier 5, Apr 2018 (R): lifted Jul 2018 after a settlement" }
+  - { key: drc_mining_code_2018, title: "DR Congo's Mining Code: cobalt a strategic substance", month: "2018-06", actor: drc, goods: [cobalt], to: [all], regime: licence, approval: 1.0, news: true, by_ownership: false, tag: R, source: "dossier 5, Jun 2018 (R): 10% royalty (regions.yaml africa royalty_rate)" }
+  - { key: us_jinhua_2018, title: "Fujian Jinhua added to the Entity List", month: "2018-10", actor: us, goods: [chip_equipment, us_components], to: [{ entity: Fujian Jinhua }], regime: ban, by_ownership: true, tag: R, source: "dossier 5, Oct 2018 (R)" }
+  - { key: us_huawei_2019, title: "Huawei added to the Entity List", month: "2019-05", actor: us, goods: [us_components, ai_chips, chip_equipment], to: [{ entity: Huawei }], regime: ban, by_ownership: true, tag: V, source: "dossier 5, 16 May 2019 (V listed, R day)" }
+  - { key: id_nickel_ban_2020, title: "Indonesia's nickel ore export ban", month: "2020-01", actor: indonesia, goods: [nickel_ore], to: [all], regime: ban, via: m19, news: true, by_ownership: false, tag: V, source: "dossier 5, Jan 2020 (V year, R month): brought forward from 2022" }
+  - { key: us_fdpr_huawei_2020, title: "Foreign Direct Product Rule extended to Huawei", month: "2020-05", actor: us_aligned, goods: [fab_services, ai_chips], to: [{ entity: Huawei }], regime: licence, approval: 0.1, by_ownership: true, tag: R, source: "dossier 5, May and Aug 2020 (R): foreign-made chips with US tools need a licence" }
+  - { key: us_smic_2020, title: "SMIC added to the Entity List", month: "2020-12", actor: us, goods: [chip_equipment, euv_tools], to: [{ entity: SMIC }], regime: licence, approval: 0.05, by_ownership: true, tag: R, source: "dossier 5, Dec 2020 (R): presumption of denial for 10 nm and below" }
+  - { key: mx_lithium_2022, title: "Mexico nationalises lithium", month: "2022-04", actor: mexico, goods: [lithium], to: [all], regime: licence, approval: 1.0, via: m19, news: true, by_ownership: false, tag: V, source: "dossier 5, Apr 2022 (V)" }
+  - { key: us_oct_2022, title: "US advanced computing and semiconductor rules", month: "2022-10", actor: us, goods: [ai_chips, chip_equipment, euv_tools, fab_services], to: [china], regime: licence, approval: 0.25, threshold: 60, by_ownership: false, tag: V, source: "dossier 5, 7 Oct 2022 (V): advanced chips, fab end-use, PRC fabs at 16/14 nm and below, 28 entities" }
+  - { key: zw_lithium_2022, title: "Zimbabwe bans unprocessed lithium ore exports", month: "2022-12", actor: zimbabwe, goods: [lithium], to: [all], regime: ban, via: m19, news: true, by_ownership: false, tag: V, source: "dossier 5, Dec 2022 (V)" }
+  - { key: trilateral_2023, title: "US, Netherlands and Japan align chip-tool controls", month: "2023-01", actor: us_aligned, goods: [chip_equipment], to: [china], regime: licence, approval: 0.3, news: true, by_ownership: false, tag: V, source: "dossier 5, 27 Jan 2023 (V deal, R day)" }
+  - { key: bo_lithium_2023, title: "Bolivia keeps lithium in state hands", month: "2023-01", actor: bolivia, goods: [lithium], to: [all], regime: licence, approval: 1.0, via: m19, news: true, by_ownership: false, tag: R, source: "dossier 5, Jan 2023 (R)" }
+  - { key: jp_tools_2023, title: "Japan's controls on 23 types of chipmaking equipment", announced: "2023-03", month: "2023-07", actor: japan, goods: [chip_equipment], to: [china], regime: licence, approval: 0.3, by_ownership: false, tag: V, source: "dossier 5, announced Mar, enforced Jul 2023 (V)" }
+  - { key: nl_duv_2023, title: "Netherlands' controls on advanced DUV lithography", announced: "2023-03", month: "2023-09", actor: netherlands, goods: [chip_equipment, euv_tools], to: [china], regime: licence, approval: 0.2, by_ownership: false, tag: V, source: "dossier 5, announced Mar, enforced Sep 2023 (V): NXT:2000i and above" }
+  - { key: cl_lithium_2023, title: "Chile's National Lithium Strategy", month: "2023-04", actor: chile, goods: [lithium], to: [all], regime: licence, approval: 1.0, via: m19, news: true, by_ownership: false, tag: V, source: "dossier 5, Apr 2023 (V)" }
+  - { key: id_bauxite_2023, title: "Indonesia's bauxite export ban takes effect", month: "2023-06", actor: indonesia, goods: [bauxite], to: [all], regime: ban, news: true, by_ownership: false, tag: V, source: "dossier 5, Jun 2023 (V)" }
+  - { key: na_minerals_2023, title: "Namibia bans unprocessed battery-mineral exports", month: "2023-06", actor: namibia, goods: [lithium, cobalt, rare_earths], to: [all], regime: ban, via: m19, news: true, by_ownership: false, tag: V, source: "dossier 5, Jun 2023 (V year, R month)" }
+  - { key: cn_ga_ge_2023, title: "China's gallium and germanium export licensing", announced: "2023-07", month: "2023-08", actor: china, goods: [gallium, germanium], to: [all], regime: licence, approval: 0.6, by_ownership: false, tag: V, source: "dossier 5, 3 Jul 2023 announced, 1 Aug 2023 effective (V)" }
+  - { key: us_oct_2023, title: "US update to the October 2022 chip rules", month: "2023-10", actor: us, goods: [ai_chips, chip_equipment], to: [china], regime: licence, approval: 0.15, threshold: 50, voids_variants: true, by_ownership: true, tag: V, source: "dossier 5, 17 Oct 2023 (V month, R details): closes the A800/H800 route, adds parent companies" }
+  - { key: cn_graphite_2023, title: "China's graphite export permits", announced: "2023-10", month: "2023-12", actor: china, goods: [graphite], to: [all], regime: licence, approval: 0.7, news: true, by_ownership: false, tag: V, source: "dossier 5, 20 Oct 2023 announced, 1 Dec 2023 effective (V)" }
+  - { key: cn_re_tech_2023, title: "China bans rare-earth processing technology exports", month: "2023-12", actor: china, goods: [re_technology], to: [all], regime: ban, news: true, by_ownership: false, tag: V, source: "dossier 5, 21 Dec 2023 (V)" }
+  - { key: cn_antimony_2024, title: "China's antimony export controls", announced: "2024-08", month: "2024-09", actor: china, goods: [antimony], to: [all], regime: licence, approval: 0.6, news: true, by_ownership: false, tag: R, source: "dossier 5, Aug to 15 Sep 2024 (R)" }
+  - { key: us_dec_2024, title: "US adds 140 entities and controls HBM", month: "2024-12", actor: us, goods: [hbm, chip_equipment, euv_tools, fab_services], to: [china], regime: ban, by_ownership: true, tag: V, source: "dossier 5, 2 Dec 2024 (V)" }
+  - { key: cn_ga_ge_us_ban_2024, title: "China bans gallium, germanium and antimony exports to the US", month: "2024-12", actor: china, goods: [gallium, germanium, antimony], to: [us], regime: ban, by_ownership: false, tag: V, source: "dossier 5, 3 Dec 2024 (V); lifted for a year at Busan, November 2025 (V)" }
+  - { key: us_ai_diffusion_2025, title: "US AI Diffusion Framework and Foundry Due Diligence Rule", month: "2025-01", actor: us, goods: [ai_chips], to: [india, singapore, malaysia, vietnam, thailand, indonesia, brazil, mexico, israel], regime: quota, quota: 0.7, news: true, by_ownership: true, tag: V, source: "dossier 5, 13-15 Jan 2025 (V issued); rescinded May 2025 before it bit (R)" }
+  - { key: cn_metals_2025, title: "China licenses tungsten, tellurium, bismuth, molybdenum and indium", month: "2025-02", actor: china, goods: [minor_metals], to: [all], regime: licence, approval: 0.7, news: true, by_ownership: false, tag: V, source: "dossier 5, 4 Feb 2025 (V)" }
+  - { key: drc_cobalt_ban_2025, title: "DR Congo's temporary cobalt export ban", month: "2025-02", actor: drc, goods: [cobalt], to: [all], regime: ban, end: "2025-09", via: m19, by_ownership: false, tag: V, source: "dossier 5, 22 Feb 2025 (V month, R day)" }
+  - { key: cn_heavy_re_2025, title: "China controls seven heavy rare earths and magnets", month: "2025-04", actor: china, goods: [rare_earths], to: [all], regime: licence, approval: 0.5, by_ownership: false, tag: V, source: "dossier 5, 4 Apr 2025 (V): Sm, Gd, Tb, Dy, Lu, Sc, Y" }
+  - { key: us_h20_2025, title: "US licence requirement on H20-class chips to China", month: "2025-04", actor: us, goods: [ai_chips], to: [china], regime: licence, approval: 0.5, threshold: 40, voids_variants: true, by_ownership: true, tag: R, source: "dossier 5, Apr 2025 (R): later reversed for a revenue share (R)" }
+  - { key: cn_battery_tech_2025, title: "China controls battery-cathode and lithium processing technology", month: "2025-07", actor: china, goods: [battery_technology], to: [all], regime: ban, news: true, by_ownership: false, tag: V, source: "dossier 5, Jul 2025 (V)" }
+  - { key: us_affiliates_2025, title: "US affiliates rule: 50%-owned subsidiaries of listed entities", month: "2025-09", actor: us, goods: [us_components], to: [affiliates], regime: ban, by_ownership: true, tag: R, source: "dossier 5, 29 Sep 2025 (R): suspended for a year in November 2025 (R)" }
+  - { key: cn_re_oct_2025, title: "China adds five rare earths, refining equipment and battery items", announced: "2025-10", month: "2025-11", actor: china, goods: [rare_earths, graphite], to: [all], regime: licence, approval: 0.4, by_ownership: false, tag: V, source: "dossier 5, 9 Oct 2025 announced, effective 8 Nov (V); suspended for a year at Busan before it bit (V)" }
+  - { key: drc_cobalt_quota_2025, title: "DR Congo replaces its cobalt ban with quotas", month: "2025-10", actor: drc, goods: [cobalt], to: [all], regime: quota, quota: 0.55, by_ownership: false, tag: V, source: "dossier 5, 16 Oct 2025 (V): 18,125 t for the rest of 2025; up to 96,600 t a year in 2026-27" }
+  - { key: us_silicon_critical_2025, title: "Silicon added to the US critical minerals list", month: "2025-11", actor: us, goods: [silicon], to: [all], regime: licence, approval: 1.0, news: true, by_ownership: false, tag: V, source: "dossier 5, 7 Nov 2025 (V)" }
+
+# Historical détentes (39.2): each suspends rules for `months` from its month (a suspended rule
+# applies again afterwards unless a later détente suspends it). Busan's truce suspended
+# October 2025's rare-earth rules, the gallium and germanium ban to the US and the affiliates
+# rule for a year; the April 2025 controls remained (dossier 5, V; affiliates R).
+detentes:
+  - { key: busan_2025, title: "Busan truce: a year's pause on rare earths, gallium and the affiliates rule", month: "2025-11", suspends: [cn_re_oct_2025, cn_ga_ge_us_ban_2024, us_affiliates_2025], months: 12, tag: V, source: "dossier 5, 30 Oct-Nov 2025 (V)" }
+
+# After 2025 (39.2): an escalation adds one of these, drawn uniformly among those not in force;
+# its month is the escalation's month and it runs `months` (omitted: until a détente suspends it
+# or for ever). A détente suspends one rule in force for geopolitics.detente.suspend_months.
+seeded:
+  - { key: s_us_ai_tighten, title: "US tightens AI chip thresholds again", actor: us, goods: [ai_chips], to: [china], regime: ban, threshold: 35, voids_variants: true, by_ownership: true }
+  - { key: s_cn_ga_ge_ban, title: "China bans gallium and germanium exports to the US-aligned bloc", actor: china, goods: [gallium, germanium], to: [us_aligned], regime: ban, by_ownership: false }
+  - { key: s_cn_re_ban, title: "China bans rare-earth magnet exports to the US-aligned bloc", actor: china, goods: [rare_earths], to: [us_aligned], regime: ban, by_ownership: false }
+  - { key: s_us_fab_services, title: "US bars foundry services to Chinese designers", actor: us_aligned, goods: [fab_services, chip_equipment, euv_tools], to: [china], regime: ban, by_ownership: true }
+  - { key: s_cn_cobalt_lithium, title: "China licenses cobalt and lithium chemical exports", actor: china, goods: [cobalt, lithium], to: [us_aligned], regime: licence, approval: 0.5, by_ownership: false }
+  - { key: s_us_hbm_wide, title: "US extends HBM and AI chip controls to the China bloc", actor: us_aligned, goods: [ai_chips, hbm], to: [china], regime: licence, approval: 0.2, threshold: 50, by_ownership: true }

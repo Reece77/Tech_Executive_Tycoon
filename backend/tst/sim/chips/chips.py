@@ -19,6 +19,7 @@ from tst.sim.chips import formulas as cf
 from tst.sim.chips.config import ChipTypeDef
 from tst.sim.commodities import costs
 from tst.sim.data_models import Balance, CategoryDef, GameData
+from tst.sim.geopolitics import supply as geo_supply
 from tst.sim.hardware.models import ProductionContract
 from tst.sim.hardware.supply import delivered_share
 from tst.sim.products.models import Product
@@ -35,6 +36,12 @@ def chip_category(data: GameData, chip_type: str) -> CategoryDef:
 
 def is_chip(product: Product, data: GameData) -> bool:
     return data.category(product.category).chip_type is not None
+
+
+def _chip_type(product: Product, data: GameData) -> str:
+    chip_type = data.category(product.category).chip_type
+    assert chip_type is not None
+    return chip_type
 
 
 def type_of(product: Product, data: GameData, balance: Balance) -> ChipTypeDef:
@@ -121,9 +128,12 @@ def unit_cost_cents(state: GameState, product: Product, balance: Balance, data: 
     """wafer price / (chips per wafer x yield) + packaging (26.3)."""
     t = type_of(product, data, balance)
     y = chip_yield(state, product.company_id, balance, data)
-    return cf.chip_unit_cents(
-        wafer_cents(state, product, balance, data), t.per_wafer, y, balance.chips.packaging_cents
+    wafer = wafer_cents(state, product, balance, data)
+    # M22 (39.3): the premium on the wafer's commodities bought from a restricting actor
+    wafer += geo_supply.surcharge_cents(
+        state, product.company_id, balance.chips.good, t.wafer_cents, balance, data
     )
+    return cf.chip_unit_cents(wafer, t.per_wafer, y, balance.chips.packaging_cents)
 
 
 def wafers_delivered(
@@ -139,6 +149,10 @@ def wafers_delivered(
     own = own_wafer_share(state, contract.product_id)  # M20 (36.2): own wafers keep 100%
     if own > 0:
         share = own + (1 - own) * share
+    # M22 (39.3): HBM controls on the maker's country, and the entity list
+    share *= geo_supply.wafer_share(
+        state, product.company_id, _chip_type(product, data), contract.supplier, balance, data
+    )
     return contract.units * share
 
 

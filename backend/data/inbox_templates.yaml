@@ -584,3 +584,25 @@ templates:
   mine_blockaded:
     title: "Blockade: {mine}"
     body: "Pushing on brought an injunction and a blockade: no output for {months} months."
+  # M22 (formulas.md 39.3): export controls
+  licence_requested:
+    title: "Licence requested: {product} to {country}"
+    body: "The export licence application for {product}'s sales to {country} is in. Expect a decision in {decision}; your lobbying influence improves the odds."
+  licence_approved:
+    title: "Licence approved: {product} to {country}"
+    body: "Officials approved the licence for {product}'s sales to {country} under {rule}. It runs until {until}."
+  licence_denied:
+    title: "Licence denied: {product} to {country}"
+    body: "Officials denied the licence for {product}'s sales to {country} under {rule}. Customers there will drift away unless a compliant product can serve them."
+  variant_launched:
+    title: "Compliant variant: {product}"
+    body: "A cut-down version of {product} under the export threshold now ships where the rules restrict it. There its quality is {penalty} points lower."
+  local_partner_taken:
+    title: "Local partner: {company}"
+    body: "{company} has taken a local partner, which opens its home market and takes {share} of the revenue from it."
+  listing_appeal_won:
+    title: "Off the entity list"
+    body: "The appeal worked: {lister} has taken the company off its entity list."
+  listing_appeal_lost:
+    title: "Appeal rejected"
+    body: "{lister} rejected the appeal. The company stays on its entity list."

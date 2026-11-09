@@ -334,3 +334,10 @@ class MiningRuleError(SimError):
 
 class UnknownMineError(NotFoundError):  # M19
     code = "unknown_mine"
+
+
+class GeopoliticsRuleError(SimError):
+    """A licence request, variant or local partnership the export-control rules do not allow
+    (M22, formulas.md 39)."""
+
+    code = "geopolitics_rule"

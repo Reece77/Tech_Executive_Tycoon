@@ -129,6 +129,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return REFINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "mining_step":  # M19 (35.4)
             return MINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "geopolitics_step":  # M22 (39.3)
+            return GEOPOLITICS_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -145,6 +147,16 @@ REFINING_STEP_TEXT: dict[str, str] = {  # M20 (36.4): never a hidden chance
     "stop": "stop the plant and investigate: two months without output, and the fine is halved",
     "compensate": "compensate the people affected: $5M on top of the fine; persona Beloved +3",
     "contest": "contest the findings: the fine, a chance of legal costs, and persona Ruthless +5",
+}
+GEOPOLITICS_STEP_TEXT: dict[str, str] = {  # M22 (39.3): never a hidden chance
+    "comply": "Stop the restricted sales",
+    "licence": "Request export licences",
+    "variant": "Launch compliant variants of the controlled chips",
+    "grey": "Keep selling through distributors (entity-list risk)",
+    "absorb": "Absorb the higher input costs",
+    "lobby": "Lobby for relief",
+    "accept": "Accept the listing and adapt",
+    "appeal": "Appeal the listing",
 }
 MINING_STEP_TEXT: dict[str, str] = {  # M19 (35.4): never a hidden chance or overrun
     "investigate": "stop and investigate: three months without output and a smaller fine",

@@ -182,10 +182,14 @@ def product_allocation(
 ) -> float:
     """A product's units are capped at its mix's weighted allocation (module docstring);
     `use` is the company's last month's use (`company_use` before this month's production)."""
+    from tst.sim.geopolitics import supply as geo_supply  # local: it imports this module
+
     mix = mix_of(cost_good, balance)
     if mix is None or data.commodity_history is None:
         return 1.0
-    return sum(
-        w * allocation_for(state, company_id, g, use.get(g, 0.0), data)
+    return sum(  # M22 (39.3): x the export controls' cut on the exposed volume
+        w
+        * allocation_for(state, company_id, g, use.get(g, 0.0), data)
+        * geo_supply.allocation_factor(state, company_id, g, use.get(g, 0.0), balance, data)
         for g, w in mix.weights.items()
     )
