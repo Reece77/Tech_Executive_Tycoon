@@ -61,7 +61,9 @@ def load_exploration(
     )
     holes = tuple(
         from_data(Hole, r.data, project_id=r.project_id, n=r.n)
-        for r in session.scalars(select(DrillHoleRow).order_by(DrillHoleRow.project_id, DrillHoleRow.n))
+        for r in session.scalars(
+            select(DrillHoleRow).order_by(DrillHoleRow.project_id, DrillHoleRow.n)
+        )
     )
     return replace(
         state,

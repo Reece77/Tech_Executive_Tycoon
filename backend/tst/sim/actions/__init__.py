@@ -198,6 +198,18 @@ from tst.sim.actions.scaleup import (
 )
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
+from tst.sim.exploration.pipeline import ACTION_TYPES as EXPLORATION_ACTION_TYPES
+from tst.sim.exploration.pipeline import (
+    ExplorationAction,
+    OrderDrilling,
+    RelinquishProject,
+    RenewLicence,
+    SellProject,
+    StartDeskStudy,
+    StartStage,
+    TakeLicence,
+    apply_exploration,
+)
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.group.actions import (
     AnswerGroupPitch,
@@ -213,18 +225,6 @@ from tst.sim.group.actions import (
     SpinOff,
     VentureInvest,
     apply_group,
-)
-from tst.sim.exploration.pipeline import ACTION_TYPES as EXPLORATION_ACTION_TYPES
-from tst.sim.exploration.pipeline import (
-    ExplorationAction,
-    OrderDrilling,
-    RelinquishProject,
-    RenewLicence,
-    SellProject,
-    StartDeskStudy,
-    StartStage,
-    TakeLicence,
-    apply_exploration,
 )
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem

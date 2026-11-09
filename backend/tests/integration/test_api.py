@@ -279,6 +279,23 @@ MNA_FORBIDDEN_NAMES = frozenset(
 # pitch's `risk` word is public, so test_api_founder checks the founder's schemas for it).
 FOUNDER_FORBIDDEN_NAMES = frozenset({"scandal_risk", "scandal_chance", "second_story", "risk_rate"})
 
+# M18 (34.5): never a block's depth, distance to infrastructure, permitting difficulty or
+# community sensitivity, a permit's decision month, or a team's range factor (which would
+# reveal its true skill); true_* and hidden_* fields are caught by the prefixes.
+EXPLORATION_FORBIDDEN_NAMES = frozenset(
+    {
+        "depth_m",
+        "infra_km",
+        "permit_difficulty",
+        "sensitivity",
+        "decision_turn",
+        "due_turn",
+        "range_factor",
+        "team_factor",
+        "factor",
+    }
+)
+
 
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
@@ -290,6 +307,7 @@ def forbidden(name: str) -> bool:
         or name in EVENT_FORBIDDEN_NAMES
         or name in MNA_FORBIDDEN_NAMES
         or name in FOUNDER_FORBIDDEN_NAMES
+        or name in EXPLORATION_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 

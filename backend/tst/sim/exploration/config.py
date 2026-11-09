@@ -216,9 +216,7 @@ class EstimateBalance(_Frozen):
         return self
 
     def holes_for(self, category: str) -> int:
-        return {"inferred": self.inferred, "indicated": self.indicated}.get(
-            category, self.measured
-        )
+        return {"inferred": self.inferred, "indicated": self.indicated}.get(category, self.measured)
 
 
 class FeasibilityBalance(_Frozen):

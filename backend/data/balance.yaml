@@ -1469,6 +1469,6 @@ exploration: # 34.2-34.3: the pipeline, its costs and times (dossier 6, scaled t
     bonanza_ratio: 2.5 # a hole this many times the running estimate is a bonanza intercept (news)
     dry_streak: 5 # this many holes in a row under half the running estimate is a dry streak (news)
   sale:
-    share: { surveyed: 0.0, sampled: 0.02, drilled: 0.05, estimated: 0.08, scoping: 0.12, pre_feasibility: 0.2, definitive: 0.3, permitted: 0.45 } # a buyer pays this share of the project's indicative NPV midpoint at the deck, 34.2
+    share: { surveyed: 0.0, sampled: 0.02, drilled: 0.05, estimated: 0.08, scoping: 0.12, pre_feasibility: 0.2, definitive: 0.3, permitted: 0.45 } # a buyer pays this share of the project's NPV at the deck at the low end of its revealed ranges (M18 decision: narrower ranges fetch more), 34.2
     anomaly_cents: 50000000 # $500k for a strong anomaly with no grade work yet
     energy: 3

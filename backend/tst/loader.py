@@ -375,7 +375,9 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
             f"{sorted(set(data.geology.regions) - regions)}"
         )
     if balance.exploration.geologist_role not in {r.key for r in data.roles}:
-        problems.append(f"exploration.geologist_role {balance.exploration.geologist_role!r} not in roles.yaml")
+        problems.append(
+            f"exploration.geologist_role {balance.exploration.geologist_role!r} not in roles.yaml"
+        )
     return problems
 
 

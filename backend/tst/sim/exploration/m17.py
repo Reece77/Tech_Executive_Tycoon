@@ -60,22 +60,23 @@ class Buyer:
     key: str
     name: str
     goods: tuple[str, ...]
+    region: str
 
 
 # M17's suppliers.yaml (branch m17-commodities): the miners and their goods, in file order.
 _SUPPLIERS: Final = (
-    Buyer("freeport", "Freeport-McMoRan", ("copper", "cobalt")),
-    Buyer("bhp", "BHP Billiton", ("copper",)),
-    Buyer("rio_tinto", "Rio Tinto", ("copper", "lithium_carbonate")),
-    Buyer("glencore", "Glencore", ("copper", "cobalt")),
-    Buyer("codelco", "Codelco", ("copper",)),
-    Buyer("albemarle", "Albemarle", ("lithium_carbonate",)),
-    Buyer("sqm", "SQM", ("lithium_carbonate",)),
-    Buyer("lynas", "Lynas", ("ndpr_oxide",)),
-    Buyer("molycorp", "Molycorp", ("ndpr_oxide",)),
-    Buyer("mp_materials", "MP Materials", ("ndpr_oxide",)),
-    Buyer("umicore", "Umicore", ("cobalt", "germanium")),
-    Buyer("china_northern_re", "China Northern Rare Earth", ("ndpr_oxide",)),
+    Buyer("freeport", "Freeport-McMoRan", ("copper", "cobalt"), "north_america"),
+    Buyer("bhp", "BHP Billiton", ("copper",), "oceania"),
+    Buyer("rio_tinto", "Rio Tinto", ("copper", "lithium_carbonate"), "europe"),
+    Buyer("glencore", "Glencore", ("copper", "cobalt"), "europe"),
+    Buyer("codelco", "Codelco", ("copper",), "latin_america"),
+    Buyer("albemarle", "Albemarle", ("lithium_carbonate",), "north_america"),
+    Buyer("sqm", "SQM", ("lithium_carbonate",), "latin_america"),
+    Buyer("lynas", "Lynas", ("ndpr_oxide",), "oceania"),
+    Buyer("molycorp", "Molycorp", ("ndpr_oxide",), "north_america"),
+    Buyer("mp_materials", "MP Materials", ("ndpr_oxide",), "north_america"),
+    Buyer("umicore", "Umicore", ("cobalt", "germanium"), "europe"),
+    Buyer("china_northern_re", "China Northern Rare Earth", ("ndpr_oxide",), "east_asia"),
 )
 
 

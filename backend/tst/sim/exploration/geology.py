@@ -124,7 +124,10 @@ def supplier_licences(
             for b in mine
         }
         for c, commodity in enumerate(geo.commodities):
-            own = [s for s in buyers_of(data, commodity.key) if commodity.key in s.goods]
+            own = sorted(  # its suppliers, those based in the region first
+                (s for s in buyers_of(data, commodity.key) if commodity.key in s.goods),
+                key=lambda s: s.region != region,
+            )
             if not own:
                 continue
             scored = sorted(

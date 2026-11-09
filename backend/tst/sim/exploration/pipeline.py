@@ -33,8 +33,8 @@ from tst.sim.exploration.models import (
     Project,
     SupplierLicence,
 )
-from tst.sim.ledger import CASH, DISPOSAL, EXPLORATION, LedgerBalances, LedgerEntry, apply_entries
-from tst.sim.log import LogItem, inbox_item
+from tst.sim.ledger import CASH, DISPOSAL, EXPLORATION, LedgerBalances, LedgerEntry
+from tst.sim.log import inbox_item
 from tst.sim.money import format_money
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -315,6 +315,17 @@ def hole_cost_cents(project: Project, block: GeoBlock, balance: Balance, data: G
     return round(base * _region_cost(data, project.region))
 
 
+def hole_cost_range_cents(region: str, balance: Balance, data: GameData) -> tuple[int, int]:
+    """What a hole may cost in a region before any is drilled (the depth is unknown, 34.5)."""
+    db = balance.exploration.drill
+    lo, hi = balance.geology.depth_m
+    index = _region_cost(data, region)
+    return (
+        round((db.hole_base_cents + db.hole_per_m_cents * lo) * index),
+        round((db.hole_base_cents + db.hole_per_m_cents * hi) * index),
+    )
+
+
 def stage_cost_cents(
     project: Project, stage: str, balance: Balance, data: GameData
 ) -> tuple[int, int]:
@@ -415,7 +426,9 @@ def renew_licence(
         raise ExplorationRuleError("the licence has been renewed already")
     assert data.geology is not None
     fee = data.geology.regions[project.region].licence_fee_cents
-    entries = _pay(state, project.company_id, fee, f"Licence renewed: {label_of(project)}", balances)
+    entries = _pay(
+        state, project.company_id, fee, f"Licence renewed: {label_of(project)}", balances
+    )
     years = balance.exploration.licence.years
     project = replace(
         project,
@@ -549,28 +562,31 @@ def sale_stage(state: GameState, project: Project) -> str | None:
 def indicative_npv_cents(
     state: GameState, project: Project, balance: Balance, data: GameData
 ) -> int | None:
-    """The project's NPV midpoint at the price deck from what has been revealed (34.2): the
-    latest study's, else the estimate's or the sample's centres with the commodity's typical
-    costs (median distance to infrastructure, the depth drilling found)."""
-    if project.npv_mid_cents is not None:
-        return project.npv_mid_cents
+    """What a buyer counts on (34.2): the NPV at the price deck at the low end of what has
+    been revealed: the latest study's low end, else the estimate's or the sample's low grade
+    and tonnage with the commodity's typical costs (the typical depth and distance to
+    infrastructure, never the block's own). Narrower ranges fetch more."""
+    if project.npv_lo_cents is not None:
+        return project.npv_lo_cents
     if project.commodity is None or data.geology is None:
         return None
     c = data.geology.commodity(project.commodity)
+    est = running_estimate(state, project, balance, data)
     if project.est_grade_center is not None and project.est_tonnage_center is not None:
-        grade, tonnage = math.exp(project.est_grade_center), math.exp(project.est_tonnage_center)
-    elif project.sample_center is not None:
-        grade, tonnage = math.exp(project.sample_center), c.tonnage_median_mt
+        assert project.est_grade_hw is not None and project.est_tonnage_hw is not None
+        grade = math.exp(project.est_grade_center - project.est_grade_hw)
+        tonnage = math.exp(project.est_tonnage_center - project.est_tonnage_hw)
+    elif est is not None:
+        grade, tonnage = math.exp(est[0] - est[1]), c.tonnage_median_mt
+    elif project.sample_center is not None and project.sample_hw is not None:
+        grade, tonnage = math.exp(project.sample_center - project.sample_hw), c.tonnage_median_mt
     else:
         return None
-    block = block_of(state, project.region, project.block)
-    depth = block.depth_m if block is not None else sum(balance.geology.depth_m) / 2
+    depth = sum(balance.geology.depth_m) / 2  # typical: never the block's own (34.5)
     infra = math.sqrt(balance.geology.infra_km[0] * balance.geology.infra_km[1])
     kind = project.kind or next(iter(data.geology.kinds_of(project.region, c.key)))
-    rec = sum(c.recovery) / 2
-    usd = mine_npv_usd(
-        state, c, tonnage, grade, rec, kind, infra, depth, 1.0, 1.0, balance, data
-    )
+    rec = c.recovery[0]
+    usd = mine_npv_usd(state, c, tonnage, grade, rec, kind, infra, depth, 1.0, 1.0, balance, data)
     return round(usd * 100)
 
 
@@ -635,12 +651,15 @@ def sale_price_cents(state: GameState, project: Project, balance: Balance, data:
 
 
 def buyer_for(project: Project, data: GameData) -> tuple[str, str] | None:
+    """The supplier that buys a project: the first of the commodity's buyers headquartered in
+    its region, else the first (from public facts only: the commodity and the region)."""
     if project.commodity is None:
         return None
     buyers = buyers_of(data, project.commodity)
     if not buyers:
         return None
-    b = buyers[project.id % len(buyers)]
+    local = [b for b in buyers if b.region == project.region]
+    b = (local or list(buyers))[0]
     return b.key, b.name
 
 
@@ -748,7 +767,9 @@ def desk_bands(
     the team's range factor; the top high_share of the region's blocks show high, the next
     medium_share medium, the rest low."""
     db = balance.exploration.desk
-    blocks = sorted((b for b in state.geo_blocks if b.region == study.region), key=lambda b: b.index)
+    blocks = sorted(
+        (b for b in state.geo_blocks if b.region == study.region), key=lambda b: b.index
+    )
     z = rng.stream(study.done_turn, "exploration", DESK, study.id).standard_normal(len(blocks))
     scores = [
         (db.signal if b.true_commodity == study.commodity else 0.0)
@@ -822,9 +843,7 @@ def sample_result(
     z = float(rng.stream(state.turn, "exploration", SAMPLE, project.id).standard_normal())
     center = math.log(_grade_truth(block, hit, c)) + sd * z
     kind = project.kind or (
-        block.true_kind
-        if hit
-        else next(iter(data.geology.kinds_of(project.region, c.key)))
+        block.true_kind if hit else next(iter(data.geology.kinds_of(project.region, c.key)))
     )
     return replace(project, sample_center=center, sample_hw=hw, kind=kind)
 
@@ -851,7 +870,9 @@ def drill_hole(
         perm = rng.stream(GEOLOGY_TURN, "geology", r, project.block, PERM_TAG).permutation(cells)
         dev = devs[int(perm[(n - 1) % cells])]
     else:
-        dev = float(rng.stream(state.turn, "exploration", HOLE, r, project.block, n).standard_normal())
+        dev = float(
+            rng.stream(state.turn, "exploration", HOLE, r, project.block, n).standard_normal()
+        )
     assay = math.exp(math.log(_grade_truth(block, hit, c)) + field * c.hole_sd * dev)
     return Hole(
         project_id=project.id,

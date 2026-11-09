@@ -3040,3 +3040,186 @@ def transfer_price_cmd(
 
     seller, buyer, good = flow.split(":")
     _group_act(save, lambda f: SetTransferPrice(f, int(seller), int(buyer), good, kind, margin))
+
+
+# --- M18 (formulas.md 34): exploration -------------------------------------------------------
+
+
+def _explore_table(path: Path, data: LoadedData) -> None:
+    """Every project's stage and ranges (34.5: revealed values only)."""
+    from tst.api import exploration_views
+
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+    out = exploration_views.exploration_out(state, {}, data)
+    if not out.projects:
+        typer.echo("No exploration projects.")
+    for p in out.projects:
+        typer.echo(
+            f"#{p.id} {p.label} [{p.status}] {p.commodity or '-'} stage {p.stage or '-'}; "
+            f"spent {format_money(p.spent_cents)}; licence to {format_turn(p.expires_turn - 1)}"
+        )
+        if p.reading:
+            typer.echo(f"   survey: {p.reading} anomaly ({p.kind or '-'})")
+        for name, r in (("sample", p.sample_grade), ("holes", p.grade), ("estimate", p.est_grade)):
+            if r is not None:
+                typer.echo(
+                    f"   {name}: grade {r.low:.4%}-{r.high:.4%} (±{r.pct:.0%})"
+                    + (f", {len(p.holes)} holes" if name == "holes" else "")
+                )
+        if p.est_tonnage_mt is not None:
+            t = p.est_tonnage_mt
+            typer.echo(f"   {p.category}: {t.low:.1f}-{t.high:.1f} Mt")
+        if p.npv_mid_cents is not None:
+            typer.echo(
+                f"   {p.level}: NPV {format_money(p.npv_low_cents or 0)} to "
+                f"{format_money(p.npv_high_cents or 0)} (mid {format_money(p.npv_mid_cents)})"
+            )
+        if p.permit_start is not None:
+            typer.echo(
+                f"   permit: applied {format_turn(p.permit_start)}, typically "
+                f"{p.permit_years_low:g}-{p.permit_years_high:g} years; protests {p.protests}"
+            )
+        if p.sale_quote_cents:
+            typer.echo(f"   {p.buyer} would pay {format_money(p.sale_quote_cents)}")
+
+
+@app.command("geology")
+def geology_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option("--region", help="A region key")] = None,
+    commodity: Annotated[str | None, typer.Option("--commodity", help="A commodity key")] = None,
+    study: Annotated[bool, typer.Option(help="Start a desk study of --commodity in --region")] = (
+        False
+    ),
+) -> None:
+    """A region's geology (34.1): prospectivity, the latest desk study's bands, licences; with
+    --study, start a desk study (34.2). Without --region: every project."""
+    from tst.api import exploration_views
+    from tst.sim.exploration.pipeline import StartDeskStudy
+
+    path, data, state = _game(save)
+    if region is None:
+        _explore_table(path, data)
+        return
+    if study:
+        if commodity is None:
+            raise _fail("--study needs --commodity")
+        state = _run(path, data, StartDeskStudy(_founder(state), region, commodity)).new_state
+        typer.echo(f"Desk study started; {_energy(state, data)}")
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+    out = exploration_views.exploration_out(state, {}, data)
+    info = next((r for r in out.regions if r.key == region), None)
+    if info is None:
+        raise _fail(f"unknown region {region!r}")
+    typer.echo(
+        f"{info.label}: licence {format_money(info.licence_fee_cents)}, survey "
+        f"{format_money(info.survey_cost_cents)}, holes {format_money(info.hole_cost_low_cents)}"
+        f"-{format_money(info.hole_cost_high_cents)}, permits {info.permit_years_low:g}-"
+        f"{info.permit_years_high:g} years"
+    )
+    for key, p in info.prospectivity.items():
+        if commodity is None or key == commodity:
+            typer.echo(f"  {key}: prospectivity {p:.2f} ({info.basis[key]})")
+    for b in (x for x in out.blocks if x.region == region):
+        bands = " ".join(
+            f"{k}:{v}" for k, v in sorted(b.bands.items()) if commodity is None or k == commodity
+        )
+        if bands or b.holder:
+            typer.echo(
+                f"  block {b.index + 1}: {bands or '-'}"
+                + (f"; held by {b.holder}" if b.holder else "")
+            )
+
+
+@app.command("licence")
+def licence_cmd(
+    save: SaveOpt,
+    region: Annotated[str, typer.Option("--region", help="A region key")],
+    block: Annotated[int, typer.Option("--block", min=1, help="The block's number (1-based)")],
+) -> None:
+    """An exploration licence on a free block (34.2): a project."""
+    from tst.sim.exploration.pipeline import TakeLicence
+
+    path, data, state = _game(save)
+    state = _run(path, data, TakeLicence(_founder(state), region, block - 1)).new_state
+    typer.echo(f"Licensed; {_energy(state, data)}")
+    _explore_table(path, data)
+
+
+def _stage(save: str, project: int, stage: str, commodity: str | None = None) -> None:
+    from tst.sim.exploration.pipeline import StartStage
+
+    path, data, state = _game(save)
+    action = StartStage(_founder(state), project, stage, commodity)  # type: ignore[arg-type]
+    state = _run(path, data, action).new_state
+    typer.echo(f"{stage.replace('_', '-').capitalize()} started; {_energy(state, data)}")
+    _explore_table(path, data)
+
+
+ProjectOpt = Annotated[int, typer.Option("--project", help="An exploration project's id")]
+
+
+@app.command("survey")
+def survey_cmd(save: SaveOpt, project: ProjectOpt) -> None:
+    """Geophysics and geochemistry: is there an anomaly, and of what (34.2)?"""
+    _stage(save, project, "survey")
+
+
+@app.command("sample")
+def sample_cmd(
+    save: SaveOpt,
+    project: ProjectOpt,
+    commodity: Annotated[str | None, typer.Option(help="Default: the anomaly's")] = None,
+) -> None:
+    """Sampling: a first grade range (34.2)."""
+    _stage(save, project, "sampling", commodity)
+
+
+@app.command("drill")
+def drill_cmd(
+    save: SaveOpt,
+    project: ProjectOpt,
+    holes: Annotated[int, typer.Option("--holes", min=1, help="Holes in the programme")] = 20,
+) -> None:
+    """A drilling programme: each hole narrows the grade range (34.2)."""
+    from tst.sim.exploration.pipeline import OrderDrilling
+
+    path, data, state = _game(save)
+    state = _run(path, data, OrderDrilling(_founder(state), project, holes)).new_state
+    typer.echo(f"Drilling {holes} holes; {_energy(state, data)}")
+    _explore_table(path, data)
+
+
+@app.command("estimate")
+def estimate_cmd(save: SaveOpt, project: ProjectOpt) -> None:
+    """A resource estimate: its category, tonnage and grade ranges (34.2)."""
+    _stage(save, project, "estimate")
+
+
+@app.command("feasibility")
+def feasibility_cmd(
+    save: SaveOpt,
+    project: ProjectOpt,
+    level: Annotated[str, typer.Option("--level", help="scoping, pre_feasibility or definitive")],
+) -> None:
+    """A feasibility study: capex, operating cost and NPV ranges at the price deck (34.2)."""
+    _stage(save, project, level)
+
+
+@app.command("permit")
+def permit_cmd(save: SaveOpt, project: ProjectOpt) -> None:
+    """Apply for the mining permit (34.2): 1-7 years by region, with protests (34.3)."""
+    _stage(save, project, "permitting")
+
+
+@app.command("sell-project")
+def sell_project_cmd(save: SaveOpt, project: ProjectOpt) -> None:
+    """Sell a project to a supplier at its quote (34.2)."""
+    from tst.sim.exploration.pipeline import SellProject
+
+    path, data, state = _game(save)
+    result = _run(path, data, SellProject(_founder(state), project))
+    sold = next(p for p in result.new_state.projects if p.id == project)
+    typer.echo(f"Sold to {sold.sold_to} for {format_money(sold.sale_cents)}")

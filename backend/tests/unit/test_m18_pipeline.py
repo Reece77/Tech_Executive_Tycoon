@@ -140,8 +140,12 @@ def test_a_project_through_every_stage(loaded: LoadedData) -> None:
     assert p.sample_center is not None and p.sample_hw is not None
     with pytest.raises(ExplorationRuleError):  # an estimate needs holes first
         xp.apply_exploration(
-            run.state, StartStage(me, pid, "estimate"), RngFactory(3), run.balances,
-            loaded.balance, loaded.game_data,
+            run.state,
+            StartStage(me, pid, "estimate"),
+            RngFactory(3),
+            run.balances,
+            loaded.balance,
+            loaded.game_data,
         )
     assert run.act(OrderDrilling(me, pid, 40)) is not None
     finish()
@@ -224,8 +228,9 @@ def _permitting(loaded: LoadedData) -> tuple[m18.Run, int]:
 def _event(run: m18.Run, pid: int) -> GameEvent:
     p = xp.project_of(run.state, pid)
     assert p.protest_turn is not None
-    return GameEvent(0, 1, p.protest_turn, "community_blockade", "exploration", "critical",
-                     "exploration", 1.0)
+    return GameEvent(
+        0, 1, p.protest_turn, "community_blockade", "exploration", "critical", "exploration", 1.0
+    )
 
 
 @pytest.mark.parametrize("step", ["consult", "benefit", "push_on"])
@@ -259,7 +264,5 @@ def test_the_decision_waits_for_an_open_protest(loaded: LoadedData) -> None:
     run, pid = _permitting(loaded)
     p = replace(xp.project_of(run.state, pid), hidden_due_turn=run.state.turn)
     run.state = xp.with_project(run.state, p)
-    run_state, _, _ = exploration_month(
-        run.state, RngFactory(3), loaded.balance, loaded.game_data
-    )
+    run_state, _, _ = exploration_month(run.state, RngFactory(3), loaded.balance, loaded.game_data)
     assert xp.project_of(run_state, pid).status == "active"  # still waiting for the answer

@@ -13,8 +13,8 @@ from tst.sim.data_models import EventsBalance
 from tst.sim.events.data import (
     EFFECT_TARGETS,
     EFFECT_TYPES,
-    FOUNDER_STEPS,
     EXPLORATION_STEPS,
+    FOUNDER_STEPS,
     GROUP_STEPS,
     MODIFIER_STATS,
     PRESS_STEPS,

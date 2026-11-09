@@ -21,6 +21,7 @@ from tst.sim.events.data import (
     VALUELESS,
     EventTemplate,
 )
+from tst.sim.exploration.config import ExplorationBalance, GeologyBalance, GeologyFile
 from tst.sim.facilities.config import (
     ComponentsHistoryFile,
     ComputeBalance,
@@ -34,7 +35,6 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
-from tst.sim.exploration.config import ExplorationBalance, GeologyBalance, GeologyFile
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance

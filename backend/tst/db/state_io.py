@@ -23,9 +23,9 @@ from typing import Any, cast
 from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
 from sqlalchemy.orm import Session
 
+from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
-from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.group_io import load_group, sync_group
 from tst.db.mappers import (
     candidate_from_row,

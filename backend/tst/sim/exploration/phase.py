@@ -15,7 +15,7 @@ from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.config import LEVELS
 from tst.sim.exploration.formulas import half_width_pct
 from tst.sim.exploration.geology import block_of
-from tst.sim.exploration.models import Project
+from tst.sim.exploration.models import Hole, Project
 from tst.sim.ledger import CASH, EXPLORATION, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import format_money
@@ -54,9 +54,7 @@ def exploration_month(
     for project in sorted(state.projects, key=lambda p: p.id):
         if not project.is_open:
             continue
-        state, posted, logged = _project_month(
-            state, project, rng, balance, data, protesting
-        )
+        state, posted, logged = _project_month(state, project, rng, balance, data, protesting)
         entries += posted
         logs += logged
     return state, tuple(entries), tuple(logs)
@@ -123,16 +121,21 @@ def _report(
             if project.commodity and project.reading != "none"
             else "no commodity"
         )
-        item = _item(turn, project, "survey_done", block=label, reading=project.reading or "none",
-                     commodity=what)
+        item = _item(
+            turn,
+            project,
+            "survey_done",
+            block=label,
+            reading=project.reading or "none",
+            commodity=what,
+        )
     elif stage == "sampling":
         project = xp.sample_result(state, project, rng, balance, data)
         assert project.sample_hw is not None
         item = _item(turn, project, "sampling_done", block=label, pct=_pct(project.sample_hw))
     elif stage == "estimate":
         project = xp.estimate_result(state, project, rng, balance, data)
-        item = _item(turn, project, "estimate_done", block=label,
-                     category=project.category or "no")
+        item = _item(turn, project, "estimate_done", block=label, category=project.category or "no")
     else:
         project = xp.study_result(state, project, stage, rng, balance, data)
         item = _item(
@@ -159,7 +162,7 @@ def _drill(
         return state, project, entries, logs
     drilled = xp.holes_of(state, project.id)
     k = min(eb.drill.holes_per_month, project.holes_left)
-    new = []
+    new: list[Hole] = []
     for i in range(k):
         before = xp.running_estimate(
             replace(state, holes=(*state.holes, *new)), project, balance, data
@@ -257,7 +260,8 @@ def _permit_month(
         project = replace(project, protest_turn=turn + 1, protests=project.protests + 1)
         logs.append(_item(turn, project, "protest_started", block=label))
         return state, project, entries, logs
-    if turn >= project.hidden_due_turn:
+    due = project.hidden_due_turn
+    if due is not None and turn >= due:
         u = float(rng.stream(turn, "exploration", xp.PERMIT, project.id, 1).random())
         refusal = data.geology.regions[project.region].refusal * block.true_difficulty
         if project.benefit:
@@ -271,8 +275,9 @@ def _permit_month(
             permit_turn=turn,
             ended_turn=None if granted else turn,
         )
-        logs.append(_item(turn, project, "permit_granted" if granted else "permit_refused",
-                          block=label))
+        logs.append(
+            _item(turn, project, "permit_granted" if granted else "permit_refused", block=label)
+        )
     return state, project, entries, logs
 
 

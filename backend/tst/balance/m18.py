@@ -19,10 +19,11 @@ from typing import Final
 from tst.balance.game import start_game
 from tst.loader import LoadedData
 from tst.sim.actions import Action, ActionResult, apply_action
-
 from tst.sim.errors import SimError
 from tst.sim.exploration import formulas as xf
 from tst.sim.exploration import pipeline as xp
+from tst.sim.exploration.geology import block_of
+from tst.sim.exploration.models import Project
 from tst.sim.exploration.phase import exploration_month, exploration_step
 from tst.sim.exploration.pipeline import (
     OrderDrilling,
@@ -33,7 +34,7 @@ from tst.sim.exploration.pipeline import (
     TakeLicence,
 )
 from tst.sim.hiring.models import PersonState
-from tst.sim.ledger import CASH, COMMON_EQUITY, apply_entries
+from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry, apply_entries
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
 from tst.sim.rng import RngFactory
@@ -82,9 +83,18 @@ def explorer(
     skills are `skill`, and `cash` more in the bank."""
     game = start_game(loaded, seed)
     state = with_company(game.state, reach_stage(game.state.player, 3, 0))
+    state = add_geologists(state, loaded, skill, geologists)
+    balances = dict(game.balances)
+    balances[(PLAYER, CASH)] = balances.get((PLAYER, CASH), 0) + cash
+    balances[(PLAYER, COMMON_EQUITY)] = balances.get((PLAYER, COMMON_EQUITY), 0) - cash
+    return state, balances
+
+
+def add_geologists(state: GameState, loaded: LoadedData, skill: float, n: int) -> GameState:
+    """`n` senior geologists on the player's staff, their geology and data at `skill`."""
     role = loaded.game_data.role(loaded.balance.exploration.geologist_role)
-    rng = RngFactory(seed)
-    for i in range(geologists):
+    rng = RngFactory(state.save_meta.master_seed)
+    for i in range(n):
         pid, ids = state.next_ids.take("person")
         eid, ids = ids.take("employment")
         state = replace(state, next_ids=ids)
@@ -92,7 +102,7 @@ def explorer(
             rng.stream(0, "misc", 300 + i),
             loaded.game_data,
             loaded.balance,
-            0,
+            state.turn,
             role,
             "senior",
             "oceania",
@@ -102,13 +112,12 @@ def explorer(
         state = with_person(state, person)
         state = with_employment(
             state,
-            Employment(eid, pid, PLAYER, role.key, "senior", 10_000_000, 0, 0, None, "active"),
+            Employment(
+                eid, pid, PLAYER, role.key, "senior", 10_000_000, 0, state.turn, None, "active"
+            ),
         )
         state = with_person_state(state, PersonState(person_id=pid, morale=65.0))
-    balances = dict(game.balances)
-    balances[(PLAYER, CASH)] = balances.get((PLAYER, CASH), 0) + cash
-    balances[(PLAYER, COMMON_EQUITY)] = balances.get((PLAYER, COMMON_EQUITY), 0) - cash
-    return state, balances
+    return state
 
 
 @dataclass
@@ -121,6 +130,7 @@ class Run:
     study_spent: int = 0  # feasibility studies and permits: development, not discovery
     protest_answer: str = "benefit"
     log: Counter[str] = field(default_factory=Counter)
+    posted: list[LedgerEntry] = field(default_factory=list)
 
     @property
     def founder(self) -> int:
@@ -146,9 +156,10 @@ class Run:
         self._post(out.new_state, out.ledger_entries)
         return out
 
-    def _post(self, state: GameState, entries: tuple) -> None:  # type: ignore[type-arg]
+    def _post(self, state: GameState, entries: tuple[LedgerEntry, ...]) -> None:
         self.state = state
         self.balances = apply_entries(self.balances, entries)
+        self.posted += entries
         for e in entries:
             if e.company_id != PLAYER:
                 continue
@@ -186,9 +197,7 @@ class Run:
         self.state = replace(self.state, turn=self.state.turn + 1)
 
 
-def _npv_if(
-    run: Run, project: xp.Project, grade: float, tonnage: float | None = None
-) -> float:
+def _npv_if(run: Run, project: Project, grade: float, tonnage: float | None = None) -> float:
     d, b = run.loaded.game_data, run.loaded.balance
     assert d.geology is not None and project.commodity is not None
     c = d.geology.commodity(project.commodity)
@@ -319,25 +328,27 @@ def convergence(loaded: LoadedData, seeds: range, skill: float = 10.0) -> dict[i
                 continue
             c = d.geology.commodity(block.true_commodity)
             assays, factors = [], []
-            project = xp.Project(0, PLAYER, block.region, block.index, 0, 60,
-                                 commodity=block.true_commodity)
+            project = Project(
+                0, PLAYER, block.region, block.index, 0, 60, commodity=block.true_commodity
+            )
             for n in range(1, 41):
                 hole = _hole(state, project, n, f, loaded)
                 assays.append(hole)
                 factors.append(f)
                 if n in out:
-                    _, hw = xf.grade_estimate(assays, factors, c.hole_sd, b.geology.cells,
-                                              b.exploration.confidence)
+                    _, hw = xf.grade_estimate(
+                        assays, factors, c.hole_sd, b.geology.cells, b.exploration.confidence
+                    )
                     out[n].append(xf.half_width_pct(hw))
     return {n: statistics.median(v) for n, v in out.items()}
 
 
-def _hole(state: GameState, project: xp.Project, n: int, f: float, loaded: LoadedData) -> float:
+def _hole(state: GameState, project: Project, n: int, f: float, loaded: LoadedData) -> float:
     from tst.sim.exploration.geology import GEOLOGY_TURN, cell_deviations
 
     b, d = loaded.balance, loaded.game_data
     assert d.geology is not None and project.commodity is not None
-    block = xp.block_of(state, project.region, project.block)
+    block = block_of(state, project.region, project.block)
     assert block is not None
     c = d.geology.commodity(project.commodity)
     r = d.region_keys.index(project.region)
@@ -346,7 +357,9 @@ def _hole(state: GameState, project: xp.Project, n: int, f: float, loaded: Loade
     perm = rng.stream(GEOLOGY_TURN, "geology", r, project.block, xp.PERM_TAG).permutation(
         b.geology.cells
     )
-    return math.exp(math.log(block.true_grade) + f * c.hole_sd * devs[int(perm[(n - 1) % len(devs)])])
+    return math.exp(
+        math.log(block.true_grade) + f * c.hole_sd * devs[int(perm[(n - 1) % len(devs)])]
+    )
 
 
 @dataclass(frozen=True)
@@ -368,8 +381,16 @@ def summarise(run: Run) -> Summary:
     permitted = [p for p in projects if p.status == "permitted"]
     nothing = [p for p in surveyed if p not in feasible]
     months = tuple((p.permit_turn or 0) - p.licence_turn + 1 for p in permitted)
-    return Summary(len(feasible), len(permitted), run.spent, run.spent - run.study_spent, len(surveyed), len(nothing), months,
-                   run.log)
+    return Summary(
+        len(feasible),
+        len(permitted),
+        run.spent,
+        run.spent - run.study_spent,
+        len(surveyed),
+        len(nothing),
+        months,
+        run.log,
+    )
 
 
 def permit_months(loaded: LoadedData, seeds: range) -> dict[str, float]:
@@ -381,7 +402,7 @@ def permit_months(loaded: LoadedData, seeds: range) -> dict[str, float]:
         state = start_game(loaded, seed).state
         rng = RngFactory(seed)
         for i, block in enumerate(state.geo_blocks):
-            project = xp.Project(i + 1, PLAYER, block.region, block.index, 0, 60)
+            project = Project(i + 1, PLAYER, block.region, block.index, 0, 60)
             got = xp._apply_permit(state, project, rng, b, d)
             assert got.hidden_due_turn is not None
             out.setdefault(block.region, []).append(got.hidden_due_turn + 1)
@@ -395,10 +416,147 @@ def leaders(loaded: LoadedData, seeds: range) -> dict[str, Counter[str]]:
     out: dict[str, Counter[str]] = {}
     for seed in seeds:
         state = start_game(loaded, seed).state
-        ec = [x for x in state.geo_blocks
-              if x.true_commodity and xp.true_npv_usd(state, x, b, d) > 0]
+        ec = [
+            x for x in state.geo_blocks if x.true_commodity and xp.true_npv_usd(state, x, b, d) > 0
+        ]
         for c in ("copper", "lithium_carbonate", "cobalt", "ndpr_oxide"):
             cnt = Counter(x.region for x in ec if x.true_commodity == c).most_common(2)
             top = cnt[0][0] if cnt and (len(cnt) == 1 or cnt[0][1] > cnt[1][1]) else "tie"
             out.setdefault(c, Counter())[top] += 1
     return out
+
+
+# --- The report (tools/m18_targets.py) ---------------------------------------------------------
+
+SKILLS: Final = (8.0, 12.0, 15.0)
+TYPICAL: Final = 12.0  # target 3's team
+TEAM: Final = 6  # geologists in the scripted explorer's team
+
+
+def _play_one(args: tuple[int, float]) -> tuple[int, float, Summary]:
+    from pathlib import Path
+
+    from tst.loader import load_all
+
+    seed, skill = args
+    loaded = load_all(Path(__file__).resolve().parents[2] / "data")
+    return seed, skill, summarise(play(loaded, seed, skill, geologists=TEAM))
+
+
+def unchanged(loaded: LoadedData, seeds: tuple[int, ...], turns: int = 24) -> bool:
+    """Target 6: a company that never explores plays exactly as before. The same game played
+    with its geology and without (as a save from before M18): identical month ends."""
+    for seed in seeds:
+        runs = []
+        for strip in (False, True):
+            game = start_game(loaded, seed)
+            if strip:
+                game.state = replace(game.state, geo_blocks=(), supplier_licences=())
+            for _ in range(turns):
+                game.turn()
+            runs.append(game.snapshots)
+        if runs[0] != runs[1]:
+            return False
+    return True
+
+
+@dataclass(frozen=True)
+class Results:
+    seeds: tuple[int, ...]
+    convergence: dict[int, float]
+    plays: dict[float, list[Summary]]
+    leaders: dict[str, Counter[str]]
+    permit: dict[str, float]
+    unchanged: bool
+    coverage_note: str = "tests/property/test_m18_estimates.py (30 seeds)"
+
+
+def run(seeds: tuple[int, ...], jobs: int) -> Results:
+    from concurrent.futures import ProcessPoolExecutor
+    from pathlib import Path
+
+    from tst.loader import load_all
+
+    loaded = load_all(Path(__file__).resolve().parents[2] / "data")
+    plays: dict[float, list[Summary]] = {s: [] for s in SKILLS}
+    tasks = [(seed, skill) for skill in SKILLS for seed in seeds]
+    with ProcessPoolExecutor(max_workers=jobs) as pool:
+        for _, skill, summary in pool.map(_play_one, tasks):
+            plays[skill].append(summary)
+    return Results(
+        seeds=seeds,
+        convergence=convergence(loaded, range(seeds[0], seeds[-1] + 1), skill=10.0),
+        plays=plays,
+        leaders=leaders(loaded, range(seeds[0], seeds[-1] + 1)),
+        permit=permit_months(loaded, range(seeds[0], seeds[-1] + 1)),
+        unchanged=unchanged(loaded, seeds[:2]),
+    )
+
+
+def _per_dollar(rows: list[Summary], discovery: bool) -> float:
+    spent = sum(r.discovery if discovery else r.spent for r in rows)
+    return sum(r.feasible for r in rows) / spent if spent else 0.0
+
+
+def report(r: Results) -> str:
+    def mark(ok: bool) -> str:
+        return "PASS" if ok else "MISS"
+
+    out = [f"M18 targets (docs/formulas.md 34.6), seeds {r.seeds[0]}-{r.seeds[-1]}"]
+    c20, c40 = r.convergence[20], r.convergence[40]
+    out.append(
+        f"1. Estimates converge (skill-10 team, every deposit): 20 holes +/-{c20:.1%} (<= 15%), "
+        f"40 holes +/-{c40:.1%} (<= 8%)  {mark(c20 <= 0.15 and c40 <= 0.08)}"
+    )
+    weak, strong = r.plays[8.0], r.plays[15.0]
+    disc = _per_dollar(strong, True) / max(_per_dollar(weak, True), 1e-12)
+    total = _per_dollar(strong, False) / max(_per_dollar(weak, False), 1e-12)
+    from pathlib import Path
+
+    from tst.loader import load_all
+
+    eb = load_all(Path(__file__).resolve().parents[2] / "data").balance.exploration
+    narrower = 1 - xf.range_factor(15, eb) / xf.range_factor(8, eb)
+    out.append(
+        f"2. Geologists matter: skill 15 vs 8 finds feasible projects {disc:.2f}x as often per "
+        f"dollar of discovery spend ({total:.2f}x per dollar of all spend), ranges "
+        f"{narrower:.0%} narrower  {mark(1.5 <= disc <= 2.5 and 0.25 <= narrower <= 0.40)}"
+    )
+    typical = r.plays[TYPICAL]
+    per = sorted(x.spent / x.permitted / 100 / 1e6 for x in typical if x.permitted)
+    months = sorted(m for x in typical for m in x.permit_months)
+    surveyed = sum(x.surveyed for x in typical)
+    nothing = sum(x.nothing for x in typical) / surveyed if surveyed else 0.0
+    med = statistics.median(per) if per else float("inf")
+    med_years = statistics.median(months) / 12 if months else float("inf")
+    feasible = sum(x.feasible for x in typical)
+    out.append(
+        f"3. A gamble (skill-12 team): median spend ${med:.0f}M per permitted project "
+        f"($20-60M), licence to permit {med_years:.1f} years (3-8), {nothing:.0%} of surveyed "
+        f"blocks end in nothing (>= 40%); 1 in {surveyed / max(feasible, 1):.0f} surveyed blocks "
+        f"becomes feasible  {mark(20 <= med <= 60 and 3 <= med_years <= 8 and nothing >= 0.4)}"
+    )
+    expected = {
+        "copper": "latin_america",
+        "lithium_carbonate": "oceania",
+        "cobalt": "africa",
+        "ndpr_oxide": "east_asia",
+    }
+    n = len(r.seeds)
+    parts, ok4 = [], True
+    for c, region in expected.items():
+        hits = r.leaders[c][region]
+        ok4 &= hits >= 0.7 * n
+        parts.append(f"{c} {region} {hits}/{n}")
+    out.append(f"4. Geography is real: {', '.join(parts)} (>= 7 of 10)  {mark(ok4)}")
+    na, la = r.permit["north_america"], r.permit["latin_america"]
+    out.append(
+        f"5. Permits vary: median {na:.0f} months in North America vs {la:.0f} in Latin "
+        f"America ({na / la:.2f}x, >= 1.5x)  {mark(na >= 1.5 * la)}"
+    )
+    out.append(
+        f"6. Nothing else moves: a game that never explores plays identically with and without "
+        f"geology (24 months, 2 seeds); golden snapshots unchanged  {mark(r.unchanged)}"
+    )
+    out.append(f"Ranges hold their stated confidence: {r.coverage_note}")
+    return "\n".join(out)

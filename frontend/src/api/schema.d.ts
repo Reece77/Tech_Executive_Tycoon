@@ -3594,6 +3594,161 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/exploration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Exploration
+         * @description Regions and their blocks with heat-map bands and licences, desk studies, and every
+         *     project's pipeline, ranges, permit and sale quote (34.5).
+         */
+        get: operations["getExploration"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/desk-study": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Desk Study
+         * @description A desk study of one commodity in one region: a heat map of its blocks (34.2).
+         */
+        post: operations["startDeskStudy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take Licence
+         * @description An exploration licence on a free block: a project (34.2).
+         */
+        post: operations["takeLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/projects/{project_id}/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Renew Licence */
+        post: operations["renewLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/projects/{project_id}/stage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Stage
+         * @description Start a survey, sampling, a resource estimate, a feasibility study or the permit.
+         */
+        post: operations["startExplorationStage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/projects/{project_id}/drill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Order Drilling
+         * @description A programme of holes, drilled a few a month and paid hole by hole (34.2).
+         */
+        post: operations["orderDrilling"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/projects/{project_id}/sell": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sell Project
+         * @description Sell the project to a supplier at its quote (34.2).
+         */
+        post: operations["sellProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/exploration/projects/{project_id}/relinquish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Relinquish Project */
+        post: operations["relinquishProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5444,6 +5599,32 @@ export interface components {
              */
             mistake: boolean;
         };
+        /** DeskStudyIn */
+        DeskStudyIn: {
+            /** Region */
+            region: string;
+            /** Commodity */
+            commodity: string;
+            /** Company Id */
+            company_id?: number | null;
+        };
+        /** DeskStudyOut */
+        DeskStudyOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Region */
+            region: string;
+            /** Commodity */
+            commodity: string;
+            /** Start Turn */
+            start_turn: number;
+            /** Done Turn */
+            done_turn: number;
+            /** Done */
+            done: boolean;
+        };
         /** DiligenceIn */
         DiligenceIn: {
             /** Company Id */
@@ -5726,6 +5907,25 @@ export interface components {
             /** Rivals */
             rivals: components["schemas"]["RivalLeadOut"][];
         };
+        /** DrillHoleOut */
+        DrillHoleOut: {
+            /** N */
+            n: number;
+            /** Turn */
+            turn: number;
+            /**
+             * Assay
+             * @description The hole's grade, a fraction of ore (public once drilled)
+             */
+            assay: number;
+            /** Cost Cents */
+            cost_cents: number;
+        };
+        /** DrillIn */
+        DrillIn: {
+            /** Holes */
+            holes: number;
+        };
         /** DriverOut */
         DriverOut: {
             /** Label */
@@ -5907,6 +6107,20 @@ export interface components {
              */
             retryable?: boolean | null;
         };
+        /** EstimateRangeOut */
+        EstimateRangeOut: {
+            /** Low */
+            low: number;
+            /** Mid */
+            mid: number;
+            /** High */
+            high: number;
+            /**
+             * Pct
+             * @description The half-width shown as +/- this share of the midpoint
+             */
+            pct: number;
+        };
         /** EventChoiceOut */
         EventChoiceOut: {
             /** Key */
@@ -6043,6 +6257,176 @@ export interface components {
             company_id: number;
             /** Company Name */
             company_name: string;
+        };
+        /** ExplorationActionOut */
+        ExplorationActionOut: {
+            exploration: components["schemas"]["ExplorationOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** ExplorationOut */
+        ExplorationOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * Confidence
+             * @description The stated confidence of every range
+             */
+            confidence: number;
+            /** Desk Cost Cents */
+            desk_cost_cents: number;
+            /** Desk Months */
+            desk_months: number;
+            /** Max Programme */
+            max_programme: number;
+            /** Commodities */
+            commodities: components["schemas"]["GeoCommodityOut"][];
+            /** Regions */
+            regions: components["schemas"]["GeoRegionOut"][];
+            /** Explorers */
+            explorers: components["schemas"]["ExplorerOut"][];
+            /** Blocks */
+            blocks: components["schemas"]["GeoBlockOut"][];
+            /** Desk Studies */
+            desk_studies: components["schemas"]["DeskStudyOut"][];
+            /** Projects */
+            projects: components["schemas"]["ExplorationProjectOut"][];
+        };
+        /** ExplorationProjectOut */
+        ExplorationProjectOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Region */
+            region: string;
+            /** Block */
+            block: number;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @description active | permitted | refused | sold | relinquished | lapsed
+             */
+            status: string;
+            /** Commodity */
+            commodity: string | null;
+            /**
+             * Stage
+             * @description The stage running now
+             */
+            stage: string | null;
+            /** Stage Due Turn */
+            stage_due_turn: number | null;
+            /** Holes Left */
+            holes_left: number;
+            /** Licence Turn */
+            licence_turn: number;
+            /** Expires Turn */
+            expires_turn: number;
+            /** Renewals */
+            renewals: number;
+            /** Renewable */
+            renewable: boolean;
+            /** Spent Cents */
+            spent_cents: number;
+            /**
+             * Reading
+             * @description Survey: none | weak | strong
+             */
+            reading: string | null;
+            /**
+             * Deposit Chance Low
+             * @description The stated chance of a deposit under this reading
+             */
+            deposit_chance_low?: number | null;
+            /** Deposit Chance High */
+            deposit_chance_high?: number | null;
+            /**
+             * Kind
+             * @description hard_rock | brine | placer, as the survey reads it
+             */
+            kind: string | null;
+            sample_grade: components["schemas"]["EstimateRangeOut"] | null;
+            /** Holes */
+            holes: components["schemas"]["DrillHoleOut"][];
+            /** @description The running grade estimate from the holes */
+            grade: components["schemas"]["EstimateRangeOut"] | null;
+            /**
+             * Category
+             * @description inferred | indicated | measured
+             */
+            category: string | null;
+            est_grade: components["schemas"]["EstimateRangeOut"] | null;
+            est_tonnage_mt: components["schemas"]["EstimateRangeOut"] | null;
+            /**
+             * Level
+             * @description The latest feasibility study's level
+             */
+            level: string | null;
+            capex_usd: components["schemas"]["EstimateRangeOut"] | null;
+            opex_usd_per_t: components["schemas"]["EstimateRangeOut"] | null;
+            recovery: components["schemas"]["EstimateRangeOut"] | null;
+            /** Npv Low Cents */
+            npv_low_cents: number | null;
+            /** Npv Mid Cents */
+            npv_mid_cents: number | null;
+            /** Npv High Cents */
+            npv_high_cents: number | null;
+            /** Permit Start */
+            permit_start: number | null;
+            /**
+             * Permit Years Low
+             * @description The region's typical years (never the decision month)
+             */
+            permit_years_low?: number | null;
+            /** Permit Years High */
+            permit_years_high?: number | null;
+            /** Protests */
+            protests: number;
+            /** Protest Open */
+            protest_open: boolean;
+            /** Benefit Agreement */
+            benefit_agreement: boolean;
+            /** Pushes */
+            pushes: number;
+            /** Permit Turn */
+            permit_turn: number | null;
+            /**
+             * Sale Quote Cents
+             * @description What a supplier would pay now (0: no buyer)
+             */
+            sale_quote_cents: number;
+            /** Buyer */
+            buyer: string | null;
+            /** Sold To */
+            sold_to: string | null;
+            /** Sale Cents */
+            sale_cents: number;
+            /** Options */
+            options: components["schemas"]["StageOptionOut"][];
+        };
+        /** ExplorerOut */
+        ExplorerOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Geologists */
+            geologists: number;
+            /**
+             * Busy
+             * @description Desk studies and geology stages running (one a geologist)
+             */
+            busy: number;
+            /**
+             * Gate
+             * @description What stands between it and exploring; empty: it may
+             */
+            gate: string[];
         };
         /** FacilityOut */
         FacilityOut: {
@@ -6700,6 +7084,45 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** GeoBlockOut */
+        GeoBlockOut: {
+            /** Region */
+            region: string;
+            /**
+             * Index
+             * @description 0-based; shown as index + 1
+             */
+            index: number;
+            /**
+             * Holder
+             * @description Who holds its licence: a supplier or a company
+             */
+            holder: string | null;
+            /**
+             * Project Id
+             * @description The group's open project on it, if any
+             */
+            project_id: number | null;
+            /**
+             * Bands
+             * @description commodity -> low | medium | high from the group's latest desk study
+             */
+            bands: {
+                [key: string]: string;
+            };
+        };
+        /** GeoCommodityOut */
+        GeoCommodityOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Grade Unit
+             * @description pct | ppm: how a grade is shown
+             */
+            grade_unit: string;
+        };
         /** GeoOut */
         GeoOut: {
             /** Hq City */
@@ -6732,6 +7155,36 @@ export interface components {
              * @description Added to a hire who moves to the search's city
              */
             relocation_cents: number;
+        };
+        /** GeoRegionOut */
+        GeoRegionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Prospectivity
+             * @description 0-1 per commodity: the region's public geology (34.1)
+             */
+            prospectivity: {
+                [key: string]: number;
+            };
+            /** Basis */
+            basis: {
+                [key: string]: string;
+            };
+            /** Licence Fee Cents */
+            licence_fee_cents: number;
+            /** Permit Years Low */
+            permit_years_low: number;
+            /** Permit Years High */
+            permit_years_high: number;
+            /** Survey Cost Cents */
+            survey_cost_cents: number;
+            /** Hole Cost Low Cents */
+            hole_cost_low_cents: number;
+            /** Hole Cost High Cents */
+            hole_cost_high_cents: number;
         };
         /** GiftIn */
         GiftIn: {
@@ -7975,6 +8428,15 @@ export interface components {
             persona: number;
             /** Grants Cents */
             grants_cents: number;
+        };
+        /** LicenceIn */
+        LicenceIn: {
+            /** Region */
+            region: string;
+            /** Block */
+            block: number;
+            /** Company Id */
+            company_id?: number | null;
         };
         /** LicenseIn */
         LicenseIn: {
@@ -12132,6 +12594,32 @@ export interface components {
         StaffIn: {
             /** Unit Id */
             unit_id: number | null;
+        };
+        /** StageIn */
+        StageIn: {
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "survey" | "sampling" | "estimate" | "scoping" | "pre_feasibility" | "definitive" | "permitting";
+            /** Commodity */
+            commodity?: string | null;
+        };
+        /** StageOptionOut */
+        StageOptionOut: {
+            /** Stage */
+            stage: string;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Months */
+            months: number;
+            /** Allowed */
+            allowed: boolean;
+            /**
+             * Reason
+             * @default
+             */
+            reason?: string;
         };
         /** StageReachedOut */
         StageReachedOut: {
@@ -24901,6 +25389,491 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getExploration: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startDeskStudy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeskStudyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    takeLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    renewLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startExplorationStage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    orderDrilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DrillIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sellProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    relinquishProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationActionOut"];
                 };
             };
             /** @description Bad Request */
