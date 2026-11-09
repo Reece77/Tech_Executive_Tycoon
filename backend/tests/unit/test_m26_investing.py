@@ -99,7 +99,7 @@ def _startup(state: GameState, raised: int = 2 * MILLION) -> tuple[GameState, in
 
 
 def test_post_money_and_seed_stake() -> None:
-    assert angel.post_money(2 * MILLION, B) == 10 * MILLION  # raised / 0.2
+    assert angel.post_money(2 * MILLION, B) == round(2 * MILLION / B.angel.round_dilution)
     lo, hi = B.angel.seed_stake
     assert angel.seed_stake(B.angel.min_cheque_cents, B) == lo
     assert angel.seed_stake(B.angel.seed_full_cents, B) == hi
@@ -116,7 +116,7 @@ def test_joining_a_round_extends_it_at_its_price() -> None:
     after = _act(state, JoinRound(fid, cid, cheque))
     stake = angel_stake_of(after, fid, cid)
     assert stake is not None
-    post = 10 * MILLION + cheque
+    post = angel.post_money(2 * MILLION, B) + cheque
     assert stake.stake_ppm == cheque * STAKE_FULL // post
     assert stake.last_post_cents == post
     assert personal.cash_cents(after, fid) == 100 * MILLION - cheque
@@ -586,7 +586,8 @@ def test_rounds_are_recorded_from_the_months_entries() -> None:
         amount=3 * MILLION,
     )
     out, rounds = angel.record_month_rounds(state, (entry,), B)
-    assert rounds[0].raised_cents == 3 * MILLION and rounds[0].post_cents == 15 * MILLION
+    assert rounds[0].raised_cents == 3 * MILLION
+    assert rounds[0].post_cents == angel.post_money(3 * MILLION, B)
     assert rounds[0].source == "funded"
     assert angel.open_round(out, cid, B) == rounds[0]
 
@@ -617,3 +618,13 @@ def test_leavers_join_the_network_and_it_is_capped() -> None:
     assert {e.person_id for e in out.network} == {p.id for p in others[1:]}  # not the retired
     small = B.model_copy(update={"angel": B.angel.model_copy(update={"network_size": 1})})
     assert len(angel.network_month(state, small).network) == 1
+
+
+def test_a_venture_round_dilutes_the_founders_stake() -> None:
+    state, cid, stake = _held()
+    state, _ = angel.record_round(state, cid, 2 * MILLION, 8 * MILLION, "venture")
+    state, _ = angel.stakes_month(state, [], B, D)
+    after = angel_stake_of(state, _fid(state), cid)
+    assert after is not None
+    assert after.stake_ppm == stake.stake_ppm * 6 // 8
+    assert after.last_post_cents == 8 * MILLION

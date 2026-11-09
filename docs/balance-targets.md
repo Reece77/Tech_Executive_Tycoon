@@ -568,3 +568,17 @@ Tuned (M17's keys only): `commodity.mixes.device_bom.share` 0.15 → 0.033 (43% 
 | Ranges hold their confidence | 90% | `tests/property/test_m18_estimates.py`, 30 seeds (grade after 8/20/40 holes, sample, tonnage) |
 
 Tuned (`geology.*`, `exploration.*`; before → after in the brief's Decisions 8–9). T2 is read per dollar of discovery spend (Decision 10, for review); per dollar of all spend it is 1.42x on the combined code, under the band's 1.5x. M17's §33.6 targets re-run on the combined code: history 0 months off, phone +7.3% at the lithium peak, hedging +3.1 to +3.3 points, cheapest power 0.85x, shocks 7-10 of 10 seeds per good with the longest run above 3.0 at 24 months; golden snapshots unchanged.
+
+## M26: the founder's life, part 2: personal investing (§37.6)
+
+`uv run --project backend python tools/m26_targets.py` (10 seeds; nightly `tests/balance/test_m26_balance.py`).
+
+| Target | Value | Band |
+| --- | --- | --- |
+| 1 Angel skew ($250k into every new startup for 10 years) | median 0.13x; top decile 17.4x (90th percentile 9.1x); portfolio 2.69x | < 1.0; > 10x; 0.8-3.0 |
+| 2 Known founders (5-year survival) | 34% vs 23%: 1.48x | >= 1.3x |
+| 3 Family office 2010-2025 | index 32.0%/yr; balanced 29.2% (largest miss 3.7 points); aggressive/conservative vol 2.56x | within 4 points; >= 1.5x |
+| 4 Insider trading | investigated on 10 of 10 seeds | 6-10 |
+| 5 Nothing else moves | identical on 3 of 3 seeds; goldens unchanged | identical |
+
+Tuned: `angel.round_dilution` 0.2 -> 0.12; `family_office.mandates` (conservative 0.3 -> 0.4, balanced 0.6/0.01 -> 0.95/0.005, aggressive vol 0.02 -> 0.03). Target 1's top decile is its mean (M26 brief, decision 16).

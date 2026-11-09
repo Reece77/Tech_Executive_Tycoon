@@ -1362,7 +1362,7 @@ angel: # 37.2: the founder's own angel and venture investing (M26)
   min_cheque_cents: 25000000 # cents ($250k): the smallest cheque backing a new startup
   round_min_cents: 1000000 # cents ($10k): the smallest cheque into a round (M26 decision)
   round_window_months: 1 # months after a round closes that the founder may still join it (M26 decision)
-  round_dilution: 0.2 # share of a startup a round sells: post-money = raised / this
+  round_dilution: 0.12 # share of a startup a round sells: post-money = raised / this; 37.2 says 0.2, tuned for 37.6 target 1 (0.2: portfolio 4.84x on seeds 1-4, above 0.8-3.0)
   seed_stake: [0.2, 0.4] # backing a new startup: the founder's stake, from the smallest cheque to seed_full_cents
   seed_full_cents: 300000000 # cents ($3M, the top of 15.4's founding cash): a cheque this large takes the top of seed_stake
   known_hw: 2.5 # attribute points: a person whose skills' mean revealed half-width is at most this counts as known
@@ -1379,9 +1379,9 @@ family_office: # 37.4: the founder's family office (M26)
   alpha_mid: 10 # skill points; a manager at this skill adds nothing
   index_months: 240 # months of the market index and the office's returns kept
   mandates: # share in the market index (the rest earns the base rate) and the sd of a month's noise
-    conservative: { index: 0.3, vol: 0.005 }
-    balanced: { index: 0.6, vol: 0.01 }
-    aggressive: { index: 1.0, vol: 0.02 }
+    conservative: { index: 0.4, vol: 0.005 } # tuned for 37.6 target 3 (was 0.3)
+    balanced: { index: 0.95, vol: 0.005 } # 37.6 target 3: within 4 points of the index (was 0.6, vol 0.01: 13.6 points under)
+    aggressive: { index: 1.0, vol: 0.03 } # was vol 0.02
 
 group: # 31: the holding company and its subsidiaries (M16, v3)
   stage5_revenue_cents: 200000000000 # cents ($2B) of group revenue in the last 12 months that opens the holding company (with a listing), 31.2

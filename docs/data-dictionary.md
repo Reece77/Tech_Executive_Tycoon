@@ -1644,6 +1644,23 @@ The founder's own records (formulas.md 32). `founder_life`, `foundation` and `in
 
 Also new: company account `6950_lobbying` (expense; monthly lobbying by region; scandal fines post to `6900_general_admin`); `decision_log` payloads carry `holiday` in a turn's `Decisions` (a Holiday month lowers stress); action kinds `sell_founder_shares`, `create_foundation`, `give_to_foundation` and `set_lobbying`; event templates `founder_burnout`, `founder_scandal` and `founder_first_grants` (trigger `founder_life`, effect `founder_step`).
 
+## The founder's own investments (migration `0043_m26`, M26)
+
+The founder's personal investing (formulas.md 37). Each table keeps a frozen record of `backend/tst/sim/founder/investing_models.py` in a JSON `data` column, without its key columns. Money is integer cents; stakes are millionths (ppm) of a startup. Saves made before M26 have no rows: rounds, the index and net worth are recorded from their next month end. `save_meta.schema_version` is 43.
+
+| Table | Key | Columns | Notes |
+| --- | --- | --- | --- |
+| `startup_round` | `id` | `data`: `company_id`, `turn`, `raised_cents`, `post_cents` (the round's price), `source` (`founded`, `funded`, `venture`, `angel`, `backed`) | Every rival startup's round (15.4), corporate venture investment (31.5) and the founder's cheques (37.2). Public. |
+| `angel_stake` | `id` | `data`: `person_id`, `company_id`, `stake_ppm`, `cost_cents`, `from_turn`, `last_post_cents`, `backed`, `founder_known`, `status` (`open`, `acquired`, `listed`, `failed`), `closed_turn`, `proceeds_cents`, `coi_turn`, `coi_answer` (`disclose`, `conceal`, `found`), `coi_found_turn` (**hidden**: the month a concealed conflict comes out) | The founder's stake in a private startup (37.2). |
+| `personal_trade` | `id` | `data`: `person_id`, `company_id`, `turn`, `side` (`buy`, `sell`), `shares`, `price_cents`, `cost_cents`, `filed`, `sensitive_target_id` (the deal in preparation it was ahead of), `risk`, `public_turn`, `investigate_turn`, `gain_cents` (**hidden**: regulatory risk, when the news went public, the investigation's month drawn, the gain), `resolved`, `investigated_turn`, `finding_turn` | Trades of listed shares (37.3). The API shows only `sensitive`, `filed` and an opened investigation. |
+| `public_holding` | `person_id`, `company_id` | `data`: `shares`, `cost_cents` | Listed shares held (37.3); for the founder's own company only the shares bought (they sit on its cap table). |
+| `family_office` | `person_id` | `data`: `formed_turn`, `manager_id` (a generated person, kept loaded), `mandate` (`conservative`, `balanced`, `aggressive`), `returns` ([turn, return] the last 240 months) | The family office (37.4); its balance is the personal book's 9130. The manager's finance skill is hidden (shown as the revealed range). |
+| `wealth_point` | `person_id`, `turn` | `data`: `cash_cents`, `angel_cents`, `public_cents`, `family_office_cents`, `own_stake_cents` | Net worth at each month end (37.5). |
+| `market_index` | `turn` | `data`: `level` (1.0 in the first month recorded), `month_return`, `caps` ([company_id, market cap] of every listed company) | The value-weighted market index (37.4), the last 240 months. |
+| `founder_network` | `person_id` | `data`: `turn` (the month they left) | People who left the player's companies (37.2), the last `angel.network_size`; their person records stay loaded. |
+
+Also new: personal accounts `9110_angel_investments`, `9120_public_shares`, `9130_family_office` (assets), `9410_investment_gains`, `9430_dividends_received` (revenue), `9420_investment_losses` (expense) in `accounts.yaml`'s `personal_accounts`; `personal_entry.source` adds `angel`, `shares`, `family_office`, `dividends`, `fine`. Action kinds `join_round`, `back_startup`, `trade_shares`, `form_family_office`, `move_family_office`, `set_office_mandate`; event templates `personal_conflict`, `personal_filing`, `personal_investigation`, `personal_finding` (trigger `founder_life`, effect `founder_step` with `disclose`, `conceal`, `accept_finding`, `deny_finding`); RNG stream `personal` (53).
+
 ## Exact contract prices (migration `0038_m15r`, M15r)
 
 `production_contract.price_cents` (FLOAT, 0031) becomes `price_millicents` (BIGINT): the unit fee or wafer price in exact integer thousandths of a cent (Codex review 4 finding 8). Existing rows convert once, `ROUND(price_cents x 1000)`. `save_meta.schema_version` becomes 38 (after M24's `0037_founder`).
