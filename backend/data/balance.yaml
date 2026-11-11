@@ -1939,6 +1939,7 @@ geopolitics:
     decision_months: 2 # A: months from the request to the decision
     term_months: 24 # A: an approved licence's months (or until the rule ends)
     energy: 3 # A: founder energy to request one
+  rivals_controlled: true # M23a: export controls cut rivals' sales to restricted destinations as the player's (playtest 5: "rivals should also be affected"); the demand they lose goes to products still open there. false: M22's rule, the player's group only (comparison runs)
   variant: # 39.3: a compliant variant under the threshold (NVIDIA's A800, H20)
     energy: 5 # 39.3
     quality_penalty: 10 # 39.3: its quality cap is the parent's less this, in the restricted market
