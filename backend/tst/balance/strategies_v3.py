@@ -243,15 +243,17 @@ def chip_step(game: Game) -> None:
 # --- Exploration and mines (full_integrator, mineral_baron) -----------------------------------
 
 GEOLOGIST_ROLE: Final = "geologist"
-GEOLOGISTS: Final = 3  # a stage runs on one geologist (exploration.stages_per_geologist)
+GEOLOGISTS: Final = 4  # a stage runs on one geologist (exploration.stages_per_geologist)
 EXPLORE_CENTS: Final = 5_000_000_000  # $50M (x2, ready_for) before exploring a commodity
-PROJECTS_AT_ONCE: Final = 2  # licensed projects in the pipeline per commodity
+PROJECTS_AT_ONCE: Final = 4  # licensed projects in the pipeline per commodity
 HOLES: Final = 40  # a programme to an indicated resource (M18's balance runs)
 MINE_ROLE: Final = "mining_engineer"
 PROCESS_ROLE: Final = "process_engineer"
 FAB_ROLE: Final = "fab_engineer"
 MINE_CASH_MULT: Final = 1.6  # a mine's estimate x this in cash (the overrun is hidden)
-STUDIES: Final = ("scoping", "pre_feasibility", "definitive")
+# A cheap scoping study to screen the project, then the definitive study its 40-hole measured
+# resource allows (exploration.feasibility.min_category): pre-feasibility adds 8 months only.
+STUDIES: Final = ("scoping", "definitive")
 
 
 def _projects(game: Game, region: str, commodity: str) -> list[Project]:
@@ -605,11 +607,22 @@ def foundry(game: Game) -> None:
     _staff_plants(game, "fab", FAB_ROLE, "Fab crew")
 
 
+def devices_regions(game: Game) -> None:
+    """I1-I2's like-for-like baseline (M23b, proposed): steady_regions with full_integrator's
+    device line and its own SoC, both on contracts (a contract manufacturer and a foundry),
+    and no chain of its own. Measured, not among the strategies whose wins I3 counts."""
+    steady_regions(game)
+    devices_step(game)
+    chip_step(game)
+
+
 V3: Final[dict[str, Strategy]] = {
     "full_integrator": full_integrator,
     "mineral_baron": mineral_baron,
     "foundry": foundry,
 }
+
+V3_ARMS: Final[dict[str, Strategy]] = {"devices_regions": devices_regions}
 
 # keep BUILDER_ROLE and BuildFacility importable for a later rung (own assembly plant)
 _ = (BUILDER_ROLE, BuildFacility)

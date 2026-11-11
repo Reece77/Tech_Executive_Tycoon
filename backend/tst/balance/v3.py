@@ -38,14 +38,14 @@ from typing import Final
 from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.report import SCENARIO, Row
 from tst.balance.strategies_v2 import DELEGATED, PLAYABLE
-from tst.balance.strategies_v3 import V3
+from tst.balance.strategies_v3 import V3, V3_ARMS
 from tst.loader import LoadedData, load_all
 from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.state import GameState
 
 DATA: Final = Path(__file__).resolve().parents[2] / "data"
 SEEDS: Final = tuple(range(1, 11))
-ALL: Final = {**PLAYABLE, **V3}
+ALL: Final = {**PLAYABLE, **V3, **V3_ARMS}
 YEARS_20: Final = ym_to_turn(2029, 12) + 1  # 240: January 2010 to December 2029
 LONG_TURNS: Final = ym_to_turn(2039, 12) + 1  # 360
 BASE: Final = "steady_regions"
@@ -62,6 +62,8 @@ COMPARED: Final = (
     "mineral_baron",
     "foundry",
 )
+DEVICES: Final = "devices_regions"  # the like-for-like baseline (I1d, I2d), not counted in I3
+PLAYED_20: Final = (*COMPARED, DEVICES)
 LONG_STRATEGIES: Final = tuple(V3)
 MARGIN_GAP: Final = (0.03, 0.10)  # I1: full_integrator's margin over steady_regions'
 ARR_RATIO: Final = (0.9, 1.4)  # I2
@@ -258,11 +260,13 @@ def chain_categories() -> dict[str, tuple[str, ...]]:
 
 def chain_rivals(state: GameState) -> dict[str, int]:
     """Rivals still producing in each chain category this month: rival miners with output
-    (35.5's abstract capacity), suppliers of each refined good still signing (33.4), and rival
+    (35.5's abstract capacity), suppliers of each refined good still signing (33.4) or, for a
+    good M20 derives with no named seller, its spot market still allocating, and rival
     foundries with capacity (38.3)."""
     from tst.sim.fabs import market as fm
     from tst.sim.fabs import nodes as nd
     from tst.sim.mining.risk import rival_capacity
+    from tst.sim.refining import goods as rg
     from tst.sim.rng import RngFactory
 
     lg = loaded()
@@ -278,7 +282,14 @@ def chain_rivals(state: GameState) -> dict[str, int]:
             )
         elif kind == "refiners":
             suppliers = d.suppliers.suppliers if d.suppliers else ()
-            out[key] = sum(1 for s in suppliers if any(s.sells(g, turn) for g in goods))
+            named = sum(1 for s in suppliers if any(s.sells(g, turn) for g in goods))
+            # a good M20 derives (300 mm wafers, solar polysilicon: refining.goods) has no
+            # named seller: its rival supply is the abstract market, alive while a spot
+            # buyer is allocated any of it (M23b decision)
+            derived = any(
+                g in b.refining.goods and rg.allocation(state, g, b, d) > 0 for g in goods
+            )
+            out[key] = named or int(derived)
         else:
             tl = fm.timeline(state, b, d)
             foundries = d.nodes.foundries if d.nodes else ()
@@ -362,15 +373,41 @@ def _median(xs: Sequence[float]) -> float | None:
     return st.median(xs) if xs else None
 
 
-def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
-    """I1-I3 over 20-year runs of COMPARED on the same seeds."""
-    base, top = _runs(runs, BASE), _runs(runs, INTEGRATOR)
+def _gap_and_ratio(runs: Sequence[V3Run], base_name: str) -> tuple[float | None, float | None]:
+    base, top = _runs(runs, base_name), _runs(runs, INTEGRATOR)
     m_base = _median([m for r in base if (m := r.margin) is not None])
     m_top = _median([m for r in top if (m := r.margin) is not None])
     gap = m_top - m_base if m_top is not None and m_base is not None else None
     a_base = _median([r.arr for r in base])
     a_top = _median([r.arr for r in top])
     ratio = a_top / a_base if a_top is not None and a_base else None
+    return gap, ratio
+
+
+def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str) -> list[Row]:
+    gap, ratio = _gap_and_ratio(runs, base_name)
+    return [
+        Row(
+            f"I1{suffix}",
+            f"full_integrator margin - {base_name}, year 20 (points)",
+            "-" if gap is None else f"{gap * 100:+.1f}",
+            "+3 to +10",
+            _in(gap, MARGIN_GAP) if _runs(runs, base_name) else None,
+            score=None if gap is None else -gap,
+        ),
+        Row(
+            f"I2{suffix}",
+            f"full_integrator ARR / {base_name}, year 20",
+            "-" if ratio is None else f"{ratio:.2f}x",
+            "0.90-1.40x",
+            _in(ratio, ARR_RATIO) if _runs(runs, base_name) else None,
+        ),
+    ]
+
+
+def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
+    """I1-I3 over 20-year runs of COMPARED on the same seeds; I1d and I2d the same gap and
+    ratio against devices_regions, printed (the like-for-like baseline M23b proposes)."""
     wins: dict[str, int] = {}
     for seed in sorted({r.seed for r in runs}):
         field_ = [r for r in runs if r.seed == seed and r.strategy in COMPARED]
@@ -379,22 +416,10 @@ def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
             wins[best.strategy] = wins.get(best.strategy, 0) + 1
     n = len({r.seed for r in runs})
     won = wins.get(INTEGRATOR, 0)
+    like = [replace(r, ok=None) for r in _gap_rows(runs, DEVICES, "d")]
     return [
-        Row(
-            "I1",
-            "full_integrator margin - steady_regions, year 20 (points)",
-            "-" if gap is None else f"{gap * 100:+.1f}",
-            "+3 to +10",
-            _in(gap, MARGIN_GAP),
-            score=None if gap is None else -gap,
-        ),
-        Row(
-            "I2",
-            "full_integrator ARR / steady_regions, year 20",
-            "-" if ratio is None else f"{ratio:.2f}x",
-            "0.90-1.40x",
-            _in(ratio, ARR_RATIO),
-        ),
+        *_gap_rows(runs, BASE, ""),
+        *like,
         Row(
             "I3",
             f"full_integrator wins of {n} (year 20 founder value)",

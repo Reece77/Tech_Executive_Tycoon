@@ -42,7 +42,7 @@ def main() -> int:
     if args.shocks:
         rows += v3.shock_rows(v3.lithium_rise(), [v3.gallium_run(s) for s in seeds])
     if args.integration:
-        runs = v3.run_all(v3.COMPARED, seeds, v3.YEARS_20, jobs=args.jobs)
+        runs = v3.run_all(v3.PLAYED_20, seeds, v3.YEARS_20, jobs=args.jobs)
         if args.runs:
             print(v3.run_table(runs), end="\n\n")
             print(v3.rung_table([r for r in runs if r.rungs]), end="\n\n")
