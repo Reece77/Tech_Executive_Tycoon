@@ -23,6 +23,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.capital import listed
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
+from tst.sim.money import exact
 from tst.sim.state import GameState, with_cap_entry, with_personal_entries
 
 
@@ -102,13 +103,18 @@ def income_by_source(state: GameState, person_id: int) -> dict[str, int]:
 
 def salary_month(state: GameState, balance: Balance) -> GameState:
     """The founder's salary after tax reaches the book each month (32.2); the company's
-    payroll already paid it (6000_salaries). A founder on 0 salary gets nothing."""
+    payroll already paid it (6000_salaries): the month's salary as payroll pays it (8:
+    `monthly_salary_cents` of the annual salary; M23a, Codex review 5 finding 11), less tax in
+    exact arithmetic. A founder on 0 salary gets nothing."""
+    from tst.sim.hiring.formulas import monthly_salary_cents
+
     company = state.player
     founder = state.founder_of(company.id)
     job = state.employment_of(founder.id) if founder is not None else None
     if founder is None or job is None or job.salary_cents <= 0:
         return state
-    net = job.salary_cents - round(job.salary_cents * balance.personal.tax_rate)
+    month = monthly_salary_cents(job.salary_cents)
+    net = month - round(exact(month) * exact(balance.personal.tax_rate))
     return credit(state, founder.id, net, "salary", "Salary after tax")
 
 

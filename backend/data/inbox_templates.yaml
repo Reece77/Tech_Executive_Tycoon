@@ -509,7 +509,7 @@ templates:
     body: "{cause}: {plant} runs at {run} of capacity until {until}."
   refinery_incident:
     title: "Incident at {plant}"
-    body: "There has been an incident at {plant}. Your brand and credibility have taken a hit; answer it next month."
+    body: "There has been an incident at {plant}, {owner}'s plant. Your brand and credibility have taken a hit; answer it next month."
   refinery_incident_closed:
     title: "Incident closed: {plant}"
     body: "The incident at {plant} cost {cost} in fines and settlements."

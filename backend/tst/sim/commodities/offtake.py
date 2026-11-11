@@ -31,7 +31,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import CommodityRuleError
 from tst.sim.ledger import CASH, COGS, GENERAL_ADMIN, PREPAID, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents
+from tst.sim.money import Cents, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_commodity_deal
 
@@ -139,7 +139,7 @@ def offtake_quote(
         floor=price * (1 - ob.collar),
         ceiling=price * (1 + ob.collar),
         year_value_cents=year,
-        prepaid_cents=round(year * prepay),
+        prepaid_cents=times(year, prepay),  # M23a: exact (Codex review 5 finding 10)
     )
 
 

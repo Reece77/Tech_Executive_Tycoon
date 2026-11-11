@@ -6,8 +6,11 @@ chips: geopolitics.tariff_goods), `rate x cost per unit x units made in the sche
 and sold in its market`:
 
 - **made in**: assembled units in their contract's city's country (contract manufacturing)
-  or the company's plants' countries (by units run); chips in their foundries' countries (by
-  wafer starts);
+  or the company's plants' countries (by units run); chips where they were actually made
+  (M23a, Codex review 5 finding 5): the month's chips from the group's own fabs (taken first,
+  `ProductionMonth.fab_chips`) in each fab's country by its share of them, valued at their full
+  cost a good die; the rest in their foundries' countries by the wafer starts delivered, at
+  their posted cost;
 - **sold in**: the product's customers by region, each region's split by its countries'
   demand shares.
 
@@ -20,10 +23,14 @@ price carries it (M16): it stays in the seller's cost of goods.
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region
 from tst.sim.geopolitics import world
+from tst.sim.hardware.models import ProductionMonth
 from tst.sim.ledger import CASH, LOCAL_PARTNER_SHARE, TARIFFS, LedgerEntry, LedgerLine
+from tst.sim.money import exact
 from tst.sim.products.models import Product
 from tst.sim.state import GameState
 
@@ -60,23 +67,23 @@ def sold_in(
 def made_in(
     state: GameState, product: Product, balance: Balance, data: GameData
 ) -> dict[str, float]:
-    """country -> the share of the month's units made there."""
+    """country -> the share of the month's units made there (by value for chips)."""
+    value = made_value(state, product, balance, data)
+    total = sum(value.values())
+    return {c: v / total for c, v in value.items()} if total > EPS else {}
+
+
+def made_value(
+    state: GameState, product: Product, balance: Balance, data: GameData
+) -> dict[str, float]:
+    """country -> the cents of the month's sold units' cost made there (module docstring)."""
     row = next((r for r in state.production if r.product_id == product.id), None)
     if row is None or row.units <= EPS:
         return {}
     out: dict[str, float] = {}
     turn = state.turn
     if data.category(product.category).chip_type is not None:
-        wafers = [
-            c
-            for c in state.production_contracts
-            if c.product_id == product.id and c.kind == "wafer" and c.running(turn)
-        ]
-        total = sum(c.units for c in wafers)
-        for c in wafers:
-            country = world.supplier_country(data, c.supplier) or ""
-            out[country] = out.get(country, 0.0) + c.units / max(EPS, total)
-        return out
+        return _chip_value(state, product, row, balance, data)
     units = row.plant_units + row.contract_units
     if units <= EPS:
         return {}
@@ -104,6 +111,43 @@ def made_in(
         weight = f.run_units / run if run > EPS else 1 / len(plants)
         country = world.facility_country(state, f, data)
         out[country] = out.get(country, 0.0) + row.plant_units / units * weight
+    return {c: share * row.cogs_cents for c, share in out.items()}
+
+
+def _chip_value(
+    state: GameState, product: Product, row: ProductionMonth, balance: Balance, data: GameData
+) -> dict[str, float]:
+    from tst.sim.chips import chips
+    from tst.sim.fabs import supply as fs
+
+    out: dict[str, float] = {}
+    made = row.units + row.internal_units
+    own = min(made, row.fab_chips) if made > EPS else 0.0
+    sold_own = row.units * own / made if made > EPS else 0.0
+    if sold_own > EPS:
+        unit = chips.fab_unit_cents(state, product, balance, data) or 0.0
+        shares = [s for s in fs.product_shares(state, product, balance, data) if s.starts > 0]
+        capacity = sum(s.starts * s.chips_per_start for s in shares)
+        for s in shares:
+            f = state.facility(s.facility_id)
+            if f is None or capacity <= EPS:
+                continue
+            country = world.facility_country(state, f, data)
+            weight = s.starts * s.chips_per_start / capacity
+            out[country] = out.get(country, 0.0) + sold_own * weight * unit
+    contract_cents = row.chip_cents - sold_own * balance.chips.packaging_cents
+    wafers = [
+        c
+        for c in state.production_contracts
+        if c.product_id == product.id and c.kind == "wafer" and c.running(state.turn)
+    ]
+    if contract_cents > EPS and wafers:
+        delivered = {c.id: chips.wafers_delivered(state, c, balance, data) for c in wafers}
+        total = sum(delivered.values())
+        for c in wafers:
+            country = world.supplier_country(data, c.supplier) or ""
+            weight = delivered[c.id] / total if total > EPS else 1 / len(wafers)
+            out[country] = out.get(country, 0.0) + contract_cents * weight
     return out
 
 
@@ -126,17 +170,19 @@ def product_tariff_cents(
 ) -> int:
     good = good_of(product, balance)
     row = next((r for r in state.production if r.product_id == product.id), None)
-    if good is None or row is None or row.units <= EPS or row.cogs_cents <= 0:
+    if good is None or row is None or row.units <= EPS:
         return 0
-    made = made_in(state, product, balance, data)
+    value = made_value(state, product, balance, data)
+    if not value:
+        return 0
     sold = sold_in(state, product, balance, data)
-    share = sum(
-        m * s * rate(data, origin, market, good, state.turn)
-        for origin, m in made.items()
+    cents = sum(
+        v * s * rate(data, origin, market, good, state.turn)
+        for origin, v in value.items()
         if origin
         for market, s in sold.items()
     )
-    return round(share * row.cogs_cents)
+    return round(cents)
 
 
 def tariffs_month(state: GameState, balance: Balance, data: GameData) -> list[LedgerEntry]:
@@ -187,7 +233,7 @@ def partner_month(state: GameState, balance: Balance, data: GameData) -> list[Le
             for p in state.company_products(company.id)
             if p.category in lp.categories
         )
-        cents = round(total * share * lp.share)
+        cents = round(Fraction(total) * exact(share) * exact(lp.share))
         if cents > 0:
             entries.append(
                 LedgerEntry.transfer(

@@ -32,16 +32,20 @@ from tst.sim.fabs.models import CapexPart, Fab, FabMonth
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.models import Facility
+from tst.sim.group.assets import inbox_company
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
     CASH,
     COGS,
     DEPRECIATION,
     FOUNDRY_SALES,
+    INTERCOMPANY_PURCHASES,
+    INTERCOMPANY_SALES,
     PPE,
     LedgerEntry,
 )
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.refining import goods as rg
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_fab, with_facility
@@ -82,9 +86,12 @@ def is_live(fab: Fab, facility: Facility, turn: int) -> bool:
 
 
 def has_live_fab(state: GameState, company_id: int, balance: Balance) -> bool:
+    """A live fab in the company's group (M23a: a sister company's fab supplies it too)."""
+    from tst.sim.refining.plants import group_of
+
+    group = group_of(state, company_id)
     return any(
-        f.company_id == company_id and is_live(f, facility_of(state, f), state.turn)
-        for f in state.fabs
+        f.company_id in group and is_live(f, facility_of(state, f), state.turn) for f in state.fabs
     )
 
 
@@ -152,7 +159,7 @@ def _go_live(
                 logs.append(
                     inbox_item(
                         turn,
-                        facility.company_id,
+                        inbox_company(state, facility.company_id),
                         "fab_waiting_tools",
                         link_kind="fab",
                         link_id=facility.id,
@@ -172,7 +179,7 @@ def _go_live(
             months_run=0,
             parts=(*fab.parts, CapexPart(facility.capex_paid_cents, turn)),
         )
-        logs.append(_live_log(turn, facility, fab, name, data, "fab_live"))
+        logs.append(_live_log(state, facility, fab, name, data, "fab_live"))
     if fab.upgrade_ready is not None and turn >= fab.upgrade_ready and fab.upgrade_node:
         new = fab.upgrade_node
         fab = replace(
@@ -187,7 +194,7 @@ def _go_live(
             months_run=0,
         )
         fab = replace(fab, yield_=_start_yield(state, fab, balance, data), live_turn=turn)
-        logs.append(_live_log(turn, facility, fab, name, data, "fab_upgraded"))
+        logs.append(_live_log(state, facility, fab, name, data, "fab_upgraded"))
     return facility, fab, logs
 
 
@@ -196,11 +203,11 @@ def _month(turn: int | None) -> str:
 
 
 def _live_log(
-    turn: int, facility: Facility, fab: Fab, name: str, data: GameData, template: str
+    state: GameState, facility: Facility, fab: Fab, name: str, data: GameData, template: str
 ) -> LogItem:
     return inbox_item(
-        turn,
-        facility.company_id,
+        state.turn,
+        inbox_company(state, facility.company_id),
         template,
         link_kind="fab",
         link_id=facility.id,
@@ -272,13 +279,19 @@ def fab_month(
 # --- Phase 5 ---------------------------------------------------------------------------------
 
 
-def materials_cents(state: GameState, fab: Fab, balance: Balance, data: GameData) -> float:
-    """A start's substrate wafer and gases and chemicals (38.2)."""
+def materials_cents(
+    state: GameState, fab: Fab, balance: Balance, data: GameData, *, public: bool = False
+) -> float:
+    """A start's substrate wafer and gases and chemicals (38.2). `public`: at the node's
+    planning wafer price (a quote, M23a), not an unarrived node's seeded one."""
     mb = balance.fab.materials
     substrate = rg.price_cents(state, mb.substrate_good, balance, data)
     mix = sum(w * commodity.index_now(state, g, data) for g, w in mb.mix.items())
-    tl = fm.timeline(state, balance, data)
-    chemicals = mb.chemicals_share * tl.wafer_cents[fab.node] * mix
+    if public:
+        wafer = fm.planning_economics(state, fab.node, balance, data)[1]
+    else:
+        wafer = fm.timeline(state, balance, data).wafer_cents[fab.node]
+    chemicals = mb.chemicals_share * wafer * mix
     return (substrate + chemicals) * cost_mult(fab, balance)
 
 
@@ -307,9 +320,15 @@ def _customers(data: GameData, starts: float) -> tuple[tuple[str, float], ...]:
 
 
 def settle_fabs(
-    state: GameState, own_starts: dict[int, float], balance: Balance, data: GameData
+    state: GameState,
+    own_starts: dict[int, float],
+    balance: Balance,
+    data: GameData,
+    buyers: dict[tuple[int, int], float] | None = None,
 ) -> tuple[GameState, list[LedgerEntry]]:
-    """Phase 5: each fab's own use, foundry slots and costs (module docstring)."""
+    """Phase 5: each fab's own use, foundry slots and costs (module docstring). `buyers`:
+    (fab, company) -> the starts the group's chip products of that company used (M23a); a
+    sister company pays the fab's owner for them at the transfer price (4300 / 5900)."""
     entries: list[LedgerEntry] = []
     life = balance.facility.kinds[fab_kind(balance)].life_months
     fb = balance.fab
@@ -346,7 +365,7 @@ def settle_fabs(
         slot = market * fb.slot.discount
         revenue = round(sold * slot)
         run = own + sold
-        fixed = round(facility.capex_paid_cents * fb.fixed_share / MONTHS) if live else 0
+        fixed = fixed_cents(fab, facility, balance)
         materials = round(run * materials_cents(state, fab, balance, data))
         power_ = round(run * _power_cents(state, fab, facility, balance, data))
         staff = sum(e.salary_cents for e in lifecycle.staff_of(state, facility, balance)) // MONTHS
@@ -375,6 +394,8 @@ def settle_fabs(
             )
         total = max(0, dep) + cash + staff
         per_start = total / run if run > 0 else 0.0
+        group, more = _group_supply(state, fab, own, per_start, market, buyers or {}, name, balance)
+        entries += more
         month = replace(
             month,
             own=own,
@@ -389,6 +410,7 @@ def settle_fabs(
             market_cents=market,
             cost_per_start_cents=per_start,
             customers=_customers(data, sold),
+            group=group,
         )
         history = fab.history
         if live:
@@ -398,6 +420,74 @@ def settle_fabs(
         state = with_facility(state, facility)
         state = with_fab(state, replace(fab, month=month, history=history))
     return state, entries
+
+
+def fixed_cents(fab: Fab, facility: Facility, balance: Balance) -> int:
+    """The month's fixed running cost (38.6): fab.fixed_share of the capex that has gone live,
+    a year, for as long as the facility is live, staffed or not (M23a, Codex review 5 finding
+    6). A conversion's capex joins it when the conversion goes live; offline while converting,
+    the fab keeps paying it on the capex already live (M23a decision)."""
+    if facility.status != "live":
+        return 0
+    live = sum(p.cents for p in fab.parts)
+    return round(exact(live) * exact(balance.fab.fixed_share) / MONTHS)
+
+
+def _group_supply(
+    state: GameState,
+    fab: Fab,
+    own: float,
+    per_start: float,
+    market: float,
+    buyers: dict[tuple[int, int], float],
+    name: str,
+    balance: Balance,
+) -> tuple[tuple[tuple[int, float, float, float], ...], list[LedgerEntry]]:
+    """The month's starts by group company (M23a): a sister company pays the fab's owner the
+    transfer price (31.6: the `chips` flow's, cost by default: this month's cost a start) for
+    the starts its chips used; consolidation removes both sides."""
+    from tst.sim.fabs.supply import FLOW_GOOD
+    from tst.sim.group import formulas as gf
+    from tst.sim.group.transfer import flow_of
+
+    used = {cid: n for (fid, cid), n in sorted(buyers.items()) if fid == fab.facility_id}
+    total = sum(used.values())
+    if total <= 0 or own <= 0:
+        return (), []
+    scale = min(1.0, own / total)  # the starts the fab actually ran for the group
+    rows: list[tuple[int, float, float, float]] = []
+    entries: list[LedgerEntry] = []
+    seller = fab.company_id
+    for cid, n in used.items():
+        starts = n * scale
+        cost = round(starts * per_start)
+        value = round(starts * market)
+        price = cost
+        flow = flow_of(state, seller, cid, FLOW_GOOD) if cid != seller else None
+        if flow is not None:
+            price = gf.transfer_price_cents(flow.kind, cost, value, balance, flow.margin)
+        if cid != seller and price > 0:
+            buyer = state.company(cid).name
+            entries += [
+                LedgerEntry.transfer(
+                    turn=state.turn,
+                    company_id=cid,
+                    memo=f"Fab starts from {state.company(seller).name}: {name}",
+                    debit=INTERCOMPANY_PURCHASES,
+                    credit=CASH,
+                    amount=price,
+                ),
+                LedgerEntry.transfer(
+                    turn=state.turn,
+                    company_id=seller,
+                    memo=f"Fab starts for {buyer}: {name}",
+                    debit=CASH,
+                    credit=INTERCOMPANY_SALES,
+                    amount=price,
+                ),
+            ]
+        rows.append((cid, starts, float(price), float(value)))
+    return tuple(rows), entries
 
 
 def _chips_short(state: GameState, data: GameData, balance: Balance) -> bool:

@@ -558,6 +558,8 @@ def geo_fab_check(
 
     company = acting_company(state, action.actor_id)
     if isinstance(action, BuildFab):
+        if action.company_id is not None:  # M23a: built for a group company, its licences
+            company = action.company_id
         country = geo_fab_country(state, action.region, action.city, data)
         geo_check_order(state, company, country, action.node, action.duv, balance, data)
         return

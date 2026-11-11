@@ -1344,6 +1344,7 @@ class ProductionMonthRow(Base):
     chip_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     assembly_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     lost_units: Mapped[float] = mapped_column(Float, nullable=False)
+    fab_chips: Mapped[float] = mapped_column(Float, nullable=False, server_default="0")  # 0048
 
 
 class CompanyRivalKeyRow(Base):

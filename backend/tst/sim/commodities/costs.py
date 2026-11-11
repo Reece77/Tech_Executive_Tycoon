@@ -167,6 +167,7 @@ def allocation_for(
         and s.good == good
         and s.turn == state.turn
         and s.product_id is None
+        and s.fab_id is None
     )
     share = min(1.0, covered / used) if covered and used > 0 else (1.0 if covered else 0.0)
     return share + (1 - share) * month.allocation

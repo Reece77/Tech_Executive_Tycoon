@@ -25,9 +25,10 @@ from tst.sim.events.models import GameEvent, QueuedEvent
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.models import Facility
+from tst.sim.group.assets import inbox_company
 from tst.sim.ledger import CASH, GENERAL_ADMIN, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import format_money, times
 from tst.sim.refining import formulas as rf
 from tst.sim.refining.draws import CURB, INCIDENT, LEGAL, refining_draws
 from tst.sim.refining.models import Refinery
@@ -82,7 +83,7 @@ def _curb(
         return ref, []
     log = inbox_item(
         turn,
-        ref.company_id,
+        inbox_company(state, ref.company_id),
         "refinery_curbed",
         link_kind="refinery",
         link_id=ref.facility_id,
@@ -118,16 +119,17 @@ def _incident(
         ib.skill_slope,
         ib.cover_base,
     )
-    if ref.company_id in hit or u >= chance:
+    inbox = inbox_company(state, ref.company_id)  # M23a: a group company's go to the player
+    if inbox in hit or u >= chance:
         return state, ref, []
-    hit.add(ref.company_id)
+    hit.add(inbox)
     template = TEMPLATES[min(len(TEMPLATES) - 1, int(u_kind * len(TEMPLATES)))]
     qid, ids = state.next_ids.take("queued")
     state = with_queued(
         replace(state, next_ids=ids),
         QueuedEvent(
             id=qid,
-            company_id=ref.company_id,
+            company_id=inbox,
             template_id=template,
             due_turn=turn + 1,
             source_event_id=None,
@@ -137,11 +139,12 @@ def _incident(
     name = lifecycle.facility_name(facility, balance, data)
     log = inbox_item(
         turn,
-        ref.company_id,
+        inbox,
         "refinery_incident",
         link_kind="refinery",
         link_id=ref.facility_id,
         plant=name,
+        owner=state.company(ref.company_id).name,
     )
     return state, replace(ref, incident_turn=turn + 1, incidents=ref.incidents + 1), [log]
 
@@ -179,8 +182,13 @@ def events_month(
 
 
 def _refinery_for_event(state: GameState, event: GameEvent) -> Refinery | None:
+    """The plant whose incident the event is: one of the event's company or, for the player,
+    of any company of its group (M23a routing; one incident a month across the inbox)."""
     for ref in state.refineries:
-        if ref.company_id == event.company_id and ref.incident_turn == event.turn:
+        if (
+            inbox_company(state, ref.company_id) == event.company_id
+            and ref.incident_turn == event.turn
+        ):
             return ref
     return None
 
@@ -201,7 +209,7 @@ def refining_step(
     logs: list[LogItem] = []
     founder = state.founder_of(state.player.id)
     if step == "stop":
-        fine = round(fine * ib.stop_fine_share)
+        fine = times(fine, ib.stop_fine_share)
         ref = replace(ref, stop_until=turn + ib.stop_months - 1)
     elif step == "compensate":
         cost = ib.compensate_cents
@@ -239,7 +247,7 @@ def refining_step(
     logs.append(
         inbox_item(
             turn,
-            ref.company_id,
+            inbox_company(state, ref.company_id),
             "refinery_incident_closed",
             link_kind="refinery",
             link_id=ref.facility_id,

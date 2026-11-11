@@ -57,6 +57,12 @@ def exact(x: float | int | Fraction) -> Fraction:
     return Fraction(repr(x))
 
 
+def times(amount: int, rate: float | int | Fraction) -> int:
+    """Integer cents x a rate (a share, a prepayment, a fine's multiplier), in exact rational
+    arithmetic, rounded half to even once (ADR-0003; M23a, Codex review 5 finding 10)."""
+    return round(Fraction(amount) * exact(rate))
+
+
 MILLICENTS_PER_CENT: Final = 1000  # tunable-exempt: thousandths of a cent in a cent
 
 

@@ -158,7 +158,7 @@ def exposed_share(
     covered += sum(
         s.volume
         for s in state.own_supply
-        if s.buyer_id == company_id and s.good == commodity and s.turn == turn
+        if s.buyer_id == company_id and s.good == commodity and s.turn == turn and s.fab_id is None
     )
     if used <= EPS:
         return actor_share if covered <= EPS else min(1.0, from_actor / covered)
