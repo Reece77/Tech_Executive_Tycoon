@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
 from tst.events.context import Kpis
@@ -14,23 +15,34 @@ from tst.llm.offline import MockLLMAdapter
 from tst.llm.settings import LLMSettings
 from tst.loader import LoadedData
 from tst.sim.actions import Action, ChooseEvent, apply_action
+from tst.sim.data_models import AccountType
 from tst.sim.decisions import Decisions
 from tst.sim.errors import SimError
 from tst.sim.finance import formulas as ff
 from tst.sim.finance.captable import founder_bp
+from tst.sim.finance.consolidation import INTERCOMPANY
 from tst.sim.finance.fundraising import arr_cents, base_value, climate, company_growth
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
-from tst.sim.ledger import CASH, apply_entries
+from tst.sim.ledger import CASH, LedgerEntry, apply_entries
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot
-from tst.sim.state import GameState
+from tst.sim.state import GameState, group_companies
 from tst.sim.turn import advance_turn
 
 log = logging.getLogger(__name__)
 
 PLAYER = 1
+# M23b: actions after which the player's group may have a new member
+GROUP_CHANGES = frozenset({"found_subsidiary", "form_holding", "bid_for_company"})
+
+
+def group_ids(state: GameState) -> frozenset[int]:
+    """The player's group now (31.1): the player and every company it controls."""
+    if not any(c.parent_id is not None for c in state.companies):
+        return frozenset({PLAYER})
+    return frozenset(c.id for c in group_companies(state, PLAYER))
 
 
 @dataclass(slots=True)
@@ -52,6 +64,11 @@ class Game:
     # M15a: turn -> (revenue, operating result) cents, the month's whole P&L (V3's margin)
     pnl: dict[int, tuple[int, int]] = field(default_factory=dict)
     notes: dict[str, int] = field(default_factory=dict)  # M15a: a v2 script's own memory
+    # M23b: turn -> (revenue, operating result) cents of the player's whole group (the player
+    # and its subsidiaries, intercompany sales and purchases eliminated: 31.6, ADR-0020)
+    group_pnl: dict[int, tuple[int, int]] = field(default_factory=dict)
+    group_lines: list[tuple[int, int, str, int]] = field(default_factory=list)  # this month
+    _group: frozenset[int] = frozenset({PLAYER})
     _writer: Writer = field(
         default_factory=lambda: Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
     )
@@ -94,7 +111,19 @@ class Game:
             if e.company_id == PLAYER
             for line in e.lines
         ]
+        if action.kind in GROUP_CHANGES:
+            self._group = group_ids(self.state)
+        self._keep_group_lines(out.ledger_entries)
         return True
+
+    def _keep_group_lines(self, entries: Sequence[LedgerEntry]) -> None:
+        if len(self._group) > 1:
+            self.group_lines += [
+                (e.turn, e.company_id, line.account, line.amount)
+                for e in entries
+                if e.company_id in self._group and e.company_id != PLAYER
+                for line in e.lines
+            ]
 
     def turn(self) -> None:
         """Answer an open critical event with its first choice, play the month, write the
@@ -124,6 +153,10 @@ class Game:
         ]
         pnl = profit_and_loss(lines, types, turn, turn)
         self.pnl[turn] = (pnl.total_revenue, pnl.operating_result)
+        self._keep_group_lines(result.ledger_entries)
+        self.group_pnl[turn] = self._group_month(lines, types, turn)
+        self.group_lines = []
+        self._group = group_ids(result.new_state)
         self.month_lines = []
         self.last_product_months = result.product_months
         self.state = result.new_state
@@ -133,6 +166,24 @@ class Game:
         self.event_requests += len(result.event_requests)
         self._write_events(snap)
         self.record_value()
+
+    def _group_month(
+        self, player: Sequence[tuple[int, str, int]], types: Mapping[str, AccountType], turn: int
+    ) -> tuple[int, int]:
+        """The group's month: each member's P&L without its intercompany lines, summed (the
+        consolidated revenue and operating result; 1810 and equity never reach the P&L)."""
+        if len(self._group) == 1:
+            return self.pnl[turn]
+        books: dict[int, list[tuple[int, str, int]]] = {PLAYER: list(player)}
+        for t, company, account, amount in self.group_lines:
+            books.setdefault(company, []).append((t, account, amount))
+        revenue = result = 0
+        for lines in books.values():
+            kept = [x for x in lines if x[1] not in INTERCOMPANY]
+            p = profit_and_loss(kept, types, turn, turn)
+            revenue += p.total_revenue
+            result += p.operating_result
+        return revenue, result
 
     def _write_events(self, snap: CompanySnapshot) -> None:
         kpis = Kpis(snap.cash_cents, None, snap.mrr_cents, snap.headcount, self.state.player.stage)

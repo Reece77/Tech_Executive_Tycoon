@@ -2,7 +2,8 @@
 # steady_regions and research_heavy runs to December 2039, and V6's turn time on a 2039
 # stage-4 save built from a 30-year run, and (from 2026-11-08) V1-V4's 10-year run over 11
 # strategies, which pushed the nightly past two hours. The nightly keeps the milestone guards. Sundays, and on
-# demand from the Actions tab.
+# demand from the Actions tab. M23b adds the v3 targets (tst.balance.v3): the chain's shocks, 20
+# years of the founder-played strategies, the v3 scripts to 2039, and V6 on a full_integrator save.
 name: weekly
 
 on:
@@ -21,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6]
+        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6, weekly-v3-shocks, weekly-v3-integration, weekly-v3-long, weekly-v6-integrator]
     steps:
       - uses: actions/checkout@v4
 

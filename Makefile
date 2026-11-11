@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v1 weekly-v5 weekly-v6 check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -45,6 +45,19 @@ weekly-v5:
 weekly-v6:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6
 	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py
+
+# M23b's v3 targets (tst.balance.v3; CI: weekly.yml): the chain's shocks, 20 years of the v2
+# and v3 founder-played strategies (integration pays), the v3 scripts to December 2039, and V6
+# extended on a 2039 full_integrator save.
+weekly-v3-shocks:
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_shocks
+weekly-v3-integration:
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_integration_twenty_years
+weekly-v3-long:
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_chain_thirty_years
+weekly-v6-integrator:
+	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
