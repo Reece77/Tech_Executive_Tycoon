@@ -26,11 +26,11 @@
 
 ## Acceptance criteria
 
-- [ ] The top and side bars stay visible on every screen while content scrolls (e2e).
-- [ ] A critical event can be set aside to browse read-only and answered later (e2e).
-- [ ] Every greyed-out action on the Exploration, Mines, Refineries and Fabs screens says how to unlock it (a scan test over the API's reasons).
-- [ ] Every practice-save mode opens People and Org (fixture test).
-- [ ] Golden snapshots unchanged (no rule changes).
+- [x] The top and side bars stay visible on every screen while content scrolls (e2e: `m23c.spec.ts` (a), wide and phone width).
+- [x] A critical event can be set aside to browse read-only and answered later (e2e: `m23c.spec.ts` (b)).
+- [x] Every greyed-out action on the Exploration, Mines, Refineries and Fabs screens says how to unlock it (a scan test over the API's reasons: `tests/integration/test_api_m23c.py`, 14 fixture cases).
+- [x] Every practice-save mode opens People and Org (fixture test: `tests/integration/test_m23c_fixtures.py`, 70 modes, all passing locally).
+- [x] Golden snapshots unchanged (no rule changes; `tests/golden` 11 passed).
 - [ ] `make check` and CI `e2e` green; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m23c-done`.
 
 ## Decisions made
@@ -51,7 +51,8 @@ No simulation rule changed; `backend/tst/sim/` is untouched. Golden snapshots un
 12. **Angel stakes**: `estimate_low_cents`/`estimate_high_cents` = the stake at the startup's displayed value range (`valuation.value_range_cents`, the M&A and Group screens' public range) while it is open, labelled "(est.)" beside the last-round value.
 13. **Practice saves.** `tst/balance/fixtures.py` (fixtures only) gives a save a knowledge record for every hand-built employee and, for the v3 tools run from the command line, a stage-3 team in its own units: 4 senior software engineers, a DevOps engineer, 2 product managers, a designer, 3 sales representatives, an account executive, a marketer, a finance manager and a recruiter, the scenario's specialists (M18 a data scientist; M19 two mining engineers and an operations manager; M20 two hardware engineers and an operations manager; M22 and `chipfab` three chip designers and two hardware engineers), and a CTO appointed through the engine's action. M20-M22's saves are raised to stage 3 from the command line, as M18's and M19's already were (a company running refineries and fabs is a scale-up; seats open at stage 3). The mode functions the integration tests call directly are unchanged, so those tests keep their exact staff. New `e2e_m21_save.py chipfab`: `mature` with a live mobile SoC made on its own 28 nm fab; `mature`'s description now says it has no chips of its own. The m21 tool's `hire_unit` (a balance script helper, M23b's) is not changed; `finish` adds the records instead.
 14. **The fixture test** (`tests/integration/test_m23c_fixtures.py`) runs each tool's command line in process and opens People, Org, the main screen and the newest hire's profile for every save-making mode (edit modes such as `advance` and `ripen` need one of them first). It found a second broken save, `e2e_m12a_save.py cloud` ("no person 3"), fixed with `finish`. The 21 v3 modes run in CI's `check`; the 49 older modes (about 30 CPU-minutes) are marked `nightly`, so `make check` and the nightly workflow run them. Both passed locally.
-15. Local e2e ran on Edge (`PLAYWRIGHT_CHANNEL=msedge`) on spare ports (8823/5223), beside the M23a session.
+15. Seen while verifying, not this lane's: `tests/property/test_option_invariants.py::test_holdings_sum_to_fd` failed once on a Hypothesis deadline (361 ms against 200 ms) while the machine also ran the M23a session; it passes alone and this branch changes neither it nor `tst/sim`. The m7c (c) e2e flow (a former employee's read-only profile) logs `KeyError: 3` on the server while it passes; untouched here. In the full local e2e run, m12a (a) and m7b (b) hit the 30 s test limit under the same load and pass alone (about 20 s each).
+16. Local e2e ran on Edge (`PLAYWRIGHT_CHANNEL=msedge`) on spare ports (8823/5223), beside the M23a session.
 
 ### Notes to M23a (rule changes this lane did not make)
 
