@@ -5182,6 +5182,16 @@ export interface components {
              * @description Stake x the last round's post-money
              */
             worth_cents: number;
+            /**
+             * Estimate Low Cents
+             * @description An estimate (M23c): the stake at the low end of the startup's displayed value range from its public growth since the round; None once closed
+             */
+            estimate_low_cents: number | null;
+            /**
+             * Estimate High Cents
+             * @description The estimate's high end
+             */
+            estimate_high_cents: number | null;
             /** Proceeds Cents */
             proceeds_cents: number;
             /** Backed */

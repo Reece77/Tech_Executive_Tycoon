@@ -4,6 +4,8 @@ finding, a stake's `coi_found_turn`, the manager's true skill or a startup's tru
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 from tst.api.schemas.investing import (
     AngelStakeOut,
     CategoryOptionOut,
@@ -30,7 +32,7 @@ from tst.sim.founder import angel, personal, shares, wealth
 from tst.sim.founder.family_office import MANAGER_SKILL
 from tst.sim.founder.investing_models import MANDATES, STAKE_FULL
 from tst.sim.ledger import LedgerBalances
-from tst.sim.mna.valuation import is_listed
+from tst.sim.mna.valuation import is_listed, value_range_cents
 from tst.sim.people.reveal import revealed_range
 from tst.sim.rivals import formulas as rf
 from tst.sim.rivals.decisions import cash_months
@@ -64,8 +66,15 @@ def investments_out(state: GameState, balances: LedgerBalances, data: LoadedData
             continue
         company = state.company(s.company_id)
         band = None
+        est_low = est_high = None
         if company.alive and s.status == "open":
             band = rf.money_label(cash_months(state, company.id, balances, b, gd), b.rivals)
+            # M23c (playtest 5: "the angel position never rose though the company grew"): the
+            # stake at the startup's displayed value range from its public numbers now, beside
+            # the last-round mark; an estimate, as the M&A and Group screens show it
+            low, high = value_range_cents(state, company.id, balances, b, gd)
+            share = Fraction(s.stake_ppm, STAKE_FULL)
+            est_low, est_high = int(share * low), int(share * high)
         stakes.append(
             AngelStakeOut(
                 id=s.id,
@@ -76,6 +85,8 @@ def investments_out(state: GameState, balances: LedgerBalances, data: LoadedData
                 stake_pct=round(s.stake_ppm / STAKE_FULL * PCT, 2),
                 cost_cents=s.cost_cents,
                 worth_cents=wealth.stake_value_cents(s) if s.status == "open" else 0,
+                estimate_low_cents=est_low,
+                estimate_high_cents=est_high,
                 proceeds_cents=s.proceeds_cents,
                 backed=s.backed,
                 founder_known=s.founder_known,

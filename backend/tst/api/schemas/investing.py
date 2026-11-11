@@ -47,6 +47,11 @@ class AngelStakeOut(BaseModel):
     stake_pct: float
     cost_cents: int
     worth_cents: int = Field(description="Stake x the last round's post-money")
+    estimate_low_cents: int | None = Field(
+        description="An estimate (M23c): the stake at the low end of the startup's displayed "
+        "value range from its public growth since the round; None once closed"
+    )
+    estimate_high_cents: int | None = Field(description="The estimate's high end")
     proceeds_cents: int
     backed: bool
     founder_known: bool = Field(description="Backed with a founder whose skills you knew")
