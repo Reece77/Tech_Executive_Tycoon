@@ -28234,6 +28234,21 @@
             "type": "integer",
             "title": "Max Programme"
           },
+          "licence_years": {
+            "type": "integer",
+            "title": "Licence Years",
+            "description": "An exploration licence's term (34.2)"
+          },
+          "licence_renewals": {
+            "type": "integer",
+            "title": "Licence Renewals",
+            "description": "Renewals a licence allows"
+          },
+          "gate_how": {
+            "type": "string",
+            "title": "Gate How",
+            "description": "How exploration opens, when gated (M23c)"
+          },
           "commodities": {
             "items": {
               "$ref": "#/components/schemas/GeoCommodityOut"
@@ -28284,6 +28299,9 @@
           "desk_cost_cents",
           "desk_months",
           "max_programme",
+          "licence_years",
+          "licence_renewals",
+          "gate_how",
           "commodities",
           "regions",
           "explorers",
@@ -28662,6 +28680,45 @@
             },
             "type": "array",
             "title": "Options"
+          },
+          "holes_drilled": {
+            "type": "integer",
+            "title": "Holes Drilled",
+            "description": "Holes drilled on the project so far"
+          },
+          "next_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Category",
+            "description": "The resource category the next estimate can reach (M23c)"
+          },
+          "holes_for_next": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holes For Next",
+            "description": "Holes an estimate needs for next_category (34.2)"
+          },
+          "next_step": {
+            "type": "string",
+            "title": "Next Step",
+            "description": "What to do next on the project (M23c)"
+          },
+          "renew_how": {
+            "type": "string",
+            "title": "Renew How",
+            "description": "How renewal opens, when it can't (M23c)"
           }
         },
         "type": "object",
@@ -28707,7 +28764,12 @@
           "buyer",
           "sold_to",
           "sale_cents",
-          "options"
+          "options",
+          "holes_drilled",
+          "next_category",
+          "holes_for_next",
+          "next_step",
+          "renew_how"
         ],
         "title": "ExplorationProjectOut"
       },
@@ -29107,6 +29169,11 @@
             ],
             "title": "Upgrade Reason"
           },
+          "upgrade_how": {
+            "type": "string",
+            "title": "Upgrade How",
+            "description": "How the conversion opens (M23c)"
+          },
           "month": {
             "anyOf": [
               {
@@ -29173,6 +29240,7 @@
           "upgrade_estimate_cents",
           "upgrade_allowed",
           "upgrade_reason",
+          "upgrade_how",
           "month",
           "customers",
           "chips",
@@ -29265,6 +29333,11 @@
             ],
             "title": "Reason"
           },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
+          },
           "market_cents": {
             "anyOf": [
               {
@@ -29301,6 +29374,7 @@
           "level",
           "allowed",
           "reason",
+          "how",
           "market_cents",
           "cost_per_start_cents"
         ],
@@ -36867,6 +36941,11 @@
           "reason": {
             "type": "string",
             "title": "Reason"
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
           }
         },
         "type": "object",
@@ -36895,7 +36974,8 @@
           "npv_mid_cents",
           "npv_high_cents",
           "allowed",
-          "reason"
+          "reason",
+          "how"
         ],
         "title": "MineQuoteOut"
       },
@@ -37040,6 +37120,11 @@
             "type": "integer",
             "title": "Found Min Stage"
           },
+          "found_how": {
+            "type": "string",
+            "title": "Found How",
+            "description": "How founding a subsidiary opens (M23c)"
+          },
           "found_min_cents": {
             "type": "integer",
             "title": "Found Min Cents"
@@ -37149,6 +37234,7 @@
           "turn_label",
           "group_stage",
           "found_min_stage",
+          "found_how",
           "found_min_cents",
           "found_energy",
           "build_energy",
@@ -44047,6 +44133,20 @@
       },
       "RefineryQuoteOut": {
         "properties": {
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed",
+            "description": "Whether the plant can be built now"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
+          },
           "recipe": {
             "type": "string",
             "title": "Recipe"
@@ -44120,6 +44220,9 @@
         },
         "type": "object",
         "required": [
+          "allowed",
+          "reason",
+          "how",
           "recipe",
           "region",
           "size",
@@ -47821,6 +47924,11 @@
             "type": "string",
             "title": "Reason",
             "default": ""
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
           }
         },
         "type": "object",
@@ -47828,7 +47936,8 @@
           "stage",
           "cost_cents",
           "months",
-          "allowed"
+          "allowed",
+          "how"
         ],
         "title": "StageOptionOut"
       },

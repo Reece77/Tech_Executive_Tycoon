@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 
+from tst.api import howto
 from tst.api.schemas.exploration import (
     DeskStudyOut,
     DrillHoleOut,
@@ -66,6 +67,7 @@ def _options(state: GameState, project: Project, data: LoadedData) -> list[Stage
                     months=0,
                     allowed=problem is None,
                     reason=problem or "",
+                    how=howto.exploration_how(state, project, stage, problem or "", data),
                 )
             )
             continue
@@ -73,16 +75,39 @@ def _options(state: GameState, project: Project, data: LoadedData) -> list[Stage
         problem = xp._stage_problem(state, project, stage, b)
         if problem is None and stage in ("estimate", *LEVELS) and project.commodity is None:
             problem = "sample the block for a commodity first"
+        reason = problem or ("" if project.is_open else f"the project is {project.status}")
         out.append(
             StageOptionOut(
                 stage=stage,
                 cost_cents=cost,
                 months=months,
                 allowed=project.is_open and problem is None,
-                reason=problem or ("" if project.is_open else f"the project is {project.status}"),
+                reason=reason,
+                how=howto.exploration_how(state, project, stage, reason, data),
             )
         )
     return out
+
+
+def _next_step(project: Project, options: list[StageOptionOut]) -> str:
+    """What to do next on the project (M23c): the furthest stage allowed now, else the way to
+    the first greyed-out one."""
+    if not project.is_open:
+        return ""
+    allowed = [o for o in options if o.allowed]
+    if project.stage is None and not project.holes_left and allowed:
+        best = allowed[-1]
+        return f"next: {best.stage.replace('_', ' ')} is open"
+    blocked = next((o for o in options if not o.allowed and o.how), None)
+    return f"next: {blocked.how}" if blocked else ""
+
+
+def _renew_how(project: Project, renewals: int) -> str:
+    if project.is_open and project.renewals < renewals:
+        return ""
+    if not project.is_open:
+        return f"none: the project is {project.status}"
+    return f"none: a licence renews {renewals} time{'s' if renewals != 1 else ''}; sell or build"
 
 
 def project_out(state: GameState, project: Project, data: LoadedData) -> ExplorationProjectOut:
@@ -97,6 +122,8 @@ def project_out(state: GameState, project: Project, data: LoadedData) -> Explora
         else 0
     )
     years = xp.permit_range_years(project.region, d) if project.permit_start is not None else None
+    options = _options(state, project, data)
+    nxt = howto.next_category(project)
     return ExplorationProjectOut(
         id=project.id,
         company_id=project.company_id,
@@ -146,7 +173,12 @@ def project_out(state: GameState, project: Project, data: LoadedData) -> Explora
         buyer=buyer[1] if buyer else None,
         sold_to=project.sold_to,
         sale_cents=project.sale_cents,
-        options=_options(state, project, data),
+        options=options,
+        holes_drilled=howto.holes_drilled(state, project),
+        next_category=nxt,
+        holes_for_next=howto.holes_for(nxt, data) if nxt else None,
+        next_step=_next_step(project, options),
+        renew_how=_renew_how(project, b.exploration.licence.renewals),
     )
 
 
@@ -200,6 +232,11 @@ def exploration_out(state: GameState, balances: LedgerBalances, data: LoadedData
         desk_cost_cents=eb.desk.cost_cents,
         desk_months=eb.desk.months,
         max_programme=eb.drill.max_programme,
+        licence_years=eb.licence.years,
+        licence_renewals=eb.licence.renewals,
+        gate_how=howto.stage_how(
+            eb.min_stage, max((c.stage for c in explorers), default=0), "exploration"
+        ),
         commodities=[
             GeoCommodityOut(key=c.key, label=c.label, grade_unit=c.grade_unit)
             for c in geo.commodities

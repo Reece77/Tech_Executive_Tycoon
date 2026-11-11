@@ -319,7 +319,8 @@ function BuildPanel({
         <Button
           size="xs"
           data-testid="build-refinery"
-          disabled={busy || !capacity}
+          disabled={busy || !capacity || q?.allowed === false}
+          title={q && !q.allowed ? `${q.reason}. How: ${q.how}` : undefined}
           onClick={() => capacity && onAct({ kind: 'build', recipe, region, capacity })}
         >
           Build · energy {x.build_energy}
@@ -360,6 +361,9 @@ function BuildPanel({
       </div>
       {q && r && (
         <dl className="tst-facts" style={{ fontSize: 13, marginTop: 8 }} data-testid="build-quote">
+          {!q.allowed && (
+            <Fact label="How to unlock" value={`${q.reason}: ${q.how}`} testId="build-quote-how" />
+          )}
           <Fact
             label="Capex"
             value={`${formatMoneyWhole(q.capex_cents)} estimated (it may run over), ${q.build_months} months, ${q.staff_needed} process engineers`}

@@ -182,7 +182,9 @@ function FabPanel({
             size="xs"
             variant="default"
             disabled={busy || !f.upgrade_allowed}
-            title={f.upgrade_reason ?? undefined}
+            title={
+              f.upgrade_allowed ? undefined : `${f.upgrade_reason ?? ''}. How: ${f.upgrade_how}`
+            }
             data-testid="fab-upgrade"
             onClick={() => onAct({ kind: 'upgrade', facilityId: f.id })}
           >
@@ -300,7 +302,7 @@ function BuildPanel({
           size="xs"
           data-testid="build-fab"
           disabled={busy || !q?.allowed}
-          title={q?.reason ?? undefined}
+          title={q && !q.allowed ? `${q.reason ?? ''}. How: ${q.how}` : undefined}
           onClick={() => onAct({ kind: 'build', node, region, size, duv: useDuv })}
         >
           Build · energy {x.build_energy}
@@ -364,6 +366,7 @@ function BuildPanel({
             value={`needs process level ${q.need_level.toFixed(0)}; yours ${q.level.toFixed(0)}`}
           />
           {q.reason && <Fact label="Not possible" value={q.reason} testId="fab-quote-reason" />}
+          {q.how && <Fact label="How to unlock" value={q.how} testId="fab-quote-how" />}
         </dl>
       )}
     </Panel>

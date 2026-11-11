@@ -348,13 +348,27 @@ def refineries_out(state: GameState, data: LoadedData) -> RefineriesOut:
 def quote_out(
     state: GameState, recipe: str, region: str, capacity: int, data: LoadedData
 ) -> RefineryQuoteOut:
-    from tst.sim.refining.actions import quote
+    from tst.sim.errors import SimError
+    from tst.sim.refining.actions import BYPRODUCT_KIND, host_for, quote
 
     b, d = data.balance, data.game_data
     company = state.player.id
     q = quote(state, company, recipe, region, capacity, b, d).quote
     e = rq.estimate(state, company, recipe, region, b, d, capacity)
+    reason = how = ""
+    if q.kind == BYPRODUCT_KIND:
+        try:
+            host_for(state, company, region, None, b)
+        except SimError as exc:
+            reason = str(exc)
+            how = (
+                f"build or buy a refinery in {d.region(region).label} first: a by-product line "
+                "is added to one of your plants there"
+            )
     return RefineryQuoteOut(
+        allowed=not reason,
+        reason=reason,
+        how=how,
         recipe=recipe,
         region=region,
         size=capacity,

@@ -181,6 +181,9 @@ class RefineriesOut(BaseModel):
 
 
 class RefineryQuoteOut(BaseModel):
+    allowed: bool = Field(description="Whether the plant can be built now")
+    reason: str
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
     recipe: str
     region: str
     size: int

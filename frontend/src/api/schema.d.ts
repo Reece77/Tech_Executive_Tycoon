@@ -7858,6 +7858,21 @@ export interface components {
             desk_months: number;
             /** Max Programme */
             max_programme: number;
+            /**
+             * Licence Years
+             * @description An exploration licence's term (34.2)
+             */
+            licence_years: number;
+            /**
+             * Licence Renewals
+             * @description Renewals a licence allows
+             */
+            licence_renewals: number;
+            /**
+             * Gate How
+             * @description How exploration opens, when gated (M23c)
+             */
+            gate_how: string;
             /** Commodities */
             commodities: components["schemas"]["GeoCommodityOut"][];
             /** Regions */
@@ -7986,6 +8001,31 @@ export interface components {
             sale_cents: number;
             /** Options */
             options: components["schemas"]["StageOptionOut"][];
+            /**
+             * Holes Drilled
+             * @description Holes drilled on the project so far
+             */
+            holes_drilled: number;
+            /**
+             * Next Category
+             * @description The resource category the next estimate can reach (M23c)
+             */
+            next_category: string | null;
+            /**
+             * Holes For Next
+             * @description Holes an estimate needs for next_category (34.2)
+             */
+            holes_for_next: number | null;
+            /**
+             * Next Step
+             * @description What to do next on the project (M23c)
+             */
+            next_step: string;
+            /**
+             * Renew How
+             * @description How renewal opens, when it can't (M23c)
+             */
+            renew_how: string;
         };
         /** ExplorerOut */
         ExplorerOut: {
@@ -8155,6 +8195,11 @@ export interface components {
             upgrade_allowed: boolean;
             /** Upgrade Reason */
             upgrade_reason: string | null;
+            /**
+             * Upgrade How
+             * @description How the conversion opens (M23c)
+             */
+            upgrade_how: string;
             month: components["schemas"]["FabMonthOut"] | null;
             /** Customers */
             customers: components["schemas"]["FabCustomerOut"][];
@@ -8205,6 +8250,11 @@ export interface components {
             allowed: boolean;
             /** Reason */
             reason: string | null;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
             /** Market Cents */
             market_cents: number | null;
             /**
@@ -11332,6 +11382,11 @@ export interface components {
             allowed: boolean;
             /** Reason */
             reason: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
         };
         /** MineSafetyIn */
         MineSafetyIn: {
@@ -11381,6 +11436,11 @@ export interface components {
             group_stage: number;
             /** Found Min Stage */
             found_min_stage: number;
+            /**
+             * Found How
+             * @description How founding a subsidiary opens (M23c)
+             */
+            found_how: string;
             /** Found Min Cents */
             found_min_cents: number;
             /** Found Energy */
@@ -14365,6 +14425,18 @@ export interface components {
         };
         /** RefineryQuoteOut */
         RefineryQuoteOut: {
+            /**
+             * Allowed
+             * @description Whether the plant can be built now
+             */
+            allowed: boolean;
+            /** Reason */
+            reason: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
             /** Recipe */
             recipe: string;
             /** Region */
@@ -15912,6 +15984,11 @@ export interface components {
              * @default
              */
             reason?: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
         };
         /** StageReachedOut */
         StageReachedOut: {

@@ -200,6 +200,7 @@ function FoundForm({
     Math.max(1, x.found_min_cents / CENTS / MILLION) * 100,
   );
   const gated = x.group_stage < x.found_min_stage;
+  const how = gated ? x.found_how : name.trim() === '' ? 'name the subsidiary first' : '';
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
       <TextInput
@@ -232,6 +233,7 @@ function FoundForm({
       <Button
         size="xs"
         disabled={busy || gated || name.trim() === ''}
+        title={how ? `How: ${how}` : undefined}
         onClick={() =>
           onAct({
             kind: 'found',
@@ -361,16 +363,26 @@ function QuotesTable({
         quoteHelper.display({
           id: 'build',
           header: '',
-          cell: ({ row }) => (
-            <Button
-              size="compact-xs"
-              disabled={busy || !row.original.allowed}
-              onClick={() => onBuild(row.original, null)}
-              data-testid="build-mine"
-            >
-              Build · {energy}
-            </Button>
-          ),
+          cell: ({ row }) =>
+            row.original.allowed ? (
+              <Button
+                size="compact-xs"
+                disabled={busy}
+                onClick={() => onBuild(row.original, null)}
+                data-testid="build-mine"
+              >
+                Build · {energy}
+              </Button>
+            ) : (
+              <span
+                className="tst-muted"
+                style={{ fontSize: 12, whiteSpace: 'normal' }}
+                data-testid="build-mine-how"
+                title={row.original.reason}
+              >
+                How: {row.original.how}
+              </span>
+            ),
         }),
       ]),
     [busy, energy, onBuild],
