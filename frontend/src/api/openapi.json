@@ -27666,24 +27666,6 @@
         ],
         "title": "EventChoiceOut"
       },
-      "EventLinkOut": {
-        "properties": {
-          "event_id": {
-            "type": "integer",
-            "title": "Event Id"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          }
-        },
-        "type": "object",
-        "required": [
-          "event_id",
-          "label"
-        ],
-        "title": "EventLinkOut"
-      },
       "EventOut": {
         "properties": {
           "template_id": {
@@ -27781,6 +27763,14 @@
             },
             "type": "array",
             "title": "Person Ids"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__events__EventLinkOut"
+            },
+            "type": "array",
+            "title": "Links",
+            "description": "The screens that matter for the decision (M23c): its mine, product, people"
           }
         },
         "type": "object",
@@ -27799,7 +27789,8 @@
           "written_by",
           "storyline",
           "follow_up_note",
-          "person_ids"
+          "person_ids",
+          "links"
         ],
         "title": "EventOut"
       },
@@ -33505,7 +33496,7 @@
           },
           "event_links": {
             "items": {
-              "$ref": "#/components/schemas/EventLinkOut"
+              "$ref": "#/components/schemas/tst__api__schemas__people__EventLinkOut"
             },
             "type": "array",
             "title": "Event Links",
@@ -50525,6 +50516,26 @@
         ],
         "title": "WorldOut"
       },
+      "tst__api__schemas__events__EventLinkOut": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "Under /game/{save}/, e.g. 'products/mines?mine=3'"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "label"
+        ],
+        "title": "EventLinkOut",
+        "description": "A screen the event is about (M23c): look before answering."
+      },
       "tst__api__schemas__exploration__LicenceIn": {
         "properties": {
           "region": {
@@ -50729,6 +50740,24 @@
           "level"
         ],
         "title": "IndexPointOut"
+      },
+      "tst__api__schemas__people__EventLinkOut": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "label"
+        ],
+        "title": "EventLinkOut"
       },
       "tst__api__schemas__press__CauseOut": {
         "properties": {

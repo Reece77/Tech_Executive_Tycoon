@@ -1,7 +1,7 @@
 import { Alert, Button, NumberInput, Select, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { Term } from '../components/Term';
@@ -52,7 +52,12 @@ export function MinesScreen() {
 function Body({ saveId, x }: { saveId: string; x: Mines }) {
   const act = useMiningAction(saveId);
   const run = (a: MiningAction) => act.mutate(a);
-  const [selected, setSelected] = useState<number | null>(x.mines[0]?.id ?? null);
+  // An event's link opens its mine (M23c): ?mine=<id>
+  const [params] = useSearchParams();
+  const linked = Number(params.get('mine'));
+  const [selected, setSelected] = useState<number | null>(
+    x.mines.some((m) => m.id === linked) ? linked : (x.mines[0]?.id ?? null),
+  );
   const mine = x.mines.find((m) => m.id === selected) ?? x.mines[0] ?? null;
   return (
     <>

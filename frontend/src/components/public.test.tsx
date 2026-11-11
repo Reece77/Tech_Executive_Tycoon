@@ -159,6 +159,7 @@ const PRICING_EVENT: GameEventOut = {
   storyline: null,
   follow_up_note: null,
   person_ids: [],
+  links: [],
 };
 
 const EVENTS: Events = {

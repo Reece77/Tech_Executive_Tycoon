@@ -48,6 +48,7 @@ const EVENT: GameEventOut = {
   storyline: { storyline_id: 2, title: 'Priya is running hot', step: 2 },
   follow_up_note: null,
   person_ids: [3],
+  links: [],
 };
 
 describe('event card (M6)', () => {

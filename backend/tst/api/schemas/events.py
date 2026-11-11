@@ -26,6 +26,13 @@ class EventStorylineOut(BaseModel):
     step: int
 
 
+class EventLinkOut(BaseModel):
+    """A screen the event is about (M23c): look before answering."""
+
+    path: str = Field(description="Under /game/{save}/, e.g. 'products/mines?mine=3'")
+    label: str
+
+
 class EventOut(BaseModel):
     template_id: str = Field(default="", description="The event template's key (M15b)")
     event_id: int
@@ -43,6 +50,9 @@ class EventOut(BaseModel):
     storyline: EventStorylineOut | None
     follow_up_note: str | None = Field(description="Critical events: when a follow-up comes")
     person_ids: list[int]
+    links: list[EventLinkOut] = Field(
+        description="The screens that matter for the decision (M23c): its mine, product, people",
+    )
 
 
 class EventsOut(BaseModel):

@@ -1,7 +1,7 @@
 import { Alert, Button, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { Term } from '../components/Term';
@@ -41,7 +41,12 @@ export function RefineriesScreen() {
 
 function Body({ saveId, x }: { saveId: string; x: Refineries }) {
   const act = useRefiningAction(saveId);
-  const [selected, setSelected] = useState<number | null>(x.plants[0]?.id ?? null);
+  // An event's link opens its plant (M23c): ?plant=<facility id>
+  const [params] = useSearchParams();
+  const linked = Number(params.get('plant'));
+  const [selected, setSelected] = useState<number | null>(
+    x.plants.some((p) => p.id === linked) ? linked : (x.plants[0]?.id ?? null),
+  );
   const run = (a: RefiningAction) => act.mutate(a);
   const plant = x.plants.find((p) => p.id === selected) ?? x.plants[0] ?? null;
   return (

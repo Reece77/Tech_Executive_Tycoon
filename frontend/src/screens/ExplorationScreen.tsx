@@ -1,7 +1,7 @@
 import { Alert, Button, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { Term } from '../components/Term';
@@ -43,7 +43,12 @@ function Body({ saveId, x }: { saveId: string; x: Exploration }) {
   const act = useExplorationAction(saveId);
   const [region, setRegion] = useState(x.regions[0]?.key ?? '');
   const [commodity, setCommodity] = useState(x.commodities[0]?.key ?? '');
-  const [selected, setSelected] = useState<number | null>(x.projects[0]?.id ?? null);
+  // An event's link opens its project (M23c): ?project=<id>
+  const [params] = useSearchParams();
+  const linked = Number(params.get('project'));
+  const [selected, setSelected] = useState<number | null>(
+    x.projects.some((p) => p.id === linked) ? linked : (x.projects[0]?.id ?? null),
+  );
   const run = (a: ExplorationAction) => act.mutate(a);
   const info = x.regions.find((r) => r.key === region);
   const blocks = x.blocks.filter((b) => b.region === region);

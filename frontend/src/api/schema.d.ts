@@ -7607,13 +7607,6 @@ export interface components {
              */
             do_nothing: boolean;
         };
-        /** EventLinkOut */
-        EventLinkOut: {
-            /** Event Id */
-            event_id: number;
-            /** Label */
-            label: string;
-        };
         /** EventOut */
         EventOut: {
             /**
@@ -7663,6 +7656,11 @@ export interface components {
             follow_up_note: string | null;
             /** Person Ids */
             person_ids: number[];
+            /**
+             * Links
+             * @description The screens that matter for the decision (M23c): its mine, product, people
+             */
+            links: components["schemas"]["tst__api__schemas__events__EventLinkOut"][];
         };
         /** EventStorylineOut */
         EventStorylineOut: {
@@ -9909,7 +9907,7 @@ export interface components {
              * Event Links
              * @description Events this message links to (M7c)
              */
-            event_links?: components["schemas"]["EventLinkOut"][];
+            event_links?: components["schemas"]["tst__api__schemas__people__EventLinkOut"][];
         };
         /** InboxOut */
         InboxOut: {
@@ -17058,6 +17056,19 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /**
+         * EventLinkOut
+         * @description A screen the event is about (M23c): look before answering.
+         */
+        tst__api__schemas__events__EventLinkOut: {
+            /**
+             * Path
+             * @description Under /game/{save}/, e.g. 'products/mines?mine=3'
+             */
+            path: string;
+            /** Label */
+            label: string;
+        };
         /** LicenceIn */
         tst__api__schemas__exploration__LicenceIn: {
             /** Region */
@@ -17137,6 +17148,13 @@ export interface components {
             date_label: string;
             /** Level */
             level: number;
+        };
+        /** EventLinkOut */
+        tst__api__schemas__people__EventLinkOut: {
+            /** Event Id */
+            event_id: number;
+            /** Label */
+            label: string;
         };
         /** CauseOut */
         tst__api__schemas__press__CauseOut: {
