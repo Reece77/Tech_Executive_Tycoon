@@ -177,7 +177,7 @@ a {
 }
 
 .tst-nav {
-  flex: 0 0 220px;
+  flex: 0 0 200px; /* the width it had before M23c: 1440 px still fits a year of statements */
   box-sizing: border-box;
   padding: 16px 12px;
   background: var(--tst-nav-bg);

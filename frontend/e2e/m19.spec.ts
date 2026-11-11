@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { pressContinue } from './helpers.ts';
+import { continueMonth } from './helpers.ts';
 
 // M19 flows (formulas.md 35): (a) found a mining subsidiary and transfer a permitted project
 // into it (then order the mine); (b) watch construction end, the ramp-up and first sales;
@@ -55,8 +55,9 @@ test('(b) a mine ends construction, ramps up and sells', async ({ page }) => {
   tool('building', save);
   await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('mine-status')).toContainText(/building/i);
-  await pressContinue(page);
-  await pressContinue(page);
+  // M23c: the save has a stage-3 team, whose people events block Continue: answer them first
+  await continueMonth(page);
+  await continueMonth(page);
   await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('mine-status')).toContainText(/producing/i);
   await expect(page.getByTestId('mine-capex')).toContainText('revised');
