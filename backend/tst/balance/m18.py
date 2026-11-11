@@ -37,6 +37,7 @@ from tst.sim.hiring.models import PersonState
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry, apply_entries
 from tst.sim.people.generator import generate_person
 from tst.sim.people.models import Employment
+from tst.sim.people.reveal import new_reveal_state
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -45,6 +46,7 @@ from tst.sim.state import (
     with_employment,
     with_person,
     with_person_state,
+    with_reveal,
 )
 
 PLAYER: Final = 1
@@ -117,6 +119,19 @@ def add_geologists(state: GameState, loaded: LoadedData, skill: float, n: int) -
             ),
         )
         state = with_person_state(state, PersonState(person_id=pid, morale=65.0))
+        # The player's knowledge record of the new geologist, as hiring creates one; without it the
+        # People and Org screens can't show them (playtest 5: "no person 2").
+        state = with_reveal(
+            state,
+            new_reveal_state(
+                observer_company_id=PLAYER,
+                person=person,
+                turn=state.turn,
+                rng=rng,
+                data=loaded.game_data,
+                balance=loaded.balance,
+            ),
+        )
     return state
 
 

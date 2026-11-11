@@ -61,3 +61,16 @@ Proposed after v3's chain (quartz mines to cloud software) is complete. Not sche
 
 - **Data-centre costs by region:** through regional power prices in M17 (power as a market good), then v4's power expansion.
 - **The founder as an angel or venture investor** with personal money (M24's account): **M26** (scheduled 2026-11-09); M16 covers corporate venture investing.
+
+## Semiconductor equipment: lithography and EUV (Reece, 2026-11-09)
+
+**Placement:** the first v4 lane, or a small v3.5 milestone straight after M23. It builds on M21 (EUV tools as a single-supplier market good, fabs) and M22 (export controls on tools), so it starts only after both merge.
+
+- **What it adds:** an equipment business. A new research domain, **lithography**, and a long, capex-heavy programme (a decade or more, tens of billions) to make the player's own EUV (and advanced DUV) tools.
+- **Why it matters:**
+  - **no allocation queue** for the player's own fabs (M21's two-year EUV wait);
+  - **immunity to export controls** on tools from another bloc (M22);
+  - **a near-monopoly business** selling tools to rival foundries at high margins;
+  - **leverage** over who reaches the leading edge.
+- **Why it's hard:** early generations have lower throughput, more downtime and lower fab yield, improving with each generation; ASML (the incumbent) responds with price cuts and its own advances; the programme can fail or overrun like M19's mines.
+- **Hooks already in place:** `euv_tools` (M21), controls on tools (M22), the `process` domain (M20), facility kinds and overruns (M19).
