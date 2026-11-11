@@ -243,3 +243,33 @@ def test_a_chip_cost_splits_wafer_material_and_foundry_processing(
     assert chip["internal_units"] > 0
     supply = api.get(f"{base}/refineries")["supply"]
     assert supply and all(s["unit"] for s in supply)
+
+
+# --- Commodities planning (sub-task 6) ------------------------------------------------------
+
+
+def test_the_planning_view_shows_need_drivers_and_cover(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    tool("e2e_m20_save").wafers(saves, "p", loaded)
+    base = BASE.format("p")
+    api.post(f"{base}/advance")
+    plan = api.get(f"{base}/commodities/plan")
+    assert plan["months"] == 12 and plan["plans"]
+    top = plan["plans"][0]
+    assert top["need_12m"] == pytest.approx(12 * top["need_month"])
+    assert {d["name"] for d in top["drivers"]} <= {"Forge Phone", "Forge SoC"}
+    assert sum(d["share"] for d in top["drivers"]) == pytest.approx(1.0)
+    assert len(top["months"]) == 12
+    before = top["deals_12m"]
+    # a 6-month contract covers six of the twelve months
+    good, volume = top["good"], top["need_12m"]
+    api.post(
+        f"{base}/commodities/contracts", json={"good": good, "months": 6, "volume_year": volume}
+    )
+    after = next(p for p in api.get(f"{base}/commodities/plan")["plans"] if p["good"] == good)
+    assert after["deals_12m"] > before
+    covered = [m for m in after["months"] if m["deals"] > 0]
+    assert 0 < len(covered) < 12  # it ends inside the year
+    assert after["deals_ending"]
+    assert after["cover"] is not None and 0 < after["cover"] <= 1

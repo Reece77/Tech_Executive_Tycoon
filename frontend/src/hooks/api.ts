@@ -2310,6 +2310,16 @@ export function useCommodities(saveId: string) {
 }
 
 export type OfftakeBody = Schemas['OfftakeIn'];
+export type CommodityPlan = Schemas['CommodityPlanOut'];
+
+/** The planning view (M23c): next year's need per commodity, its drivers and its cover. */
+export function useCommodityPlan(saveId: string) {
+  return useQuery({
+    queryKey: [...keys.commodities(saveId), 'plan'],
+    queryFn: async () =>
+      unwrap(await api.GET('/api/saves/{save_id}/commodities/plan', path(saveId))),
+  });
+}
 
 export function useOfftakeQuote(saveId: string) {
   return useMutation({

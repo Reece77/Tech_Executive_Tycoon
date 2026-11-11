@@ -17215,6 +17215,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/commodities/plan": {
+      "get": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Get Commodity Plan",
+        "description": "The planning view (M23c): each commodity's need over the next 12 months at this\nmonth's production, the products behind it, and the cover from deals and own supply.",
+        "operationId": "getCommodityPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommodityPlansOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/commodities/offtakes/quote": {
       "post": {
         "tags": [
@@ -25724,6 +25797,201 @@
           "history"
         ],
         "title": "CommodityOut"
+      },
+      "CommodityPlanDriverOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "need_month": {
+            "type": "number",
+            "title": "Need Month",
+            "description": "Volume units a month this product uses"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Of the commodity's monthly need"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "need_month",
+          "share"
+        ],
+        "title": "CommodityPlanDriverOut"
+      },
+      "CommodityPlanMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "required": {
+            "type": "number",
+            "title": "Required",
+            "description": "The month's need at this month's production"
+          },
+          "deals": {
+            "type": "number",
+            "title": "Deals",
+            "description": "Running contracts' and offtakes' volume that month"
+          },
+          "own": {
+            "type": "number",
+            "title": "Own",
+            "description": "The group's own supply at this month's rate"
+          },
+          "gap": {
+            "type": "number",
+            "title": "Gap",
+            "description": "Need not covered by deals or own supply"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "required",
+          "deals",
+          "own",
+          "gap"
+        ],
+        "title": "CommodityPlanMonthOut"
+      },
+      "CommodityPlanOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "volume_unit": {
+            "type": "string",
+            "title": "Volume Unit"
+          },
+          "need_month": {
+            "type": "number",
+            "title": "Need Month",
+            "description": "This month's use, volume units"
+          },
+          "need_12m": {
+            "type": "number",
+            "title": "Need 12M",
+            "description": "The next 12 months at this month's production"
+          },
+          "deals_12m": {
+            "type": "number",
+            "title": "Deals 12M",
+            "description": "What running contracts and offtakes deliver in them"
+          },
+          "own_12m": {
+            "type": "number",
+            "title": "Own 12M",
+            "description": "The group's own supply to the group, at this rate"
+          },
+          "mines_12m": {
+            "type": "number",
+            "title": "Mines 12M",
+            "description": "The group's mines' output at the latest month's rate"
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover",
+            "description": "(deals + own supply) / need, at most 1"
+          },
+          "gap_12m": {
+            "type": "number",
+            "title": "Gap 12M"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanDriverOut"
+            },
+            "type": "array",
+            "title": "Drivers",
+            "description": "The products that use it"
+          },
+          "deals_ending": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deals Ending",
+            "description": "Deals that end inside the 12 months"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "volume_unit",
+          "need_month",
+          "need_12m",
+          "deals_12m",
+          "own_12m",
+          "mines_12m",
+          "cover",
+          "gap_12m",
+          "drivers",
+          "deals_ending",
+          "months"
+        ],
+        "title": "CommodityPlanOut"
+      },
+      "CommodityPlansOut": {
+        "properties": {
+          "turn_label": {
+            "type": "string",
+            "title": "Turn Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanOut"
+            },
+            "type": "array",
+            "title": "Plans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_label",
+          "months",
+          "plans"
+        ],
+        "title": "CommodityPlansOut"
       },
       "ComponentOut": {
         "properties": {

@@ -146,3 +146,44 @@ class CommodityCostLineOut(BaseModel):
     spot_cents: float = Field(description="Its cost in one unit at spot")
     hedged_share: float = Field(description="Share of your use covered by contracts and offtakes")
     deal_cents: float = Field(description="Its cost in one unit after your deals")
+
+
+# --- M23c: the planning view -------------------------------------------------------------
+
+
+class CommodityPlanDriverOut(BaseModel):
+    product_id: int
+    name: str
+    need_month: float = Field(description="Volume units a month this product uses")
+    share: float = Field(description="Of the commodity's monthly need")
+
+
+class CommodityPlanMonthOut(BaseModel):
+    turn: int
+    label: str
+    required: float = Field(description="The month's need at this month's production")
+    deals: float = Field(description="Running contracts' and offtakes' volume that month")
+    own: float = Field(description="The group's own supply at this month's rate")
+    gap: float = Field(description="Need not covered by deals or own supply")
+
+
+class CommodityPlanOut(BaseModel):
+    good: str
+    label: str
+    volume_unit: str
+    need_month: float = Field(description="This month's use, volume units")
+    need_12m: float = Field(description="The next 12 months at this month's production")
+    deals_12m: float = Field(description="What running contracts and offtakes deliver in them")
+    own_12m: float = Field(description="The group's own supply to the group, at this rate")
+    mines_12m: float = Field(description="The group's mines' output at the latest month's rate")
+    cover: float | None = Field(description="(deals + own supply) / need, at most 1")
+    gap_12m: float
+    drivers: list[CommodityPlanDriverOut] = Field(description="The products that use it")
+    deals_ending: list[str] = Field(description="Deals that end inside the 12 months")
+    months: list[CommodityPlanMonthOut]
+
+
+class CommodityPlansOut(BaseModel):
+    turn_label: str
+    months: int
+    plans: list[CommodityPlanOut]

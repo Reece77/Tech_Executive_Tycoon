@@ -3797,6 +3797,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/commodities/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Commodity Plan
+         * @description The planning view (M23c): each commodity's need over the next 12 months at this
+         *     month's production, the products behind it, and the cover from deals and own supply.
+         */
+        get: operations["getCommodityPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/commodities/offtakes/quote": {
         parameters: {
             query?: never;
@@ -6758,6 +6779,112 @@ export interface components {
             peak_label: string;
             /** History */
             history: components["schemas"]["PricePointOut"][];
+        };
+        /** CommodityPlanDriverOut */
+        CommodityPlanDriverOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Need Month
+             * @description Volume units a month this product uses
+             */
+            need_month: number;
+            /**
+             * Share
+             * @description Of the commodity's monthly need
+             */
+            share: number;
+        };
+        /** CommodityPlanMonthOut */
+        CommodityPlanMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /**
+             * Required
+             * @description The month's need at this month's production
+             */
+            required: number;
+            /**
+             * Deals
+             * @description Running contracts' and offtakes' volume that month
+             */
+            deals: number;
+            /**
+             * Own
+             * @description The group's own supply at this month's rate
+             */
+            own: number;
+            /**
+             * Gap
+             * @description Need not covered by deals or own supply
+             */
+            gap: number;
+        };
+        /** CommodityPlanOut */
+        CommodityPlanOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /** Volume Unit */
+            volume_unit: string;
+            /**
+             * Need Month
+             * @description This month's use, volume units
+             */
+            need_month: number;
+            /**
+             * Need 12M
+             * @description The next 12 months at this month's production
+             */
+            need_12m: number;
+            /**
+             * Deals 12M
+             * @description What running contracts and offtakes deliver in them
+             */
+            deals_12m: number;
+            /**
+             * Own 12M
+             * @description The group's own supply to the group, at this rate
+             */
+            own_12m: number;
+            /**
+             * Mines 12M
+             * @description The group's mines' output at the latest month's rate
+             */
+            mines_12m: number;
+            /**
+             * Cover
+             * @description (deals + own supply) / need, at most 1
+             */
+            cover: number | null;
+            /** Gap 12M */
+            gap_12m: number;
+            /**
+             * Drivers
+             * @description The products that use it
+             */
+            drivers: components["schemas"]["CommodityPlanDriverOut"][];
+            /**
+             * Deals Ending
+             * @description Deals that end inside the 12 months
+             */
+            deals_ending: string[];
+            /** Months */
+            months: components["schemas"]["CommodityPlanMonthOut"][];
+        };
+        /** CommodityPlansOut */
+        CommodityPlansOut: {
+            /** Turn Label */
+            turn_label: string;
+            /** Months */
+            months: number;
+            /** Plans */
+            plans: components["schemas"]["CommodityPlanOut"][];
         };
         /** ComponentOut */
         ComponentOut: {
@@ -29906,6 +30033,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommoditiesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCommodityPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommodityPlansOut"];
                 };
             };
             /** @description Bad Request */

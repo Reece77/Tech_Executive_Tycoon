@@ -17,6 +17,7 @@ from tst.api.schemas.commodities import (
     CommoditiesActionOut,
     CommoditiesOut,
     CommodityContractIn,
+    CommodityPlansOut,
     DealQuoteOut,
     OfftakeIn,
 )
@@ -51,6 +52,21 @@ def get_commodities(save_id: str, settings: SettingsDep, data: DataDep) -> Commo
     company's contracts and offtakes, and the suppliers (33)."""
     path = _path(settings, save_id)
     return _out(path, _state(path), data)
+
+
+@router.get(
+    "/commodities/plan",
+    response_model=CommodityPlansOut,
+    responses=ERRORS,
+    operation_id="getCommodityPlan",
+)
+def get_commodity_plan(save_id: str, settings: SettingsDep, data: DataDep) -> CommodityPlansOut:
+    """The planning view (M23c): each commodity's need over the next 12 months at this
+    month's production, the products behind it, and the cover from deals and own supply."""
+    from tst.api.commodity_plan_views import commodity_plans
+
+    state = _state(_path(settings, save_id))
+    return commodity_plans(state, state.player.id, data)
 
 
 @router.post(
