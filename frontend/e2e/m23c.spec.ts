@@ -26,7 +26,7 @@ async function scrollPane(page: Page) {
   const pane = page.getByTestId('working-pane');
   await pane.evaluate((el) => el.scrollTo(0, el.scrollHeight));
   await expect.poll(() => pane.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(await page.locator('html').evaluate((el) => el.scrollTop)).toBe(0); // the page itself never scrolls
 }
 
 test('(a) the top bar and side nav stay visible while the working pane scrolls', async ({
