@@ -28,6 +28,20 @@ def _id(entity: str | None, what: str) -> int:
         raise _bad(f"a {what} metric needs a {what} id") from exc
 
 
+def _none(b: Builder, m: MetricDef, what: str) -> Explanation:
+    """The number asked without naming which one (the screens always name it): a note on
+    where it is shown, as a company number with nothing to explain says."""
+    return b._out(
+        m,
+        None,
+        None,
+        (),
+        f"Open Explain beside a {what} on its screen: each {what} has its own.",
+        (),
+        (),
+    )
+
+
 def _group(b: Builder) -> set[int]:
     from tst.sim.exploration import pipeline as xp
 
@@ -38,6 +52,8 @@ def mine_npv(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     """A project's NPV range from its latest study (34.3)."""
     from tst.sim.exploration import pipeline as xp
 
+    if not entity:
+        return _none(b, m, "project")
     pid = _id(entity, "project")
     project = next((p for p in b.state.projects if p.id == pid), None)
     if project is None or project.company_id not in _group(b):
@@ -85,6 +101,8 @@ def mine_cost(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     """A mine's all-in sustaining cost a tonne, month by month (35.3)."""
     from tst.sim.mining.actions import mine_name
 
+    if not entity:
+        return _none(b, m, "mine")
     mid = _id(entity, "mine")
     mine = b.state.mine(mid)
     if mine is None or mine.company_id not in _group(b):
@@ -124,6 +142,8 @@ def fab_die_cost(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     from tst.api.fab_views import _die
     from tst.sim.fabs.market import fab_of
 
+    if not entity:
+        return _none(b, m, "fab")
     fid = _id(entity, "fab")
     fab = fab_of(b.state, fid)
     if fab is None or fab.company_id not in _group(b):
@@ -159,6 +179,8 @@ def refinery_cost(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     """A refinery's cost a unit of output last month (36.1)."""
     from tst.sim.refining.plants import refinery_of
 
+    if not entity:
+        return _none(b, m, "refinery")
     fid = _id(entity, "refinery")
     ref = refinery_of(b.state, fid)
     if ref is None or ref.company_id not in _group(b):
