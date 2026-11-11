@@ -403,13 +403,15 @@ def _ready_for(game: Game, fid: int, cid: int, uid: int) -> None:
     game.balances[(cid, m20.PPE)] = game.balances.get((cid, m20.PPE), 0) + f.capex_cents
 
 
-def chain(seed: int = 1) -> tuple[Game, dict[str, int], dict[str, int]]:
+def chain(
+    seed: int = 1, start: tuple[int, int] = (2016, 1)
+) -> tuple[Game, dict[str, int], dict[str, int]]:
     """The player (a device maker whose own SoC goes into its devices), a subsidiary with a
     28 nm fab making the SoC, and a subsidiary with a wafer plant making the fab's wafers."""
     from tst.sim.fabs.actions import BuildFab
     from tst.sim.refining.actions import BuildRefinery
 
-    game, chip = m20.chip_game(seed, (2016, 1))
+    game, chip = m20.chip_game(seed, start)
     game.state = with_research_lead(
         game.state, ResearchLead(1, m20.loaded().balance.refining.domain, m21.LEAD)
     )

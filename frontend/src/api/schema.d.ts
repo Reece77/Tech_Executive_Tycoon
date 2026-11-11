@@ -5589,6 +5589,10 @@ export interface components {
             duv?: boolean;
             /** City */
             city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Company Id */
+            company_id?: number | null;
         };
         /** BuildIn */
         BuildIn: {
@@ -5686,6 +5690,8 @@ export interface components {
             city?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Country */
+            country?: string | null;
         };
         /** BuybackIn */
         BuybackIn: {
@@ -6506,6 +6512,8 @@ export interface components {
         };
         /** CommodityDealOut */
         CommodityDealOut: {
+            /** Supplier Country Label */
+            supplier_country_label?: string | null;
             /** Deal Id */
             deal_id: number;
             /**
@@ -8642,6 +8650,8 @@ export interface components {
             region: string;
             /** Cents */
             cents: number;
+            /** Country */
+            country?: string | null;
         };
         /** FoundationFormOut */
         FoundationFormOut: {
@@ -16255,6 +16265,13 @@ export interface components {
             region: string;
             /** Region Label */
             region_label: string;
+            /**
+             * Country
+             * @description M23a: where the supplier sits
+             */
+            country?: string | null;
+            /** Country Label */
+            country_label?: string | null;
             /** Listing */
             listing: string;
             /**

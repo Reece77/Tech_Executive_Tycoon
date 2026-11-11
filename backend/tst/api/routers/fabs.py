@@ -79,7 +79,17 @@ def build_fab(
 ) -> FabsActionOut:
     path = _path(settings, save_id)
     actor = _founder_id(_state(path))
-    return _act(path, data, BuildFab(actor, body.node, body.region, body.size, body.duv, body.city))
+    action = BuildFab(
+        actor,
+        body.node,
+        body.region,
+        body.size,
+        body.duv,
+        body.city,
+        company_id=body.company_id,
+        country=body.country,
+    )
+    return _act(path, data, action)
 
 
 @router.post(

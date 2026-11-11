@@ -20,6 +20,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InsufficientCashError, RefiningRuleError
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
+from tst.sim.group.assets import check_country, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.refining import goods as rg
@@ -41,6 +42,7 @@ class BuildRefinery:
     host_id: int | None = None  # a by-product line's host plant (default: the first in region)
     city: str | None = None
     company_id: int | None = None  # a group company the founder builds for (default: own)
+    country: str | None = None  # M23a: the country it sits in (default: its city's, the region's)
     kind: Literal["build_refinery"] = "build_refinery"
 
 
@@ -147,6 +149,7 @@ def build_refinery(
         not data.has_city(action.city) or data.city(action.city).region != action.region
     ):
         raise RefiningRuleError(f"{action.city!r} is not a city in that region")
+    check_country(data, action.region, action.country)
     if account_balance(balances, company, CASH) < q.monthly_capex_cents:
         raise InsufficientCashError(f"the first capex payment needs {q.monthly_capex_cents} cents")
     state = spend_energy(
@@ -158,6 +161,7 @@ def build_refinery(
     if action.city is not None:
         facility = replace(facility, city=action.city)
         state = with_facility(state, facility)
+    state = place(state, "facility", facility.id, action.country)
     state = with_refinery(
         state,
         Refinery(

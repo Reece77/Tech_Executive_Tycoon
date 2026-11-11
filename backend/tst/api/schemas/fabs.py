@@ -187,6 +187,8 @@ class BuildFabIn(BaseModel):
     size: int
     duv: bool = False
     city: str | None = None
+    country: str | None = None  # M23a: a countries.yaml key in the region
+    company_id: int | None = None  # M23a: a group company to build it for
 
 
 class StaffFabIn(BaseModel):

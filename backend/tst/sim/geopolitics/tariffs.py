@@ -128,11 +128,18 @@ def _chip_value(
         unit = chips.fab_unit_cents(state, product, balance, data) or 0.0
         shares = [s for s in fs.product_shares(state, product, balance, data) if s.starts > 0]
         capacity = sum(s.starts * s.chips_per_start for s in shares)
+        home = world.company_country(state, state.company(product.company_id), balance, data)
         for s in shares:
             f = state.facility(s.facility_id)
             if f is None or capacity <= EPS:
                 continue
-            country = world.facility_country(state, f, data)
+            # a sister company's fab: its starts were taxed at the border into this company's
+            # country (fabs.plants.border_tariff), so they count as made here
+            country = (
+                world.facility_country(state, f, data)
+                if f.company_id == product.company_id
+                else home
+            )
             weight = s.starts * s.chips_per_start / capacity
             out[country] = out.get(country, 0.0) + sold_own * weight * unit
     contract_cents = row.chip_cents - sold_own * balance.chips.packaging_cents

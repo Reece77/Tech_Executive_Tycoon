@@ -32,7 +32,7 @@ from tst.sim.fabs.plants import FAB_KIND, fab_name, node_label
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
-from tst.sim.group.assets import inbox_company
+from tst.sim.group.assets import check_country, inbox_company, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.money import times
@@ -49,6 +49,7 @@ class BuildFab:
     duv: bool = False  # 7 nm by DUV (38.1)
     city: str | None = None
     company_id: int | None = None  # M23a: a group company the founder builds for (default: own)
+    country: str | None = None  # M23a: the country it sits in (default: its city's, the region's)
     kind: Literal["build_fab"] = "build_fab"
 
 
@@ -196,6 +197,7 @@ def build_fab(
         not data.has_city(action.city) or data.city(action.city).region != action.region
     ):
         raise FabRuleError(f"{action.city!r} is not a city in that region")
+    check_country(data, action.region, action.country)
     if account_balance(balances, company, CASH) < q.monthly_capex_cents:
         raise InsufficientCashError(f"the first capex payment needs {q.monthly_capex_cents} cents")
     state = spend_energy(
@@ -229,7 +231,7 @@ def build_fab(
     )
     state, facility = lifecycle.order_build(state, company, bq)
     facility = replace(facility, ready_turn=q.ready_turn, late_turn=q.ready_turn, city=action.city)
-    state = with_facility(state, facility)
+    state = place(with_facility(state, facility), "facility", facility.id, action.country)
     fab = Fab(
         facility_id=facility.id,
         company_id=company,

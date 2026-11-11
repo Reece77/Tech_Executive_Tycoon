@@ -42,10 +42,11 @@ from tst.sim.ledger import (
     INTERCOMPANY_PURCHASES,
     INTERCOMPANY_SALES,
     PPE,
+    TARIFFS,
     LedgerEntry,
 )
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import exact
+from tst.sim.money import exact, times
 from tst.sim.refining import goods as rg
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_fab, with_facility
@@ -394,7 +395,9 @@ def settle_fabs(
             )
         total = max(0, dep) + cash + staff
         per_start = total / run if run > 0 else 0.0
-        group, more = _group_supply(state, fab, own, per_start, market, buyers or {}, name, balance)
+        group, more = _group_supply(
+            state, fab, own, per_start, market, buyers or {}, name, balance, data
+        )
         entries += more
         month = replace(
             month,
@@ -442,6 +445,7 @@ def _group_supply(
     buyers: dict[tuple[int, int], float],
     name: str,
     balance: Balance,
+    data: GameData,
 ) -> tuple[tuple[tuple[int, float, float, float], ...], list[LedgerEntry]]:
     """The month's starts by group company (M23a): a sister company pays the fab's owner the
     transfer price (31.6: the `chips` flow's, cost by default: this month's cost a start) for
@@ -467,6 +471,7 @@ def _group_supply(
         if flow is not None:
             price = gf.transfer_price_cents(flow.kind, cost, value, balance, flow.margin)
         if cid != seller and price > 0:
+            entries += border_tariff(state, fab, cid, price, name, balance, data)
             buyer = state.company(cid).name
             entries += [
                 LedgerEntry.transfer(
@@ -488,6 +493,46 @@ def _group_supply(
             ]
         rows.append((cid, starts, float(price), float(value)))
     return tuple(rows), entries
+
+
+def border_tariff(
+    state: GameState,
+    fab: Fab,
+    buyer: int,
+    price: int,
+    name: str,
+    balance: Balance,
+    data: GameData,
+) -> list[LedgerEntry]:
+    """Tariffs carried in transfer prices (39.3, M23a): starts a sister company in another
+    country takes cross a border, and the importer pays the chips schedule's rate from the fab's
+    country into its own on the transfer price (5100 against cash). Its chips then count as
+    made in its own country when sold (geopolitics.tariffs)."""
+    from tst.sim.geopolitics import tariffs, world
+
+    if not world.enabled(data) or data.tariffs is None:
+        return []
+    origin = world.facility_country(state, facility_of(state, fab), data)
+    market = world.company_country(state, state.company(buyer), balance, data)
+    if origin == market:
+        return []
+    rate = tariffs.rate(data, origin, market, CHIPS_GOOD, state.turn)
+    cents = times(price, rate)
+    if cents <= 0:
+        return []
+    return [
+        LedgerEntry.transfer(
+            turn=state.turn,
+            company_id=buyer,
+            memo=f"Tariffs: fab starts from {name}",
+            debit=TARIFFS,
+            credit=CASH,
+            amount=cents,
+        )
+    ]
+
+
+CHIPS_GOOD: Final = "chips"  # tariffs.yaml goods key
 
 
 def _chips_short(state: GameState, data: GameData, balance: Balance) -> bool:

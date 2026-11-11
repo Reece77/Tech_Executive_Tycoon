@@ -23079,6 +23079,28 @@
               }
             ],
             "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
           }
         },
         "type": "object",
@@ -23323,6 +23345,17 @@
               }
             ],
             "title": "Company Id"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           }
         },
         "type": "object",
@@ -25182,6 +25215,17 @@
       },
       "CommodityDealOut": {
         "properties": {
+          "supplier_country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Country Label"
+          },
           "deal_id": {
             "type": "integer",
             "title": "Deal Id"
@@ -30303,6 +30347,17 @@
           "cents": {
             "type": "integer",
             "title": "Cents"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           }
         },
         "type": "object",
@@ -48614,6 +48669,29 @@
           "region_label": {
             "type": "string",
             "title": "Region Label"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "description": "M23a: where the supplier sits"
+          },
+          "country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Label"
           },
           "listing": {
             "type": "string",

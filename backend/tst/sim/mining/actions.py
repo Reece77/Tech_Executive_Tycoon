@@ -25,7 +25,7 @@ from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.geology import block_of
 from tst.sim.exploration.models import Project
 from tst.sim.facilities.models import Facility
-from tst.sim.group.assets import move_facility
+from tst.sim.group.assets import check_country, move_facility, place
 from tst.sim.group.models import Ownership
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
@@ -82,6 +82,7 @@ class FoundSubsidiary:
     region: str
     cents: int
     parent_id: int | None = None
+    country: str | None = None  # M23a: the country it sits in (default: the region's default)
     kind: Literal["found_subsidiary"] = "found_subsidiary"
 
 
@@ -265,6 +266,7 @@ def found_subsidiary(
         raise MiningRuleError(f"a company called {name!r} already exists")
     if action.region not in data.region_keys:
         raise MiningRuleError(f"unknown region {action.region!r}")
+    check_country(data, action.region, action.country)
     parent = action.parent_id if action.parent_id is not None else listed_id(state)
     if parent not in group_ids(state):
         raise MiningRuleError("the parent is a company of your group")
@@ -276,7 +278,14 @@ def found_subsidiary(
     turn = state.turn
     cid = max(c.id for c in state.companies) + 1
     founded = sum(1 for c in state.companies if c.rival_key[:1] == (SUBSIDIARY_KEY,))
-    city = next((c.key for c in data.cities if c.region == action.region), None)
+    city = next(
+        (
+            c.key
+            for c in data.cities
+            if c.region == action.region and (action.country is None or c.country == action.country)
+        ),
+        None,
+    )
     company = CompanyState(
         id=cid,
         name=name,
@@ -289,6 +298,7 @@ def found_subsidiary(
         rival_key=(SUBSIDIARY_KEY, founded),  # a stable identity for its streams (ADR-0013)
     )
     state = replace(state, companies=(*state.companies, company))
+    state = place(state, "company", cid, action.country)
     state = with_ownership(
         state,
         Ownership(

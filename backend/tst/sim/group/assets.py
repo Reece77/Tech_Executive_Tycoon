@@ -16,6 +16,9 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim.data_models import GameData
+from tst.sim.errors import InvalidActionError
+from tst.sim.geopolitics.models import Site, SiteKind
 from tst.sim.state import (
     GameState,
     group_companies,
@@ -25,6 +28,7 @@ from tst.sim.state import (
     with_facility,
     with_mine,
     with_refinery,
+    with_site,
     with_unit,
 )
 
@@ -38,6 +42,22 @@ def inbox_company(state: GameState, company_id: int) -> int:
     """Where an item about `company_id` is shown: the player's inbox for any company of the
     player's group (M23a routing rule), else the company itself."""
     return state.player.id if company_id in group_ids(state) else company_id
+
+
+def check_country(data: GameData, region: str, country: str | None) -> None:
+    """A chosen country must sit in the region (M23a: a country choice for new facilities and
+    subsidiaries)."""
+    if country is None or data.countries is None:
+        return
+    if not any(c.key == country and c.region == region for c in data.countries.countries):
+        raise InvalidActionError(f"{country!r} is not a country of {data.region(region).label}")
+
+
+def place(state: GameState, kind: SiteKind, item_id: int, country: str | None) -> GameState:
+    """Record where a new company or facility sits when a country was chosen (39.1's sites)."""
+    if country is None:
+        return state
+    return with_site(state, Site(kind, item_id, country))
 
 
 def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
@@ -72,4 +92,4 @@ def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
     return state
 
 
-__all__ = ["group_ids", "inbox_company", "move_facility"]
+__all__ = ["check_country", "group_ids", "inbox_company", "move_facility", "place"]
