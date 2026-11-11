@@ -7,7 +7,9 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 type Unit = Literal["cents", "count", "points", "percent", "months"]
-type Scope = Literal["company", "product", "person", "account", "market"]
+type Scope = Literal[
+    "company", "product", "person", "account", "market", "project", "mine", "fab", "refinery"
+]
 
 
 @dataclass(frozen=True, slots=True)

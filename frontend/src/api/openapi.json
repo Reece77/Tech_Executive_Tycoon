@@ -28642,7 +28642,11 @@
               "product",
               "person",
               "account",
-              "market"
+              "market",
+              "project",
+              "mine",
+              "fab",
+              "refinery"
             ],
             "title": "Scope"
           },

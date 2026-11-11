@@ -3,6 +3,7 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
+import { Explain } from '../components/Explain';
 import { NodeTimeline } from '../components/NodeTimeline';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { useOrg } from '../hooks/api';
@@ -241,6 +242,10 @@ function FabPanel({
                 testId="fab-die"
               />
             )}
+            <div style={{ fontSize: 12 }}>
+              Why this cost per good die?{' '}
+              <Explain metric="fab_die_cost" entity={f.id} label="Cost per good die" />
+            </div>
             <Fact
               label="Costs"
               value={`depreciation ${formatMoneyWhole(m.depreciation_cents)}, fixed ${formatMoneyWhole(m.fixed_cents)}, materials ${formatMoneyWhole(m.materials_cents)}, power ${formatMoneyWhole(m.power_cents)}, engineers ${formatMoneyWhole(m.staff_cents)}`}

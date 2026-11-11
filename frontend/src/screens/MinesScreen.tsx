@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
+import { Explain } from '../components/Explain';
 import { Term } from '../components/Term';
 import {
   useMines,
@@ -363,8 +364,16 @@ function QuotesTable({
         }),
         quoteHelper.accessor('npv_mid_cents', {
           header: 'NPV (mid)',
-          cell: ({ getValue }) =>
-            getValue() === null ? '—' : formatMoneyWhole(getValue() as number),
+          meta: { term: 'npv' },
+          cell: ({ row, getValue }) =>
+            getValue() === null ? (
+              '—'
+            ) : (
+              <>
+                {formatMoneyWhole(getValue() as number)}{' '}
+                <Explain metric="mine_npv" entity={row.original.project_id} label="NPV" />
+              </>
+            ),
         }),
         quoteHelper.display({
           id: 'build',
@@ -427,7 +436,12 @@ function MinesTable({ mines, onSelect }: { mines: Mine[]; onSelect: (id: number)
         mineHelper.accessor('cost_usd_t', {
           header: 'Cost',
           meta: { term: 'mining.aisc' },
-          cell: ({ getValue }) => formatPerTonne(getValue()),
+          cell: ({ row, getValue }) => (
+            <>
+              {formatPerTonne(getValue())}{' '}
+              <Explain metric="mine_cost" entity={row.original.id} label="Cost a tonne" />
+            </>
+          ),
         }),
         mineHelper.accessor('book_cents', {
           header: 'Book value',

@@ -273,3 +273,52 @@ def test_the_planning_view_shows_need_drivers_and_cover(
     assert 0 < len(covered) < 12  # it ends inside the year
     assert after["deals_ending"]
     assert after["cover"] is not None and 0 < after["cover"] <= 1
+
+
+# --- Explain on v3's numbers (sub-task 7) ----------------------------------------------------
+
+
+def test_explain_a_projects_npv_and_a_mines_cost(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    tool("e2e_m19_save").building(saves, "e", loaded)
+    base = BASE.format("e")
+    api.post(f"{base}/advance")
+    api.post(f"{base}/advance")
+    mine = api.get(f"{base}/mines")["mines"][0]
+    cost = api.get(f"{base}/explain/mine_cost?entity={mine['id']}")
+    assert cost["subject"] == mine["name"] and cost["value"] is not None
+    assert cost["value"] == pytest.approx(mine["cost_usd_t"] * 100)
+    assert [i["label"] for i in cost["items"]][:3] == [
+        "All-in sustaining cost a tonne",
+        "Price a tonne (spot)",
+        "Margin a tonne",
+    ]
+    assert cost["explanation"]
+    x = api.get(f"{base}/exploration")
+    studied = next(p for p in x["projects"] if p["npv_mid_cents"] is not None)
+    npv = api.get(f"{base}/explain/mine_npv?entity={studied['id']}")
+    assert npv["value"] == studied["npv_mid_cents"]
+    assert npv["items"][0]["amount"] == studied["npv_low_cents"]
+    api.get(f"{base}/explain/mine_cost?entity=999999", status=400)
+
+
+def test_explain_a_fabs_cost_per_good_die(api: Client, saves: Path, loaded: LoadedData) -> None:
+    tool("e2e_m21_save").mature(saves, "f", loaded)
+    base = BASE.format("f")
+    api.post(f"{base}/advance")  # its first production month
+    fab = api.get(f"{base}/fabs")["fabs"][0]
+    out = api.get(f"{base}/explain/fab_die_cost?entity={fab['id']}")
+    assert out["items"][-1]["label"] == "Cost a start"
+    assert out["items"][-1]["amount"] == pytest.approx(fab["month"]["cost_per_start_cents"])
+    assert out["value"] == pytest.approx(fab["month"]["die_cost_cents"])
+
+
+def test_explain_a_refinerys_cost_a_unit(api: Client, saves: Path, loaded: LoadedData) -> None:
+    tool("e2e_m20_save").wafers(saves, "r", loaded)  # its wafer plant is past its ramp
+    base = BASE.format("r")
+    api.post(f"{base}/advance")
+    plant = next(p for p in api.get(f"{base}/refineries")["plants"] if p["month"])
+    out = api.get(f"{base}/explain/refinery_cost?entity={plant['id']}")
+    assert out["value"] == pytest.approx(plant["month"]["unit_cost_cents"])
+    assert len(out["items"]) == 6

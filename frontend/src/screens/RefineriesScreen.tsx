@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
+import { Explain } from '../components/Explain';
 import { Term } from '../components/Term';
 import { useOrg } from '../hooks/api';
 import {
@@ -136,7 +137,14 @@ function PlantsTable({ plants, onSelect }: { plants: Plant[]; onSelect: (id: num
           header: 'Unit cost',
           meta: { term: 'refining.unit_cost' },
           cell: ({ row }) =>
-            row.original.month ? formatMoney(Math.round(row.original.month.unit_cost_cents)) : '—',
+            row.original.month ? (
+              <>
+                {formatMoney(Math.round(row.original.month.unit_cost_cents))}{' '}
+                <Explain metric="refinery_cost" entity={row.original.id} label="Unit cost" />
+              </>
+            ) : (
+              '—'
+            ),
         }),
         plantHelper.accessor((p) => p.month?.market_cents ?? 0, {
           id: 'market',

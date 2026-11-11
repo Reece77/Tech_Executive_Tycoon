@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
+import { Explain } from '../components/Explain';
 import { Term } from '../components/Term';
 import {
   useExploration,
@@ -405,6 +406,12 @@ function ProjectPanel({
               }
               testId="npv-range"
             />
+            {p.npv_mid_cents !== null && (
+              <div style={{ fontSize: 12, paddingLeft: 178 }}>
+                <Term term="npv">What NPV means</Term> · why this range?{' '}
+                <Explain metric="mine_npv" entity={p.id} label="NPV" />
+              </div>
+            )}
             <Fact
               label="Permit"
               term="exploration.permit"
