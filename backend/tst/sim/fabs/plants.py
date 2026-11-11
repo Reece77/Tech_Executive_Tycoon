@@ -361,10 +361,17 @@ def settle_fabs(
         spare = max(0.0, month.available - own)
         quality = min(1.0, fab.yield_ / (fb.yield_.mature * yield_mult(fab, balance)))
         take = 1.0 if short else fb.slot.take * quality * month.reliability / PERCENT
-        sold = spare * take if live else 0.0
         market = fm.node_price_cents(state, fab.node, balance, data)
         slot = market * fb.slot.discount
-        revenue = round(sold * slot)
+        contracted, contract_revenue = 0.0, 0.0
+        signed: tuple[tuple[str, float], ...] = ()
+        if live and state.foundry_contracts:  # M23a: foundry contracts first, then spot slots
+            from tst.sim.fabs import foundry  # local: foundry imports the actions
+
+            state, contracted, contract_revenue, signed = foundry.deliver(state, fab, spare)
+        spot = (spare - contracted) * take if live else 0.0
+        sold = contracted + spot
+        revenue = round(contract_revenue + spot * slot)
         run = own + sold
         fixed = fixed_cents(fab, facility, balance)
         materials = round(run * materials_cents(state, fab, balance, data))
@@ -412,7 +419,8 @@ def settle_fabs(
             slot_price_cents=slot,
             market_cents=market,
             cost_per_start_cents=per_start,
-            customers=_customers(data, sold),
+            customers=(*signed, *_customers(data, spot)),
+            contracted=contracted,
             group=group,
         )
         history = fab.history

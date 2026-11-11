@@ -22,6 +22,7 @@ from tst.sim.commodities.config import (
     PowerHistoryFile,
     SuppliersFile,
 )
+from tst.sim.contracts.config import ContractsBalance
 from tst.sim.events.data import (
     EFFECT_TYPES,
     LOAN_EFFECTS,
@@ -1282,6 +1283,7 @@ class Balance(_Frozen):
     geopolitics: GeopoliticsBalance  # M22 (formulas.md 39)
     mining: MiningBalance  # M19 (formulas.md 35)
     fab: FabBalance  # M21 (formulas.md 38)
+    contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

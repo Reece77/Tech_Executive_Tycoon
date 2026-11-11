@@ -88,7 +88,10 @@ def contract_quote(
         )
     if volume_year <= 0:
         raise CommodityRuleError("a contract needs a volume")
-    price = spot_price(state, good, data, balance)
+    from tst.sim.contracts import termination as ct  # local: termination reads offtake
+
+    ct.check_willing(state, f"traders:{good}", "The market", balance)  # M23a
+    price = ct.offered(state, f"traders:{good}", spot_price(state, good, data, balance), balance)
     return DealQuote(
         good=good,
         supplier=None,
@@ -128,7 +131,10 @@ def offtake_quote(
         raise CommodityRuleError("an offtake needs a volume")
     if not 0 <= prepay <= ob.prepay_max + EPS:
         raise CommodityRuleError(f"prepayment is at most {ob.prepay_max:.0%} of year 1's value")
-    price = spot_price(state, good, data, balance)
+    from tst.sim.contracts import termination as ct  # local: termination reads offtake
+
+    ct.check_willing(state, supplier, s.name, balance)  # M23a: a broken contract is remembered
+    price = ct.offered(state, supplier, spot_price(state, good, data, balance), balance)
     year = round(value_cents(volume_year, price, good, data))
     return DealQuote(
         good=good,

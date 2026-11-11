@@ -191,6 +191,16 @@ class BuildFabIn(BaseModel):
     company_id: int | None = None  # M23a: a group company to build it for
 
 
+class FoundryContractIn(BaseModel):
+    """M23a: sell a fab's starts to a rival designer for months at a price."""
+
+    fab_id: int
+    customer: str
+    monthly_starts: float
+    months: int
+    price_cents: float
+
+
 class StaffFabIn(BaseModel):
     unit_id: int | None
 

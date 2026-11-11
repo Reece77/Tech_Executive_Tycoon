@@ -20,7 +20,8 @@ class FabMonth:
     turn: int
     available: float = 0.0  # starts it could run (live capacity x staff coverage)
     own: float = 0.0  # starts run for the company's own chips
-    sold: float = 0.0  # starts sold as foundry slots
+    sold: float = 0.0  # starts sold as foundry slots (contracted and spot)
+    contracted: float = 0.0  # M23a: of which under foundry contracts
     yield_: float = 0.0
     reliability: float = 0.0
     depreciation_cents: int = 0

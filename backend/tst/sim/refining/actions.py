@@ -16,6 +16,7 @@ from typing import Final, Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.calendar import format_turn
+from tst.sim.contracts import termination as ct
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InsufficientCashError, RefiningRuleError
 from tst.sim.facilities import lifecycle
@@ -209,8 +210,16 @@ def sign_deal(
         )
     if action.volume <= 0:
         raise RefiningRuleError("a contract needs a volume")
+    who = f"refining:{action.good}"  # M23a: the market remembers a broken contract
+    ct.check_willing(state, who, "The market", balance)
     state = spend_energy(state, action.actor_id, "sign_refining_deal", balance, cost=rb.deal.energy)
-    price = rg.price_cents(state, action.good, balance, data)
+    price = ct.offered(
+        state,
+        who,
+        rg.price_cents(state, action.good, balance, data),
+        balance,
+        buying=action.side == "buy",
+    )
     deal = RefiningDeal(
         id=max((d.id for d in state.refining_deals), default=0) + 1,
         company_id=company,

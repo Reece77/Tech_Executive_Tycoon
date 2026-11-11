@@ -507,6 +507,12 @@ templates:
   refinery_curbed:
     title: "Power curb: {plant}"
     body: "{cause}: {plant} runs at {run} of capacity until {until}."
+  contract_terminated:
+    title: "Contract with {counterparty} terminated"
+    body: "You broke the contract with {counterparty} in {month} for a fee of {fee}. They will remember it when you next ask them for a deal."
+  foundry_contract_signed:
+    title: "{customer} signs a foundry contract"
+    body: "{customer} will buy {starts} wafer starts a month from {fab} at {price} a start until {end}."
   refinery_incident:
     title: "Incident at {plant}"
     body: "There has been an incident at {plant}, {owner}'s plant. Your brand and credibility have taken a hit; answer it next month."

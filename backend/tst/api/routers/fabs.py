@@ -17,6 +17,7 @@ from tst.api.schemas.fabs import (
     FabQuoteOut,
     FabsActionOut,
     FabsOut,
+    FoundryContractIn,
     NodesOut,
     StaffFabIn,
 )
@@ -25,6 +26,7 @@ from tst.loader import LoadedData
 from tst.sim.actions import Action
 from tst.sim.actions.facilities import SellFacility, StaffFacility
 from tst.sim.fabs.actions import BuildFab, UpgradeFab
+from tst.sim.fabs.foundry import SignFoundryContract
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["fabs"])
 
@@ -127,3 +129,22 @@ def staff_fab(
 def sell_fab(save_id: str, facility_id: int, settings: SettingsDep, data: DataDep) -> FabsActionOut:
     path = _path(settings, save_id)
     return _act(path, data, SellFacility(_founder_id(_state(path)), facility_id))
+
+
+@router.post(
+    "/fabs/foundry-contract",
+    response_model=FabsActionOut,
+    responses=ERRORS,
+    operation_id="signFoundryContract",
+)
+def sign_foundry_contract(
+    save_id: str, body: FoundryContractIn, settings: SettingsDep, data: DataDep
+) -> FabsActionOut:
+    """M23a: a multi-month foundry contract with a rival designer (price and volume; the
+    designer takes what the fab delivers, before spot slots)."""
+    path = _path(settings, save_id)
+    actor = _founder_id(_state(path))
+    action = SignFoundryContract(
+        actor, body.fab_id, body.customer, body.monthly_starts, body.months, body.price_cents
+    )
+    return _act(path, data, action)

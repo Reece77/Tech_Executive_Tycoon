@@ -113,3 +113,20 @@ def test_a_fab_under_conversion_pays_its_fixed_cost_on_the_old_capex() -> None:
 
     assert fab.month is not None
     assert fab.month.fixed_cents == round(Fraction(live) * Fraction(str(fb.fixed_share)) / 12)
+
+
+def test_a_group_mines_supply_counts_as_protected_volume(loaded: LoadedData) -> None:
+    """M23a (M19 follow-up 3): what a group mine sold its group buyer last month keeps 100%
+    allocation for that buyer in a shortage."""
+    from tst.sim.commodities import costs
+
+    run = m19.miner(loaded, 7)
+    mine = m19.build(run, "copper")
+    m19.run_until(run, mine.ready_turn + 3)
+    now = m19.mine_of(run, mine.id)
+    assert now.history and now.history[-1].output_t > 0
+    buyer = 99  # the mine's designated group buyer
+    run.state = with_mine(run.state, replace(now, buyer_id=buyer))
+    got = costs.mine_supply(run.state, buyer, "copper", loaded.game_data)
+    assert got == pytest.approx(now.history[-1].output_t)
+    assert costs.mine_supply(run.state, 1, "copper", loaded.game_data) == 0
