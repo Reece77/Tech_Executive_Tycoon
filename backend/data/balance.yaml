@@ -1801,7 +1801,7 @@ fab: # 38: fabs and process nodes (M21, v3 lane A). Nodes and rival foundries ar
   duv: { yield_mult: 0.85, cost_mult: 1.15 } # 7 nm's DUV route (38.1): yield and capex and running costs (dossier 4: N7 and SMIC N+2 by multipatterning)
   fixed_share: 0.06 # fixed running cost a year as a share of capex: the staff beyond the lead engineers, maintenance, utilities, insurance (A; M21 tuning from 0.09 for 38.5 target 3: use decides)
   materials: # a wafer start's materials (38.2): the substrate wafer and the gases and chemicals
-    substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, market price; the group's own at transfer price is a follow-up)
+    substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, at market price; M23a: a group wafer plant's own at its transfer price)
     chemicals_share: 0.08 # gases and chemicals a start, as a share of the node's wafer price at index 1 of the mix below (A)
     mix: { neon: 0.5, gallium: 0.25, germanium: 0.25 } # M17 commodities whose index moves them (38.2)
   power_mwh: { base: 0.6, per_generation: 0.2 } # MWh a wafer start: base + per_generation x the node's generation (65 nm = 0): 5 nm about 2 MWh (A; TSMC's ~1.5 MWh a wafer on average)
