@@ -88,6 +88,7 @@ class FabOut(BaseModel):
     upgrade_estimate_cents: int | None
     upgrade_allowed: bool
     upgrade_reason: str | None
+    upgrade_how: str = Field(description="How the conversion opens (M23c)")
     month: FabMonthOut | None
     customers: list[FabCustomerOut]
     chips: list[str] = Field(description="The company's chip products its starts supply")
@@ -175,6 +176,7 @@ class FabQuoteOut(BaseModel):
     level: float
     allowed: bool
     reason: str | None
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
     market_cents: float | None
     cost_per_start_cents: float = Field(
         description="A start's cost at full use: depreciation, fixed, materials and power"

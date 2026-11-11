@@ -24,7 +24,7 @@ from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 
-from tst.balance import m18, m19
+from tst.balance import fixtures, m18, m19
 from tst.config import Settings
 from tst.db.mappers import entry_to_row
 from tst.db.repository import create_save, ledger_balances, load_state, open_session, run_turn
@@ -155,7 +155,14 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
     data = load_all(Settings().data_dir)
-    MODES[argv[1]](Path(argv[2]), argv[3], data)
+    path = MODES[argv[1]](Path(argv[2]), argv[3], data)
+    # M23c: a believable stage-3 team and a knowledge record of every employee (playtest 5)
+    fixtures.finish(
+        path,
+        data,
+        team=True,
+        specialists=(("mining_engineer", 2, "Mining"), ("operations_manager", 1, "Mining")),
+    )
     return 0
 
 

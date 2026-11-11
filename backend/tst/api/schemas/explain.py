@@ -34,7 +34,9 @@ class ExplainOut(BaseModel):
     metric: str
     label: str
     unit: ExplainUnit
-    scope: Literal["company", "product", "person", "account", "market"]
+    scope: Literal[
+        "company", "product", "person", "account", "market", "project", "mine", "fab", "refinery"
+    ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")
     value: float | None = None

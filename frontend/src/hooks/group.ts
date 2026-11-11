@@ -95,3 +95,22 @@ export function useGroupAction(saveId: string) {
     onSuccess: () => void invalidate(),
   });
 }
+
+// --- M23c: the capital-actions history and subsidiaries' quarterly updates ---------------
+
+export type CapitalAction = Schemas['CapitalActionOut'];
+export type SubsidiaryUpdate = Schemas['SubsidiaryUpdateOut'];
+
+export function useCapitalHistory(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'group', 'history'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/group/history', path(saveId))),
+  });
+}
+
+export function useSubsidiaryUpdates(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'group', 'updates'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/group/updates', path(saveId))),
+  });
+}

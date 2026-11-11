@@ -62,5 +62,24 @@ METRICS: dict[str, MetricDef] = {
             "Customers of every product in the market",
         ),
         _m("market_size", "Market size", "cents", "market", "Addressable spend a year"),
+        # v3 (M23c): a project, a mine, a fab or a refinery; the entity is its id
+        _m(
+            "mine_npv",
+            "Project NPV",
+            "cents",
+            "project",
+            "The latest study's NPV, mid of its range",
+        ),
+        _m("mine_cost", "Mine cost a tonne", "cents", "mine", "All-in sustaining cost a tonne"),
+        _m(
+            "fab_die_cost", "Cost per good die", "cents", "fab", "A start's cost over its good dies"
+        ),
+        _m(
+            "refinery_cost",
+            "Refinery cost a unit",
+            "cents",
+            "refinery",
+            "Full cost a unit of output",
+        ),
     )
 }

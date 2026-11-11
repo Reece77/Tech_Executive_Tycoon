@@ -80,7 +80,7 @@ test('(c) design an AI accelerator; a GPU data centre costs less', async ({ page
   await page.goto(`/game/${save}/products/hardware`);
   await page.getByTestId('wafer-open').click();
   await page.getByTestId('wafer-sign').click();
-  await expect(page.getByTestId('chip-row')).toContainText('50 wafers a month');
+  await expect(page.getByTestId('chip-row')).toContainText('50 wafer starts a month'); // M23c wording
   await page.goto(`/game/${save}/products`);
   await page.getByText('Kestrel TPU').first().click();
   await page.getByTestId('launch').click();

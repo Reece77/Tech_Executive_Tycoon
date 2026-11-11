@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { pressContinue } from './helpers.ts';
+import { continueMonth } from './helpers.ts';
 
 // M19 flows (formulas.md 35): (a) found a mining subsidiary and transfer a permitted project
 // into it (then order the mine); (b) watch construction end, the ramp-up and first sales;
@@ -28,8 +28,13 @@ test('(a) found a mining subsidiary and move a permitted project into it', async
   await page.goto(`/game/${save}/products`);
   await page.getByTestId('mines-link').click();
   await expect(page.getByTestId('quote-row')).toHaveCount(1);
+  // M23c: founding a subsidiary is on the Group screen, linked from Mines
+  await page.getByTestId('found-link').click();
+  await expect(page.getByTestId('group-found')).toBeVisible();
   await page.getByTestId('found-name').fill('Ironbark Mining');
   await page.getByTestId('found-subsidiary').click();
+  await expect(page.getByTestId('group-found-done')).toBeVisible();
+  await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('company-row')).toHaveCount(2);
   await expect(page.getByTestId('companies-panel')).toContainText('Ironbark Mining');
   await page.getByTestId('asset-select').click();
@@ -50,8 +55,9 @@ test('(b) a mine ends construction, ramps up and sells', async ({ page }) => {
   tool('building', save);
   await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('mine-status')).toContainText(/building/i);
-  await pressContinue(page);
-  await pressContinue(page);
+  // M23c: the save has a stage-3 team, whose people events block Continue: answer them first
+  await continueMonth(page);
+  await continueMonth(page);
   await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('mine-status')).toContainText(/producing/i);
   await expect(page.getByTestId('mine-capex')).toContainText('revised');

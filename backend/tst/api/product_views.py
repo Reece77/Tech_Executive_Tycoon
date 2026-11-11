@@ -248,7 +248,7 @@ def categories_out(state: GameState, data: LoadedData) -> list[CategoryOut]:
                 if cat.capacity_market
                 else "Sells your spare assembly-plant capacity: start it from Hardware"
                 if cat.assembly_market
-                else "Needs a manufacturing contract or a plant (a wafer contract for a chip)"
+                else "Needs a manufacturing contract or a plant (a foundry contract for a chip)"
                 if cat.sells_units
                 else "Compute costs follow the market"
                 if cat.compute_indexed

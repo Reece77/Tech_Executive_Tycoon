@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 
+from tst.api import howto
 from tst.api.schemas.mining import (
     MineDealOut,
     MineMonthOut,
@@ -243,6 +244,7 @@ def quotes_out(state: GameState, data: LoadedData) -> list[MineQuoteOut]:
                     npv_high_cents=p.npv_hi_cents,
                     allowed=False,
                     reason=str(exc),
+                    how=howto.mine_quote_how(str(exc)),
                 )
             )
             continue
@@ -273,6 +275,7 @@ def quotes_out(state: GameState, data: LoadedData) -> list[MineQuoteOut]:
                 npv_high_cents=p.npv_hi_cents,
                 allowed=True,
                 reason="",
+                how="",
             )
         )
     return out
@@ -427,6 +430,11 @@ def mines_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> M
         turn_label=format_turn(state.turn),
         group_stage=max(c.stage for c in xp.explorers(state)),
         found_min_stage=mb.found.min_stage,
+        found_how=howto.stage_how(
+            mb.found.min_stage,
+            max(c.stage for c in xp.explorers(state)),
+            "founding a subsidiary",
+        ),
         found_min_cents=mb.found.min_cents,
         found_energy=mb.found.energy,
         build_energy=mb.build_energy,

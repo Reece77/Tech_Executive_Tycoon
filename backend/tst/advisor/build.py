@@ -15,6 +15,7 @@ from dataclasses import replace
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from tst.advisor import v3
 from tst.advisor.metrics import METRICS
 from tst.advisor.model import Driver, Explanation, Item, MetricDef, Point
 from tst.api import breakdowns as bd
@@ -819,6 +820,20 @@ class Builder:
             trend_note="Market size is not kept month by month.",
         )
 
+    # --- v3's numbers (M23c): projects, mines, fabs and refineries ------------------------------
+
+    def mine_npv(self, m: MetricDef, entity: str | None) -> Explanation:
+        return v3.mine_npv(self, m, entity)
+
+    def mine_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        return v3.mine_cost(self, m, entity)
+
+    def fab_die_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        return v3.fab_die_cost(self, m, entity)
+
+    def refinery_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        return v3.refinery_cost(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(
@@ -860,6 +875,15 @@ def explain(
     return replace(out, related=related)
 
 
+# M23c: a v3 number's related events are those of its kind of facility, and the world's.
+V3_EVENTS: dict[str, tuple[str, ...]] = {
+    "project": ("exploration", "geopolitics"),
+    "mine": ("mining", "geopolitics"),
+    "fab": ("geopolitics", "research"),
+    "refinery": ("refining", "geopolitics"),
+}
+
+
 def related_events(
     state: GameState, m: MetricDef, entity: str | None, months: int
 ) -> tuple[str, ...]:
@@ -882,6 +906,8 @@ def related_events(
             product = state.product(e.product_id) if e.product_id is not None else None
             if product is None or product.category != entity:
                 continue
+        if m.scope in V3_EVENTS and e.category not in V3_EVENTS[m.scope]:
+            continue
         choice = e.choice(e.chosen) if e.chosen else None
         taken = f" (you chose: {choice.label})" if choice is not None else ""
         out.append(f"{format_turn(e.turn)}: {e.title}{taken}")

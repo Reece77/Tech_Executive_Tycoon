@@ -88,6 +88,8 @@ def test_investments_tab_and_actions(api: tuple[Client, Path], loaded: LoadedDat
     (stake,) = joined["investments"]["stakes"]
     assert stake["company_id"] == rnd["company_id"] and stake["stake_pct"] > 0
     assert stake["funding"] and stake["cash_band"] in ("deep pockets", "comfortable", "tight")
+    # M23c: an estimated value range from the startup's public numbers beside the round's mark
+    assert 0 < stake["estimate_low_cents"] <= stake["estimate_high_cents"]
     listed = next(c for c in joined["investments"]["listed"] if not c["own"])
     bought = client.post(
         f"{BASE}/founder/shares",

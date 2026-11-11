@@ -70,7 +70,7 @@ function Body({ saveId, hw }: { saveId: string; hw: Hardware }) {
               onClick={() => setDialog('wafer')}
               data-testid="wafer-open"
             >
-              Sign a wafer contract · {hw.wafer_energy}
+              Sign a foundry contract · {hw.wafer_energy}
             </Button>
           </>
         }
@@ -99,7 +99,7 @@ function Body({ saveId, hw }: { saveId: string; hw: Hardware }) {
         <Panel title="Unit cost">
           <p className="tst-muted" style={{ margin: 0 }} data-testid="no-hardware">
             No hardware products yet. Create a device, server or chip on Products; it needs a
-            manufacturing contract (or a wafer contract for a chip) before it can launch.
+            manufacturing contract (or a foundry contract for a chip) before it can launch.
           </p>
         </Panel>
       )}
@@ -127,9 +127,9 @@ function Body({ saveId, hw }: { saveId: string; hw: Hardware }) {
           <p className="tst-muted" style={{ margin: 0 }}>
             No contracts. Contract manufacturing runs {hw.contract_months[0]}–
             {hw.contract_months[1]} months and charges {pct(hw.contract_take_or_pay)} of the fee on
-            unused volume each month; wafer contracts run {hw.wafer_months[0]}–{hw.wafer_months[1]}{' '}
-            months ({pct(hw.wafer_take_or_pay)} on unused wafers). A contract signed before a
-            shortage keeps full allocation.
+            unused volume each month; foundry contracts run {hw.wafer_months[0]}–
+            {hw.wafer_months[1]} months ({pct(hw.wafer_take_or_pay)} on unused wafers). A contract
+            signed before a shortage keeps full allocation.
           </p>
         ) : (
           hw.contracts.map((c) => (
@@ -253,7 +253,7 @@ export function ManufacturingPanel({ m }: { m: Manufacturing }) {
       ))}
       {!m.can_launch_source && (
         <p className="tst-muted" style={{ fontSize: 12 }} data-testid="needs-source">
-          No manufacturing source yet: sign a {m.chip_source === null ? 'wafer' : 'manufacturing'}{' '}
+          No manufacturing source yet: sign a {m.chip_source === null ? 'foundry' : 'manufacturing'}{' '}
           contract{m.chip_source === null ? '' : ' or build a plant'} before launch.
         </p>
       )}
@@ -447,14 +447,15 @@ function ChipsPanel({ hw }: { hw: Hardware }) {
       {hw.chips.length === 0 ? (
         <p className="tst-muted" style={{ margin: 0 }}>
           No chips. Design a mobile SoC, server CPU or AI accelerator on Products; it is made on
-          foundry wafers you buy on a wafer contract.
+          wafers a foundry processes for you on a foundry contract.
         </p>
       ) : (
         hw.chips.map((c) => (
           <div key={c.product_id} className="tst-row" data-testid="chip-row">
             <span>
               {c.name} · {c.chip_label} · {c.per_wafer} a wafer · yield {pct(c.chip_yield)} ·{' '}
-              {formatWhole(c.wafers)} wafers a month
+              {formatWhole(c.wafers)} wafer starts a month on foundry contracts (about{' '}
+              {formatWhole(c.wafers * c.per_wafer * c.chip_yield)} good chips)
               {c.gpu_capex_factor !== null && (
                 <span data-testid="gpu-capex">
                   {' '}
@@ -462,9 +463,18 @@ function ChipsPanel({ hw }: { hw: Hardware }) {
                 </span>
               )}
             </span>
-            <span className="tst-num">
-              {formatMoney(c.unit_cost_cents)} a chip (market {formatMoney(c.market_price_cents)}) ·
-              your devices {formatWhole(c.internal_units)} · sold {formatWhole(c.market_units)}
+            <span className="tst-num" data-testid="chip-cost">
+              {formatMoney(c.unit_cost_cents)} a chip ={' '}
+              <Term term="chips.material">wafer material</Term> {formatMoney(c.material_cents)} +{' '}
+              <Term term="chips.processing">foundry processing</Term>{' '}
+              {formatMoney(c.processing_cents)} + packaging {formatMoney(c.packaging_cents)} (market{' '}
+              {formatMoney(c.market_price_cents)})
+            </span>
+            <span className="tst-num" data-testid="chip-use">
+              {c.used_in.length > 0 || c.internal_units > 0
+                ? `used in ${formatWhole(c.internal_units)} of your ${c.used_in.join(', ') || 'devices'} last month (at cost: its revenue is the devices')`
+                : 'not used in your devices'}
+              {' · '}sold {formatWhole(c.market_units)} to the chip market
             </span>
           </div>
         ))
@@ -619,7 +629,7 @@ function WaferDialog({
   const [wafers, setWafers] = useState<number>(50);
   const [months, setMonths] = useState<number>(24);
   return (
-    <Modal opened onClose={onClose} title="Wafer contract">
+    <Modal opened onClose={onClose} title="Foundry contract">
       <Select
         label="Chip"
         data={hw.chips.map((c) => ({ value: String(c.product_id), label: c.name }))}

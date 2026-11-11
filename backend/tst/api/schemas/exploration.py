@@ -73,6 +73,7 @@ class StageOptionOut(BaseModel):
     months: int
     allowed: bool
     reason: str = ""
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
 
 
 class ExplorationProjectOut(BaseModel):
@@ -126,6 +127,15 @@ class ExplorationProjectOut(BaseModel):
     sold_to: str | None
     sale_cents: int
     options: list[StageOptionOut]
+    holes_drilled: int = Field(description="Holes drilled on the project so far")
+    next_category: str | None = Field(
+        description="The resource category the next estimate can reach (M23c)"
+    )
+    holes_for_next: int | None = Field(
+        description="Holes an estimate needs for next_category (34.2)"
+    )
+    next_step: str = Field(description="What to do next on the project (M23c)")
+    renew_how: str = Field(description="How renewal opens, when it can't (M23c)")
 
 
 class ExplorerOut(BaseModel):
@@ -142,6 +152,9 @@ class ExplorationOut(BaseModel):
     desk_cost_cents: int
     desk_months: int
     max_programme: int
+    licence_years: int = Field(description="An exploration licence's term (34.2)")
+    licence_renewals: int = Field(description="Renewals a licence allows")
+    gate_how: str = Field(description="How exploration opens, when gated (M23c)")
     commodities: list[GeoCommodityOut]
     regions: list[GeoRegionOut]
     explorers: list[ExplorerOut]

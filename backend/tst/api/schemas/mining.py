@@ -134,6 +134,7 @@ class MineQuoteOut(BaseModel):
     npv_high_cents: int | None
     allowed: bool
     reason: str
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
 
 
 class TransferAssetOut(BaseModel):
@@ -198,6 +199,7 @@ class MinesOut(BaseModel):
     turn_label: str
     group_stage: int
     found_min_stage: int
+    found_how: str = Field(description="How founding a subsidiary opens (M23c)")
     found_min_cents: int
     found_energy: int
     build_energy: int
