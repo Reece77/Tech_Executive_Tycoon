@@ -320,6 +320,7 @@ def refineries_out(state: GameState, data: LoadedData) -> RefineriesOut:
                 product=product.name if product else None,
                 volume=s.volume,
                 taken=s.taken,
+                unit=rg.volume_unit(s.good, b, d),
                 unit_cents=s.unit_cents,
                 market_cents=s.market_cents,
             )

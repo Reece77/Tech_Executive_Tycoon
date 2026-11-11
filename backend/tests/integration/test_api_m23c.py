@@ -223,3 +223,23 @@ def test_subsidiary_ceos_report_each_quarter_and_ask_a_question(
     )
     assert after["mandate"] == "margin"
     assert next(a for a in after["advice"] if a["mandate"] == "margin")["current"]
+
+
+# --- Chips, wafers and foundries (sub-task 5) -----------------------------------------------
+
+
+def test_a_chip_cost_splits_wafer_material_and_foundry_processing(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    tool("e2e_m20_save").wafers(saves, "w", loaded)
+    base = BASE.format("w")
+    api.post(f"{base}/advance")  # a month of the phone using its own SoC
+    chip = next(c for c in api.get(f"{base}/hardware")["chips"] if c["name"] == "Forge SoC")
+    parts = chip["material_cents"] + chip["processing_cents"] + chip["packaging_cents"]
+    assert abs(parts - chip["unit_cost_cents"]) <= 2  # rounding of three parts
+    assert chip["material_cents"] > 0 and chip["processing_cents"] > 0
+    assert chip["processing_cents"] > chip["material_cents"]  # the foundry is most of a wafer
+    assert chip["used_in"] == ["Forge Phone"]
+    assert chip["internal_units"] > 0
+    supply = api.get(f"{base}/refineries")["supply"]
+    assert supply and all(s["unit"] for s in supply)

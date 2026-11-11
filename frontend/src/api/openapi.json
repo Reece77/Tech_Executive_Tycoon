@@ -24839,6 +24839,29 @@
             "type": "integer",
             "title": "Unit Cost Cents"
           },
+          "material_cents": {
+            "type": "integer",
+            "title": "Material Cents",
+            "description": "Of the unit cost: the blank wafer, a good die (M23c)"
+          },
+          "processing_cents": {
+            "type": "integer",
+            "title": "Processing Cents",
+            "description": "Of the unit cost: foundry processing, a good die"
+          },
+          "packaging_cents": {
+            "type": "integer",
+            "title": "Packaging Cents",
+            "description": "Of the unit cost: packaging and test"
+          },
+          "used_in": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Used In",
+            "description": "The group's own devices that use the chip"
+          },
           "market_price_cents": {
             "type": "integer",
             "title": "Market Price Cents",
@@ -24890,6 +24913,10 @@
           "status",
           "chip_yield",
           "unit_cost_cents",
+          "material_cents",
+          "processing_cents",
+          "packaging_cents",
+          "used_in",
           "market_price_cents",
           "per_wafer",
           "wafers",
@@ -39845,7 +39872,13 @@
           },
           "taken": {
             "type": "number",
-            "title": "Taken"
+            "title": "Taken",
+            "description": "Of the volume, what the buyer used this month"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "The good's volume unit (t, kg, wafer)"
           },
           "unit_cents": {
             "type": "number",
@@ -39866,6 +39899,7 @@
           "product",
           "volume",
           "taken",
+          "unit",
           "unit_cents",
           "market_cents"
         ],

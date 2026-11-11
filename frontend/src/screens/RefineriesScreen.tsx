@@ -88,7 +88,13 @@ function Body({ saveId, x }: { saveId: string; x: Refineries }) {
               <li key={i} data-testid="supply-row">
                 {qty(s.volume)} {s.good_label} from {s.seller} to {s.buyer}
                 {s.product ? ` (${s.product})` : ''} at {formatMoney(Math.round(s.unit_cents))}{' '}
-                against {formatMoney(Math.round(s.market_cents))} at market; used {qty(s.taken)}
+                against {formatMoney(Math.round(s.market_cents))} at market;{' '}
+                <span
+                  title={`Of the ${qty(s.volume)} ${s.unit} supplied, what ${s.buyer} put to use this month; the rest waits for next month.`}
+                  data-testid="supply-used"
+                >
+                  used {qty(s.taken)} {s.unit}
+                </span>
               </li>
             ))}
           </ul>

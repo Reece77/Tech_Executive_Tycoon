@@ -145,7 +145,8 @@ class OwnSupplyOut(BaseModel):
     good_label: str
     product: str | None
     volume: float
-    taken: float
+    taken: float = Field(description="Of the volume, what the buyer used this month")
+    unit: str = Field(description="The good's volume unit (t, kg, wafer)")
     unit_cents: float
     market_cents: float
 

@@ -6324,6 +6324,26 @@ export interface components {
             /** Unit Cost Cents */
             unit_cost_cents: number;
             /**
+             * Material Cents
+             * @description Of the unit cost: the blank wafer, a good die (M23c)
+             */
+            material_cents: number;
+            /**
+             * Processing Cents
+             * @description Of the unit cost: foundry processing, a good die
+             */
+            processing_cents: number;
+            /**
+             * Packaging Cents
+             * @description Of the unit cost: packaging and test
+             */
+            packaging_cents: number;
+            /**
+             * Used In
+             * @description The group's own devices that use the chip
+             */
+            used_in: string[];
+            /**
              * Market Price Cents
              * @description The device OEM reference price
              */
@@ -12544,8 +12564,16 @@ export interface components {
             product: string | null;
             /** Volume */
             volume: number;
-            /** Taken */
+            /**
+             * Taken
+             * @description Of the volume, what the buyer used this month
+             */
             taken: number;
+            /**
+             * Unit
+             * @description The good's volume unit (t, kg, wafer)
+             */
+            unit: string;
             /** Unit Cents */
             unit_cents: number;
             /** Market Cents */
