@@ -168,3 +168,58 @@ def test_every_greyed_out_fab_action_says_how(
         if not f["upgrade_allowed"]:
             assert f["upgrade_how"], f
     assert greyed > 0  # the newest nodes are out of reach in every one of these saves
+
+
+# --- The group: capital actions' history and the CEOs' quarterly updates (sub-task 4) -------
+
+
+def test_capital_actions_are_tracked_with_what_they_accomplished(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    tool("e2e_m16_save").formed(saves, "g", loaded)
+    base = BASE.format("g")
+    assert api.get(f"{base}/group/history")["actions"] == []
+    sub = next(e for e in api.get(f"{base}/group")["entities"] if e["role"] == "subsidiary")
+    api.post(f"{base}/group/sell-stake", json={"company_id": sub["company_id"], "stake_bp": 3000})
+    sale = api.get(f"{base}/group/history")["actions"][0]
+    assert sale["kind"] == "stake_sale" and sale["company"] == sub["name"]
+    assert (sale["stake_before_bp"], sale["stake_after_bp"]) == (10_000, 7_000)
+    assert sale["proceeds_cents"] > 0 and sale["nci_cents"] != 0
+    assert sale["value_note"]
+    api.post(f"{base}/group/companies/{sub['company_id']}/buy-out")
+    actions = api.get(f"{base}/group/history")["actions"]
+    kinds = sorted(a["kind"] for a in actions)
+    assert kinds == ["buyout", "stake_sale"]
+    buyout = next(a for a in actions if a["kind"] == "buyout")
+    assert buyout["proceeds_cents"] < 0  # the price paid
+    assert (buyout["stake_before_bp"], buyout["stake_after_bp"]) == (7_000, 10_000)
+    assert buyout["nci_cents"] == 0
+
+
+def test_subsidiary_ceos_report_each_quarter_and_ask_a_question(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    tool("e2e_m16_save").formed(saves, "u", loaded)
+    base = BASE.format("u")
+    updates = api.get(f"{base}/group/updates")["updates"]
+    assert updates
+    for u in updates:
+        assert u["ceo"] and u["body"] and u["question"].endswith("?")
+        assert [a["mandate"] for a in u["advice"]] == ["grow", "margin", "return_cash"]
+    # the advice is the mandate action: answering it sets the mandate
+    u = updates[0]
+    api.post(
+        f"{base}/group/mandate",
+        json={
+            "company_id": u["company_id"],
+            "mandate": "margin",
+            "capex_limit_cents": u["capex_limit_cents"],
+            "categories": u["categories"],
+            "regions": u["regions"],
+        },
+    )
+    after = next(
+        x for x in api.get(f"{base}/group/updates")["updates"] if x["company_id"] == u["company_id"]
+    )
+    assert after["mandate"] == "margin"
+    assert next(a for a in after["advice"] if a["mandate"] == "margin")["current"]

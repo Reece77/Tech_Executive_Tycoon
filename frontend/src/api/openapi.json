@@ -16086,6 +16086,152 @@
         }
       }
     },
+    "/api/saves/{save_id}/group/history": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Capital History",
+        "description": "Every stake sale, carve-out, spin-off and buyout: date, proceeds, ownership before and\nafter, NCI and the value created (31.5; M23c). Read from the posted entries.",
+        "operationId": "getCapitalHistory",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapitalHistoryOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/updates": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Subsidiary Updates",
+        "description": "Each subsidiary CEO's quarterly update, ending with a question for the Chair (M23c).",
+        "operationId": "getSubsidiaryUpdates",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubsidiaryUpdatesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/group/form": {
       "post": {
         "tags": [
@@ -21892,6 +22038,30 @@
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
+      "AdviceOut": {
+        "properties": {
+          "mandate": {
+            "type": "string",
+            "title": "Mandate",
+            "description": "grow | margin | return_cash"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mandate",
+          "label",
+          "current"
+        ],
+        "title": "AdviceOut"
+      },
       "AnalystOut": {
         "properties": {
           "firm": {
@@ -23528,6 +23698,126 @@
           "ownership_history"
         ],
         "title": "CapTableOut"
+      },
+      "CapitalActionOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "stake_sale | carve_out | spin_off | buyout"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "owner": {
+            "type": "string",
+            "title": "Owner",
+            "description": "The group company that sold or bought"
+          },
+          "proceeds_cents": {
+            "type": "integer",
+            "title": "Proceeds Cents",
+            "description": "Cash in (a buyout's price is negative)"
+          },
+          "stake_before_bp": {
+            "type": "integer",
+            "title": "Stake Before Bp"
+          },
+          "stake_after_bp": {
+            "type": "integer",
+            "title": "Stake After Bp"
+          },
+          "nci_cents": {
+            "type": "integer",
+            "title": "Nci Cents",
+            "description": "Non-controlling interest left: minorities' book equity"
+          },
+          "value_created_cents": {
+            "type": "integer",
+            "title": "Value Created Cents",
+            "description": "The equity effect on the owner's books: what the sale fetched over the book value given up (a buyout: below the minority's book; negative is a premium paid)"
+          },
+          "value_note": {
+            "type": "string",
+            "title": "Value Note"
+          },
+          "market_cap_now_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap Now Cents",
+            "description": "Its market cap now, when listed"
+          },
+          "stake_value_now_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Value Now Cents",
+            "description": "What the group's stake is worth now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "kind",
+          "kind_label",
+          "company_id",
+          "company",
+          "owner",
+          "proceeds_cents",
+          "stake_before_bp",
+          "stake_after_bp",
+          "nci_cents",
+          "value_created_cents",
+          "value_note",
+          "market_cap_now_cents",
+          "stake_value_now_cents"
+        ],
+        "title": "CapitalActionOut"
+      },
+      "CapitalHistoryOut": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/CapitalActionOut"
+            },
+            "type": "array",
+            "title": "Actions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actions"
+        ],
+        "title": "CapitalHistoryOut"
       },
       "CapitalOut": {
         "properties": {
@@ -48666,6 +48956,139 @@
           "staff"
         ],
         "title": "SubsidiaryOut"
+      },
+      "SubsidiaryUpdateOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "ceo": {
+            "type": "string",
+            "title": "Ceo"
+          },
+          "quarter_label": {
+            "type": "string",
+            "title": "Quarter Label"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "The latest quarter's revenue"
+          },
+          "prior_revenue_cents": {
+            "type": "integer",
+            "title": "Prior Revenue Cents",
+            "description": "The quarter before"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "mandate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mandate"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "title": "Capex Limit Cents"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "description": "The CEO's update in their own words, from public numbers"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "What the CEO asks the Chair"
+          },
+          "advice": {
+            "items": {
+              "$ref": "#/components/schemas/AdviceOut"
+            },
+            "type": "array",
+            "title": "Advice",
+            "description": "Answers: each re-sets the mandate (31.4)"
+          },
+          "advice_energy": {
+            "type": "integer",
+            "title": "Advice Energy",
+            "description": "Founder energy an answer takes (a mandate change)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "ceo",
+          "quarter_label",
+          "revenue_cents",
+          "prior_revenue_cents",
+          "operating_margin",
+          "cash_cents",
+          "mandate",
+          "capex_limit_cents",
+          "categories",
+          "regions",
+          "body",
+          "question",
+          "advice",
+          "advice_energy"
+        ],
+        "title": "SubsidiaryUpdateOut"
+      },
+      "SubsidiaryUpdatesOut": {
+        "properties": {
+          "updates": {
+            "items": {
+              "$ref": "#/components/schemas/SubsidiaryUpdateOut"
+            },
+            "type": "array",
+            "title": "Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updates"
+        ],
+        "title": "SubsidiaryUpdatesOut"
       },
       "SupplierGoodOut": {
         "properties": {

@@ -28,8 +28,13 @@ test('(a) found a mining subsidiary and move a permitted project into it', async
   await page.goto(`/game/${save}/products`);
   await page.getByTestId('mines-link').click();
   await expect(page.getByTestId('quote-row')).toHaveCount(1);
+  // M23c: founding a subsidiary is on the Group screen, linked from Mines
+  await page.getByTestId('found-link').click();
+  await expect(page.getByTestId('group-found')).toBeVisible();
   await page.getByTestId('found-name').fill('Ironbark Mining');
   await page.getByTestId('found-subsidiary').click();
+  await expect(page.getByTestId('group-found-done')).toBeVisible();
+  await page.goto(`/game/${save}/products/mines`);
   await expect(page.getByTestId('company-row')).toHaveCount(2);
   await expect(page.getByTestId('companies-panel')).toContainText('Ironbark Mining');
   await page.getByTestId('asset-select').click();

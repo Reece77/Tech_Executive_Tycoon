@@ -3514,6 +3514,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/group/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Capital History
+         * @description Every stake sale, carve-out, spin-off and buyout: date, proceeds, ownership before and
+         *     after, NCI and the value created (31.5; M23c). Read from the posted entries.
+         */
+        get: operations["getCapitalHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Subsidiary Updates
+         * @description Each subsidiary CEO's quarterly update, ending with a question for the Chair (M23c).
+         */
+        get: operations["getSubsidiaryUpdates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/group/form": {
         parameters: {
             query?: never;
@@ -5075,6 +5116,18 @@ export interface components {
             /** Months Left */
             months_left: number;
         };
+        /** AdviceOut */
+        AdviceOut: {
+            /**
+             * Mandate
+             * @description grow | margin | return_cash
+             */
+            mandate: string;
+            /** Label */
+            label: string;
+            /** Current */
+            current: boolean;
+        };
         /** AnalystOut */
         AnalystOut: {
             /** Firm */
@@ -5766,6 +5819,65 @@ export interface components {
              * @description Oldest first
              */
             ownership_history: components["schemas"]["OwnershipEventOut"][];
+        };
+        /** CapitalActionOut */
+        CapitalActionOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Kind
+             * @description stake_sale | carve_out | spin_off | buyout
+             */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /**
+             * Owner
+             * @description The group company that sold or bought
+             */
+            owner: string;
+            /**
+             * Proceeds Cents
+             * @description Cash in (a buyout's price is negative)
+             */
+            proceeds_cents: number;
+            /** Stake Before Bp */
+            stake_before_bp: number;
+            /** Stake After Bp */
+            stake_after_bp: number;
+            /**
+             * Nci Cents
+             * @description Non-controlling interest left: minorities' book equity
+             */
+            nci_cents: number;
+            /**
+             * Value Created Cents
+             * @description The equity effect on the owner's books: what the sale fetched over the book value given up (a buyout: below the minority's book; negative is a premium paid)
+             */
+            value_created_cents: number;
+            /** Value Note */
+            value_note: string;
+            /**
+             * Market Cap Now Cents
+             * @description Its market cap now, when listed
+             */
+            market_cap_now_cents: number | null;
+            /**
+             * Stake Value Now Cents
+             * @description What the group's stake is worth now
+             */
+            stake_value_now_cents: number | null;
+        };
+        /** CapitalHistoryOut */
+        CapitalHistoryOut: {
+            /** Actions */
+            actions: components["schemas"]["CapitalActionOut"][];
         };
         /** CapitalOut */
         CapitalOut: {
@@ -16302,6 +16414,64 @@ export interface components {
             cash_cents: number;
             /** Staff */
             staff: number;
+        };
+        /** SubsidiaryUpdateOut */
+        SubsidiaryUpdateOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Ceo */
+            ceo: string;
+            /** Quarter Label */
+            quarter_label: string;
+            /**
+             * Revenue Cents
+             * @description The latest quarter's revenue
+             */
+            revenue_cents: number;
+            /**
+             * Prior Revenue Cents
+             * @description The quarter before
+             */
+            prior_revenue_cents: number;
+            /** Operating Margin */
+            operating_margin: number | null;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Mandate */
+            mandate: string | null;
+            /** Capex Limit Cents */
+            capex_limit_cents: number;
+            /** Categories */
+            categories: string[];
+            /** Regions */
+            regions: string[];
+            /**
+             * Body
+             * @description The CEO's update in their own words, from public numbers
+             */
+            body: string;
+            /**
+             * Question
+             * @description What the CEO asks the Chair
+             */
+            question: string;
+            /**
+             * Advice
+             * @description Answers: each re-sets the mandate (31.4)
+             */
+            advice: components["schemas"]["AdviceOut"][];
+            /**
+             * Advice Energy
+             * @description Founder energy an answer takes (a mandate change)
+             */
+            advice_energy: number;
+        };
+        /** SubsidiaryUpdatesOut */
+        SubsidiaryUpdatesOut: {
+            /** Updates */
+            updates: components["schemas"]["SubsidiaryUpdateOut"][];
         };
         /** SupplierGoodOut */
         SupplierGoodOut: {
@@ -28861,6 +29031,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCapitalHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapitalHistoryOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getSubsidiaryUpdates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubsidiaryUpdatesOut"];
                 };
             };
             /** @description Bad Request */

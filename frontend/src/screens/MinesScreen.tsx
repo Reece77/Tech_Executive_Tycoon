@@ -84,7 +84,12 @@ function Body({ saveId, x }: { saveId: string; x: Mines }) {
       )}
       <Panel title="Group companies" testId="companies-panel">
         <CompaniesTable companies={x.companies} />
-        <FoundForm x={x} busy={act.isPending} onAct={run} />
+        <p style={{ fontSize: 13, margin: '4px 0' }}>
+          <Link to={`/game/${saveId}/finance/group`} data-testid="found-link">
+            Found a subsidiary on the Group screen
+          </Link>
+          <span className="tst-muted"> (Finance → Group), then move projects into it here.</span>
+        </p>
         <TransferForm x={x} busy={act.isPending} onAct={run} />
       </Panel>
       <Panel title="Build a mine" testId="quotes-panel">
@@ -185,7 +190,8 @@ function CompaniesTable({ companies }: { companies: MiningCompany[] }) {
   return <DataTable table={table} label="Group companies" rowTestId="company-row" />;
 }
 
-function FoundForm({
+/** Found a subsidiary (35.3): on the Group screen since M23c (playtest 5). */
+export function FoundForm({
   x,
   busy,
   onAct,
@@ -247,8 +253,8 @@ function FoundForm({
         Found · {x.found_energy} energy
       </Button>
       {gated && (
-        <span className="tst-muted" style={{ fontSize: 12 }}>
-          Opens at stage {x.found_min_stage}.
+        <span className="tst-muted" style={{ fontSize: 12 }} data-testid="found-how">
+          How: {x.found_how}.
         </span>
       )}
     </div>
