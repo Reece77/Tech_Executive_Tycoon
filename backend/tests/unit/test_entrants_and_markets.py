@@ -44,7 +44,11 @@ def test_every_entrant_is_founded_in_its_month(loaded: LoadedData, seed: int) ->
         assert {e.level for e in staff} == {"senior"}
         (product,) = state.company_products(company.id)
         assert product.category == entrant.category
-        assert {s.segment for s in state.segments_of(product.id)} == set(entrant.segments)
+        if entrant.region is None:  # North America, the home market
+            assert {s.segment for s in state.segments_of(product.id)} == set(entrant.segments)
+        else:  # M23a: an entrant that sells first in its own region
+            rows = state.regional_segments_of(product.id, entrant.region)
+            assert {s.segment for s in rows} == set(entrant.segments)
         again, _, _ = found_entrants(state, RngFactory(seed), loaded.balance, data)
         assert sum(1 for c in again.companies if c.name == entrant.name) == 1
 
