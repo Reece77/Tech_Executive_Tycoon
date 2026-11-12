@@ -19304,6 +19304,262 @@
         }
       }
     },
+    "/api/saves/{save_id}/fabs/foundry-contract": {
+      "post": {
+        "tags": [
+          "fabs"
+        ],
+        "summary": "Sign Foundry Contract",
+        "description": "M23a: a multi-month foundry contract with a rival designer (price and volume; the\ndesigner takes what the fab delivers, before spot slots).",
+        "operationId": "signFoundryContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoundryContractIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FabsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/contracts/{contract}/{contract_id}/quote": {
+      "get": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Quote Termination",
+        "description": "What breaking a contract would cost now (fee = the remaining months' take-or-pay minimum\ndiscounted at the base rate, plus contracts.break_penalty), before confirming.",
+        "operationId": "quoteTermination",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "contract",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Contract"
+            }
+          },
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerminationQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/contracts/terminate": {
+      "post": {
+        "tags": [
+          "contracts"
+        ],
+        "summary": "Terminate Contract",
+        "operationId": "terminateContract",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TerminateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world": {
       "get": {
         "tags": [
@@ -23348,6 +23604,28 @@
               }
             ],
             "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
           }
         },
         "type": "object",
@@ -23592,6 +23870,17 @@
               }
             ],
             "title": "Company Id"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           }
         },
         "type": "object",
@@ -25598,6 +25887,17 @@
       },
       "CommodityDealOut": {
         "properties": {
+          "supplier_country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Country Label"
+          },
           "deal_id": {
             "type": "integer",
             "title": "Deal Id"
@@ -26104,6 +26404,23 @@
         ],
         "title": "ContinueUntilOut",
         "description": "Continue until something needs me (30.5)."
+      },
+      "ContractActionOut": {
+        "properties": {
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "ContractActionOut"
       },
       "ContractIn": {
         "properties": {
@@ -30983,6 +31300,17 @@
           "cents": {
             "type": "integer",
             "title": "Cents"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
           }
         },
         "type": "object",
@@ -31449,6 +31777,40 @@
           "value"
         ],
         "title": "FounderSkillOut"
+      },
+      "FoundryContractIn": {
+        "properties": {
+          "fab_id": {
+            "type": "integer",
+            "title": "Fab Id"
+          },
+          "customer": {
+            "type": "string",
+            "title": "Customer"
+          },
+          "monthly_starts": {
+            "type": "number",
+            "title": "Monthly Starts"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "price_cents": {
+            "type": "number",
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fab_id",
+          "customer",
+          "monthly_starts",
+          "months",
+          "price_cents"
+        ],
+        "title": "FoundryContractIn",
+        "description": "M23a: sell a fab's starts to a rival designer for months at a price."
       },
       "FoundryNodeOut": {
         "properties": {
@@ -49470,6 +49832,29 @@
             "type": "string",
             "title": "Region Label"
           },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "description": "M23a: where the supplier sits"
+          },
+          "country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Label"
+          },
           "listing": {
             "type": "string",
             "title": "Listing"
@@ -50358,6 +50743,103 @@
           "expires_label"
         ],
         "title": "TermSheetOut"
+      },
+      "TerminateIn": {
+        "properties": {
+          "contract": {
+            "type": "string",
+            "title": "Contract",
+            "description": "commodity, refining, production, mine or foundry"
+          },
+          "contract_id": {
+            "type": "integer",
+            "title": "Contract Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract",
+          "contract_id"
+        ],
+        "title": "TerminateIn"
+      },
+      "TerminationQuoteOut": {
+        "properties": {
+          "contract": {
+            "type": "string",
+            "title": "Contract"
+          },
+          "contract_id": {
+            "type": "integer",
+            "title": "Contract Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "counterparty": {
+            "type": "string",
+            "title": "Counterparty"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left"
+          },
+          "monthly_minimum_cents": {
+            "type": "integer",
+            "title": "Monthly Minimum Cents",
+            "description": "A month's take-or-pay minimum"
+          },
+          "discounted_cents": {
+            "type": "integer",
+            "title": "Discounted Cents",
+            "description": "The months' minimums discounted at the base rate"
+          },
+          "penalty_cents": {
+            "type": "integer",
+            "title": "Penalty Cents"
+          },
+          "prepaid_cents": {
+            "type": "integer",
+            "title": "Prepaid Cents",
+            "description": "An offtake's unused prepayment kept against the fee"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "What leaves cash (negative: a refund)"
+          },
+          "relationship": {
+            "type": "number",
+            "title": "Relationship",
+            "description": "The counterparty's willingness to deal now, 0-1"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "contract",
+          "contract_id",
+          "company_id",
+          "counterparty",
+          "months_left",
+          "monthly_minimum_cents",
+          "discounted_cents",
+          "penalty_cents",
+          "prepaid_cents",
+          "fee_cents",
+          "cash_cents",
+          "relationship",
+          "energy"
+        ],
+        "title": "TerminationQuoteOut"
       },
       "TimelineItemOut": {
         "properties": {

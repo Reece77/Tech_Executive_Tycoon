@@ -82,7 +82,8 @@ def found_subsidiary(
 ) -> MinesActionOut:
     """35.1: a new, wholly owned subsidiary with a cash injection from the group."""
     path = _path(settings, save_id)
-    return _act(path, data, FoundSubsidiary(_actor(path), body.name, body.region, body.cents))
+    action = FoundSubsidiary(_actor(path), body.name, body.region, body.cents, country=body.country)
+    return _act(path, data, action)
 
 
 @router.post(

@@ -12,6 +12,7 @@ from typing import Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.chips import chips
+from tst.sim.contracts import termination as ct
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import FacilityRuleError, ProductRuleError
 from tst.sim.facilities.config import month_to_turn
@@ -102,10 +103,12 @@ def sign_manufacturing_contract(
     _months(action.months, c.months.lo, c.months.hi)
     if not 0 < action.units <= c.max_units:
         raise FacilityRuleError(f"a contract covers 1 to {c.max_units:,} units a month")
+    ct.check_willing(state, action.manufacturer, action.manufacturer, balance)  # M23a
     state = spend_energy(
         state, action.actor_id, "sign_manufacturing_contract", balance, cost=c.energy
     )
     fee = manufacturing_fee_cents(balance, product.category, action.manufacturer, action.city)
+    fee = ct.offered(state, action.manufacturer, fee, balance)  # M23a: it remembers a break
     contract_id, ids = state.next_ids.take("production_contract")
     contract = ProductionContract(
         id=contract_id,
@@ -157,8 +160,10 @@ def sign_wafer_contract(
         start
     ):
         raise FacilityRuleError(f"{w.foundries[action.foundry].label} takes contracts from {start}")
+    ct.check_willing(state, action.foundry, w.foundries[action.foundry].label, balance)  # M23a
     state = spend_energy(state, action.actor_id, "sign_wafer_contract", balance, cost=w.energy)
     price = chips.index_wafer_cents(state, chip_type, balance, data, action.foundry, action.node)
+    price = ct.offered(state, action.foundry, price, balance)  # M23a: it remembers a break
     contract_id, ids = state.next_ids.take("production_contract")
     contract = ProductionContract(
         id=contract_id,

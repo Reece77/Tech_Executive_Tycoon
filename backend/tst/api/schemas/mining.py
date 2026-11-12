@@ -228,6 +228,7 @@ class FoundSubsidiaryIn(BaseModel):
     name: str
     region: str
     cents: int
+    country: str | None = None  # M23a: a countries.yaml key in the region
 
 
 class TransferIn(BaseModel):

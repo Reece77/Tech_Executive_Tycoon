@@ -287,7 +287,7 @@ def quote_out(
         build_months=0,
         duv=duv,
     )
-    materials = materials_cents(state, probe, b, d)
+    materials = materials_cents(state, probe, b, d, public=True)
     per_start = (dep + fixed) / starts + materials
     return FabQuoteOut(
         node=node,

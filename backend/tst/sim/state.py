@@ -11,6 +11,7 @@ from types import MappingProxyType
 from typing import Any, Final
 
 from tst.sim.commodities.models import CommodityDeal
+from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
@@ -350,6 +351,9 @@ class GameState:
     own_supply: tuple[OwnSupply, ...] = ()
     # M21 (38.2): fabs' own state by facility id
     fabs: tuple[Fab, ...] = ()
+    # M23a: counterparties' memory of broken contracts, and fabs' foundry contracts by id
+    relations: tuple[Relation, ...] = ()
+    foundry_contracts: tuple[FoundryContract, ...] = ()
     # M19 (35): mines by facility id (closed ones too, until reclaimed and after), the deals
     # they sign as sellers by id, and rivals' bids for the group's projects and mines by id
     mines: tuple[Mine, ...] = ()
@@ -1240,6 +1244,16 @@ def with_variant(state: GameState, variant: Variant) -> GameState:
 
 def with_site(state: GameState, site: Site) -> GameState:
     return replace(state, sites=_upsert(state.sites, site, lambda x: (x.kind, x.id)))
+
+
+def with_relation(state: GameState, relation: Relation) -> GameState:
+    return replace(state, relations=_upsert(state.relations, relation, lambda r: r.counterparty))
+
+
+def with_foundry_contract(state: GameState, contract: FoundryContract) -> GameState:
+    return replace(
+        state, foundry_contracts=_upsert(state.foundry_contracts, contract, lambda c: c.id)
+    )
 
 
 def with_refinery(state: GameState, refinery: Refinery) -> GameState:

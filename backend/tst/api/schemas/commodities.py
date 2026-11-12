@@ -48,6 +48,7 @@ class PowerOut(BaseModel):
 
 
 class CommodityDealOut(BaseModel):
+    supplier_country_label: str | None = None  # M23a: where the supplier sits
     deal_id: int
     kind: str = Field(description="contract or offtake")
     good: str
@@ -82,6 +83,8 @@ class SupplierOut(BaseModel):
     name: str
     region: str
     region_label: str
+    country: str | None = Field(default=None, description="M23a: where the supplier sits")
+    country_label: str | None = None
     listing: str
     reliability: float = Field(description="Chance it keeps delivering through a severe shock")
     goods: list[SupplierGoodOut]

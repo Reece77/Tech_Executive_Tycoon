@@ -23,8 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 47  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
-# M22: 0047
+SCHEMA_VERSION = 48  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047; M23a: 0048
 
 
 class Base(DeclarativeBase):
@@ -1344,6 +1344,7 @@ class ProductionMonthRow(Base):
     chip_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     assembly_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     lost_units: Mapped[float] = mapped_column(Float, nullable=False)
+    fab_chips: Mapped[float] = mapped_column(Float, nullable=False, server_default="0")  # 0048
 
 
 class CompanyRivalKeyRow(Base):

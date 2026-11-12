@@ -7,8 +7,11 @@ chips from a fab are `starts x chips per wafer x its design yield x min(1, fab y
 yield)`. Production takes fab chips before wafer contracts' (38.2: "the group's own chips
 first"); starts a product does not use are sold as foundry slots (`plants.settle_fabs`).
 
-Fabs supply chips of their own company only (M21 decision; a group transfer is a follow-up).
-Nothing here runs for a company without a live fab.
+M23a (ADR-0020 1, 31.6): a fab supplies the chip products of **any company of its group**, its
+own company's and its sister companies' alike; a sister company pays for the starts it used at
+the `chips` flow's transfer price between the two (cost by default: the fab's cost a start; else
+cost plus or the node's market price), settled with the fab's month (`plants.settle_fabs`).
+Nothing here runs for a company without a live fab in its group.
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from tst.sim.products.models import SELLING, Product
 from tst.sim.state import GameState
 
 COST = 3  # tunable-exempt: the cost a start's place in a fab's history row
+FLOW_GOOD = "chips"  # M16's flow good for chips (31.6)
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,11 +36,19 @@ class FabShare:
     cost_per_start_cents: float  # the fab's full cost a start (last month's, else 0)
 
 
+def _group(state: GameState, company_id: int) -> tuple[int, ...]:
+    from tst.sim.refining.plants import group_of
+
+    return group_of(state, company_id)
+
+
 def live_fabs(state: GameState, company_id: int) -> list[Fab]:
+    """The live fabs of `company_id`'s group (M23a), in facility order."""
+    group = _group(state, company_id)
     return [
         f
         for f in state.fabs
-        if f.company_id == company_id
+        if f.company_id in group
         and f.month is not None
         and f.month.turn == state.turn
         and f.month.available > 0
@@ -44,11 +56,34 @@ def live_fabs(state: GameState, company_id: int) -> list[Fab]:
 
 
 def chip_products(state: GameState, company_id: int, data: GameData) -> list[Product]:
+    """The selling chip products of `company_id`'s group (M23a), by company then product."""
     return [
         p
-        for p in state.company_products(company_id)
+        for cid in _group(state, company_id)
+        for p in state.company_products(cid)
         if p.status in SELLING and data.category(p.category).chip_type is not None
     ]
+
+
+def start_price_cents(
+    state: GameState, fab: Fab, buyer: int, cost: float, balance: Balance, data: GameData
+) -> float:
+    """What a start costs company `buyer` (31.6): the fab's cost inside its own company, else
+    the `chips` flow's transfer price between the two (cost when none is set) against the node's
+    market wafer price."""
+    if buyer == fab.company_id:
+        return cost
+    from tst.sim.fabs import market as fm
+    from tst.sim.group import formulas as gf
+    from tst.sim.group.transfer import flow_of
+
+    flow = flow_of(state, fab.company_id, buyer, FLOW_GOOD)
+    if flow is None:
+        return cost
+    market = fm.node_price_cents(state, fab.node, balance, data)
+    return float(
+        gf.transfer_price_cents(flow.kind, round(cost), round(market), balance, flow.margin)
+    )
 
 
 def _per_start(
@@ -88,8 +123,9 @@ def allocation(
         prev = fab.history[-1][COST] if fab.history else 0.0
         for p in products:
             share = wish[p.id] / total if total > 0 else 1 / len(products)
+            price = start_price_cents(state, fab, p.company_id, prev, balance, data)
             out[p.id].append(
-                FabShare(fab.facility_id, fab.node, fab.month.available * share, per[p.id], prev)
+                FabShare(fab.facility_id, fab.node, fab.month.available * share, per[p.id], price)
             )
     return out
 

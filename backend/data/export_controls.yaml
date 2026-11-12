@@ -85,3 +85,11 @@ seeded:
   - { key: s_us_fab_services, title: "US bars foundry services to Chinese designers", actor: us_aligned, goods: [fab_services, chip_equipment, euv_tools], to: [china], regime: ban, by_ownership: true }
   - { key: s_cn_cobalt_lithium, title: "China licenses cobalt and lithium chemical exports", actor: china, goods: [cobalt, lithium], to: [us_aligned], regime: licence, approval: 0.5, by_ownership: false }
   - { key: s_us_hbm_wide, title: "US extends HBM and AI chip controls to the China bloc", actor: us_aligned, goods: [ai_chips, hbm], to: [china], regime: licence, approval: 0.2, threshold: 50, by_ownership: true }
+
+# M23a (39.3): rivals' compliant variants, from history. A rival in a rule's jurisdiction sells to
+# its destinations only as a variant launched by then (at the variant's lower quality, keeping
+# geopolitics.variant.keep of the buyers), and not at all once a rule voids variants launched
+# before it. Rivals request no licences.
+rival_variants:
+  - { company: NVIDIA, chip_type: ai_accelerator, month: "2022-11", label: A800, tag: R } # R: A800 shipped to China from November 2022; closed by October 2023's rules
+  - { company: NVIDIA, chip_type: ai_accelerator, month: "2024-01", label: H20, tag: R } # R: H20 for China from early 2024; licensed from April 2025 (us_h20_2025)

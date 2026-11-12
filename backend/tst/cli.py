@@ -1728,7 +1728,7 @@ def wafer_contract(
     months: Annotated[int, typer.Option(help="12 to 36")],
     foundry: Annotated[str, typer.Option(help="tsmc or samsung")] = "tsmc",
 ) -> None:
-    """Sign a wafer contract at this month's wafer price; take-or-pay; energy 6 (26.3)."""
+    """Sign a foundry (wafer) contract at this month's wafer price; take-or-pay; energy 6 (26.3)."""
     from tst.sim.actions.hardware import SignWaferContract
 
     path, data, state = _game(save)

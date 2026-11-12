@@ -17,8 +17,14 @@ the player group's products in a region, each country is open, open as a complia
 
 `access` gives the product's **blocked share** of the region (the demand it cannot win) and its
 **variant share** (where it sells as the variant at quality - variant.quality_penalty, M22
-decision: the variant's appeal there is that of the lower quality). Rivals' sales are not
-controlled (M22 decision; brief: rivals' lobbying out of scope).
+decision: the variant's appeal there is that of the lower quality).
+
+**Rivals** (M23a; playtest 5): with `geopolitics.rivals_controlled`, a rival in a rule's
+jurisdiction is restricted as the player is, but it requests no licences: it sells to a
+destination only as a compliant variant from history (export_controls.yaml `rival_variants`:
+NVIDIA's A800 and H20) or under a quota. The local-partner rule stays the player's. Demand a
+blocked product cannot win goes to the products free in that region (products.phases), so a
+Chinese rival gains where a US one is shut out.
 
 **Leaving.** Customers in a destination that closes stay on the books and leave at
 `exit_rate` a month (`exits`, before the month's markets): an `Exit` per (product, region,
@@ -38,6 +44,7 @@ from tst.sim.geopolitics.models import Exit
 from tst.sim.geopolitics.rules import ActiveRule
 from tst.sim.products.models import Product
 from tst.sim.state import (
+    CompanyState,
     GameState,
     with_product_segment,
     with_regional_segment,
@@ -105,6 +112,31 @@ def variant_open(state: GameState, product_id: int, active: ActiveRule) -> bool:
     return not (active.rule.voids_variants and variant.turn < active.start_turn)
 
 
+def rival_variant_open(
+    state: GameState, product: Product, active: ActiveRule, data: GameData
+) -> bool:
+    """A rival's compliant variant from history (M23a): the latest launched by now for its
+    company and chip type, unless the rule voids variants launched before it."""
+    chip_type = data.category(product.category).chip_type
+    name = state.company(product.company_id).name
+    launched = [
+        v.turn
+        for v in gr.controls_of(data).rival_variants
+        if v.company == name and v.chip_type == chip_type and v.turn <= state.turn
+    ]
+    if not launched:
+        return False
+    return not (active.rule.voids_variants and max(launched) < active.start_turn)
+
+
+def controlled(state: GameState, company_id: int, balance: Balance) -> bool:
+    """Whether export controls bind the company's sales: the player's group always; a rival
+    with geopolitics.rivals_controlled (M23a)."""
+    if world.in_group(state, company_id):
+        return True
+    return balance.geopolitics.rivals_controlled and state.company(company_id).is_rival
+
+
 def partner_closed(
     state: GameState, product: Product, country: str, balance: Balance, data: GameData
 ) -> bool:
@@ -127,15 +159,20 @@ def country_access(
     data: GameData,
 ) -> tuple[float, bool]:
     """(the share of the country's demand open to the product, whether only as a variant)."""
-    if partner_closed(state, product, country, balance, data):
+    rival = not world.in_group(state, product.company_id)
+    if not rival and partner_closed(state, product, country, balance, data):
         return 0.0, False
     allowed, as_variant = 1.0, False
     for a in restrict:
         if country not in world.destination_countries(data, a.rule, state.turn):
             continue
-        if licence_open(state, product.id, a.key, country):
+        if not rival and licence_open(state, product.id, a.key, country):
             continue
-        if variant_open(state, product.id, a):
+        if (
+            rival_variant_open(state, product, a, data)
+            if rival
+            else variant_open(state, product.id, a)
+        ):
             as_variant = True
             allowed *= balance.geopolitics.variant.keep
             continue
@@ -147,11 +184,12 @@ def access(
     state: GameState, product: Product, region: str, balance: Balance, data: GameData
 ) -> Access:
     """The product's blocked and variant shares in `region` (module docstring)."""
-    if not world.enabled(data) or not world.in_group(state, product.company_id):
+    if not world.enabled(data) or not controlled(state, product.company_id, balance):
         return OPEN
     restrict = restricting(state, product, balance, data)
     lp = balance.geopolitics.local_partner
-    if not restrict and product.category not in lp.categories:
+    rival = not world.in_group(state, product.company_id)
+    if not restrict and (rival or product.category not in lp.categories):
         return OPEN
     blocked = variant = 0.0
     for c in world.countries_of(data).of_region(region):
@@ -163,13 +201,13 @@ def access(
 
 
 def access_map(state: GameState, balance: Balance, data: GameData) -> dict[tuple[int, str], Access]:
-    """(product id, region) -> access for the player group's selling products, where not
-    open: built once at phase 5's start."""
+    """(product id, region) -> access for the controlled companies' selling products (the
+    player's group; M23a, rivals), where not open: built once at phase 5's start."""
     out: dict[tuple[int, str], Access] = {}
     if not world.enabled(data):
         return out
     regions = data.region_keys
-    for company in world.group(state):
+    for company in controlled_companies(state, balance, data):
         for product in state.company_products(company.id):
             if product.status not in ("live", "sunset"):
                 continue
@@ -178,6 +216,27 @@ def access_map(state: GameState, balance: Balance, data: GameData) -> dict[tuple
                 if not a.free:
                     out[(product.id, region)] = a
     return out
+
+
+def controlled_companies(
+    state: GameState, balance: Balance, data: GameData
+) -> tuple[CompanyState, ...]:
+    """The player's group, then (M23a) rivals with a selling chip product while a rule bites."""
+    group = world.group(state)
+    if not balance.geopolitics.rivals_controlled or not gr.biting(state, data):
+        return group
+    ids = {c.id for c in group}
+    rivals = tuple(
+        c
+        for c in state.companies
+        if c.id not in ids
+        and c.is_rival
+        and any(
+            p.status in ("live", "sunset") and data.category(p.category).chip_type is not None
+            for p in state.company_products(c.id)
+        )
+    )
+    return (*group, *rivals)
 
 
 def winding(
@@ -203,7 +262,7 @@ def exits(state: GameState, balance: Balance, data: GameData) -> GameState:
     old = {(x.product_id, x.region, x.segment): x for x in state.exits}
     out: list[Exit] = []
     rows: list[tuple[int, str, str, float]] = []  # product, region, segment, customers
-    for company in world.group(state):
+    for company in controlled_companies(state, balance, data):
         for product in state.company_products(company.id):
             if home is not None:
                 rows += [

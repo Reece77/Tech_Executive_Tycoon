@@ -329,8 +329,9 @@ def settle(
     entries: list[LedgerEntry] = []
     rows: list[ProductionMonth] = []
     fab_used: dict[int, float] = {}  # M21: facility id -> starts run for own chips
+    fab_buyers: dict[tuple[int, int], float] = {}  # M23a: (facility, company) -> starts
     if plan is not None:
-        posted = _posted_units(state, plan, fab_used, balance, data)
+        posted = _posted_units(state, plan, fab_used, balance, data, fab_buyers)
         for pid in sorted(plan.capped):
             product = state.product(pid)
             assert product is not None
@@ -348,6 +349,7 @@ def settle(
                         internal_units=use.internal,
                         chip_cents=chip_cents,
                         lost_units=use.lost,
+                        fab_chips=_fab_made(plan, pid),
                     )
                 )
                 if chip_cents:
@@ -411,7 +413,7 @@ def settle(
     entries += more
     state = replace(state, production=tuple(rows))
     if state.fabs:  # M21 (38.2): own starts, foundry slots and the fabs' month
-        state, more = fab_plants.settle_fabs(state, fab_used, balance, data)
+        state, more = fab_plants.settle_fabs(state, fab_used, balance, data, fab_buyers)
         entries += more
     return state, entries
 
@@ -428,10 +430,12 @@ def _posted_units(
     fab_used: dict[int, float],
     balance: Balance,
     data: GameData,
+    fab_buyers: dict[tuple[int, int], float] | None = None,
 ) -> dict[int, float]:
     """Each chip product's cost a chip at sale (26.3): contract chips at their unit cost, own-fab
-    chips at packaging only (M21: the fab's month carries the wafer). Fills `fab_used` with the
-    starts each fab ran for them."""
+    chips at packaging only (M21: the fab's month carries the wafer; M23a: a sister company pays
+    the fab's owner for its starts with the fab's month). Fills `fab_used` with the starts each
+    fab ran for them, and `fab_buyers` with them by (fab, the product's company)."""
     out: dict[int, float] = {}
     for pid in sorted(plan.chips_capacity):
         product = state.product(pid)
@@ -454,6 +458,9 @@ def _posted_units(
             )
             got = min(left, cap)
             fab_used[s.facility_id] = fab_used.get(s.facility_id, 0.0) + got / s.chips_per_start
+            if fab_buyers is not None:
+                key = (s.facility_id, product.company_id)
+                fab_buyers[key] = fab_buyers.get(key, 0.0) + got / s.chips_per_start
             left -= got
     return out
 

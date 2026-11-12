@@ -25,6 +25,7 @@ from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.geology import block_of
 from tst.sim.exploration.models import Project
 from tst.sim.facilities.models import Facility
+from tst.sim.group.assets import check_country, move_facility, place
 from tst.sim.group.models import Ownership
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
@@ -81,6 +82,7 @@ class FoundSubsidiary:
     region: str
     cents: int
     parent_id: int | None = None
+    country: str | None = None  # M23a: the country it sits in (default: the region's default)
     kind: Literal["found_subsidiary"] = "found_subsidiary"
 
 
@@ -264,6 +266,7 @@ def found_subsidiary(
         raise MiningRuleError(f"a company called {name!r} already exists")
     if action.region not in data.region_keys:
         raise MiningRuleError(f"unknown region {action.region!r}")
+    check_country(data, action.region, action.country)
     parent = action.parent_id if action.parent_id is not None else listed_id(state)
     if parent not in group_ids(state):
         raise MiningRuleError("the parent is a company of your group")
@@ -275,7 +278,14 @@ def found_subsidiary(
     turn = state.turn
     cid = max(c.id for c in state.companies) + 1
     founded = sum(1 for c in state.companies if c.rival_key[:1] == (SUBSIDIARY_KEY,))
-    city = next((c.key for c in data.cities if c.region == action.region), None)
+    city = next(
+        (
+            c.key
+            for c in data.cities
+            if c.region == action.region and (action.country is None or c.country == action.country)
+        ),
+        None,
+    )
     company = CompanyState(
         id=cid,
         name=name,
@@ -288,6 +298,7 @@ def found_subsidiary(
         rival_key=(SUBSIDIARY_KEY, founded),  # a stable identity for its streams (ADR-0013)
     )
     state = replace(state, companies=(*state.companies, company))
+    state = place(state, "company", cid, action.country)
     state = with_ownership(
         state,
         Ownership(
@@ -403,9 +414,7 @@ def transfer_asset(
         entries.append(LedgerEntry(turn, seller, f"{memo}, to {receiver}", tuple(out)))
     if inn:
         entries.append(LedgerEntry(turn, to, memo, tuple(inn)))
-    state = with_facility(state, replace(facility, company_id=to))
-    if mine is not None:
-        state = with_mine(state, replace(mine, company_id=to))
+    state = move_facility(state, facility.id, to)  # M23a: every record and its crew
     log = inbox_item(
         turn,
         state.player.id,
@@ -470,6 +479,11 @@ def quote(
         raise MiningRuleError("a mine needs a feasibility study")
     if any(m.project_id == project.id and m.status != "closed" for m in state.mines):
         raise MiningRuleError("a mine already stands on that project")
+    ended = {m.close_reason for m in earlier_mines(state, project.id)}
+    if "depleted" in ended:
+        raise MiningRuleError("that deposit is exhausted: its mine closed when the ore ran out")
+    if ended & DISPOSED:
+        raise MiningRuleError("that deposit's mine was sold or seized: it is no longer the group's")
     block = block_of(state, project.region, project.block)
     assert block is not None
     sub = subtype_of(project, block.depth_m, balance)
@@ -498,6 +512,14 @@ def quote(
         overrun_hi=over.hi,
         staff_needed=mf.staff_needed(cap, mb.staff_per_kt),
     )
+
+
+DISPOSED: Final = frozenset({"sold", "sold_to_state", "seized"})
+
+
+def earlier_mines(state: GameState, project_id: int) -> list[Mine]:
+    """Mines built on the project before, closed (M23a: the deposit's history)."""
+    return [m for m in state.mines if m.project_id == project_id and m.status == "closed"]
 
 
 def build_mine(
@@ -534,6 +556,12 @@ def build_mine(
     c = data.geology.commodity(project.commodity)
     assert project.est_grade_center is not None and project.recovery_center is not None
     ready = turn + months
+    # M23a (Codex review 5 finding 2): depletion and capitalized exploration are the deposit's
+    # across mine lifetimes. A mine rebuilt after a chosen closure starts where the last one
+    # stopped and capitalizes only the project's spend not yet moved to 1520.
+    earlier = earlier_mines(state, project.id)
+    mined = sum(m.ore_mined_mt for m in earlier)
+    moved = max(0, project.spent_cents - sum(m.moved_cents for m in earlier))
     mine = Mine(
         id=fid,
         company_id=company,
@@ -553,7 +581,8 @@ def build_mine(
         hidden_ore_mt=xp._tonnage_truth(block, hit, c),
         hidden_grade=xp._grade_truth(block, hit, c),
         hidden_recovery=block.true_recovery if hit else sum(c.recovery) / 2,
-        moved_cents=project.spent_cents,
+        moved_cents=moved,
+        ore_mined_mt=mined,
     )
     facility = Facility(
         id=fid,
@@ -570,7 +599,7 @@ def build_mine(
     )
     state = with_mine(with_facility(state, facility), mine)
     entries: tuple[LedgerEntry, ...] = ()
-    if project.spent_cents:  # 35.2: the project's exploration and study spend is capitalized
+    if moved:  # 35.2: the project's exploration and study spend is capitalized (once)
         entries = (
             LedgerEntry.transfer(
                 turn=turn,
@@ -578,7 +607,7 @@ def build_mine(
                 memo=f"Capitalized exploration: {xp.label_of(project)}",
                 debit=MINERAL_PROPERTIES,
                 credit=EXPLORATION,
-                amount=project.spent_cents,
+                amount=moved,
             ),
         )
     log = inbox_item(

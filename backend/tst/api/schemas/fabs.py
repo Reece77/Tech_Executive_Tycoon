@@ -189,6 +189,18 @@ class BuildFabIn(BaseModel):
     size: int
     duv: bool = False
     city: str | None = None
+    country: str | None = None  # M23a: a countries.yaml key in the region
+    company_id: int | None = None  # M23a: a group company to build it for
+
+
+class FoundryContractIn(BaseModel):
+    """M23a: sell a fab's starts to a rival designer for months at a price."""
+
+    fab_id: int
+    customer: str
+    monthly_starts: float
+    months: int
+    price_cents: float
 
 
 class StaffFabIn(BaseModel):

@@ -11,7 +11,7 @@ from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.calendar import format_turn
 from tst.sim.commodities import offtake
 from tst.sim.data_models import Balance, GameData
-from tst.sim.errors import InsufficientCashError
+from tst.sim.errors import CommodityRuleError, InsufficientCashError
 from tst.sim.ledger import CASH, PREPAID, LedgerBalances, LedgerEntry, LedgerLine, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.state import GameState, with_commodity_deal
@@ -72,6 +72,13 @@ def sign_offtake(
     balances: LedgerBalances,
 ) -> Outcome:
     company = acting_company(state, action.actor_id)
+    from tst.sim.geopolitics import supply as geo_supply
+
+    banned = geo_supply.banned_supplier(  # M23a: suppliers obey their country's export bans
+        state, company, action.good, action.supplier, balance, data
+    )
+    if banned is not None:
+        raise CommodityRuleError(f"{banned.rule.title}: this supplier cannot sell it to you")
     q = offtake.offtake_quote(
         state,
         action.good,

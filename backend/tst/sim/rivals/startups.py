@@ -414,7 +414,20 @@ def found_entrants(
         )
         entries.append(entry)
         product_id = state.company_products(company.id)[0].id
-        state = sell_first_in(state, company, product_id, ENTRANT_REGION, balance, data)  # 19.6
+        if entrant.quality is not None:  # M23a: an established group's unit, launched at once
+            product = state.company_products(company.id)[0]
+            state = with_product(
+                state,
+                replace(
+                    product,
+                    status="live",
+                    quality=entrant.quality,
+                    feature_points=max(product.feature_points, category.features_at_start),
+                    launched_turn=state.turn,
+                ),
+            )
+        first = entrant.region or ENTRANT_REGION  # 19.6; M23a: a Chinese entrant in East Asia
+        state = sell_first_in(state, company, product_id, first, balance, data)
         state, move = _record(
             state, company, "founded", f"was founded in {category.label}", product_id
         )

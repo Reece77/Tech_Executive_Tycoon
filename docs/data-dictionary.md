@@ -1409,6 +1409,7 @@ One unit-sale product's month of production (26.2, 26.3), append-only. Primary k
 | `chip_cents` | BIGINT | no | Chips (own at cost, bought at market), to `5000_cogs`; a chip product: its market chips' cost. |
 | `assembly_cents` | BIGINT | no | Contract fees and plants' cost per unit run, to `5000_cogs`. Plants' fixed cost posts in phase 6 ("Assembly plant operations", `5000_cogs`). |
 | `lost_units` | FLOAT | no | Demand above what it could make, lost to the next-best product. |
+| `fab_chips` | FLOAT | no | M23a (0048, default 0): a chip product's chips made in its group's own fabs this month (taken first): their fabs' countries are the chips' origin for tariffs (39.3). |
 
 `5000_cogs` (existing) now carries hardware's cost of goods: the player's from `production_month`, a rival's at its market's `hosting_cents` a unit.
 
@@ -1903,7 +1904,7 @@ Every geopolitical record, one row each, rewritten by collection when it changes
 | Column | Type | Null | Meaning |
 | --- | --- | --- | --- |
 | `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position (keeps each collection's order). |
-| `kind` | VARCHAR | no | The collection: `tension` (`turn`, `value` 0-100, `shock` `none`/`escalation`/`detente`: seeded months after 2025), `seeded_rules` (`rule_key` an export_controls.yaml `seeded` key, `start_turn`, `end_turn`), `suspensions` (`rule_key`, `start_turn`, `end_turn`: a seeded détente's), `licences` (`id`, `company_id`, `product_id`, `rule_key`, `country`, `requested_turn`, `decide_turn`, `status` `pending`/`approved`/`denied`/`expired`/`grey`, `until_turn`), `variants` (`product_id`, `turn`: a compliant variant's launch), `entity_listings` (`company_id`, `actor` a country or bloc, `turn`, `reason`), `sites` (`kind` `company`/`facility`, `id`, `country`, `local_partner`), `exits` (`product_id`, `region`, `segment`, `remaining` customers in closed destinations still on the books, `share` the blocked share last month), `geo_notices` (`turn`, `company_id`, `template_id`, `rule_key`: what a geopolitical event's {rule} names). |
+| `kind` | VARCHAR | no | The collection: `tension` (`turn`, `value` 0-100, `shock` `none`/`escalation`/`detente`: seeded months after 2025), `seeded_rules` (`rule_key` an export_controls.yaml `seeded` key, `start_turn`, `end_turn`), `suspensions` (`rule_key`, `start_turn`, `end_turn`: a seeded détente's), `licences` (`id`, `company_id`, `product_id`, `rule_key`, `country`, `requested_turn`, `decide_turn`, `status` `pending`/`approved`/`denied`/`expired`/`grey`, `until_turn`), `variants` (`product_id`, `turn`: a compliant variant's launch), `entity_listings` (`company_id`, `actor` a country or bloc, `turn`, `reason`), `sites` (`kind` `company`/`facility`, `id`, `country`, `local_partner`), `exits` (`product_id`, `region`, `segment`, `remaining` customers in closed destinations still on the books, `share` the blocked share last month), `geo_notices` (`turn`, `company_id`, `template_id`, `rule_key`: what a geopolitical event's {rule} names); M23a, appended so earlier rows keep their numbers: `relations` (`counterparty` a supplier, manufacturer or foundry key, `traders:<good>`, `refining:<good>` or a buyer's name; `score` 0-1 as of `turn`, recovering contracts.relationship_recovery a month; `breaks`), `foundry_contracts` (`id`, `fab_id` the fab's facility, `company_id` its owner, `customer` a rival designer's name, `monthly_starts`, `price_cents` a start, `signed_turn`, `end_turn`, `delivered` last month's starts, `status` `active`/`ended`). |
 | `data` | JSON | no | The record's fields, as listed under `kind`. |
 
 ## M25: files beside the saves (not tables)
@@ -1927,3 +1928,13 @@ A company's commodity contract or offtake agreement (formulas.md 33.3). Prepayme
 | `id` | INTEGER | no | Primary key. |
 | `company_id` | INTEGER | no | The buyer (indexed). |
 | `data` | JSON | no | `kind` (`contract`: a fixed price for 6–36 months, take-or-pay on the unused volume at the end; `offtake`: 3–10 years with a supplier inside a collar, take-or-pay each month), `good`, `supplier` (suppliers.yaml key; offtakes), `signed_turn`, `end_turn` (the last month covered), `volume_year` (volume units a year), `signing_price`, `floor` and `ceiling` (the collar, the good's price unit; a contract's are its price), `prepaid_cents` and `prepaid_left_cents` (paid at signing, and not yet drawn), `status` (`active`, `ended`, `breached`), `taken` (volume taken so far), `last_taken` and `last_price` (last month's), `hedge_cents` (cost of goods saved against spot so far; negative when the deal cost more), `charged_cents` (take-or-pay so far), `closed_turn`. |
+
+## M23a: v3 integration (migration `0048_m23a`)
+
+`production_month.fab_chips` (above) is the only new column; `save_meta.schema_version` is 48. New `geo_record` kinds: `relations` and `foundry_contracts` (above). New fields inside existing JSON `data` columns (absent in older saves: their defaults):
+
+- `fab.data.month.group`: `[[company_id, starts, transfer_cents, market_cents], ...]`, the month's starts by group company (31.6: a sister company pays the transfer price, 4300/5900); `fab.data.month.contracted`: starts sold under foundry contracts (part of `sold`).
+- `refining_supply.data.fab_id`: a lot of substrate wafers for a group fab's starts (null for chip products' wafer starts and commodities).
+- `company` sites (`geo_record` `sites`) now also record a country chosen when founding a subsidiary or ordering a fab or refinery.
+
+Accounts: none new (termination fees post to `6900_general_admin`; border tariffs on intra-group chips to `5100_tariffs`). Balance keys `contracts.*`, `geopolitics.rivals_controlled`. Data: `export_controls.yaml` `rival_variants`, `entrants.yaml` `region` and `quality` (Huawei Ascend), `countries.yaml` rivals' `Huawei Ascend: china`.

@@ -80,7 +80,14 @@ def build_refinery(
     path = _path(settings, save_id)
     actor = _founder_id(_state(path))
     action = BuildRefinery(
-        actor, body.recipe, body.region, body.size, body.host_id, body.city, body.company_id
+        actor,
+        body.recipe,
+        body.region,
+        body.size,
+        body.host_id,
+        body.city,
+        body.company_id,
+        country=body.country,
     )
     return _act(path, data, action)
 
