@@ -16086,6 +16086,152 @@
         }
       }
     },
+    "/api/saves/{save_id}/group/history": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Capital History",
+        "description": "Every stake sale, carve-out, spin-off and buyout: date, proceeds, ownership before and\nafter, NCI and the value created (31.5; M23c). Read from the posted entries.",
+        "operationId": "getCapitalHistory",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapitalHistoryOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/group/updates": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Subsidiary Updates",
+        "description": "Each subsidiary CEO's quarterly update, ending with a question for the Chair (M23c).",
+        "operationId": "getSubsidiaryUpdates",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubsidiaryUpdatesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/group/form": {
       "post": {
         "tags": [
@@ -17022,6 +17168,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CommoditiesOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/commodities/plan": {
+      "get": {
+        "tags": [
+          "commodities"
+        ],
+        "summary": "Get Commodity Plan",
+        "description": "The planning view (M23c): each commodity's need over the next 12 months at this\nmonth's production, the products behind it, and the cover from deals and own supply.",
+        "operationId": "getCommodityPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommodityPlansOut"
                 }
               }
             }
@@ -22148,6 +22367,30 @@
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
+      "AdviceOut": {
+        "properties": {
+          "mandate": {
+            "type": "string",
+            "title": "Mandate",
+            "description": "grow | margin | return_cash"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mandate",
+          "label",
+          "current"
+        ],
+        "title": "AdviceOut"
+      },
       "AnalystOut": {
         "properties": {
           "firm": {
@@ -22211,6 +22454,30 @@
             "type": "integer",
             "title": "Worth Cents",
             "description": "Stake x the last round's post-money"
+          },
+          "estimate_low_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate Low Cents",
+            "description": "An estimate (M23c): the stake at the low end of the startup's displayed value range from its public growth since the round; None once closed"
+          },
+          "estimate_high_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate High Cents",
+            "description": "The estimate's high end"
           },
           "proceeds_cents": {
             "type": "integer",
@@ -22282,6 +22549,8 @@
           "stake_pct",
           "cost_cents",
           "worth_cents",
+          "estimate_low_cents",
+          "estimate_high_cents",
           "proceeds_cents",
           "backed",
           "founder_known",
@@ -23818,6 +24087,126 @@
         ],
         "title": "CapTableOut"
       },
+      "CapitalActionOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "stake_sale | carve_out | spin_off | buyout"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "owner": {
+            "type": "string",
+            "title": "Owner",
+            "description": "The group company that sold or bought"
+          },
+          "proceeds_cents": {
+            "type": "integer",
+            "title": "Proceeds Cents",
+            "description": "Cash in (a buyout's price is negative)"
+          },
+          "stake_before_bp": {
+            "type": "integer",
+            "title": "Stake Before Bp"
+          },
+          "stake_after_bp": {
+            "type": "integer",
+            "title": "Stake After Bp"
+          },
+          "nci_cents": {
+            "type": "integer",
+            "title": "Nci Cents",
+            "description": "Non-controlling interest left: minorities' book equity"
+          },
+          "value_created_cents": {
+            "type": "integer",
+            "title": "Value Created Cents",
+            "description": "The equity effect on the owner's books: what the sale fetched over the book value given up (a buyout: below the minority's book; negative is a premium paid)"
+          },
+          "value_note": {
+            "type": "string",
+            "title": "Value Note"
+          },
+          "market_cap_now_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap Now Cents",
+            "description": "Its market cap now, when listed"
+          },
+          "stake_value_now_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stake Value Now Cents",
+            "description": "What the group's stake is worth now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "kind",
+          "kind_label",
+          "company_id",
+          "company",
+          "owner",
+          "proceeds_cents",
+          "stake_before_bp",
+          "stake_after_bp",
+          "nci_cents",
+          "value_created_cents",
+          "value_note",
+          "market_cap_now_cents",
+          "stake_value_now_cents"
+        ],
+        "title": "CapitalActionOut"
+      },
+      "CapitalHistoryOut": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/CapitalActionOut"
+            },
+            "type": "array",
+            "title": "Actions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actions"
+        ],
+        "title": "CapitalHistoryOut"
+      },
       "CapitalOut": {
         "properties": {
           "buyback_price_cents": {
@@ -24838,6 +25227,29 @@
             "type": "integer",
             "title": "Unit Cost Cents"
           },
+          "material_cents": {
+            "type": "integer",
+            "title": "Material Cents",
+            "description": "Of the unit cost: the blank wafer, a good die (M23c)"
+          },
+          "processing_cents": {
+            "type": "integer",
+            "title": "Processing Cents",
+            "description": "Of the unit cost: foundry processing, a good die"
+          },
+          "packaging_cents": {
+            "type": "integer",
+            "title": "Packaging Cents",
+            "description": "Of the unit cost: packaging and test"
+          },
+          "used_in": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Used In",
+            "description": "The group's own devices that use the chip"
+          },
           "market_price_cents": {
             "type": "integer",
             "title": "Market Price Cents",
@@ -24889,6 +25301,10 @@
           "status",
           "chip_yield",
           "unit_cost_cents",
+          "material_cents",
+          "processing_cents",
+          "packaging_cents",
+          "used_in",
           "market_price_cents",
           "per_wafer",
           "wafers",
@@ -25707,6 +26123,201 @@
           "history"
         ],
         "title": "CommodityOut"
+      },
+      "CommodityPlanDriverOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "need_month": {
+            "type": "number",
+            "title": "Need Month",
+            "description": "Volume units a month this product uses"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Of the commodity's monthly need"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "need_month",
+          "share"
+        ],
+        "title": "CommodityPlanDriverOut"
+      },
+      "CommodityPlanMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "required": {
+            "type": "number",
+            "title": "Required",
+            "description": "The month's need at this month's production"
+          },
+          "deals": {
+            "type": "number",
+            "title": "Deals",
+            "description": "Running contracts' and offtakes' volume that month"
+          },
+          "own": {
+            "type": "number",
+            "title": "Own",
+            "description": "The group's own supply at this month's rate"
+          },
+          "gap": {
+            "type": "number",
+            "title": "Gap",
+            "description": "Need not covered by deals or own supply"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "label",
+          "required",
+          "deals",
+          "own",
+          "gap"
+        ],
+        "title": "CommodityPlanMonthOut"
+      },
+      "CommodityPlanOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "volume_unit": {
+            "type": "string",
+            "title": "Volume Unit"
+          },
+          "need_month": {
+            "type": "number",
+            "title": "Need Month",
+            "description": "This month's use, volume units"
+          },
+          "need_12m": {
+            "type": "number",
+            "title": "Need 12M",
+            "description": "The next 12 months at this month's production"
+          },
+          "deals_12m": {
+            "type": "number",
+            "title": "Deals 12M",
+            "description": "What running contracts and offtakes deliver in them"
+          },
+          "own_12m": {
+            "type": "number",
+            "title": "Own 12M",
+            "description": "The group's own supply to the group, at this rate"
+          },
+          "mines_12m": {
+            "type": "number",
+            "title": "Mines 12M",
+            "description": "The group's mines' output at the latest month's rate"
+          },
+          "cover": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover",
+            "description": "(deals + own supply) / need, at most 1"
+          },
+          "gap_12m": {
+            "type": "number",
+            "title": "Gap 12M"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanDriverOut"
+            },
+            "type": "array",
+            "title": "Drivers",
+            "description": "The products that use it"
+          },
+          "deals_ending": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deals Ending",
+            "description": "Deals that end inside the 12 months"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "volume_unit",
+          "need_month",
+          "need_12m",
+          "deals_12m",
+          "own_12m",
+          "mines_12m",
+          "cover",
+          "gap_12m",
+          "drivers",
+          "deals_ending",
+          "months"
+        ],
+        "title": "CommodityPlanOut"
+      },
+      "CommodityPlansOut": {
+        "properties": {
+          "turn_label": {
+            "type": "string",
+            "title": "Turn Label"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/CommodityPlanOut"
+            },
+            "type": "array",
+            "title": "Plans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn_label",
+          "months",
+          "plans"
+        ],
+        "title": "CommodityPlansOut"
       },
       "ComponentOut": {
         "properties": {
@@ -27983,24 +28594,6 @@
         ],
         "title": "EventChoiceOut"
       },
-      "EventLinkOut": {
-        "properties": {
-          "event_id": {
-            "type": "integer",
-            "title": "Event Id"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          }
-        },
-        "type": "object",
-        "required": [
-          "event_id",
-          "label"
-        ],
-        "title": "EventLinkOut"
-      },
       "EventOut": {
         "properties": {
           "template_id": {
@@ -28098,6 +28691,14 @@
             },
             "type": "array",
             "title": "Person Ids"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__events__EventLinkOut"
+            },
+            "type": "array",
+            "title": "Links",
+            "description": "The screens that matter for the decision (M23c): its mine, product, people"
           }
         },
         "type": "object",
@@ -28116,7 +28717,8 @@
           "written_by",
           "storyline",
           "follow_up_note",
-          "person_ids"
+          "person_ids",
+          "links"
         ],
         "title": "EventOut"
       },
@@ -28383,7 +28985,11 @@
               "product",
               "person",
               "account",
-              "market"
+              "market",
+              "project",
+              "mine",
+              "fab",
+              "refinery"
             ],
             "title": "Scope"
           },
@@ -28560,6 +29166,21 @@
             "type": "integer",
             "title": "Max Programme"
           },
+          "licence_years": {
+            "type": "integer",
+            "title": "Licence Years",
+            "description": "An exploration licence's term (34.2)"
+          },
+          "licence_renewals": {
+            "type": "integer",
+            "title": "Licence Renewals",
+            "description": "Renewals a licence allows"
+          },
+          "gate_how": {
+            "type": "string",
+            "title": "Gate How",
+            "description": "How exploration opens, when gated (M23c)"
+          },
           "commodities": {
             "items": {
               "$ref": "#/components/schemas/GeoCommodityOut"
@@ -28610,6 +29231,9 @@
           "desk_cost_cents",
           "desk_months",
           "max_programme",
+          "licence_years",
+          "licence_renewals",
+          "gate_how",
           "commodities",
           "regions",
           "explorers",
@@ -28988,6 +29612,45 @@
             },
             "type": "array",
             "title": "Options"
+          },
+          "holes_drilled": {
+            "type": "integer",
+            "title": "Holes Drilled",
+            "description": "Holes drilled on the project so far"
+          },
+          "next_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Category",
+            "description": "The resource category the next estimate can reach (M23c)"
+          },
+          "holes_for_next": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holes For Next",
+            "description": "Holes an estimate needs for next_category (34.2)"
+          },
+          "next_step": {
+            "type": "string",
+            "title": "Next Step",
+            "description": "What to do next on the project (M23c)"
+          },
+          "renew_how": {
+            "type": "string",
+            "title": "Renew How",
+            "description": "How renewal opens, when it can't (M23c)"
           }
         },
         "type": "object",
@@ -29033,7 +29696,12 @@
           "buyer",
           "sold_to",
           "sale_cents",
-          "options"
+          "options",
+          "holes_drilled",
+          "next_category",
+          "holes_for_next",
+          "next_step",
+          "renew_how"
         ],
         "title": "ExplorationProjectOut"
       },
@@ -29433,6 +30101,11 @@
             ],
             "title": "Upgrade Reason"
           },
+          "upgrade_how": {
+            "type": "string",
+            "title": "Upgrade How",
+            "description": "How the conversion opens (M23c)"
+          },
           "month": {
             "anyOf": [
               {
@@ -29499,6 +30172,7 @@
           "upgrade_estimate_cents",
           "upgrade_allowed",
           "upgrade_reason",
+          "upgrade_how",
           "month",
           "customers",
           "chips",
@@ -29591,6 +30265,11 @@
             ],
             "title": "Reason"
           },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
+          },
           "market_cents": {
             "anyOf": [
               {
@@ -29627,6 +30306,7 @@
           "level",
           "allowed",
           "reason",
+          "how",
           "market_cents",
           "cost_per_start_cents"
         ],
@@ -33867,7 +34547,7 @@
           },
           "event_links": {
             "items": {
-              "$ref": "#/components/schemas/EventLinkOut"
+              "$ref": "#/components/schemas/tst__api__schemas__people__EventLinkOut"
             },
             "type": "array",
             "title": "Event Links",
@@ -37238,6 +37918,11 @@
           "reason": {
             "type": "string",
             "title": "Reason"
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
           }
         },
         "type": "object",
@@ -37266,7 +37951,8 @@
           "npv_mid_cents",
           "npv_high_cents",
           "allowed",
-          "reason"
+          "reason",
+          "how"
         ],
         "title": "MineQuoteOut"
       },
@@ -37411,6 +38097,11 @@
             "type": "integer",
             "title": "Found Min Stage"
           },
+          "found_how": {
+            "type": "string",
+            "title": "Found How",
+            "description": "How founding a subsidiary opens (M23c)"
+          },
           "found_min_cents": {
             "type": "integer",
             "title": "Found Min Cents"
@@ -37520,6 +38211,7 @@
           "turn_label",
           "group_stage",
           "found_min_stage",
+          "found_how",
           "found_min_cents",
           "found_energy",
           "build_energy",
@@ -39840,7 +40532,13 @@
           },
           "taken": {
             "type": "number",
-            "title": "Taken"
+            "title": "Taken",
+            "description": "Of the volume, what the buyer used this month"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "The good's volume unit (t, kg, wafer)"
           },
           "unit_cents": {
             "type": "number",
@@ -39861,6 +40559,7 @@
           "product",
           "volume",
           "taken",
+          "unit",
           "unit_cents",
           "market_cents"
         ],
@@ -44418,6 +45117,20 @@
       },
       "RefineryQuoteOut": {
         "properties": {
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed",
+            "description": "Whether the plant can be built now"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
+          },
           "recipe": {
             "type": "string",
             "title": "Recipe"
@@ -44491,6 +45204,9 @@
         },
         "type": "object",
         "required": [
+          "allowed",
+          "reason",
+          "how",
           "recipe",
           "region",
           "size",
@@ -48192,6 +48908,11 @@
             "type": "string",
             "title": "Reason",
             "default": ""
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "How to unlock it when not allowed (M23c)"
           }
         },
         "type": "object",
@@ -48199,7 +48920,8 @@
           "stage",
           "cost_cents",
           "months",
-          "allowed"
+          "allowed",
+          "how"
         ],
         "title": "StageOptionOut"
       },
@@ -48928,6 +49650,139 @@
           "staff"
         ],
         "title": "SubsidiaryOut"
+      },
+      "SubsidiaryUpdateOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "ceo": {
+            "type": "string",
+            "title": "Ceo"
+          },
+          "quarter_label": {
+            "type": "string",
+            "title": "Quarter Label"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "The latest quarter's revenue"
+          },
+          "prior_revenue_cents": {
+            "type": "integer",
+            "title": "Prior Revenue Cents",
+            "description": "The quarter before"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "mandate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mandate"
+          },
+          "capex_limit_cents": {
+            "type": "integer",
+            "title": "Capex Limit Cents"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "description": "The CEO's update in their own words, from public numbers"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "description": "What the CEO asks the Chair"
+          },
+          "advice": {
+            "items": {
+              "$ref": "#/components/schemas/AdviceOut"
+            },
+            "type": "array",
+            "title": "Advice",
+            "description": "Answers: each re-sets the mandate (31.4)"
+          },
+          "advice_energy": {
+            "type": "integer",
+            "title": "Advice Energy",
+            "description": "Founder energy an answer takes (a mandate change)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "ceo",
+          "quarter_label",
+          "revenue_cents",
+          "prior_revenue_cents",
+          "operating_margin",
+          "cash_cents",
+          "mandate",
+          "capex_limit_cents",
+          "categories",
+          "regions",
+          "body",
+          "question",
+          "advice",
+          "advice_energy"
+        ],
+        "title": "SubsidiaryUpdateOut"
+      },
+      "SubsidiaryUpdatesOut": {
+        "properties": {
+          "updates": {
+            "items": {
+              "$ref": "#/components/schemas/SubsidiaryUpdateOut"
+            },
+            "type": "array",
+            "title": "Updates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updates"
+        ],
+        "title": "SubsidiaryUpdatesOut"
       },
       "SupplierGoodOut": {
         "properties": {
@@ -51007,6 +51862,26 @@
         ],
         "title": "WorldOut"
       },
+      "tst__api__schemas__events__EventLinkOut": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "Under /game/{save}/, e.g. 'products/mines?mine=3'"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "label"
+        ],
+        "title": "EventLinkOut",
+        "description": "A screen the event is about (M23c): look before answering."
+      },
       "tst__api__schemas__exploration__LicenceIn": {
         "properties": {
           "region": {
@@ -51211,6 +52086,24 @@
           "level"
         ],
         "title": "IndexPointOut"
+      },
+      "tst__api__schemas__people__EventLinkOut": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "label"
+        ],
+        "title": "EventLinkOut"
       },
       "tst__api__schemas__press__CauseOut": {
         "properties": {

@@ -48,6 +48,8 @@ const INV: Investments = {
       stake_pct: 4.76,
       cost_cents: 500_000_00,
       worth_cents: 1_000_000_00,
+      estimate_low_cents: 1_200_000_00,
+      estimate_high_cents: 1_800_000_00,
       proceeds_cents: 0,
       backed: false,
       founder_known: false,
@@ -151,6 +153,7 @@ describe('InvestmentsTab', () => {
     expect(html).toContain('$9,000,000');
     expect(html).toContain('Northwind');
     expect(html).toContain('4.76%');
+    expect(html).toContain('$1,200,000–$1,800,000 (est.)'); // M23c: the estimate beside the mark
     expect(html).toContain('round-invest-41');
     expect(html).toContain('Ada Byron, Software engineer (known)');
     expect(html).toContain('sensitive window');

@@ -173,6 +173,28 @@ function AngelPanel({ saveId, inv }: { saveId: string; inv: Investments }) {
             </span>
           ),
         }),
+        stakeHelper.accessor('estimate_low_cents', {
+          // M23c (playtest 5): what the stake may be worth now, beside the last-round mark
+          id: 'inv.stake_estimate',
+          header: 'Estimated now',
+          sortFn: 'basic',
+          cell: ({ row }) =>
+            row.original.estimate_low_cents === null ||
+            row.original.estimate_low_cents === undefined ||
+            row.original.estimate_high_cents === null ||
+            row.original.estimate_high_cents === undefined ? (
+              ''
+            ) : (
+              <span
+                className="tst-num tst-muted"
+                data-testid="stake-estimate"
+                title="An estimate from the startup's public growth since its last round, not a price anyone has paid"
+              >
+                {formatMoneyWhole(row.original.estimate_low_cents)}–
+                {formatMoneyWhole(row.original.estimate_high_cents)} (est.)
+              </span>
+            ),
+        }),
         stakeHelper.accessor('cash_band', {
           id: 'inv.stake_cash',
           header: 'Cash',

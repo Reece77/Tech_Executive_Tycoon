@@ -19,7 +19,7 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
-from tst.balance import m22
+from tst.balance import fixtures, m22
 from tst.config import Settings
 from tst.db.mappers import entry_to_row
 from tst.db.repository import create_save, load_state, open_session
@@ -96,7 +96,15 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
     data = load_all(Settings().data_dir)
-    MODES[argv[1]](Path(argv[2]), argv[3], data)
+    path = MODES[argv[1]](Path(argv[2]), argv[3], data)
+    # M23c: a believable stage-3 team and a knowledge record of every employee (playtest 5)
+    fixtures.finish(
+        path,
+        data,
+        team=True,
+        stage=3,
+        specialists=(("chip_designer", 3, "Chip design"), ("hardware_engineer", 2, "Chip design")),
+    )
     return 0
 
 

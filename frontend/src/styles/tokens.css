@@ -154,16 +154,30 @@ a {
   border-top: 1px solid var(--tst-border);
 }
 
-/* Shell: nav and content wrap to one column on narrow windows. */
+/* Shell (M23c, playtest 5): the top bar and the side navigation stay put while the working
+   pane scrolls on its own, at every width. The shell fills the window; only the nav and the
+   main pane scroll. On narrow windows the nav becomes a strip under the top bar. */
+.tst-shell {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tst-shell > * {
+  flex-shrink: 0;
+}
+
 .tst-shell-body {
   display: flex;
-  flex-wrap: wrap;
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-shrink: 1;
 }
 
 .tst-nav {
-  flex: 1 1 200px;
-  max-width: 240px;
+  flex: 0 0 200px; /* the width it had before M23c: 1440 px still fits a year of statements */
   box-sizing: border-box;
   padding: 16px 12px;
   background: var(--tst-nav-bg);
@@ -171,28 +185,38 @@ a {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow-y: auto;
 }
 
 .tst-main {
-  flex: 999 1 560px;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   box-sizing: border-box;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
+}
+
+.tst-main > * {
+  flex-shrink: 0;
 }
 
 @media (max-width: 800px) {
+  .tst-shell-body {
+    flex-direction: column;
+  }
   .tst-nav {
-    max-width: none;
+    flex: 0 0 auto;
+    max-height: 30vh;
     flex-direction: row;
     flex-wrap: wrap;
     border-right: 0;
     border-bottom: 1px solid var(--tst-rule);
   }
   .tst-main {
-    flex-basis: 100%;
     padding: 16px;
   }
 }

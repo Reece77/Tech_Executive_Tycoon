@@ -32,7 +32,11 @@ test('create a game and continue two months', async ({ page }) => {
 
   await cont.click();
   await expect(page.getByTestId('game-date')).toHaveText('Mar 2010');
-  await page.getByRole('link', { name: /Overview/ }).click();
+  // the side nav's link (an open event card may link Overview too, M23c)
+  await page
+    .getByRole('navigation', { name: 'Game screens' })
+    .getByRole('link', { name: /Overview/ })
+    .click();
   // $50,000 less two months of $1,100, give or take February's event, answered with its
   // first choice at Continue (M6): a minor event moves at most 1% of cash, $500.
   const dollars = async (id: string) =>

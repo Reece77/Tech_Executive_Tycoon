@@ -515,11 +515,37 @@ function MessageDetail({
         {item.link_kind === 'mine' && (
           <Button
             component={Link}
-            to={`/game/${saveId}/products/mines`}
+            to={`/game/${saveId}/products/mines${item.link_id !== null ? `?mine=${item.link_id}` : ''}`}
             h={44}
             data-testid="view-mines"
           >
             Open Mines
+          </Button>
+        )}
+        {item.link_kind === 'group' && (
+          // M23c: a subsidiary's request for capital is answered on the Group screen
+          <Button
+            component={Link}
+            to={`/game/${saveId}/finance/group`}
+            h={44}
+            data-testid="view-group"
+          >
+            {item.kind === 'group_pitch' ? 'Answer it on the Group screen' : 'Open Group'}
+          </Button>
+        )}
+        {item.link_kind === 'finance' && (
+          <Button component={Link} to={`/game/${saveId}/finance`} h={44} data-testid="view-finance">
+            Open Finance
+          </Button>
+        )}
+        {item.link_kind === 'exploration' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/products/exploration${item.link_id !== null ? `?project=${item.link_id}` : ''}`}
+            h={44}
+            data-testid="view-exploration"
+          >
+            Open Exploration
           </Button>
         )}
         {item.link_kind === 'history' && (

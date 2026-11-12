@@ -3,6 +3,7 @@ import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
+import { Explain } from '../components/Explain';
 import { NodeTimeline } from '../components/NodeTimeline';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { useOrg } from '../hooks/api';
@@ -182,7 +183,9 @@ function FabPanel({
             size="xs"
             variant="default"
             disabled={busy || !f.upgrade_allowed}
-            title={f.upgrade_reason ?? undefined}
+            title={
+              f.upgrade_allowed ? undefined : `${f.upgrade_reason ?? ''}. How: ${f.upgrade_how}`
+            }
             data-testid="fab-upgrade"
             onClick={() => onAct({ kind: 'upgrade', facilityId: f.id })}
           >
@@ -239,6 +242,10 @@ function FabPanel({
                 testId="fab-die"
               />
             )}
+            <div style={{ fontSize: 12 }}>
+              Why this cost per good die?{' '}
+              <Explain metric="fab_die_cost" entity={f.id} label="Cost per good die" />
+            </div>
             <Fact
               label="Costs"
               value={`depreciation ${formatMoneyWhole(m.depreciation_cents)}, fixed ${formatMoneyWhole(m.fixed_cents)}, materials ${formatMoneyWhole(m.materials_cents)}, power ${formatMoneyWhole(m.power_cents)}, engineers ${formatMoneyWhole(m.staff_cents)}`}
@@ -300,7 +307,7 @@ function BuildPanel({
           size="xs"
           data-testid="build-fab"
           disabled={busy || !q?.allowed}
-          title={q?.reason ?? undefined}
+          title={q && !q.allowed ? `${q.reason ?? ''}. How: ${q.how}` : undefined}
           onClick={() => onAct({ kind: 'build', node, region, size, duv: useDuv })}
         >
           Build · energy {x.build_energy}
@@ -364,6 +371,7 @@ function BuildPanel({
             value={`needs process level ${q.need_level.toFixed(0)}; yours ${q.level.toFixed(0)}`}
           />
           {q.reason && <Fact label="Not possible" value={q.reason} testId="fab-quote-reason" />}
+          {q.how && <Fact label="How to unlock" value={q.how} testId="fab-quote-how" />}
         </dl>
       )}
     </Panel>

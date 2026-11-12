@@ -4,6 +4,7 @@ import { useChooseEvent, useEvents, type GameEventOut } from '../hooks/api';
 import { IpoEventPricing } from './IpoPanel';
 import { Term } from './Term';
 import { usePress } from '../hooks/press';
+import { returnToDecision, setAside, useSetAside } from '../lib/setAside';
 
 const SEVERITY_STYLE: Record<string, { color: string; background: string; label: string }> = {
   minor: { color: 'var(--tst-tier-4)', background: 'var(--tst-gold-bg)', label: 'Minor' },
@@ -14,7 +15,16 @@ const SEVERITY_STYLE: Record<string, { color: string; background: string; label:
 /** One event (M6, wireframe "Events"): category and severity, its storyline, the title and
  * body, and two or three choices as full-width buttons with their effects in words. Effects
  * apply at once; the text is written by AI (or a template) within the game's rules. */
-export function EventCard({ saveId, event }: { saveId: string; event: GameEventOut }) {
+export function EventCard({
+  saveId,
+  event,
+  onLook,
+}: {
+  saveId: string;
+  event: GameEventOut;
+  /** Called before following one of the event's links (the critical modal sets it aside). */
+  onLook?: () => void;
+}) {
   const choose = useChooseEvent(saveId);
   const severity = SEVERITY_STYLE[event.severity] ?? SEVERITY_STYLE.minor;
   const open = event.status === 'open';
@@ -57,6 +67,27 @@ export function EventCard({ saveId, event }: { saveId: string; event: GameEventO
       <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: 'var(--tst-text-2)' }}>
         {event.body}
       </p>
+      {open && event.links.length > 0 && (
+        <div
+          style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', fontSize: 13 }}
+          data-testid="event-links"
+        >
+          <span className="tst-muted" style={{ fontSize: 12 }}>
+            Look first:
+          </span>
+          {event.links.map((l) => (
+            <Link
+              key={l.path}
+              to={`/game/${saveId}/${l.path}`}
+              onClick={onLook}
+              data-testid="event-link"
+              style={{ textDecoration: 'none' }}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {event.choices.map((c) => {
           const chosen = event.chosen === c.key;
@@ -142,14 +173,20 @@ function PressNote({ saveId, event }: { saveId: string; event: GameEventOut }) {
   );
 }
 
-/** A critical event opens as a modal that cannot be dismissed; Continue waits for it. */
+/** A critical event opens as a modal; Continue waits for it. It can be set aside to look
+ * around read only (M23c), with a banner back to it (SetAsideBanner). */
 export function CriticalEventModal({ saveId }: { saveId: string }) {
   const events = useEvents(saveId);
-  const blocking = events.data?.open.find((e) => e.event_id === events.data?.blocking_event_id);
+  const blockingId = events.data?.blocking_event_id ?? null;
+  const blocking = events.data?.open.find((e) => e.event_id === blockingId);
+  const aside = useSetAside(saveId, blockingId);
+  const look = () => {
+    if (blockingId !== null) setAside(saveId, blockingId);
+  };
   return (
     <Modal
-      opened={blocking !== undefined}
-      onClose={() => undefined}
+      opened={blocking !== undefined && !aside}
+      onClose={look}
       withCloseButton={false}
       closeOnClickOutside={false}
       closeOnEscape={false}
@@ -158,12 +195,63 @@ export function CriticalEventModal({ saveId }: { saveId: string }) {
       title="Critical decision"
       data-testid="critical-modal"
     >
-      {blocking && <EventCard saveId={saveId} event={blocking} />}
+      {blocking && <EventCard saveId={saveId} event={blocking} onLook={look} />}
       {blocking?.category === 'public' && (
         <div style={{ marginTop: 16 }}>
           <IpoEventPricing saveId={saveId} />
         </div>
       )}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+        <Button variant="subtle" size="xs" onClick={look} data-testid="set-aside">
+          Set aside and look around (read only)
+        </Button>
+      </div>
     </Modal>
+  );
+}
+
+/** While a critical decision is set aside: a banner that stays above the working pane, its
+ * links, and the way back. Continue stays blocked. */
+export function SetAsideBanner({ saveId }: { saveId: string }) {
+  const events = useEvents(saveId);
+  const blockingId = events.data?.blocking_event_id ?? null;
+  const blocking = events.data?.open.find((e) => e.event_id === blockingId);
+  const aside = useSetAside(saveId, blockingId);
+  if (!aside || !blocking) return null;
+  return (
+    <div
+      role="status"
+      data-testid="set-aside-banner"
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 10,
+        padding: '8px 16px',
+        background: 'var(--tst-gold-bg)',
+        borderBottom: '1px solid var(--tst-border)',
+        fontSize: 13,
+      }}
+    >
+      <strong style={{ color: 'var(--tst-warn)' }}>Critical decision waiting:</strong>
+      <span>{blocking.title}</span>
+      <span className="tst-muted" style={{ fontSize: 12 }}>
+        Looking around read only; Continue waits for your answer.
+      </span>
+      {blocking.links.map((l) => (
+        <Link key={l.path} to={`/game/${saveId}/${l.path}`} style={{ textDecoration: 'none' }}>
+          {l.label}
+        </Link>
+      ))}
+      <Button
+        size="xs"
+        color="warn"
+        style={{ marginLeft: 'auto' }}
+        onClick={() => returnToDecision(saveId)}
+        data-testid="back-to-decision"
+      >
+        Back to the decision
+      </Button>
+    </div>
   );
 }

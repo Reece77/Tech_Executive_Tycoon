@@ -882,7 +882,7 @@ facility:
       sizes: [1000, 2500, 5000, 10000]
       outages: false
     wafer_plant:
-      label: Wafer plant (300 mm)
+      label: Blank wafer plant (300 mm)
       unit: wafers/yr
       input_good: equipment
       output_good: silicon_wafer

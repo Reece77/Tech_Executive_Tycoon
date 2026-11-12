@@ -145,7 +145,8 @@ class OwnSupplyOut(BaseModel):
     good_label: str
     product: str | None
     volume: float
-    taken: float
+    taken: float = Field(description="Of the volume, what the buyer used this month")
+    unit: str = Field(description="The good's volume unit (t, kg, wafer)")
     unit_cents: float
     market_cents: float
 
@@ -181,6 +182,9 @@ class RefineriesOut(BaseModel):
 
 
 class RefineryQuoteOut(BaseModel):
+    allowed: bool = Field(description="Whether the plant can be built now")
+    reason: str
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
     recipe: str
     region: str
     size: int

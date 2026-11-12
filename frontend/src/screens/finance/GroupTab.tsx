@@ -9,8 +9,17 @@ import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { useRefineries } from '../../hooks/refining';
 import { Term } from '../../components/Term';
-import { useFormHolding, useGroup, useGroupAction, type GroupEntity } from '../../hooks/group';
-import { useMines } from '../../hooks/mining';
+import {
+  useCapitalHistory,
+  useFormHolding,
+  useGroup,
+  useGroupAction,
+  useSubsidiaryUpdates,
+  type CapitalAction,
+  type GroupEntity,
+} from '../../hooks/group';
+import { useMines, useMiningAction } from '../../hooks/mining';
+import { FoundForm } from '../MinesScreen';
 import { formatBpPercent, formatMoneyShort } from '../../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../../lib/table';
 
@@ -280,6 +289,7 @@ export function GroupTab({ saveId }: { saveId: string }) {
           )}
         </Panel>
       )}
+      <Pitches saveId={saveId} />
       <Panel title="Group" testId="group-tree">
         <DataTable table={table} label="Group" rowTestId="group-row" empty="No companies." />
         {act.error && (
@@ -288,6 +298,9 @@ export function GroupTab({ saveId }: { saveId: string }) {
           </Alert>
         )}
       </Panel>
+      <SubsidiaryUpdates saveId={saveId} />
+      <FoundSubsidiary saveId={saveId} />
+      <CapitalHistory saveId={saveId} />
       <ValueChain saveId={saveId} />
       <GroupMines saveId={saveId} />
       {g.discount && (
@@ -405,36 +418,197 @@ export function GroupTab({ saveId }: { saveId: string }) {
           ))}
         </Panel>
       )}
-      {(g.pitches ?? []).length > 0 && (
-        <Panel title="Requests from subsidiaries" testId="group-pitches">
-          {(g.pitches ?? []).map((p) => (
-            <div
-              key={p.id}
-              data-testid="group-pitch"
-              style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}
-            >
-              <span>
-                {p.ceo} ({p.company}) asks for {formatMoneyShort(p.amount_cents)}:{' '}
-                {p.fits_mandate ? 'fits its mandate' : 'does not fit its mandate'}.
-              </span>
-              <Button
-                size="xs"
-                onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: true })}
-              >
-                Approve
-              </Button>
-              <Button
-                size="xs"
-                variant="default"
-                onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: false })}
-              >
-                Decline
-              </Button>
-            </div>
-          ))}
-        </Panel>
-      )}
     </>
+  );
+}
+
+/** Subsidiaries' requests for capital (31.4), first on the screen: the inbox message links
+ * here (M23c, playtest 5: "a capital request had no link to it"). */
+function Pitches({ saveId }: { saveId: string }) {
+  const group = useGroup(saveId);
+  const act = useGroupAction(saveId);
+  const pitches = group.data?.pitches ?? [];
+  if (pitches.length === 0) return null;
+  return (
+    <Panel title="Requests from subsidiaries" testId="group-pitches">
+      {pitches.map((p) => (
+        <div
+          key={p.id}
+          data-testid="group-pitch"
+          style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}
+        >
+          <span>
+            {p.ceo} ({p.company}) asks for {formatMoneyShort(p.amount_cents)}:{' '}
+            {p.fits_mandate ? 'fits its mandate' : 'does not fit its mandate'}.
+          </span>
+          <Button
+            size="xs"
+            onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: true })}
+          >
+            Approve
+          </Button>
+          <Button
+            size="xs"
+            variant="default"
+            onClick={() => act.mutate({ kind: 'pitch', pitchId: p.id, approve: false })}
+          >
+            Decline
+          </Button>
+        </div>
+      ))}
+    </Panel>
+  );
+}
+
+/** Found a subsidiary (35.3; on the Group screen since M23c), linked from Mines. */
+function FoundSubsidiary({ saveId }: { saveId: string }) {
+  const mines = useMines(saveId);
+  const act = useMiningAction(saveId);
+  if (!mines.data) return null;
+  return (
+    <Panel title="Found a subsidiary" testId="group-found">
+      <p className="tst-muted" style={{ fontSize: 12, marginTop: 0 }}>
+        A new, wholly owned company with its own cash. Move projects and facilities into it from the{' '}
+        <Link to={`/game/${saveId}/products/mines`}>Mines screen</Link>, and give it a mandate here.
+      </p>
+      <FoundForm x={mines.data} busy={act.isPending} onAct={(a) => act.mutate(a)} />
+      {act.error && (
+        <Alert color="red" role="alert" mt="sm">
+          {act.error.message}
+        </Alert>
+      )}
+      {act.isSuccess && (
+        <p style={{ fontSize: 13 }} data-testid="group-found-done">
+          Founded. It appears in the group above.
+        </p>
+      )}
+    </Panel>
+  );
+}
+
+/** Each subsidiary CEO's quarterly update in their own words, ending with a question; the
+ * answer re-sets the mandate (M23c, playtest 5). */
+function SubsidiaryUpdates({ saveId }: { saveId: string }) {
+  const updates = useSubsidiaryUpdates(saveId);
+  const act = useGroupAction(saveId);
+  const list = updates.data?.updates ?? [];
+  if (list.length === 0) return null;
+  return (
+    <Panel title="Quarterly updates from your CEOs" testId="group-updates">
+      {list.map((u) => (
+        <div
+          key={u.company_id}
+          data-testid="group-update"
+          style={{ padding: '8px 0', borderBottom: '1px solid var(--tst-rule)' }}
+        >
+          <div style={{ fontSize: 12 }} className="tst-muted">
+            {u.ceo}, CEO of {u.company} · quarter to {u.quarter_label}
+          </div>
+          <p style={{ margin: '4px 0', fontSize: 14, color: 'var(--tst-text-2)' }}>
+            &ldquo;{u.body} {u.question}&rdquo;
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            <span className="tst-muted" style={{ fontSize: 12 }}>
+              Your advice ({u.advice_energy} energy, sets the mandate):
+            </span>
+            {u.advice.map((a) => (
+              <Button
+                key={a.mandate}
+                size="compact-xs"
+                variant={a.current ? 'filled' : 'default'}
+                disabled={a.current || act.isPending}
+                data-testid="group-advice"
+                data-mandate={a.mandate}
+                onClick={() =>
+                  act.mutate({
+                    kind: 'mandate',
+                    body: {
+                      company_id: u.company_id,
+                      mandate: a.mandate,
+                      capex_limit_cents: u.capex_limit_cents,
+                      categories: u.categories,
+                      regions: u.regions,
+                    },
+                  })
+                }
+              >
+                {a.label}
+                {a.current ? ' (current)' : ''}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {act.error && (
+        <Alert color="red" role="alert" mt="sm">
+          {act.error.message}
+        </Alert>
+      )}
+    </Panel>
+  );
+}
+
+const historyHelper = createColumnHelper<GameTableFeatures, CapitalAction>();
+
+/** What the group's capital actions accomplished (M23c, playtest 5: "I sold and did a
+ * carve-out but can't see where this is tracked"). */
+function CapitalHistory({ saveId }: { saveId: string }) {
+  const history = useCapitalHistory(saveId);
+  const columns = useMemo(
+    () =>
+      historyHelper.columns([
+        historyHelper.accessor('date_label', { header: 'Date', enableSorting: false }),
+        historyHelper.accessor('kind_label', { header: 'Action' }),
+        historyHelper.accessor('company', { header: 'Company' }),
+        historyHelper.accessor('proceeds_cents', {
+          header: 'Proceeds',
+          cell: ({ getValue }) => formatMoneyShort(getValue()),
+        }),
+        historyHelper.display({
+          id: 'ownership',
+          header: 'Ownership',
+          cell: ({ row }) =>
+            `${formatBpPercent(row.original.stake_before_bp)} → ${formatBpPercent(row.original.stake_after_bp)}`,
+        }),
+        historyHelper.accessor('nci_cents', {
+          header: 'NCI',
+          meta: { term: 'group.nci' },
+          cell: ({ getValue }) => formatMoneyShort(getValue()),
+        }),
+        historyHelper.accessor('value_created_cents', {
+          header: 'Value created',
+          cell: ({ row }) => (
+            <span title={row.original.value_note}>
+              {formatMoneyShort(row.original.value_created_cents)}
+            </span>
+          ),
+        }),
+        historyHelper.accessor('stake_value_now_cents', {
+          header: 'Stake worth now',
+          cell: ({ getValue }) => {
+            const v = getValue();
+            return v === null || v === undefined ? '—' : formatMoneyShort(v);
+          },
+        }),
+      ]),
+    [],
+  );
+  const table = useTable({
+    features: gameTableFeatures,
+    columns,
+    data: history.data?.actions ?? [],
+    getRowId: (a) => `${a.turn}-${a.kind}-${a.company_id}-${a.proceeds_cents}`,
+  });
+  if (!history.data || history.data.actions.length === 0) return null;
+  return (
+    <Panel title="Capital actions" testId="group-history">
+      <p className="tst-muted" style={{ fontSize: 12, marginTop: 0 }}>
+        Stake sales, carve-outs, spin-offs and buyouts: what each raised, the ownership it left, the
+        minorities&apos; share of book equity (NCI) and the value it created on the owner&apos;s
+        books (hover for what it means).
+      </p>
+      <DataTable table={table} label="Capital actions" rowTestId="capital-action" />
+    </Panel>
   );
 }
 

@@ -4,6 +4,7 @@ or trigger strengths."""
 
 from __future__ import annotations
 
+from tst.api.event_links import event_links
 from tst.api.schemas.events import (
     EventChoiceOut,
     EventOut,
@@ -72,6 +73,7 @@ def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:
         else None,
         follow_up_note=follow,
         person_ids=list(event.person_ids),
+        links=event_links(state, event, data),
     )
 
 
