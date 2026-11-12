@@ -3099,7 +3099,7 @@ Reece's decision (2026-11-02): **regional blocs with export controls**. Data: do
 4. **Influence helps licences:** at influence 80 a licence is approved at least 1.2× as often as at 0.
 5. **Tariffs cost:** China-assembled devices sold in North America cost 8–20% more from 2019.
 6. **After 2025:** at least one escalation and one détente in 2026–2039 on 7–10 of 10 seeds.
-7. **Nothing else moves for a domestic software company:** a software-only company in North America and Europe plays exactly as before.
+7. **Nothing else moves for a domestic software company:** a software-only company in North America and Europe plays exactly as before: (a) its own books, snapshots and decisions (its events and products) are identical with and without M22's data; (b) every company's books are identical before October 2022. Rivals' books may differ from October 2022, when controls reach the rivals M23a put under them (PM ruling, 2026-11-11).
 
 
 ### 39.5 Implementation notes (M22)
@@ -3112,3 +3112,17 @@ Reece's decision (2026-11-02): **regional blocs with export controls**. Data: do
 - **Tariffs** (tariffs.py, `tariffs.yaml`): after production, rate x cost of goods x the share made in the origin x the share sold in the market, to 5100 against cash. A device's origin is its contract's city (Foxconn in Shenzhen: China) or its plants' countries; a chip's its foundries' (TSMC: Taiwan).
 - **Fabs (wired at the M21 merge, fabs.py)**: a fab order (a new fab or a conversion) whose country (its city's, else its region's default: East Asia's is China) is a destination of a biting rule on `euv_tools` (an EUV node) or `chip_equipment` (`geopolitics.equipment_node` n16 and below) is refused without an approved tool licence for that rule and country (a ban refuses it outright); a company on an entity list of a toolmakers' actor gets no EUV or advanced tools. Orders already placed are not recalled. M21's foundry customers are the chip incumbents, none in China: `fab_services` rules have no sale to stop.
 - **Who is controlled**: the player's group (M16), subsidiaries included; rivals' sales and inputs are not (M22 decision; rivals' lobbying is out of scope).
+
+
+## 40. v3 balance targets (M23b)
+
+Measured by `tst/balance/v3.py` (printed by `tools/v3_targets.py`, checked weekly by `tests/balance/test_v3_balance.py`) on seeds 1–10, with the v3 scripts in `tst/balance/strategies_v3.py`. A group's margin and ARR are its consolidated figures: the members' P&L summed with intercompany sales and purchases dropped (31.6); ARR is 12 × the last month's group revenue.
+
+- **I1. Vertical integration pays modestly (margin).** full_integrator's group operating margin over year 20 is 3–10 points above devices_regions' (steady_regions plus the same phone and SoC on contracts, no owned chain; PM ruling, 2026-11-11). The gap against steady_regions prints as I1s, for information.
+- **I2. Vertical integration pays modestly (ARR).** full_integrator's ARR at year 20 is 0.9–1.4 × devices_regions'. The ratio against steady_regions prints as I2s, for information.
+- **I3. It doesn't dominate.** full_integrator has the highest founder value at year 20 on at most 4 of 10 seeds, among steady_regions, research_heavy, acquirer, integrator, full_integrator, mineral_baron and foundry.
+- **S1. Chains feel the lithium spike.** An unhedged phone's peak unit cost in 2021–2022 is at least 3% above 2020's (M17's reference phone).
+- **S2. The gallium ban limits output.** An unhedged chip maker's output allocation falls at least 5% after December 2024 (median of 10 seeds), not only its price.
+- **F1. Foundry demand.** The foundry script's first 28 nm fab reaches 70%+ use within 36 months of going live on at least 7 of 10 seeds.
+- **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039.
+- **L4 (printed).** full_integrator has ordered its whole chain (mine, refinery, wafer plant, fab, devices) by December 2024 (year 15).

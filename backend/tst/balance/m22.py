@@ -308,15 +308,26 @@ def target_6(seeds: Sequence[int] = SEEDS) -> list[tuple[int, int, int]]:
 # --- target 7 ---------------------------------------------------------------------------------
 
 
+CONTROLS_FROM = ym_to_turn(2022, 10)  # the first US chip rule (dossier §5)
+
+
 def target_7(seed: int = 1, turns: int = 60, start: int = ym_to_turn(2018, 1)) -> bool:
-    """A software company's run with and without M22's data: identical books and snapshots."""
+    """A software company's run with and without M22's data (PM ruling, 2026-11-11): (a) the
+    software company's own books, snapshots and decisions (its events and products) are
+    identical; (b) every company's books are identical before October 2022. Rivals' books may
+    differ from October 2022, when controls reach the rivals M23a put under them."""
     runs = []
     for data in (loaded(), without_geopolitics()):
         g = start_game(data, seed, "funded_spinout")
         g.state = replace(g.state, turn=start)
+        before: dict[tuple[int, str], int] = {}
         for _ in range(turns):
+            if g.state.turn == CONTROLS_FROM:
+                before = dict(g.balances)
             g.turn()
-        runs.append((dict(g.balances), list(g.snapshots), g.state.events, g.state.products))
+        own = {k: v for k, v in g.balances.items() if k[0] == PLAYER}
+        events = tuple(e for e in g.state.events if e.company_id == PLAYER)
+        runs.append((own, list(g.snapshots), events, g.state.company_products(PLAYER), before))
     return runs[0] == runs[1]
 
 

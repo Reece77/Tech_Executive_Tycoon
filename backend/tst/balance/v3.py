@@ -4,7 +4,7 @@ are read here; this is a tool.
 
 - **Integration pays modestly** (I1-I3): the v2 founder-played strategies and the three v3
   scripts (tst.balance.strategies_v3) played for 20 years on 10 seeds. full_integrator's group
-  operating margin over year 20 is 3-10 points above steady_regions', its ARR 0.9-1.4x, and it
+  operating margin over year 20 is 3-10 points above devices_regions', its ARR 0.9-1.4x, and it
   wins at most 4 of 10 seeds by founder value at year 20.
 - **Chains feel shocks** (S1, S2): the 2021-2022 lithium spike raises an unhedged device
   maker's unit cost visibly (M17's reference phone, at least 3%); the December 2024 gallium
@@ -62,10 +62,10 @@ COMPARED: Final = (
     "mineral_baron",
     "foundry",
 )
-DEVICES: Final = "devices_regions"  # the like-for-like baseline (I1d, I2d), not counted in I3
+DEVICES: Final = "devices_regions"  # I1 and I2's baseline (PM ruling 2026-11-11), not counted in I3
 PLAYED_20: Final = (*COMPARED, DEVICES)
 LONG_STRATEGIES: Final = tuple(V3)
-MARGIN_GAP: Final = (0.03, 0.10)  # I1: full_integrator's margin over steady_regions'
+MARGIN_GAP: Final = (0.03, 0.10)  # I1: full_integrator's margin over devices_regions'
 ARR_RATIO: Final = (0.9, 1.4)  # I2
 MAX_WINS: Final = 4  # I3
 FAB_USE: Final = 0.70  # F1: use within FAB_MONTHS of going live
@@ -406,8 +406,9 @@ def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str) -> list[Row]:
 
 
 def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
-    """I1-I3 over 20-year runs of COMPARED on the same seeds; I1d and I2d the same gap and
-    ratio against devices_regions, printed (the like-for-like baseline M23b proposes)."""
+    """I1-I3 over 20-year runs of COMPARED on the same seeds. I1 and I2 are measured against
+    devices_regions, the same devices without an owned chain (PM ruling, 2026-11-11); I1s and
+    I2s print the same gap and ratio against steady_regions, for information."""
     wins: dict[str, int] = {}
     for seed in sorted({r.seed for r in runs}):
         field_ = [r for r in runs if r.seed == seed and r.strategy in COMPARED]
@@ -416,10 +417,10 @@ def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
             wins[best.strategy] = wins.get(best.strategy, 0) + 1
     n = len({r.seed for r in runs})
     won = wins.get(INTEGRATOR, 0)
-    like = [replace(r, ok=None) for r in _gap_rows(runs, DEVICES, "d")]
+    software = [replace(r, ok=None) for r in _gap_rows(runs, BASE, "s")]
     return [
-        *_gap_rows(runs, BASE, ""),
-        *like,
+        *_gap_rows(runs, DEVICES, ""),
+        *software,
         Row(
             "I3",
             f"full_integrator wins of {n} (year 20 founder value)",
