@@ -42,6 +42,7 @@ from tst.sim.actions import (
 from tst.sim.actions.facilities import BuildFacility, StaffFacility
 from tst.sim.actions.hardware import SignManufacturingContract, SignWaferContract
 from tst.sim.actions.research import StartProject
+from tst.sim.contracts import termination as ct
 from tst.sim.errors import SimError
 from tst.sim.exploration.models import Project
 from tst.sim.exploration.pipeline import (
@@ -53,7 +54,10 @@ from tst.sim.exploration.pipeline import (
     holder_of,
 )
 from tst.sim.fabs import actions as fab_actions
+from tst.sim.fabs import foundry as foundry_contracts
+from tst.sim.fabs import market as fab_market
 from tst.sim.fabs.actions import BuildFab
+from tst.sim.facilities.models import Facility
 from tst.sim.mining import actions as mine_actions
 from tst.sim.mining import formulas as mine_formulas
 from tst.sim.mining.actions import (
@@ -73,15 +77,16 @@ LADDER_STAGE: Final = 3  # stage the v3 ladders start at (exploration, subsidiar
 LADDER_RUNWAY: Final = 24  # months of runway (or profitable) a new rung needs
 
 
-def ready_for(game: Game, cents: int) -> bool:
+def ready_for(game: Game, cents: int, cover: float = 2.0) -> bool:
     """A new rung costing `cents`: stage 3 or more, profitable or 24 months of runway, and
-    cash covering the cost twice (the script keeps half its cash for the software business)."""
+    cash covering the cost `cover` times (by default twice: the script keeps half its cash for
+    the software business)."""
     if game.state.player.stage < LADDER_STAGE:
         return False
     months = runway(game)
     if months is not None and months <= LADDER_RUNWAY:
         return False
-    return game.cash >= 2 * cents
+    return game.cash >= cover * cents
 
 
 def _mark(game: Game, key: str) -> None:
@@ -250,7 +255,9 @@ HOLES: Final = 40  # a programme to an indicated resource (M18's balance runs)
 MINE_ROLE: Final = "mining_engineer"
 PROCESS_ROLE: Final = "process_engineer"
 FAB_ROLE: Final = "fab_engineer"
-MINE_CASH_MULT: Final = 1.6  # a mine's estimate x this in cash (the overrun is hidden)
+MINE_CASH_MULT: Final = 1.5  # a mine's estimate x this in cash: the top of a definitive study's
+# public overrun band (mining.overrun.definitive [0, 0.5]); the draw itself is hidden
+MINE_COVER: Final = 1.25  # cash x this before founding a mine (a mine is the ladder's big bet)
 # A cheap scoping study to screen the project, then the definitive study its 40-hole measured
 # resource allows (exploration.feasibility.min_category): pre-feasibility adds 8 months only.
 STUDIES: Final = ("scoping", "definitive")
@@ -391,21 +398,17 @@ def build_mines(game: Game, region: str, commodity: str, owner_name: str | None 
     for p in _permitted(game, region, commodity):
         if any(m.project_id == p.id for m in game.state.mines):
             continue
+        design = mine_actions.design_capacity_t(p) / b.exploration.feasibility.life_years
+        capacity = mine_formulas.capacity_bounds(design, b.mining)[0]  # the smallest mine
         try:
-            q = mine_actions.quote(game.state, p, None, b, g)
+            q = mine_actions.quote(game.state, p, capacity, b, g)
         except SimError:  # a quote the rules refuse: not this month
             continue
         cash_need = round(q.estimate_cents * MINE_CASH_MULT)
         if owner_name is not None and p.company_id == PLAYER:
             region = p.region
-            plant = refinery_actions.quote(
-                game.state, PLAYER, CONVERTER[0], region, CONVERTER[1], b, g
-            )
-            capital = round(
-                (p.spent_cents + cash_need + plant.quote.capex_cents * REFINERY_CASH_MULT)
-                * SUBSIDIARY_BUFFER
-            )
-            if not ready_for(game, capital):
+            capital = round((p.spent_cents + cash_need) * SUBSIDIARY_BUFFER)
+            if not ready_for(game, capital, MINE_COVER):
                 continue
             owner = subsidiary(game, owner_name, region, capital)
             if owner is None:
@@ -413,10 +416,10 @@ def build_mines(game: Game, region: str, commodity: str, owner_name: str | None 
             refill_energy(game)
             if not game.act(TransferAsset(game.founder_id, owner, project_id=p.id)):
                 continue
-        elif not ready_for(game, cash_need):
+        elif not ready_for(game, cash_need, MINE_COVER):
             continue
         refill_energy(game)
-        if game.act(BuildMine(game.founder_id, p.id)):
+        if game.act(BuildMine(game.founder_id, p.id, capacity)):
             _mark(game, f"mine:{commodity}")
     for i, m in enumerate(sorted(_mines(game), key=lambda m: m.id)):  # type: ignore[attr-defined]
         _crew(game, m, i)
@@ -451,7 +454,7 @@ def subsidiary(game: Game, name: str, region: str, cents: int) -> int | None:
 REFINERY_CASH_MULT: Final = 1.3  # a plant's estimate x this in cash (the overrun is hidden)
 
 
-def _facilities(game: Game, kind: str) -> list[object]:
+def _facilities(game: Game, kind: str) -> list[Facility]:
     groups = _group(game)
     return [
         f
@@ -464,12 +467,12 @@ def _staff_plants(game: Game, kind: str, role: str, label: str) -> None:
     """A unit of `role` in the parent for each plant of `kind`, sized to its need."""
     b = game.loaded.balance
     k = b.facility.kinds[kind]
-    for i, f in enumerate(sorted(_facilities(game, kind), key=lambda f: f.id)):  # type: ignore[attr-defined]
-        need = math.ceil(f.capacity / k.staff_per)  # type: ignore[attr-defined]
+    for i, f in enumerate(sorted(_facilities(game, kind), key=lambda f: f.id)):
+        need = math.ceil(f.capacity / k.staff_per)
         uid = staff_unit(game, f"{label} {i + 1}", role, need)
-        if uid is not None and f.unit_id != uid:  # type: ignore[attr-defined]
+        if uid is not None and f.unit_id != uid:
             refill_energy(game)
-            game.act(StaffFacility(game.founder_id, f.id, uid))  # type: ignore[attr-defined]
+            game.act(StaffFacility(game.founder_id, f.id, uid))
 
 
 def build_refinery(
@@ -540,25 +543,32 @@ def _transfer_sales(game: Game, owner: int) -> None:
                 _mark(game, "transfer")
 
 
+def _resourced(game: Game, region: str, commodity: str) -> bool:
+    """A project in `region` with a resource estimate (revealed: the estimate stage's result)."""
+    return any(p.category is not None for p in _projects(game, region, commodity))
+
+
 def full_integrator(game: Game) -> None:
     """steady_regions, then from stage 3 the whole chain: devices, its own SoC, a minerals
     subsidiary mining lithium for the parent at cost plus, the parent's converter, a wafer
-    plant and a fab (30.6's integrator carried down the chain; M23b)."""
+    plant and a fab (30.6's integrator carried down the chain; M23b). Exploration starts with
+    the device line, and the converter once a deposit has a resource estimate: it buys
+    concentrate at spot until the group's mine replaces it (M23a's group supply, 36.2)."""
     steady_regions(game)
     devices_step(game)
     chip_step(game)
-    if _product(game, DEVICE[1]) is None:
+    if game.state.player.stage < LADDER_STAGE:
         return
     region, commodity = LITHIUM
-    if not _mines(game, commodity) and not ready_for(game, EXPLORE_CENTS):
-        return
-    explore_step(game, region, commodity)
+    if _mines(game, commodity) or ready_for(game, EXPLORE_CENTS):
+        explore_step(game, region, commodity)
     build_mines(game, region, commodity, MINERALS)
-    owner = subsidiary_id(game, MINERALS)
-    if _mines(game, commodity) and owner is not None:
-        recipe, size = CONVERTER  # in the parent: a unit staffs its own company's plants only
+    if _mines(game, commodity) or _resourced(game, region, commodity):
+        recipe, size = CONVERTER  # in the parent (its crew is the parent's)
         build_refinery(game, recipe, region, size)
         _staff_plants(game, "li_converter", PROCESS_ROLE, "Converter crew")
+    owner = subsidiary_id(game, MINERALS)
+    if owner is not None:
         _transfer_sales(game, owner)
     if _product(game, CHIP[1]) is not None:
         build_refinery(game, "wafer_plant", FAB_REGION, WAFER_PLANT_SIZE)
@@ -596,15 +606,53 @@ def _process_research(game: Game) -> None:
         game.act(StartProject(game.founder_id, uid, domain))
 
 
+FOUNDRY_MONTHS: Final = 36  # a foundry contract's term (the longest contracts.foundry.months)
+FOUNDRY_FILL: Final = (
+    0.8  # contract this share of a fab's capacity (contracts.foundry.max_share 0.9)
+)
+
+
+def sign_foundry_contracts(game: Game) -> None:
+    """Contract a live group fab's starts to the chip incumbents (M23a's foundry contracts):
+    each designer up to its share cap, the fab to FOUNDRY_FILL of capacity, at the most a
+    designer pays (the node's slot price, which the fab card shows)."""
+    b, g = game.loaded.balance, game.loaded.game_data
+    fb = b.contracts.foundry
+    for facility in _facilities(game, "fab"):
+        if facility.status != "live":
+            continue
+        fab = fab_market.fab_of(game.state, facility.id)
+        if fab is None:
+            continue
+        cap = float(facility.capacity)
+        for customer in foundry_contracts.customers(g):
+            running = foundry_contracts.running(game.state, fab.facility_id)
+            total = sum(c.monthly_starts for c in running)
+            own = sum(c.monthly_starts for c in running if c.customer == customer)
+            starts = math.floor(min(cap * fb.customer_share - own, cap * FOUNDRY_FILL - total))
+            if starts < 1:
+                continue
+            slot = foundry_contracts.slot_price_cents(game.state, fab, b, g) * fb.max_price
+            price = slot / float(ct.premium(game.state, customer, b)) * 0.999
+            refill_energy(game)
+            game.act(
+                foundry_contracts.SignFoundryContract(
+                    game.founder_id, fab.facility_id, customer, starts, FOUNDRY_MONTHS, price
+                )
+            )
+
+
 def foundry(game: Game) -> None:
     """steady_regions, then from stage 3 a process research unit and a mature-node fab in East
-    Asia selling its starts to rival designers (38.2's slots; M23a's foundry contracts)."""
+    Asia, its starts under foundry contracts to rival designers (M23a), the rest sold as
+    38.2's slots."""
     steady_regions(game)
     if game.state.player.stage < LADDER_STAGE:
         return
     _process_research(game)
     build_fab(game)
     _staff_plants(game, "fab", FAB_ROLE, "Fab crew")
+    sign_foundry_contracts(game)
 
 
 def devices_regions(game: Game) -> None:
