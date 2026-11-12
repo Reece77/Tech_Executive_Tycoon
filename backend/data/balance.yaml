@@ -1801,7 +1801,7 @@ fab: # 38: fabs and process nodes (M21, v3 lane A). Nodes and rival foundries ar
   duv: { yield_mult: 0.85, cost_mult: 1.15 } # 7 nm's DUV route (38.1): yield and capex and running costs (dossier 4: N7 and SMIC N+2 by multipatterning)
   fixed_share: 0.06 # fixed running cost a year as a share of capex: the staff beyond the lead engineers, maintenance, utilities, insurance (A; M21 tuning from 0.09 for 38.5 target 3: use decides)
   materials: # a wafer start's materials (38.2): the substrate wafer and the gases and chemicals
-    substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, market price; the group's own at transfer price is a follow-up)
+    substrate_good: silicon_wafer # refining.goods key (M20's 300 mm wafer, at market price; M23a: a group wafer plant's own at its transfer price)
     chemicals_share: 0.08 # gases and chemicals a start, as a share of the node's wafer price at index 1 of the mix below (A)
     mix: { neon: 0.5, gallium: 0.25, germanium: 0.25 } # M17 commodities whose index moves them (38.2)
   power_mwh: { base: 0.6, per_generation: 0.2 } # MWh a wafer start: base + per_generation x the node's generation (65 nm = 0): 5 nm about 2 MWh (A; TSMC's ~1.5 MWh a wafer on average)
@@ -1939,6 +1939,7 @@ geopolitics:
     decision_months: 2 # A: months from the request to the decision
     term_months: 24 # A: an approved licence's months (or until the rule ends)
     energy: 3 # A: founder energy to request one
+  rivals_controlled: true # M23a: export controls cut rivals' sales to restricted destinations as the player's (playtest 5: "rivals should also be affected"); the demand they lose goes to products still open there. false: M22's rule, the player's group only (comparison runs)
   variant: # 39.3: a compliant variant under the threshold (NVIDIA's A800, H20)
     energy: 5 # 39.3
     quality_penalty: 10 # 39.3: its quality cap is the parent's less this, in the restricted market
@@ -1987,3 +1988,19 @@ geopolitics:
     servers: [servers]
     chips: [chips_mobile_soc, chips_server_cpu, chips_ai_accelerator]
   actor_regions: { us_aligned: north_america, china: east_asia, non_aligned: south_southeast_asia } # a bloc actor's influence region (a country actor's is its own region)
+
+contracts: # M23a (playtest 5): breaking contracts, counterparties' memory, foundry contracts
+  break_penalty: 0.10 # a termination fee is the remaining months' take-or-pay minimum, discounted monthly at the base rate, x (1 + this) (brief: "plus contracts.break_penalty (10%)")
+  terminate_energy: 3 # founder energy to break a contract (A: as signing a sale, 2-6)
+  mine_take_or_pay: 0.30 # share of a mine's remaining contracted sales' value its buyer is owed on a break (A: as 33.3's contract_take_or_pay; mine sales had none)
+  relationship_hit: 0.30 # a counterparty's score (0-1) falls this much when the group breaks a contract with it (A)
+  relationship_recovery: 0.01 # and recovers this much a month (A: a broken contract is forgotten in about 2.5 years)
+  relationship_premium: 0.25 # a new deal with it costs price x (1 + this x (1 - score)) (A: at most 25% dearer)
+  relationship_floor: 0.25 # below this score it signs nothing new until the score recovers (A: after three breaks in a row)
+  foundry: # foundry contracts (playtest 5's fab card): rival designers buy starts for months at a price
+    months: [6, 36] # whole months a foundry contract may run (A: as wafer contracts' 12-36, shorter allowed)
+    max_price: 1.0 # a designer signs at most at this x the node's slot price (market x fab.slot.discount) (A)
+    customer_share: 0.4 # one designer contracts at most this share of a fab's capacity (A)
+    max_share: 0.9 # at most this share of a fab's capacity under contract (A: some starts stay for own chips and spot)
+    take_or_pay: 0.3 # the buyer pays this share of contracted starts it does not take (as 26.3's wafer contracts)
+    energy: 3 # founder energy to sign one (A)

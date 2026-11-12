@@ -128,12 +128,30 @@ def company_use(
     return use
 
 
+KG_PER_T = 1000.0  # tunable-exempt: unit conversion (as refining.mines)
+
+
 def protected(deal: CommodityDeal, start: int | None) -> bool:
-    """A deal's volume keeps 100% allocation: a prepaid offtake, or one signed before the
+    """A deal's volume keeps 100% allocation: an offtake (M23a: a named supplier's long-term
+    supply, prepaid or not; playtest 5's "I lost production"), or a contract signed before the
     running shortage began (33.3, as M12a's contracts)."""
-    if deal.kind == "offtake" and deal.prepaid_cents > 0:
+    if deal.kind == "offtake":
         return True
     return start is not None and deal.signed_turn < start
+
+
+def mine_supply(state: GameState, company_id: int, good: str, data: GameData) -> float:
+    """Last month's output of the group's mines selling `good` to `company_id` (35.3's group
+    buyer), in the good's volume units: own supply that keeps 100% allocation (M23a; M19
+    follow-up 3)."""
+    if not state.mines or data.commodities is None:
+        return 0.0
+    per_t = KG_PER_T if data.commodities.good(good).volume_unit == "kg" else 1.0
+    return sum(
+        m.history[-1].output_t * per_t
+        for m in state.mines
+        if m.buyer_id == company_id and m.commodity == good and m.is_open and m.history
+    )
 
 
 def shortage_start(state: GameState, good: str, data: GameData) -> int | None:
@@ -167,7 +185,9 @@ def allocation_for(
         and s.good == good
         and s.turn == state.turn
         and s.product_id is None
+        and s.fab_id is None
     )
+    covered += mine_supply(state, company_id, good, data)  # M23a: a group mine's supply
     share = min(1.0, covered / used) if covered and used > 0 else (1.0 if covered else 0.0)
     return share + (1 - share) * month.allocation
 

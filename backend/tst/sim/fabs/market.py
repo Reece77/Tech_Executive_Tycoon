@@ -102,6 +102,25 @@ def planning_turn(state: GameState, node: str, balance: Balance, data: GameData)
     return fut.start_turn + fut.months // 2
 
 
+def planning_economics(
+    state: GameState, node: str, balance: Balance, data: GameData
+) -> tuple[float, float]:
+    """(capital per wafer-per-year, wafer price), cents, the player may plan a node around
+    (ADR-0007; M23a, Codex review 5 finding 9): a historical or arrived node's own; an unarrived
+    future node's the public estimate, the previous node's planning values x the middle of
+    fab.future_capital_mult and fab.future_wafer_mult, never its seeded draws."""
+    nf = nodes_file(data)
+    tl = timeline(state, balance, data)
+    if public_arrival(state, node, balance, data) is not None:
+        return tl.capital_cents[node], tl.wafer_cents[node]
+    keys = nf.node_keys()
+    capital, wafer = planning_economics(state, keys[keys.index(node) - 1], balance, data)
+    fb = balance.fab
+    mid_c = (fb.future_capital_mult.lo + fb.future_capital_mult.hi) / 2
+    mid_w = (fb.future_wafer_mult.lo + fb.future_wafer_mult.hi) / 2
+    return capital * mid_c, wafer * mid_w
+
+
 def window_start(data: GameData, node: str) -> int | None:
     fut = nodes_file(data).future_node(node)
     return fut.start_turn if fut is not None else None

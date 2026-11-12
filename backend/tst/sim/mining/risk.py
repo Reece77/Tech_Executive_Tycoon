@@ -39,6 +39,7 @@ from tst.sim.mining import prices
 from tst.sim.mining.actions import LINK, closed, group_ids, mine_name
 from tst.sim.mining.draws import BID, CHOICE, mining_draws, region_draws
 from tst.sim.mining.models import Mine, MineDeal, RivalBid
+from tst.sim.money import times
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -230,7 +231,7 @@ def arbitration_month(
     award = 0
     if u_win < nb.award_win:
         share = nb.award_share.lo + (nb.award_share.hi - nb.award_share.lo) * u_share
-        award = round(mine.seized_book_cents * share)
+        award = times(mine.seized_book_cents, share)
     entries = []
     if award:
         entries.append(
@@ -337,7 +338,7 @@ def mining_step(
         if step in ("investigate", "compensate", "contest"):
             if step == "investigate":
                 mine = replace(mine, stopped_until=turn + ab.stop_months - 1)
-                pay("Investigation fine", round(ab.fine_cents * ab.stop_fine_share))
+                pay("Investigation fine", times(ab.fine_cents, ab.stop_fine_share))
             elif step == "compensate":
                 pay("Compensation", ab.compensate_cents)
                 state = _persona(
@@ -349,7 +350,7 @@ def mining_step(
                 )
                 u = float(mining_draws(rng, turn, mine.id, CHOICE).random())
                 if u < ab.contest_risk:
-                    pay("Court ruling", round(ab.fine_cents * ab.contest_fine_mult))
+                    pay("Court ruling", times(ab.fine_cents, ab.contest_fine_mult))
                     logs.append(_item(state, mine, "mine_court_lost", name))
             mine = replace(mine, accident_turn=None)
         elif step in ("partner", "fight", "sell_out"):
@@ -359,7 +360,7 @@ def mining_step(
             if step == "partner":
                 u = float(mining_draws(rng, turn, mine.id, CHOICE).random())
                 share = nb.partner_share.lo + (nb.partner_share.hi - nb.partner_share.lo) * u
-                sold = round(book * share)
+                sold = times(book, share)
                 if sold:
                     entries.append(
                         LedgerEntry.transfer(
@@ -374,7 +375,7 @@ def mining_step(
                 mine = replace(mine, state_share=share, depleted_cents=mine.depleted_cents + sold)
                 logs.append(_item(state, mine, "mine_state_partner", name, pct=f"{share:.0%}"))
             else:
-                proceeds = round(book * nb.sell_out_share) if step == "sell_out" else 0
+                proceeds = times(book, nb.sell_out_share) if step == "sell_out" else 0
                 lines = [
                     LedgerLine(CASH, proceeds),
                     LedgerLine(ARO, owed),
@@ -581,7 +582,7 @@ def rival_bids_month(
             continue
         project = next((p for p in state.projects if p.id == m.project_id), None)
         buyer = xp.buyer_for(project, data, turn) if project is not None else None
-        price = round(m.book_cents * rb.mine_bid)
+        price = times(m.book_cents, rb.mine_bid)
         if buyer is None or price <= 0:
             continue
         bid = RivalBid(next_id, m.company_id, buyer[0], None, m.id, price, turn, turn + BID_MONTHS)

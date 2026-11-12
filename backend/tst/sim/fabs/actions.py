@@ -32,8 +32,10 @@ from tst.sim.fabs.plants import FAB_KIND, fab_name, node_label
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
+from tst.sim.group.assets import check_country, inbox_company, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
+from tst.sim.money import times
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_fab, with_facility
 
@@ -46,6 +48,8 @@ class BuildFab:
     capacity: int  # wafer starts a month
     duv: bool = False  # 7 nm by DUV (38.1)
     city: str | None = None
+    company_id: int | None = None  # M23a: a group company the founder builds for (default: own)
+    country: str | None = None  # M23a: the country it sits in (default: its city's, the region's)
     kind: Literal["build_fab"] = "build_fab"
 
 
@@ -112,13 +116,8 @@ def quote(
         sizes = ", ".join(f"{s:,}" for s in kind.sizes or ())
         raise FabRuleError(f"a fab has {sizes} {kind.unit}")
     fb = balance.fab
-    tl = fm.timeline(state, balance, data)
-    capex = fx.capex_cents(
-        capacity,
-        tl.capital_cents[node],
-        fb.capex_scale,
-        fb.duv.cost_mult if duv else 1.0,
-    )
+    capital, _ = fm.planning_economics(state, node, balance, data)  # M23a: public numbers only
+    capex = fx.capex_cents(capacity, capital, fb.capex_scale, fb.duv.cost_mult if duv else 1.0)
     age = fm.age_months(state, node, balance, data)
     months = fx.build_months(
         age, fb.mature_age_months, fb.build_months.leading, fb.build_months.mature
@@ -158,6 +157,20 @@ def quote(
     )
 
 
+def _company(state: GameState, actor_id: int, company_id: int | None) -> int:
+    """The company a fab is built for: the actor's own, or (the founder only) another company
+    of the group (M23a, as M20's refineries)."""
+    from tst.sim.refining.plants import group_of
+
+    own = acting_company(state, actor_id)
+    if company_id is None or company_id == own:
+        return own
+    founder = state.founder_of(state.player.id)
+    if founder is None or founder.id != actor_id or company_id not in group_of(state, own):
+        raise FabRuleError("only the founder builds for another company of the group")
+    return company_id
+
+
 def _physical(build_end: int, tools_at: int | None, install: int) -> int:
     """Construction done and EUV tools installed (38.2)."""
     return build_end if tools_at is None else max(build_end, tools_at + install)
@@ -174,7 +187,7 @@ def overrun_share(state: GameState, facility_id: int, balance: Balance) -> float
 def build_fab(
     state: GameState, action: BuildFab, balance: Balance, data: GameData, balances: LedgerBalances
 ) -> Outcome:
-    company = acting_company(state, action.actor_id)
+    company = _company(state, action.actor_id, action.company_id)
     q = quote(
         state, company, action.node, action.region, action.capacity, balance, data, duv=action.duv
     )
@@ -184,13 +197,22 @@ def build_fab(
         not data.has_city(action.city) or data.city(action.city).region != action.region
     ):
         raise FabRuleError(f"{action.city!r} is not a city in that region")
+    check_country(data, action.region, action.country)
     if account_balance(balances, company, CASH) < q.monthly_capex_cents:
         raise InsufficientCashError(f"the first capex payment needs {q.monthly_capex_cents} cents")
     state = spend_energy(
         state, action.actor_id, "build_fab", balance, cost=balance.fab.build_energy
     )
     facility_id = state.next_ids.facility
-    true_capex = round(q.capex_cents * (1 + overrun_share(state, facility_id, balance)))
+    # the engine's capex: the node's real capital (an unarrived node's seeded draw, which the
+    # quote's planning estimate never shows), with the hidden overrun
+    real = fx.capex_cents(
+        action.capacity,
+        fm.timeline(state, balance, data).capital_cents[action.node],
+        balance.fab.capex_scale,
+        balance.fab.duv.cost_mult if action.duv else 1.0,
+    )
+    true_capex = times(real, 1 + overrun_share(state, facility_id, balance))
     bq = BuildQuote(
         kind=FAB_KIND,
         region=action.region,
@@ -209,7 +231,7 @@ def build_fab(
     )
     state, facility = lifecycle.order_build(state, company, bq)
     facility = replace(facility, ready_turn=q.ready_turn, late_turn=q.ready_turn, city=action.city)
-    state = with_facility(state, facility)
+    state = place(with_facility(state, facility), "facility", facility.id, action.country)
     fab = Fab(
         facility_id=facility.id,
         company_id=company,
@@ -229,7 +251,7 @@ def build_fab(
     )
     log = inbox_item(
         state.turn,
-        company,
+        inbox_company(state, company),
         "fab_ordered",
         link_kind="fab",
         link_id=facility.id,
@@ -328,7 +350,7 @@ def upgrade_fab(
     )
     fab = fm.fab_of(state, action.facility_id)
     assert fab is not None
-    true_capex = round(uq.capex_cents * (1 + overrun_share(state, action.facility_id, balance)))
+    true_capex = times(uq.capex_cents, 1 + overrun_share(state, action.facility_id, balance))
     ready = state.turn + uq.months
     fab = replace(
         fab,

@@ -213,7 +213,9 @@ def test_salary_after_tax() -> None:
 
     paid = with_employment(state, replace(job, salary_cents=1_000_000))
     out = personal.salary_month(paid, B)
-    assert personal.cash_cents(out, fid) == 650_000
+    # M23a (Codex review 5 finding 11): a month of a $10,000 annual salary, $833.33, less 35%
+    # tax ($291.67); this test expected the whole annual salary every month
+    assert personal.cash_cents(out, fid) == 83_333 - 29_167
 
 
 # --- 32.3 The foundation -------------------------------------------------------------------

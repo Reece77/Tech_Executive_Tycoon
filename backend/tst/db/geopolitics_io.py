@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from tst.db.mna_io import from_data, to_data
 from tst.db.models import GeoRecordRow
+from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.geopolitics.models import (
     EntityListing,
     Exit,
@@ -36,6 +37,10 @@ COLLECTIONS: Final[dict[str, type]] = {
     "sites": Site,
     "exits": Exit,
     "geo_notices": Notice,
+    # M23a (no new table): counterparties' memory and foundry contracts, appended so existing
+    # rows keep their numbers
+    "relations": Relation,
+    "foundry_contracts": FoundryContract,
 }
 STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + position
 

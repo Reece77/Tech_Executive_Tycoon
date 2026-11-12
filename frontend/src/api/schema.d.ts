@@ -4272,6 +4272,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/fabs/foundry-contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Foundry Contract
+         * @description M23a: a multi-month foundry contract with a rival designer (price and volume; the
+         *     designer takes what the fab delivers, before spot slots).
+         */
+        post: operations["signFoundryContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/contracts/{contract}/{contract_id}/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quote Termination
+         * @description What breaking a contract would cost now (fee = the remaining months' take-or-pay minimum
+         *     discounted at the base rate, plus contracts.break_penalty), before confirming.
+         */
+        get: operations["quoteTermination"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/contracts/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Terminate Contract */
+        post: operations["terminateContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/world": {
         parameters: {
             query?: never;
@@ -5673,6 +5732,10 @@ export interface components {
             duv?: boolean;
             /** City */
             city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Company Id */
+            company_id?: number | null;
         };
         /** BuildIn */
         BuildIn: {
@@ -5770,6 +5833,8 @@ export interface components {
             city?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Country */
+            country?: string | null;
         };
         /** BuybackIn */
         BuybackIn: {
@@ -6669,6 +6734,8 @@ export interface components {
         };
         /** CommodityDealOut */
         CommodityDealOut: {
+            /** Supplier Country Label */
+            supplier_country_label?: string | null;
             /** Deal Id */
             deal_id: number;
             /**
@@ -6946,6 +7013,12 @@ export interface components {
             turn: number;
             /** Date Label */
             date_label: string;
+        };
+        /** ContractActionOut */
+        ContractActionOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
         };
         /** ContractIn */
         ContractIn: {
@@ -8959,6 +9032,8 @@ export interface components {
             region: string;
             /** Cents */
             cents: number;
+            /** Country */
+            country?: string | null;
         };
         /** FoundationFormOut */
         FoundationFormOut: {
@@ -9112,6 +9187,22 @@ export interface components {
             group: string;
             /** Value */
             value: number;
+        };
+        /**
+         * FoundryContractIn
+         * @description M23a: sell a fab's starts to a rival designer for months at a price.
+         */
+        FoundryContractIn: {
+            /** Fab Id */
+            fab_id: number;
+            /** Customer */
+            customer: string;
+            /** Monthly Starts */
+            monthly_starts: number;
+            /** Months */
+            months: number;
+            /** Price Cents */
+            price_cents: number;
         };
         /** FoundryNodeOut */
         FoundryNodeOut: {
@@ -16665,6 +16756,13 @@ export interface components {
             region: string;
             /** Region Label */
             region_label: string;
+            /**
+             * Country
+             * @description M23a: where the supplier sits
+             */
+            country?: string | null;
+            /** Country Label */
+            country_label?: string | null;
             /** Listing */
             listing: string;
             /**
@@ -17070,6 +17168,60 @@ export interface components {
              * @description The founder's share of FD if this sheet closes (open sheets)
              */
             founder_fraction_after?: number | null;
+        };
+        /** TerminateIn */
+        TerminateIn: {
+            /**
+             * Contract
+             * @description commodity, refining, production, mine or foundry
+             */
+            contract: string;
+            /** Contract Id */
+            contract_id: number;
+        };
+        /** TerminationQuoteOut */
+        TerminationQuoteOut: {
+            /** Contract */
+            contract: string;
+            /** Contract Id */
+            contract_id: number;
+            /** Company Id */
+            company_id: number;
+            /** Counterparty */
+            counterparty: string;
+            /** Months Left */
+            months_left: number;
+            /**
+             * Monthly Minimum Cents
+             * @description A month's take-or-pay minimum
+             */
+            monthly_minimum_cents: number;
+            /**
+             * Discounted Cents
+             * @description The months' minimums discounted at the base rate
+             */
+            discounted_cents: number;
+            /** Penalty Cents */
+            penalty_cents: number;
+            /**
+             * Prepaid Cents
+             * @description An offtake's unused prepayment kept against the fee
+             */
+            prepaid_cents: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /**
+             * Cash Cents
+             * @description What leaves cash (negative: a refund)
+             */
+            cash_cents: number;
+            /**
+             * Relationship
+             * @description The counterparty's willingness to deal now, 0-1
+             */
+            relationship: number;
+            /** Energy */
+            energy: number;
         };
         /** TimelineItemOut */
         TimelineItemOut: {
@@ -31560,6 +31712,190 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signFoundryContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoundryContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quoteTermination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                contract: string;
+                contract_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TerminationQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    terminateContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerminateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractActionOut"];
                 };
             };
             /** @description Bad Request */

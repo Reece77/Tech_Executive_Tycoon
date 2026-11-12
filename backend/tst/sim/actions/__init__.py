@@ -213,6 +213,8 @@ from tst.sim.actions.scaleup import (
     set_product_division,
     set_shared_services,
 )
+from tst.sim.contracts.termination import ACTION_TYPES as CONTRACT_ACTION_TYPES
+from tst.sim.contracts.termination import TerminateContract, terminate
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.exploration.pipeline import ACTION_TYPES as EXPLORATION_ACTION_TYPES
@@ -229,6 +231,9 @@ from tst.sim.exploration.pipeline import (
 )
 from tst.sim.fabs.actions import ACTION_TYPES as FAB_ACTION_TYPES
 from tst.sim.fabs.actions import BuildFab, FabAction, UpgradeFab, apply_fab
+from tst.sim.fabs.foundry import ACTION_TYPES as FOUNDRY_ACTION_TYPES
+from tst.sim.fabs.foundry import SignFoundryContract
+from tst.sim.fabs.foundry import sign as sign_foundry_contract
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics.actions import ACTION_TYPES as GEOPOLITICS_ACTION_TYPES
 from tst.sim.geopolitics.actions import (
@@ -318,6 +323,8 @@ type Action = (
     | ExplorationAction  # M18
     | RefiningAction  # M20
     | FabAction  # M21
+    | SignFoundryContract  # M23a
+    | TerminateContract  # M23a
     | GeopoliticsAction  # M22
     | RequestToolLicence  # M22
     | MiningAction  # M19
@@ -328,6 +335,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **EXPLORATION_ACTION_TYPES,  # M18 (34.2)
     **REFINING_ACTION_TYPES,  # M20 (36.1)
     **FAB_ACTION_TYPES,  # M21 (38.2)
+    **FOUNDRY_ACTION_TYPES,  # M23a
+    **CONTRACT_ACTION_TYPES,  # M23a
     **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
@@ -558,7 +567,9 @@ def geo_fab_check(
 
     company = acting_company(state, action.actor_id)
     if isinstance(action, BuildFab):
-        country = geo_fab_country(state, action.region, action.city, data)
+        if action.company_id is not None:  # M23a: built for a group company, its licences
+            company = action.company_id
+        country = action.country or geo_fab_country(state, action.region, action.city, data)
         geo_check_order(state, company, country, action.node, action.duv, balance, data)
         return
     facility = state.facility(action.facility_id)
@@ -787,6 +798,10 @@ def apply_action(
         case BuildFab() | UpgradeFab():  # M21 (38.2); M22 (39.3): export controls on tools
             geo_fab_check(state, action, balance, data)
             out = apply_fab(state, action, ledger_balances, balance, data)
+        case SignFoundryContract():  # M23a
+            out = sign_foundry_contract(state, action, balance, data)
+        case TerminateContract():  # M23a
+            out = terminate(state, action, ledger_balances, balance, data)
         case RequestToolLicence():  # M22 (39.3)
             out = request_tool_licence(state, action, balance, data)
         case RequestLicence() | SetGreyRoute() | LaunchVariant() | TakeLocalPartner():  # M22

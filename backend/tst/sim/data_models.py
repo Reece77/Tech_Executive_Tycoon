@@ -22,6 +22,7 @@ from tst.sim.commodities.config import (
     PowerHistoryFile,
     SuppliersFile,
 )
+from tst.sim.contracts.config import ContractsBalance
 from tst.sim.events.data import (
     EFFECT_TYPES,
     LOAN_EFFECTS,
@@ -1282,6 +1283,7 @@ class Balance(_Frozen):
     geopolitics: GeopoliticsBalance  # M22 (formulas.md 39)
     mining: MiningBalance  # M19 (formulas.md 35)
     fab: FabBalance  # M21 (formulas.md 38)
+    contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1818,6 +1820,10 @@ class EntrantDef(_Frozen):
     category: str
     segments: tuple[str, ...] = Field(min_length=1)
     listed_from: tuple[int, int] | None = None  # M14 (28.1): as IncumbentCompany's
+    region: str | None = None  # M23a: the region it sells in first (default North America)
+    # M23a: an established group's new unit launches at its founding with this quality (0-100)
+    # and the category's starting features, instead of building from scratch
+    quality: float | None = Field(default=None, ge=0, le=100)  # tunable-exempt: quality scale
 
 
 class EntrantsFile(_Frozen):

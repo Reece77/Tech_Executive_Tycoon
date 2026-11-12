@@ -20,7 +20,8 @@ for every hit product and destination (free: the event is the request); variant 
 hit chips' compliant variants (free); grey sells through distributors (listing risk); lobby
 spends geopolitics.lobby.cents in the actor's region (6950) for lobby.influence points of M24
 influence; accept changes nothing; appeal spends listing.appeal_cents and, with chance
-listing.appeal_chance (stream `geopolitics` key (3, company id)), takes the listing off.
+listing.appeal_chance (stream `geopolitics` key (3, the company's stable key)), takes the
+listing off.
 """
 
 from __future__ import annotations
@@ -35,15 +36,13 @@ from tst.sim.errors import GeopoliticsRuleError
 from tst.sim.events.models import GameEvent, QueuedEvent
 from tst.sim.founder.models import Influence
 from tst.sim.geopolitics import actions as ga
+from tst.sim.geopolitics import listing, sales, world
 from tst.sim.geopolitics import rules as gr
-from tst.sim.geopolitics import sales, world
 from tst.sim.geopolitics.config import RuleDef
-from tst.sim.geopolitics.draws import APPEAL, geo_draws
 from tst.sim.geopolitics.models import EntityListing, Notice
 from tst.sim.geopolitics.rules import ActiveRule
 from tst.sim.ledger import CASH, LOBBYING, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
     influence_of,
@@ -284,8 +283,7 @@ def geopolitics_step(
                     amount=lb.appeal_cents,
                 )
             )
-            gen = geo_draws(RngFactory(state.save_meta.master_seed), state.turn, APPEAL, company)
-            won = float(gen.random()) < lb.appeal_chance
+            won = listing.appeal_won(state, company, balance)  # M23a: the stable key
             if won:
                 state = replace(
                     state,

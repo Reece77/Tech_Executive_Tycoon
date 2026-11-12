@@ -164,9 +164,11 @@ def consolidated_lines(
     for brand in brands:
         member = brand if isinstance(brand, Member) else Member(brand[0], brand[1])
         mine, entry = contribution(member, types)
-        mine = [x for x in mine if x[1] not in INTERCOMPANY]
+        # NCI's share of profit is of the member's own profit, its intercompany sales and
+        # purchases included (31.3; M23a, Codex review 5 finding 3): attribution reads the
+        # whole contribution, and only the group's lines lose the intercompany accounts.
         contributed.append((member, mine, entry))
-        out += mine
+        out += [x for x in mine if x[1] not in INTERCOMPANY]
     if any(e < 1 for m, _, _ in contributed for _, e in m.effective):
         out += nci_lines(out, contributed, types)
     return out

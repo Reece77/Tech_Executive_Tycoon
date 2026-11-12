@@ -206,11 +206,28 @@ class DetenteDef(_Frozen):
         return month_to_turn(self.month)
 
 
+class RivalVariantDef(_Frozen):
+    """A rival's compliant variant, from history (M23a, 39.3): `company` (an incumbent's or
+    entrant's name) sells a cut-down `chip_type` to restricted destinations from `month`, until
+    a rule that voids variants launched before it."""
+
+    company: str = Field(min_length=1)
+    chip_type: str = Field(min_length=1)
+    month: str
+    label: str = Field(min_length=1)
+    tag: str = "R"
+
+    @property
+    def turn(self) -> int:
+        return month_to_turn(self.month)
+
+
 class ExportControlsFile(_Frozen):
     last_month: str
     rules: tuple[RuleDef, ...]
     detentes: tuple[DetenteDef, ...] = ()
     seeded: tuple[RuleDef, ...] = ()
+    rival_variants: tuple[RivalVariantDef, ...] = ()  # M23a
 
     @model_validator(mode="after")
     def _check(self) -> ExportControlsFile:
@@ -357,6 +374,9 @@ class GeopoliticsBalance(_Frozen):
     local_partner: PartnerBalance
     goods: dict[str, GoodDef]
     tariff_goods: dict[str, tuple[str, ...]]  # devices/servers/chips -> category keys
+    # M23a: export controls bind rivals' sales as the player's (rival variants from history);
+    # false gives M22's rule (the player's group only), for comparison runs
+    rivals_controlled: bool = True
     actor_regions: dict[str, str] = Field(default_factory=dict)  # bloc -> region for influence
 
     @model_validator(mode="after")

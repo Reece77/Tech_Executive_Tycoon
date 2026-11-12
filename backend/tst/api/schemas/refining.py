@@ -213,6 +213,7 @@ class BuildRefineryIn(BaseModel):
     host_id: int | None = None
     city: str | None = None
     company_id: int | None = None
+    country: str | None = None  # M23a: a countries.yaml key in the region
 
 
 class RefiningDealIn(BaseModel):
