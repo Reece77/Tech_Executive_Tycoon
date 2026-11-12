@@ -1,5 +1,6 @@
 // Guide pages (M29, 42.1): what each system is for and where to start. Words only: what is
 // open and why comes from the API.
+import type { WhatNextItem } from '../hooks/onboarding';
 
 export interface Guide {
   title: string;
@@ -145,3 +146,28 @@ export const GUIDES: Record<string, Guide> = {
     start: ['Check which rules bite your products and inputs before you expand.'],
   },
 };
+
+/** Where a What next item links (the same kinds as the COO's briefing, 17.3, plus guides). */
+export function whatNextHref(saveId: string, item: WhatNextItem): string {
+  const base = `/game/${saveId}`;
+  switch (item.link_kind) {
+    case 'event':
+      return item.link_id ? `${base}/events/${item.link_id}` : `${base}/inbox`;
+    case 'product':
+      return item.link_id ? `${base}/products/${item.link_id}` : `${base}/products`;
+    case 'person':
+      return item.link_id ? `${base}/people/${item.link_id}` : `${base}/people`;
+    case 'rival':
+      return item.link_id ? `${base}/competitors/${item.link_id}` : `${base}/competitors`;
+    case 'board':
+      return `${base}/finance/board`;
+    case 'guide':
+      return `${base}/guide/${item.link_key ?? ''}`;
+    case 'recruitment':
+    case 'org':
+    case 'finance':
+      return `${base}/${item.link_kind}`;
+    default:
+      return `${base}/inbox`;
+  }
+}

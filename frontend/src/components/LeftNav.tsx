@@ -55,7 +55,13 @@ export function LeftNav({
                 aria-current={active === item.path ? 'page' : undefined}
                 data-testid={`nav-${item.path.replace('/', '-')}`}
               >
-                <span className="tst-key">{key ?? ''}</span>
+                <span
+                  className="tst-key"
+                  style={key ? undefined : { visibility: 'hidden' }}
+                  aria-hidden={key ? undefined : true}
+                >
+                  {key ?? '0'}
+                </span>
                 {item.label}
                 {item.path === 'inbox' && unread > 0 && (
                   <span
