@@ -62,6 +62,7 @@ export function UnlockToasts({ saveId }: { saveId: string }) {
         flexDirection: 'column',
         gap: 8,
         maxWidth: 340,
+        pointerEvents: 'none', // never in the way of a click beneath; its link and close do
       }}
       aria-live="polite"
     >
@@ -81,11 +82,14 @@ export function UnlockToasts({ saveId }: { saveId: string }) {
             <div style={{ fontWeight: 600 }}>{s.label}</div>
             <div className="tst-muted" style={{ fontSize: 13 }}>
               Open because {s.reason ?? 'you opened it'}.{' '}
-              <Link to={`/game/${saveId}/guide/${s.key}`}>What it does</Link>
+              <Link to={`/game/${saveId}/guide/${s.key}`} style={{ pointerEvents: 'auto' }}>
+                What it does
+              </Link>
             </div>
           </div>
           <CloseButton
             size="sm"
+            style={{ pointerEvents: 'auto' }}
             aria-label={`Close the ${s.label} notice`}
             onClick={() => setShown((cur) => cur.filter((x) => x.key !== s.key))}
           />
