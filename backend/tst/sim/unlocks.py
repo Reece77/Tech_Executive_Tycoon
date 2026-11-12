@@ -46,25 +46,25 @@ class System:
 SYSTEMS: tuple[System, ...] = (
     System(1, "inbox", "Inbox", "company", always=True),
     System(2, "overview", "Overview", "company", always=True),
-    System(3, "history", "History", "company", always=True),
-    System(4, "people", "People", "people", always=True),
-    System(5, "recruitment", "Recruitment", "people", always=True),
-    System(6, "org", "Org", "people", always=True),
-    System(7, "offices", "Offices", "people"),
-    System(8, "products", "Products", "products", always=True),
-    System(9, "research", "Research", "products"),
-    System(10, "infrastructure", "Infrastructure", "products"),
-    System(11, "hardware", "Hardware", "products"),
-    System(12, "markets", "Markets", "markets", always=True),
-    System(13, "competitors", "Competitors", "markets", always=True),
-    System(14, "rankings", "Rankings", "markets"),
-    System(15, "exploration", "Exploration", "chain"),
-    System(16, "mines", "Mines", "chain"),
-    System(17, "refineries", "Refineries", "chain"),
-    System(18, "fabs", "Fabs", "chain"),
-    System(19, "finance", "Finance", "finance", always=True),
-    System(20, "group", "Group", "finance"),
-    System(21, "world", "World", "world"),
+    System(3, "history", "History", "company", always=True),  # tunable-exempt: stable id
+    System(4, "people", "People", "people", always=True),  # tunable-exempt: stable id
+    System(5, "recruitment", "Recruitment", "people", always=True),  # tunable-exempt: stable id
+    System(6, "org", "Org", "people", always=True),  # tunable-exempt: stable id
+    System(7, "offices", "Offices", "people"),  # tunable-exempt: stable id
+    System(8, "products", "Products", "products", always=True),  # tunable-exempt: stable id
+    System(9, "research", "Research", "products"),  # tunable-exempt: stable id
+    System(10, "infrastructure", "Infrastructure", "products"),  # tunable-exempt: stable id
+    System(11, "hardware", "Hardware", "products"),  # tunable-exempt: stable id
+    System(12, "markets", "Markets", "markets", always=True),  # tunable-exempt: stable id
+    System(13, "competitors", "Competitors", "markets", always=True),  # tunable-exempt: stable id
+    System(14, "rankings", "Rankings", "markets"),  # tunable-exempt: stable id
+    System(15, "exploration", "Exploration", "chain"),  # tunable-exempt: stable id
+    System(16, "mines", "Mines", "chain"),  # tunable-exempt: stable id
+    System(17, "refineries", "Refineries", "chain"),  # tunable-exempt: stable id
+    System(18, "fabs", "Fabs", "chain"),  # tunable-exempt: stable id
+    System(19, "finance", "Finance", "finance", always=True),  # tunable-exempt: stable id
+    System(20, "group", "Group", "finance"),  # tunable-exempt: stable id
+    System(21, "world", "World", "world"),  # tunable-exempt: stable id
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}

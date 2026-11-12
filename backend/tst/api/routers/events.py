@@ -241,14 +241,22 @@ def update_llm_settings(body: LLMSettingsIn, settings: SettingsDep) -> LLMSettin
     return _settings_out(settings)
 
 
-@settings_router.get("/ui", response_model=UISettings, operation_id="getUiSettings")
+@settings_router.get(
+    "/ui",
+    response_model=UISettings,
+    response_model_exclude={"onboarding"},  # its own endpoint (M29)
+    operation_id="getUiSettings",
+)
 def get_ui_settings(settings: SettingsDep) -> UISettings:
     """Saved column views per table (M7b), shared by every save."""
     return load_ui(settings.resolved_save_dir())
 
 
 @settings_router.put(
-    "/ui/tables/{table_id}", response_model=UISettings, operation_id="updateTableViews"
+    "/ui/tables/{table_id}",
+    response_model=UISettings,
+    response_model_exclude={"onboarding"},
+    operation_id="updateTableViews",
 )
 def update_table_views(
     table_id: Annotated[str, Path(pattern=TABLE_ID)], body: TableViews, settings: SettingsDep
