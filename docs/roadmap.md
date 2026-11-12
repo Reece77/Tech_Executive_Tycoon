@@ -28,13 +28,18 @@ v1, v2 and v3 are built: a founder-to-conglomerate game with people, products, r
 
 ## Phase 2: v3.5, "a game you can actually play"
 
-| Milestone (draft) | What |
-| --- | --- |
-| **Automation everywhere** | an auto-manage switch for every area (hiring, products, pricing, research, supply and offtake, facilities, finance, group mandates, PR), run by the relevant executive or department with the player's guardrails; FM-style "delegate to staff" with reports and override; the inbox only surfaces what the player kept for themselves |
-| **A living world** | rival miners, refiners and foundries as full companies; incumbents form groups, spin off and buy each other; Chinese chipmakers rise under the export rules; rivals use the same systems as the player |
-| **Onboarding and the UI pulled together** | progressive unlocking (systems appear as the company reaches them), a guided first year, sensible defaults, one consistent dashboard, an inbox that triages, navigation for 40 screens |
-| **A one-click launcher and performance at scale** | double-click to play (no PowerShell); a 2039 group with the full chain under a second a turn; save size |
-| **Reece's 30-year campaign** | one game, 2010–2039: the real acceptance test for v1–v3; its notes shape v3.5's last fixes and v4 |
+**Reece's decisions (2026-11-11):** every area can be automated, but one-off decisions need his approval; each delegate has a money limit; a monthly digest; delegates can be bad, so staff matter.
+
+| Milestone | Lane | What | Brief |
+| --- | --- | --- | --- |
+| **M27a, automation everywhere** | A | areas and owners (seat holders, the CEO, area leads, subsidiary CEOs); money limits and one-offs that always need approval; quality from true skills and a workload in energy; routine events; the monthly digest; the Automation screen (formulas §40) | `docs/tasks/M27a-automation-everywhere.md` |
+| **M27b, automation for the chain** | A, after M27a | device production, supply, exploration, mines and refineries, fabs, government affairs, corporate development (§40.7) | `docs/tasks/M27b-automation-for-the-chain.md` (outline) |
+| **M28, a living world** | B, merges last | chain companies as companies, supply-driven prices from 2026, rival groups and bids, China's catch-up, regional cycles, World news and company pages (§41) | `docs/tasks/M28-a-living-world.md` |
+| **M29, onboarding, navigation and the launcher** | C, merges first | double-click launcher, progressive unlocking, guided first year, What next, inbox tabs, grouped navigation and a command palette (§42) | `docs/tasks/M29-onboarding-navigation-and-launcher.md` |
+| **M30, performance at scale** | after M28 | a 2039 group with the full chain and the living world under a second a turn; save size | to be written after M28 |
+| **Reece's 30-year campaign** | — | one game, 2010–2039, started after `m23b-done` on `main`; saves upgrade as v3.5 merges, and its notes shape v3.5's last fixes and v4 | campaign log page |
+
+M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of v3) runs alongside them.
 
 ## Phase 3: v4, power, platforms and regulation
 

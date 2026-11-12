@@ -3112,3 +3112,206 @@ Reece's decision (2026-11-02): **regional blocs with export controls**. Data: do
 - **Tariffs** (tariffs.py, `tariffs.yaml`): after production, rate x cost of goods x the share made in the origin x the share sold in the market, to 5100 against cash. A device's origin is its contract's city (Foxconn in Shenzhen: China) or its plants' countries; a chip's its foundries' (TSMC: Taiwan).
 - **Fabs (wired at the M21 merge, fabs.py)**: a fab order (a new fab or a conversion) whose country (its city's, else its region's default: East Asia's is China) is a destination of a biting rule on `euv_tools` (an EUV node) or `chip_equipment` (`geopolitics.equipment_node` n16 and below) is refused without an approved tool licence for that rule and country (a ban refuses it outright); a company on an entity list of a toolmakers' actor gets no EUV or advanced tools. Orders already placed are not recalled. M21's foundry customers are the chip incumbents, none in China: `fab_services` rules have no sale to stop.
 - **Who is controlled**: the player's group (M16), subsidiaries included; rivals' sales and inputs are not (M22 decision; rivals' lobbying is out of scope).
+
+## 40. Automation everywhere (M27a, M27b; v3.5)
+
+Reece (2026-11-11): "Being able to automate anything would be nice. That is what makes FM fun." His decisions: **every area can be automated**; **one-off decisions always need his approval**; each delegate works under a **money limit**; a **monthly digest** reports what they did; and **delegates can be bad**, so whom he appoints matters. This section generalises §24 (authority), §25.6 (the CEO) and §27.1 (pitches) to every area of the game. Nothing here changes a company whose areas are all managed by the player.
+
+### 40.1 Areas, owners and eligibility
+
+An **area** is a part of the business with its own monthly rule. Each area of each company has an **owner**: the player (**Manage myself**, the default) or a person. Setting or changing an owner is an immediate action (energy `exec_authority.change_energy`, 2); taking an area back costs the same, and a high-ego owner (ego ≥ 15) loses 2 morale once when an area is taken back within 6 months of being given.
+
+**Who may own an area:**
+- **A seat holder** (§18.3) for the areas of its seat (table below). Giving a seat's authority (§24.1) is the same as making it the owner of its seat's areas; the two are one setting.
+- **The CEO** (§25.6) for any area.
+- **An area lead** (new): any active employee at `automation.lead_min_level` (senior) or above whose role is in the area's `roles` list in `balance.yaml`. An area lead has no seat effect (§18.3) and an empty lead post costs nothing, so area leads do not change §18's balance.
+- **A subsidiary's CEO** for every area inside that subsidiary (§31.4); the mandate is its guardrail.
+
+The founder is never an owner (the founder is the player). A person may own several areas; their workload is §40.3's energy.
+
+| Area | Seat that owns it | Lead roles (examples; `balance.yaml` lists them) | What the owner does each month | Milestone |
+| --- | --- | --- | --- | --- |
+| Hiring | the unit's seat; else COO | recruiter, any team lead | hiring plans (§13.10) for the headcount targets the player sets per unit | existing (M2, §24) |
+| Engineering teams | CTO | engineering manager | §24.1's CTO rule | existing |
+| Product launches and roadmaps | CPO | product manager | §27.1's CPO rule: launches ready products, pitches new products and sunsets | existing |
+| Pricing | CRO | sales manager | §24.1's CRO rule, plus self-serve and device prices (§40.6) | M27a |
+| Marketing | CMO | marketing manager | §24.1's CMO rule | existing |
+| Support and offices | COO | operations manager | §24.1's COO rule | existing |
+| Treasury | CFO | finance manager | §24.1's CFO rule (repayments; rounds and loans are one-offs) | existing |
+| Research | CTO | research scientist, research lead | §40.6 | M27a |
+| Regions | CRO | sales manager | §27.1's CRO pitch; a launch under the limit goes ahead | M27a |
+| Cloud capacity | CTO | infrastructure engineer, SRE | §40.6 | M27a |
+| Press and communications | CMO | communications manager | §40.6 | M27a |
+| Routine events | the owner of the event's area; else COO | — | §40.5 | M27a |
+| Device production | COO | manufacturing engineer, operations manager | §40.7 | M27b |
+| Supply and commodities | COO | procurement manager | §40.7 | M27b |
+| Exploration | — | geologist (senior+) | §40.7 | M27b |
+| Mines and refineries | — | mining engineer, plant manager | §40.7 | M27b |
+| Fabs and foundry customers | CTO | process engineer, fab manager | §40.7 | M27b |
+| Government affairs | — | legal counsel, public policy manager | §40.7 | M27b |
+| Corporate development | CFO | corporate development manager | screens targets and pitches acquisitions (§28); every bid is a one-off | M27b |
+
+Roles a lead needs that are not yet in `roles.yaml` are added by the milestone that adds the area (data only; no new skills).
+
+### 40.2 The money limit and one-offs
+
+- **Money limit.** Each owner has a limit per decision, `limit_cents`, that the player sets on the Automation screen. The default is `automation.default_limit_bp` (200 bp, 2%) of the company's cash at the moment of appointment, rounded down to $10,000, at least `automation.min_limit_cents` ($25,000). A decision's **commitment** is its cash cost over the next 12 months plus every fixed obligation it creates (a contract's take-or-pay over its term, capex, a lease's term). Under the limit the owner acts; at or above it the decision becomes a **proposal**. An owner also stops acting in a month once its decisions that month have committed `automation.monthly_limit_mult` (3) × its limit; the rest wait to next month (logged "over this month's budget").
+- **One-offs** are always proposals, whatever their size, whoever owns the area (the CEO included), on Holiday or not:
+  - buying a company or a stake, a bid of any kind, and selling a product, unit, brand, subsidiary or stake;
+  - equity rounds, the IPO, secondary offerings, new loans or bonds, buybacks and dividends;
+  - founding, closing, carving out or spinning off a subsidiary, and changing a subsidiary's mandate;
+  - building, expanding, converting or closing a facility (data centre, assembly plant, wafer, refining or fab plant, mine) and a new process node;
+  - the development decision on an exploration project, and selling a project;
+  - sunsetting a live product;
+  - layoffs of at least `automation.layoff_share` (10%) of a unit in one month;
+  - appointing or removing an executive, a CEO or a subsidiary CEO;
+  - terminating a contract that has a fee, and signing a contract longer than `automation.long_contract_months` (36);
+  - lobbying above the government-affairs budget the player set.
+- **Proposals** are §24.1's (major severity; Approve, Modify, Decline) with §27.1's low and high case where the move has one. An unanswered proposal expires after `automation.proposal_months` (3) as declined ("expired"), and the owner may not propose the same move again for 6 months.
+- **Holiday** (§17.1): ordinary decisions under the limit go ahead and are reported in the digest. A one-off **stops Holiday** by default (setting `stop_for_approvals`, on); with it off, the proposal waits and Holiday carries on. M13b's `auto_approve_cents` (§27.1) becomes the pitching owner's limit for pitches that are not one-offs; pitches that are one-offs (data centres, assembly plants, offices with a lease above the limit, rounds) no longer go ahead on Holiday.
+
+### 40.3 Decision quality and workload
+
+- **Score.** An owner's area score `s` is their true skills weighted by the area's `weights` (sum 1, in `balance.yaml`); a seat holder uses its seat score (§18.3) for its seat's areas, the CEO its CEO score (§25.6). Each monthly decision runs the area's right rule with probability `clamp(0.55 + 0.03 s, 0.6, 0.98)` (§24.2's `exec_authority.quality`), otherwise the area's stated mistake (second-best option, a step off by 20%, or a month late). Draws for areas that are new in M27 come from stream `automation` (id 56), key `(person_id, area_index, n)`, `n` counting that person's decisions in the area this month; the existing seat rules keep stream `delegate` and are unchanged.
+- **Workload.** Each owner has 100 energy a month (§13.10's delegate energy, × the support pool's coverage `c`, §18.4). Running an area for a month costs its `energy` (`balance.yaml`, typically 15–35); an owner runs its areas in the player's priority order on the Automation screen and skips the rest when energy runs out (logged "no time this month"; the digest says so). The CEO is no exception for the new areas. One excellent person cannot run the whole company well; a team can.
+- **Visible record.** Every decision and every mistake is logged with the owner's name (§24.2). Each owner shows a record on their profile and the Automation screen: decisions this year, proposals and their outcomes, pitches hit or missed (§27.1), and KPIs of their areas while they owned them. Never the probability or the draw.
+
+### 40.4 The monthly digest
+
+- At month end (phase 12) each company with at least one automated area gets one inbox item of kind `digest` ("Your month: <Month Year>", minor severity, never blocks Continue).
+- **For each automated area:** the owner; what they did (a count and up to three lines with effects, as §27.2's "What I did"); money committed against the limit; visible mistakes and their effect; proposals waiting, with links; the area's two or three KPIs against last month and the target; "no time" or "over budget" notes.
+- **Worth your attention:** up to three lines across areas, ranked by the size of a KPI's move against its target or a proposal's commitment.
+- **Opening paragraph:** written by the LLM within §16's budget from engine facts only, in the chief of staff's (COO's) voice, or a template.
+- **What leaves the inbox.** Inbox items produced by automated areas (delegates' hires, executives' decisions, routine events answered for the player) are stored as before but flagged `in_digest`; the inbox's default view hides them and the digest links to them. The inbox keeps proposals, critical and major events, everything in areas the player manages, and board, earnings and press items.
+- Quarterly reports (§24.3, §27.2) continue; in a quarter's last month the digest links them.
+
+### 40.5 Routine events
+
+- A non-critical event (§16, §23.1) whose category maps to an automated area, still unanswered when the player presses Continue, is answered by that area's owner (setting per area: "Let them answer routine events", on when the area is automated). The right rule picks the option with the best displayed effect on the area's KPIs (§23.2's modifiers as the player sees them), ties to the more cautious option; the mistake picks the second best. The answer is logged with the owner's name and appears in the digest.
+- **Critical events always go to the player** and never resolve by automation.
+
+### 40.6 Area rules added in M27a
+
+- **Pricing (self-serve and devices).** Each quarter, for each priced segment of a live product, within ±`automation.price_band` (10%) of the anchor (the player's last price there, as §24.1): step the price down 5% if the product's shown churn is above the category's shown average and its price is above the segment's displayed reference price; step it up 5% if supply limits sales (sellers, devices or capacity short) or shown churn is at least 20% below the category average. Mistake: no move.
+- **Research.** Keep research spending at or below a budget (guardrail: % of trailing revenue, default `automation.research_budget_bp` 800); when builders or researchers are free, start the project with the best §27.1 research candidate score that fits the budget; stop a project whose displayed months to finish exceed a guardrail (24) when no live product draws on its domain. Licensing deals are proposals. Mistake: the second-best project.
+- **Regions.** §27.1's CRO candidate; a launch whose commitment is under the limit goes ahead.
+- **Cloud capacity.** Keep projected data-centre use between guardrails (default 60–90%): sell spare capacity at spot above the upper band, buy spot compute below the lower; pitch a data centre (a one-off) when §27.1's CTO test holds. Mistake: a month late.
+- **Press and communications.** Answer press moments (§29) with the option whose claim the company's displayed plans support (the measured answer); a bold claim only when the guardrail "allow bold claims" is on and the plan's displayed central case supports it. Mistake: the bolder answer. Promises follow §29 as if the player made them.
+
+### 40.7 Area rules added in M27b (outline; the M27b brief settles the details)
+
+- **Device production:** contract-manufacturer orders and plant use to the shown demand plan, within inventory guardrails (weeks of cover).
+- **Supply and commodities:** keep each input's cover (contracts, offtakes and own supply over the next 12 months' need, M23c's planning view) within a guardrail band (default 60–100%); sign standard contracts and offtakes under the limit with the best displayed terms; never terminate (one-off).
+- **Exploration:** run licensed projects through the pipeline within a yearly budget, licence blocks the best desk studies show, drop projects whose displayed range falls below a guardrail grade; the development decision is a one-off.
+- **Mines and refineries:** output rate, maintenance, power contracts and sales routing (group first, then contracts, then spot) within guardrails; expansions and closures are one-offs.
+- **Fabs and foundry customers:** wafer starts by node to own demand first, then foundry contracts at or above a margin guardrail; conversions and new nodes are one-offs.
+- **Government affairs:** lobbying within the budget by region, licence applications for blocked sales, compliant variants proposed.
+- **Corporate development:** screens targets each quarter and pitches; every bid is a one-off.
+
+### 40.8 The Automation screen
+
+- One table per company (the company switcher scopes it): area, owner (a picker of eligible people with their displayed fit band, §18.8), status (Manage myself, Automated, or **Can't automate yet** with the reason and how to fix it: "hire a senior procurement manager or fill the COO seat"), money limit, priority, this month's decisions, proposals waiting, energy used.
+- **Automate everything:** assigns every area to the eligible person with the best displayed fit (seat holders first, then leads, never more areas than their energy covers at the area costs), shows the result for confirmation, and sets default limits.
+- Every screen whose area is automated shows "Run by <name> (<role>) · Take back" in its header.
+
+### 40.9 What must not move
+
+- A company whose areas the player manages, with seat authorities as they stand, plays exactly as before: same books, people and products (state-cache check). Golden snapshots change only by new settings rows and, for companies with an automated seat, the digest item; that regeneration's reason goes in CHANGELOG.
+- An owner never commits above its limit, and no one-off is ever carried out without the player's approval (property tests over random settings and states).
+
+### 40.10 Balance targets (printed)
+
+1. **Automate everything works.** A stage-3 steady company (§24.5 target 1's) with every area automated by score-15 owners spread over at least five people, the founder doing nothing but approving proposals whose central case is positive, for 60 months: median ARR at month 60 between 0.85× and 1.2× the steady + regions founder script (§27.5 target 7's), 10 seeds.
+2. **Staff matter.** The same run with owners at score 8: median ARR at least 20% below the score-15 run, and at least twice the logged mistakes.
+3. **Workload matters.** The score-15 run with every area given to one person: median ARR at least 10% below the spread run.
+4. **The inbox stays calm.** In target 1's run, proposals at most 2 a month (median) and other inbox items at most 10 a month, not counting the digest.
+5. **Founder energy.** Target 1's run leaves at least 80% of the founder's energy unspent on average.
+6. **Nothing else moves:** §40.9, and every earlier guard as before.
+
+### 40.11 What the API may show
+
+Areas, owners, eligibility and its reasons, displayed fit bands, limits, priorities, energy used, decisions and mistakes as outcomes, proposals, digests and records. Never an owner's true skills or score, the quality probability, the draws, or which option was best.
+
+## 41. A living world (M28; v3.5)
+
+The roadmap's first product risk: the world is shallower than the player. Miners, refiners and foundries are data; rivals don't form groups or fight each other. In Capitalism Lab rivals play the same game. Here they will, within the simulation's budget, and **2010–2025 history stays the anchor**: until 2026 prices, capacity totals and dated events follow the data exactly.
+
+### 41.1 Chain companies
+
+- The named suppliers (`suppliers.yaml`), rival miners (§35), refiners (§36) and foundries (§38) become **rival companies** in the generic company model (ADR-0020), each owning **facilities** in the generic facility model, in the countries the data names. Their capacity per good sums to the data's world supply each year to 2025 (each company's facilities scaled to its share, `world_share` in the data; the rest is "other producers", one aggregate company per good).
+- They run **simplified operations**: monthly output = capacity × utilisation, cost per unit from the facility's region (power, labour index) and grade, sales at spot or under their contracts, and books (revenue, costs, capex, debt, cash) on the ledger. No individual staff below the CEO and a few named executives; a CEO from the rival characters (§13 rival personalities).
+- The player's contracts and offtakes (§33.3) are with these companies; a supplier's breach risk (§33.3) reads its real cash and utilisation instead of a fixed rate from 2026.
+
+### 41.2 Capacity decisions and prices after 2025
+
+- **Each December** from 2025, each chain company decides capex (stream `world`, id 57, key: the company's stable key): **expand** when its 3-year displayed price outlook exceeds its cost per unit × (1 + `world.hurdle`) and net debt / EBITDA is under `world.max_leverage`; the size by personality (aggressive large, cost leader medium, premium small); **mothball** a facility when spot is under its cash cost for 6 months; **close** after 24 months mothballed. Expansions take the facility kind's build time (§35, §36, §38).
+- **Prices from 2026:** M17's seeded path is multiplied by a **balance factor** `clamp((demand / supply) ^ world.elasticity, world.factor_min, world.factor_max)`, where supply is every producer's output (the player's included) and demand every buyer's need (the player's, rivals' and the rest-of-world baseline in the data). Through 2025 the factor is exactly 1.
+- The player can now **move a market**: building large capacity lowers prices for everyone; rivals respond by mothballing.
+
+### 41.3 Rivals form groups
+
+- **Incumbents buy chain companies and each other.** §28.6's rival M&A extends to incumbents buying incumbents (any category, chain companies included) with antitrust (§28.7), at `world.rival_mna_rate` a quarter for a candidate with cash above 12 months of costs; a buyer prefers targets that supply its inputs (vertical) or share its categories (horizontal), by personality.
+- **Rival groups.** A rival that owns another company runs it as a subsidiary (§31.4's model, with a mandate chosen by personality); its statements consolidate; the conglomerate discount applies to listed rival groups, and a group whose discount exceeds `world.spinoff_discount` spins off its least-related subsidiary (at most one a year).
+- **Supply security.** Device and chip incumbents sign offtakes with chain companies when their cover of an input falls under 60% (as the player's supply rule in §40.7), so in a shortage the player competes with rivals' contracts.
+
+### 41.4 Bids for the player
+
+- §28.6's "being acquired" is now driven by rivals' own valuations: when the player's group is listed and its market cap is under `world.bid_discount` (0.7) × a rival's displayed-knowledge valuation (§28.1) and the rival can fund 1.3× the price, the rival may bid (a critical event), at most once a year per rival. The player's defences and the board's response are §28.6's. A private player is approached only for friendly offers.
+
+### 41.5 Chinese chipmakers under export rules
+
+- From October 2022 (and any later control), Chinese foundries' (SMIC and peers') research lag (§38.2) shrinks by `world.china_catchup` generations a year while a control on equipment binds, at capex × `world.china_subsidy`; Chinese device and chip rivals gain the share that controlled sellers lose in China (M23a's rivals under controls), and may launch in other regions where no rule blocks them.
+
+### 41.6 Regional cycles
+
+- After 2025, each region's demand multiplier follows a seeded cycle (stream `world` key `(1, region_index)`): AR(1) around 1 with recessions (−3 to −8% demand for 6–18 months) and booms, independent across regions except a global shock (`world.global_shock_rate` a year) that hits all. Through 2025, `macro_history.yaml` as now.
+
+### 41.7 The world you can see
+
+- **World news:** a feed of rivals' deals, capacity moves, launches, mothballings, executive moves and regional cycles, filterable by company, region, good and kind; links to each.
+- **Company pages** for every rival, extending the existing Rival screen (Football Manager's club page): owner and group, CEO and named executives, products and shares, facilities on a map, public financials (listed companies) or estimated ranges (private), deals, and history.
+
+### 41.8 Balance targets (printed)
+
+1. **History holds:** to December 2025, every commodity, power and wafer price, every capacity total and every dated event identical to `main` before M28 on every seed (a state-cache check on those series).
+2. **Markets respond:** a script that builds 20% of world lithium-hydroxide capacity by 2030 sees the 2031–2033 average price 15–40% below the same seed without it, and at least one rival mothballing.
+3. **The world survives:** at least 80% of chain companies alive in December 2039 (median, 10 seeds), and no good's supply under 70% of demand for more than 24 months in a row.
+4. **Rivals form groups:** at least two rival groups with a chain subsidiary by 2035 on 7 of 10 seeds; rival-on-rival deals at most 3 a year (median).
+5. **Bids happen when deserved:** a listed player trading at 0.6× value receives a bid within 3 years on at least 5 of 10 seeds; a player at 1.0× on at most 1.
+6. **China catches up under controls:** SMIC's lag at 2030 at least one generation shorter than with controls lifted (same seed).
+7. **Nothing else moves for a software company** before 2026: books identical; after 2026 regional cycles may move them.
+8. **Turn time:** a 2039 turn with the full world within the M30 budget measured on `main` (no worse than 1.3× `main` before M28).
+
+### 41.9 What the API may show
+
+Rival companies' public facts: names, owners, products, facilities, public financials or estimated ranges, deals and news. Never a rival's hidden valuation, true costs beyond published ranges, capex intentions before they are announced, or seeded cycle paths.
+
+## 42. Onboarding, navigation and the launcher (M29; v3.5)
+
+The roadmap's third product risk: complexity has outgrown the experience. About 40 screens, many concepts, and a PowerShell setup. Nothing here changes a simulation rule.
+
+### 42.1 Progressive unlocking
+
+- Each screen and system has an **unlock condition**, a pure read-only function of state (`tst.sim.unlocks`): its stage (§12), or the first fact that makes it relevant (Exploration when the company or group holds a licence or a desk study, or when the player opens "Explore for minerals" from Markets; Mines when a project is feasible; Fabs at stage 4 or with a chip product; Group at stage 5 or with a subsidiary; World when the company sells in two blocs or buys a controlled input).
+- Locked screens are hidden from the side navigation. When a screen unlocks, an inbox item of kind `unlock` (minor) and a toast say what it is, why it unlocked, and link to its guide page. A setting **Show everything** turns unlocking off. Saves started before M29 unlock what they already use.
+
+### 42.2 A guided first year
+
+- New games (setting on by default) show a **Getting started** checklist for the first 12 months, from state only: hire a first engineer, set a product's team, reach the launch bars, launch, open a hiring plan, raise a seed round, give a seat authority or automate an area. Each step links to its screen and ticks itself when done; the chief of staff's one-line note explains why it matters. Dismissible at any time.
+
+### 42.3 What next
+
+- A **What next** panel on the Overview: up to five items from §17.3's COO briefing, extended with proposals waiting (§40.2), areas that could be automated and have an eligible owner (§40.8), new unlocks, and the most urgent risk (runway, covenant, a critical event set aside). Read-only, no energy.
+
+### 42.4 The inbox and navigation
+
+- **Inbox tabs:** Needs you (proposals, critical and major), Digest (kind `digest`, §40.4), News, Everything; filters by area, company and kind.
+- **Navigation:** the side bar grouped (Company, People, Products, Markets, Chain, Finance, World, Automation), a **command palette** (Ctrl+K) to jump to any screen, person, product, facility or rival by name, recent items, and breadcrumbs.
+- **One Overview:** KPI tiles with Explain (M25), runway, What next, the latest digest's attention lines, and alerts.
+- **Interruptions:** a setting for which severities stop Continue and Holiday (critical always stops; major by default; minor never), and §40.2's `stop_for_approvals`.
+
+### 42.5 The launcher
+
+- **Double-click to play on Windows:** a `Tech Startup Tycoon` shortcut runs `tools/launcher.py`, which on first run checks for `uv` and installs dependencies, builds the front end if it is missing or stale, then starts the API serving the built front end on one local port and opens the browser. No PowerShell commands.
+- **Saves in the game:** the launcher opens the existing Main menu and Saves screen (M7b), which gain Continue (the last-played save), last-played dates and Back up, so nothing needs the CLI.
+- The launcher writes its log to `saves/launcher.log` and shows a plain error page if something fails (port in use, missing uv).
