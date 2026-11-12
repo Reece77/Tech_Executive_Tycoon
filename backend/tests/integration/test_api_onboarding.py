@@ -160,3 +160,21 @@ def test_the_api_serves_the_built_front_end(tmp_path: Path) -> None:
         assert client.get("/api/meta/scenarios").status_code == 200
         assert client.get("/api/nothing-here").status_code == 404
         assert client.get("/../secret").text == "<html>menu</html>"
+
+
+def test_an_action_that_makes_a_screen_relevant_announces_it(
+    setup: tuple[Client, Path], loaded: LoadedData
+) -> None:
+    api, path = setup
+    from tst.sim.actions import CreateProduct
+
+    with repository.open_session(path) as session:
+        founder = repository.load_state(session).founder_of(1)
+    assert founder is not None
+    repository.run_action(
+        path, loaded, CreateProduct(founder.id, "Gadget", "devices", ("consumer",))
+    )
+    items = api.get(f"{BASE}/inbox?kind=unlock")["items"]
+    assert [i["title"] for i in items] == ["New: Hardware"]
+    assert "Gadget is a hardware product" in items[0]["body"]
+    assert "hardware" in _shown(api)
