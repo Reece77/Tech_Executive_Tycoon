@@ -17,8 +17,10 @@ import { Term } from '../components/Term';
 import {
   useCommodities,
   useCommodityAction,
+  useCommodityPlan,
   useOfftakeQuote,
   type Commodities,
+  type CommodityPlan,
   type OfftakeBody,
 } from '../hooks/api';
 import { formatMoney } from '../lib/format';
@@ -31,6 +33,7 @@ type Supplier = components['schemas']['SupplierOut'];
 const goodHelper = createColumnHelper<GameTableFeatures, Good>();
 const dealHelper = createColumnHelper<GameTableFeatures, Deal>();
 const supplierHelper = createColumnHelper<GameTableFeatures, Supplier>();
+const planHelper = createColumnHelper<GameTableFeatures, CommodityPlan>();
 
 function pct(x: number): string {
   return `${Math.round(x * 100)}%`;
@@ -54,6 +57,7 @@ export function CommoditiesTab({ saveId }: { saveId: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} data-testid="commodities">
       <GoodsTable goods={c.goods} selected={good?.good ?? ''} onSelect={setSelected} />
       {good && <PriceChart good={good} />}
+      <PlanPanel saveId={saveId} />
       <PowerPanel c={c} />
       <DealsPanel deals={c.deals} />
       <OfftakeForm saveId={saveId} c={c} defaultGood={good?.good ?? ''} />
@@ -431,6 +435,159 @@ function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
   return (
     <Panel title="Suppliers" testId="suppliers">
       <DataTable table={table} label="Suppliers" rowTestId="supplier-row" />
+    </Panel>
+  );
+}
+
+function vol(x: number, unit: string): string {
+  return `${x.toLocaleString('en-US', { maximumFractionDigits: x < 10 ? 2 : 0 })} ${unit}`;
+}
+
+/** The planning view (M23c, playtest 5): each commodity's need over the next 12 months at
+ * this month's production, the products that drive it, and how much your contracts, offtakes
+ * and own supply cover, month by month as deals end. A projection at the current run rate. */
+function PlanPanel({ saveId }: { saveId: string }) {
+  const plan = useCommodityPlan(saveId);
+  const [open, setOpen] = useState<string | null>(null);
+  const columns = useMemo(
+    () =>
+      planHelper.columns([
+        planHelper.accessor('label', {
+          header: 'Commodity',
+          meta: { term: 'commodity.good' },
+          cell: ({ row }) => (
+            <Button
+              variant="subtle"
+              size="compact-xs"
+              onClick={() => setOpen(row.original.good)}
+              data-testid="plan-open"
+            >
+              {row.original.label}
+            </Button>
+          ),
+        }),
+        planHelper.accessor('need_12m', {
+          header: 'Need, 12 months',
+          meta: { term: 'commodity.need' },
+          cell: ({ row }) => vol(row.original.need_12m, row.original.volume_unit),
+        }),
+        planHelper.accessor('deals_12m', {
+          header: 'Deals cover',
+          meta: { term: 'commodity.deal_cover' },
+          cell: ({ row }) => vol(row.original.deals_12m, row.original.volume_unit),
+        }),
+        planHelper.accessor('own_12m', {
+          header: 'Own supply',
+          meta: { term: 'commodity.own_supply' },
+          cell: ({ row }) => vol(row.original.own_12m, row.original.volume_unit),
+        }),
+        planHelper.accessor('cover', {
+          header: 'Covered',
+          meta: { term: 'commodity.cover' },
+          cell: ({ getValue }) => {
+            const v = getValue();
+            return v === null || v === undefined ? '—' : pct(v);
+          },
+        }),
+        planHelper.accessor('gap_12m', {
+          header: 'Uncovered',
+          meta: { term: 'commodity.gap' },
+          cell: ({ row }) => vol(row.original.gap_12m, row.original.volume_unit),
+        }),
+        planHelper.display({
+          id: 'drivers',
+          header: 'Driven by',
+          meta: { term: 'commodity.drivers' },
+          cell: ({ row }) =>
+            row.original.drivers.map((d) => `${d.name} ${pct(d.share)}`).join(', ') || '—',
+        }),
+      ]),
+    [],
+  );
+  const table = useTable({
+    features: gameTableFeatures,
+    columns,
+    data: plan.data?.plans ?? [],
+    getRowId: (p) => p.good,
+  });
+  if (plan.error) return <LoadError title="Could not load the plan" error={plan.error} />;
+  if (!plan.data) return null;
+  const shown = plan.data.plans.find((p) => p.good === open) ?? plan.data.plans[0];
+  return (
+    <Panel title="Planning: the next 12 months" testId="plan-panel">
+      <p className="tst-muted" style={{ fontSize: 12, marginTop: 0 }}>
+        What your products will use at this month&apos;s production ({plan.data.turn_label}), and
+        how much your running contracts and offtakes and your group&apos;s own supply cover. A
+        projection at the current run rate: new launches and growth add to it.
+      </p>
+      {plan.data.plans.length === 0 ? (
+        <p className="tst-muted" style={{ fontSize: 13 }}>
+          Your products use no commodities yet: devices and chips do.
+        </p>
+      ) : (
+        <DataTable table={table} label="Commodity plan" rowTestId="plan-row" />
+      )}
+      {shown && (
+        <div style={{ marginTop: 10 }} data-testid="plan-months">
+          <div style={{ fontSize: 13, marginBottom: 4 }}>
+            {shown.label} by month ({shown.volume_unit}):
+            {shown.deals_ending.length > 0 && (
+              <span className="tst-muted" style={{ fontSize: 12 }}>
+                {' '}
+                deals end {shown.deals_ending.join(', ')}
+              </span>
+            )}
+            {shown.mines_12m > 0 && (
+              <span className="tst-muted" style={{ fontSize: 12 }}>
+                {' '}
+                · your mines produce {vol(shown.mines_12m, shown.volume_unit)} a year (sold at
+                market unless supplied to the group)
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
+              gap: 4,
+              fontSize: 11,
+            }}
+          >
+            {shown.months.map((m) => {
+              const covered = m.required > 0 ? Math.min(1, (m.deals + m.own) / m.required) : 1;
+              return (
+                <div
+                  key={m.turn}
+                  title={`${m.label}: need ${vol(m.required, shown.volume_unit)}, deals ${vol(m.deals, shown.volume_unit)}, own ${vol(m.own, shown.volume_unit)}, uncovered ${vol(m.gap, shown.volume_unit)}`}
+                  data-testid="plan-month"
+                >
+                  <div
+                    style={{
+                      height: 28,
+                      background: 'var(--tst-track)',
+                      borderRadius: 3,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '100%',
+                        height: `${Math.round(covered * 100)}%`,
+                        background: 'var(--tst-accent)',
+                      }}
+                    />
+                  </div>
+                  <div className="tst-muted" style={{ textAlign: 'center' }}>
+                    {m.label.slice(0, 3)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </Panel>
   );
 }

@@ -150,3 +150,60 @@ class TransferPriceIn(BaseModel):
     good: str = Field(description="compute | chips")
     price_kind: str = Field(description="cost | cost_plus | market")
     margin: float | None = Field(default=None, description="cost plus: the margin, 0-1")
+
+
+# --- M23c: the capital-actions history and subsidiaries' quarterly updates ----------------
+
+
+class CapitalActionOut(BaseModel):
+    turn: int
+    date_label: str
+    kind: str = Field(description="stake_sale | carve_out | spin_off | buyout")
+    kind_label: str
+    company_id: int
+    company: str
+    owner: str = Field(description="The group company that sold or bought")
+    proceeds_cents: int = Field(description="Cash in (a buyout's price is negative)")
+    stake_before_bp: int
+    stake_after_bp: int
+    nci_cents: int = Field(description="Non-controlling interest left: minorities' book equity")
+    value_created_cents: int = Field(
+        description="The equity effect on the owner's books: what the sale fetched over the "
+        "book value given up (a buyout: below the minority's book; negative is a premium paid)"
+    )
+    value_note: str
+    market_cap_now_cents: int | None = Field(description="Its market cap now, when listed")
+    stake_value_now_cents: int | None = Field(description="What the group's stake is worth now")
+
+
+class CapitalHistoryOut(BaseModel):
+    actions: list[CapitalActionOut]
+
+
+class AdviceOut(BaseModel):
+    mandate: str = Field(description="grow | margin | return_cash")
+    label: str
+    current: bool
+
+
+class SubsidiaryUpdateOut(BaseModel):
+    company_id: int
+    company: str
+    ceo: str
+    quarter_label: str
+    revenue_cents: int = Field(description="The latest quarter's revenue")
+    prior_revenue_cents: int = Field(description="The quarter before")
+    operating_margin: float | None
+    cash_cents: int
+    mandate: str | None
+    capex_limit_cents: int
+    categories: list[str]
+    regions: list[str]
+    body: str = Field(description="The CEO's update in their own words, from public numbers")
+    question: str = Field(description="What the CEO asks the Chair")
+    advice: list[AdviceOut] = Field(description="Answers: each re-sets the mandate (31.4)")
+    advice_energy: int = Field(description="Founder energy an answer takes (a mandate change)")
+
+
+class SubsidiaryUpdatesOut(BaseModel):
+    updates: list[SubsidiaryUpdateOut]

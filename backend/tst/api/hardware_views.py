@@ -276,12 +276,57 @@ def format_cents(cents: float) -> str:
     return f"${cents / 100:,.2f}"
 
 
+def blank_wafer_good(data: LoadedData) -> str | None:
+    """The refining good a foundry wafer is made on: the blank 300 mm wafer (M20; the good whose
+    shortage follows foundry wafers')."""
+    b = data.balance
+    return next((k for k, g in b.refining.goods.items() if g.allocation_from == b.chips.good), None)
+
+
+def _cost_split(
+    state: GameState, product: Product, unit_cost: float, per_wafer: int, y: float, data: LoadedData
+) -> tuple[int, int, int]:
+    """(wafer material, foundry processing, packaging) of a chip's unit cost (M23c, playtest 5:
+    "the chip cost should split wafer material and foundry processing"): the blank wafer's
+    price (the group's own transfer price for starts on its own wafers) a good die, the rest of
+    the wafer part as processing, and packaging and test. Display only: the sum is the unit
+    cost the engine posts."""
+    from tst.sim.refining.goods import price_cents
+
+    b, d = data.balance, data.game_data
+    packaging = b.chips.packaging_cents
+    wafer_part = max(0.0, unit_cost - packaging)
+    good = blank_wafer_good(data)
+    if good is None or per_wafer <= 0 or y <= 0:
+        return 0, round(wafer_part), packaging
+    blank = price_cents(state, good, b, d)
+    share = chips.own_wafer_share(state, product.id)
+    if share > 0:
+        _, own, market = chips.own_wafers(state, product.id)
+        blank -= share * (market - own)
+    material = min(wafer_part, blank / (per_wafer * y))
+    return round(material), round(wafer_part - material), packaging
+
+
 def chip_out(state: GameState, product: Product, data: LoadedData) -> ChipOut:
     b, d = data.balance, data.game_data
     chip_type = d.category(product.category).chip_type
     assert chip_type is not None
     t = b.chips.types[chip_type]
     row = state.production_of(product.id)
+    unit_cost = chips.unit_cost_cents(state, product, b, d)
+    y = chips.chip_yield(state, product.company_id, b, d)
+    material, processing, packaging = _cost_split(state, product, unit_cost, t.per_wafer, y, data)
+    own = chips.own_chip_product(state, product.company_id, chip_type, d)
+    users = [
+        p.name
+        for p in state.company_products(product.company_id)
+        if own is not None
+        and own.id == product.id
+        and p.status == "live"
+        and p.category in b.hardware.bom
+        and b.hardware.bom[p.category].chip_type == chip_type
+    ]
     factor = None
     if chip_type == b.chips.gpu_capex.chip_type and product.status == "live":
         factor = chips.gpu_capex_factor(state, product.company_id, b, d)
@@ -291,8 +336,12 @@ def chip_out(state: GameState, product: Product, data: LoadedData) -> ChipOut:
         chip_type=chip_type,
         chip_label=t.label,
         status=product.status,
-        chip_yield=chips.chip_yield(state, product.company_id, b, d),
-        unit_cost_cents=round(chips.unit_cost_cents(state, product, b, d)),
+        chip_yield=y,
+        unit_cost_cents=round(unit_cost),
+        material_cents=material,
+        processing_cents=processing,
+        packaging_cents=packaging,
+        used_in=users,
         market_price_cents=chips.bought_price_cents(d, b, chip_type),
         per_wafer=t.per_wafer,
         wafers=sum(c.units for c in chips.wafer_contracts(state, product.id)),

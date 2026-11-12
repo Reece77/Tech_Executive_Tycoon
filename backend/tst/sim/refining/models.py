@@ -134,3 +134,4 @@ class OwnSupply:
     market_cents: float
     product_id: int | None = None
     taken: float = 0.0
+    fab_id: int | None = None  # M23a: substrate wafers for a group fab's starts

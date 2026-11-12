@@ -85,6 +85,34 @@ def commodity_rules(
     return out
 
 
+def supplier_country(data: GameData, supplier: str) -> str | None:
+    """A suppliers.yaml supplier's country (countries.yaml sites, else its region's default)."""
+    suppliers = data.suppliers
+    region = next(
+        (s.region for s in (suppliers.suppliers if suppliers else ()) if s.key == supplier), None
+    )
+    return world.supplier_country(data, supplier, region)
+
+
+def banned_supplier(
+    state: GameState,
+    company_id: int,
+    commodity: str,
+    supplier: str,
+    balance: Balance,
+    data: GameData,
+) -> ActiveRule | None:
+    """A biting ban on `commodity` from the supplier's country to the company's (M23a: a
+    supplier obeys its own country's export ban and signs no new offtake into it), if any."""
+    country = supplier_country(data, supplier)
+    if country is None:
+        return None
+    for a in commodity_rules(state, company_id, commodity, balance, data):
+        if a.rule.regime == "ban" and world.in_actor(data, a.rule.actor, country, state.turn):
+            return a
+    return None
+
+
 def actor_supply_share(data: GameData, commodity: str, actor: str, turn: int) -> float:
     """The actor's share of world supply of `commodity` (module docstring)."""
     assert data.commodities is not None
@@ -158,7 +186,7 @@ def exposed_share(
     covered += sum(
         s.volume
         for s in state.own_supply
-        if s.buyer_id == company_id and s.good == commodity and s.turn == turn
+        if s.buyer_id == company_id and s.good == commodity and s.turn == turn and s.fab_id is None
     )
     if used <= EPS:
         return actor_share if covered <= EPS else min(1.0, from_actor / covered)

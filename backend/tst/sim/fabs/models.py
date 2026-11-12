@@ -20,7 +20,8 @@ class FabMonth:
     turn: int
     available: float = 0.0  # starts it could run (live capacity x staff coverage)
     own: float = 0.0  # starts run for the company's own chips
-    sold: float = 0.0  # starts sold as foundry slots
+    sold: float = 0.0  # starts sold as foundry slots (contracted and spot)
+    contracted: float = 0.0  # M23a: of which under foundry contracts
     yield_: float = 0.0
     reliability: float = 0.0
     depreciation_cents: int = 0
@@ -33,6 +34,9 @@ class FabMonth:
     market_cents: float = 0.0  # the node's market wafer price this month
     cost_per_start_cents: float = 0.0
     customers: tuple[tuple[str, float], ...] = ()  # (rival designer, starts bought)
+    # M23a: starts run for each group company's chips, (company, starts, transfer cents, market
+    # cents); the fab's own company at cost
+    group: tuple[tuple[int, float, float, float], ...] = ()
 
     @property
     def run(self) -> float:

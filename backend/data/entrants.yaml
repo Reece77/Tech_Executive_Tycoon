@@ -17,3 +17,7 @@ entrants:
   # M12b (formulas.md 26.3): AI accelerator entrants
   - { name: Cerebras, year: 2016, month: 1, personality: premium, cash_cents: 10000000000, staff: 12, category: chips_ai_accelerator, segments: [hyperscalers] }
   - { name: Groq, year: 2016, month: 9, personality: aggressive, cash_cents: 6000000000, staff: 10, category: chips_ai_accelerator, segments: [hyperscalers] }
+  # M23a (39.3): a Chinese accelerator maker that can supply China under US controls: HiSilicon's
+  # Ascend line (Ascend 310 announced October 2018, R; the team, cash and quality 55 A: a large
+  # chip group's unit launching a product behind NVIDIA's 80, not a startup). Appended: list order is the stream key.
+  - { name: Huawei Ascend, year: 2018, month: 10, personality: cost_leader, cash_cents: 200000000000, staff: 60, category: chips_ai_accelerator, segments: [hyperscalers], region: east_asia, quality: 55 }

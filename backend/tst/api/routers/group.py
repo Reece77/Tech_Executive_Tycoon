@@ -7,17 +7,19 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from tst.api import group_views, views
+from tst.api import group_story_views, group_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.group import (
+    CapitalHistoryOut,
     GroupActionOut,
     GroupOut,
     MandateIn,
     PitchAnswerIn,
     SpinOffIn,
     StakeIn,
+    SubsidiaryUpdatesOut,
     TransferPriceIn,
     VentureIn,
 )
@@ -62,6 +64,61 @@ def get_group(save_id: str, settings: SettingsDep, data: DataDep) -> GroupOut:
     """The entity tree with stakes, treatments and each company's numbers; the holding
     company's gate before it is formed (31.2, 31.10)."""
     return _group(_path(settings, save_id), data)
+
+
+@router.get(
+    "/group/history",
+    response_model=CapitalHistoryOut,
+    responses=ERRORS,
+    operation_id="getCapitalHistory",
+)
+def get_capital_history(save_id: str, settings: SettingsDep, data: DataDep) -> CapitalHistoryOut:
+    """Every stake sale, carve-out, spin-off and buyout: date, proceeds, ownership before and
+    after, NCI and the value created (31.5; M23c). Read from the posted entries."""
+    from sqlalchemy import select
+
+    from tst.db.models import LedgerEntryRow
+
+    memos = [prefix for prefix, _ in group_story_views.MEMOS]
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
+        balances = repository.ledger_balances(session)
+        found = session.scalars(
+            select(LedgerEntryRow)
+            .order_by(LedgerEntryRow.id)
+            .where(
+                LedgerEntryRow.memo.startswith(memos[0])
+                | LedgerEntryRow.memo.startswith(memos[1])
+                | LedgerEntryRow.memo.startswith(memos[2])
+                | LedgerEntryRow.memo.startswith(memos[3])
+            )
+        ).all()
+        rows = [
+            (
+                e.turn,
+                e.company_id,
+                e.memo,
+                {line.account_code: line.amount_cents for line in e.lines},
+            )
+            for e in found
+        ]
+    return CapitalHistoryOut(actions=group_story_views.capital_history(state, rows, balances, data))
+
+
+@router.get(
+    "/group/updates",
+    response_model=SubsidiaryUpdatesOut,
+    responses=ERRORS,
+    operation_id="getSubsidiaryUpdates",
+)
+def get_subsidiary_updates(
+    save_id: str, settings: SettingsDep, data: DataDep
+) -> SubsidiaryUpdatesOut:
+    """Each subsidiary CEO's quarterly update, ending with a question for the Chair (M23c)."""
+    with repository.read_session(_path(settings, save_id)) as session:
+        state = repository.read_state(session)
+        balances = repository.ledger_balances(session)
+    return SubsidiaryUpdatesOut(updates=group_story_views.subsidiary_updates(state, balances, data))
 
 
 @router.post(

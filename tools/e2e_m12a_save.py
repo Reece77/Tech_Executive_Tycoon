@@ -22,6 +22,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
+from tst.balance import fixtures
 from tst.config import Settings
 from tst.db.repository import (
     create_save,
@@ -220,6 +221,7 @@ def main(argv: list[str]) -> int:
         else:
             print(__doc__)
             return 2
+    fixtures.finish(path, data)  # M23c: a knowledge record of every hand-built employee
     print(path)
     return 0
 

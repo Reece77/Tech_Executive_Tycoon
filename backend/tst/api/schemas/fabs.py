@@ -88,6 +88,7 @@ class FabOut(BaseModel):
     upgrade_estimate_cents: int | None
     upgrade_allowed: bool
     upgrade_reason: str | None
+    upgrade_how: str = Field(description="How the conversion opens (M23c)")
     month: FabMonthOut | None
     customers: list[FabCustomerOut]
     chips: list[str] = Field(description="The company's chip products its starts supply")
@@ -175,6 +176,7 @@ class FabQuoteOut(BaseModel):
     level: float
     allowed: bool
     reason: str | None
+    how: str = Field(description="How to unlock it when not allowed (M23c)")
     market_cents: float | None
     cost_per_start_cents: float = Field(
         description="A start's cost at full use: depreciation, fixed, materials and power"
@@ -187,6 +189,18 @@ class BuildFabIn(BaseModel):
     size: int
     duv: bool = False
     city: str | None = None
+    country: str | None = None  # M23a: a countries.yaml key in the region
+    company_id: int | None = None  # M23a: a group company to build it for
+
+
+class FoundryContractIn(BaseModel):
+    """M23a: sell a fab's starts to a rival designer for months at a price."""
+
+    fab_id: int
+    customer: str
+    monthly_starts: float
+    months: int
+    price_cents: float
 
 
 class StaffFabIn(BaseModel):

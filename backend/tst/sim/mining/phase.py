@@ -45,7 +45,7 @@ from tst.sim.mining import prices, risk
 from tst.sim.mining.actions import LINK, close_entries, closed, group_ids, mine_name
 from tst.sim.mining.draws import ACCIDENT, GRADE, PROTEST, mining_draws
 from tst.sim.mining.models import HISTORY_MONTHS, Mine, MineMonth
-from tst.sim.money import format_money
+from tst.sim.money import format_money, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_facility, with_mine, with_mine_deal, with_queued
 
@@ -475,7 +475,7 @@ def _operate(
         )
     margin = revenue - cash_cost - royalty
     if mine.state_share > 0 and margin > 0:
-        state_cut = round(margin * mine.state_share)
+        state_cut = times(margin, mine.state_share)
         entries.append(
             LedgerEntry.transfer(
                 turn=turn,

@@ -37,6 +37,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.models import Facility
 from tst.sim.group import formulas as gf
+from tst.sim.group.assets import inbox_company
 from tst.sim.ledger import (
     CASH,
     COGS,
@@ -405,13 +406,15 @@ def _run_plant(
 
 def _consumers(
     state: GameState, root: int, good: str, balance: Balance, data: GameData
-) -> list[tuple[int, int | None, float]]:
-    """(buyer, product or None, volume wanted) for the group's products (36.2, 33.2)."""
+) -> list[tuple[int, int | None, int | None, float]]:
+    """(buyer, product or None, fab or None, volume wanted) for the group's products (36.2,
+    33.2) and, M23a, the group's fabs: a wafer plant's wafers are the substrate of a fab's
+    starts (last month's run, after the chip products' wafer starts)."""
     from tst.sim.chips import chips
     from tst.sim.commodities import costs
 
     group = group_of(state, root)
-    out: list[tuple[int, int | None, float]] = []
+    out: list[tuple[int, int | None, int | None, float]] = []
     if good == balance.refining.wafer.good:
         for cid in group:
             for p in state.company_products(cid):
@@ -419,14 +422,18 @@ def _consumers(
                     continue
                 starts = sum(c.units for c in chips.wafer_contracts(state, p.id))
                 if starts > 0:
-                    out.append((cid, p.id, float(starts)))
-        return out
-    if not rg.is_commodity(good, data):
+                    out.append((cid, p.id, None, float(starts)))
+    if state.fabs and good == balance.fab.materials.substrate_good:
+        for fab in state.fabs:
+            m = fab.month
+            if fab.company_id in group and m is not None and m.turn == state.turn - 1 and m.run > 0:
+                out.append((fab.company_id, None, fab.facility_id, m.run))
+    if good == balance.refining.wafer.good or not rg.is_commodity(good, data):
         return out
     for cid in group:
         use = costs.company_use(state, cid, balance, data).get(good, 0.0)
         if use > EPS:
-            out.append((cid, None, use))
+            out.append((cid, None, None, use))
     return out
 
 
@@ -440,7 +447,7 @@ def _distribute(
     supply: list[OwnSupply] = []
     for (root, good), lots in sorted(pools.items()):
         market = rg.price_cents(state, good, balance, data)
-        for buyer, product, want in _consumers(state, root, good, balance, data):
+        for buyer, product, fab_id, want in _consumers(state, root, good, balance, data):
             for lot in lots:
                 if want <= EPS:
                     break
@@ -461,6 +468,7 @@ def _distribute(
                         unit_cents=price,
                         market_cents=market,
                         product_id=product,
+                        fab_id=fab_id,
                     )
                 )
                 m = months[lot.facility_id]
@@ -530,7 +538,7 @@ def end_deals(state: GameState) -> tuple[GameState, list[LogItem]]:
             logs.append(
                 inbox_item(
                     state.turn,
-                    deal.company_id,
+                    inbox_company(state, deal.company_id),
                     "refining_deal_ended",
                     link_kind="refinery",
                     side="buy" if deal.side == "buy" else "sell",
@@ -613,6 +621,7 @@ def settle_supply(
     entries: list[LedgerEntry] = []
     uses: dict[int, dict[str, float]] = {}
     wafer_left: dict[int, float] = {}
+    fab_left: dict[int, float] = {}  # M23a: fab -> starts run this month not yet supplied
     spot: dict[int, float] = {}  # facility -> cents sold at spot after production
     settled: list[OwnSupply] = []
     for lot in lots:
@@ -658,6 +667,28 @@ def settle_supply(
                             (LedgerLine(CASH, amount), LedgerLine(INTERCOMPANY_SALES, -amount)),
                         )
                     )
+        elif lot.fab_id is not None:  # M23a: substrate wafers for a group fab's starts
+            if lot.fab_id not in fab_left:
+                fab = next((f for f in state.fabs if f.facility_id == lot.fab_id), None)
+                month = fab.month if fab is not None else None
+                fab_left[lot.fab_id] = (
+                    month.run if month is not None and month.turn == turn else 0.0
+                )
+            taken = min(lot.volume, fab_left[lot.fab_id])
+            fab_left[lot.fab_id] -= taken
+            at_market = round(taken * lot.market_cents)
+            if at_market > 0:  # the fab paid the market price for its substrate in its month
+                entries.append(
+                    LedgerEntry(
+                        turn,
+                        lot.buyer_id,
+                        "Own-group wafers in fab starts",
+                        (LedgerLine(CASH, at_market), LedgerLine(COGS, -at_market)),
+                    )
+                )
+            entries += intercompany(
+                turn, lot.seller_id, lot.buyer_id, "Own-group wafers", round(taken * lot.unit_cents)
+            )
         else:
             if lot.buyer_id not in uses:
                 uses[lot.buyer_id] = _use_left(state, lot.buyer_id, balance, data)

@@ -21,6 +21,7 @@ from tst.api.schemas.commodities import (
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.commodities import commodity, costs, offtake
+from tst.sim.data_models import GameData
 from tst.sim.facilities.models import GoodMonth
 from tst.sim.state import GameState
 
@@ -93,6 +94,9 @@ def deal_out(state: GameState, deal_id: int, data: LoadedData) -> CommodityDealO
         good_label=d.commodities.good(deal.good).label,
         supplier=deal.supplier,
         supplier_name=supplier.name if supplier else None,
+        supplier_country_label=(
+            supplier_country_label(d, supplier.key, supplier.region) if supplier else None
+        ),
         signed=format_turn(deal.signed_turn),
         ends=format_turn(deal.end_turn),
         volume_year=deal.volume_year,
@@ -171,6 +175,8 @@ def commodities_out(
                 name=s.name,
                 region=s.region,
                 region_label=d.region(s.region).label,
+                country=supplier_country(d, s.key, s.region),
+                country_label=supplier_country_label(d, s.key, s.region),
                 listing=s.listing,
                 reliability=s.reliability,
                 goods=[
@@ -241,3 +247,19 @@ def cost_lines(
             )
         )
     return out
+
+
+def supplier_country(d: GameData, supplier: str, region: str) -> str | None:
+    """A supplier's country (M23a: shown wherever a supplier is listed)."""
+    if d.countries is None:
+        return None
+    from tst.sim.geopolitics import world
+
+    return world.supplier_country(d, supplier, region)
+
+
+def supplier_country_label(d: GameData, supplier: str, region: str) -> str | None:
+    key = supplier_country(d, supplier, region)
+    if key is None or d.countries is None:
+        return None
+    return d.countries.country(key).label

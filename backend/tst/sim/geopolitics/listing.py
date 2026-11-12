@@ -9,8 +9,10 @@ Each month (phase 12) every company of the player's group not yet listed by an a
   else with chance listing.owned_monthly a month.
 
 A listed company gets no controlled inputs from the actor (supply.py: no wafers from foundries
-in its jurisdiction). Stream `geopolitics` (id 55) key (2, company id): two uniforms a month
-(grey, ownership), drawn whenever the company is eligible for either.
+in its jurisdiction). Stream `geopolitics` (id 55) key (2, the company's stable key): two
+uniforms a month (grey, ownership), drawn whenever the company is eligible for either. An appeal
+draws on key (3, the stable key) (M23a, Codex review 5 finding 8: `company_key`, never the
+database id, which an unrelated company founded earlier moves).
 """
 
 from __future__ import annotations
@@ -20,10 +22,27 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geopolitics import rules as gr
 from tst.sim.geopolitics import world
-from tst.sim.geopolitics.draws import LISTING, geo_draws
+from tst.sim.geopolitics.draws import APPEAL, LISTING, geo_draws
 from tst.sim.geopolitics.models import EntityListing
+from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
+
+
+def company_key(state: GameState, company_id: int) -> tuple[int, ...]:
+    """A group company's stable key for its draws (ADR-0013; M15r's `player_key`): a founded
+    subsidiary's (SUBSIDIARY_KEY, ordinal), the first company's id."""
+    company = state.company(company_id)
+    return player_key(company.id, company.rival_key)
+
+
+def appeal_won(state: GameState, company_id: int, balance: Balance) -> bool:
+    """An entity-list appeal's draw (39.3): listing.appeal_chance on stream `geopolitics` key
+    (3, the stable key), seeded by the save and the month."""
+    gen = geo_draws(
+        RngFactory(state.save_meta.master_seed), state.turn, APPEAL, *company_key(state, company_id)
+    )
+    return float(gen.random()) < balance.geopolitics.listing.appeal_chance
 
 
 def listed(state: GameState, company_id: int, actor: str) -> bool:
@@ -73,7 +92,8 @@ def listing_month(
         ]
         if not grey and not owned:
             continue
-        u_grey, u_owned = (float(x) for x in geo_draws(rng, turn, LISTING, company.id).random(2))
+        key = company_key(state, company.id)
+        u_grey, u_owned = (float(x) for x in geo_draws(rng, turn, LISTING, *key).random(2))
         if grey and u_grey < lb.grey_monthly:
             new.append(EntityListing(company.id, grey[0], turn, "sold controlled goods unlicensed"))
             continue

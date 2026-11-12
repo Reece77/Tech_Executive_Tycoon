@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.api import howto
 from tst.api.schemas.fabs import (
     FabCustomerOut,
     FabHistoryOut,
@@ -139,6 +140,9 @@ def fab_out(state: GameState, fab: Fab, f: Facility, data: LoadedData) -> FabOut
         upgrade_estimate_cents=uq.capex_cents if uq and uq.new else None,
         upgrade_allowed=bool(uq and uq.allowed),
         upgrade_reason=uq.reason if uq else "only a fab in production can convert",
+        upgrade_how=howto.fab_upgrade_how(
+            uq.reason if uq else "only a fab in production can convert", fab.live_turn, state
+        ),
         month=month,
         customers=[FabCustomerOut(name=n, starts=s) for n, s in (m.customers if m else ())],
         chips=supplied,
@@ -283,7 +287,7 @@ def quote_out(
         build_months=0,
         duv=duv,
     )
-    materials = materials_cents(state, probe, b, d)
+    materials = materials_cents(state, probe, b, d, public=True)
     per_start = (dep + fixed) / starts + materials
     return FabQuoteOut(
         node=node,
@@ -303,6 +307,7 @@ def quote_out(
         level=q.level,
         allowed=q.allowed,
         reason=q.reason,
+        how=howto.fab_quote_how(state, node, q.need_level, q.level, q.reason, data),
         market_cents=market,
         cost_per_start_cents=per_start,
     )

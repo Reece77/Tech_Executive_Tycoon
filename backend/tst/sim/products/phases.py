@@ -513,11 +513,25 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 rate = balance.products.seller_rate.get(seg_key, 0.0)
                 per = seen / sellers if sellers else f.seller_capacity(rate, (1.0,))
                 capacity_notes[s.product_id] = (sellers, seen, wanted, per)
+    lost = 0.0
     for pid, a in limits.items():  # M22 (39.3): the blocked share cannot buy, but for
         # customers still winding down there (sales.exits)
         row = next(x for x in entries if x.product_id == pid)
         winding = geo_sales.winding(state, pid, here or "", seg_key, row.customers)
+        before = won[pid]
         won[pid] *= max(0.0, 1 - max(0.0, a.blocked - winding))
+        lost += before - won[pid]
+    if lost > 0 and balance.geopolitics.rivals_controlled:
+        # M23a (39.3): the buyers a blocked product cannot serve choose among the products free
+        # in the region (a Chinese rival where a US one is shut out), by their choice shares
+        free = {
+            s.product_id: share
+            for s, share in zip(live, shares, strict=True)
+            if s.product_id not in limits and share > 0
+        }
+        total = sum(free.values())
+        for pid, share in free.items():
+            won[pid] += lost * share / total
     upc = category_def.market(seg_key).units_per_customer if category_def.sells_units else 0.0
     if plan is not None and category_def.sells_units:
         won = _cap_units(live, appeals, won, upc, plan)

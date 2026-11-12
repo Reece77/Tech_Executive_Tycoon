@@ -132,6 +132,7 @@ def transfer_month(
         {c.id for c in group_companies(state, listed_id(state))} if state.transfer_flows else set()
     )
     turn = state.turn
+    real = settled_supply(state) if state.transfer_flows else {}
     for flow in [f for f in state.transfer_flows if f.ended_turn is None]:
         if not {flow.seller_id, flow.buyer_id} <= group:  # one left the group: the flow ends
             state = with_flow(state, replace(flow, ended_turn=turn))
@@ -140,6 +141,12 @@ def transfer_month(
         market = spend.get((flow.buyer_id, account), 0) if account is not None else 0
         seller, buyer = state.company(flow.seller_id).name, state.company(flow.buyer_id).name
         price = 0
+        # M23a (Codex review 5 finding 7): supply the plants settled this month at the flow's
+        # price (materials from refineries, chips from a sister company's fab) is judged and
+        # counted as the abstract supply is; its postings are the plants'.
+        real_price, real_market = real.get((flow.seller_id, flow.buyer_id, flow.good), (0, 0))
+        if flow.good == FLOW_MATERIALS and real_market <= 0:
+            continue  # no materials moved this month: the record stands as it was
         if market > 0 and account is not None:
             cost = round(exact(gb.supply_cost) * market)
             price = gf.transfer_price_cents(flow.kind, cost, market, balance, flow.margin)
@@ -165,6 +172,8 @@ def transfer_month(
                     ),
                 ),
             ]
+        price += real_price
+        market += real_market
         minorities = minority_held(state, flow.seller_id) or minority_held(state, flow.buyer_id)
         unfair = minorities and market > 0 and gf.unfair(price, market, balance)
         months = flow.unfair_months + 1 if unfair else 0
@@ -225,6 +234,35 @@ def transfer_month(
             ),
         )
     return state, tuple(e for e in entries if any(x.amount for x in e.lines)), tuple(logs)
+
+
+FLOW_MATERIALS: Final = "materials"
+FLOW_CHIPS: Final = "chips"
+
+
+def settled_supply(state: GameState) -> dict[tuple[int, int, str], tuple[int, int]]:
+    """(seller, buyer, flow good) -> (transfer consideration, market value), cents, of the group
+    supply the plants settled this month between two companies: refineries' and wafer plants'
+    lots taken after production (materials), and fabs' starts run for a sister company's chips
+    (chips)."""
+    out: dict[tuple[int, int, str], list[float]] = {}
+    for lot in state.own_supply:
+        if lot.turn != state.turn or lot.seller_id == lot.buyer_id or lot.taken <= 0:
+            continue
+        acc = out.setdefault((lot.seller_id, lot.buyer_id, FLOW_MATERIALS), [0.0, 0.0])
+        acc[0] += lot.taken * lot.unit_cents
+        acc[1] += lot.taken * lot.market_cents
+    for fab in state.fabs:
+        m = fab.month
+        if m is None or m.turn != state.turn:
+            continue
+        for buyer, _starts, price, market in m.group:
+            if buyer == fab.company_id:
+                continue
+            acc = out.setdefault((fab.company_id, buyer, FLOW_CHIPS), [0.0, 0.0])
+            acc[0] += price
+            acc[1] += market
+    return {k: (round(v[0]), round(v[1])) for k, v in out.items()}
 
 
 def _queue_complaint(state: GameState, due: int) -> GameState:

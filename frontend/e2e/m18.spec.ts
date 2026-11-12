@@ -48,7 +48,8 @@ test('(a) a desk study, a licence and a survey', async ({ page }) => {
   await page.getByRole('option', { name: 'Copper' }).click();
   const high = page.locator('[data-band="high"][data-held="false"]');
   await expect(high.first()).toBeVisible();
-  await high.first().click(); // licence it
+  await high.first().click(); // M23c: the licence asks first
+  await page.getByTestId('licence-confirm').click();
   await expect(page.getByTestId('project-row')).toHaveCount(1);
   await page.getByTestId('stage-survey').click();
   await expect(page.getByTestId('project-facts')).toContainText(/survey running/i);

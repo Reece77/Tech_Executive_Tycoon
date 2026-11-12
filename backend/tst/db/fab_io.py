@@ -36,6 +36,9 @@ def fab_from(row: FabRow) -> Fab:
     if month is not None:
         month = dict(month)
         month["customers"] = tuple((str(n), float(v)) for n, v in month.get("customers", ()))
+        month["group"] = tuple(
+            (int(c), float(n), float(p), float(m)) for c, n, p, m in month.get("group", ())
+        )
     return replace(
         fab,
         month=FabMonth(**month) if month is not None else None,

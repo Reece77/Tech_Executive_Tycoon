@@ -134,6 +134,7 @@ def test_entrants(loaded: LoadedData) -> None:
         ("CoreWeave", 2019, 1),
         ("Cerebras", 2016, 1),  # M12b (26.3)
         ("Groq", 2016, 9),
+        ("Huawei Ascend", 2018, 10),  # M23a (39.3): a Chinese accelerator maker, East Asia
     ]
     assert turn_to_ym(ym_to_turn(2011, 9)) == (2011, 9)
     assert STREAM_IDS["entrants"] == 20

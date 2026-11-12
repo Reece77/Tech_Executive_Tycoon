@@ -65,6 +65,7 @@ class ProductionMonth:
     chip_cents: int = 0
     assembly_cents: int = 0
     lost_units: float = 0.0  # demand above the capacity cap, lost to the next-best product
+    fab_chips: float = 0.0  # M23a: a chip product's chips made in the group's fabs (taken first)
 
     @property
     def cogs_cents(self) -> int:

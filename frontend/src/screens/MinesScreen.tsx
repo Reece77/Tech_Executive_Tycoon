@@ -1,9 +1,10 @@
 import { Alert, Button, NumberInput, Select, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
+import { Explain } from '../components/Explain';
 import { Term } from '../components/Term';
 import {
   useMines,
@@ -52,7 +53,12 @@ export function MinesScreen() {
 function Body({ saveId, x }: { saveId: string; x: Mines }) {
   const act = useMiningAction(saveId);
   const run = (a: MiningAction) => act.mutate(a);
-  const [selected, setSelected] = useState<number | null>(x.mines[0]?.id ?? null);
+  // An event's link opens its mine (M23c): ?mine=<id>
+  const [params] = useSearchParams();
+  const linked = Number(params.get('mine'));
+  const [selected, setSelected] = useState<number | null>(
+    x.mines.some((m) => m.id === linked) ? linked : (x.mines[0]?.id ?? null),
+  );
   const mine = x.mines.find((m) => m.id === selected) ?? x.mines[0] ?? null;
   return (
     <>
@@ -79,7 +85,12 @@ function Body({ saveId, x }: { saveId: string; x: Mines }) {
       )}
       <Panel title="Group companies" testId="companies-panel">
         <CompaniesTable companies={x.companies} />
-        <FoundForm x={x} busy={act.isPending} onAct={run} />
+        <p style={{ fontSize: 13, margin: '4px 0' }}>
+          <Link to={`/game/${saveId}/finance/group`} data-testid="found-link">
+            Found a subsidiary on the Group screen
+          </Link>
+          <span className="tst-muted"> (Finance → Group), then move projects into it here.</span>
+        </p>
         <TransferForm x={x} busy={act.isPending} onAct={run} />
       </Panel>
       <Panel title="Build a mine" testId="quotes-panel">
@@ -180,7 +191,8 @@ function CompaniesTable({ companies }: { companies: MiningCompany[] }) {
   return <DataTable table={table} label="Group companies" rowTestId="company-row" />;
 }
 
-function FoundForm({
+/** Found a subsidiary (35.3): on the Group screen since M23c (playtest 5). */
+export function FoundForm({
   x,
   busy,
   onAct,
@@ -195,6 +207,7 @@ function FoundForm({
     Math.max(1, x.found_min_cents / CENTS / MILLION) * 100,
   );
   const gated = x.group_stage < x.found_min_stage;
+  const how = gated ? x.found_how : name.trim() === '' ? 'name the subsidiary first' : '';
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
       <TextInput
@@ -227,6 +240,7 @@ function FoundForm({
       <Button
         size="xs"
         disabled={busy || gated || name.trim() === ''}
+        title={how ? `How: ${how}` : undefined}
         onClick={() =>
           onAct({
             kind: 'found',
@@ -240,8 +254,8 @@ function FoundForm({
         Found · {x.found_energy} energy
       </Button>
       {gated && (
-        <span className="tst-muted" style={{ fontSize: 12 }}>
-          Opens at stage {x.found_min_stage}.
+        <span className="tst-muted" style={{ fontSize: 12 }} data-testid="found-how">
+          How: {x.found_how}.
         </span>
       )}
     </div>
@@ -350,22 +364,40 @@ function QuotesTable({
         }),
         quoteHelper.accessor('npv_mid_cents', {
           header: 'NPV (mid)',
-          cell: ({ getValue }) =>
-            getValue() === null ? '—' : formatMoneyWhole(getValue() as number),
+          meta: { term: 'npv' },
+          cell: ({ row, getValue }) =>
+            getValue() === null ? (
+              '—'
+            ) : (
+              <>
+                {formatMoneyWhole(getValue() as number)}{' '}
+                <Explain metric="mine_npv" entity={row.original.project_id} label="NPV" />
+              </>
+            ),
         }),
         quoteHelper.display({
           id: 'build',
           header: '',
-          cell: ({ row }) => (
-            <Button
-              size="compact-xs"
-              disabled={busy || !row.original.allowed}
-              onClick={() => onBuild(row.original, null)}
-              data-testid="build-mine"
-            >
-              Build · {energy}
-            </Button>
-          ),
+          cell: ({ row }) =>
+            row.original.allowed ? (
+              <Button
+                size="compact-xs"
+                disabled={busy}
+                onClick={() => onBuild(row.original, null)}
+                data-testid="build-mine"
+              >
+                Build · {energy}
+              </Button>
+            ) : (
+              <span
+                className="tst-muted"
+                style={{ fontSize: 12, whiteSpace: 'normal' }}
+                data-testid="build-mine-how"
+                title={row.original.reason}
+              >
+                How: {row.original.how}
+              </span>
+            ),
         }),
       ]),
     [busy, energy, onBuild],
@@ -404,7 +436,12 @@ function MinesTable({ mines, onSelect }: { mines: Mine[]; onSelect: (id: number)
         mineHelper.accessor('cost_usd_t', {
           header: 'Cost',
           meta: { term: 'mining.aisc' },
-          cell: ({ getValue }) => formatPerTonne(getValue()),
+          cell: ({ row, getValue }) => (
+            <>
+              {formatPerTonne(getValue())}{' '}
+              <Explain metric="mine_cost" entity={row.original.id} label="Cost a tonne" />
+            </>
+          ),
         }),
         mineHelper.accessor('book_cents', {
           header: 'Book value',

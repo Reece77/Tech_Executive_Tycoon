@@ -3514,6 +3514,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/group/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Capital History
+         * @description Every stake sale, carve-out, spin-off and buyout: date, proceeds, ownership before and
+         *     after, NCI and the value created (31.5; M23c). Read from the posted entries.
+         */
+        get: operations["getCapitalHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/group/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Subsidiary Updates
+         * @description Each subsidiary CEO's quarterly update, ending with a question for the Chair (M23c).
+         */
+        get: operations["getSubsidiaryUpdates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/group/form": {
         parameters: {
             query?: never;
@@ -3748,6 +3789,27 @@ export interface paths {
          *     company's contracts and offtakes, and the suppliers (33).
          */
         get: operations["getCommodities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/commodities/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Commodity Plan
+         * @description The planning view (M23c): each commodity's need over the next 12 months at this
+         *     month's production, the products behind it, and the cover from deals and own supply.
+         */
+        get: operations["getCommodityPlan"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4204,6 +4266,65 @@ export interface paths {
         put?: never;
         /** Sell Fab */
         post: operations["sellFab"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/fabs/foundry-contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Foundry Contract
+         * @description M23a: a multi-month foundry contract with a rival designer (price and volume; the
+         *     designer takes what the fab delivers, before spot slots).
+         */
+        post: operations["signFoundryContract"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/contracts/{contract}/{contract_id}/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quote Termination
+         * @description What breaking a contract would cost now (fee = the remaining months' take-or-pay minimum
+         *     discounted at the base rate, plus contracts.break_penalty), before confirming.
+         */
+        get: operations["quoteTermination"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/contracts/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Terminate Contract */
+        post: operations["terminateContract"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5075,6 +5196,18 @@ export interface components {
             /** Months Left */
             months_left: number;
         };
+        /** AdviceOut */
+        AdviceOut: {
+            /**
+             * Mandate
+             * @description grow | margin | return_cash
+             */
+            mandate: string;
+            /** Label */
+            label: string;
+            /** Current */
+            current: boolean;
+        };
         /** AnalystOut */
         AnalystOut: {
             /** Firm */
@@ -5108,6 +5241,16 @@ export interface components {
              * @description Stake x the last round's post-money
              */
             worth_cents: number;
+            /**
+             * Estimate Low Cents
+             * @description An estimate (M23c): the stake at the low end of the startup's displayed value range from its public growth since the round; None once closed
+             */
+            estimate_low_cents: number | null;
+            /**
+             * Estimate High Cents
+             * @description The estimate's high end
+             */
+            estimate_high_cents: number | null;
             /** Proceeds Cents */
             proceeds_cents: number;
             /** Backed */
@@ -5589,6 +5732,10 @@ export interface components {
             duv?: boolean;
             /** City */
             city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Company Id */
+            company_id?: number | null;
         };
         /** BuildIn */
         BuildIn: {
@@ -5686,6 +5833,8 @@ export interface components {
             city?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /** Country */
+            country?: string | null;
         };
         /** BuybackIn */
         BuybackIn: {
@@ -5766,6 +5915,65 @@ export interface components {
              * @description Oldest first
              */
             ownership_history: components["schemas"]["OwnershipEventOut"][];
+        };
+        /** CapitalActionOut */
+        CapitalActionOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /**
+             * Kind
+             * @description stake_sale | carve_out | spin_off | buyout
+             */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /**
+             * Owner
+             * @description The group company that sold or bought
+             */
+            owner: string;
+            /**
+             * Proceeds Cents
+             * @description Cash in (a buyout's price is negative)
+             */
+            proceeds_cents: number;
+            /** Stake Before Bp */
+            stake_before_bp: number;
+            /** Stake After Bp */
+            stake_after_bp: number;
+            /**
+             * Nci Cents
+             * @description Non-controlling interest left: minorities' book equity
+             */
+            nci_cents: number;
+            /**
+             * Value Created Cents
+             * @description The equity effect on the owner's books: what the sale fetched over the book value given up (a buyout: below the minority's book; negative is a premium paid)
+             */
+            value_created_cents: number;
+            /** Value Note */
+            value_note: string;
+            /**
+             * Market Cap Now Cents
+             * @description Its market cap now, when listed
+             */
+            market_cap_now_cents: number | null;
+            /**
+             * Stake Value Now Cents
+             * @description What the group's stake is worth now
+             */
+            stake_value_now_cents: number | null;
+        };
+        /** CapitalHistoryOut */
+        CapitalHistoryOut: {
+            /** Actions */
+            actions: components["schemas"]["CapitalActionOut"][];
         };
         /** CapitalOut */
         CapitalOut: {
@@ -6212,6 +6420,26 @@ export interface components {
             /** Unit Cost Cents */
             unit_cost_cents: number;
             /**
+             * Material Cents
+             * @description Of the unit cost: the blank wafer, a good die (M23c)
+             */
+            material_cents: number;
+            /**
+             * Processing Cents
+             * @description Of the unit cost: foundry processing, a good die
+             */
+            processing_cents: number;
+            /**
+             * Packaging Cents
+             * @description Of the unit cost: packaging and test
+             */
+            packaging_cents: number;
+            /**
+             * Used In
+             * @description The group's own devices that use the chip
+             */
+            used_in: string[];
+            /**
              * Market Price Cents
              * @description The device OEM reference price
              */
@@ -6506,6 +6734,8 @@ export interface components {
         };
         /** CommodityDealOut */
         CommodityDealOut: {
+            /** Supplier Country Label */
+            supplier_country_label?: string | null;
             /** Deal Id */
             deal_id: number;
             /**
@@ -6627,6 +6857,112 @@ export interface components {
             /** History */
             history: components["schemas"]["PricePointOut"][];
         };
+        /** CommodityPlanDriverOut */
+        CommodityPlanDriverOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Need Month
+             * @description Volume units a month this product uses
+             */
+            need_month: number;
+            /**
+             * Share
+             * @description Of the commodity's monthly need
+             */
+            share: number;
+        };
+        /** CommodityPlanMonthOut */
+        CommodityPlanMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Label */
+            label: string;
+            /**
+             * Required
+             * @description The month's need at this month's production
+             */
+            required: number;
+            /**
+             * Deals
+             * @description Running contracts' and offtakes' volume that month
+             */
+            deals: number;
+            /**
+             * Own
+             * @description The group's own supply at this month's rate
+             */
+            own: number;
+            /**
+             * Gap
+             * @description Need not covered by deals or own supply
+             */
+            gap: number;
+        };
+        /** CommodityPlanOut */
+        CommodityPlanOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /** Volume Unit */
+            volume_unit: string;
+            /**
+             * Need Month
+             * @description This month's use, volume units
+             */
+            need_month: number;
+            /**
+             * Need 12M
+             * @description The next 12 months at this month's production
+             */
+            need_12m: number;
+            /**
+             * Deals 12M
+             * @description What running contracts and offtakes deliver in them
+             */
+            deals_12m: number;
+            /**
+             * Own 12M
+             * @description The group's own supply to the group, at this rate
+             */
+            own_12m: number;
+            /**
+             * Mines 12M
+             * @description The group's mines' output at the latest month's rate
+             */
+            mines_12m: number;
+            /**
+             * Cover
+             * @description (deals + own supply) / need, at most 1
+             */
+            cover: number | null;
+            /** Gap 12M */
+            gap_12m: number;
+            /**
+             * Drivers
+             * @description The products that use it
+             */
+            drivers: components["schemas"]["CommodityPlanDriverOut"][];
+            /**
+             * Deals Ending
+             * @description Deals that end inside the 12 months
+             */
+            deals_ending: string[];
+            /** Months */
+            months: components["schemas"]["CommodityPlanMonthOut"][];
+        };
+        /** CommodityPlansOut */
+        CommodityPlansOut: {
+            /** Turn Label */
+            turn_label: string;
+            /** Months */
+            months: number;
+            /** Plans */
+            plans: components["schemas"]["CommodityPlanOut"][];
+        };
         /** ComponentOut */
         ComponentOut: {
             /** Good */
@@ -6677,6 +7013,12 @@ export interface components {
             turn: number;
             /** Date Label */
             date_label: string;
+        };
+        /** ContractActionOut */
+        ContractActionOut: {
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
         };
         /** ContractIn */
         ContractIn: {
@@ -7607,13 +7949,6 @@ export interface components {
              */
             do_nothing: boolean;
         };
-        /** EventLinkOut */
-        EventLinkOut: {
-            /** Event Id */
-            event_id: number;
-            /** Label */
-            label: string;
-        };
         /** EventOut */
         EventOut: {
             /**
@@ -7663,6 +7998,11 @@ export interface components {
             follow_up_note: string | null;
             /** Person Ids */
             person_ids: number[];
+            /**
+             * Links
+             * @description The screens that matter for the decision (M23c): its mine, product, people
+             */
+            links: components["schemas"]["tst__api__schemas__events__EventLinkOut"][];
         };
         /** EventStorylineOut */
         EventStorylineOut: {
@@ -7784,7 +8124,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery";
             /** Entity */
             entity?: string | null;
             /**
@@ -7860,6 +8200,21 @@ export interface components {
             desk_months: number;
             /** Max Programme */
             max_programme: number;
+            /**
+             * Licence Years
+             * @description An exploration licence's term (34.2)
+             */
+            licence_years: number;
+            /**
+             * Licence Renewals
+             * @description Renewals a licence allows
+             */
+            licence_renewals: number;
+            /**
+             * Gate How
+             * @description How exploration opens, when gated (M23c)
+             */
+            gate_how: string;
             /** Commodities */
             commodities: components["schemas"]["GeoCommodityOut"][];
             /** Regions */
@@ -7988,6 +8343,31 @@ export interface components {
             sale_cents: number;
             /** Options */
             options: components["schemas"]["StageOptionOut"][];
+            /**
+             * Holes Drilled
+             * @description Holes drilled on the project so far
+             */
+            holes_drilled: number;
+            /**
+             * Next Category
+             * @description The resource category the next estimate can reach (M23c)
+             */
+            next_category: string | null;
+            /**
+             * Holes For Next
+             * @description Holes an estimate needs for next_category (34.2)
+             */
+            holes_for_next: number | null;
+            /**
+             * Next Step
+             * @description What to do next on the project (M23c)
+             */
+            next_step: string;
+            /**
+             * Renew How
+             * @description How renewal opens, when it can't (M23c)
+             */
+            renew_how: string;
         };
         /** ExplorerOut */
         ExplorerOut: {
@@ -8157,6 +8537,11 @@ export interface components {
             upgrade_allowed: boolean;
             /** Upgrade Reason */
             upgrade_reason: string | null;
+            /**
+             * Upgrade How
+             * @description How the conversion opens (M23c)
+             */
+            upgrade_how: string;
             month: components["schemas"]["FabMonthOut"] | null;
             /** Customers */
             customers: components["schemas"]["FabCustomerOut"][];
@@ -8207,6 +8592,11 @@ export interface components {
             allowed: boolean;
             /** Reason */
             reason: string | null;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
             /** Market Cents */
             market_cents: number | null;
             /**
@@ -8642,6 +9032,8 @@ export interface components {
             region: string;
             /** Cents */
             cents: number;
+            /** Country */
+            country?: string | null;
         };
         /** FoundationFormOut */
         FoundationFormOut: {
@@ -8795,6 +9187,22 @@ export interface components {
             group: string;
             /** Value */
             value: number;
+        };
+        /**
+         * FoundryContractIn
+         * @description M23a: sell a fab's starts to a rival designer for months at a price.
+         */
+        FoundryContractIn: {
+            /** Fab Id */
+            fab_id: number;
+            /** Customer */
+            customer: string;
+            /** Monthly Starts */
+            monthly_starts: number;
+            /** Months */
+            months: number;
+            /** Price Cents */
+            price_cents: number;
         };
         /** FoundryNodeOut */
         FoundryNodeOut: {
@@ -9909,7 +10317,7 @@ export interface components {
              * Event Links
              * @description Events this message links to (M7c)
              */
-            event_links?: components["schemas"]["EventLinkOut"][];
+            event_links?: components["schemas"]["tst__api__schemas__people__EventLinkOut"][];
         };
         /** InboxOut */
         InboxOut: {
@@ -11334,6 +11742,11 @@ export interface components {
             allowed: boolean;
             /** Reason */
             reason: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
         };
         /** MineSafetyIn */
         MineSafetyIn: {
@@ -11383,6 +11796,11 @@ export interface components {
             group_stage: number;
             /** Found Min Stage */
             found_min_stage: number;
+            /**
+             * Found How
+             * @description How founding a subsidiary opens (M23c)
+             */
+            found_how: string;
             /** Found Min Cents */
             found_min_cents: number;
             /** Found Energy */
@@ -12374,8 +12792,16 @@ export interface components {
             product: string | null;
             /** Volume */
             volume: number;
-            /** Taken */
+            /**
+             * Taken
+             * @description Of the volume, what the buyer used this month
+             */
             taken: number;
+            /**
+             * Unit
+             * @description The good's volume unit (t, kg, wafer)
+             */
+            unit: string;
             /** Unit Cents */
             unit_cents: number;
             /** Market Cents */
@@ -14367,6 +14793,18 @@ export interface components {
         };
         /** RefineryQuoteOut */
         RefineryQuoteOut: {
+            /**
+             * Allowed
+             * @description Whether the plant can be built now
+             */
+            allowed: boolean;
+            /** Reason */
+            reason: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
             /** Recipe */
             recipe: string;
             /** Region */
@@ -15914,6 +16352,11 @@ export interface components {
              * @default
              */
             reason?: string;
+            /**
+             * How
+             * @description How to unlock it when not allowed (M23c)
+             */
+            how: string;
         };
         /** StageReachedOut */
         StageReachedOut: {
@@ -16228,6 +16671,64 @@ export interface components {
             /** Staff */
             staff: number;
         };
+        /** SubsidiaryUpdateOut */
+        SubsidiaryUpdateOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Ceo */
+            ceo: string;
+            /** Quarter Label */
+            quarter_label: string;
+            /**
+             * Revenue Cents
+             * @description The latest quarter's revenue
+             */
+            revenue_cents: number;
+            /**
+             * Prior Revenue Cents
+             * @description The quarter before
+             */
+            prior_revenue_cents: number;
+            /** Operating Margin */
+            operating_margin: number | null;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Mandate */
+            mandate: string | null;
+            /** Capex Limit Cents */
+            capex_limit_cents: number;
+            /** Categories */
+            categories: string[];
+            /** Regions */
+            regions: string[];
+            /**
+             * Body
+             * @description The CEO's update in their own words, from public numbers
+             */
+            body: string;
+            /**
+             * Question
+             * @description What the CEO asks the Chair
+             */
+            question: string;
+            /**
+             * Advice
+             * @description Answers: each re-sets the mandate (31.4)
+             */
+            advice: components["schemas"]["AdviceOut"][];
+            /**
+             * Advice Energy
+             * @description Founder energy an answer takes (a mandate change)
+             */
+            advice_energy: number;
+        };
+        /** SubsidiaryUpdatesOut */
+        SubsidiaryUpdatesOut: {
+            /** Updates */
+            updates: components["schemas"]["SubsidiaryUpdateOut"][];
+        };
         /** SupplierGoodOut */
         SupplierGoodOut: {
             /** Good */
@@ -16255,6 +16756,13 @@ export interface components {
             region: string;
             /** Region Label */
             region_label: string;
+            /**
+             * Country
+             * @description M23a: where the supplier sits
+             */
+            country?: string | null;
+            /** Country Label */
+            country_label?: string | null;
             /** Listing */
             listing: string;
             /**
@@ -16661,6 +17169,60 @@ export interface components {
              */
             founder_fraction_after?: number | null;
         };
+        /** TerminateIn */
+        TerminateIn: {
+            /**
+             * Contract
+             * @description commodity, refining, production, mine or foundry
+             */
+            contract: string;
+            /** Contract Id */
+            contract_id: number;
+        };
+        /** TerminationQuoteOut */
+        TerminationQuoteOut: {
+            /** Contract */
+            contract: string;
+            /** Contract Id */
+            contract_id: number;
+            /** Company Id */
+            company_id: number;
+            /** Counterparty */
+            counterparty: string;
+            /** Months Left */
+            months_left: number;
+            /**
+             * Monthly Minimum Cents
+             * @description A month's take-or-pay minimum
+             */
+            monthly_minimum_cents: number;
+            /**
+             * Discounted Cents
+             * @description The months' minimums discounted at the base rate
+             */
+            discounted_cents: number;
+            /** Penalty Cents */
+            penalty_cents: number;
+            /**
+             * Prepaid Cents
+             * @description An offtake's unused prepayment kept against the fee
+             */
+            prepaid_cents: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /**
+             * Cash Cents
+             * @description What leaves cash (negative: a refund)
+             */
+            cash_cents: number;
+            /**
+             * Relationship
+             * @description The counterparty's willingness to deal now, 0-1
+             */
+            relationship: number;
+            /** Energy */
+            energy: number;
+        };
         /** TimelineItemOut */
         TimelineItemOut: {
             /** Turn */
@@ -17058,6 +17620,19 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /**
+         * EventLinkOut
+         * @description A screen the event is about (M23c): look before answering.
+         */
+        tst__api__schemas__events__EventLinkOut: {
+            /**
+             * Path
+             * @description Under /game/{save}/, e.g. 'products/mines?mine=3'
+             */
+            path: string;
+            /** Label */
+            label: string;
+        };
         /** LicenceIn */
         tst__api__schemas__exploration__LicenceIn: {
             /** Region */
@@ -17137,6 +17712,13 @@ export interface components {
             date_label: string;
             /** Level */
             level: number;
+        };
+        /** EventLinkOut */
+        tst__api__schemas__people__EventLinkOut: {
+            /** Event Id */
+            event_id: number;
+            /** Label */
+            label: string;
         };
         /** CauseOut */
         tst__api__schemas__press__CauseOut: {
@@ -28806,6 +29388,122 @@ export interface operations {
             };
         };
     };
+    getCapitalHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapitalHistoryOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getSubsidiaryUpdates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubsidiaryUpdatesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     formHolding: {
         parameters: {
             query?: never;
@@ -29497,6 +30195,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommoditiesOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCommodityPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommodityPlansOut"];
                 };
             };
             /** @description Bad Request */
@@ -30956,6 +31712,190 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signFoundryContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoundryContractIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quoteTermination: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                contract: string;
+                contract_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TerminationQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    terminateContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerminateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractActionOut"];
                 };
             };
             /** @description Bad Request */

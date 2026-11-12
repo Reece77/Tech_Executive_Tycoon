@@ -117,6 +117,10 @@ class ChipOut(BaseModel):
     status: str
     chip_yield: float = Field(description="Good chips per chip on a wafer (0-1)")
     unit_cost_cents: int
+    material_cents: int = Field(description="Of the unit cost: the blank wafer, a good die (M23c)")
+    processing_cents: int = Field(description="Of the unit cost: foundry processing, a good die")
+    packaging_cents: int = Field(description="Of the unit cost: packaging and test")
+    used_in: list[str] = Field(description="The group's own devices that use the chip")
     market_price_cents: int = Field(description="The device OEM reference price")
     per_wafer: int
     wafers: int = Field(description="Wafer starts a month under contract")

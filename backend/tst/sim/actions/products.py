@@ -204,7 +204,9 @@ def launch_problems(
     ):
         # M12b (26.1): a manufacturing source
         problems.append(
-            "a wafer contract" if category.chip_type else "a manufacturing contract or a live plant"
+            "a foundry contract or a group fab"
+            if category.chip_type
+            else "a manufacturing contract or a live plant"
         )
     return problems
 

@@ -9,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 
 from tst.api.routers import (
     commodities,
+    contracts,
     coo,
     events,
     explain,
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
     app.include_router(exploration.router)  # M18
     app.include_router(refining.router)  # M20
     app.include_router(fabs.router)  # M21
+    app.include_router(contracts.router)  # M23a
     app.include_router(geopolitics.router)  # M22
     app.include_router(mining.router)  # M19
     app.include_router(explain.router)  # M25

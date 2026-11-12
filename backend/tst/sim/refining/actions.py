@@ -16,10 +16,12 @@ from typing import Final, Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.calendar import format_turn
+from tst.sim.contracts import termination as ct
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InsufficientCashError, RefiningRuleError
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
+from tst.sim.group.assets import check_country, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.refining import goods as rg
@@ -41,6 +43,7 @@ class BuildRefinery:
     host_id: int | None = None  # a by-product line's host plant (default: the first in region)
     city: str | None = None
     company_id: int | None = None  # a group company the founder builds for (default: own)
+    country: str | None = None  # M23a: the country it sits in (default: its city's, the region's)
     kind: Literal["build_refinery"] = "build_refinery"
 
 
@@ -147,6 +150,7 @@ def build_refinery(
         not data.has_city(action.city) or data.city(action.city).region != action.region
     ):
         raise RefiningRuleError(f"{action.city!r} is not a city in that region")
+    check_country(data, action.region, action.country)
     if account_balance(balances, company, CASH) < q.monthly_capex_cents:
         raise InsufficientCashError(f"the first capex payment needs {q.monthly_capex_cents} cents")
     state = spend_energy(
@@ -158,6 +162,7 @@ def build_refinery(
     if action.city is not None:
         facility = replace(facility, city=action.city)
         state = with_facility(state, facility)
+    state = place(state, "facility", facility.id, action.country)
     state = with_refinery(
         state,
         Refinery(
@@ -205,8 +210,16 @@ def sign_deal(
         )
     if action.volume <= 0:
         raise RefiningRuleError("a contract needs a volume")
+    who = f"refining:{action.good}"  # M23a: the market remembers a broken contract
+    ct.check_willing(state, who, "The market", balance)
     state = spend_energy(state, action.actor_id, "sign_refining_deal", balance, cost=rb.deal.energy)
-    price = rg.price_cents(state, action.good, balance, data)
+    price = ct.offered(
+        state,
+        who,
+        rg.price_cents(state, action.good, balance, data),
+        balance,
+        buying=action.side == "buy",
+    )
     deal = RefiningDeal(
         id=max((d.id for d in state.refining_deals), default=0) + 1,
         company_id=company,

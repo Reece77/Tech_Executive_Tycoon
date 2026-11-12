@@ -1,9 +1,9 @@
 import { Alert } from '@mantine/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
 import { AchievementToasts } from '../components/AchievementToast';
 import { CooPanel } from '../components/CooPanel';
-import { CriticalEventModal } from '../components/EventCard';
+import { CriticalEventModal, SetAsideBanner } from '../components/EventCard';
 import { HolidayDialog, HolidayStrip } from '../components/Holiday';
 import { LeftNav } from '../components/LeftNav';
 import { ScreenErrorBoundary } from '../components/ScreenErrorBoundary';
@@ -13,6 +13,9 @@ import { useAdvance, useEvents, useFinanceSummary, useHoliday, useOverview } fro
 import { useContinueUntil } from '../hooks/modes';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
 import { answerHref, NAV_ITEMS } from '../lib/nav';
+import { installReadOnlyGuard, setReadOnly, useSetAside } from '../lib/setAside';
+
+installReadOnlyGuard();
 
 export function GameLayout() {
   const { saveId = '' } = useParams();
@@ -31,6 +34,12 @@ export function GameLayout() {
     (events.data?.blocking_proposal_ids.length ?? 0) + // M10c (24.1)
     (events.data?.blocking_pitch_ids?.length ?? 0); // M13b (27.1): pitches block too
   const blocked = blocking + proposals > 0;
+  // M23c: a critical decision set aside makes the game read only until it is answered.
+  const aside = useSetAside(saveId, events.data?.blocking_event_id ?? null);
+  useEffect(() => {
+    setReadOnly(aside);
+    return () => setReadOnly(false);
+  }, [aside]);
   const holiday = useHoliday(saveId);
   const away = holiday.data?.status === 'running';
   const [holidayOpen, setHolidayOpen] = useState(false);
@@ -70,7 +79,7 @@ export function GameLayout() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="tst-shell" data-testid="game-shell">
       <TopBar
         overview={overview.data}
         summary={summary.data}
@@ -97,9 +106,10 @@ export function GameLayout() {
       )}
       {helpOpen && <ShortcutHelp onClose={() => setHelpOpen(false)} />}
       {!ended && !away && <CriticalEventModal saveId={saveId} />}
+      {!ended && !away && <SetAsideBanner saveId={saveId} />}
       <div className="tst-shell-body">
         <LeftNav saveId={saveId} unread={overview.data?.unread_inbox ?? 0} />
-        <main className="tst-main">
+        <main className="tst-main" data-testid="working-pane">
           {overview.error && (
             <Alert color="red" title="Could not load the game" role="alert">
               {overview.error.message}
