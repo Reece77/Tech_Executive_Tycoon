@@ -56,6 +56,7 @@ from tst.sim.exploration.pipeline import (
 from tst.sim.fabs import actions as fab_actions
 from tst.sim.fabs import foundry as foundry_contracts
 from tst.sim.fabs import market as fab_market
+from tst.sim.fabs import supply as fab_supply
 from tst.sim.fabs.actions import BuildFab
 from tst.sim.facilities.models import Facility
 from tst.sim.mining import actions as mine_actions
@@ -236,8 +237,15 @@ def chip_step(game: Game) -> None:
     staff_unit(game, "Chip team", CHIP_ROLE, CHIP_TEAM)
     contracts = _contracts(game, pid, "wafer")
     if _renewal_due(game, contracts):
-        refill_energy(game)
         units = max(_units_sold(game, device), DEVICE_UNITS)
+        chip = game.state.product(pid)
+        b, g = game.loaded.balance, game.loaded.game_data
+        if (
+            chip is not None
+            and fab_supply.fab_chips(game.state, chip, b, g) >= units * UNITS_HEADROOM
+        ):
+            return  # the group's own fab makes them (38.2: own chips first)
+        refill_energy(game)
         game.act(
             SignWaferContract(
                 game.founder_id, pid, FOUNDRY, _wafers_for(game, units), CONTRACT_MONTHS
@@ -575,6 +583,7 @@ def full_integrator(game: Game) -> None:
         _staff_plants(game, "wafer_plant", PROCESS_ROLE, "Wafer crew")
         build_fab(game)
         _staff_plants(game, "fab", FAB_ROLE, "Fab crew")
+        sign_foundry_contracts(game)
 
 
 def mineral_baron(game: Game) -> None:
@@ -612,10 +621,26 @@ FOUNDRY_FILL: Final = (
 )
 
 
+def _own_starts(game: Game, fab_id: int) -> float:
+    """Starts the group's own SoCs need from this fab: the devices' units over the fab's good
+    chips a start for the SoC, x headroom (0 without a chip on this fab)."""
+    pid, device = _product(game, CHIP[1]), _product(game, DEVICE[1])
+    chip = game.state.product(pid) if pid is not None else None
+    if chip is None or device is None:
+        return 0.0
+    b, g = game.loaded.balance, game.loaded.game_data
+    shares = fab_supply.product_shares(game.state, chip, b, g)
+    per = max((x.chips_per_start for x in shares if x.facility_id == fab_id), default=0.0)
+    if per <= 0:
+        return 0.0
+    return max(_units_sold(game, device), DEVICE_UNITS) / per * UNITS_HEADROOM
+
+
 def sign_foundry_contracts(game: Game) -> None:
     """Contract a live group fab's starts to the chip incumbents (M23a's foundry contracts):
-    each designer up to its share cap, the fab to FOUNDRY_FILL of capacity, at the most a
-    designer pays (the node's slot price, which the fab card shows)."""
+    each designer up to its share cap, the fab to FOUNDRY_FILL of capacity less the starts the
+    group's own chips need, at the most a designer pays (the node's slot price, which the fab
+    card shows)."""
     b, g = game.loaded.balance, game.loaded.game_data
     fb = b.contracts.foundry
     for facility in _facilities(game, "fab"):
@@ -629,7 +654,8 @@ def sign_foundry_contracts(game: Game) -> None:
             running = foundry_contracts.running(game.state, fab.facility_id)
             total = sum(c.monthly_starts for c in running)
             own = sum(c.monthly_starts for c in running if c.customer == customer)
-            starts = math.floor(min(cap * fb.customer_share - own, cap * FOUNDRY_FILL - total))
+            room = min(cap * FOUNDRY_FILL, cap - _own_starts(game, fab.facility_id)) - total
+            starts = math.floor(min(cap * fb.customer_share - own, room))
             if starts < 1:
                 continue
             slot = foundry_contracts.slot_price_cents(game.state, fab, b, g) * fb.max_price
