@@ -52,6 +52,15 @@ Pull `main` in GitHub Desktop, then double-click **Tech Startup Tycoon** in the 
 10. **The launcher** listens on port 8770 (so `make dev`'s 8000 can run beside it), runs `uv sync` every launch (quick when current), installs front-end packages when `node_modules` is missing or older than the lockfile, rebuilds `frontend/dist` when any front-end source is newer than it, uses `corepack pnpm` when pnpm itself is missing, and needs Node.js 22 once (the error page says so). A second double-click while the game runs just opens the browser. The `.cmd` finds a missing uv itself (Python comes through uv) and opens `tools/launcher_missing_uv.html`. `.gitattributes` keeps `*.cmd` in CRLF.
 11. **The palette's index:** open screens (with the Finance and History tabs), the player company's active and notice-period staff, the group's products, facilities and mines, and living rivals. Recent items are kept in the browser (`localStorage`), like a table's last view. Keys 1-9 and 0 are unchanged.
 12. **M23c's e2e flow** clicked the side bar's "People" by text; a nav group is titled People now, so it clicks the People link by role (the same link; the test is not weakened).
+13. **The system ids in `tst/sim/unlocks.py`** are stable inbox link ids, not tunables, so each line carries `# tunable-exempt: stable id`. `GET /api/settings/ui` and the tables `PUT` keep M7b's `{"tables": ...}` response (onboarding has its own endpoint), so M7b's test stands unchanged.
+14. **Two local-only failures that also fail on a clean `main` (§9 rule 3, not M29's).** The full local run (`-m "not timing and not weekly"`, 2026-11-12) failed these two; the `check` shards on this branch passed. A worktree of `main` at `dc746ea` gave the same result:
+
+    | Test | m29-onboarding | main `dc746ea` |
+    | --- | --- | --- |
+    | `tests/property/test_fab_invariants.py::test_a_fab_keeps_its_books` (`build_fab refused`, n16, east_asia, 2023) | fail | fail |
+    | `tests/balance/test_m22_balance.py::test_39_4_targets` (target 7) | fail | fail |
+
+    M29 touches neither geopolitics nor balance. The fix belongs to lane B's M23b (running), which owns balance; nothing was added to `known_misses.py`. Turn-time budgets alone (`-m timing`): 6 passed, 1 skipped.
 
 ## Acceptance criteria (how each was verified)
 
