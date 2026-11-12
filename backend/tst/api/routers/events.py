@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 from sqlalchemy import select
 
-from tst.api import event_views, views
+from tst.api import event_views, interruptions, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _act, _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
@@ -36,7 +36,6 @@ from tst.llm.settings import (
 )
 from tst.sim.actions import ChooseEvent
 from tst.sim.errors import NotFoundError
-from tst.sim.events.effects import blocking_events
 from tst.ui_settings import TABLE_ID, TableViews, UISettings, load_ui, save_table
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["events"])
@@ -80,7 +79,10 @@ def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut
         key=lambda e: -e.id,
     )[:RECENT_LIMIT]
     blocking = next((e.id for e in shown if e.severity == "critical"), None)
-    blocking_ids = [e.id for e in blocking_events(state)]
+    # M29 (42.4): major events stop Continue unless Interruptions is critical only
+    blocking_ids = interruptions.blocking_ids(
+        state, interruptions.stop_on(settings.resolved_save_dir())
+    )
     llm = load_settings(settings.resolved_save_dir())
     return EventsOut(
         to_answer=len(shown),

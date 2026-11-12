@@ -1,7 +1,9 @@
 import { Alert } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
 import { AchievementToasts } from '../components/AchievementToast';
+import { Breadcrumbs } from '../components/Breadcrumbs';
+import { CommandPalette } from '../components/CommandPalette';
 import { CooPanel } from '../components/CooPanel';
 import { CriticalEventModal, SetAsideBanner } from '../components/EventCard';
 import { HolidayDialog, HolidayStrip } from '../components/Holiday';
@@ -9,10 +11,14 @@ import { LeftNav } from '../components/LeftNav';
 import { ScreenErrorBoundary } from '../components/ScreenErrorBoundary';
 import { ShortcutHelp } from '../components/ShortcutHelp';
 import { TopBar } from '../components/TopBar';
+import { UnlockToasts } from '../components/UnlockToast';
 import { useAdvance, useEvents, useFinanceSummary, useHoliday, useOverview } from '../hooks/api';
 import { useContinueUntil } from '../hooks/modes';
+import { usePalette } from '../hooks/onboarding';
 import { useGameHotkeys } from '../hooks/useGameHotkeys';
 import { answerHref, NAV_ITEMS } from '../lib/nav';
+import { usePaletteHotkey } from '../lib/palette';
+import { pushRecent } from '../lib/recent';
 import { installReadOnlyGuard, setReadOnly, useSetAside } from '../lib/setAside';
 
 installReadOnlyGuard();
@@ -45,6 +51,19 @@ export function GameLayout() {
   const [holidayOpen, setHolidayOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [cooOpen, setCooOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false); // M29 (42.4): Ctrl+K
+  usePaletteHotkey(useCallback(() => setPaletteOpen(true), []));
+  // Recent items (42.4): a person, product or rival page visited goes first in the palette.
+  const palette = usePalette(saveId);
+  const names = useMemo(
+    () => new Map((palette.data?.entries ?? []).map((e) => [e.path, e] as const)),
+    [palette.data],
+  );
+  const here = location.pathname.replace(`/game/${saveId}/`, '');
+  useEffect(() => {
+    const entry = names.get(here);
+    if (entry) pushRecent(saveId, { label: entry.label, path: entry.path, kind: entry.kind });
+  }, [here, names, saveId]);
   const canHoliday = overview.data !== undefined && !ended && !blocked && !away;
 
   const onContinue = () => {
@@ -96,6 +115,8 @@ export function GameLayout() {
       />
       {cooOpen && <CooPanel saveId={saveId} onClose={() => setCooOpen(false)} />}
       <AchievementToasts saveId={saveId} />
+      <UnlockToasts saveId={saveId} />
+      <CommandPalette saveId={saveId} opened={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <HolidayStrip saveId={saveId} />
       {holidayOpen && holiday.data && (
         <HolidayDialog
@@ -108,8 +129,13 @@ export function GameLayout() {
       {!ended && !away && <CriticalEventModal saveId={saveId} />}
       {!ended && !away && <SetAsideBanner saveId={saveId} />}
       <div className="tst-shell-body">
-        <LeftNav saveId={saveId} unread={overview.data?.unread_inbox ?? 0} />
+        <LeftNav
+          saveId={saveId}
+          unread={overview.data?.unread_inbox ?? 0}
+          onSearch={() => setPaletteOpen(true)}
+        />
         <main className="tst-main" data-testid="working-pane">
+          <Breadcrumbs saveId={saveId} />
           {overview.error && (
             <Alert color="red" title="Could not load the game" role="alert">
               {overview.error.message}

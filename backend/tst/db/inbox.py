@@ -9,7 +9,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import func, select, update
+from sqlalchemy import ColumnElement, and_, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from tst.db.models import InboxItemRow
@@ -17,6 +17,7 @@ from tst.sim.data_models import InboxTemplate
 from tst.sim.errors import NotFoundError
 from tst.sim.log import LogItem
 from tst.sim.money import format_money
+from tst.sim.state import GameState
 
 MONEY_SUFFIX = "_cents"
 ARTICLE_SPEC = "a"  # "{role:a}" renders "a Designer" or "an Account executive"
@@ -118,11 +119,14 @@ def list_inbox(
     limit: int | None = None,
     offset: int = 0,
     archived: bool | None = None,
+    only: ColumnElement[bool] | None = None,
 ) -> list[InboxMessage]:
     """Newest first; `offset` skips that many (paging, M2b); `kinds` keeps only those
     templates (M3b); `archived` keeps only archived (True) or unarchived (False) items, or
     both (None; M4c)."""
     stmt = select(InboxItemRow).where(InboxItemRow.company_id == company_id)
+    if only is not None:  # a further condition (M29: the Needs you tab)
+        stmt = stmt.where(only)
     if unread_only:
         stmt = stmt.where(InboxItemRow.read.is_(False))
     if kinds is not None:
@@ -142,10 +146,13 @@ def inbox_total(
     unread_only: bool = False,
     kinds: Sequence[str] | None = None,
     archived: bool | None = None,
+    only: ColumnElement[bool] | None = None,
 ) -> int:
     stmt = (
         select(func.count()).select_from(InboxItemRow).where(InboxItemRow.company_id == company_id)
     )
+    if only is not None:
+        stmt = stmt.where(only)
     if unread_only:
         stmt = stmt.where(InboxItemRow.read.is_(False))
     if kinds is not None:
@@ -324,3 +331,32 @@ def _with_links(session: Session, messages: list[InboxMessage]) -> list[InboxMes
     ):
         links.setdefault(row.item_id, []).append((row.event_id, row.label))
     return [replace(m, event_links=tuple(links.get(m.id, ()))) for m in messages]
+
+
+# Templates asking the player to approve or decline something (24.1, 27.1, 31.4).
+DECISION_TEMPLATES = frozenset(
+    {"exec_proposal", "exec_pitch", "group_pitch", "group_review_proposal"}
+)
+
+
+def needs_you(state: GameState) -> ColumnElement[bool]:
+    """The Needs you tab (M29, 42.4): items of open major and critical events, and decision
+    items from the month the oldest waiting proposal or pitch arrived on."""
+    cid = state.player.id
+    open_ids = [
+        e.id
+        for e in state.open_events(cid)
+        if e.status == "open" and e.severity in ("major", "critical")
+    ]
+    waiting = [p.turn for p in state.pending_proposals(cid)]
+    waiting += [p.turn for p in state.pending_pitches(cid)]
+    waiting += [p.turn for p in state.group_pitches if p.status == "pending"]
+    clauses = [and_(InboxItemRow.link_kind == "event", InboxItemRow.link_id.in_(open_ids))]
+    if waiting:
+        clauses.append(
+            and_(
+                InboxItemRow.template.in_(DECISION_TEMPLATES),
+                InboxItemRow.turn >= min(waiting),
+            )
+        )
+    return or_(*clauses)
