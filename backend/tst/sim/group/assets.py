@@ -10,6 +10,11 @@
   are the caller's (`mining.actions.transfer_asset`).
 - **Routing** (`inbox_company`): a group company's critical events and inbox items go to the
   player's inbox; the record that raised them names the affected company and facility.
+- **Managing** (M23r, Codex review 6 finding 2): the founder manages every facility of the group
+  (`managed_facility`): staffs, converts and sells it, and its owner pays and is paid. A unit of
+  another group company that the founder puts on a facility moves to the facility's owner with
+  its active people (`crew_to`, the transfer's crew rule), so the owner's payroll carries the
+  crew that its facility counts (`lifecycle.staff_of` counts only the owner's employees).
 """
 
 from __future__ import annotations
@@ -18,7 +23,9 @@ from dataclasses import replace
 
 from tst.sim.data_models import GameData
 from tst.sim.errors import InvalidActionError
+from tst.sim.facilities.models import Facility
 from tst.sim.geopolitics.models import Site, SiteKind
+from tst.sim.org.models import OrgUnit
 from tst.sim.state import (
     GameState,
     group_companies,
@@ -60,6 +67,50 @@ def place(state: GameState, kind: SiteKind, item_id: int, country: str | None) -
     return with_site(state, Site(kind, item_id, country))
 
 
+def crew_to(state: GameState, unit_id: int, to: int) -> GameState:
+    """A unit and its active people to company `to` (their pay follows, on its payroll)."""
+    unit = state.unit(unit_id)
+    assert unit is not None
+    if unit.company_id == to:
+        return state
+    seller = unit.company_id
+    state = with_unit(state, replace(unit, company_id=to, parent_id=None))
+    for e in state.employments:
+        if e.unit_id == unit.id and e.company_id == seller and e.status == "active":
+            state = with_employment(state, replace(e, company_id=to))
+    return state
+
+
+def managed_facility(state: GameState, actor_id: int, facility_id: int, own: int) -> Facility:
+    """A facility the actor manages (module docstring): one of `own` (the actor's company), or,
+    for the founder, of any company of the player's group. Closed or unknown ones raise."""
+    from tst.sim.errors import UnknownFacilityError
+
+    facility = state.facility(facility_id)
+    founder = state.founder_of(state.player.id)
+    allowed = {own}
+    if founder is not None and founder.id == actor_id:
+        allowed |= group_ids(state)
+    if facility is None or facility.company_id not in allowed or facility.status == "closed":
+        raise UnknownFacilityError(f"no facility {facility_id}")
+    return facility
+
+
+def staff_unit(state: GameState, actor_id: int, unit_id: int, own: int) -> OrgUnit:
+    """A unit the actor may put on a facility: an active unit of `own`, or (the founder) of any
+    company of the group."""
+    from tst.sim.errors import UnknownUnitError
+
+    unit = state.unit(unit_id)
+    founder = state.founder_of(state.player.id)
+    allowed = {own}
+    if founder is not None and founder.id == actor_id:
+        allowed |= group_ids(state)
+    if unit is None or unit.company_id not in allowed or unit.status != "active":
+        raise UnknownUnitError(f"no unit {unit_id}")
+    return unit
+
+
 def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
     """Every record of a facility to company `to`, its crew with it (module docstring)."""
     facility = state.facility(facility_id)
@@ -75,10 +126,7 @@ def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
         if unit is None or unit.company_id != seller or shared:
             unit_id = None  # the old owner keeps its unit: the new owner staffs the facility
         else:
-            state = with_unit(state, replace(unit, company_id=to, parent_id=None))
-            for e in state.employments:
-                if e.unit_id == unit.id and e.company_id == seller and e.status == "active":
-                    state = with_employment(state, replace(e, company_id=to))
+            state = crew_to(state, unit_id, to)
     state = with_facility(state, replace(facility, company_id=to, unit_id=unit_id))
     mine = state.mine(facility_id)
     if mine is not None:
@@ -92,4 +140,13 @@ def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
     return state
 
 
-__all__ = ["check_country", "group_ids", "inbox_company", "move_facility", "place"]
+__all__ = [
+    "check_country",
+    "crew_to",
+    "group_ids",
+    "inbox_company",
+    "managed_facility",
+    "move_facility",
+    "place",
+    "staff_unit",
+]

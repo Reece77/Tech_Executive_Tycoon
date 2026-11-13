@@ -56,3 +56,57 @@ def test_repeated_rebuilds_deplete_the_deposit_once(loaded: LoadedData, tmp_path
         assert len(lifetimes) == lifetime
         assert sum(m.moved_cents for m in lifetimes) == project_spend
         assert run.balances.get((m19.PLAYER, EXPLORATION), 0) == exploration
+
+
+# --- Finding 2's check on mines and refineries ------------------------------------------------
+
+
+def test_a_subsidiarys_mine_counts_the_crew_the_founder_gives_it(loaded: LoadedData) -> None:
+    """The matching gap on mines: a player unit put on a subsidiary's mine moves to the mine's
+    owner with its people, so the mine counts its crew and the owner pays it."""
+    from tst.sim.facilities import lifecycle
+    from tst.sim.mining.actions import FoundSubsidiary, StaffMine, TransferAsset
+
+    run = m19.miner(loaded, 7)
+    mine = m19.build(run, "copper")
+    before = {c.id for c in run.state.companies}
+    assert run.act(FoundSubsidiary(run.founder, "Copper Co", mine.region, 50_000_000_000)), run.log
+    (sub,) = {c.id for c in run.state.companies} - before
+    assert run.act(TransferAsset(run.founder, sub, facility_id=mine.id)), run.log
+    assert run.act(StaffMine(run.founder, mine.id, None)), run.log
+    need = len(lifecycle.staff_of(run.state, run.state.facility(mine.id), loaded.balance))  # type: ignore[arg-type]
+    assert need == 0
+    uid = m19.add_engineers(run, 40, 12.0)  # the player's
+    assert run.act(StaffMine(run.founder, mine.id, uid)), run.log
+    f = run.state.facility(mine.id)
+    assert f is not None and f.company_id == sub and f.unit_id == uid
+    unit = run.state.unit(uid)
+    assert unit is not None and unit.company_id == sub
+    crew = lifecycle.staff_of(run.state, f, loaded.balance)
+    assert len(crew) == 40 and all(e.company_id == sub for e in crew)
+
+
+def test_the_founder_staffs_and_sells_a_subsidiarys_refinery() -> None:
+    """The matching gap on refineries: a refinery transferred to a subsidiary is staffed and sold
+    by the founder; the proceeds are the owner's."""
+    from tests.unit.test_m23a_group import _energy, found
+    from tst.balance import m20
+    from tst.sim.actions.facilities import SellFacility, StaffFacility
+    from tst.sim.ledger import CASH
+
+    game = m20.game_at(1, m20.ym_to_turn(2015, 1))
+    fid = m20.build(game, "silicon_smelter", "north_america", 25_000)
+    m20.play(game, 2)
+    sub = found(game, "Smelter Co")
+    _energy(game)
+    from tst.sim.mining.actions import TransferAsset
+
+    assert game.act(TransferAsset(game.founder_id, sub, facility_id=fid)), dict(game.refused)
+    _energy(game)
+    assert game.act(StaffFacility(game.founder_id, fid, None)), dict(game.refused)
+    sub_cash, player_cash = game.balances.get((sub, CASH), 0), game.cash
+    _energy(game)
+    assert game.act(SellFacility(game.founder_id, fid)), dict(game.refused)
+    f = game.state.facility(fid)
+    assert f is not None and f.status == "closed"
+    assert game.balances.get((sub, CASH), 0) > sub_cash and game.cash == player_cash

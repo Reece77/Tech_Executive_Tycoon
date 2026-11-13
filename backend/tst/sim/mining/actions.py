@@ -25,7 +25,7 @@ from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.geology import block_of
 from tst.sim.exploration.models import Project
 from tst.sim.facilities.models import Facility
-from tst.sim.group.assets import check_country, move_facility, place
+from tst.sim.group.assets import check_country, crew_to, move_facility, place
 from tst.sim.group.models import Ownership
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
@@ -675,6 +675,8 @@ def staff_mine(state: GameState, action: StaffMine, balance: Balance) -> Outcome
     state = spend_energy(
         state, action.actor_id, action.kind, balance, cost=balance.facility.assign_energy
     )
+    if action.unit_id is not None:  # M23r (finding 2): the mine's owner pays the crew it counts
+        state = crew_to(state, action.unit_id, mine.company_id)
     return Outcome(with_facility(state, replace(facility, unit_id=action.unit_id)))
 
 

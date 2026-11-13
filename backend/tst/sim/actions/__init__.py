@@ -572,9 +572,13 @@ def geo_fab_check(
         country = action.country or geo_fab_country(state, action.region, action.city, data)
         geo_check_order(state, company, country, action.node, action.duv, balance, data)
         return
-    facility = state.facility(action.facility_id)
+    from tst.sim.group.assets import managed_facility
+
+    # M23r (finding 2): a group fab's conversion is checked against its owner's licences
+    facility = managed_facility(state, action.actor_id, action.facility_id, company)
+    company = facility.company_id
     uq = upgrade_quote(state, company, action.facility_id, balance, data)
-    if facility is None or uq.new is None:
+    if uq.new is None:
         return
     country = facility_country(state, facility, data)
     geo_check_order(state, company, country, uq.new, False, balance, data)
