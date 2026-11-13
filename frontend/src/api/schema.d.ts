@@ -95,7 +95,12 @@ export interface paths {
          */
         get: operations["listBackups"];
         put?: never;
-        post?: never;
+        /**
+         * Back Up Save
+         * @description Back up now (M29): a copy kept with the save's backups. 409 for an Ironman or busy
+         *     save.
+         */
+        post: operations["backUpSave"];
         delete?: never;
         options?: never;
         head?: never;
@@ -409,7 +414,8 @@ export interface paths {
          * Get Inbox
          * @description Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
          *     keep only those message kinds, across every page (M3b). Archived items are hidden;
-         *     `archived=true` shows only them (M4c).
+         *     `archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open
+         *     major and critical events and waiting proposals and pitches (M29, 42.4).
          */
         get: operations["getInbox"];
         put?: never;
@@ -4841,6 +4847,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/unlocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Unlocks
+         * @description Which screens the side bar shows and why (42.1).
+         */
+        get: operations["getUnlocks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/unlocks/{key}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open System
+         * @description Open an opt-in system before its condition holds ("Explore for minerals" from Markets,
+         *     42.1): writes its unlock item once. No game effect.
+         */
+        post: operations["openSystem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/getting-started": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Getting Started
+         * @description The first year's checklist, ticked from state alone (42.2).
+         */
+        get: operations["getGettingStarted"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/getting-started/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Getting Started */
+        post: operations["dismissGettingStarted"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/what-next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get What Next
+         * @description Up to five things to do now (42.3). Read-only, no energy.
+         */
+        get: operations["getWhatNext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/palette": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Palette
+         * @description Everything the command palette jumps to by name (42.4): the player's people, the
+         *     group's products, facilities and mines, and rivals.
+         */
+        get: operations["getPalette"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -4898,6 +5023,27 @@ export interface paths {
          * @description Replace one table's saved views and the view last used.
          */
         put: operations["updateTableViews"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/ui/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Onboarding Settings
+         * @description Show everything, Getting started and Interruptions (42.1, 42.2, 42.4), for every save.
+         */
+        get: operations["getOnboardingSettings"];
+        /** Update Onboarding Settings */
+        put: operations["updateOnboardingSettings"];
         post?: never;
         delete?: never;
         options?: never;
@@ -5483,7 +5629,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "periodic" | "pre_upgrade";
+            kind: "periodic" | "pre_upgrade" | "manual";
             /**
              * Turn
              * @description The game turn the backup was taken at
@@ -9508,6 +9654,23 @@ export interface components {
             /** Hole Cost High Cents */
             hole_cost_high_cents: number;
         };
+        /** GettingStartedOut */
+        GettingStartedOut: {
+            /**
+             * Visible
+             * @description First 12 months, the setting on, not dismissed
+             */
+            visible: boolean;
+            /** Months Left */
+            months_left: number;
+            /**
+             * Speaker
+             * @description Who writes the notes: the chief of staff, or your notes
+             */
+            speaker: string;
+            /** Steps */
+            steps: components["schemas"]["StepOut"][];
+        };
         /** GiftIn */
         GiftIn: {
             /** Amount Cents */
@@ -12396,6 +12559,49 @@ export interface components {
              */
             prepay?: number;
         };
+        /**
+         * Onboarding
+         * @description M29 (42.1-42.4). `stop_on`: the lowest severity that stops Continue and is a holiday's
+         *     default stop; critical always stops, minor never does.
+         */
+        Onboarding: {
+            /**
+             * Show Everything
+             * @description Turn progressive unlocking off
+             * @default false
+             */
+            show_everything?: boolean;
+            /**
+             * Guided First Year
+             * @description Show Getting started
+             * @default true
+             */
+            guided_first_year?: boolean;
+            /**
+             * Stop On
+             * @default major
+             * @enum {string}
+             */
+            stop_on?: "major" | "critical";
+            /**
+             * Dismissed Checklists
+             * @description Save ids whose Getting started was dismissed
+             */
+            dismissed_checklists?: string[];
+        };
+        /** OnboardingSettings */
+        OnboardingSettings: {
+            /** Show Everything */
+            show_everything: boolean;
+            /** Guided First Year */
+            guided_first_year: boolean;
+            /**
+             * Stop On
+             * @description The lowest severity that stops Continue and is a holiday's default stop
+             * @enum {string}
+             */
+            stop_on: "major" | "critical";
+        };
         /** OpenRoundOut */
         OpenRoundOut: {
             /** Company Id */
@@ -12837,6 +13043,33 @@ export interface components {
              * @default false
              */
             pending?: boolean;
+        };
+        /** PaletteEntryOut */
+        PaletteEntryOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "person" | "product" | "facility" | "rival";
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            /**
+             * Detail
+             * @description A role, a category, a place or 'rival'
+             */
+            detail: string;
+            /**
+             * Path
+             * @description The route under /game/<save>/
+             */
+            path: string;
+        };
+        /** PaletteOut */
+        PaletteOut: {
+            /** Entries */
+            entries: components["schemas"]["PaletteEntryOut"][];
         };
         /** PartnerIn */
         PartnerIn: {
@@ -16494,6 +16727,25 @@ export interface components {
             /** Subsidiaries */
             subsidiaries?: components["schemas"]["SubsidiaryColumnOut"][];
         };
+        /** StepOut */
+        StepOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Note
+             * @description The chief of staff's one line on why it matters
+             */
+            note: string;
+            /**
+             * Screen
+             * @description A systems key the step links to
+             */
+            screen: string;
+            /** Done */
+            done: boolean;
+        };
         /** StockOut */
         StockOut: {
             /** Ticker */
@@ -16852,6 +17104,46 @@ export interface components {
              * @description The largest shortfall's change to output, %; an estimate: the COO's effect from displayed ranges (18.8)
              */
             output_effect_pct: number;
+        };
+        /** SystemOut */
+        SystemOut: {
+            /**
+             * Key
+             * @description tst.sim.unlocks SYSTEMS key
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Group
+             * @description company | people | products | markets | chain | finance | world | automation
+             */
+            group: string;
+            /**
+             * Unlocked
+             * @description Shown in the side bar (or Show everything is on)
+             */
+            unlocked: boolean;
+            /**
+             * Reason
+             * @description Why it is open; null while locked
+             */
+            reason: string | null;
+            /**
+             * Since Label
+             * @description When it was announced, if it was
+             */
+            since_label: string | null;
+            /**
+             * Item Id
+             * @description The unlock inbox item, if one was written
+             */
+            item_id: number | null;
+            /**
+             * Opt In
+             * @description The player may open it early (Explore for minerals)
+             */
+            opt_in: boolean;
         };
         /** TableView */
         TableView: {
@@ -17411,6 +17703,7 @@ export interface components {
             tables?: {
                 [key: string]: components["schemas"]["TableViews"];
             };
+            onboarding?: components["schemas"]["Onboarding"];
         };
         /** UnitChoiceOut */
         UnitChoiceOut: {
@@ -17496,6 +17789,18 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** UnlocksOut */
+        UnlocksOut: {
+            /** Show Everything */
+            show_everything: boolean;
+            /** Systems */
+            systems: components["schemas"]["SystemOut"][];
+            /**
+             * Fresh
+             * @description Systems announced this month (for the toast)
+             */
+            fresh: string[];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -17577,6 +17882,30 @@ export interface components {
              * @description M21 (38.1): a process node (nodes.yaml key); none: M12b's wafer
              */
             node?: string | null;
+        };
+        /** WhatNextItemOut */
+        WhatNextItemOut: {
+            /** Key */
+            key: string;
+            /** Text */
+            text: string;
+            /**
+             * Link Kind
+             * @description finance | event | product | person | org | recruitment | board | rival | guide
+             */
+            link_kind: string;
+            /** Link Id */
+            link_id: number | null;
+            /**
+             * Link Key
+             * @description The systems key of a guide link
+             */
+            link_key: string | null;
+        };
+        /** WhatNextOut */
+        WhatNextOut: {
+            /** Items */
+            items: components["schemas"]["WhatNextItemOut"][];
         };
         /** WorldActionOut */
         WorldActionOut: {
@@ -18105,6 +18434,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BackupOut"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    backUpSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupOut"];
                 };
             };
             /** @description Bad Request */
@@ -19161,6 +19548,7 @@ export interface operations {
                 limit?: number | null;
                 offset?: number;
                 archived?: boolean;
+                needs_you?: boolean;
             };
             header?: never;
             path: {
@@ -33510,6 +33898,355 @@ export interface operations {
             };
         };
     };
+    getUnlocks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnlocksOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openSystem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnlocksOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGettingStarted: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GettingStartedOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    dismissGettingStarted: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GettingStartedOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getWhatNext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhatNextOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPalette: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaletteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     getLlmSettings: {
         parameters: {
             query?: never;
@@ -33605,6 +34342,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UISettings"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getOnboardingSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingSettings"];
+                };
+            };
+        };
+    };
+    updateOnboardingSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingSettings"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OnboardingSettings"];
                 };
             };
             /** @description Validation Error */

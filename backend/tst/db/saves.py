@@ -20,7 +20,7 @@ from typing import Any, Literal
 from sqlalchemy import select
 
 from tst.db import migrate, repository
-from tst.db.backup import SAVE_SUFFIX, backup_dir, slug_of
+from tst.db.backup import SAVE_SUFFIX, backup_dir, manual_backup, slug_of
 from tst.db.models import CompanyRow, SaveMetaRow
 from tst.db.session import forget_engine
 from tst.db.state_io import META_ID
@@ -31,7 +31,8 @@ IRONMAN = "ironman"
 NAME_MAX = 80  # characters in a display name (save_meta.display_name)
 SLUG_MAX = 48  # characters taken from a display name for a new save's slug
 _BACKUP_RE = re.compile(
-    r"^(?P<slug>.+)\.turn-(?P<turn>\d{3,})(?:\.pre-migration-(?P<rev>.+))?\.sqlite$"
+    r"^(?P<slug>.+)\.turn-(?P<turn>\d{3,})"
+    r"(?:\.pre-migration-(?P<rev>.+)|\.manual-(?P<manual>\d{8}T\d{6}))?\.sqlite$"
 )
 
 
@@ -69,7 +70,7 @@ class SaveFile:
 @dataclass(frozen=True, slots=True)
 class BackupFile:
     backup_id: str  # the file name
-    kind: Literal["periodic", "pre_upgrade"]
+    kind: Literal["periodic", "pre_upgrade", "manual"]
     turn: int
     created: datetime
     size_bytes: int
@@ -286,7 +287,9 @@ def backups(path: Path) -> list[BackupFile]:
         found.append(
             BackupFile(
                 backup_id=f.name,
-                kind="pre_upgrade" if m.group("rev") else "periodic",
+                kind="pre_upgrade"
+                if m.group("rev")
+                else ("manual" if m.group("manual") else "periodic"),
                 turn=int(m.group("turn")),
                 created=datetime.fromtimestamp(stat.st_mtime, tz=UTC),
                 size_bytes=stat.st_size,
@@ -311,3 +314,14 @@ def restore(path: Path, backup_id: str) -> SaveFile:
     with exclusive(path):
         _copy_into(backup_dir(path) / found.backup_id, target, name)
     return describe(target)
+
+
+def back_up(path: Path) -> BackupFile:
+    """Back up now (M29, 42.5): a consistent copy beside the periodic backups, never pruned.
+    Refused for an Ironman save (it has no restore) and while the save is busy."""
+    _refuse_ironman(path, "backed up by hand")
+    with repository.write_session(path) as session:
+        turn = int(session.scalar(select(SaveMetaRow.current_turn)) or 0)
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
+        made = manual_backup(path, turn, stamp)
+    return next(b for b in backups(path) if b.backup_id == made.name)

@@ -110,6 +110,7 @@ const KINDS: Record<string, { label: KindLabel; group: Group }> = {
   promise_broken: { label: 'Press', group: 'company' },
   rival_statement: { label: 'Press', group: 'company' },
   replace_started: { label: 'Delegate', group: 'hiring' },
+  unlock: { label: 'News', group: 'company' }, // M29 (42.1): a screen opened
 };
 
 /** The Finance tab a finance message opens (M4b). */
@@ -171,4 +172,44 @@ export function matchesFilter(
 export function preview(body: string): string {
   const end = body.search(/[.!?](\s|$)/);
   return end === -1 ? body : body.slice(0, end + 1);
+}
+
+// --- Tabs and filters (M29, 42.4) -------------------------------------------------------------
+
+export type InboxTab = 'needs_you' | 'digest' | 'news' | 'all';
+
+export const TABS: readonly { key: InboxTab; label: string }[] = [
+  { key: 'needs_you', label: 'Needs you' },
+  { key: 'digest', label: 'Digest' }, // kind `digest` (40.4), once M27a writes them
+  { key: 'news', label: 'News' },
+  { key: 'all', label: 'Everything' },
+];
+
+/** The kinds a tab keeps (null: all; Needs you is decided by the API). */
+export function tabKinds(tab: InboxTab): string[] | null {
+  if (tab === 'digest') return ['digest'];
+  if (tab === 'news') {
+    return Object.keys(KINDS).filter((k) => ['News', 'Press'].includes(KINDS[k].label));
+  }
+  return null;
+}
+
+/** The kind filter's choices: each badge label and the templates it covers. */
+export function kindChoices(): { label: KindLabel; kinds: string[] }[] {
+  const by = new Map<KindLabel, string[]>();
+  for (const [kind, { label }] of Object.entries(KINDS)) {
+    by.set(label, [...(by.get(label) ?? []), kind]);
+  }
+  return [...by.entries()]
+    .map(([label, kinds]) => ({ label, kinds }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** Both lists' kinds (null means no limit); [] when they share none. */
+export function intersectKinds(...lists: (string[] | null)[]): string[] | null {
+  return lists.reduce<string[] | null>((acc, list) => {
+    if (list === null) return acc;
+    if (acc === null) return [...list];
+    return acc.filter((k) => list.includes(k));
+  }, null);
 }

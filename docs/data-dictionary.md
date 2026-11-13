@@ -571,11 +571,11 @@ Messages for the player company, rendered from `inbox_templates.yaml` when the t
 | `id` | INTEGER PK | no | Message id; newest has the highest id. |
 | `turn` | INTEGER | no | Turn that produced it. |
 | `company_id` | INTEGER FK → company.id | no | The player company. |
-| `template` | VARCHAR(64) | no | `inbox_templates.yaml` key, e.g. `offer_accepted`. |
+| `template` | VARCHAR(64) | no | `inbox_templates.yaml` key, e.g. `offer_accepted`. M29: `unlock` (a screen opened, formulas.md 42.1) is written by `tst.db.unlocks` with its words, not from the YAML; it is the only record of what was announced (no schema change). |
 | `title` | VARCHAR(200) | no | Rendered title. |
 | `body` | TEXT | no | Rendered body; amounts are formatted as money. |
 | `link_kind` | VARCHAR(16) | yes | `person`, `candidate`, `search`, or null. |
-| `link_id` | INTEGER | yes | Id of the linked person or search. |
+| `link_id` | INTEGER | yes | Id of the linked person or search. For `link_kind` `guide` (M29), the stable id of a `tst.sim.unlocks.SYSTEMS` entry. |
 | `read` | BOOLEAN | no | Marked read by the player. |
 | `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. Since M10b (formulas.md 23.1) an answered event's item archives itself, and a read, unbookmarked item `inbox.auto_archive_months` (3) old archives at month end. UI state only: no game effect, not in `decision_log`. |
 | `bookmarked` | BOOLEAN | no | Starred by the player (migration `0024_inbox_bookmark`, M10b): never auto-archived; starring an archived item brings it back. UI state only. |

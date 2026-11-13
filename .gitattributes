@@ -3,3 +3,5 @@
 * text=auto eol=lf
 *.png binary
 *.sqlite binary
+# Windows batch files need CRLF: cmd.exe misreads some LF-only scripts (M29 launcher).
+*.cmd text eol=crlf
