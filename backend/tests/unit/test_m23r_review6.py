@@ -18,13 +18,14 @@ from tst.sim.state import GameState, with_mine
 def reload(state: GameState, data: LoadedData, tmp_path: Path, name: str = "reload") -> GameState:
     """`state` written into a fresh save and read back cold (a new session)."""
     from tst.db.repository import create_save, load_state, open_session
-    from tst.db.state_io import sync_state
+    from tst.db.state_io import read_meta, sync_state
 
     path = create_save(
         name, 1, "funded_spinout", company_name="Reload", data=data, save_dir=tmp_path
     )
     with open_session(path) as session, session.begin():
         sync_state(session, load_state(session), state)
+        read_meta(session).current_turn = state.turn
     with open_session(path) as session:
         return load_state(session)
 
@@ -110,3 +111,67 @@ def test_the_founder_staffs_and_sells_a_subsidiarys_refinery() -> None:
     f = game.state.facility(fid)
     assert f is not None and f.status == "closed"
     assert game.balances.get((sub, CASH), 0) > sub_cash and game.cash == player_cash
+
+
+# --- Finding 3: a fab's foundry contracts move with it --------------------------------------------
+
+
+def test_a_transferred_fabs_foundry_contracts_are_its_new_owners(tmp_path: Path) -> None:
+    """Codex's reproduction: a 24-month, 3,000-start foundry contract on company 1's fab, the fab
+    transferred to an 80%-owned subsidiary. Deliveries, revenue, the termination quote and its
+    fee are the subsidiary's, also after a cold reload."""
+    from tests.unit.test_m23a_group import _energy, found
+    from tst.balance import m21
+    from tst.sim.contracts import termination as ct
+    from tst.sim.contracts.termination import TerminateContract
+    from tst.sim.fabs import foundry
+    from tst.sim.fabs import market as fm
+    from tst.sim.ledger import CASH
+    from tst.sim.mining.actions import TransferAsset
+    from tst.sim.state import owner_at, with_ownership
+
+    lg = m21.loaded()
+    b, d = lg.balance, lg.game_data
+    game = m21.game_at(1, m21.ym_to_turn(2016, 1))
+    fid = m21.build(game, "n28", "east_asia", 10_000)
+    m21.play(game)
+    fab = fm.fab_of(game.state, fid)
+    assert fab is not None
+    price = foundry.slot_price_cents(game.state, fab, b, d) * 0.5
+    customer = foundry.customers(d)[0]
+    _energy(game)
+    sign = foundry.SignFoundryContract(game.founder_id, fid, customer, 3_000.0, 24, price)
+    assert game.act(sign), dict(game.refused)
+    (contract,) = game.state.foundry_contracts
+    player = game.state.player.id
+
+    def sales(cid: int) -> int:
+        return game.balances.get((cid, "4420_foundry_sales"), 0)
+
+    before = sales(player)
+    m21.play(game)
+    assert sales(player) < before  # credit: the player's fab delivered and was paid
+    sub = found(game, "Foundry Co")
+    held = owner_at(game.state, sub)
+    assert held is not None
+    game.state = with_ownership(game.state, replace(held, stake_bp=8_000))  # 20% minority
+    _energy(game)
+    assert game.act(TransferAsset(game.founder_id, sub, facility_id=fid)), dict(game.refused)
+    moved = next(c for c in game.state.foundry_contracts if c.id == contract.id)
+    assert moved.company_id == sub
+    assert ct.quote(game.state, "foundry", contract.id, b, d).company_id == sub
+    player_sales, sub_sales = sales(player), sales(sub)
+    m21.play(game)
+    delivered = next(c for c in game.state.foundry_contracts if c.id == contract.id).delivered
+    assert delivered > 0
+    assert sales(player) == player_sales and sales(sub) < sub_sales
+    cold = reload(game.state, lg, tmp_path)
+    again = next(c for c in cold.foundry_contracts if c.id == contract.id)
+    assert again.company_id == sub
+    q = ct.quote(cold, "foundry", contract.id, b, d)
+    assert q.company_id == sub and q.fee_cents > 0
+    sub_cash, player_cash = game.balances.get((sub, CASH), 0), game.cash
+    _energy(game)
+    assert game.act(TerminateContract(game.founder_id, "foundry", contract.id)), game.refused
+    assert sub_cash - game.balances.get((sub, CASH), 0) == q.cash_cents
+    assert game.cash == player_cash

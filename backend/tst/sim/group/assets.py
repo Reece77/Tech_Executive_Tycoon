@@ -15,6 +15,10 @@
   another group company that the founder puts on a facility moves to the facility's owner with
   its active people (`crew_to`, the transfer's crew rule), so the owner's payroll carries the
   crew that its facility counts (`lifecycle.staff_of` counts only the owner's employees).
+- **Contracts** (M23r, finding 3): a facility's own contracts move with it: a fab's foundry
+  contracts are assigned to its new owner, so deliveries, revenue and an early termination's
+  quote and fee are the owner's. (A mine's sales follow `mine.company_id` already; a company's
+  supply, commodity and production contracts are its own, not a facility's, and stay.)
 """
 
 from __future__ import annotations
@@ -33,6 +37,7 @@ from tst.sim.state import (
     with_employment,
     with_fab,
     with_facility,
+    with_foundry_contract,
     with_mine,
     with_refinery,
     with_site,
@@ -112,7 +117,8 @@ def staff_unit(state: GameState, actor_id: int, unit_id: int, own: int) -> OrgUn
 
 
 def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
-    """Every record of a facility to company `to`, its crew with it (module docstring)."""
+    """Every record of a facility to company `to`, its crew and its contracts with it (module
+    docstring)."""
     facility = state.facility(facility_id)
     assert facility is not None
     seller = facility.company_id
@@ -128,6 +134,9 @@ def move_facility(state: GameState, facility_id: int, to: int) -> GameState:
         else:
             state = crew_to(state, unit_id, to)
     state = with_facility(state, replace(facility, company_id=to, unit_id=unit_id))
+    for c in state.foundry_contracts:  # M23r (finding 3): the fab's customers are the owner's
+        if c.fab_id == facility_id and c.company_id != to:
+            state = with_foundry_contract(state, replace(c, company_id=to))
     mine = state.mine(facility_id)
     if mine is not None:
         state = with_mine(state, replace(mine, company_id=to))
