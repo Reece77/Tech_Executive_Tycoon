@@ -271,6 +271,8 @@ def play(
     )
     founder_ca = []
     for _ in range(TURNS):
+        # M23r: the server is read only while a critical event is open, so answer it first
+        answer_critical(path, data)
         funding_plan(path, data)
         product_plan(path, data)
         hiring_plan(path, data)

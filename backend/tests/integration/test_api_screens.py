@@ -118,6 +118,12 @@ def test_people_fields_and_fire(api: Client) -> None:
     )
     morale_before = {p["person_id"]: p["morale"] for p in staff}
 
+    # M23r: the server is read only while a critical event is open (here "Payroll is at risk"
+    # after the hires), so answer it first, as the player must
+    for e in api.get(f"{BASE}/events")["open"]:
+        if e["severity"] == "critical":
+            choice = e["choices"][0]["key"]
+            api.post(f"{BASE}/events/{e['event_id']}/choose", {"choice": choice})
     fired = api.post(f"{BASE}/people/{hire['person_id']}/fire")
     ov = api.get(f"{BASE}/overview")
     assert ov["month_paid"] == [

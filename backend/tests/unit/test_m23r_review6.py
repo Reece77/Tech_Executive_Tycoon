@@ -242,3 +242,26 @@ def test_mixed_contracted_and_spot_revenue_matches_a_rational_reference() -> Non
     slot = foundry.slot_price_cents(game.state, fab, lg.balance, lg.game_data)
     expected = round(Fraction(100) * Fraction(545, 1000) + exact(spot) * exact(slot))
     assert posted == revenue == expected
+
+
+def test_no_float_in_the_foundry_money_path() -> None:
+    """Acceptance (no float in a money path the findings name): every money field of a foundry
+    contract is integer cents or millicents, and a month's contracted revenue is an exact
+    rational until it is posted."""
+    from dataclasses import fields
+    from fractions import Fraction
+
+    from tst.balance import m21
+    from tst.sim.contracts.models import FoundryContract
+    from tst.sim.fabs import foundry
+    from tst.sim.fabs.models import Fab
+
+    money = {f.name: f.type for f in fields(FoundryContract) if "cents" in f.name}
+    assert money == {"price_millicents": "int"}
+    game = m21.game_at(1, m21.ym_to_turn(2016, 1))
+    turn = game.state.turn
+    contract = FoundryContract(1, 7, 1, "NVIDIA", 100.0, 545, turn, turn + 11)
+    state = replace(game.state, foundry_contracts=(contract,))
+    fab = Fab(facility_id=7, company_id=1, node="n28", estimate_cents=0, build_months=0)
+    _, starts, revenue, _ = foundry.deliver(state, fab, 100.0)
+    assert starts == 100.0 and revenue == Fraction(109, 2)
