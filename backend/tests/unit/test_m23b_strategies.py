@@ -143,3 +143,18 @@ def test_group_month_eliminates_intercompany_sales() -> None:
     game.pnl[t] = (0, 0)
     rev, _ = game._group_month(player, types, t)
     assert rev == 1_000
+
+
+def test_a_long_run_keeps_its_year_20_reading(monkeypatch: pytest.MonkeyPatch) -> None:
+    """I1-I3 read December 2039 and print year 20 (PM ruling, 2026-11-12): a 30-year run
+    records its reading at YEARS_20 on the way (here a 3-month run read at month 2)."""
+    from tst.balance import v3
+
+    monkeypatch.setattr(v3, "LONG_TURNS", 3)
+    monkeypatch.setattr(v3, "YEARS_20", 2)
+    monkeypatch.setattr(v3, "ERA_FROM", 10**6)
+    run = v3.play(("steady_regions", 1, 3))
+    assert run.early is not None
+    assert (run.early.turns, run.turns) == (2, 3)
+    rows = {r.target: r for r in v3.integration_rows([run])}
+    assert rows["I3"].ok is not None and rows["I3y20"].ok is None

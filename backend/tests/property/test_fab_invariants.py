@@ -13,7 +13,10 @@ from hypothesis import strategies as st
 
 from tst.balance import m21
 from tst.sim.calendar import ym_to_turn
+from tst.sim.errors import SimError
 from tst.sim.fabs import market as fm
+from tst.sim.fabs.actions import BuildFab
+from tst.sim.geopolitics import fabs as geo_fabs
 from tst.sim.ledger import COGS, FOUNDRY_SALES, PPE
 from tst.sim.state import GameState
 
@@ -30,7 +33,7 @@ def _fab_lines(game: m21.Game, before: dict[tuple[int, str], int], account: str)
 @settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(
     node=st.sampled_from(NODES),
-    region=st.sampled_from(REGIONS),
+    pick=st.data(),
     size=st.sampled_from(SIZES),
     year=st.integers(min_value=2019, max_value=2024),
     months=st.integers(min_value=1, max_value=6),
@@ -38,9 +41,20 @@ def _fab_lines(game: m21.Game, before: dict[tuple[int, str], int], account: str)
     staffed=st.booleans(),
 )
 def test_a_fab_keeps_its_books(
-    node: str, region: str, size: int, year: int, months: int, ready: bool, staffed: bool
+    node: str,
+    pick: st.DataObject,
+    size: int,
+    year: int,
+    months: int,
+    ready: bool,
+    staffed: bool,
 ) -> None:
     game = m21.game_at(11, ym_to_turn(year, 1))
+    # only regions where the export controls allow this build (M22): a refused order has no
+    # books to keep; the refusal is test_controls_refuse_an_advanced_fab_in_china
+    allowed = [r for r in REGIONS if _orderable(game, node, r)]
+    assert allowed  # North America never controls its own fabs
+    region = pick.draw(st.sampled_from(allowed), label="region")
     fid = m21.build(game, node, region, size, ready_now=ready)
     if not staffed:
         f = game.state.facility(fid)
@@ -75,3 +89,23 @@ def _paid(state: GameState, fid: int) -> int:
     f = state.facility(fid)
     assert f is not None
     return f.capex_paid_cents
+
+
+def _orderable(game: m21.Game, node: str, region: str) -> bool:
+    loaded = m21.loaded()
+    country = geo_fabs.fab_country(game.state, region, None, loaded.game_data)
+    try:
+        geo_fabs.check_order(game.state, 1, country, node, False, loaded.balance, loaded.game_data)
+    except SimError:
+        return False
+    return True
+
+
+def test_controls_refuse_an_advanced_fab_in_china() -> None:
+    """The case the property test leaves out: October 2022's equipment controls (M22) refuse a
+    16 nm fab in East Asia's default country (China) in 2023, and the order changes nothing."""
+    game = m21.game_at(11, ym_to_turn(2023, 1))
+    assert not _orderable(game, "n16", "east_asia")
+    before = (dict(game.balances), game.state.facilities)
+    assert not game.act(BuildFab(game.founder_id, "n16", "east_asia", 10_000))
+    assert (dict(game.balances), game.state.facilities) == before

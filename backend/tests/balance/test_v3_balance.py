@@ -31,8 +31,8 @@ def test_v3_shocks() -> None:
 
 
 @pytest.mark.weekly
-def test_v3_integration_twenty_years() -> None:
-    runs = v3.run_all(v3.PLAYED_20, v3.SEEDS, v3.YEARS_20, jobs=_jobs())
+def test_v3_integration_thirty_years() -> None:
+    runs = v3.run_all(v3.PLAYED, v3.SEEDS, v3.LONG_TURNS, jobs=_jobs())
     print("\n" + v3.run_table(runs))
     _check(v3.integration_rows(runs))
 

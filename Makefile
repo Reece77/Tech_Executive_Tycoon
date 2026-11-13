@@ -52,7 +52,7 @@ weekly-v6:
 weekly-v3-shocks:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_shocks
 weekly-v3-integration:
-	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_integration_twenty_years
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_integration_thirty_years
 weekly-v3-long:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_chain_thirty_years
 weekly-v6-integrator:

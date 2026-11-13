@@ -3,9 +3,10 @@ checked weekly (tests/balance/test_v3_balance.py, .github/workflows/weekly.yml).
 are read here; this is a tool.
 
 - **Integration pays modestly** (I1-I3): the v2 founder-played strategies and the three v3
-  scripts (tst.balance.strategies_v3) played for 20 years on 10 seeds. full_integrator's group
-  operating margin over year 20 is 3-10 points above devices_regions', its ARR 0.9-1.4x, and it
-  wins at most 4 of 10 seeds by founder value at year 20.
+  scripts (tst.balance.strategies_v3) and devices_regions played for 30 years on 10 seeds.
+  full_integrator's group operating margin over year 30 (the 12 months to December 2039) is
+  3-10 points above devices_regions', its ARR 0.9-1.4x, and it wins at most 4 of 10 seeds by
+  founder value at year 30; the year-20 readings print for information.
 - **Chains feel shocks** (S1, S2): the 2021-2022 lithium spike raises an unhedged device
   maker's unit cost visibly (M17's reference phone, at least 3%); the December 2024 gallium
   ban limits an unhedged chip maker's **output** through allocation (playtest 5), not only its
@@ -50,8 +51,8 @@ YEARS_20: Final = ym_to_turn(2029, 12) + 1  # 240: January 2010 to December 2029
 LONG_TURNS: Final = ym_to_turn(2039, 12) + 1  # 360
 BASE: Final = "steady_regions"
 INTEGRATOR: Final = "full_integrator"
-# The strategies whose wins I3 counts at year 20: the v2 founder-played scripts (V1's, less
-# v1's four, which do not reach year 20 as companies worth comparing: M23b decision) and the
+# The strategies whose wins I3 counts at year 30: the v2 founder-played scripts (V1's, less
+# v1's four, which do not reach year 30 as companies worth comparing: M23b decision) and the
 # three v3 scripts.
 COMPARED: Final = (
     "steady_regions",
@@ -63,7 +64,7 @@ COMPARED: Final = (
     "foundry",
 )
 DEVICES: Final = "devices_regions"  # I1 and I2's baseline (PM ruling 2026-11-11), not counted in I3
-PLAYED_20: Final = (*COMPARED, DEVICES)
+PLAYED: Final = (*COMPARED, DEVICES)  # I1-I3: played for 30 years (PM ruling 2026-11-12)
 LONG_STRATEGIES: Final = tuple(V3)
 MARGIN_GAP: Final = (0.03, 0.10)  # I1: full_integrator's margin over devices_regions'
 ARR_RATIO: Final = (0.9, 1.4)  # I2
@@ -116,6 +117,7 @@ class V3Run:
     eras: dict[str, int] = field(default_factory=dict)  # domain -> arrivals from 2026
     chain_alive: dict[str, int] = field(default_factory=dict)  # chain category -> rivals alive
     band_runs: dict[str, int] = field(default_factory=dict)  # good -> longest run outside BAND
+    early: V3Run | None = None  # a 30-year run's reading at year 20 (December 2029)
 
     @property
     def margin(self) -> float | None:
@@ -146,12 +148,16 @@ def play(job: tuple[str, int, int]) -> V3Run:
     script = ALL[strategy]
     long = turns >= LONG_TURNS
     bands: dict[str, list[float]] = {}
+    early: V3Run | None = None
     while game.state.turn < turns and not game.state.ended:
         script(game)
         game.turn()
         if long and game.state.turn - 1 >= ERA_FROM:
             _indices(game, bands)
-    return _result(game, strategy, seed, turns, started, bands if long else None)
+        if long and game.state.turn == YEARS_20:
+            early = _result(game, strategy, seed, YEARS_20, started, None)
+    run = _result(game, strategy, seed, turns, started, bands if long else None)
+    return replace(run, early=early)
 
 
 def _indices(game: Game, bands: dict[str, list[float]]) -> None:
@@ -384,12 +390,12 @@ def _gap_and_ratio(runs: Sequence[V3Run], base_name: str) -> tuple[float | None,
     return gap, ratio
 
 
-def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str) -> list[Row]:
+def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str, year: int) -> list[Row]:
     gap, ratio = _gap_and_ratio(runs, base_name)
     return [
         Row(
             f"I1{suffix}",
-            f"full_integrator margin - {base_name}, year 20 (points)",
+            f"full_integrator margin - {base_name}, year {year} (points)",
             "-" if gap is None else f"{gap * 100:+.1f}",
             "+3 to +10",
             _in(gap, MARGIN_GAP) if _runs(runs, base_name) else None,
@@ -397,7 +403,7 @@ def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str) -> list[Row]:
         ),
         Row(
             f"I2{suffix}",
-            f"full_integrator ARR / {base_name}, year 20",
+            f"full_integrator ARR / {base_name}, year {year}",
             "-" if ratio is None else f"{ratio:.2f}x",
             "0.90-1.40x",
             _in(ratio, ARR_RATIO) if _runs(runs, base_name) else None,
@@ -405,10 +411,7 @@ def _gap_rows(runs: Sequence[V3Run], base_name: str, suffix: str) -> list[Row]:
     ]
 
 
-def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
-    """I1-I3 over 20-year runs of COMPARED on the same seeds. I1 and I2 are measured against
-    devices_regions, the same devices without an owned chain (PM ruling, 2026-11-11); I1s and
-    I2s print the same gap and ratio against steady_regions, for information."""
+def _wins_row(runs: Sequence[V3Run], target: str, year: int) -> Row:
     wins: dict[str, int] = {}
     for seed in sorted({r.seed for r in runs}):
         field_ = [r for r in runs if r.seed == seed and r.strategy in COMPARED]
@@ -417,17 +420,33 @@ def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
             wins[best.strategy] = wins.get(best.strategy, 0) + 1
     n = len({r.seed for r in runs})
     won = wins.get(INTEGRATOR, 0)
-    software = [replace(r, ok=None) for r in _gap_rows(runs, BASE, "s")]
+    return Row(
+        target,
+        f"full_integrator wins of {n} (year {year} founder value)",
+        f"{won} ({', '.join(f'{k} {v}' for k, v in sorted(wins.items()))})",
+        f"<= {MAX_WINS}",
+        won <= MAX_WINS,
+    )
+
+
+def integration_rows(runs: Sequence[V3Run]) -> list[Row]:
+    """I1-I3 over 30-year runs of PLAYED on the same seeds, on the trailing 12 months to
+    December 2039 (PM ruling, 2026-11-12). I1 and I2 are measured against devices_regions, the
+    same devices without an owned chain (PM ruling, 2026-11-11); I1s and I2s print the gap and
+    ratio against steady_regions. The year-20 readings (I1y20 ...) print for information: at
+    year 20 a group fab built in the mid-2020s is still inside its 5-year depreciation (38.2),
+    dearer a start than the market's wafers."""
+    early = [r.early for r in runs if r.early is not None]
+    info = [
+        *_gap_rows(runs, BASE, "s", 30),
+        *_gap_rows(early, DEVICES, "y20", 20),
+        *_gap_rows(early, BASE, "sy20", 20),
+        _wins_row(early, "I3y20", 20),
+    ]
     return [
-        *_gap_rows(runs, DEVICES, ""),
-        *software,
-        Row(
-            "I3",
-            f"full_integrator wins of {n} (year 20 founder value)",
-            f"{won} ({', '.join(f'{k} {v}' for k, v in sorted(wins.items()))})",
-            f"<= {MAX_WINS}",
-            won <= MAX_WINS,
-        ),
+        *_gap_rows(runs, DEVICES, "", 30),
+        _wins_row(runs, "I3", 30),
+        *[replace(r, ok=None) for r in info],
     ]
 
 
