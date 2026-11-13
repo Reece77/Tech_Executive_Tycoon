@@ -55,7 +55,7 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 | V3.ai (30.7 V3's AI arm, +3 to +10 points) | M23 | integrator_ai more than 2 points below ai_regions | +0.9 pts at year 10: an AI-models company is about $7M ARR in 2020 and its own GPU data centres save little (product manager, 2026-11-07) |
 | V5.cells (≥ 75% of run × startup category × decade-after-2020 cells with a rival launch) | M23 | more than 40% of cells empty | 77% (steady_regions), 68% (research_heavy): about 11 startups a decade over 6 categories is about 1.8 launches per category-decade, e^-1.8 ≈ 17–20% empty by chance, and long-lived startups hold the 8 places (found_rate 0.05 with 12 places fell to 63%) |
 | V5.cats (no category misses a decade in more than 2 of 10 runs) | M23 | a category-decade empty in more than 7 of 10 runs | as V5.cells |
-| I1 (formulas §43: full_integrator margin − devices_regions at year 30, +3 to +10 points) | M28 | the gap below −1.9 points (the year-30 reading minus 2) | +0.1 points in M23b (weekly 43350478720): subscriptions are 98–100% of both groups' revenue and the device line's cost of goods 8–17%, so an own fab 23–24% cheaper a chip is worth about a point; M28's supply-driven prices from 2026 change the fab's economics (product manager, 2026-11-12) |
+| I1 (formulas §43: full_integrator margin − devices_regions at year 30, +3 to +10 points) | M28 | the gap below −1.9 points (the year-30 reading minus 2) | +0.1 points in M23b (weekly 43350478720): subscriptions are 100% of both groups' 2039 revenue and cost of goods 0.2–0.3% (8–17% at year 20), so an own fab 23–24% cheaper a chip cannot move the margin; M28's supply-driven prices from 2026 change the fab's economics (product manager, 2026-11-12) |
 
 T2 (closed by M15a: wins counted over the founder-played strategies, as V1) and M10.T3 (closed: covenants re-measured as V7 with `debt.venture.covenant_burn_months` 2) left the list.
 
@@ -674,12 +674,12 @@ Tuned (`geopolitics.*` only; the brief's Decisions): `escalation.base` and `dete
 | L3 prices stay in their bands | a commodity index outside [1/3, 3]: longest run 2026–2039, at most 36 months | 28 months (polysilicon) |
 | L4 the whole chain by year 15 | full_integrator orders mine, converter, wafer plant and fab by December 2024 | printed: 1 of 10 (only the lithium mine is late; the rest is ordered 2020–2023) |
 | V6 extended | a 2039 full-integrator group turn under 1.0 s | 586–650 ms |
-| V1–V6 (§30.7) | as recorded under M15a | V1 4 strategies win over 30 seeds; V2, V4 and V6 met; V3's AI arm, V5.cells (69–72%) and V5.cats are known misses (M23) |
+| V1–V6 (§30.7) | as recorded under M15a | V1 4 strategies win over 30 seeds; V2, V4 and V6 met; V3's AI arm (+0.9 points), V5.cells (69–72%) and V5.cats are known misses (M23) |
 | §35.6 mines (M19) | as recorded | T1 median IRR 10.1%, 32% below 5%; T2 AISC $2.19/lb; T3 met; T4 5 of 10; T5 0.11; T6 yes |
 | §38.5 fabs (M21) | as recorded | 5 nm 50k $16.9–21.2B; 28 nm $4.75–5.94B; IRR 12.5–13.8% at 80% use; yield 35% → 80% within 24 months; own fab 23–24% cheaper; nothing else moves (0.00%) |
 | M16 T3, T4 (§31.9) | as recorded | identical to M16's record: T3 integrated spin-offs down on 3 of 10 (miss); T4 revenue 7 of 10 in band (seeds 1, 2, 4 above), cash 9 of 10; T5 10 of 10 |
 
 No balance key was tuned.
-- I1 is structural: subscriptions are 98–100% of both groups' revenue, and an own fab 23–24% cheaper a chip is worth about one point of margin.
+- I1 is structural: in December 2039 subscriptions are 100% of both groups' revenue and cost of goods 0.2–0.3% (compute 22%, marketing 19%), so an own fab 23–24% cheaper a chip cannot move group margin by points.
 - M21's fab capital costs and lives stay (§38.5).
 - The scripts were changed under rule 2 (the brief's Decisions 10 and 11).

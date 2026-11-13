@@ -51,8 +51,8 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         # score: minus the margin gap at year 30; known while the gap is at least -1.9 points,
         # the year-30 reading (+0.1, weekly 43350478720) minus 2 (product manager, 2026-11-12)
         worse_than=0.019,
-        reason="+0.1 pts at year 30 (M23b): chips are 8-17% of a mostly-software group's "
-        "revenue; M28's supply-driven prices from 2026 change the fab's economics",
+        reason="+0.1 pts at year 30 (M23b): cost of goods is 0.2-0.3% of a 2039 group's revenue; "
+        "M28's supply-driven prices from 2026 change the fab's economics",
     ),
 )
 

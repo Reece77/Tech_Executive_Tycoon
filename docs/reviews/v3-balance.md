@@ -35,8 +35,8 @@ No balance key was tuned. Every change was to measurement (product manager rulin
 
 | Miss | Owner | Reading | Bound | Why |
 | --- | --- | --- | --- | --- |
-| I1 (formulas §43) | M28 | +0.1 points at year 30 | −1.9 points | subscriptions are 98–100% of the group's revenue and chips a part of the device line's 8–17% cost of goods; an own fab 23–24% cheaper is worth about a point. Supply-driven prices from 2026 (M28) change the fab's economics |
-| V3.ai (§30.7) | M23 | V3AI_READING | 2 points below ai_regions | an AI-models company is about $7M ARR at year 10 |
+| I1 (formulas §43) | M28 | +0.1 points at year 30 | −1.9 points | in 2039 subscriptions are 100% of the group's revenue and cost of goods 0.2–0.3% (8–17% at year 20); an own fab 23–24% cheaper a chip cannot move group margin by points. Supply-driven prices from 2026 (M28) change the fab's economics |
+| V3.ai (§30.7) | M23 | +0.9 points at year 10 (54.1% vs 53.2%) | 2 points below ai_regions | an AI-models company is about $7M ARR at year 10 |
 | V5.cells (§30.7) | M23 | 72% (steady_regions), 69% (research_heavy) | 40% empty | long-lived startups hold rivals.startup.max_alive's places |
 | V5.cats (§30.7) | M23 | fintech 2030s empty in 6 runs; ai_models 2030s in 5 | 7 of 10 runs | as V5.cells |
 | M16 T3, T4 (§31.9) | the product manager's later ruling | T3 integrated down on 3 of 10; T4 revenue 7 of 10, cash 9 of 10 | recorded, not in `known_misses.py` | the fixture's subsidiaries take compute supply, which M23a's group supply does not touch: identical to M16 |
