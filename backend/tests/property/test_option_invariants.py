@@ -36,7 +36,11 @@ def check(state: GameState, fd: int) -> None:
         assert g.vested + g.forfeited <= g.granted
 
 
-@settings(max_examples=60, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(
+    max_examples=60,
+    deadline=None,  # M23b (rule 5): a timing deadline flaked under parallel load
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(STEPS)
 def test_holdings_sum_to_fd(loaded: LoadedData, steps: list[tuple[str, int]]) -> None:
     state = fresh_game(loaded)

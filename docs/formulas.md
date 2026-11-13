@@ -3099,7 +3099,7 @@ Reece's decision (2026-11-02): **regional blocs with export controls**. Data: do
 4. **Influence helps licences:** at influence 80 a licence is approved at least 1.2× as often as at 0.
 5. **Tariffs cost:** China-assembled devices sold in North America cost 8–20% more from 2019.
 6. **After 2025:** at least one escalation and one détente in 2026–2039 on 7–10 of 10 seeds.
-7. **Nothing else moves for a domestic software company:** a software-only company in North America and Europe plays exactly as before.
+7. **Nothing else moves for a domestic software company:** a software-only company in North America and Europe plays exactly as before: (a) its own books, snapshots and decisions (its events and products) are identical with and without M22's data; (b) every company's books are identical before October 2022. Rivals' books may differ from October 2022, when controls reach the rivals M23a put under them (PM ruling, 2026-11-11).
 
 
 ### 39.5 Implementation notes (M22)
@@ -3315,3 +3315,18 @@ The roadmap's third product risk: complexity has outgrown the experience. About 
 - **Double-click to play on Windows:** a `Tech Startup Tycoon` shortcut runs `tools/launcher.py`, which on first run checks for `uv` and installs dependencies, builds the front end if it is missing or stale, then starts the API serving the built front end on one local port and opens the browser. No PowerShell commands.
 - **Saves in the game:** the launcher opens the existing Main menu and Saves screen (M7b), which gain Continue (the last-played save), last-played dates and Back up, so nothing needs the CLI.
 - The launcher writes its log to `saves/launcher.log` and shows a plain error page if something fails (port in use, missing uv).
+
+
+## 43. v3 balance targets (M23b)
+
+Measured by `tst/balance/v3.py` (printed by `tools/v3_targets.py`, checked weekly by `tests/balance/test_v3_balance.py`) on seeds 1–10, with the v3 scripts in `tst/balance/strategies_v3.py`. A group's margin and ARR are its consolidated figures: the members' P&L summed with intercompany sales and purchases dropped (31.6); ARR is 12 × the last month's group revenue. (Numbered 43 because M29's brief took §40–§42 for v3.5.)
+
+- **I1. Vertical integration pays modestly (margin).** full_integrator's group operating margin over year 30 (the trailing 12 months to December 2039) is 3–10 points above devices_regions' (steady_regions plus the same phone and SoC on contracts, no owned chain; PM rulings, 2026-11-11 and 2026-11-12).
+- **I2. Vertical integration pays modestly (ARR).** full_integrator's ARR at December 2039 is 0.9–1.4 × devices_regions'.
+- **I3. It doesn't dominate.** full_integrator has the highest founder value at December 2039 on at most 4 of 10 seeds, among steady_regions, research_heavy, acquirer, integrator, full_integrator, mineral_baron and foundry.
+- **Year-20 readings (printed only).** I1 and I2 at year 20 (2029) against devices_regions, and against steady_regions, print for information: at year 20 a group fab built in the mid-2020s is still inside its 5-year depreciation (38.2), costing more a start than the market wafer price, so integration cannot yet pay.
+- **S1. Chains feel the lithium spike.** An unhedged phone's peak unit cost in 2021–2022 is at least 3% above 2020's (M17's reference phone).
+- **S2. The gallium ban limits output.** An unhedged chip maker's output allocation falls at least 5% after December 2024 (median of 10 seeds), not only its price.
+- **F1. Foundry demand.** The foundry script's first 28 nm fab, with foundry contracts, reaches 70%+ use within 36 months of going live on at least 7 of 10 seeds.
+- **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039.
+- **L4 (printed).** full_integrator has ordered its whole chain (mine, refinery, wafer plant, fab, devices) by December 2024 (year 15).

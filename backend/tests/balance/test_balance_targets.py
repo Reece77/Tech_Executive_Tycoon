@@ -19,6 +19,8 @@ import pytest
 from tst.balance.known_misses import KNOWN_MISSES, KnownMiss, verdict
 from tst.balance.report import RunResult, evaluate, run_all, runs_table, table
 
+V3_INTEGRATION = frozenset({"I1", "I2", "I3"})  # tst.balance.v3.integration_rows' gated targets
+
 
 @pytest.fixture(scope="module")
 def results() -> list[RunResult]:
@@ -43,9 +45,13 @@ def test_balance_targets(results: list[RunResult]) -> None:
 
 @pytest.mark.nightly
 # A milestone-prefixed miss (M10.T3) is not a row of this table: its own milestone test
-# measures it and xfails it within the same bound (tests/balance/test_m10_balance.py).
+# measures it and xfails it within the same bound (tests/balance/test_m10_balance.py). So is
+# the v3 integration target I1 (formulas 43), measured at year 30 by the weekly
+# tests/balance/test_v3_balance.py::test_v3_integration_thirty_years.
 @pytest.mark.parametrize(
-    "known", [k for k in KNOWN_MISSES if "." not in k.target], ids=lambda k: k.target
+    "known",
+    [k for k in KNOWN_MISSES if "." not in k.target and k.target not in V3_INTEGRATION],
+    ids=lambda k: k.target,
 )
 def test_known_misses(results: list[RunResult], known: KnownMiss) -> None:
     """Each recorded known miss on its own (T2 since M12a): passes if met, xfails while within

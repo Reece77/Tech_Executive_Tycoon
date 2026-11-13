@@ -45,6 +45,16 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.70,
         reason="2030s category-decades empty in up to 6 of 10 runs (M15a): as V5.cells",
     ),
+    KnownMiss(
+        target="I1",  # docs/formulas.md 43 I1: full_integrator margin - devices_regions, +3 to +10
+        owner="M28",
+        # score: minus the margin gap at year 30; known while the gap is at least -2.0 points,
+        # the year-30 reading on the combined code (-0.0, weekly 43381860624) minus 2 (product
+        # manager, 2026-11-12)
+        worse_than=0.020,
+        reason="-0.0 pts at year 30 (M23b): cost of goods is 0.2-0.3% of a 2039 group's revenue; "
+        "M28's supply-driven prices from 2026 change the fab's economics",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

@@ -4,6 +4,21 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M23b v3 balance (lane B, merged last; no balance key tuned, golden snapshots unchanged):
+  - Strategies (`tst/balance/strategies_v3.py`):
+    - `full_integrator`: mines, a lithium converter, a wafer plant and a 28 nm fab under a device and SoC line, supplied at transfer price; its fab replaces the TSMC contract and sells spare starts on foundry contracts.
+    - `mineral_baron`: exploration and mining, selling to market.
+    - `foundry`: a pure-play 28 nm fab on foundry contracts.
+    - `devices_regions`: the same devices with no owned chain, the integration baseline.
+  - Group measurement: the group P&L with intercompany sales eliminated; group ARR is 12 × the last month's revenue.
+  - The v3 targets (formulas §43; `tst/balance/v3.py`, `tools/v3_targets.py`):
+    - I1–I3 at year 30 against devices_regions, with year 20 and steady_regions printed (product manager rulings, 2026-11-11 and 2026-11-12).
+    - S1–S2 shocks, F1 foundry demand, L1–L4 across 30 years.
+  - Weekly jobs: `weekly-v3-shocks`, `weekly-v3-integration`, `weekly-v3-long` and `weekly-v6-integrator`.
+  - Known miss I1 (owner M28, bound −2.0 points). Results under "v3 final" in `docs/balance-targets.md`; summary in `docs/reviews/v3-balance.md`.
+  - M22 target 7 compares the software company's own books, snapshots and decisions, and every company's books before October 2022 (formulas §39.4).
+  - `test_a_fab_keeps_its_books` draws only regions the export controls allow; the refusal of a 16 nm fab in China in 2023 has its own test.
+  - `test_holdings_sum_to_fd` runs without a Hypothesis deadline.
 - M23r Codex review 6 fixes (a fix lane beside M23b and M29; no migration, golden snapshots unchanged):
   - The seven findings fixed, each with a regression test seen failing first (Resolution in `docs/reviews/codex-review-6.md`).
   - A deposit's depletion and capitalised spend live on its project (`Project.depleted_mt`, `capitalized_cents`), so repeated rebuilds deplete it once.

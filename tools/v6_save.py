@@ -1,5 +1,6 @@
 """Build the V6 save (docs/formulas.md 30.7 V6, M15a; a fixture tool, never used by the game):
-research_heavy played through the normal save path (every action and month goes through
+research_heavy (or, M23b's V6 extended, `--strategy full_integrator`) played through the normal
+save path (every action and month goes through
 `repository`, as tools/quickstart_saves.py) from January 2010 for `--turns` months (360: to
 December 2039) on `--seed`. The scripts' energy top-ups edit the state between actions;
 they are written to the save before the next action. An existing save of the name is replaced.
@@ -19,12 +20,13 @@ BACKEND = Path(__file__).resolve().parent.parent / "backend"
 STRATEGY = "research_heavy"
 
 
-def build(save_dir: Path, name: str, turns: int, seed: int) -> Path:
+def build(save_dir: Path, name: str, turns: int, seed: int, strategy: str = STRATEGY) -> Path:
     os.environ.setdefault("TST_LLM_ADAPTER", "mock")
     sys.path.insert(0, str(BACKEND))
     from tst.balance.game import PLAYER, Game
     from tst.balance.report import SCENARIO
     from tst.balance.strategies_v2 import STRATEGIES
+    from tst.balance.strategies_v3 import V3
     from tst.db import repository
     from tst.db.state_io import sync_state
     from tst.llm.offline import MockLLMAdapter
@@ -64,6 +66,7 @@ def build(save_dir: Path, name: str, turns: int, seed: int) -> Path:
             self._write_edits()
             result = repository.run_turn(self.path, data, adapter=MockLLMAdapter())
             self.snapshots.append(result.snapshot.for_company(PLAYER))
+            self.last_product_months = result.product_months  # M23b: the v3 scripts read it
             self._reload()
 
         def _reload(self) -> None:
@@ -85,7 +88,7 @@ def build(save_dir: Path, name: str, turns: int, seed: int) -> Path:
     Game.__init__(game, data, state, balances)
     game.path = path
     game.written = state
-    script = STRATEGIES[STRATEGY]
+    script = {**STRATEGIES, **V3}[strategy]
     started = time.perf_counter()
     for _ in range(turns):
         if game.state.ended:
@@ -107,9 +110,10 @@ def main() -> int:
     parser.add_argument("name")
     parser.add_argument("--turns", type=int, default=360)
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--strategy", default=STRATEGY, help="M23b: V6 extended")
     args = parser.parse_args()
     args.save_dir.mkdir(parents=True, exist_ok=True)
-    print(build(args.save_dir.resolve(), args.name, args.turns, args.seed))
+    print(build(args.save_dir.resolve(), args.name, args.turns, args.seed, args.strategy))
     return 0
 
 
