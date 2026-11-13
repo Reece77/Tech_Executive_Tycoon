@@ -143,6 +143,7 @@ Data
 - Never expose hidden true values (potential, hidden traits, true deposit grade) through the API or in an LLM prompt. The API returns only revealed ranges for the viewing company.
 - Never call the Anthropic API in tests; use `MockLLMAdapter`.
 - Never commit secrets. `ANTHROPIC_API_KEY` comes from `.env` (git-ignored).
+- Never commit under Reece's identity: before your first commit, set `git config user.name "Claude"` and `git config user.email noreply@anthropic.com` in the repository (GitHub refuses pushes that expose his private email).
 - Never edit an applied migration or delete golden snapshots to make tests pass.
 - Never weaken a test to make it pass. If a test is wrong, say so and explain why.
 - Never use floats for money, wall-clock time in the sim, or unseeded randomness.
