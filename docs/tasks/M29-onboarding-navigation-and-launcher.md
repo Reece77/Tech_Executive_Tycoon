@@ -61,6 +61,7 @@ Pull `main` in GitHub Desktop, then double-click **Tech Startup Tycoon** in the 
     | `tests/balance/test_m22_balance.py::test_39_4_targets` (target 7) | fail | fail |
 
     M29 touches neither geopolitics nor balance. The fix belongs to lane B's M23b (running), which owns balance; nothing was added to `known_misses.py`. Turn-time budgets alone (`-m timing`): 6 passed, 1 skipped.
+15. **M9's e2e flow (c) and Continue's 409 (§9 rule 5).** PR #48's e2e run on `9c33218` refused flow (c)'s Continue with 409. The trace's body was `save_busy`: the advance went out 82 ms after the Bangalore search's POST started and while that 178 ms write still held the save (a second writer is refused at once, M6 sub-task 0). The flow pressed Continue without waiting for the search to save. It now waits for that POST's response, as M1c's flows already wait for the new search row. M29's unlock check adds about 0.4 ms to a write (measured on this save), so it did not cause the race. The `KeyError: 3` in the server log is a separate bug: `event_links` looks up a person who has left (M7c's former-employee flow). It appears 4 times in `main`'s green e2e run too, so it is listed under Follow-ups. `tests/integration/test_m9_continue.py` plays Continue on the M9 save after a Bangalore search under both Interruptions settings, and checks that a Continue during a write is refused as busy and retryable, then plays once the write finishes.
 
 ## Acceptance criteria (how each was verified)
 
@@ -71,6 +72,8 @@ Pull `main` in GitHub Desktop, then double-click **Tech Startup Tycoon** in the 
 - `make check` and CI `e2e`: see the pull request.
 
 ## Follow-ups
+
+- `tst/api/event_links.py:92` raises `KeyError` when an event names a person who has left (`state.person`): `GET /events` returns 500 on such a save (M7c's former-employee flow; on `main` too). Skip people no longer in the state, or link them to their former-employee profile.
 
 1. Reece's manual check of the shortcut on a fresh clone (the brief's Manual check).
 2. Continue until (M15b) could honour Interruptions too (it stops for a major event as before).
