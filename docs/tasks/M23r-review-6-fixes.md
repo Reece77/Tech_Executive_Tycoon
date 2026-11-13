@@ -25,15 +25,33 @@
 
 ## Acceptance criteria
 
-- [ ] Each of the seven findings has a regression test that fails on `m23a-done` and passes on this branch.
-- [ ] No mutation succeeds through the API while a critical event is open, except the allowed list (HTTP tests).
-- [ ] No float in any money path the findings name (test; a grep check in CI if one fits the existing lint).
-- [ ] `make check` and CI `e2e` green; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m23r-done`.
+- [x] Each of the seven findings has a regression test that fails on `m23a-done` and passes on this branch.
+- [x] No mutation succeeds through the API while a critical event is open, except the allowed list (HTTP tests).
+- [x] No float in any money path the findings name (test; a grep check in CI if one fits the existing lint).
+- [x] `make check` and CI `e2e` green; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m23r-done`.
 
 ## Decisions made
 
-(filled in by the agent)
+1. **Depletion lives on the project** (sub-task 1). `Project.depleted_mt` and `Project.capitalized_cents` hold the deposit's cumulative history, updated when a mine closes and when one is built. An older save without them falls back to the closed mines' totals (`max` of the two), so nothing double-counts. Stored in the project's existing JSON record, so there is no migration.
+2. **Staffing with another group company's team moves the team** (sub-task 2; extends M23a decision 1, "a facility's crew moves with it"). When the founder staffs a group facility with a unit of another group company, that unit and its active people move to the facility's owner, so the owner pays the crew it counts (`group.assets.crew_to`). Without this, a fab a subsidiary built could never be staffed: subsidiaries have no hiring screen.
+3. **A fab's process level stays its owner's research** (sub-task 2). Upgrading a subsidiary's fab needs that company's process research, as before. The test gives the subsidiary its own research lead. Group-wide process research is a follow-up.
+4. **Read only whenever a critical event is open** (sub-task 4). The server cannot know whether the player set the event aside, so it refuses every game action while any critical event is open, except `choose_event` on one of those events. Writes that are not game actions stay allowed: inbox marks, Explain and the COO's ask, previews, settings (including M29's onboarding and unlock marks), saves and backups. The error is `ReadOnlyError`, a subclass of `CriticalEventOpenError` with code `read_only`, so the existing 409 mapping covers it. The check sits in `repository.run_action`, the one door every API action uses. Holiday already refused a critical event. Two existing tests acted with a critical event open, as the browser had stopped a player from doing: the golden harness now answers critical events at the start of each month as well as before Continue (all golden snapshots unchanged), and `test_api_screens.py::test_people_fields_and_fire` answers "Payroll is at risk" before firing (every assertion unchanged).
+5. **Foundry prices are integer millicents** (sub-task 5). `FoundryContract.price_millicents: int` replaces `price_cents: float`. A legacy record's `price_cents` converts on load (`geopolitics_io._upgraded`), so no migration. Contracted revenue is a `Fraction` added to the exact spot revenue and rounded once (half-even) in `settle_fabs`. Golden snapshots unchanged.
+6. **The planner reads the completed month** (sub-task 6). Own supply counts lots with `turn == state.turn - 1` (the month the demand comes from, ADR-0014 §2) sold to the plan's company by any company in the player's group.
+7. **"No float" is a unit test, not a CI grep.** No existing lint rule fits a type check on named fields, so `test_no_float_in_the_foundry_money_path` asserts the contract's money fields are `int` and the delivered revenue is a `Fraction`.
+8. **Failures that also fail on a clean `main` (rule 3).** Run on this machine at `main` 24bad29 and on this branch:
+
+   | Test | `main` | branch |
+   | --- | --- | --- |
+   | `test_m22_balance.py::test_39_4_targets` (target 7, `m22.target_7()`) | False | False |
+   | `test_option_invariants.py::test_holdings_sum_to_fd` (Hypothesis deadline) | fails | fails |
+   | `make check-timing` | 3 of 6 over budget (mna integrate, org, product) | 3 of 6 over budget (hiring, mna integrate, product) |
+
+   Target 7 is nightly and belongs to M23b's balance lane (`tst/balance/`, which this lane must not edit). The turn-time budgets miss by a similar margin on both, with a different set each run: this machine (the repo is on OneDrive) is slower than CI, where `check` was green on `main`. CI's `check` on this branch is the measure.
+9. **Every finding has a test that fails on `m23a-done`.** 10 of the 12 new tests fail there. The two that pass are guards: the allowlist agreement test, and the mixed contracted and spot reference, where float happens to give the right cent (the half-cent test is finding 5's failing one).
 
 ## Follow-ups
 
-(filled in by the agent)
+- Group-wide process research: let a subsidiary's fab use the parent's process level, or share research across the group (decision 3).
+- M22 target 7 misses on `main` too (decision 8): M23b or the next balance pass should find what M22's data changes in a software-only run.
+- The front end could show the server's `read_only` 409 as the set-aside banner, not as an error toast, if a click slips through the client's allowlist.
