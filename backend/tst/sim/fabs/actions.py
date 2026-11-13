@@ -32,7 +32,7 @@ from tst.sim.fabs.plants import FAB_KIND, fab_name, node_label
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
-from tst.sim.group.assets import check_country, inbox_company, place
+from tst.sim.group.assets import check_country, inbox_company, managed_facility, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.money import times
@@ -338,7 +338,9 @@ def upgrade_fab(
     data: GameData,
     balances: LedgerBalances,
 ) -> Outcome:
-    company = acting_company(state, action.actor_id)
+    # M23r (finding 2): the founder converts any group fab; its owner pays
+    own = acting_company(state, action.actor_id)
+    company = managed_facility(state, action.actor_id, action.facility_id, own).company_id
     uq = upgrade_quote(state, company, action.facility_id, balance, data)
     if not uq.allowed or uq.new is None:
         raise FabRuleError(uq.reason or "this fab cannot convert")
@@ -365,7 +367,7 @@ def upgrade_fab(
     state = with_fab(state, fab)
     log = inbox_item(
         state.turn,
-        company,
+        inbox_company(state, company),
         "fab_upgrade_ordered",
         link_kind="fab",
         link_id=action.facility_id,

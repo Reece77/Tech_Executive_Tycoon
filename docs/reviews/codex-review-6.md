@@ -129,3 +129,15 @@ No P1. All seven findings go to **M23r** (`docs/tasks/M23r-review-6-fixes.md`), 
 | 5 | P2 | Foundry-contract revenue uses floating-point money | M23r sub-task 5 |
 | 6 | P2 | Commodity planning drops completed own supply (turn mismatch) | M23r sub-task 6 |
 | 7 | P3 | Mine NPV Explain shows log capex as dollars | M23r sub-task 7 |
+
+### Fixed in M23r (2026-11-13)
+
+Each regression test was written first and seen failing before its fix. Against `m23a-done`, 10 of the 12 new tests fail, at least one per finding. The two that pass there are guards: `test_the_front_ends_read_only_allowlist_follows_the_servers` (the client and server lists agree) and `test_mixed_contracted_and_spot_revenue_matches_a_rational_reference` (float happens to match on that case; the half-cent test is finding 5's failing one).
+
+1. **Fixed.** A project keeps its own cumulative depletion and capitalised spend (`Project.depleted_mt`, `Project.capitalized_cents`; older saves fall back to their closed mines' totals). Test: `tests/unit/test_m23r_review6.py::test_repeated_rebuilds_deplete_the_deposit_once` (three lifetimes, a reload between rebuilds; also `test_a_subsidiarys_mine_counts_the_crew_the_founder_gives_it`).
+2. **Fixed.** The Fabs view lists every fab in the player's group with its owning company. The founder staffs, upgrades and sells any group fab, mine or refinery, and its owner pays or is paid (`group.assets.managed_facility`, `staff_unit`). Tests: `tests/integration/test_api_m23r.py::test_a_subsidiarys_fabs_are_visible_and_managed` and `tests/unit/test_m23r_review6.py::test_the_founder_staffs_and_sells_a_subsidiarys_refinery`.
+3. **Fixed.** `move_facility` gives a fab's foundry contracts to its new owner. Test: `tests/unit/test_m23r_review6.py::test_a_transferred_fabs_foundry_contracts_are_its_new_owners` (deliveries, revenue and termination fee before and after, minority holders, a cold reload).
+4. **Fixed.** `repository.run_action` refuses every action while a critical event is open, except `choose_event` on it (`ReadOnlyError`, code `read_only`, HTTP 409). Tests: `tests/integration/test_api_m23r.py::test_a_critical_event_makes_every_action_read_only_through_the_api` and `test_the_front_ends_read_only_allowlist_follows_the_servers`.
+5. **Fixed.** A foundry contract's price is integer millicents (`FoundryContract.price_millicents`; a legacy `price_cents` converts on load). Revenue is an exact `Fraction` through `settle_fabs`, rounded half-even once. Tests: `tests/unit/test_m23r_review6.py::test_a_half_cent_of_contracted_revenue_rounds_half_even_once`, `test_mixed_contracted_and_spot_revenue_matches_a_rational_reference` and `test_no_float_in_the_foundry_money_path`.
+6. **Fixed.** The planner counts the completed month's lots (`turn - 1`) sold to the plan's company by any group seller. Test: `tests/integration/test_api_m23r.py::test_the_planner_counts_a_group_refinerys_supply_after_continue`.
+7. **Fixed.** Explain's capex is `round(exp(capex_center) × 100)` cents, Exploration's public midpoint. Test: `tests/integration/test_api_m23r.py::test_explains_capex_estimate_is_explorations_public_midpoint`.

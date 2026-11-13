@@ -13,11 +13,16 @@ before spot slots: the designer takes what the fab delivers (their demand is abs
 contract price to 4420 foundry sales. A live fab short of starts delivers less, and owes nothing;
 contracts.foundry.take_or_pay is what the designer would owe on starts it did not take, so it
 prices the owner's early termination (contracts.termination).
+
+The price is exact integer millicents a start, and the month's revenue (contracted and spot) is
+summed as exact rationals and rounded half to even once, at posting (ADR-0003; M23r, Codex review
+6 finding 5).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final, Literal
 
 from tst.sim.actions.hiring import Outcome, spend_energy
@@ -29,7 +34,7 @@ from tst.sim.errors import FabRuleError
 from tst.sim.fabs import market as fm
 from tst.sim.fabs.models import Fab
 from tst.sim.log import inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import MILLICENTS_PER_CENT, exact, format_money, to_millicents
 from tst.sim.state import GameState, with_foundry_contract
 
 EPS: Final = 1e-9  # tunable-exempt: float tolerance on starts
@@ -112,7 +117,7 @@ def sign(
         company_id=facility.company_id,
         customer=action.customer,
         monthly_starts=action.monthly_starts,
-        price_cents=action.price_cents,
+        price_millicents=to_millicents(action.price_cents),
         signed_turn=state.turn,
         end_turn=state.turn + action.months - 1,
     )
@@ -128,7 +133,7 @@ def sign(
         customer=action.customer,
         starts=f"{action.monthly_starts:,.0f}",
         fab=fab_name(state, fab, balance, data),
-        price=format_money(round(action.price_cents)),
+        price=format_money(round(Fraction(contract.price_millicents, MILLICENTS_PER_CENT))),
         end=format_turn(contract.end_turn),
     )
     return Outcome(state, (), (log,))
@@ -136,16 +141,16 @@ def sign(
 
 def deliver(
     state: GameState, fab: Fab, spare: float
-) -> tuple[GameState, float, float, tuple[tuple[str, float], ...]]:
+) -> tuple[GameState, float, Fraction, tuple[tuple[str, float], ...]]:
     """The month's contracted starts out of `spare` (module docstring): (state, starts
-    delivered, revenue cents, (customer, starts) rows)."""
+    delivered, exact revenue cents, (customer, starts) rows)."""
     left = spare
-    revenue = 0.0
+    revenue = Fraction(0)
     rows: list[tuple[str, float]] = []
     for c in sorted(running(state, fab.facility_id), key=lambda x: x.id):
         got = min(left, c.monthly_starts)
         left -= got
-        revenue += got * c.price_cents
+        revenue += exact(got) * Fraction(c.price_millicents, MILLICENTS_PER_CENT)
         if got > EPS:
             rows.append((c.customer, got))
         state = with_foundry_contract(state, replace(c, delivered=got))

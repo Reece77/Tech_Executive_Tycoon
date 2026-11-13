@@ -202,7 +202,7 @@ def _terms(
         f.company_id,
         f.customer,
         f.end_turn,
-        share * exact(f.monthly_starts) * exact(f.price_cents),
+        share * exact(f.monthly_starts) * Fraction(f.price_millicents, MILLICENTS_PER_CENT),
         0,
     )
 

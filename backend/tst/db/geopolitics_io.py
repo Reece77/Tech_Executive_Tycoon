@@ -25,6 +25,7 @@ from tst.sim.geopolitics.models import (
     TensionMonth,
     Variant,
 )
+from tst.sim.money import to_millicents
 from tst.sim.state import GameState
 
 COLLECTIONS: Final[dict[str, type]] = {
@@ -45,6 +46,15 @@ COLLECTIONS: Final[dict[str, type]] = {
 STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + position
 
 
+def _upgraded(kind: str, data: dict[str, Any]) -> dict[str, Any]:
+    """A record from an older save in today's shape: an M23a foundry contract's float
+    `price_cents` becomes exact integer `price_millicents` (M23r, Codex review 6 finding 5)."""
+    if kind == "foundry_contracts" and "price_millicents" not in data and "price_cents" in data:
+        rest = {k: v for k, v in data.items() if k != "price_cents"}
+        return {**rest, "price_millicents": to_millicents(data["price_cents"])}
+    return data
+
+
 def load_geopolitics(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
@@ -55,7 +65,7 @@ def load_geopolitics(
     for row in session.scalars(select(GeoRecordRow).order_by(GeoRecordRow.n)):
         cls = COLLECTIONS.get(row.kind)
         if cls is not None:
-            found[row.kind].append(from_data(cls, row.data))
+            found[row.kind].append(from_data(cls, _upgraded(row.kind, row.data)))
     for kind, items in found.items():
         state = replace(state, **{kind: tuple(items)})  # type: ignore[arg-type]
     return state

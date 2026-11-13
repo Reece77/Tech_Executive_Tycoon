@@ -5,6 +5,7 @@ hidden overrun, grade or yield."""
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Final
 
 from tst.advisor.model import Driver, Explanation, Item, MetricDef, Point
@@ -77,7 +78,10 @@ def mine_npv(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
         Item("NPV if every range lands at its best end", float(project.npv_hi_cents or 0), "cents"),
     ]
     if project.capex_center is not None:
-        items.append(Item("Capex estimate (mid)", float(project.capex_center) * CENTS, "cents"))
+        # M23r (Codex review 6 finding 7): the estimate is log dollars; Exploration's public
+        # midpoint is exp(centre) dollars, here in whole cents
+        mid = round(math.exp(project.capex_center) * CENTS)
+        items.append(Item("Capex estimate (mid)", float(mid), "cents"))
     level = (project.level or "").replace("_", "-")
     note = (
         f"The {level} study's NPV: each year's cash from the estimated tonnage, grade and "
