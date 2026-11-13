@@ -9,13 +9,13 @@ from dataclasses import dataclass, replace
 from typing import Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
-from tst.sim.actions.org import active_unit
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
-from tst.sim.errors import FacilityRuleError, InsufficientCashError, UnknownFacilityError
+from tst.sim.errors import FacilityRuleError, InsufficientCashError
 from tst.sim.facilities import compute, goods, lifecycle
 from tst.sim.facilities import formulas as ff
-from tst.sim.facilities.models import Facility, SupplyContract
+from tst.sim.facilities.models import SupplyContract
+from tst.sim.group.assets import crew_to, inbox_company, managed_facility, staff_unit
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.products.formulas import held_feature_points
@@ -73,13 +73,6 @@ class SellCapacity:
 
 
 type FacilityAction = BuildFacility | SellFacility | StaffFacility | SignContract | SellCapacity
-
-
-def own_facility(state: GameState, company_id: int, facility_id: int) -> Facility:
-    facility = state.facility(facility_id)
-    if facility is None or facility.company_id != company_id or facility.status == "closed":
-        raise UnknownFacilityError(f"no facility {facility_id}")
-    return facility
 
 
 def build_facility(
@@ -156,7 +149,8 @@ def sell_facility(
 ) -> Outcome:
     """Immediate, energy 12: sell for half its book value (22.2)."""
     company = acting_company(state, action.actor_id)
-    facility = own_facility(state, company, action.facility_id)
+    # M23r (finding 2): the founder sells any group facility; the proceeds are its owner's
+    facility = managed_facility(state, action.actor_id, action.facility_id, company)
     if balance.facility.kinds[facility.kind].module == "mining":  # M21: a fab sells here
         raise FacilityRuleError("close or sell a mine from the Mines screen")
     state = spend_energy(
@@ -166,7 +160,7 @@ def sell_facility(
     state, entry, proceeds = lifecycle.sell(state, facility, balance, data)
     log = inbox_item(
         state.turn,
-        company,
+        inbox_company(state, company),
         "facility_sold",
         facility=lifecycle.facility_name(facility, balance, data),
         proceeds_cents=proceeds,
@@ -179,20 +173,28 @@ def staff_facility(state: GameState, action: StaffFacility, balance: Balance) ->
     """Immediate, energy 2: the unit whose infrastructure people staff it (22.2). A unit
     staffs at most one facility."""
     company = acting_company(state, action.actor_id)
-    facility = own_facility(state, company, action.facility_id)
+    # M23r (finding 2): the founder staffs any group facility. A unit of another group company
+    # moves to the facility's owner with its people, so the owner pays the crew it counts.
+    facility = managed_facility(state, action.actor_id, action.facility_id, company)
     if action.unit_id is not None:
-        active_unit(state, company, action.unit_id)
+        unit = staff_unit(state, action.actor_id, action.unit_id, company)
         other = next(
-            (f for f in state.company_facilities(company) if f.unit_id == action.unit_id),
+            (
+                f
+                for f in state.company_facilities(unit.company_id)
+                if f.unit_id == action.unit_id and f.status != "closed"
+            ),
             None,
         )
         if other is not None and other.id != facility.id:
-            raise FacilityRuleError("that unit already staffs another data centre")
+            raise FacilityRuleError("that unit already staffs another facility")
     if facility.unit_id == action.unit_id:
         raise FacilityRuleError("that unit already staffs it")
     state = spend_energy(
         state, action.actor_id, "staff_facility", balance, cost=balance.facility.assign_energy
     )
+    if action.unit_id is not None:
+        state = crew_to(state, action.unit_id, facility.company_id)
     return Outcome(with_facility(state, replace(facility, unit_id=action.unit_id)))
 
 

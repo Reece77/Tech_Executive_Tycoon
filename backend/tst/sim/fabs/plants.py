@@ -20,6 +20,7 @@ A fab at 7 nm by DUV runs at fab.duv's yield and cost multipliers.
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.calendar import format_turn
@@ -363,7 +364,7 @@ def settle_fabs(
         take = 1.0 if short else fb.slot.take * quality * month.reliability / PERCENT
         market = fm.node_price_cents(state, fab.node, balance, data)
         slot = market * fb.slot.discount
-        contracted, contract_revenue = 0.0, 0.0
+        contracted, contract_revenue = 0.0, Fraction(0)
         signed: tuple[tuple[str, float], ...] = ()
         if live and state.foundry_contracts:  # M23a: foundry contracts first, then spot slots
             from tst.sim.fabs import foundry  # local: foundry imports the actions
@@ -371,7 +372,8 @@ def settle_fabs(
             state, contracted, contract_revenue, signed = foundry.deliver(state, fab, spare)
         spot = (spare - contracted) * take if live else 0.0
         sold = contracted + spot
-        revenue = round(contract_revenue + spot * slot)
+        # M23r (Codex review 6 finding 5): exact through the sum, rounded half to even once
+        revenue = round(contract_revenue + exact(spot) * exact(slot))
         run = own + sold
         fixed = fixed_cents(fab, facility, balance)
         materials = round(run * materials_cents(state, fab, balance, data))

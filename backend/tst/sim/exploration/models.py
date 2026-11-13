@@ -155,6 +155,9 @@ class Project:
     sold_to: str | None = None
     sale_cents: int = 0
     ended_turn: int | None = None
+    # the deposit across its mines' lifetimes (35.2-35.3; M23r, Codex review 6 finding 1)
+    depleted_mt: float = 0.0  # ore its closed mines took, cumulative: a rebuild starts here
+    capitalized_cents: int = 0  # its spend already moved to 1520 with a mine (once)
 
     @property
     def is_open(self) -> bool:

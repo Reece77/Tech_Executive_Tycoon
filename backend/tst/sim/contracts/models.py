@@ -23,7 +23,8 @@ class Relation:
 @dataclass(frozen=True, slots=True)
 class FoundryContract:
     """A fab's owner sells `monthly_starts` wafer starts a month to a rival chip designer at
-    `price_cents` a start from `signed_turn` to `end_turn` (38.2 with M23a): the starts come out
+    `price_millicents` a start (exact thousandths of a cent; M23r, Codex review 6 finding 5) from
+    `signed_turn` to `end_turn` (38.2 with M23a): the starts come out
     of the fab's spare starts before spot slots; the buyer takes what the fab delivers, and pays
     contracts.foundry.take_or_pay of the contracted starts' value on any it does not take."""
 
@@ -32,7 +33,7 @@ class FoundryContract:
     company_id: int  # the fab's owner
     customer: str  # a rival chip designer's name
     monthly_starts: float
-    price_cents: float  # a start
+    price_millicents: int  # a start, in thousandths of a cent
     signed_turn: int
     end_turn: int  # the last month it covers
     delivered: float = 0.0  # last month's starts

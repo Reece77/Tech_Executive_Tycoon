@@ -1938,3 +1938,12 @@ A company's commodity contract or offtake agreement (formulas.md 33.3). Prepayme
 - `company` sites (`geo_record` `sites`) now also record a country chosen when founding a subsidiary or ordering a fab or refinery.
 
 Accounts: none new (termination fees post to `6900_general_admin`; border tariffs on intra-group chips to `5100_tariffs`). Balance keys `contracts.*`, `geopolitics.rivals_controlled`. Data: `export_controls.yaml` `rival_variants`, `entrants.yaml` `region` and `quality` (Huawei Ascend), `countries.yaml` rivals' `Huawei Ascend: china`.
+
+## M23r: Codex review 6 fixes (no migration)
+
+No new table or column; `save_meta.schema_version` stays 48. Changed fields inside existing JSON `data` columns:
+
+- `exploration_project.data.depleted_mt`: ore the project's closed mines took from the deposit, cumulative (a rebuilt mine starts here); `exploration_project.data.capitalized_cents`: the project's spend already moved to 1520 with its mines (capitalized once). Both absent in older saves (0): a rebuild there reads the latest closed mine's cumulative `ore_mined_mt` and the sum of the closed mines' `moved_cents`.
+- `geo_record` `foundry_contracts`: `price_millicents` (integer thousandths of a cent a start) replaces M23a's float `price_cents`; an older save's `price_cents` is converted on load (half to even).
+
+A facility transfer (`group.assets.move_facility`) now also moves the fab's foundry contracts (`company_id`), and staffing a group facility with another group company's unit moves that unit and its active people to the facility's owner (`org_unit.company_id`, `employment.company_id`).

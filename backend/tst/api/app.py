@@ -72,6 +72,7 @@ ERROR_STATUS: dict[type[SimError], int] = {
     GameOverError: status.HTTP_409_CONFLICT,  # ADR-0018
     SaveBusyError: status.HTTP_409_CONFLICT,  # M6 sub-task 0
     CriticalEventOpenError: status.HTTP_409_CONFLICT,  # M6: answer it first (ADR-0006)
+    # (its subclass ReadOnlyError, M23r: every action is refused while a critical event is open)
     EventsOpenError: status.HTTP_409_CONFLICT,  # M10b: answer major events first (23.1)
     EventError: status.HTTP_409_CONFLICT,
     UpgradeNeededError: status.HTTP_409_CONFLICT,

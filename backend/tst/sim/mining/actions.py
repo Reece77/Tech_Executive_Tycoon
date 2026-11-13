@@ -25,7 +25,7 @@ from tst.sim.exploration import pipeline as xp
 from tst.sim.exploration.geology import block_of
 from tst.sim.exploration.models import Project
 from tst.sim.facilities.models import Facility
-from tst.sim.group.assets import check_country, move_facility, place
+from tst.sim.group.assets import check_country, crew_to, move_facility, place
 from tst.sim.group.models import Ownership
 from tst.sim.ledger import (
     ACCUMULATED_DEPRECIATION,
@@ -522,6 +522,17 @@ def earlier_mines(state: GameState, project_id: int) -> list[Mine]:
     return [m for m in state.mines if m.project_id == project_id and m.status == "closed"]
 
 
+def deposit_history(state: GameState, project: Project) -> tuple[float, int]:
+    """(ore its closed mines took, spend already capitalized): the project's own record. A mine's
+    `ore_mined_mt` is the deposit's cumulative extraction, so for a save from before M23r (no
+    record on the project) the latest closed mine's counter is the deposit's, never their sum;
+    each mine's `moved_cents` is its own, so their sum is what was capitalized."""
+    earlier = earlier_mines(state, project.id)
+    mined = max([project.depleted_mt, *(m.ore_mined_mt for m in earlier)])
+    capitalized = max(project.capitalized_cents, sum(m.moved_cents for m in earlier))
+    return mined, capitalized
+
+
 def build_mine(
     state: GameState,
     action: BuildMine,
@@ -556,12 +567,13 @@ def build_mine(
     c = data.geology.commodity(project.commodity)
     assert project.est_grade_center is not None and project.recovery_center is not None
     ready = turn + months
-    # M23a (Codex review 5 finding 2): depletion and capitalized exploration are the deposit's
-    # across mine lifetimes. A mine rebuilt after a chosen closure starts where the last one
-    # stopped and capitalizes only the project's spend not yet moved to 1520.
-    earlier = earlier_mines(state, project.id)
-    mined = sum(m.ore_mined_mt for m in earlier)
-    moved = max(0, project.spent_cents - sum(m.moved_cents for m in earlier))
+    # M23a (Codex review 5 finding 2), M23r (review 6 finding 1): depletion and capitalized
+    # exploration are the deposit's, kept on the project across mine lifetimes. A mine rebuilt
+    # after a chosen closure starts where the last one stopped and capitalizes only the
+    # project's spend not yet moved to 1520.
+    mined, capitalized = deposit_history(state, project)
+    moved = max(0, project.spent_cents - capitalized)
+    state = xp.with_project(state, replace(project, capitalized_cents=capitalized + moved))
     mine = Mine(
         id=fid,
         company_id=company,
@@ -663,6 +675,8 @@ def staff_mine(state: GameState, action: StaffMine, balance: Balance) -> Outcome
     state = spend_energy(
         state, action.actor_id, action.kind, balance, cost=balance.facility.assign_energy
     )
+    if action.unit_id is not None:  # M23r (finding 2): the mine's owner pays the crew it counts
+        state = crew_to(state, action.unit_id, mine.company_id)
     return Outcome(with_facility(state, replace(facility, unit_id=action.unit_id)))
 
 
@@ -794,6 +808,10 @@ def closed(state: GameState, mine: Mine, reason: str) -> GameState:
         accident_turn=None,
     )
     state = with_mine(state, mine)
+    project = next((p for p in state.projects if p.id == mine.project_id), None)
+    if project is not None:  # M23r: the deposit keeps its depletion for a rebuild
+        depleted = max(project.depleted_mt, mine.ore_mined_mt)
+        state = xp.with_project(state, replace(project, depleted_mt=depleted))
     facility = state.facility(mine.id)
     if facility is not None:
         state = with_facility(

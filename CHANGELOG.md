@@ -19,6 +19,15 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
   - M22 target 7 compares the software company's own books, snapshots and decisions, and every company's books before October 2022 (formulas §39.4).
   - `test_a_fab_keeps_its_books` draws only regions the export controls allow; the refusal of a 16 nm fab in China in 2023 has its own test.
   - `test_holdings_sum_to_fd` runs without a Hypothesis deadline.
+- M23r Codex review 6 fixes (a fix lane beside M23b and M29; no migration, golden snapshots unchanged):
+  - The seven findings fixed, each with a regression test seen failing first (Resolution in `docs/reviews/codex-review-6.md`).
+  - A deposit's depletion and capitalised spend live on its project (`Project.depleted_mt`, `capitalized_cents`), so repeated rebuilds deplete it once.
+  - Every group fab is on the Fabs view with its owner. The founder staffs, upgrades and sells any group fab, mine or refinery, and the owner pays and is paid. A team staffing another group company's facility moves to that company.
+  - A transferred fab's foundry contracts move to its new owner.
+  - The server is read only while a critical event is open: every action except answering it gets 409 `read_only` (reverses M23c decision 2). The golden harness and the People screen test now answer the event before acting.
+  - Foundry-contract prices are integer millicents and revenue is exact until it posts, rounded half-even once.
+  - The commodity planner counts the completed month's supply from group facilities; Explain's mine capex is Exploration's public midpoint.
+
 - M29 Onboarding, navigation and the launcher (v3.5 lane C; formulas.md §42; no rule changed, golden snapshots unchanged, no migration):
   - Double-click to play on Windows: `Tech Startup Tycoon.cmd` runs `tools/launcher.py` (uv sync, builds `frontend/dist` when missing or stale, serves it from the API on one port via `TST_FRONTEND_DIR`, opens the browser, logs to `saves/launcher.log`, a plain error page for a missing uv or Node.js, a busy port or a failed step); `Make desktop shortcut.cmd`. The Main menu's Continue (the save played last) and the Saves screen's Back up now (`POST /saves/{id}/backups`, kind `manual`, never pruned).
   - Progressive unlocking: `tst.sim.unlocks` (pure, read-only) gives each screen a condition (its stage, or the first fact that makes it relevant); locked screens are hidden from the side bar; an `unlock` inbox item (written in the turn's or action's transaction) and a toast say what opened and why, linking a guide page per system (`/game/<save>/guide/<key>`). Settings → Show everything. A save from before M29 shows what it already uses, without items. "Explore for minerals" on Markets → Commodities opens Exploration early. API `GET /unlocks`, `POST /unlocks/{key}/open`.

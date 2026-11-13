@@ -33,6 +33,7 @@ from tst.sim.fabs.models import Fab, FabMonth
 from tst.sim.fabs.plants import fab_name, is_live, materials_cents, node_label
 from tst.sim.facilities import goods, lifecycle
 from tst.sim.facilities.models import Facility
+from tst.sim.group.assets import group_ids
 from tst.sim.state import GameState
 
 MONTHS = 12
@@ -252,10 +253,11 @@ def nodes_out(state: GameState, data: LoadedData) -> NodesOut:
 def fabs_out(state: GameState, data: LoadedData) -> FabsOut:
     b, d = data.balance, data.game_data
     player = state.player.id
+    group = group_ids(state)  # M23r (finding 2): every fab of the group, with its owner
     fabs = [
         fab_out(state, fab, f, data)
         for fab in state.fabs
-        if (f := state.facility(fab.facility_id)) is not None and fab.company_id == player
+        if (f := state.facility(fab.facility_id)) is not None and f.company_id in group
     ]
     kind = b.facility.kinds["fab"]
     return FabsOut(
