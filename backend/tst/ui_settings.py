@@ -2,7 +2,9 @@
 
 `saves/ui_settings.json` sits beside the saves like the LLM settings and is shared across
 them: a view saved on one save's People table shows on every save's. It is UI state only,
-never written into a save file, and never read by the game.
+never written into a save file, and never read by the game. M29 adds the onboarding and
+interruption options (formulas.md 42.1-42.4): the API reads `stop_on` to decide whether open
+major events stop the player's Continue; the simulation never sees it.
 """
 
 from __future__ import annotations
@@ -11,6 +13,7 @@ import json
 import logging
 import threading
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -53,11 +56,31 @@ class TableViews(BaseModel):
         return self
 
 
+class Onboarding(BaseModel):
+    """M29 (42.1-42.4). `stop_on`: the lowest severity that stops Continue and is a holiday's
+    default stop; critical always stops, minor never does."""
+
+    show_everything: bool = Field(default=False, description="Turn progressive unlocking off")
+    guided_first_year: bool = Field(default=True, description="Show Getting started")
+    stop_on: Literal["major", "critical"] = "major"
+    dismissed_checklists: list[str] = Field(
+        default_factory=list, description="Save ids whose Getting started was dismissed"
+    )
+
+
 class UISettings(BaseModel):
     tables: dict[str, TableViews] = Field(default_factory=dict)
+    onboarding: Onboarding = Field(default_factory=Onboarding)
 
 
 _lock = threading.Lock()
+
+
+def _write(save_dir: Path, settings: UISettings) -> None:
+    save_dir.mkdir(parents=True, exist_ok=True)
+    tmp = save_dir / (SETTINGS_FILE + ".tmp")
+    tmp.write_text(json.dumps(settings.model_dump(), indent=2) + "\n", encoding="utf-8")
+    tmp.replace(save_dir / SETTINGS_FILE)
 
 
 def load_ui(save_dir: Path) -> UISettings:
@@ -73,8 +96,26 @@ def save_table(save_dir: Path, table_id: str, views: TableViews) -> UISettings:
     with _lock:
         settings = load_ui(save_dir)
         settings.tables[table_id] = views
-        save_dir.mkdir(parents=True, exist_ok=True)
-        tmp = save_dir / (SETTINGS_FILE + ".tmp")
-        tmp.write_text(json.dumps(settings.model_dump(), indent=2) + "\n", encoding="utf-8")
-        tmp.replace(save_dir / SETTINGS_FILE)
+        _write(save_dir, settings)
+    return settings
+
+
+def save_onboarding(save_dir: Path, onboarding: Onboarding) -> UISettings:
+    """Replace the onboarding options; the table views stay as they are (M29)."""
+    with _lock:
+        settings = load_ui(save_dir)
+        settings.onboarding = onboarding.model_copy(
+            update={"dismissed_checklists": settings.onboarding.dismissed_checklists}
+        )
+        _write(save_dir, settings)
+    return settings
+
+
+def dismiss_checklist(save_dir: Path, save_id: str) -> UISettings:
+    """Hide one save's Getting started checklist for good (42.2)."""
+    with _lock:
+        settings = load_ui(save_dir)
+        if save_id not in settings.onboarding.dismissed_checklists:
+            settings.onboarding.dismissed_checklists.append(save_id)
+            _write(save_dir, settings)
     return settings

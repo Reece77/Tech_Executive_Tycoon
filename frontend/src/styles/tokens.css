@@ -393,3 +393,32 @@ a {
   color: var(--tst-accent);
   border-color: var(--tst-accent);
 }
+
+/* M29 (42.4): the side bar's groups */
+.tst-navgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.tst-navgroup-title {
+  padding: 4px 12px 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tst-muted);
+}
+.tst-crumbs {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--tst-muted);
+  margin-bottom: 4px;
+}
+.tst-crumbs a {
+  color: var(--tst-muted);
+  text-decoration: none;
+}
+.tst-crumbs a:hover {
+  color: var(--tst-text);
+}

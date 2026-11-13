@@ -19,6 +19,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from tst.db import inbox, migrate
+from tst.db import unlocks as unlocks_db
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
 from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
@@ -852,6 +853,7 @@ def _play_turn(
         )
         apply_turn_result(session, result, decisions, state, data)
         _tidy_inbox(session, state, result.new_state, data)
+        unlocks_db.announce(session, state, result.new_state, data)  # M29 (42.1)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     return result
 
@@ -1006,6 +1008,7 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
             )
         )
         _tidy_inbox(session, state, result.new_state, data)
+        unlocks_db.announce(session, state, result.new_state, data)  # M29 (42.1)
         publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 

@@ -86,7 +86,15 @@ test('(c) search for engineers in Bangalore and see city and salary', async ({ p
   await page.getByTestId('search-city').click();
   await page.getByRole('option', { name: 'Bangalore' }).click();
   await page.getByTestId('channel-job_post').click();
+  // Wait for the search to be saved: a Continue sent while its write holds the save is refused
+  // as busy (409 save_busy, M6), which PR #48's e2e run hit.
+  const opened = page.waitForResponse(
+    (r) =>
+      r.request().method() === 'POST' &&
+      /^\/api\/saves\/[^/]+\/recruitment\/searches$/.test(new URL(r.url()).pathname),
+  );
   await page.getByTestId('open-search').click();
+  expect((await opened).ok()).toBe(true);
   await continueMonth(page);
   await page.goto(`/game/${GEO}/recruitment`);
   const cities = page.getByTestId('candidate-city');

@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     )
 
     save_dir: Path = REPO_DIR / "saves"
+    # M29 (42.5): the built front end (frontend/dist) the API serves on its own port, so the
+    # launcher needs one server; unset, the API serves only /api (Vite serves the front end).
+    frontend_dir: Path | None = None
     data_dir: Path = BACKEND_DIR / "data"
     # M6 (ADR-0005): TST_LLM_ADAPTER forces "claude", "templates" or "mock" (tests use mock);
     # the key comes from ANTHROPIC_API_KEY in the environment or .env and is never returned.

@@ -106,7 +106,7 @@ class SaveNameIn(BaseModel):
 
 class BackupOut(BaseModel):
     backup_id: str = Field(description="The backup's file name")
-    kind: Literal["periodic", "pre_upgrade"]
+    kind: Literal["periodic", "pre_upgrade", "manual"]
     turn: int = Field(description="The game turn the backup was taken at")
     date_label: str
     created: datetime = Field(description="When the backup file was written (UTC)")

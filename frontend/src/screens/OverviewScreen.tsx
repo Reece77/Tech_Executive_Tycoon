@@ -4,6 +4,12 @@ import { OverviewTip } from '../components/Term';
 import { CashChart } from '../components/CashChart';
 import { KpiTile } from '../components/KpiTile';
 import { ActiveEffects } from '../components/ActiveEffects';
+import {
+  GettingStartedPanel,
+  LatestDigest,
+  OverviewAlerts,
+  WhatNextPanel,
+} from '../components/OnboardingPanels';
 import { PressPanels } from '../components/PressPanels';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOverview, type Overview, type OverviewBreakdowns } from '../hooks/api';
@@ -74,6 +80,17 @@ export function OverviewScreen() {
   return (
     <>
       <ScreenTitle>Overview</ScreenTitle>
+      {/* M29 (42.2-42.4): one Overview */}
+      <OverviewAlerts saveId={saveId} overview={data} />
+      <GettingStartedPanel saveId={saveId} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
+        <div style={{ flex: '2 1 420px', display: 'grid' }}>
+          <WhatNextPanel saveId={saveId} />
+        </div>
+        <div style={{ flex: '1 1 280px', display: 'grid' }}>
+          <LatestDigest saveId={saveId} />
+        </div>
+      </div>
       <div
         style={{
           display: 'grid',
