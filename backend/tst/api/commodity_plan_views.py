@@ -67,9 +67,18 @@ def _group(state: GameState) -> set[int]:
     return {root, state.player.id, *(m.company_id for m in group_members(state, root))}
 
 
-def _own_supply(state: GameState, good: str) -> float:
-    """What the group's own plants supplied the group of the good this month."""
-    return sum(s.volume for s in state.own_supply if s.good == good and s.turn == state.turn)
+def _own_supply(state: GameState, company_id: int, good: str) -> float:
+    """What the group's own plants supplied the company of the good in the completed month.
+    M23r (Codex review 6 finding 6): between turns `state.turn` is the next month to play and
+    the settled lots carry the month just played (ADR-0014 2), as the production rows that the
+    demand reads do; the plan's buyer is `company_id`, its sellers any plant of the group."""
+    group = _group(state)
+    done = state.turn - 1
+    return sum(
+        s.volume
+        for s in state.own_supply
+        if s.good == good and s.turn == done and s.buyer_id == company_id and s.seller_id in group
+    )
 
 
 def _mine_output(state: GameState, good: str, volume_unit: str) -> float:
@@ -96,7 +105,7 @@ def commodity_plans(state: GameState, company_id: int, data: LoadedData) -> Comm
             for x in state.commodity_deals
             if x.company_id == company_id and x.good == g.key and x.status == "active"
         ]
-        own = _own_supply(state, g.key)
+        own = _own_supply(state, company_id, g.key)
         mined = _mine_output(state, g.key, g.volume_unit)
         if need_month <= EPS and not deals and own <= EPS and mined <= EPS:
             continue

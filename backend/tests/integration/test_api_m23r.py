@@ -184,6 +184,15 @@ def test_a_subsidiarys_fabs_are_visible_and_managed(
     assert {(x["id"], x["company_id"], x["status"]) for x in again} == {(built, sub, "converting")}
 
 
+def play(api: Client, base: str) -> None:
+    """Continue, first answering any event that blocks it with its first choice."""
+    for e in api.get(f"{base}/events")["open"]:
+        if e["severity"] in ("major", "critical"):
+            choice = e["choices"][0]["key"]
+            api.post(f"{base}/events/{e['event_id']}/choose", json={"choice": choice})
+    api.post(f"{base}/advance")
+
+
 def load_state_of(path: Path) -> GameState:
     with open_session(path) as session:
         return load_state(session)
@@ -285,3 +294,65 @@ def test_the_front_ends_read_only_allowlist_follows_the_servers() -> None:
         acts = "run_action" in source or "_act(" in source or "_check(" in source
         assert acts == sample.endswith("/events/1/choose"), route.path
     assert matched >= 10
+
+
+# --- Finding 7: Explain's capex is Exploration's public midpoint -------------------------------
+
+
+def test_explains_capex_estimate_is_explorations_public_midpoint(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    """Codex's reproduction: Exploration's midpoint capex was $302,536,142.93 while Explain's
+    "Capex estimate (mid)" showed 1,952.771 cents (the log estimate x 100). Both now read
+    exp(capex_center) dollars, Explain in whole cents."""
+    tool("e2e_m19_save").building(saves, "e", loaded)
+    base = BASE.format("e")
+    projects = api.get(f"{base}/exploration")["projects"]
+    studied = next(p for p in projects if p["capex_usd"] is not None)
+    npv = api.get(f"{base}/explain/mine_npv?entity={studied['id']}")
+    (capex,) = [i for i in npv["items"] if i["label"] == "Capex estimate (mid)"]
+    assert capex["amount"] == round(studied["capex_usd"]["mid"] * 100)
+    assert capex["amount"] > 1_000_000_00  # a mine's capex: hundreds of millions of dollars
+
+
+# --- Finding 6: the planner counts the group's own supply of the completed month ---------------
+
+
+def test_the_planner_counts_a_group_refinerys_supply_after_continue(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    """Codex's reproduction: after Continue the settled own-supply lots carry the completed month
+    (state.turn - 1, ADR-0014 2) and the planner, filtering on state.turn, counted none. With a
+    semiconductor polysilicon plant supplying the group's chips, the plan's own cover is the
+    completed month's lots to the player, and the gap is the need less deals and that cover."""
+    from tst.balance import m20
+
+    e2e = tool("e2e_m20_save")
+    path = e2e._create(saves, "poly", loaded, m20.ym_to_turn(2018, 1))
+
+    def step(game: Game) -> None:
+        e2e._chips(game)
+        fid = m20.build(game, "poly_plant_semi", "east_asia", 1_000)
+        e2e._past_ramp(game, fid, 12)
+
+    e2e._edit(path, loaded, step)
+    base = BASE.format("poly")
+    play(api, base)  # the first month's production
+    play(api, base)  # the plant supplies that use
+    state = load_state_of(path)
+    player = state.player.id
+    lots = [s for s in state.own_supply if s.good == "polysilicon" and s.buyer_id == player]
+    assert lots and {s.turn for s in lots} == {state.turn - 1}
+    own = sum(s.volume for s in lots)
+    assert own > 0
+    plan = next(
+        p for p in api.get(f"{base}/commodities/plan")["plans"] if p["good"] == "polysilicon"
+    )
+    assert plan["own_12m"] == pytest.approx(12 * own)
+    assert all(m["own"] == pytest.approx(own) for m in plan["months"])
+    gap = max(0.0, plan["need_12m"] - plan["deals_12m"] - 12 * own)
+    assert plan["gap_12m"] == pytest.approx(gap)
+    assert plan["need_12m"] > 0
+    with client(saves) as fresh:  # a cold reload reads the same
+        again = Client(fresh).get(f"{base}/commodities/plan")["plans"]
+    assert next(p for p in again if p["good"] == "polysilicon") == plan
