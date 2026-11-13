@@ -29,14 +29,14 @@ def test_v3_ai_known_until_two_points_below() -> None:
 
 
 def test_i1_known_until_its_year_30_reading_minus_two_points() -> None:
-    """formulas 43 I1 at year 30: +0.1 points in M23b, known down to -1.9 (PM, 2026-11-12)."""
+    """formulas 43 I1 at year 30: -0.0 points in M23b, known down to -2.0 (PM, 2026-11-12)."""
 
     def i1(gap: float) -> Row:
         return Row("I1", "margin gap", f"{gap:+.1%}", "+3 to +10", 0.03 <= gap <= 0.10, score=-gap)
 
     assert verdict(i1(0.04)) == "ok"
-    assert [verdict(i1(g)) for g in (0.001, -0.01, -0.019)] == ["known"] * 3
-    assert verdict(i1(-0.02)) == "fail"
+    assert [verdict(i1(g)) for g in (0.001, -0.01, -0.02)] == ["known"] * 3
+    assert verdict(i1(-0.021)) == "fail"
 
 
 def test_closed_and_unlisted_misses_fail_and_the_table_says_known() -> None:

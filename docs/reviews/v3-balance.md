@@ -23,7 +23,7 @@ No balance key was tuned. Every change was to measurement (product manager rulin
 | Change | Why | Effect |
 | --- | --- | --- |
 | I1/I2 against devices_regions (ruling, 2026-11-11) | steady_regions is pure software at a 63% margin; any device line dilutes it, so the original comparison measured hardware, not integration | I1 −12.8 → −2.6 points at year 20 (pre-merge) |
-| I1–I3 at year 30, year 20 printed (ruling, 2026-11-12) | at year 20 the group fab is inside its 5-year depreciation, dearer a start than market wafers | I1 −3.3 → +0.1 points; I2 1.03× → 1.04×; I3 0 → 2 wins |
+| I1–I3 at year 30, year 20 printed (ruling, 2026-11-12) | at year 20 the group fab is inside its 5-year depreciation, dearer a start than market wafers | I1 −3.1 → −0.0 points; I2 1.02× → 1.08×; I3 0 → 0 wins (combined code) |
 | full_integrator stops renewing TSMC once its fab covers its SoCs, and contracts spare starts | the script kept buying foundry wafers beside its own fab | own fab supplies the SoCs; foundry sales fill spare starts |
 | foundry signs M23a's foundry contracts (80% of capacity, 36 months, slot price) | the pure-play fab had no customers before M23a | F1 10 of 10 from month 1 |
 | mines at the smallest capacity, funded at the definitive study's overrun cover | the script asked for 2× a $4.9B estimate | mines get built, but after 2024 on 9 of 10 seeds (L4) |
@@ -35,7 +35,7 @@ No balance key was tuned. Every change was to measurement (product manager rulin
 
 | Miss | Owner | Reading | Bound | Why |
 | --- | --- | --- | --- | --- |
-| I1 (formulas §43) | M28 | +0.1 points at year 30 | −1.9 points | in 2039 subscriptions are 100% of the group's revenue and cost of goods 0.2–0.3% (8–17% at year 20); an own fab 23–24% cheaper a chip cannot move group margin by points. Supply-driven prices from 2026 (M28) change the fab's economics |
+| I1 (formulas §43) | M28 | −0.0 points at year 30 | −2.0 points | in 2039 subscriptions are 100% of the group's revenue and cost of goods 0.2–0.3% (8–17% at year 20); an own fab 23–24% cheaper a chip cannot move group margin by points. Supply-driven prices from 2026 (M28) change the fab's economics |
 | V3.ai (§30.7) | M23 | +0.9 points at year 10 (54.1% vs 53.2%) | 2 points below ai_regions | an AI-models company is about $7M ARR at year 10 |
 | V5.cells (§30.7) | M23 | 72% (steady_regions), 69% (research_heavy) | 40% empty | long-lived startups hold rivals.startup.max_alive's places |
 | V5.cats (§30.7) | M23 | fintech 2030s empty in 6 runs; ai_models 2030s in 5 | 7 of 10 runs | as V5.cells |

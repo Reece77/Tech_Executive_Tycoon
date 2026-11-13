@@ -15,7 +15,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
     - I1–I3 at year 30 against devices_regions, with year 20 and steady_regions printed (product manager rulings, 2026-11-11 and 2026-11-12).
     - S1–S2 shocks, F1 foundry demand, L1–L4 across 30 years.
   - Weekly jobs: `weekly-v3-shocks`, `weekly-v3-integration`, `weekly-v3-long` and `weekly-v6-integrator`.
-  - Known miss I1 (owner M28, bound −1.9 points). Results under "v3 final" in `docs/balance-targets.md`; summary in `docs/reviews/v3-balance.md`.
+  - Known miss I1 (owner M28, bound −2.0 points). Results under "v3 final" in `docs/balance-targets.md`; summary in `docs/reviews/v3-balance.md`.
   - M22 target 7 compares the software company's own books, snapshots and decisions, and every company's books before October 2022 (formulas §39.4).
   - `test_a_fab_keeps_its_books` draws only regions the export controls allow; the refusal of a 16 nm fab in China in 2023 has its own test.
   - `test_holdings_sum_to_fd` runs without a Hypothesis deadline.
