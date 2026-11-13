@@ -415,9 +415,10 @@ export function useInbox(
   kinds: readonly string[] | null = null,
   unreadOnly = false,
   archived = false,
+  needsYou = false, // M29 (42.4): the Needs you tab
 ) {
   return useQuery({
-    queryKey: [...keys.inbox(saveId, offset, kinds), unreadOnly, archived],
+    queryKey: [...keys.inbox(saveId, offset, kinds), unreadOnly, archived, needsYou],
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/inbox', {
@@ -428,6 +429,7 @@ export function useInbox(
               offset,
               unread_only: unreadOnly,
               archived,
+              needs_you: needsYou,
               ...(kinds ? { kind: [...kinds] } : {}),
             },
           },

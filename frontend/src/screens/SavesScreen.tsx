@@ -15,6 +15,7 @@ import {
   useScenarios,
   type Save,
 } from '../hooks/api';
+import { useBackUp } from '../hooks/onboarding';
 import { formatBytes, formatWhen, humanize } from '../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 
@@ -276,12 +277,31 @@ function BackupsDialog({
 }) {
   const backups = useBackups(save.save_id);
   const restore = useRestoreBackup();
+  const backUp = useBackUp(); // M29 (42.5)
   return (
     <Modal opened onClose={onClose} title={`Backups of ${save.display_name}`} centered size="lg">
       <p className="tst-muted" style={{ marginTop: 0, fontSize: 13 }}>
         A backup restores as a new save named after the company and the backup's date. The original
         save is never changed.
       </p>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+        <Button
+          size="compact-sm"
+          loading={backUp.isPending}
+          onClick={() => backUp.mutate(save.save_id)}
+          data-testid="back-up-now"
+        >
+          Back up now
+        </Button>
+        {backUp.data && (
+          <span className="tst-muted" style={{ fontSize: 12 }} data-testid="backed-up">
+            Backed up at {backUp.data.date_label}.
+          </span>
+        )}
+        {backUp.error && (
+          <span style={{ fontSize: 12, color: 'var(--tst-warn)' }}>{backUp.error.message}</span>
+        )}
+      </div>
       {backups.isPending ? (
         <Loading />
       ) : backups.error ? (
@@ -311,7 +331,13 @@ function BackupsDialog({
             {backups.data.map((b) => (
               <tr key={b.backup_id} data-testid="backup-row">
                 <td className="tst-num">{b.date_label}</td>
-                <td>{b.kind === 'periodic' ? 'Periodic' : 'Before an upgrade'}</td>
+                <td>
+                  {b.kind === 'periodic'
+                    ? 'Periodic'
+                    : b.kind === 'manual'
+                      ? 'Backed up by you'
+                      : 'Before an upgrade'}
+                </td>
                 <td className="tst-num">{formatWhen(b.created)}</td>
                 <td className="tst-num">{formatBytes(b.size_bytes)}</td>
                 <td>

@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import FastAPI, Request, status
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
 from tst.api.routers import (
@@ -31,6 +34,7 @@ from tst.api.routers import (
     mna,
     modes,
     mods,
+    onboarding,
     org,
     press,
     products,
@@ -43,6 +47,7 @@ from tst.api.routers import (
     scaleup,
 )
 from tst.api.schemas.common import ErrorOut
+from tst.config import get_settings
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
@@ -120,7 +125,9 @@ def create_app() -> FastAPI:
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
     app.include_router(mods.router)  # M25
+    app.include_router(onboarding.router)  # M29
     app.include_router(events.settings_router)
+    app.include_router(onboarding.settings_router)  # M29
     app.include_router(meta.router)
 
     @app.exception_handler(SimError)
@@ -157,7 +164,27 @@ def create_app() -> FastAPI:
         )
         return _error(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_request", details)
 
+    frontend = get_settings().frontend_dir
+    if frontend is not None and (frontend / "index.html").is_file():
+        serve_frontend(app, frontend)
     return app
+
+
+def serve_frontend(app: FastAPI, dist: Path) -> None:
+    """Serve the built front end beside the API (M29, 42.5): files from `dist`, and
+    index.html for every other path so the router's deep links load. /api stays the API's."""
+    root = dist.resolve()
+    if (root / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=root / "assets"), name="assets")
+
+    @app.get("/{path:path}", include_in_schema=False)
+    async def _page(path: str) -> FileResponse:
+        if path == "api" or path.startswith("api/"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        file = (root / path).resolve()
+        if path and file.is_file() and file.is_relative_to(root):
+            return FileResponse(file)
+        return FileResponse(root / "index.html")
 
 
 app = create_app()

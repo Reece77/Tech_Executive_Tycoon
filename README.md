@@ -2,6 +2,20 @@
 
 Pre-build documents for a Football Manager-style tech-industry management sim. Drop these into the root of a new git repository before running any coding agent.
 
+## How to play
+
+On Windows, double-click **Tech Startup Tycoon** in the repository folder (`Tech Startup Tycoon.cmd`). That is all:
+
+- The first time, it installs what the game needs and builds its screens (a few minutes; later starts take seconds). It needs **uv** and **Node.js 22** installed once; if either is missing, a page opens saying how to get it.
+- Your browser opens at the Main menu. **Continue** opens the game you played last; **New game** starts one. The Saves list shows each game's last-played date, and Backups → **Back up now** keeps a copy you can restore later.
+- Keep the black window open while you play; close it to stop the game. Double-clicking again while it runs just opens the browser.
+- Want it on the desktop? Double-click **Make desktop shortcut** once.
+- If something goes wrong, `saves/launcher.log` says what happened, and the error page names the step that failed.
+
+In the game: press **Space** to Continue a month, **Ctrl+K** to jump to any screen, person, product, facility or rival by name, and **?** for every shortcut. New screens appear in the side bar as your company reaches them (Settings → Show everything turns that off), and a Getting started checklist on the Overview walks you through the first year.
+
+On macOS or Linux, run `make dev` and open http://localhost:5173.
+
 ## What is here
 
 | Path | Purpose |
@@ -12,6 +26,8 @@ Pre-build documents for a Football Manager-style tech-industry management sim. D
 | `docs/adr/` | 12 architecture decision records |
 | `docs/tasks/` | Task briefs for M0, M1a, M1b and how to run them |
 | `docs/spec/` | Where the exported game design spec goes |
+| `Tech Startup Tycoon.cmd`, `tools/launcher.py` | Double-click to play on Windows (M29): installs, builds, serves the game on one port and opens the browser |
+| `Make desktop shortcut.cmd` | Adds a Tech Startup Tycoon shortcut to the Windows desktop (M29) |
 
 ## Getting started
 

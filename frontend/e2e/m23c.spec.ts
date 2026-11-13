@@ -66,7 +66,10 @@ test('(b) a critical event set aside to look around read only, and answered late
   await expect(banner).toContainText('Critical decision waiting');
   await expect(page.getByTestId('continue-blocked')).toBeVisible();
   // browse any screen: the banner stays, and follows its link to the mine
-  await page.getByRole('navigation', { name: 'Game screens' }).getByText('People').click();
+  await page
+    .getByRole('navigation', { name: 'Game screens' })
+    .getByRole('link', { name: /People/ })
+    .click(); // M29: a group is titled People too
   await expect(banner).toBeVisible();
   await banner.getByRole('link', { name: /mine #\d+/ }).click();
   await expect(page).toHaveURL(/products\/mines\?mine=\d+/);

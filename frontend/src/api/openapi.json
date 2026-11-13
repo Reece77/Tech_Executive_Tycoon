@@ -477,6 +477,77 @@
             "description": "Unprocessable Entity"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "saves"
+        ],
+        "summary": "Back Up Save",
+        "description": "Back up now (M29): a copy kept with the save's backups. 409 for an Ironman or busy\nsave.",
+        "operationId": "backUpSave",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
       }
     },
     "/api/saves/{save_id}/backups/{backup_id}/restore": {
@@ -1846,7 +1917,7 @@
           "game"
         ],
         "summary": "Get Inbox",
-        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c).",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open\nmajor and critical events and waiting proposals and pitches (M29, 42.4).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -1923,6 +1994,16 @@
               "type": "boolean",
               "default": false,
               "title": "Archived"
+            }
+          },
+          {
+            "name": "needs_you",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Needs You"
             }
           }
         ],
@@ -21723,6 +21804,453 @@
         }
       }
     },
+    "/api/saves/{save_id}/unlocks": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Get Unlocks",
+        "description": "Which screens the side bar shows and why (42.1).",
+        "operationId": "getUnlocks",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlocksOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/unlocks/{key}/open": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Open System",
+        "description": "Open an opt-in system before its condition holds (\"Explore for minerals\" from Markets,\n42.1): writes its unlock item once. No game effect.",
+        "operationId": "openSystem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z_]{1,32}$",
+              "title": "Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnlocksOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/getting-started": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Get Getting Started",
+        "description": "The first year's checklist, ticked from state alone (42.2).",
+        "operationId": "getGettingStarted",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GettingStartedOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/getting-started/dismiss": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Dismiss Getting Started",
+        "operationId": "dismissGettingStarted",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GettingStartedOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/what-next": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Get What Next",
+        "description": "Up to five things to do now (42.3). Read-only, no energy.",
+        "operationId": "getWhatNext",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatNextOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/palette": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Get Palette",
+        "description": "Everything the command palette jumps to by name (42.4): the player's people, the\ngroup's products, facilities and mines, and rivals.",
+        "operationId": "getPalette",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaletteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -21844,6 +22372,67 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UISettings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings/ui/onboarding": {
+      "get": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get Onboarding Settings",
+        "description": "Show everything, Getting started and Interruptions (42.1, 42.2, 42.4), for every save.",
+        "operationId": "getOnboardingSettings",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingSettings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update Onboarding Settings",
+        "operationId": "updateOnboardingSettings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingSettings"
                 }
               }
             }
@@ -23030,7 +23619,8 @@
             "type": "string",
             "enum": [
               "periodic",
-              "pre_upgrade"
+              "pre_upgrade",
+              "manual"
             ],
             "title": "Kind"
           },
@@ -32564,6 +33154,39 @@
         ],
         "title": "GeoRegionOut"
       },
+      "GettingStartedOut": {
+        "properties": {
+          "visible": {
+            "type": "boolean",
+            "title": "Visible",
+            "description": "First 12 months, the setting on, not dismissed"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "description": "Who writes the notes: the chief of staff, or your notes"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "visible",
+          "months_left",
+          "speaker",
+          "steps"
+        ],
+        "title": "GettingStartedOut"
+      },
       "GiftIn": {
         "properties": {
           "amount_cents": {
@@ -39643,6 +40266,70 @@
         ],
         "title": "OfftakeIn"
       },
+      "Onboarding": {
+        "properties": {
+          "show_everything": {
+            "type": "boolean",
+            "title": "Show Everything",
+            "description": "Turn progressive unlocking off",
+            "default": false
+          },
+          "guided_first_year": {
+            "type": "boolean",
+            "title": "Guided First Year",
+            "description": "Show Getting started",
+            "default": true
+          },
+          "stop_on": {
+            "type": "string",
+            "enum": [
+              "major",
+              "critical"
+            ],
+            "title": "Stop On",
+            "default": "major"
+          },
+          "dismissed_checklists": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dismissed Checklists",
+            "description": "Save ids whose Getting started was dismissed"
+          }
+        },
+        "type": "object",
+        "title": "Onboarding",
+        "description": "M29 (42.1-42.4). `stop_on`: the lowest severity that stops Continue and is a holiday's\ndefault stop; critical always stops, minor never does."
+      },
+      "OnboardingSettings": {
+        "properties": {
+          "show_everything": {
+            "type": "boolean",
+            "title": "Show Everything"
+          },
+          "guided_first_year": {
+            "type": "boolean",
+            "title": "Guided First Year"
+          },
+          "stop_on": {
+            "type": "string",
+            "enum": [
+              "major",
+              "critical"
+            ],
+            "title": "Stop On",
+            "description": "The lowest severity that stops Continue and is a holiday's default stop"
+          }
+        },
+        "type": "object",
+        "required": [
+          "show_everything",
+          "guided_first_year",
+          "stop_on"
+        ],
+        "title": "OnboardingSettings"
+      },
       "OpenRoundOut": {
         "properties": {
           "company_id": {
@@ -40607,6 +41294,63 @@
         ],
         "title": "OwnershipEventOut",
         "description": "One step of \"your ownership over time\" (M4b)."
+      },
+      "PaletteEntryOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "person",
+              "product",
+              "facility",
+              "rival"
+            ],
+            "title": "Kind"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "A role, a category, a place or 'rival'"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "The route under /game/<save>/"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "label",
+          "detail",
+          "path"
+        ],
+        "title": "PaletteEntryOut"
+      },
+      "PaletteOut": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/PaletteEntryOut"
+            },
+            "type": "array",
+            "title": "Entries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entries"
+        ],
+        "title": "PaletteOut"
       },
       "PartnerIn": {
         "properties": {
@@ -49204,6 +49948,41 @@
         ],
         "title": "StatementsOut"
       },
+      "StepOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "The chief of staff's one line on why it matters"
+          },
+          "screen": {
+            "type": "string",
+            "title": "Screen",
+            "description": "A systems key the step links to"
+          },
+          "done": {
+            "type": "boolean",
+            "title": "Done"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "note",
+          "screen",
+          "done"
+        ],
+        "title": "StepOut"
+      },
       "StockOut": {
         "properties": {
           "ticker": {
@@ -50047,6 +50826,82 @@
         ],
         "title": "SupportTileOut",
         "description": "The Overview's support coverage tile, from stage 3 (M8, 18.4): counts, not c."
+      },
+      "SystemOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "tst.sim.unlocks SYSTEMS key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group",
+            "description": "company | people | products | markets | chain | finance | world | automation"
+          },
+          "unlocked": {
+            "type": "boolean",
+            "title": "Unlocked",
+            "description": "Shown in the side bar (or Show everything is on)"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Why it is open; null while locked"
+          },
+          "since_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since Label",
+            "description": "When it was announced, if it was"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id",
+            "description": "The unlock inbox item, if one was written"
+          },
+          "opt_in": {
+            "type": "boolean",
+            "title": "Opt In",
+            "description": "The player may open it early (Explore for minerals)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "group",
+          "unlocked",
+          "reason",
+          "since_label",
+          "item_id",
+          "opt_in"
+        ],
+        "title": "SystemOut"
       },
       "TableView": {
         "properties": {
@@ -51260,6 +52115,9 @@
             },
             "type": "object",
             "title": "Tables"
+          },
+          "onboarding": {
+            "$ref": "#/components/schemas/Onboarding"
           }
         },
         "type": "object",
@@ -51499,6 +52357,36 @@
         ],
         "title": "UnitRefOut"
       },
+      "UnlocksOut": {
+        "properties": {
+          "show_everything": {
+            "type": "boolean",
+            "title": "Show Everything"
+          },
+          "systems": {
+            "items": {
+              "$ref": "#/components/schemas/SystemOut"
+            },
+            "type": "array",
+            "title": "Systems"
+          },
+          "fresh": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fresh",
+            "description": "Systems announced this month (for the toast)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "show_everything",
+          "systems",
+          "fresh"
+        ],
+        "title": "UnlocksOut"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -51732,6 +52620,71 @@
           "months"
         ],
         "title": "WaferContractIn"
+      },
+      "WhatNextItemOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "link_kind": {
+            "type": "string",
+            "title": "Link Kind",
+            "description": "finance | event | product | person | org | recruitment | board | rival | guide"
+          },
+          "link_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Id"
+          },
+          "link_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Link Key",
+            "description": "The systems key of a guide link"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "text",
+          "link_kind",
+          "link_id",
+          "link_key"
+        ],
+        "title": "WhatNextItemOut"
+      },
+      "WhatNextOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WhatNextItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "WhatNextOut"
       },
       "WorldActionOut": {
         "properties": {

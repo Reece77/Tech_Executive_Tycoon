@@ -1,8 +1,9 @@
-import { Button, NumberInput, SegmentedControl, TextInput } from '@mantine/core';
+import { Button, NumberInput, SegmentedControl, Switch, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import { useLlmSettings, useSaves, useUpdateLlmSettings, type LlmSettings } from '../hooks/api';
+import { useOnboardingSettings, useUpdateOnboardingSettings } from '../hooks/onboarding';
 import { formatMoney } from '../lib/format';
 
 /** Settings (M6 wireframe): AI writing (Claude or offline templates, this calendar month's
@@ -22,6 +23,7 @@ export function SettingsScreen() {
         key={`${settings.data.adapter}-${settings.data.budget_cents}-${settings.data.model_events}-${settings.data.model_story}`}
         s={settings.data}
       />
+      <Onboarding />
       <section
         className="tst-panel"
         style={{ padding: '20px 24px', maxWidth: 760, marginTop: 16 }}
@@ -182,6 +184,67 @@ function AiWriting({ s }: { s: LlmSettings }) {
           )}
         </div>
       </div>
+    </section>
+  );
+}
+
+/** Onboarding and interruptions (M29, 42.1, 42.2, 42.4), for every save. */
+function Onboarding() {
+  const settings = useOnboardingSettings();
+  const update = useUpdateOnboardingSettings();
+  const s = settings.data;
+  return (
+    <section
+      className="tst-panel"
+      style={{ padding: '20px 24px', maxWidth: 760, marginTop: 16 }}
+      aria-label="Onboarding and interruptions"
+      data-testid="settings-onboarding"
+    >
+      <h2 className="tst-ptitle" style={{ marginTop: 0 }}>
+        Onboarding and interruptions
+      </h2>
+      {!s ? (
+        <p className="tst-muted">Loading…</p>
+      ) : (
+        <div style={{ display: 'grid', gap: 14 }}>
+          <Switch
+            label="Show everything"
+            description="Every screen in the side bar from the start, instead of each appearing when it becomes relevant."
+            checked={s.show_everything}
+            disabled={update.isPending}
+            onChange={(e) => update.mutate({ ...s, show_everything: e.currentTarget.checked })}
+            data-testid="setting-show-everything"
+          />
+          <Switch
+            label="Getting started in a new game's first year"
+            description="A checklist on the Overview that ticks itself as you go; dismiss it any time."
+            checked={s.guided_first_year}
+            disabled={update.isPending}
+            onChange={(e) => update.mutate({ ...s, guided_first_year: e.currentTarget.checked })}
+            data-testid="setting-guided"
+          />
+          <div>
+            <div style={{ fontSize: 14, marginBottom: 6 }}>What stops Continue and Holiday</div>
+            <SegmentedControl
+              value={s.stop_on}
+              disabled={update.isPending}
+              onChange={(v) =>
+                update.mutate({ ...s, stop_on: v === 'critical' ? 'critical' : 'major' })
+              }
+              data={[
+                { value: 'major', label: 'Major and critical events' },
+                { value: 'critical', label: 'Critical events only' },
+              ]}
+              data-testid="setting-stop-on"
+            />
+            <p className="tst-muted" style={{ fontSize: 12, margin: '6px 0 0' }}>
+              Critical events always stop the game; minor ones never do. With critical only, an
+              unanswered major event takes its first choice when you press Continue, as on a
+              holiday.
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

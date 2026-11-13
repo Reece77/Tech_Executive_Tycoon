@@ -19,6 +19,7 @@ import { NodeTimeline } from '../components/NodeTimeline';
 import { LoadError, Loading } from '../components/ScreenState';
 import { useCategories, useEras, useMarket } from '../hooks/api';
 import { useNodes } from '../hooks/fabs';
+import { useOpenSystem } from '../hooks/onboarding';
 import { useTableViews } from '../hooks/useTableViews';
 import { CommoditiesTab } from './CommoditiesTab';
 import { formatMoneyShort } from '../lib/format';
@@ -109,6 +110,36 @@ function MarketDemand({ m }: { m: Market }) {
 }
 
 /** Every product in a category's market, segment by segment, incumbents included. */
+/** M29 (42.1): opens Exploration (and its side-bar entry) before the group explores. */
+function ExploreForMinerals({ saveId }: { saveId: string }) {
+  const navigate = useNavigate();
+  const open = useOpenSystem(saveId);
+  return (
+    <div>
+      <button
+        type="button"
+        className="tst-link-button"
+        disabled={open.isPending}
+        onClick={() =>
+          open.mutate('exploration', {
+            onSuccess: () => void navigate(`/game/${saveId}/products/exploration`),
+          })
+        }
+        data-testid="explore-for-minerals"
+        style={{
+          background: 'none',
+          border: 0,
+          padding: 0,
+          color: 'var(--tst-accent)',
+          cursor: 'pointer',
+        }}
+      >
+        Explore for minerals →
+      </button>
+    </div>
+  );
+}
+
 export function MarketScreen() {
   // One set of views for every segment's table: they share their columns (M7b).
   const views = useTableViews('market', {
@@ -196,6 +227,7 @@ export function MarketScreen() {
         )}
       </div>
       <MacroStrip saveId={saveId} />
+      {commodities && !nodes && <ExploreForMinerals saveId={saveId} />}
       {commodities && !nodes && <CommoditiesTab saveId={saveId} />}
       {nodes && <MarketNodes saveId={saveId} />}
       {!commodities && market.error && (

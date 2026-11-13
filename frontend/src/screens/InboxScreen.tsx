@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core';
+import { Button, NativeSelect } from '@mantine/core';
 import { useState, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { EventCard } from '../components/EventCard';
@@ -25,11 +25,16 @@ import {
 import { formatMoney, formatMoneyWhole, formatWhole, humanize } from '../lib/format';
 import {
   financeTab,
+  intersectKinds,
+  kindChoices,
   kindLabel,
   kindsFor,
   pageRange,
   preview,
+  tabKinds,
+  TABS,
   type InboxFilter,
+  type InboxTab,
 } from '../lib/inbox';
 import { moraleBand } from '../lib/attr';
 import { useReplace, useReplaceable } from '../hooks/press';
@@ -49,19 +54,37 @@ export function InboxScreen() {
   const navigate = useNavigate();
   const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState<InboxFilter>('all');
+  const [params, setParams] = useSearchParams();
+  // M29 (42.4): tabs (Needs you, Digest, News, Everything) and a kind filter, with the area
+  // filters below; ?tab= opens one (the Overview's alerts link Needs you).
+  const tab: InboxTab = TABS.some((t) => t.key === params.get('tab'))
+    ? (params.get('tab') as InboxTab)
+    : 'all';
+  const [kindLabelFilter, setKindLabelFilter] = useState('');
+  const chosenKinds = kindChoices().find((c) => c.label === kindLabelFilter)?.kinds ?? null;
+  const kinds = intersectKinds(tabKinds(tab), kindsFor(filter), chosenKinds);
   // Filters run in the API, so they apply across every page, not only the one shown (M3b).
   const inbox = useInbox(
     saveId,
     offset,
-    kindsFor(filter),
+    kinds && kinds.length === 0 ? ['(none)'] : kinds,
     filter === 'unread',
     filter === 'archived',
+    tab === 'needs_you',
   );
+  const digests = useInbox(saveId, 0, ['digest']);
+  const tabs = TABS.filter((t) => t.key !== 'digest' || (digests.data?.total ?? 0) > 0);
+  const setTab = (next: InboxTab) => {
+    const p = new URLSearchParams(params);
+    if (next === 'all') p.delete('tab');
+    else p.set('tab', next);
+    setParams(p, { replace: true });
+    setOffset(0);
+  };
   const overview = useOverview(saveId);
   const setRead = useSetRead(saveId);
   const archive = useArchive(saveId);
   const bulk = useInboxBulk(saveId);
-  const [params] = useSearchParams();
   // M7c: /inbox/:itemId (and the older ?item=) open that message even off the first page.
   const selectedId = Number(itemId ?? params.get('item'));
   const onPage = inbox.data?.items.some((m) => m.item_id === selectedId) ?? false;
@@ -142,6 +165,40 @@ export function InboxScreen() {
       >
         Inbox
       </ScreenTitle>
+      <div
+        role="tablist"
+        aria-label="Inbox tabs"
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}
+      >
+        {tabs.map((t) => (
+          <Button
+            key={t.key}
+            role="tab"
+            aria-selected={tab === t.key}
+            size="compact-md"
+            variant={tab === t.key ? 'filled' : 'default'}
+            onClick={() => setTab(t.key)}
+            data-testid={`inbox-tab-${t.key}`}
+          >
+            {t.label}
+          </Button>
+        ))}
+        <NativeSelect
+          aria-label="Kind"
+          size="xs"
+          ml="auto"
+          value={kindLabelFilter}
+          onChange={(e) => {
+            setKindLabelFilter(e.currentTarget.value);
+            setOffset(0);
+          }}
+          data={[
+            { value: '', label: 'Every kind' },
+            ...kindChoices().map((c) => ({ value: c.label, label: c.label })),
+          ]}
+          data-testid="inbox-kind"
+        />
+      </div>
       <EventsHeader saveId={saveId} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         <section
@@ -151,11 +208,13 @@ export function InboxScreen() {
         >
           {items.length === 0 ? (
             <p className="tst-muted" style={{ margin: 0, padding: 16 }}>
-              {filter === 'all'
-                ? 'Nothing in the inbox. Archived messages are under Archived.'
-                : filter === 'archived'
-                  ? 'Nothing archived yet.'
-                  : 'No messages match this filter.'}
+              {tab === 'needs_you'
+                ? 'Nothing needs you right now.'
+                : filter === 'all'
+                  ? 'Nothing in the inbox. Archived messages are under Archived.'
+                  : filter === 'archived'
+                    ? 'Nothing archived yet.'
+                    : 'No messages match this filter.'}
             </p>
           ) : (
             items.map((m) => (

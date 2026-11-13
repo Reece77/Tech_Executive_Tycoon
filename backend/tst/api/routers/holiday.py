@@ -6,6 +6,7 @@ from __future__ import annotations
 from fastapi import APIRouter, status
 
 from tst import holiday
+from tst.api import interruptions
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _path
 from tst.api.routers.saves import ERRORS
@@ -17,7 +18,9 @@ from tst.sim.calendar import format_turn
 router = APIRouter(prefix="/api/saves/{save_id}/holiday", tags=["holiday"])
 
 
-def _out(job: holiday.HolidayJob | None, turn: int, data: LoadedData) -> HolidayOut:
+def _out(
+    job: holiday.HolidayJob | None, turn: int, data: LoadedData, default_stop: str
+) -> HolidayOut:
     keys = data.balance.holiday
     return HolidayOut(
         status=job.status if job else "idle",
@@ -33,9 +36,17 @@ def _out(job: holiday.HolidayJob | None, turn: int, data: LoadedData) -> Holiday
         stop_requested=job.stop_requested.is_set() if job else False,
         max_months=keys.max_months,
         default_months=keys.default_months,
-        default_stop=keys.default_stop,
+        default_stop=default_stop,
         stop_runway_months=keys.stop_runway_months,
     )
+
+
+def _default_stop(settings: SettingsDep, data: LoadedData) -> holiday.StopLevel:
+    """M29 (42.4): Interruptions at critical only makes critical the default stop; otherwise
+    the balance default."""
+    if interruptions.stop_on(settings.resolved_save_dir()) == "critical":
+        return "critical"
+    return data.balance.holiday.default_stop
 
 
 def _turn(save_id: str, settings: SettingsDep) -> int:
@@ -48,7 +59,12 @@ def get_holiday(save_id: str, settings: SettingsDep, data: DataDep) -> HolidayOu
     """The save's holiday: running (months done, the date), or the last one this session."""
     job = holiday.job_for(_path(settings, save_id))
     running = job is not None and job.status == "running"
-    return _out(job, job.turn if job and running else _turn(save_id, settings), data)
+    return _out(
+        job,
+        job.turn if job and running else _turn(save_id, settings),
+        data,
+        _default_stop(settings, data),
+    )
 
 
 @router.post(
@@ -69,9 +85,9 @@ def start_holiday(
         save_id,
         data,
         body.months if body.months is not None else keys.default_months,
-        body.stop or keys.default_stop,
+        body.stop or _default_stop(settings, data),
     )
-    return _out(job, job.turn, data)
+    return _out(job, job.turn, data, _default_stop(settings, data))
 
 
 @router.post("/stop", response_model=HolidayOut, responses=ERRORS, operation_id="stopHoliday")
@@ -80,4 +96,6 @@ def stop_holiday(save_id: str, settings: SettingsDep, data: DataDep) -> HolidayO
     job = holiday.job_for(_path(settings, save_id))
     if job is not None and job.status == "running":
         job.stop_requested.set()
-    return _out(job, job.turn if job else _turn(save_id, settings), data)
+    return _out(
+        job, job.turn if job else _turn(save_id, settings), data, _default_stop(settings, data)
+    )
