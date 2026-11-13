@@ -2,6 +2,10 @@
 // look around read only, with a banner back to it; Continue stays blocked until it is answered.
 // While it is set aside, the client refuses every request that would change the game, except
 // answering the event itself and the read-only POSTs (previews, quotes, inbox marks, Explain).
+// The server enforces the same boundary (M23r, Codex review 6 finding 4): while a critical event
+// is open it refuses every action except answering it, with 409 `read_only`. This guard only
+// saves the round trip; tests/integration/test_api_m23r.py checks that nothing it lets through
+// is an action the server would refuse.
 import { useSyncExternalStore } from 'react';
 import { api } from '../api/client';
 

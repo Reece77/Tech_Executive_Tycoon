@@ -208,6 +208,14 @@ class CriticalEventOpenError(SimError):
         self.event_id = event_id
 
 
+class ReadOnlyError(CriticalEventOpenError):
+    """While a critical event is open the save is read only (M23c's set-aside; M23r, Codex
+    review 6 finding 4): every action is refused except answering that event. Reading, the
+    inbox's marks, previews, quotes, settings and saving are not actions and stay open."""
+
+    code = "read_only"
+
+
 class EventsOpenError(SimError):
     """Open major or critical events block the player's Continue until answered (23.1, M10b).
     Holiday and headless scripts answer major events with their first choice instead."""

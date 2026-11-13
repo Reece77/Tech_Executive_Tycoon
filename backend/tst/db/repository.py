@@ -63,6 +63,7 @@ from tst.loader import LoadedData
 from tst.sim.actions import (
     Action,
     ActionResult,
+    ChooseEvent,
     action_from_payload,
     action_payload,
     apply_action,
@@ -80,6 +81,7 @@ from tst.sim.errors import (
     UnknownScenarioError,
     UpgradeNeededError,
 )
+from tst.sim.events.effects import check_read_only
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
@@ -970,6 +972,9 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     migrate.ensure_current(save_path)
     with write_session(save_path) as session:
         state = load_current(session)
+        # M23r (Codex review 6 finding 4): the server's read-only boundary, before anything runs
+        answers = action.event_id if isinstance(action, ChooseEvent) else None
+        check_read_only(state, action.kind, answers)
         balances = current_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)
         result = apply_action(

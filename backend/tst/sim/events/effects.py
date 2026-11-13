@@ -411,6 +411,38 @@ def blocking_events(state: GameState) -> tuple[GameEvent, ...]:
     )
 
 
+def critical_open(state: GameState) -> tuple[GameEvent, ...]:
+    """The player's written critical events still to answer: Continue is refused (ADR-0006),
+    and the save is read only for actions until they are answered (M23r)."""
+    return tuple(
+        e
+        for e in state.open_events(state.player.id)
+        if e.severity == "critical" and e.status == "open"
+    )
+
+
+def check_read_only(state: GameState, kind: str, event_id: int | None) -> None:
+    """Refuse an action while a critical event is open (M23r, Codex review 6 finding 4), except
+    `choose_event` on one of the open critical events. `event_id`: the event a choose_event
+    answers (None for any other action)."""
+    from tst.sim.errors import ReadOnlyError
+
+    critical = critical_open(state)
+    if not critical:
+        return
+    if kind == READ_ONLY_ALLOWED and event_id in {e.id for e in critical}:
+        return
+    first = critical[0]
+    raise ReadOnlyError(
+        "the save is read only while a critical decision waits: answer "
+        f"{first.title or first.template_id!r} first",
+        first.id,
+    )
+
+
+READ_ONLY_ALLOWED = "choose_event"  # the one action allowed while a critical event is open
+
+
 def auto_resolve(
     state: GameState, balance: Balance, data: GameData, balances: LedgerBalances | None = None
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:

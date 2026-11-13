@@ -175,3 +175,70 @@ def test_a_transferred_fabs_foundry_contracts_are_its_new_owners(tmp_path: Path)
     assert game.act(TerminateContract(game.founder_id, "foundry", contract.id)), game.refused
     assert sub_cash - game.balances.get((sub, CASH), 0) == q.cash_cents
     assert game.cash == player_cash
+
+
+# --- Finding 5: foundry-contract money is exact ---------------------------------------------------
+
+
+def _foundry_month(own: float) -> tuple[int, float, float, int]:
+    """A live 10,000-start fab with an accepted contract for 100 starts at 0.545 cents a start,
+    settled with `own` starts used by the group: (revenue posted to 4420, contracted starts,
+    spot starts, the month's revenue_cents)."""
+    from tests.unit.test_m23a_group import _energy
+    from tst.balance import m21
+    from tst.sim.fabs import foundry
+    from tst.sim.fabs import market as fm
+    from tst.sim.fabs.plants import settle_fabs
+    from tst.sim.ledger import FOUNDRY_SALES
+    from tst.sim.state import with_fab
+
+    lg = m21.loaded()
+    b, d = lg.balance, lg.game_data
+    game = m21.game_at(1, m21.ym_to_turn(2016, 1))
+    fid = m21.build(game, "n28", "east_asia", 10_000)
+    m21.play(game)
+    _energy(game)
+    customer = foundry.customers(d)[0]
+    assert game.act(foundry.SignFoundryContract(game.founder_id, fid, customer, 100.0, 12, 0.545))
+    fab = fm.fab_of(game.state, fid)
+    assert fab is not None and fab.month is not None
+    month = replace(fab.month, turn=game.state.turn, available=10_000.0)
+    state = with_fab(game.state, replace(fab, month=month))
+    state, entries = settle_fabs(state, {fid: own}, b, d)
+    posted = -sum(line.amount for e in entries for line in e.lines if line.account == FOUNDRY_SALES)
+    after = fm.fab_of(state, fid)
+    assert after is not None and after.month is not None
+    m = after.month
+    return posted, m.contracted, m.sold - m.contracted, m.revenue_cents
+
+
+def test_a_half_cent_of_contracted_revenue_rounds_half_even_once() -> None:
+    """Codex's reproduction: 9,900 of 10,000 starts used inside the group, the 100 left all
+    contracted at 0.545 cents, no spot sales: exactly 54.5 cents, posted as 54 (half to even),
+    not the 55 that binary floating point gave."""
+    posted, contracted, spot, revenue = _foundry_month(9_900.0)
+    assert contracted == 100.0 and spot == 0.0
+    assert posted == revenue == 54
+
+
+def test_mixed_contracted_and_spot_revenue_matches_a_rational_reference() -> None:
+    """Contracted and spot revenue are summed exactly and rounded once at posting."""
+    from fractions import Fraction
+
+    from tst.balance import m21
+    from tst.sim.fabs import foundry
+    from tst.sim.fabs import market as fm
+    from tst.sim.money import exact
+
+    posted, contracted, spot, revenue = _foundry_month(9_700.0)
+    assert contracted == 100.0 and spot > 0
+    lg = m21.loaded()
+    # the reference: the same month's slot price, every product exact, one rounding
+    game = m21.game_at(1, m21.ym_to_turn(2016, 1))
+    fid = m21.build(game, "n28", "east_asia", 10_000)
+    m21.play(game)
+    fab = fm.fab_of(game.state, fid)
+    assert fab is not None
+    slot = foundry.slot_price_cents(game.state, fab, lg.balance, lg.game_data)
+    expected = round(Fraction(100) * Fraction(545, 1000) + exact(spot) * exact(slot))
+    assert posted == revenue == expected

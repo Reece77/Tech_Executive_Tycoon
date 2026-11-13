@@ -187,3 +187,101 @@ def test_a_subsidiarys_fabs_are_visible_and_managed(
 def load_state_of(path: Path) -> GameState:
     with open_session(path) as session:
         return load_state(session)
+
+
+# --- Finding 4: an open critical event makes the save read only, at the server -------------------
+
+
+def _snapshot(path: Path) -> tuple[Any, ...]:
+    """Everything a refused action must leave alone: the state, the ledger, the decision log."""
+    from sqlalchemy import func, select
+
+    from tst.db.models import DecisionLogRow, LedgerEntryRow
+
+    with open_session(path) as session:
+        state = load_state(session)
+        entries = session.scalar(select(func.count()).select_from(LedgerEntryRow))
+        decisions = session.scalar(select(func.count()).select_from(DecisionLogRow))
+        return state, dict(ledger_balances(session)), entries, decisions
+
+
+def test_a_critical_event_makes_every_action_read_only_through_the_api(
+    api: Client, saves: Path, loaded: LoadedData
+) -> None:
+    """Codex's reproduction: with the critical mine_price_crash open, POST .../safety was 200 and
+    changed the mine. Now every action is refused with 409 read_only and leaves the state (energy
+    included), the ledger and the decision log as they were; answering the event, reading and
+    the inbox's marks still work."""
+    path = tool("e2e_m19_save").crash(saves, "crash", loaded)
+    base = BASE.format("crash")
+    crash = next(e for e in api.get(f"{base}/events")["open"] if e["severity"] == "critical")
+    mine = api.get(f"{base}/mines")["mines"][0]
+    before = _snapshot(path)
+    refused = [
+        (f"{base}/mines/{mine['id']}/safety", {"safety": "high"}),
+        (f"{base}/mines/{mine['id']}/care", {"restart": False}),
+        (f"{base}/mines/{mine['id']}/close", None),
+        (f"{base}/mines/subsidiaries", {"name": "Late Co", "region": "africa", "cents": 100}),
+    ]
+    for url, body in refused:
+        res = api.client.post(url, json=body)
+        assert res.status_code == 409, (url, res.status_code, res.text)
+        assert res.json()["code"] == "read_only", (url, res.text)
+        assert res.json()["event_id"] == crash["event_id"]
+    assert _snapshot(path) == before
+    assert api.get(f"{base}/mines")["mines"][0]["safety"] == mine["safety"]
+    # allowed: reading, the inbox's marks and answering the event
+    item = api.get(f"{base}/inbox")["items"][0]
+    api.post(f"{base}/inbox/{item['item_id']}/read")
+    api.get("/api/settings/ui")  # settings are the app's, outside any save
+    api.post(
+        f"{base}/events/{crash['event_id']}/choose", json={"choice": crash["choices"][0]["key"]}
+    )
+    # once answered, actions work again
+    api.post(f"{base}/mines/{mine['id']}/safety", json={"safety": "high"})
+    assert api.get(f"{base}/mines")["mines"][0]["safety"] == "high"
+
+
+SET_ASIDE = Path(__file__).resolve().parents[3] / "frontend" / "src" / "lib" / "setAside.ts"
+
+
+def _routes() -> list[Any]:
+    """Every API route, from the routers themselves (each carries its full path)."""
+    import importlib
+    import pkgutil
+
+    from fastapi import APIRouter
+    from fastapi.routing import APIRoute
+
+    import tst.api.routers as package
+
+    out = []
+    for info in pkgutil.iter_modules(package.__path__):
+        module = importlib.import_module(f"{package.__name__}.{info.name}")
+        for value in vars(module).values():
+            if isinstance(value, APIRouter):
+                out += [r for r in value.routes if isinstance(r, APIRoute)]
+    return out
+
+
+def test_the_front_ends_read_only_allowlist_follows_the_servers() -> None:
+    """Every request the front end lets through while a critical event is set aside is one the
+    server allows too: none runs an action (repository.run_action) except answering the event."""
+    import inspect
+    import re
+
+    block = SET_ASIDE.read_text(encoding="utf8").split("const ALLOWED")[1].split("];")[0]
+    allowed = [re.compile(p) for p in re.findall(r"^\s*/(.+)/,\s*$", block, re.MULTILINE)]
+    assert len(allowed) >= 5, block
+    matched = 0
+    for route in _routes():
+        if not route.methods - {"GET", "HEAD"}:
+            continue
+        sample = re.sub(r"\{[^}]+\}", "1", route.path)
+        if not any(p.search(sample) for p in allowed):
+            continue
+        matched += 1
+        source = inspect.getsource(route.endpoint)
+        acts = "run_action" in source or "_act(" in source or "_check(" in source
+        assert acts == sample.endswith("/events/1/choose"), route.path
+    assert matched >= 10
