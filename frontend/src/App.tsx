@@ -5,6 +5,7 @@ import { CompetitorsScreen } from './screens/CompetitorsScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
+import { GuideScreen } from './screens/GuideScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { EventRedirect, InboxScreen } from './screens/InboxScreen';
 import { ExplorationScreen } from './screens/ExplorationScreen';
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="saves" element={<SavesScreen />} />
           <Route path="history" element={<HistoryScreen />} />
           <Route path="history/:tab" element={<HistoryScreen />} />
+          <Route path="guide/:guideKey?" element={<GuideScreen />} />
           <Route path=":section" element={<PlaceholderScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

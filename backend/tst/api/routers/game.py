@@ -375,13 +375,17 @@ def get_inbox(
     limit: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
     archived: bool = False,
+    needs_you: bool = False,
 ) -> InboxOut:
     """Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
     keep only those message kinds, across every page (M3b). Archived items are hidden;
-    `archived=true` shows only them (M4c)."""
+    `archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open
+    major and critical events and waiting proposals and pitches (M29, 42.4)."""
     path = _path(settings, save_id)
     with repository.read_session(path) as session:
-        player = repository.read_state(session).player
+        state = repository.read_state(session)
+        player = state.player
+        only = inbox.needs_you(state) if needs_you else None
         items = inbox.list_inbox(
             session,
             player.id,
@@ -390,11 +394,17 @@ def get_inbox(
             limit=limit,
             offset=offset,
             archived=archived,
+            only=only,
         )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
             total=inbox.inbox_total(
-                session, player.id, unread_only=unread_only, kinds=kind, archived=archived
+                session,
+                player.id,
+                unread_only=unread_only,
+                kinds=kind,
+                archived=archived,
+                only=only,
             ),
             offset=offset,
             items=[

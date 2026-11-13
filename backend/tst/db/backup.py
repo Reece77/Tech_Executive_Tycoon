@@ -62,6 +62,12 @@ def periodic_backup(save_path: Path, turn: int, keep: int) -> Path:
     return dst
 
 
+def manual_backup(save_path: Path, turn: int, stamp: str) -> Path:
+    """The player's Back up (M29): kept until the player deletes the save; never pruned."""
+    slug = slug_of(save_path)
+    return _copy(save_path, backup_dir(save_path) / f"{slug}.turn-{turn:03d}.manual-{stamp}.sqlite")
+
+
 def pre_migration_backup(save_path: Path, turn: int, revision: str | None) -> Path:
     slug = slug_of(save_path)
     rev = revision or "base"

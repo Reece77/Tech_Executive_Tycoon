@@ -7,6 +7,8 @@ import { join } from 'node:path';
 // never touches saves/ or a running `make dev`.
 const API_PORT = Number(process.env.TST_E2E_API_PORT ?? 8765); // overridable to run beside `make playtest`
 const WEB_PORT = Number(process.env.TST_E2E_WEB_PORT ?? 5175);
+// M29 (42.5): the launcher serves the built front end and the API on one port.
+const LAUNCHER_PORT = Number(process.env.TST_E2E_LAUNCHER_PORT ?? 5176);
 // Kept in the environment so test workers (which load this file again) see the same folder;
 // the M4c flow edits a save there with tools/e2e_set_arr.py.
 process.env.TST_E2E_SAVE_DIR ??= mkdtempSync(join(tmpdir(), 'tst-e2e-'));
@@ -48,6 +50,16 @@ export default defineConfig({
       env: { TST_SAVE_DIR: saveDir, ANTHROPIC_API_KEY: '', TST_ANTHROPIC_API_KEY: '' },
       reuseExistingServer: false,
       timeout: 60_000,
+    },
+    {
+      // The launcher as the shortcut runs it, without installing or opening a browser; it
+      // builds frontend/dist first when that is missing or stale.
+      command: `uv run --project backend python tools/launcher.py --no-browser --skip-install --port ${LAUNCHER_PORT}`,
+      cwd: '..',
+      url: `http://127.0.0.1:${LAUNCHER_PORT}/api/meta/scenarios`,
+      env: { TST_SAVE_DIR: saveDir, ANTHROPIC_API_KEY: '', TST_ANTHROPIC_API_KEY: '' },
+      reuseExistingServer: false,
+      timeout: 300_000,
     },
     {
       command: `pnpm exec vite --port ${WEB_PORT} --host 127.0.0.1`,

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Response, status
 
-from tst.api import breakdowns, finance_views, org_views, scaleup_views, views
+from tst.api import breakdowns, finance_views, interruptions, org_views, scaleup_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.schemas.common import ErrorOut, OverviewBreakdownsOut
 from tst.api.schemas.saves import (
@@ -318,6 +318,27 @@ def list_backups(save_id: str, settings: SettingsDep) -> list[BackupOut]:
 
 
 @router.post(
+    "/{save_id}/backups",
+    response_model=BackupOut,
+    status_code=status.HTTP_201_CREATED,
+    responses=ERRORS,
+    operation_id="backUpSave",
+)
+def back_up_save(save_id: str, settings: SettingsDep) -> BackupOut:
+    """Back up now (M29): a copy kept with the save's backups. 409 for an Ironman or busy
+    save."""
+    b = saves_db.back_up(_existing(settings, save_id))
+    return BackupOut(
+        backup_id=b.backup_id,
+        kind=b.kind,
+        turn=b.turn,
+        date_label=format_turn(b.turn),
+        created=b.created,
+        size_bytes=b.size_bytes,
+    )
+
+
+@router.post(
     "/{save_id}/backups/{backup_id}/restore",
     response_model=SaveOut,
     status_code=status.HTTP_201_CREATED,
@@ -348,6 +369,9 @@ def get_overview(save_id: str, settings: SettingsDep, data: DataDep) -> Overview
 )
 def advance(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut:
     path = repository.existing_save_path(settings.resolved_save_dir(), save_id)
+    # M29 (42.4): with Interruptions at critical only, open major events take their first
+    # choice first, as on a holiday; otherwise they block (23.1).
+    interruptions.answer_waived(path, data, interruptions.stop_on(settings.resolved_save_dir()))
     repository.run_turn(path, data, block_major=True)  # the player at the controls (23.1)
     return _overview(save_id, settings, data)
 
