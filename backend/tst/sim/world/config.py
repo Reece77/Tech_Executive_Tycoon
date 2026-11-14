@@ -152,6 +152,7 @@ class WorldBalance(_Frozen):
     repay_cash_months: float = Field(ge=0)  # cash above this many months of costs repays debt
     insolvent_months: int = Field(ge=1)  # months of cash below zero before a company fails
     outlook_spot_weight: float = Field(ge=0, le=1)  # the 3-year outlook's weight on spot
+    pipeline_share: float = Field(ge=0, le=1)  # the opening pipeline: share of the pre-M28 path
     foundry_wafer_cents: int = Field(gt=0)  # a foundry wafer's price at index 1.0 (blended)
     executives: int = Field(ge=1)  # named executives a chain company has (the CEO first)
     ceo_change: float = Field(ge=0, le=1)  # chance a year a chain company's CEO changes

@@ -2099,6 +2099,7 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
   repay_cash_months: 12 # cash above this many months of costs repays debt (A)
   insolvent_months: 6 # months of cash below zero before a chain company fails (as 14.7's rivals)
   outlook_spot_weight: 0.34 # the 3-year outlook: this x the last 12 months' mean price + the rest x the long-run price (A: a year of spot, two of the deck, as M18's deck)
+  pipeline_share: 1.0 # 41.2 (M28r): the world starts with its pipeline: each opening facility grows month by month to the month before the first December decisions can land (December 2026 + the good's build_months), along this share of its good's pre-M28 path (38.3's seeded growth for a foundry, the data's demand_growth for a commodity); 1 = that whole path was already under construction
   foundry_wafer_cents: 500000 # $5,000 a foundry wafer at index 1.0, blended across nodes (A)
   executives: 3 # named executives a chain company has, the CEO first (41.1)
   ceo_change: 0.06 # chance a year a chain company's CEO changes (World news; A)

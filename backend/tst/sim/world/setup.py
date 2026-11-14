@@ -4,8 +4,9 @@ becomes a rival company with facilities at its December 2025 capacity, named exe
 opening books; each good gets its world month and each region its cycle.
 
 Opening books (one entry a company): cash `open_cash_months` of revenue, plant at `open_book` of
-its replacement capex, debt `open_leverage` x a year's EBITDA at December 2025's prices and
-`base_utilisation`, and equity the balance.
+its replacement capex plus the pipeline it is still building, at full replacement capex (paid
+before the world starts; `tst.sim.world.pipeline`), debt `open_leverage` x a year's EBITDA at
+December 2025's prices and `base_utilisation`, and equity the balance.
 """
 
 from __future__ import annotations
@@ -21,7 +22,7 @@ from tst.sim.rivals.models import CHAIN_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState
 from tst.sim.world import data as wd
-from tst.sim.world import draws
+from tst.sim.world import draws, pipeline
 from tst.sim.world import formulas as wf
 from tst.sim.world import query as wq
 from tst.sim.world.config import FOUNDRY_GOOD
@@ -103,8 +104,12 @@ def materialise(
         revenue = cash_costs = fixed = book = 0.0
         for good in goods:
             lr = wq.long_run_usd(state, good, balance, data)
+            grown = pipeline.ratio(
+                state, good, spec.key, turn, pipeline.end_turn(turn, good, data), balance, data
+            )
             for capacity, cost in _tranches(spec, _capacity(data, spec, good, last), balance):
                 capex = capacity * lr * wb.capex_years * wq.CENTS
+                building = capacity * (grown - 1) * lr * wb.capex_years * wq.CENTS
                 f = WorldFacility(
                     id=facility_id,
                     company_id=cid,
@@ -116,7 +121,7 @@ def materialise(
                     status="live",
                     ordered_turn=turn,
                     ready_turn=turn,
-                    capex_cents=round(capex * wb.open_book),
+                    capex_cents=round(capex * wb.open_book + building),
                     output=capacity * wb.base_utilisation / MONTHS,
                 )
                 facility_id += 1
