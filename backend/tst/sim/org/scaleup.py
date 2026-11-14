@@ -32,7 +32,7 @@ from tst.sim.org.formulas import (
 )
 from tst.sim.org.rules import OrgView
 from tst.sim.products.models import Product
-from tst.sim.state import GameState, derived
+from tst.sim.state import GameState
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,23 +68,7 @@ def modifiers(
     state: GameState, view: OrgView, balance: Balance, data: GameData, *, estimate: bool = False
 ) -> Modifiers | None:
     """Seat, support and structure factors (18.5). `estimate`: seat effects from displayed
-    ranges, for the API (M8r); the engine always uses true values.
-
-    M30: a company's factors are the same for each of its products in one state, so they are
-    computed once per state and company, for the same view, balance and data objects."""
-    key = ("org.modifiers", view.company_id, estimate)
-    kept = derived(
-        state, key, lambda: (view, balance, data, _modifiers(state, view, balance, data, estimate))
-    )
-    kept_view, kept_balance, kept_data, value = kept
-    if kept_view is view and kept_balance is balance and kept_data is data:
-        return value
-    return _modifiers(state, view, balance, data, estimate)
-
-
-def _modifiers(
-    state: GameState, view: OrgView, balance: Balance, data: GameData, estimate: bool
-) -> Modifiers | None:
+    ranges, for the API (M8r); the engine always uses true values."""
     company = state.company(view.company_id)
     seats = ex.seats_in_play(state, company.id, balance)
     if not seats and not company_divisions(state, company.id):
