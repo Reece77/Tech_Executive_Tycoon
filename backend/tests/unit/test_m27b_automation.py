@@ -427,8 +427,9 @@ def test_fab_spare_starts_go_under_contract_at_the_best_price_above_the_margin()
     assert fab.month is not None
     cap = auto.state.facility(fid).capacity  # type: ignore[union-attr]
     assert sum(c.monthly_starts for c in contracts) <= cap * 0.8 + 1e-6
+    assert signed  # spare starts at the slot price, well above the cash cost a start
     for c in signed:
-        assert c.price_millicents / 1000 >= fab.month.cost_per_start_cents * 1.2 - 1
+        assert c.price_millicents / 1000 >= chain.cash_cost_per_start(fab.month) * 1.2 - 1
 
 
 def test_corporate_development_screens_then_pitches_a_bid_as_a_proposal() -> None:

@@ -24,6 +24,7 @@ from tst.sim.automation.run import AutoRun
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import SimError
 from tst.sim.exploration.pipeline import StageName
+from tst.sim.fabs.models import FabMonth
 from tst.sim.ledger import CASH, account_balance
 from tst.sim.mining.models import Mine
 from tst.sim.org.formulas import decision_quality
@@ -812,8 +813,9 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
     starts go under foundry contracts at the most each designer pays (the node's slot price,
     as the fab card shows), if that is at or above the margin guardrail over the cost a start,
     up to the player's cap on the contracted share, a designer up to its share (M23a); the rest
-    sells at spot. Fabs and wafer plants are staffed. Upgrades, conversions and new nodes are
-    one-offs. Mistake: a contract 20% under the best price."""
+    sells at spot. The margin is over the cash cost a start (`cash_cost_per_start`). Fabs and
+    wafer plants are staffed. Upgrades, conversions and new nodes are one-offs. Mistake: a
+    contract 20% under the best price."""
     from tst.sim.contracts import termination as ct
     from tst.sim.fabs import foundry as fc
     from tst.sim.fabs import market as fm
@@ -834,7 +836,7 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
             continue
         cap = float(facility.capacity)
         own = fab.month.own
-        cost = fab.month.cost_per_start_cents
+        cost = cash_cost_per_start(fab.month)
         for customer in fc.customers(data):
             state = run.state
             running = fc.running(state, facility.id)
@@ -866,6 +868,14 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
                 text,
                 not right,
             )
+
+
+def cash_cost_per_start(month: FabMonth) -> float:
+    """The fab card's cost a start less depreciation (sunk: the spot slots that take the rest
+    pay less than any contract), over the starts it ran last month."""
+    run = month.own + month.sold + month.contracted
+    cash = month.fixed_cents + month.materials_cents + month.power_cents + month.staff_cents
+    return cash / max(1.0, run)
 
 
 # --- Government affairs (40.7; M27b sub-task 7) -------------------------------------------------
