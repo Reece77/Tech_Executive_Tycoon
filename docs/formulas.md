@@ -3495,3 +3495,88 @@ Platforms' public facts: owners, users and developer shares as published (exact 
 - **Gatekeeping** (§44.5): a rejected update costs a month of the category's features; a fee dispute charges a month's fees on that platform again; a regulator's answer takes 6 months. The appeal odds shown are `review.appeal_odds`; the chance is drawn inside them on the answer month and never stored.
 - **Tuning for §44.9 target 2:** `reach_exp` 1.0 → 0.5 and `fee_exp` 1.0 → 3.0.
 
+## 45. Family and succession (M36; v5, lane D)
+
+Reece (2026-11-14): **the player plays the heir**, and the old founder becomes a board member and adviser with opinions. This section adds a partner and children, children growing up, heirs in the company, succession, estate planning and a dynasty legacy. It builds on §32 (stress, persona, the personal account) and §37 (wealth and the family office). **Nothing here changes a company's rules** except through the effects named below, and a founder with no family plays exactly as before.
+
+### 45.1 The family
+
+- **Setting up.** A new game has a **Family** setting with three options: none (the default for scripted strategies and balance runs); a partner; or a partner and children, with the number and ages chosen at the start.
+- **Family members** are people (§2's generation, stream `family`, id 59, key `(founder_id, member_index)`): attributes, hidden potential, personality and interests. They sit outside any company until they join one.
+- **Children's traits.** A child's personality blends the founder's and the partner's (`family.inherit` 0.5) plus noise. Their interests come from both parents' interests and the child's own draw.
+- **Life events** (stream `family`), all minor unless stated:
+  - meeting a partner (founders aged 24–45 with stress under 60, `family.partner_rate` a year);
+  - marriage (a choice);
+  - children (while the partner is under 45, `family.child_rate` a year, at most `family.max_children`);
+  - milestones at ages 5, 12, 18 and 22.
+  - These events never block Continue except where §45.2 marks them critical.
+
+### 45.2 Family time, the relationship and its strain
+
+- **Family time.** The founder sets **family time** each month, 0–20 energy taken from the monthly budget (default 10 once a family exists).
+  - Each month, stress falls by `family.calm × time / 20` (up to 6).
+  - The **relationship** score (0–100, starting at 70) moves by `family.bond × (time − 8) / 8` a month (±2 at the extremes), and falls by 3 for each burnout month (§32.1).
+  - Each child's **closeness** (0–100) moves the same way.
+- **Strain.** Below a relationship of 30, a critical event offers three answers: more time (family time at least 15 for 6 months), counselling (personal cost, +10), or carrying on (−10).
+- **Divorce.** Below 15 for 6 months, divorce follows. The partner leaves with half of the personal account and investments, and `family.divorce_share` (50%) of the founder's shares in each company. The partner's shares become an independent holder: ADR-0018's cap table, voting with the board by default. The persona's Beloved trait falls by 10, and History records it.
+
+### 45.3 Children growing up
+
+- **Development.** Children's attributes develop each month from age 5 by §2's growth formula, using their age and potential. An education multiplier `e` and the founder's closeness multiply the growth term (`× e × (0.8 + 0.4 × closeness / 100)`).
+- **Education** is a choice at ages 12, 18 and 22, paid from the personal account (`9300 personal spending`) at `family.education_cents.<tier>`:
+  - **school:** standard or elite (`e` 1.0 or 1.2);
+  - **university:** none, standard or top (`e` 1.0, 1.15 or 1.3, with a degree field that weights its skills: engineering, business, design, science or medicine);
+  - **a later MBA** (+management skills).
+- **Seeing a child's ability.** A child's ratings show as ranges, narrowing with the founder's time with them (§18.8's reveal rules). Potential is never shown exactly (CLAUDE.md §8).
+
+### 45.4 Heirs in the company
+
+- **Joining.** From 22, a child may join a group company in any role, with an offer like any hire (§7). The child accepts if their closeness is at least 40 and the role matches their interests; otherwise they may join a rival or found their own company (an occasional event, `family.own_way_rate`).
+- **Mentoring** (founder energy 3 a month per heir) adds `family.mentor_growth` (+30%) to the heir's growth in management and leadership skills, and closeness +1.
+- **Succession readiness.** Each heir shows a readiness band (not ready, developing, ready, strong) from three things:
+  - their displayed CEO-seat fit (§25.6, from revealed ranges);
+  - their years in the group and the seats they have held;
+  - the board's confidence in them (§14.6, rising with their visible results).
+- **Staff reactions.** Staff see a family member's promotion: morale −2 in their unit if the heir's displayed fit is below the median of the people passed over (nepotism), and +1 if above.
+
+### 45.5 Succession
+
+- **When it happens:**
+  - **By choice:** a one-off, at any time.
+  - **On health grounds:** from age 70, each year a seeded health event (stream `family`) asks the founder to step back, with chance `family.step_back_rate × (age − 69)`. The founder can delay twice; the third is final.
+  - **Through the board:** removal (§14) also triggers succession instead of game over, when an heir is at least "developing" or a professional CEO is named.
+- **The choice** (a critical event):
+  - **An heir** (any child at least 25 in the group), or
+  - **a professional CEO** (the CEO seat, §25.6, from inside or a search, §13).
+- **Choosing an heir:** **the player now plays the heir.** The heir becomes the founder person, with the founder role and energy. Stress starts at 20, the persona starts from the heir's own traits (each at 20 plus the parent's at a quarter strength), and the heir's own relationships carry over. The old founder joins the board as **adviser**.
+- **Choosing a professional CEO:** the player continues as **the family's head**, acting through the board and the Automation screen (M27). They can name an heir later, as a new succession.
+- **The adviser** (the old founder) gives opinions on proposals and one-offs in their voice (LLM within §16's budget, or templates), from their persona and past choices. When the adviser opposes a decision, that director's board confidence falls (−5). The adviser retires from the board at 80, or by choice.
+
+### 45.6 Estate planning and estate tax
+
+- **Estate tax.** At succession by health and at the founder's death in dynasty mode (M37), the estate pays tax by the founder's home region: `estate_tax.<region>.rate` above `.exemption_cents`. Data and dates come from the M36 research dossier; for the US, 40% above the exemption.
+- **Paying it.** The estate pays from personal cash first, then by selling shares. That can cost the family control: a sale above the free float may need a secondary offering (§25.5).
+- **Planning** (one-offs, set up in life):
+  - **gifting shares** to heirs (gift tax at the same rates above the lifetime exemption);
+  - **a family trust** (holds shares outside the estate; set-up cost; the founder still votes them; distributions to heirs);
+  - **the foundation** (§32.3: shares given to it leave the estate and count toward legacy).
+- **Hidden values:** none. Estate tax, trusts and exemptions are public rules.
+
+### 45.7 The dynasty legacy
+
+- Each generation's legacy is §32.6's score for their years.
+- **The dynasty score** sums the generations' legacies, plus `100 × log10(1 + family-held value at the game's end / $1B)`, minus 50 for each loss of family control.
+- **Shown** in the Hall of Fame as a family tree with each generation's score.
+
+### 45.8 Balance targets (printed)
+
+1. **Nothing moves without a family:** with Family set to none, every earlier guard and the state-cache check are unchanged.
+2. **Family time matters:** over 10 years with a partner and two children, family time of 10 keeps the relationship above 50 on at least 8 of 10 seeds; family time of 0 with burnout leads to divorce on at least 3 of 10.
+3. **Upbringing matters:** at 22, heirs with elite school, top university and closeness above 70 have a median CEO-seat score at least 3 points above heirs with standard education and closeness under 40, from the same potential.
+4. **Succession is a real choice:** a strong heir and a professional CEO of equal displayed fit lead to median company value within ±20% of each other 10 years after succession (neither is always right).
+5. **Estate planning pays:** a founder with $10B in shares and no planning loses family control on at least half of seeds at a health succession; with a trust set up 10 years earlier, on at most 1 of 10.
+6. **Turn time** within M30's budget.
+
+### 45.9 What the API may show
+
+Family members' public facts (names, ages, relationships, education, roles), their ratings as revealed ranges, readiness bands, closeness and relationship scores, the adviser's opinions, estate-tax rules and quotes, and the dynasty score with its parts. Never a family member's potential or hidden traits, or the draws behind life events.
