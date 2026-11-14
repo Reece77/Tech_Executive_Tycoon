@@ -11,8 +11,8 @@ import pytest
 from tests.world_helpers import WORLD_START, world_state
 from tst.loader import LoadedData
 from tst.sim.fabs import nodes as nd
-from tst.sim.world import operate, pipeline
 from tst.sim.world import data as wd
+from tst.sim.world import operate, pipeline
 from tst.sim.world.config import FOUNDRY_GOOD
 
 DECEMBER_2026 = 203
