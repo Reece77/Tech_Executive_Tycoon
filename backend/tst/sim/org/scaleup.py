@@ -76,8 +76,9 @@ def modifiers(
     kept = derived(
         state, key, lambda: (view, balance, data, _modifiers(state, view, balance, data, estimate))
     )
-    if kept[0] is view and kept[1] is balance and kept[2] is data:
-        return kept[3]
+    kept_view, kept_balance, kept_data, value = kept
+    if kept_view is view and kept_balance is balance and kept_data is data:
+        return value
     return _modifiers(state, view, balance, data, estimate)
 
 
