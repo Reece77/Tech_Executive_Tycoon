@@ -42,9 +42,9 @@ def _save(tmp_path: Path, loaded: LoadedData) -> Path:
             arr = [100, 300, 200, 300, 900, 50][t % 6] * (1 + t // 60)  # records, ties, falls
             kpis = {"arr_cents": arr, "headcount": 5 + t % 7, "cash_cents": t}
             session.add(TurnSnapshotRow(turn=t, company_id=COMPANY, kpis=kpis))
-            for k in range(t % 3 + 1):
+            for _ in range(t % 3 + 1):
                 session.add(TurnLogRow(turn=t, company_id=COMPANY, kind="month_end", message="x"))
-            session.add(TurnLogRow(turn=t, company_id=None, kind="world", message=f"m{k}"))
+            session.add(TurnLogRow(turn=t, company_id=None, kind="world", message=f"m{t}"))
         meta = session.scalars(select(SaveMetaRow)).one()
         meta.current_turn = MONTHS
     return path
