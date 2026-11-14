@@ -44,34 +44,44 @@ def loaded() -> LoadedData:
     return load_all(DATA)
 
 
+def _f(x: float) -> str:
+    """A float to 10 significant figures: libm's last bits differ between platforms (the
+    fixture is recorded on Windows; CI runs Linux), the history's numbers do not."""
+    return f"{x:.10g}"
+
+
+def _params(params: tuple[tuple[str, object], ...]) -> str:
+    return "|".join(f"{k}={_f(v) if isinstance(v, float) else v}" for k, v in params)
+
+
 def _month_lines(game: Game, result: TurnResult, turn: int) -> dict[str, list[str]]:
     state = game.state  # after the month: the month just played is `turn`
     b, d = game.loaded.balance, game.loaded.game_data
     out: dict[str, list[str]] = {s: [] for s in SERIES}
     out["prices"] = [
-        f"{g.good}|{g.turn}|{g.index!r}|{g.allocation!r}|{g.shock_turn}|{g.shock_kind}"
+        f"{g.good}|{g.turn}|{_f(g.index)}|{_f(g.allocation)}|{g.shock_turn}|{g.shock_kind}"
         for g in state.supply
     ]
     if d.nodes is not None:
         tl = market.timeline(state, b, d)
         slots = market.player_slots(state)
         out["wafer"] = [
-            repr(nd.price_factor(tl, d.nodes, turn, b.fab, slots)),
-            repr(nd.allocation_factor(tl, d.nodes, turn, b.fab, slots)),
+            _f(nd.price_factor(tl, d.nodes, turn, b.fab, slots)),
+            _f(nd.allocation_factor(tl, d.nodes, turn, b.fab, slots)),
             *(f"{n}|{tl.behind(n, turn)}" for n in tl.keys if tl.arrival[n] <= turn),
             *(f"{f.key}|{tl.reached(f.key, turn)}" for f in d.nodes.foundries),
         ]
         out["capacity"] = [
-            f"{f.key}|{nd.capacity(tl, f, turn, b.fab)!r}" for f in d.nodes.foundries
+            f"{f.key}|{_f(nd.capacity(tl, f, turn, b.fab))}" for f in d.nodes.foundries
         ]
     if turn % MONTHS_PER_YEAR == MONTHS_PER_YEAR - 1:  # December: the rival miners
         rng = RngFactory(state.save_meta.master_seed)
         out["capacity"] += [
-            f"{r.supplier}|{r.commodity}|{r.capacity_share!r}|{r.output_share!r}"
+            f"{r.supplier}|{r.commodity}|{_f(r.capacity_share)}|{_f(r.output_share)}"
             for r in rival_capacity(rng, turn, state, b, d)
         ]
     out["events"] = [
-        f"{i.turn}|{i.company_id}|{i.kind}|{i.template}|{i.message}|{i.params}"
+        f"{i.turn}|{i.company_id}|{i.kind}|{i.template}|{i.message}|{_params(i.params)}"
         for i in result.log_items
     ] + [f"{r.template_id}|{r.company_id}" for r in result.event_requests]
     out["books"] = [
