@@ -20,7 +20,7 @@ from tst.api.schemas.automation import (
     UnitChoiceOut,
 )
 from tst.loader import LoadedData
-from tst.sim.automation import digest, owners
+from tst.sim.automation import chain, digest, owners
 from tst.sim.automation.plan import automate_everything, energy_left
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance
@@ -227,6 +227,7 @@ def plan_out(
         if k not in chosen
         and state.area_owner(company, k) is None
         and owners.automatable_in(state, company, k, b)
+        and (k not in chain.RULES or chain.relevant(state, company, k, b, data.game_data))
     ]
     return AutomatePlanOut(assignments=out, left_out=left)
 

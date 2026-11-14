@@ -1096,6 +1096,40 @@ def _bid_asked(state: GameState, company: int, target_id: int, b: Balance) -> bo
     return False
 
 
+def relevant(state: GameState, company: int, area: str, b: Balance, data: GameData) -> bool:
+    """A chain area has something to run in the company now (Automate everything hands out
+    only these, so it does not spend the founder's energy on idle areas)."""
+    from tst.sim.chips import chips
+
+    facilities = {f.kind for f in state.company_facilities(company) if f.status != "closed"}
+    selling = [p for p in state.company_products(company) if p.status in SELLING]
+    match area:
+        case "production":
+            return bool(device_products(state, company, b)) or b.hardware.plant_kind in facilities
+        case "supply":
+            return bool(supply_needs(state, company, b, data)) or any(
+                chips.is_chip(p, data) for p in selling
+            )
+        case "exploration":
+            return any(s.company_id == company for s in state.desk_studies) or any(
+                p.company_id == company and p.status in ("active", "permitted")
+                for p in state.projects
+            )
+        case "mines":
+            return any(m.company_id == company and m.is_open for m in state.mines) or bool(
+                facilities & _plant_kinds(b)
+            )
+        case "fabs":
+            return bool(facilities & {"fab", "wafer_plant"})
+        case "government":
+            return "fab" in facilities or bool(blocked(state, company, b, data))
+        case "corp_dev":
+            return any(f.acquirer_id == company for f in state.target_files) or any(
+                d.acquirer_id == company for d in state.deals
+            )
+    return True
+
+
 RULES: dict[str, Callable[[AutoRun, AreaOwner, GameData], None]] = {
     "production": production,
     "supply": supply,

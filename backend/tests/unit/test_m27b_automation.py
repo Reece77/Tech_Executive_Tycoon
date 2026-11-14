@@ -620,3 +620,20 @@ def test_no_owner_rows_anywhere_in_the_group_changes_nothing(device_game: Game) 
             state, RngFactory(1), B, LOADED.game_data, balances
         )
         assert out is state and entries == () and logs == () and taken == ()
+
+
+def test_automate_everything_hands_out_only_chain_areas_with_something_to_run(
+    device_game: Game,
+) -> None:
+    from tst.sim.automation import chain
+    from tst.sim.automation.plan import automate_everything
+
+    plain = start_game(LOADED, 1)
+    for area in chain.RULES:
+        assert not chain.relevant(plain.state, PLAYER, area, B, LOADED.game_data), area
+    assert chain.relevant(device_game.state, PLAYER, "production", B, LOADED.game_data)
+    assert chain.relevant(device_game.state, PLAYER, "supply", B, LOADED.game_data)
+    plan = automate_everything(device_game.state, 10**10, B, LOADED.game_data)
+    areas = {a.area for a in plan}
+    assert {"production", "supply"} <= areas
+    assert not areas & {"exploration", "mines", "fabs", "corp_dev"}

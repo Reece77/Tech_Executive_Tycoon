@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tst.sim.automation import owners
+from tst.sim.automation import chain, owners
 from tst.sim.automation.run import month_energy
 from tst.sim.data_models import Balance, GameData
 from tst.sim.money import Cents
@@ -43,6 +43,8 @@ def automate_everything(
     for area in owners.area_keys(b):
         if not owners.automatable_in(state, company, area, b):
             continue
+        if area in chain.RULES and not chain.relevant(state, company, area, b, data):
+            continue  # M27b: a chain area with nothing to run here yet
         if state.area_owner(company, area) is not None:
             continue
         cost = owners.area_def(b, area).energy
