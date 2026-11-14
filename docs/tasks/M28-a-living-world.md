@@ -111,6 +111,48 @@ Read on this branch (weekly run 43569674208, before the M27a merge) and on seeds
 26. **Intel Foundry.** The foundry chain company is named "Intel Foundry" (chain_companies.yaml `name`), since the chip rival Intel already exists; the loader refuses a chain company named as a rival.
 27. **The practice save `pt-world`** is `tools/e2e_m28_save.py world`: Cathode, M13's listed scale-up, moved to 2026 and played through 2026 in the world, with a 25 kt lithium converter in Latin America, a 5-year Albemarle offtake and its share price at 55% of value. `bid` moves it to the first month a rival's own valuation bids (Playwright flow c).
 
+28. **M28r: the world starts with its pipeline (product manager ruling, 2026-11-14).** The nightly on main after m28-done missed 38.5 target 3: the named foundries' world capacity stood still from January 2026 until the first December 2026 expansions landed (36 months later), while 38.3's expected capacity grew about 6% a year, so the foundry price factor rose from 1.02 (2026) to 1.21 (2029) on seed 3 and a 5 nm fab two nodes behind returned 5.07% (band < 5%). No script change could help (target 3 reads the market price; offtakes or contracts only cut the fab's costs, raising every IRR), and no `world.*` key reaches 2026-2029 foundry capacity. Ruling: every chain good starts with capacity under construction. Each opening facility grows month by month to the month before December 2026 + its good's `build_months` (foundries November 2029, gallium November 2027), along its good's pre-M28 path: a named foundry's 38.3 seeded growth (the other foundries' aggregate: the named foundries' summed path); a commodity's data `demand_growth`. Before M28 no commodity (M17) or refined good (M20) had a capacity path after 2025: their prices followed M17's seeded path, which in the world means a balance factor of 1, i.e. supply at `base_utilisation` keeping pace with the baseline demand, so `demand_growth` is that path (interpretation recorded here). New key `world.pipeline_share` 1.0. The pipeline's capex is in the opening books at full replacement cost (paid before 2026); December decisions count the pipeline still to arrive as planned capacity (`tst/sim/world/pipeline.py`, formulas 41.2 and 41.10). Golden snapshots unchanged.
+
+    Readings, main (f030020) → m28r-fix:
+
+    | Guard | Before | After | Band | |
+    | --- | --- | --- | --- | --- |
+    | 38.5 T3, seed 1 (80% / 50% / behind) | 13.1% / 0.9% / 3.3% | 12.5% / −0.0% / 2.5% | > 12% / < 5% / < 5% | met (80% use is 0.5 points over the floor, as before M28: 12.51%) |
+    | 38.5 T3, seed 2 | 13.4% / 1.3% / 3.6% | 12.7% / 0.2% / 2.6% | | met |
+    | 38.5 T3, seed 3 | 14.5% / 2.7% / **5.1%** | 13.8% / 1.7% / 4.1% | | met (was missed) |
+    | 38.5 T1, T2, T4, T5, T6 | met (0 misses; $16.9-21.2B, 28 nm $4.75-5.94B; first yield 35%, 80% in 24/21/23 months; 23.4/23.8/23.6% cheaper; gap 0.00%) | identical | | met |
+    | 41.8 T1 history to 2025 (10 seeds, fingerprint) | identical | identical | identical | met |
+    | 41.8 T2 lithium 2031-33, built vs not (median) | −12% (seeds +1% to −17%) | −8% (seeds +6% to −18%) | 15-40% lower | carried (decision above); further from the band: the player's 20% now meets a market already supplied at its demand pace, not one tightened by flat 2026-27 capacity |
+    | 41.8 T2b seeds with a rival mothballing | 8/10 | 9/10 | every seed | carried with T2 |
+    | 41.8 T3 alive Dec 2039 (median); longest run < 70% of demand | 100%; 21 months | 100%; 4 months | ≥ 80%; ≤ 24 | met |
+    | 41.8 T4 groups 2035; deals a year | 10/10; 1 | 10/10; 1 | ≥ 7/10; ≤ 3 | met |
+    | 41.8 T5 bids at 0.6× / 1.0× | 10/10 / 1/10 | 10/10 / 1/10 | ≥ 5 / ≤ 1 | met |
+    | 41.8 T6 SMIC lag 2030 (controls/lifted) | 3.0/4.25, 2.0/3.25, 3.0/4.25 | identical | ≥ 1 shorter | met |
+    | 41.8 T7 software company to 2025 | in T1's fingerprint | identical | identical | met |
+    | 41.8 T8 2039 turn, world / none | 1.04× | 1.03× (427 / 415 ms, under load) | ≤ 1.3× | met |
+    | 33.6 M17 T1-T5 | 0 months off; +7.3%; min 3.1 pts; 0.85; shocks 7-10, longest above 3.0 24 months | identical | | met |
+    | v3 I1 year 30 (known miss, M28) | +0.1 pts | +0.0 pts | ≥ −2.0 (bound) | known |
+    | v3 I2 / I3 | 1.04× / 0 wins | 1.03× / 0 wins | 0.90-1.40× / ≤ 4 | met |
+    | v3 S1 / S2 | +7.3% / 22.8% (10 of 10) | identical | ≥ +3% / ≥ 5% | met |
+    | v3 F1 / L1 / L2 | 10 of 10 / all / all | identical | ≥ 7 / every run / every category | met |
+    | v3 L3 longest index run outside [1/3, 3] | 31 months (lithium) | 22 months (polysilicon) | ≤ 36 | met |
+    | v3 L4 (printed) | 1 of 10 | 1 of 10 | printed | |
+    | V5.cats research_heavy (weekly-v5) | fintech 2030s 7/9: FAIL | identical: FAIL | | rule 3: the same reading on main (weekly 43605652584) and the branch (43606818446); decision above records it as seed variance (rule 4) |
+    | V6 extended (weekly-v6-integrator, 2039 turn) | 908 ms (908/816/942) | 1101 ms (1101/1025/1101) on the first run | < 1.0 s | rule 6: profiled in memory on both trees (same full_integrator game to December 2039, 149 staff): branch 2880 ms against main 3034 ms a turn under cProfile, 271 world facilities against 326, the pipeline's code idle after 2029; the CI save build was already 7% slower at turn 240, where the code is identical. Re-runs: 1105 ms (1105/1032/1111), then 1118 ms (1118/1034/1130) in weekly 43639486286, run alongside main's 43639488593 (5e5095b): 677 ms (677/554/687). Handed to M30 (product manager ruling 2026-11-14): see below |
+
+    Main's weekly: 43605652584 (42a8037). The branch's: 43606818446 (fd3cc75; later commits are docs and a test's import order).
+
+    **V6 on the full_integrator save, handed to M30** (product manager ruling 2026-11-14). The branch misses the 1.0 s budget on CI's runner in all three readings (1,101, 1,105 and 1,118 ms); main reads 677 to 908 ms. The other V6 job (its own 2039 save) reads the same on both refs in the same weekly: branch 702 ms, main 736 ms. On this session's machine (4 vCPU, 16 GB, a 260 MB L3 cache), built through the save path and run alone (`make weekly-v6-integrator`'s test, rule 6):
+
+    | | branch | main (f030020) |
+    |---|---|---|
+    | V6 median, two runs | 850 ms, 923 ms | 862 ms, 881 ms |
+    | 2039 turns under cProfile | 1,675 ms | 1,793 ms |
+    | 9 save-path turns: median, peak RSS, live Python objects | 917 ms, 204 MB, 418,561 | 943 ms, 204 MB, 417,400 |
+    | save: staff, table rows | 134; within 0.3% of main's in every table | 133 |
+
+    No step is slower on the branch here, so rule 6 found nothing to make proportional; the gap shows only on CI's hardware (smaller CPU caches are the likely difference). The turn-time budget on that save is handed to M30 (performance), whose target is a 400 ms median for 2039 turns on the CI runner; the product manager records the hand-off in M30's lane, so it is not added to `known_misses.py`.
+
 ## Follow-ups
 
 - The player cannot yet bid for a chain company (28.3's deals list rivals only); a "buy Albemarle" action would complete the vertical-integration story.

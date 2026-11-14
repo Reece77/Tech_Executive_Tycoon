@@ -4,7 +4,8 @@ Each December, companies in order of cost (lowest first, then stable key) look a
 make. The outlook is 41.2's 3-year displayed price outlook (a year of spot, two of the long-run
 level) times the balance factor the market would have when a new build arrives (the good's
 `build_months` ahead): demand at the data's growth, against the capacity live and building
-(announced builds are public) plus this expansion. A company expands when the market would be
+(announced builds are public, the opening pipeline's still to arrive among them:
+`tst.sim.world.pipeline`) plus this expansion. A company expands when the market would be
 tight then without it (that factor at least 1: M28 decision, so producers build for demand
 rather than into a balanced market after a price spike), that outlook tops a new unit's full
 cost x (1 + `hurdle`), and its net debt is under `max_leverage` x a year's EBITDA (a company
@@ -30,7 +31,7 @@ from tst.sim.money import Cents
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 from tst.sim.world import data as wd
-from tst.sim.world import draws
+from tst.sim.world import draws, pipeline
 from tst.sim.world import formulas as wf
 from tst.sim.world import operate as wo
 from tst.sim.world import query as wq
@@ -65,9 +66,10 @@ def decide(
     goods = wd.all_goods(data)
     flows = wo.player_flows(state, balance, data)
     mean = wo.cycle_mean(state)
+    names = pipeline.keys(state)
     planned = {
         g: sum(
-            f.capacity
+            pipeline.committed(state, f, balance, data, names)
             for f in state.world_facilities
             if f.good == g and f.status in ("live", "building")
         )
