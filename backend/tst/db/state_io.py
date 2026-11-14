@@ -1680,9 +1680,64 @@ def _update_rows(session: Session, model: Any, rows: list[dict[str, Any]]) -> No
     for row in rows:
         groups[tuple(row)].append(row)
     for keys, same in groups.items():
+        raw = _raw_update(session, model, keys)
+        if raw is not None:  # M30: plain columns go straight to the driver, same SQL
+            sql, order, floats = raw
+            values = [
+                tuple(
+                    float(v) if f and v is not None else v
+                    for v, f in zip((row[k] for k in order), floats, strict=True)
+                )
+                for row in same
+            ]
+            cursor = session.connection().connection.driver_connection.cursor()  # type: ignore[union-attr]
+            try:
+                cursor.executemany(sql, values)
+            finally:
+                cursor.close()
+            continue
         names = tuple(f"b_{k}" for k in keys)  # once per group, not per row (M14 turn time)
         params = [dict(zip(names, row.values(), strict=True)) for row in same]
         session.execute(_update_statement(model, keys), params)
+
+
+RawUpdate = tuple[str, tuple[str, ...], tuple[bool, ...]]
+
+
+@cache
+def _raw_sql(model: Any, keys: tuple[str, ...], dialect_name: str) -> RawUpdate | None:
+    """`_update_statement` as driver SQL with positional parameters: the SQL, the attribute
+    order of its parameters, and which of them are Float columns (SQLAlchemy binds those as
+    float(value); the caller does the same). Only when no other column it binds converts its
+    value (no JSON, no Boolean...): the driver then gets exactly the values SQLAlchemy would
+    pass. Else None."""
+    from sqlalchemy import Float
+    from sqlalchemy.dialects import sqlite
+
+    mapper = model.__mapper__
+    pk = [mapper.get_property_by_column(c).key for c in mapper.primary_key]
+    sets = [k for k in keys if k not in pk]
+    if not sets or any(k not in keys for k in pk):
+        return None
+    dialect = sqlite.dialect()
+    order = (*sets, *pk)
+    floats = []
+    for k in order:
+        col_type = mapper.columns[k].type
+        is_float = type(col_type) is Float and not col_type.asdecimal
+        if not is_float and col_type.bind_processor(dialect) is not None:
+            return None
+        floats.append(is_float)
+    table = model.__table__.name
+    assign = ", ".join(f'"{mapper.columns[k].name}" = ?' for k in sets)
+    where = " AND ".join(f'"{mapper.columns[k].name}" = ?' for k in pk)
+    return f'UPDATE "{table}" SET {assign} WHERE {where}', order, tuple(floats)
+
+
+def _raw_update(session: Session, model: Any, keys: tuple[str, ...]) -> RawUpdate | None:
+    if session.get_bind().dialect.name != "sqlite":
+        return None
+    return _raw_sql(model, keys, "sqlite")
 
 
 SAVE_CHUNK = 500  # tunable-exempt: primary keys per existence query (SQLite's variable limit)

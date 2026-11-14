@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 from tst.sim.data_models import GameData
 from tst.sim.geopolitics.config import ExportControlsFile, RuleDef
-from tst.sim.state import GameState
+from tst.sim.state import GameState, from_all
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,9 +72,14 @@ def applies(state: GameState, data: GameData, active: ActiveRule, turn: int) -> 
 
 
 def in_force(state: GameState, data: GameData, turn: int | None = None) -> tuple[ActiveRule, ...]:
-    """Rules applying in `turn` (default: the state's), biting or not."""
+    """Rules applying in `turn` (default: the state's), biting or not: a function of the
+    seeded rules, the suspensions and the data alone, so kept while they are (M30)."""
     t = state.turn if turn is None else turn
-    return tuple(a for a in all_rules(state, data) if applies(state, data, a, t))
+    return from_all(
+        (state.seeded_rules, state.suspensions, data),
+        ("rules_in_force", t),
+        lambda: tuple(a for a in all_rules(state, data) if applies(state, data, a, t)),
+    )
 
 
 def biting(state: GameState, data: GameData, turn: int | None = None) -> tuple[ActiveRule, ...]:

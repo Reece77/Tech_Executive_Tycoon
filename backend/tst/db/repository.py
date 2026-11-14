@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import json
 import logging
 import os
@@ -984,6 +985,17 @@ def _after_commit(
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    settle_memory()
+
+
+def settle_memory() -> None:
+    """After a month (M30): collect the young generations, then freeze what is left alive so
+    the collector's full passes skip it. A 2039 save holds about 400,000 objects, and a full
+    pass over them took 150-500 ms at unpredictable moments inside the next turns. Objects
+    freed later still go by reference counting; only cyclic garbage that was alive at a freeze
+    stays (about 300 objects a month, measured). It never changes a result."""
+    gc.collect(1)
+    gc.freeze()
 
 
 # --- Player actions (ADR-0014) --------------------------------------------------------------

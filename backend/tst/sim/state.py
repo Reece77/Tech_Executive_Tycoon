@@ -827,7 +827,10 @@ class GameState:
 
 
 MEMO_CHECK = False  # M30's debug tests: every derived value is recomputed and compared
-_INPUT_MEMO: OrderedDict[int, tuple[object, dict[object, Any]]] = OrderedDict()
+_INPUT_MEMO: OrderedDict[tuple[int, ...], tuple[tuple[object, ...], dict[object, Any]]] = (
+    OrderedDict()
+)
+_ONE_INPUT: dict[int, tuple[object, dict[object, Any]]] = {}  # from_inputs: id -> (input, memo)
 _INPUT_MEMO_GUARD = threading.Lock()  # the API reads states from several threads
 INPUT_MEMO_SIZE: Final = 64  # tunable-exempt: input tuples whose derived values are kept
 
@@ -837,14 +840,38 @@ def from_inputs[T](source: object, key: object, compute: Callable[[], T]) -> T:
     person states), computed once per input object (M30). Unlike `derived` it outlives the
     state: a state made by `replace` that keeps the tuple keeps its derived values. The
     input is held with its values, so its id cannot be reused while they are kept."""
+    hit = _ONE_INPUT.get(id(source))  # the hot path: no lock, no key tuple (atomic reads)
+    if hit is not None and hit[0] is source and key in hit[1] and not MEMO_CHECK:
+        value: T = hit[1][key]
+        return value
     with _INPUT_MEMO_GUARD:
-        hit = _INPUT_MEMO.get(id(source))
-        if hit is not None and hit[0] is source:
-            _INPUT_MEMO.move_to_end(id(source))
+        hit = _ONE_INPUT.get(id(source))
+        if hit is None or hit[0] is not source:
+            hit = _ONE_INPUT[id(source)] = (source, {})
+            while len(_ONE_INPUT) > INPUT_MEMO_SIZE:
+                del _ONE_INPUT[next(iter(_ONE_INPUT))]  # the oldest first
+        memo = hit[1]
+        if key not in memo:
+            value = memo[key] = compute()
+            return value
+        value = memo[key]
+    if compute() != value:
+        raise AssertionError(f"input-derived value {key!r} differs from a recompute")
+    return value
+
+
+def from_all[T](sources: tuple[object, ...], key: object, compute: Callable[[], T]) -> T:
+    """`from_inputs` for a value derived from several immutable inputs, kept while every one
+    of them is the same object."""
+    ids = tuple(map(id, sources))
+    with _INPUT_MEMO_GUARD:
+        hit = _INPUT_MEMO.get(ids)
+        if hit is not None and all(a is b for a, b in zip(hit[0], sources, strict=True)):
+            _INPUT_MEMO.move_to_end(ids)
             memo = hit[1]
         else:
             memo = {}
-            _INPUT_MEMO[id(source)] = (source, memo)
+            _INPUT_MEMO[ids] = (sources, memo)
             while len(_INPUT_MEMO) > INPUT_MEMO_SIZE:
                 _INPUT_MEMO.popitem(last=False)
         if key in memo:
