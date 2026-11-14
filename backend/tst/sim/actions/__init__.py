@@ -47,6 +47,20 @@ from tst.sim.actions.facilities import (
     sign_contract,
     staff_facility,
 )
+from tst.sim.actions.family import (
+    FAMILY_ACTION_TYPES,
+    EducateChild,
+    FamilyAction,
+    FundTrust,
+    GiftShares,
+    GiveSharesToFoundation,
+    NameSuccessor,
+    OfferFamilyJob,
+    RetireAdviser,
+    SetFamilyTime,
+    SetMentoring,
+    apply_family,
+)
 from tst.sim.actions.finance import (
     AcceptBridge,
     AcceptTermSheet,
@@ -340,6 +354,7 @@ type Action = (
     | RequestToolLicence  # M22
     | MiningAction  # M19
     | AutomationAction  # M27a
+    | FamilyAction  # M36
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -351,6 +366,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **CONTRACT_ACTION_TYPES,  # M23a
     **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
     **AUTOMATION_ACTION_TYPES,  # M27a (40)
+    **FAMILY_ACTION_TYPES,  # M36 (45)
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
@@ -779,6 +795,18 @@ def apply_action(
             out = choose_event(state, action, balance, data, ledger_balances)
         case MakePromise():  # M14b (29.2)
             out = make_promise(state, action, balance, data)
+        case (
+            SetFamilyTime()
+            | EducateChild()
+            | SetMentoring()
+            | OfferFamilyJob()
+            | NameSuccessor()
+            | GiftShares()
+            | FundTrust()
+            | GiveSharesToFoundation()
+            | RetireAdviser()
+        ):  # M36 (45)
+            out = apply_family(state, action, rng, ledger_balances, balance, data)
         case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
             out = apply_founder(state, action, balance, data)  # M24 (32)
         case (

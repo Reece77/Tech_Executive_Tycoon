@@ -139,10 +139,10 @@ def add_child(
     gen = member_stream(rng, state.turn, head.id, index)
     child = generate_child(gen, parents, age, state.turn, person_id, balance, data)
     state = add_member_person(state, child, rng, balance, data)
-    passed = tuple(m for m in balance.family.milestones if m <= age)
+    passed = tuple(m for m in balance.family.milestones if m < age)  # this year's comes
     ed = balance.family.education  # choices already past at the setup: the standard ones
-    school = "standard" if age >= ed.school_age else None
-    university = "standard" if age >= ed.university_age else None
+    school = "standard" if age > ed.school_age else None
+    university = "standard" if age > ed.university_age else None
     state = with_family_member(
         state,
         FamilyMember(

@@ -28,8 +28,11 @@ def _family_data(family: Family) -> dict[str, Any]:
 
 def _family_from(row: FamilyRow) -> Family:
     data = dict(row.data)
-    nested = {key: tuple(cls(**item) for item in data.pop(key, [])) for key, cls in NESTED.items()}
-    return replace(from_data(Family, data, id=row.id), **nested)
+    gens = tuple(Generation(**g) for g in data.pop("generations", []))
+    opinions = tuple(Opinion(**o) for o in data.pop("opinions", []))
+    notes = tuple(FamilyNote(**n) for n in data.pop("notes", []))
+    family = from_data(Family, data, id=row.id)
+    return replace(family, generations=gens, opinions=opinions, notes=notes)
 
 
 def family_people(session: Session, has_table: Callable[[Session, Any], bool]) -> set[int]:

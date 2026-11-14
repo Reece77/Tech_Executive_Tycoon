@@ -27,8 +27,8 @@ from tst.db.automation_io import load_automation, sync_automation
 from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
-from tst.db.former import former_rows
 from tst.db.family_io import family_people, live_family, load_family, sync_family
+from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.geopolitics_io import load_geopolitics, sync_geopolitics
 from tst.db.group_io import load_group, sync_group
