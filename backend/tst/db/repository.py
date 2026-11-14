@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from tst.db import history, inbox, migrate
 from tst.db import unlocks as unlocks_db
-from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.backup import SAVE_SUFFIX, periodic_backup_in_background, slug_of
 from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
@@ -983,7 +983,7 @@ def _after_commit(
     backup = data.balance.backup
     try:
         if committed % backup.every_n_turns == 0:
-            periodic_backup(save_path, committed, backup.keep_periodic)
+            periodic_backup_in_background(save_path, committed, backup.keep_periodic)
         update_index(save_path, result.new_state)
     except Exception:
         log.exception("Turn %d committed; its backup or index update failed", committed)

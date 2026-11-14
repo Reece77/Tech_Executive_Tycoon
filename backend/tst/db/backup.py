@@ -7,9 +7,13 @@ pruned; pre-migration backups are kept forever.
 
 from __future__ import annotations
 
+import logging
 import re
 import sqlite3
+import threading
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 SAVE_SUFFIX = ".tst.sqlite"
 
@@ -42,8 +46,49 @@ def _copy(src: Path, dst: Path) -> Path:
     return dst
 
 
+# M30: a periodic backup copies the whole save (160-350 MB by 2039: 0.4 s here, 1.0 s on CI's
+# runner), so it runs on its own thread after the month's commit, reading the committed month
+# through its own connection (WAL: a consistent snapshot while the next month writes). Every
+# reader of the backups folder, and every file operation on the save, waits for it first; the
+# thread is not a daemon, so the interpreter finishes it before it exits.
+_RUNNING: dict[Path, threading.Thread] = {}
+_RUNNING_LOCK = threading.Lock()
+
+
+def wait(save_path: Path) -> None:
+    """Return once the save's periodic backup in progress, if any, is written."""
+    with _RUNNING_LOCK:
+        running = _RUNNING.get(save_path.resolve())
+    if running is not None and running is not threading.current_thread():
+        running.join()
+
+
+def periodic_backup_in_background(save_path: Path, turn: int, keep: int) -> threading.Thread:
+    """`periodic_backup` on its own thread (after the previous one ends); a failure is logged,
+    as one after a commit always was (the month is played either way)."""
+    wait(save_path)
+
+    def run() -> None:
+        try:
+            periodic_backup(save_path, turn, keep)
+        except Exception:
+            log.exception("Turn %d committed; its backup failed", turn)
+        finally:
+            with _RUNNING_LOCK:
+                if _RUNNING.get(key) is thread:
+                    del _RUNNING[key]
+
+    key = save_path.resolve()
+    thread = threading.Thread(target=run, name=f"backup-{slug_of(save_path)}-{turn}")
+    with _RUNNING_LOCK:
+        _RUNNING[key] = thread
+    thread.start()
+    return thread
+
+
 def periodic_backups(save_path: Path) -> list[Path]:
     """Periodic backups for a save, oldest first."""
+    wait(save_path)
     folder = backup_dir(save_path)
     if not folder.is_dir():
         return []
@@ -64,11 +109,13 @@ def periodic_backup(save_path: Path, turn: int, keep: int) -> Path:
 
 def manual_backup(save_path: Path, turn: int, stamp: str) -> Path:
     """The player's Back up (M29): kept until the player deletes the save; never pruned."""
+    wait(save_path)
     slug = slug_of(save_path)
     return _copy(save_path, backup_dir(save_path) / f"{slug}.turn-{turn:03d}.manual-{stamp}.sqlite")
 
 
 def pre_migration_backup(save_path: Path, turn: int, revision: str | None) -> Path:
+    wait(save_path)
     slug = slug_of(save_path)
     rev = revision or "base"
     return _copy(

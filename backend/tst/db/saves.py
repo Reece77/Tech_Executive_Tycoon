@@ -19,6 +19,7 @@ from typing import Any, Literal
 
 from sqlalchemy import select
 
+from tst.db import backup as backup_files
 from tst.db import migrate, repository
 from tst.db.backup import SAVE_SUFFIX, backup_dir, manual_backup, slug_of
 from tst.db.models import CompanyRow, SaveMetaRow
@@ -115,6 +116,7 @@ def exclusive(path: Path) -> Iterator[None]:
     if not lock.acquire(blocking=False):
         raise SaveBusyError(repository.BUSY_MESSAGE)
     try:
+        backup_files.wait(path)  # M30: the month's backup finishes before the file moves
         yield
     finally:
         lock.release()
@@ -274,6 +276,7 @@ def delete(path: Path) -> None:
 
 def backups(path: Path) -> list[BackupFile]:
     """Periodic and pre-upgrade backups, newest first."""
+    backup_files.wait(path)
     folder = backup_dir(path)
     if not folder.is_dir():
         return []

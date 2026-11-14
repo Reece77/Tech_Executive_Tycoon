@@ -275,3 +275,42 @@ def test_upgrade_to_0038_makes_contract_prices_exact(save: Path) -> None:
         assert row is not None and row.price_millicents == 1_740_700
         (contract,) = load_state(session).production_contracts
     assert contract.price_millicents == 1_740_700 and contract.price_cents == 1740.7
+
+
+def test_a_backup_runs_beside_the_next_month_and_holds_its_own(
+    save: Path, loaded: LoadedData
+) -> None:
+    """M30: the turn-12 backup is written on its own thread while turn 13 plays; it holds the
+    committed turn 12, and readers of the backups folder wait for it."""
+    from tst.db import backup
+
+    for _ in range(12):
+        run_turn(save, loaded)
+    run_turn(save, loaded)  # the next month, while the backup may still be copying
+    backup.wait(save)
+    [made] = periodic_backups(save)
+    with open_session(made) as session:
+        assert load_state(session).turn == 12
+    with open_session(save) as session:
+        assert load_state(session).turn == 13
+
+
+def test_a_failed_backup_is_logged_and_the_month_stays_played(
+    save: Path,
+    loaded: LoadedData,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    from tst.db import backup
+
+    def broken(*_: object) -> Path:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(backup, "periodic_backup", broken)
+    for _ in range(12):
+        run_turn(save, loaded)
+    backup.wait(save)
+    assert "its backup failed" in caplog.text
+    assert periodic_backups(save) == []
+    with open_session(save) as session:
+        assert load_state(session).turn == 12
