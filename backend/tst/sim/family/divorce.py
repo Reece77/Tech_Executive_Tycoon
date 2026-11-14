@@ -29,10 +29,11 @@ from tst.sim.state import (
 )
 
 SOURCE = "settlement"
+RATE_STEPS = 10_000  # tunable-exempt: a share as an exact fraction (to 1/10,000)
 
 
 def split(cents: int, share: float) -> int:
-    return int(Fraction(cents) * Fraction(share).limit_denominator(10_000))  # tunable-exempt
+    return int(Fraction(cents) * Fraction(share).limit_denominator(RATE_STEPS))
 
 
 def divorce(

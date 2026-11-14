@@ -15,6 +15,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.family import dynasty, estate, rules
 from tst.sim.family.models import Generation
+from tst.sim.family.people import family_stream
 from tst.sim.finance.board import BOARD_ROLE
 from tst.sim.finance.models import BoardSeat
 from tst.sim.founder.events import queue
@@ -48,7 +49,7 @@ from tst.sim.state import (
 
 HOWS: Final = ("choice", "health", "board")
 FOUNDER_LEVEL: Final = "exec"
-CEO_KEY: Final = 3  # stream family's (head_id, 3, 0): a professional CEO found by a search
+CEO_KEY: Final = 3  # tunable-exempt: stream key (head_id, 3, 0): a CEO search
 CEO_LEVEL: Final = "exec"
 TRAIT_MAX: Final = 100.0  # tunable-exempt: traits are 0-100
 
@@ -367,7 +368,7 @@ def _search_hire(
     assert family is not None
     person_id, ids = state.next_ids.take("person")
     state = replace(state, next_ids=ids)
-    gen = rng.stream(state.turn, "family", family.head_id, CEO_KEY, 0)
+    gen = family_stream(rng, state.turn, family.head_id, CEO_KEY, 0)
     role = data.role(balance.board.director_role)
     person = generate_person(
         gen, data, balance, state.turn, role, CEO_LEVEL, state.person(family.head_id).region,

@@ -25,13 +25,20 @@ from tst.sim.state import GameState, with_person, with_reveal
 PARTNER_LEVEL: Final = "senior"  # a partner is generated as an experienced adult
 DEV_KEY: Final = 1  # stream family's (person_id, 1): a child's development noise
 MIN_ADULT: Final = 18  # tunable-exempt: a partner's youngest age
-CLOSENESS_BASE: Final = 0.8  # 45.3's formula: x (0.8 + 0.4 x closeness / 100)
-CLOSENESS_SPAN: Final = 0.4
+CLOSENESS_BASE: Final = 0.8  # tunable-exempt: 45.3's x (0.8 + 0.4 x closeness / 100)
+CLOSENESS_SPAN: Final = 0.4  # tunable-exempt: 45.3's formula constant
 SCORE_MAX: Final = 100.0  # tunable-exempt: closeness is 0-100
 
 
+def family_stream(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
+    """Stream `family` (59), this package's one call site (ADR-0013): `(head_id, index)` a
+    member's generation, `(head_id, 0, k)` life events, `(person_id, 1)` development,
+    `(head_id, 2)` health, `(head_id, 3, 0)` a CEO search, `(person_id, 4)` an offer refused."""
+    return rng.stream(turn, "family", *key)
+
+
 def member_stream(rng: RngFactory, turn: int, head_id: int, index: int) -> np.random.Generator:
-    return rng.stream(turn, "family", head_id, index)
+    return family_stream(rng, turn, head_id, index)
 
 
 def generate_partner(

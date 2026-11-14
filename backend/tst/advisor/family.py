@@ -23,11 +23,10 @@ def heir_readiness(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     except ValueError as exc:
         raise InvalidEntityError("give a family member's person id") from exc
     member = family_member(state, pid)
-    if state.family is None or member is None:
-        raise InvalidEntityError(f"person {pid} is not in your family")
-    r = _readiness(state, member, b.data)
+    r = _readiness(state, member, b.data) if member is not None else None
     if r is None:
-        raise InvalidEntityError(f"person {pid} is not one of your children")
+        note = "Readiness is for your children: this person is not one of them."
+        return b._out(m, entity, None, (), note, (), ())
     items = [
         Item("CEO-seat fit from what you know of them", r.fit, "points"),
         Item("Years in the group", r.years * b.data.balance.family.ready.per_year, "points"),

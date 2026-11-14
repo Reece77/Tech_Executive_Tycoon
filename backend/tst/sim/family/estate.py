@@ -45,6 +45,7 @@ from tst.sim.state import (
 )
 
 ESTATE_SOURCE: Final = "estate"
+RATE_STEPS: Final = 10_000  # tunable-exempt: a rate as an exact fraction (to 1/10,000)
 
 
 def rule(balance: Balance, region: str, turn: int) -> EstateYear:
@@ -136,7 +137,7 @@ def quote(
     )
     estate = held * price + cash + other
     taxable = max(0, estate - (r.exemption_cents - used))
-    tax = round(Fraction(taxable) * Fraction(r.rate).limit_denominator(10_000))  # tunable-exempt
+    tax = round(Fraction(taxable) * Fraction(r.rate).limit_denominator(RATE_STEPS))
     due = max(0, tax - cash)
     sell = min(held, math.ceil(due / price)) if due else 0
     now = rules.family_bp(state, cid)
@@ -283,7 +284,7 @@ def gift_tax(state: GameState, value: int, balance: Balance) -> int:
     before = max(0, family.lifetime_gifts_cents - r.exemption_cents)
     after = max(0, family.lifetime_gifts_cents + value - r.exemption_cents)
     return round(
-        Fraction(after - before) * Fraction(r.rate).limit_denominator(10_000)
+        Fraction(after - before) * Fraction(r.rate).limit_denominator(RATE_STEPS)
     )  # tunable-exempt
 
 

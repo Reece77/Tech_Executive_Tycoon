@@ -15,7 +15,7 @@ from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
 from tst.sim.family import adviser, rules
 from tst.sim.family.models import FamilyMember
-from tst.sim.family.people import DEV_KEY, develop, narrow_view
+from tst.sim.family.people import DEV_KEY, develop, family_stream, narrow_view
 from tst.sim.family.setup import add_child, add_partner
 from tst.sim.founder import stress
 from tst.sim.founder.events import queue
@@ -142,7 +142,7 @@ def _child_month(
     state = with_family_member(state, m)
     person = state.person(m.person_id)
     if state.employment_of(m.person_id) is None:  # phase 8 grows them once employed
-        gen = rng.stream(state.turn, "family", m.person_id, DEV_KEY)
+        gen = family_stream(rng, state.turn, m.person_id, DEV_KEY)
         state = with_person(state, develop(person, m, state.turn, gen, m.closeness, balance, data))
     elif m.mentored:
         state = _mentor_growth(state, m, balance, data)
@@ -244,7 +244,7 @@ def _life_events(
     if partner is None:
         calm = life is None or life.stress < fb.partner_stress_below
         if fb.partner_ages.lo <= age <= fb.partner_ages.hi and calm:
-            u = float(rng.stream(turn, "family", head.id, 0, EVENT_PARTNER).random())
+            u = float(family_stream(rng, turn, head.id, 0, EVENT_PARTNER).random())
             if u < fb.partner_rate / MONTHS_PER_YEAR:
                 state, person = add_partner(state, head, rng, balance, data)
                 logs.append(
@@ -269,7 +269,7 @@ def _life_events(
     partner_person = state.person(partner.person_id)
     kids = rules.children(state)
     if partner_person.age(turn) < fb.child_parent_age_max and len(kids) < fb.max_children:
-        u = float(rng.stream(turn, "family", head.id, 0, EVENT_CHILD).random())
+        u = float(family_stream(rng, turn, head.id, 0, EVENT_CHILD).random())
         if u < fb.child_rate / MONTHS_PER_YEAR:
             state, child = add_child(state, (head, partner_person), 0, rng, balance, data)
             logs.append(
@@ -306,7 +306,7 @@ def _health(state: GameState, rng: RngFactory, balance: Balance) -> tuple[GameSt
     chance = step_back_chance(head.age(state.turn), balance)
     if not chance:
         return state, []
-    u = float(rng.stream(state.turn, "family", head.id, HEALTH_KEY).random())
+    u = float(family_stream(rng, state.turn, head.id, HEALTH_KEY).random())
     if u >= chance:
         return state, []
     state = queue(state, state.player.id, "family_step_back", state.turn + 1)

@@ -14,7 +14,7 @@ from tst.sim.events.models import GameEvent
 from tst.sim.family import rules
 from tst.sim.family.config import DEGREES, SCHOOLS, UNIVERSITIES
 from tst.sim.family.models import FamilyMember
-from tst.sim.family.people import narrow_view
+from tst.sim.family.people import family_stream, narrow_view
 from tst.sim.family.steps import FAMILY_STEPS
 from tst.sim.founder.models import PERSONAL_CASH, PERSONAL_SPENDING
 from tst.sim.founder.personal import cash_cents
@@ -37,7 +37,7 @@ from tst.sim.state import (
 )
 
 SCORE_MAX: Final = 100.0  # tunable-exempt: relationship is 0-100
-OWN_WAY_KEY: Final = 4  # stream family's (person_id, 4, turn): a turned-down offer
+OWN_WAY_KEY: Final = 4  # tunable-exempt: stream key (person_id, 4): an offer refused
 COSTS: Final = {  # education choice -> family.education.cents key (None: free)
     ("school", "standard"): None,
     ("school", "elite"): "elite_school",
@@ -278,7 +278,7 @@ def offer_job(
     accepts = member.closeness >= fb.join_closeness and rules.roles_match(person, role, data)
     if not accepts:
         rng = RngFactory(state.save_meta.master_seed)
-        u = float(rng.stream(state.turn, "family", person_id, OWN_WAY_KEY).random())
+        u = float(family_stream(rng, state.turn, person_id, OWN_WAY_KEY).random())
         if u < fb.own_way_rate and member.own_way is None:
             way = (
                 "founded"

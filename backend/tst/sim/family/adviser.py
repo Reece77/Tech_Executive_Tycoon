@@ -18,6 +18,7 @@ from tst.sim.state import GameState, life_of, with_family, with_seat
 
 RISKY: Final = frozenset({"round", "loan", "high"})  # proposal kinds and pitch risks
 SUPPORT, OPPOSE = "support", "oppose"
+TITLE_MAX: Final = 80  # tunable-exempt: an opinion title's width
 APPROVED: Final = frozenset({"approved", "auto_approved", "modified"})
 
 WORDS: Final = {
@@ -61,11 +62,15 @@ def adviser_month(state: GameState, balance: Balance) -> tuple[GameState, list[L
     for p in state.proposals:
         if p.company_id == cid and p.turn == state.turn and ("proposal", p.id) not in seen:
             s, voice = stance(life, p.kind in RISKY)
-            new.append(Opinion(state.turn, "proposal", p.id, p.text[:80], s, WORDS[(voice, s)]))
+            new.append(
+                Opinion(state.turn, "proposal", p.id, p.text[:TITLE_MAX], s, WORDS[(voice, s)])
+            )
     for pt in state.pitches:
         if pt.company_id == cid and pt.turn == state.turn and ("pitch", pt.id) not in seen:
             s, voice = stance(life, pt.risk in RISKY)
-            new.append(Opinion(state.turn, "pitch", pt.id, pt.title[:80], s, WORDS[(voice, s)]))
+            new.append(
+                Opinion(state.turn, "pitch", pt.id, pt.title[:TITLE_MAX], s, WORDS[(voice, s)])
+            )
     opinions = list(family.opinions) + new
     # Objections the player overruled this month (45.5).
     overruled = 0
@@ -116,7 +121,9 @@ def opinion_on_one_off(state: GameState, title: str, risky: bool) -> GameState:
         return state
     life = life_of(state, family.adviser_id)
     s, voice = stance(life, risky)
-    op = Opinion(state.turn, "one_off", 0, title[:80], s, WORDS[(voice, s)], overruled=s == OPPOSE)
+    op = Opinion(
+        state.turn, "one_off", 0, title[:TITLE_MAX], s, WORDS[(voice, s)], overruled=s == OPPOSE
+    )
     return with_family(state, replace(family, opinions=(*family.opinions, op)))
 
 

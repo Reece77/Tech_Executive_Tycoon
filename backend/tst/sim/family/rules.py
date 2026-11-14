@@ -20,7 +20,7 @@ from tst.sim.state import GameState, family_member, group_companies, listed_id, 
 
 MONTHS_A_YEAR: Final = 12  # tunable-exempt: calendar
 NOTES_KEPT: Final = 40  # tunable-exempt: History notes kept (family.history in balance)
-BOARD_MID: Final = 50.0  # 45.4's formula: (board confidence - 50) / divisor
+BOARD_MID: Final = 50.0  # tunable-exempt: 45.4's (board confidence - 50) / divisor
 
 
 def head(state: GameState) -> Person | None:
