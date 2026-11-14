@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import threading
 from bisect import bisect_left
+from collections import OrderedDict
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from fractions import Fraction
@@ -139,6 +141,8 @@ from tst.sim.world.models import (
 )
 
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
+_REVEAL_KEY = attrgetter("observer_company_id", "person_id")  # reveals' sort key (M30)
+_PERSON_ID = attrgetter("person_id")
 
 
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
@@ -411,15 +415,23 @@ class GameState:
     world_bids: tuple[WorldBid, ...] = ()
     china_lags: tuple[ChinaLag, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
+    # M30: values derived from this state (indexes, groups), computed once each. Not part of
+    # the state: never compared, saved or passed on by `replace` (a new state starts empty).
+    _memo: dict[object, Any] = field(
+        default_factory=dict, init=False, repr=False, compare=False, hash=False
+    )
 
     def mine(self, mine_id: int) -> Mine | None:
         return next((m for m in self.mines if m.id == mine_id), None)
 
     def company(self, company_id: int) -> CompanyState:
-        for company in self.companies:
-            if company.id == company_id:
-                return company
-        raise KeyError(company_id)
+        by_id: dict[int, CompanyState] = derived(
+            self, "companies_by_id", lambda: _first_by_id(self.companies)
+        )
+        try:
+            return by_id[company_id]
+        except KeyError:
+            raise KeyError(company_id) from None
 
     def person(self, person_id: int) -> Person:
         """By binary search: `people` is kept sorted by id (`with_person`); the scan after a
@@ -435,22 +447,30 @@ class GameState:
 
     def staff(self, company_id: int) -> tuple[Employment, ...]:
         """Active and notice employments of a company, by employment id."""
-        return tuple(
-            e for e in self.employments if e.company_id == company_id and e.counts_as_staff
+        by_company: dict[int, tuple[Employment, ...]] = from_inputs(
+            self.employments, "staff_by_company", lambda: _staff_by_company(self.employments)
         )
+        return by_company.get(company_id, ())
 
     def reveal(self, observer_company_id: int, person_id: int) -> RevealState | None:
-        for rev in self.reveals:
-            if rev.observer_company_id == observer_company_id and rev.person_id == person_id:
-                return rev
-        return None
+        """By binary search (M30): `reveals` is kept sorted by (observer, person) with one
+        record a pair (`with_reveal`, the mappers' load, filters that keep order)."""
+        reveals = self.reveals
+        key = (observer_company_id, person_id)
+        i = bisect_left(reveals, key, key=_REVEAL_KEY)
+        found = reveals[i] if i < len(reveals) and _REVEAL_KEY(reveals[i]) == key else None
+        if MEMO_CHECK:
+            scan = next((r for r in reveals if _REVEAL_KEY(r) == key), None)
+            if scan is not found:
+                raise AssertionError(f"reveals are not sorted by (observer, person): {key}")
+        return found
 
     def employment_of(self, person_id: int) -> Employment | None:
         """The person's active or notice employment, if any."""
-        for e in self.employments:
-            if e.person_id == person_id and e.counts_as_staff:
-                return e
-        return None
+        by_person: dict[int, Employment] = from_inputs(
+            self.employments, "staff_by_person", lambda: _staff_by_person(self.employments)
+        )
+        return by_person.get(person_id)
 
     def founder_of(self, company_id: int) -> Person | None:
         for h in self.holdings:  # M16 (31.2): a holding company's founder is its Chair
@@ -464,10 +484,11 @@ class GameState:
         return None
 
     def person_state(self, person_id: int) -> PersonState:
-        for ps in self.person_states:
-            if ps.person_id == person_id:
-                return ps
-        return PersonState(person_id=person_id)
+        by_person: dict[int, PersonState] = from_inputs(
+            self.person_states, "by_person", lambda: _first_by(self.person_states, _PERSON_ID)
+        )
+        found = by_person.get(person_id)
+        return found if found is not None else PersonState(person_id=person_id)
 
     def candidate(self, person_id: int) -> Candidate | None:
         for c in self.candidates:
@@ -805,11 +826,99 @@ class GameState:
         raise LookupError("game state has no player company")
 
 
+MEMO_CHECK = False  # M30's debug tests: every derived value is recomputed and compared
+_INPUT_MEMO: OrderedDict[int, tuple[object, dict[object, Any]]] = OrderedDict()
+_INPUT_MEMO_GUARD = threading.Lock()  # the API reads states from several threads
+INPUT_MEMO_SIZE: Final = 64  # tunable-exempt: input tuples whose derived values are kept
+
+
+def from_inputs[T](source: object, key: object, compute: Callable[[], T]) -> T:
+    """A value derived from one immutable input alone (a state's tuple: its employments, its
+    person states), computed once per input object (M30). Unlike `derived` it outlives the
+    state: a state made by `replace` that keeps the tuple keeps its derived values. The
+    input is held with its values, so its id cannot be reused while they are kept."""
+    with _INPUT_MEMO_GUARD:
+        hit = _INPUT_MEMO.get(id(source))
+        if hit is not None and hit[0] is source:
+            _INPUT_MEMO.move_to_end(id(source))
+            memo = hit[1]
+        else:
+            memo = {}
+            _INPUT_MEMO[id(source)] = (source, memo)
+            while len(_INPUT_MEMO) > INPUT_MEMO_SIZE:
+                _INPUT_MEMO.popitem(last=False)
+        if key in memo:
+            value: T = memo[key]
+            if not MEMO_CHECK:
+                return value
+        else:
+            value = memo[key] = compute()
+            return value
+    if compute() != value:
+        raise AssertionError(f"input-derived value {key!r} differs from a recompute")
+    return value
+
+
+def _first_by[T](items: tuple[T, ...], key: Callable[[T], int]) -> dict[int, T]:
+    out: dict[int, T] = {}
+    for x in items:
+        out.setdefault(key(x), x)  # the first, as a scan finds it
+    return out
+
+
+def _staff_by_company(employments: tuple[Employment, ...]) -> dict[int, tuple[Employment, ...]]:
+    grouped: dict[int, list[Employment]] = {}
+    for e in employments:
+        if e.counts_as_staff:
+            grouped.setdefault(e.company_id, []).append(e)
+    return {k: tuple(v) for k, v in grouped.items()}
+
+
+def _staff_by_person(employments: tuple[Employment, ...]) -> dict[int, Employment]:
+    out: dict[int, Employment] = {}
+    for e in employments:
+        if e.counts_as_staff:
+            out.setdefault(e.person_id, e)
+    return out
+
+
+def derived[T](state: GameState, key: object, compute: Callable[[], T]) -> T:
+    """A value derived from `state` alone, computed once per state (M30). The value must be
+    immutable, or treated as read-only by every caller: it is shared. With MEMO_CHECK on, a
+    remembered value is recomputed and must be equal (tests/unit/test_m30_memo.py)."""
+    memo = state._memo
+    try:
+        value: T = memo[key]
+    except KeyError:
+        value = memo[key] = compute()
+        return value
+    if MEMO_CHECK and compute() != value:
+        raise AssertionError(f"derived value {key!r} differs from a recompute")
+    return value
+
+
+def _first_by_id(companies: tuple[CompanyState, ...]) -> dict[int, CompanyState]:
+    out: dict[int, CompanyState] = {}
+    for c in companies:
+        out.setdefault(c.id, c)  # the first, as a scan finds it
+    return out
+
+
+def _ownerships_by_company(ownerships: tuple[Ownership, ...]) -> dict[int, tuple[Ownership, ...]]:
+    grouped: dict[int, list[Ownership]] = {}
+    for o in ownerships:
+        grouped.setdefault(o.company_id, []).append(o)
+    return {k: tuple(v) for k, v in grouped.items()}
+
+
 def ownership_history(state: GameState, company_id: int) -> tuple[Ownership, ...]:
     """Every holding of `company_id`, oldest first (31.1). A company with a parent but no
     recorded history (a save or fixture from before M16) is held by its parent from its
     latest closing, or from turn 0 without one."""
-    found = tuple(o for o in state.ownerships if o.company_id == company_id)
+    by_company: dict[int, tuple[Ownership, ...]] = derived(
+        state, "ownerships_by_company", lambda: _ownerships_by_company(state.ownerships)
+    )
+    found = by_company.get(company_id)
     if found:
         return found
     parent = state.company(company_id).parent_id
@@ -848,6 +957,11 @@ def owner_of(state: GameState, company_id: int, turn: int | None = None) -> int:
 
 
 def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
+    """`_group_members`, computed once per state and root (M30)."""
+    return derived(state, ("group_members", root_id), lambda: _group_members(state, root_id))
+
+
+def _group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
     """Every company ever inside `root_id`'s group, at any depth, with the run of turns it was
     inside (31.1): a company enters when it is bought or when its owner enters, and leaves when
     its holding ends or its owner leaves. Ordered by depth, then start, then company id, so
@@ -1029,12 +1143,28 @@ def with_employment(state: GameState, employment: Employment) -> GameState:
 def with_reveal(state: GameState, reveal: RevealState) -> GameState:
     return replace(
         state,
-        reveals=_upsert(state.reveals, reveal, lambda r: (r.observer_company_id, r.person_id)),
+        reveals=_upsert(state.reveals, reveal, _REVEAL_KEY),
     )
 
 
 def with_search(state: GameState, search: Search) -> GameState:
     return replace(state, searches=_upsert(state.searches, search, lambda s: s.id))
+
+
+def with_people_batch(
+    state: GameState,
+    people: list[Person],
+    candidates: list[Candidate],
+    reveals: list[RevealState],
+) -> GameState:
+    """`with_person`, `with_candidate` and `with_reveal` for each item in order, as one
+    rebuild of each tuple (M30: a search's batch)."""
+    return replace(
+        state,
+        people=_upsert_many(state.people, people, _ID),
+        candidates=_upsert_many(state.candidates, candidates, _PERSON_ID),
+        reveals=_upsert_many(state.reveals, reveals, _REVEAL_KEY),
+    )
 
 
 def with_candidate(state: GameState, candidate: Candidate) -> GameState:
@@ -1108,6 +1238,20 @@ def with_approach(state: GameState, approach: PoachApproach) -> GameState:
 
 def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
     return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
+
+
+def with_free_agents(state: GameState, agents: list[FreeAgent]) -> GameState:
+    """`with_free_agent` for each, in order, as one rebuild (M30)."""
+    if not agents:
+        return state
+    return replace(state, free_agents=_upsert_many(state.free_agents, agents, _PERSON_ID))
+
+
+def with_candidates(state: GameState, candidates: list[Candidate]) -> GameState:
+    """`with_candidate` for each, in order, as one rebuild (M30)."""
+    if not candidates:
+        return state
+    return replace(state, candidates=_upsert_many(state.candidates, candidates, _PERSON_ID))
 
 
 def with_event(state: GameState, event: GameEvent) -> GameState:

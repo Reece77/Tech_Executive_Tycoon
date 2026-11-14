@@ -70,10 +70,13 @@ from tst.sim.state import (
     ceo_of,
     reach_stage,
     with_candidate,
+    with_candidates,
     with_company,
     with_employment,
     with_free_agent,
+    with_free_agents,
     with_offer,
+    with_people_batch,
     with_person,
     with_person_state,
     with_person_states,
@@ -630,19 +633,23 @@ def first_hire_stage(state: GameState) -> GameState:
 def expire_candidates(state: GameState) -> GameState:
     """Open candidates without a pending offer leave in phase 12 of their expires_turn; so do
     free agents (M6 sub-task 0)."""
-    for agent in state.free_agents:
-        if agent.status == "available" and agent.until_turn <= state.turn:
-            state = with_free_agent(state, replace(agent, status="expired"))
-    for candidate in state.candidates:
+    # M30: each tuple is rebuilt once (an upsert a candidate copied the whole tuple)
+    agents = [
+        replace(agent, status="expired")
+        for agent in state.free_agents
+        if agent.status == "available" and agent.until_turn <= state.turn
+    ]
+    state = with_free_agents(state, agents)
+    expired = [
+        replace(candidate, status="expired", resolved_turn=state.turn)
+        for candidate in state.candidates
         if (
             candidate.status == "open"
             and candidate.expires_turn <= state.turn
             and state.pending_offer_for(candidate.person_id) is None
-        ):
-            state = with_candidate(
-                state, replace(candidate, status="expired", resolved_turn=state.turn)
-            )
-    return state
+        )
+    ]
+    return with_candidates(state, expired)
 
 
 def candidate_batches(
@@ -728,11 +735,15 @@ def candidate_batches(
             people = tuple(replace(p, id=first + i) for i, p in enumerate(kept))
             count = len(people)
         scout = actor.skills["judgment_of_talent"] if actor is not None else 0.0
+        # M30: the batch's people, candidates and records go into the state at once (each
+        # upsert copied the whole tuple); nothing below reads them back before then
+        new_people: list[Person] = []
+        new_candidates: list[Candidate] = []
+        new_reveals: list[RevealState] = []
         for person in people:
-            state = with_person(state, person)
+            new_people.append(person)
             moves = search.city not in (None, ANYWHERE) and person.city != search.city
-            state = with_candidate(
-                state,
+            new_candidates.append(
                 Candidate(
                     person_id=person.id,
                     company_id=search.company_id,
@@ -741,7 +752,7 @@ def candidate_batches(
                     created_turn=state.turn,
                     expires_turn=state.turn + balance.hiring.candidate_shelf_turns,
                     relocate_to=search.city if moves else None,
-                ),
+                )
             )
             reveal = new_reveal_state(
                 observer_company_id=search.company_id,
@@ -757,7 +768,8 @@ def candidate_batches(
                 )
             if search.interest is not None:  # they were found for it: the profile shows (29.5)
                 reveal = replace(reveal, profile_revealed_turn=state.turn)
-            state = with_reveal(state, reveal)
+            new_reveals.append(reveal)
+        state = with_people_batch(state, new_people, new_candidates, new_reveals)
         if search.company_id == state.player.id:
             state, joined = _free_agents_join(state, search, balance)
             count += joined

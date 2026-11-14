@@ -494,21 +494,15 @@ def rival_capacity(
     events: list[RegionEvent] = []
     for t in range(max(0, turn - EVENT_YEARS * YEAR), turn + 1):
         events += region_events(rng, t, balance, data)
+    paths: dict[str, tuple[float, float]] = {}  # good -> (capacity, index now): M30, once a good
     for s in data.suppliers.suppliers:
         for good, share in _shares(s.goods):
             if good not in explored:
                 continue
-            idx = [_index_at(state, good, t, data, balance) for t in range(turn + 1)]
-            cap, last_start = 1.0, -YEAR
-            pending: list[int] = []
-            for t in range(turn + 1):
-                cap += rb.expand * sum(1 for due in pending if due == t)
-                window = idx[max(0, t + 1 - YEAR) : t + 1]
-                if len(window) == YEAR and sum(window) / YEAR > rb.spike and t - last_start >= YEAR:
-                    pending.append(t + rb.lag_months)
-                    last_start = t
-                cap = min(rb.cap, max(rb.floor, cap))
-            output = cap * (1 - rb.cut if idx[turn] < rb.crash else 1.0)
+            if good not in paths:
+                paths[good] = _capacity_path(state, good, turn, balance, data)
+            cap, index_now = paths[good]
+            output = cap * (1 - rb.cut if index_now < rb.crash else 1.0)
             if any(
                 e.region == s.region and e.commodity == good and e.turn + max(e.months, 12) > turn
                 for e in events
@@ -518,6 +512,25 @@ def rival_capacity(
                 RivalCapacity(s.key, s.name, good, s.region, share, share * cap, share * output)
             )
     return out
+
+
+def _capacity_path(
+    state: GameState, good: str, turn: int, balance: Balance, data: GameData
+) -> tuple[float, float]:
+    """A rival's capacity multiple in `turn` (a pure function of the good's price path, the
+    same for every supplier of it) and the good's index in `turn`."""
+    rb = balance.mining.rivals
+    idx = [_index_at(state, good, t, data, balance) for t in range(turn + 1)]
+    cap, last_start = 1.0, -YEAR
+    pending: list[int] = []
+    for t in range(turn + 1):
+        cap += rb.expand * sum(1 for due in pending if due == t)
+        window = idx[max(0, t + 1 - YEAR) : t + 1]
+        if len(window) == YEAR and sum(window) / YEAR > rb.spike and t - last_start >= YEAR:
+            pending.append(t + rb.lag_months)
+            last_start = t
+        cap = min(rb.cap, max(rb.floor, cap))
+    return cap, idx[turn]
 
 
 def _shares(goods: Mapping[str, SupplierGood]) -> list[tuple[str, float]]:

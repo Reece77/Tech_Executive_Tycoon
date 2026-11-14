@@ -7,7 +7,7 @@ import logging
 import os
 import re
 import threading
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
@@ -311,6 +311,9 @@ def current_balances(session: Session, turn: int) -> Balances:
 
 _READ_LOCKS: dict[Path, threading.Lock] = {}
 LOADED_STATE = "tst_loaded_state"
+READ_MEMO = "tst_read_memo"
+# M30: per save, the file's stamp and what reads computed from it (read_memo)
+_READ_MEMOS: dict[str, tuple[tuple[int, int, int, int], dict[object, Any]]] = {}
 
 
 @contextmanager
@@ -325,12 +328,34 @@ def read_session(path: Path) -> Iterator[Session]:
     with lock:
         before = _stamp(path)
         cached = _recall(path)
+        key = str(path.resolve())
+        kept = _READ_MEMOS.get(key)
+        memo: dict[object, Any] = dict(kept[1]) if kept is not None and kept[0] == before else {}
         with open_session(path) as session:
             _cache(session, cached)
+            session.info[READ_MEMO] = memo
             yield session
             loaded = session.info.get(LOADED_STATE)
-        if cached is None and loaded is not None and _stamp(path) == before:
-            _LAST[str(path.resolve())] = (before, loaded, None)  # no commit landed meanwhile
+        if _stamp(path) == before:  # no commit landed meanwhile
+            _READ_MEMOS[key] = (before, memo)
+            if cached is None and loaded is not None:
+                _LAST[key] = (before, loaded, None)
+
+
+def read_memo[T](session: Session, key: object, compute: Callable[[], T]) -> T:
+    """A value read from the save, kept while the save's file is unchanged (M30): in a
+    `read_session` it is computed once until the next commit; elsewhere (a write) every time.
+    Callers must not change it. TST_STATE_CACHE_CHECK=1 recomputes it and compares."""
+    memo = session.info.get(READ_MEMO)
+    if memo is None:
+        return compute()
+    if key in memo:
+        value: T = memo[key]
+        if os.environ.get("TST_STATE_CACHE_CHECK") == "1" and compute() != value:
+            raise RuntimeError(f"the remembered read {key!r} differs from the save")
+        return value
+    value = memo[key] = compute()
+    return value
 
 
 def read_state(session: Session) -> GameState:
@@ -509,7 +534,12 @@ def ledger_balances(
     )
     if through_turn is not None:
         stmt = stmt.where(LedgerEntryRow.turn <= through_turn)
-    return {(cid, acc): int(total) for cid, acc, total in session.execute(stmt)}
+
+    def compute() -> dict[tuple[int, AccountCode], Cents]:
+        return {(cid, acc): int(total) for cid, acc, total in session.execute(stmt)}
+
+    # M30: a screen's reads sum the ledger once per commit, not once per request
+    return dict(read_memo(session, ("ledger_balances", through_turn), compute))
 
 
 def recent_snapshots(

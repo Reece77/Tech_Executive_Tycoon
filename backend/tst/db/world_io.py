@@ -1,7 +1,7 @@
 """Loading and syncing M28's records (formulas.md 41; migration 0050). Every collection lives
 in `world_record`, one row a record (`kind` = the GameState field), its fields in `data`
-(tst.db.mna_io's encoding); a changed collection is rewritten whole (they are small: a few
-hundred rows at most)."""
+(tst.db.mna_io's encoding). A changed collection writes only what changed (M30): items dropped
+from its front and its changed tail, so World news no longer rewrites its whole window a month."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from collections.abc import Callable
 from dataclasses import replace
 from typing import Any, Final
 
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, func, insert, select
 from sqlalchemy.orm import Session
 
 from tst.db.mna_io import from_data, to_data
@@ -66,14 +66,72 @@ def sync_world(
         return
     for i, kind in enumerate(COLLECTIONS):
         before, after = getattr(old, kind), getattr(new, kind)
-        if before == after:
+        if before is after or before == after:
             continue
-        session.execute(delete(WorldRecordRow).where(WorldRecordRow.kind == kind))
-        if after:
-            session.execute(
-                insert(WorldRecordRow),
-                [
-                    {"n": i * STRIDE + j, "kind": kind, "data": to_data(x)}
-                    for j, x in enumerate(after)
-                ],
+        _write_changes(session, kind, i * STRIDE, before, after)
+
+
+def _write_changes(
+    session: Session, kind: str, base: int, before: tuple[Any, ...], after: tuple[Any, ...]
+) -> None:
+    """Write only what changed (M30). A collection's rows are numbered `base` + offset +
+    position, and load reads them in `n` order, so numbers need not start at `base`: items
+    dropped from the front (World news past its window) are deleted, the run both share
+    keeps its rows, and only the changed tail is rewritten."""
+    first = session.scalar(
+        select(func.min(WorldRecordRow.n)).where(
+            WorldRecordRow.n >= base, WorldRecordRow.n < base + STRIDE
+        )
+    )
+    offset = 0 if first is None else first - base
+    dropped = _dropped(before, after)
+    same = _common_prefix(before[dropped:], after)
+    start = offset + dropped + same  # the first position rewritten
+    if start + len(after) - same >= STRIDE:  # out of numbers: renumber from the start
+        offset, dropped, same, start = 0, 0, 0, 0
+        session.execute(
+            delete(WorldRecordRow).where(
+                WorldRecordRow.n >= base, WorldRecordRow.n < base + STRIDE
             )
+        )
+    else:
+        if dropped:
+            session.execute(
+                delete(WorldRecordRow).where(
+                    WorldRecordRow.n >= base, WorldRecordRow.n < base + offset + dropped
+                )
+            )
+        session.execute(
+            delete(WorldRecordRow).where(
+                WorldRecordRow.n >= base + start, WorldRecordRow.n < base + STRIDE
+            )
+        )
+    if len(after) > same:
+        session.execute(
+            insert(WorldRecordRow),
+            [
+                {"n": base + start + j, "kind": kind, "data": to_data(after[same + j])}
+                for j in range(len(after) - same)
+            ],
+        )
+
+
+def _dropped(before: tuple[Any, ...], after: tuple[Any, ...]) -> int:
+    """How many of `before`'s leading items `after` dropped, when the rest of `before` starts
+    `after` (a window moving on); else 0."""
+    if not before or not after or before[0] is after[0]:
+        return 0
+    first = after[0]
+    for d in range(1, len(before)):
+        if before[d] is first:
+            return d if _common_prefix(before[d:], after) == len(before) - d else 0
+    return len(before) if not _common_prefix(before, after) else 0
+
+
+def _common_prefix(before: tuple[Any, ...], after: tuple[Any, ...]) -> int:
+    """How many leading items `before` and `after` share."""
+    n = min(len(before), len(after))
+    k = 0
+    while k < n and (before[k] is after[k] or before[k] == after[k]):
+        k += 1
+    return k
