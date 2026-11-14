@@ -861,6 +861,12 @@ def from_inputs[T](source: object, key: object, compute: Callable[[], T]) -> T:
 def from_all[T](sources: tuple[object, ...], key: object, compute: Callable[[], T]) -> T:
     """`from_inputs` for a value derived from several immutable inputs, kept while every one
     of them is the same object."""
+    return _kept(input_memo(sources), key, compute)
+
+
+def input_memo(sources: tuple[object, ...]) -> dict[object, Any]:
+    """The memo `from_all` keeps for these inputs, for a caller that keeps several values in
+    it under its own keys (and checks them itself under MEMO_CHECK)."""
     ids = tuple(map(id, sources))
     with _INPUT_MEMO_GUARD:
         hit = _INPUT_MEMO.get(ids)
@@ -870,7 +876,7 @@ def from_all[T](sources: tuple[object, ...], key: object, compute: Callable[[], 
             hit = _INPUT_MEMO[ids] = (sources, {})
             while len(_INPUT_MEMO) > INPUT_MEMO_SIZE:
                 _INPUT_MEMO.popitem(last=False)
-    return _kept(hit[1], key, compute)
+    return hit[1]
 
 
 def _kept[T](memo: dict[object, Any], key: object, compute: Callable[[], T]) -> T:

@@ -11,11 +11,12 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim import state as state_module
 from tst.sim.data_models import Balance, CategoryDef
 from tst.sim.people.reveal import revealed_range
 from tst.sim.products import formulas as f
 from tst.sim.products.team import Contributor, Team
-from tst.sim.state import GameState
+from tst.sim.state import GameState, input_memo
 
 SELL_SKILLS = ("sales", "negotiation", "communication")
 
@@ -42,7 +43,28 @@ def shown_team(
     state: GameState, company_id: int, team: Team, category: CategoryDef, balance: Balance
 ) -> Team:
     """`team` with every builder's output and seller's contribution re-scaled from what the
-    company sees: x (shown d x shown t) / (true d x true t) and x shown sell / true sell."""
+    company sees: x (shown d x shown t) / (true d x true t) and x shown sell / true sell.
+    A function of the people, the records, the team, the category and the balance alone,
+    so kept while they are the same (M30: the market phase asks for it in every segment)."""
+    memo = input_memo((state.people, state.reveals, balance))
+    key = ("shown_team", company_id, id(team), id(category))
+    hit = memo.get(key)
+    if hit is not None and hit[0] is team and hit[1] is category:
+        if (
+            state_module.MEMO_CHECK
+            and _shown_team(state, company_id, team, category, balance) != hit[2]
+        ):
+            raise AssertionError(f"shown team {key!r} differs from a recompute")
+        shown: Team = hit[2]
+        return shown
+    shown = _shown_team(state, company_id, team, category, balance)
+    memo[key] = (team, category, shown)  # held: their ids are not reused while kept
+    return shown
+
+
+def _shown_team(
+    state: GameState, company_id: int, team: Team, category: CategoryDef, balance: Balance
+) -> Team:
     pb = balance.products
     builders = []
     for b in team.builders:
