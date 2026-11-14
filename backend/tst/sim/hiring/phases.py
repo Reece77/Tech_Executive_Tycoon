@@ -82,6 +82,7 @@ from tst.sim.state import (
     with_person_states,
     with_plan,
     with_reveal,
+    with_reveals,
     with_search,
 )
 
@@ -573,6 +574,9 @@ def employed_month(state: GameState, balance: Balance, data: GameData) -> GameSt
     The scout is the company's best true judgment_of_talent among active staff.
     """
     skill_keys = frozenset(data.skill_keys)
+    # M30: the month's records go into the state at once (an upsert each copied the whole
+    # tuple); one read back first sees this month's own update, as the loop did
+    updated: dict[tuple[int, int], RevealState] = {}
     for company in sorted(state.companies, key=lambda c: c.id):
         staff = state.staff(company.id)
         active = [state.person(e.person_id) for e in staff if e.status == "active"]
@@ -580,7 +584,8 @@ def employed_month(state: GameState, balance: Balance, data: GameData) -> GameSt
             continue
         scout = max(p.skills["judgment_of_talent"] for p in active)
         for e in sorted(staff, key=lambda e: e.person_id):
-            reveal = state.reveal(company.id, e.person_id)
+            key = (company.id, e.person_id)
+            reveal = updated.get(key) or state.reveal(*key)
             if reveal is None:
                 continue
             reveal = apply_knowledge_action(
@@ -591,8 +596,8 @@ def employed_month(state: GameState, balance: Balance, data: GameData) -> GameSt
                 and state.turn - e.start_turn >= balance.people.reveal_tenure_months
             ):
                 reveal = known_by_tenure(reveal, balance, state.turn)
-            state = with_reveal(state, reveal)
-    return state
+            updated[key] = reveal
+    return with_reveals(state, list(updated.values()))
 
 
 def known_by_tenure(reveal: RevealState, balance: Balance, turn: int) -> RevealState:

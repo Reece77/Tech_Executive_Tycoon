@@ -5,9 +5,10 @@ from __future__ import annotations
 import threading
 from bisect import bisect_left
 from collections import OrderedDict
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from fractions import Fraction
+from itertools import pairwise
 from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
@@ -144,6 +145,8 @@ _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
 _REVEAL_KEY = attrgetter("observer_company_id", "person_id")  # reveals' sort key (M30)
 _PERSON_ID = attrgetter("person_id")
 _KEY = attrgetter("key")
+_MARKET_KEY = attrgetter("category", "segment")
+_REGIONAL_KEY = attrgetter("category", "segment", "region")
 
 
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
@@ -1264,6 +1267,13 @@ def with_free_agent(state: GameState, agent: FreeAgent) -> GameState:
     return replace(state, free_agents=_upsert(state.free_agents, agent, lambda a: a.person_id))
 
 
+def with_reveals(state: GameState, reveals: list[RevealState]) -> GameState:
+    """`with_reveal` for each, in order, as one rebuild (M30)."""
+    if not reveals:
+        return state
+    return replace(state, reveals=_upsert_many(state.reveals, reveals, _REVEAL_KEY))
+
+
 def with_free_agents(state: GameState, agents: list[FreeAgent]) -> GameState:
     """`with_free_agent` for each, in order, as one rebuild (M30)."""
     if not agents:
@@ -1393,6 +1403,30 @@ def with_exec_seat(state: GameState, seat: ExecSeat) -> GameState:
 
 def with_office(state: GameState, office: Office) -> GameState:
     return replace(state, offices=_upsert(state.offices, office, lambda o: o.id))
+
+
+def with_all_markets(
+    state: GameState, markets: list[MarketSegment], regional: list[RegionalMarket]
+) -> GameState:
+    """`with_market` and `with_regional_market` for every market, in order (M30): one
+    rebuild each. When the new items have the old ones' keys in the same places, sorted and
+    unique (as `_upsert` keeps them), that is the upserts' result; otherwise the upserts."""
+    if _same_keys(state.markets, markets, _MARKET_KEY):
+        state = replace(state, markets=tuple(markets))
+    else:
+        for m in markets:
+            state = with_market(state, m)
+    if _same_keys(state.regional_markets, regional, _REGIONAL_KEY):
+        state = replace(state, regional_markets=tuple(regional))
+    else:
+        for r in regional:
+            state = with_regional_market(state, r)
+    return state
+
+
+def _same_keys[T](old: Sequence[T], new: Sequence[T], key: Callable[[T], Any]) -> bool:
+    keys = [key(x) for x in new]
+    return keys == [key(x) for x in old] and all(a < b for a, b in pairwise(keys))
 
 
 def with_regional_market(state: GameState, market: RegionalMarket) -> GameState:
