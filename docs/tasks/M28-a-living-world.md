@@ -98,7 +98,14 @@ Load `pt-world`. Open Albemarle's page from your lithium contract. Build a secon
 
 ### Known misses (re-owned to M28; re-measured on the weekly workflow on m28-world)
 
-See "Known misses" in the final summary: I1 (bound −2.0 points), V3.ai (bound −2 points), V5.cells (bound 40% empty) and V5.cats (bound 70%) are read from weekly run 43569674208 on this branch.
+Read on this branch (weekly run 43569674208, before the M27a merge) and on seeds 11-40 locally after it; none is closed, none is beyond its bound on 30 seeds:
+
+| Miss | Bound | m28-world | main | |
+| --- | --- | --- | --- | --- |
+| I1 (year-30 margin gap) | ≥ −2.0 pts | +0.1 pts | −0.0 (weekly 43419446811) | open, known: M28's supply-driven prices barely move a 2039 group's cost of goods (0.2-0.3% of revenue, M23b) |
+| V3.ai (year 10) | ≥ −2 pts | unchanged | unchanged | open, known: measured in 2020, before the world starts, so M28 cannot move it |
+| V5.cells | ≤ 40% empty | seeds 1-10: 71% / 69% filled (known); seeds 11-40: 75% / 75% (met) | seeds 1-10: 72% / 69%; 11-40: 75% / 75% | open: met on 30 seeds on both |
+| V5.cats | worst category-decade empty in ≤ 70% of runs | seeds 1-10: steady 7/10 (known), research_heavy fintech 2030s 7/9 = 78% (**over**); seeds 11-40: 14/30 and 12/28 (known) | seeds 1-10: 7/10 and 6/9 (known); 11-40: 14/30 and 12/28 (known) | seed variance (rule 4): one run's fintech launch on seeds 1-10; branch and main read the same on seeds 11-40. Recorded, not added to known_misses.py; the bound is the product manager's |
 
 25. **China's lost customers.** From 2026 the customers a controlled seller loses in a closed destination (M22's exits) go to the Chinese rival (countries.yaml `rivals`) with the most customers on a product of the same category in that region and segment; before 2026 they leave the market as M22 had it. Chinese rivals' launches elsewhere stay 19.6's region entries (no rule blocks them): a follow-up below.
 26. **Intel Foundry.** The foundry chain company is named "Intel Foundry" (chain_companies.yaml `name`), since the chip rival Intel already exists; the loader refuses a chain company named as a rival.
