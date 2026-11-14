@@ -307,7 +307,8 @@ def _time_screens(path: Path, data: Any, res: SaveResult) -> None:
     app.dependency_overrides[get_settings] = lambda: Settings(save_dir=path.parent)
     category = _category(path)
     with TestClient(app) as client:
-        client.get("/api/saves")  # the app's own first-request costs, outside the screens
+        # the app's own first-request costs (its data load: the cold start's), outside them
+        client.get(f"/api/saves/{save_id}/overview")
         answer_blockers(path, data)
         repository.run_turn(path, data)
         for paths in SCREENS.values():
