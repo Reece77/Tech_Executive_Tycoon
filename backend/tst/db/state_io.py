@@ -18,7 +18,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import asdict, replace
 from functools import cache
-from typing import Any, cast
+from typing import Any, Final, cast
 
 from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select, tuple_
 from sqlalchemy.orm import Session
@@ -1608,12 +1608,23 @@ def has_table(session: Session, model: Any) -> bool:
     """Whether the save already has a table added or rebuilt after 0013, with the model's
     columns. Migration 0013 loads and syncs state through the current models, so on an
     older save it runs before later migrations have made their tables; those tables then
-    read as empty and are not written (M6 sub-task 0)."""
-    insp = inspect(session.connection())
-    if not insp.has_table(model.__tablename__):
-        return False
-    have = {c["name"] for c in insp.get_columns(model.__tablename__)}
-    return {c.name for c in model.__table__.columns} <= have
+    read as empty and are not written (M6 sub-task 0).
+
+    M30: the answer is kept on the session (a month asks about 30 times): tables change
+    only in migrations, and each opens its own session after its DDL."""
+    known: dict[str, bool] = session.info.setdefault(_HAS_TABLE, {})
+    name = model.__tablename__
+    found = known.get(name)
+    if found is None:
+        insp = inspect(session.connection())
+        found = insp.has_table(name) and {c.name for c in model.__table__.columns} <= {
+            c["name"] for c in insp.get_columns(name)
+        }
+        known[name] = found
+    return found
+
+
+_HAS_TABLE: Final = "tst.has_table"
 
 
 def _plain(session: Session, statement: Any) -> list[Any]:
