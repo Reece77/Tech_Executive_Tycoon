@@ -71,6 +71,7 @@ from tst.sim.org.replace import replace_offers
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
+from tst.sim.platforms import month as platform_month
 from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
@@ -304,9 +305,18 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     """Appeal, churn, customers won, and revenue for every market segment (11.6-11.8)."""
     # M22 (39.3): customers in destinations export controls closed leave first.
     ctx = replace(ctx, state=geopolitics.before_markets(ctx.state, ctx.balance, ctx.data))
-    out = products.run_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
+    state, platform_effects = platform_month.before_markets(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
+    # M31 (44.4-44.8): fees, licences, removals, open source, reviews, standards and rivals.
+    state, platform_entries, platform_logs = platform_month.after_markets(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, out.flows, out.regional_units
+    )
+    ctx = replace(ctx, state=state).post(*platform_entries).log(*platform_logs)
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)

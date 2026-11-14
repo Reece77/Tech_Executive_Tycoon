@@ -76,6 +76,10 @@ def event_names(
         from tst.sim.geopolitics.events import rule_names
 
         names |= rule_names(state, data, event)
+    if event.category == "platforms":  # M31 (44.5): the store and regions of a removal
+        from tst.sim.platforms.gatekeep import removal_names
+
+        names |= removal_names(state, data, event)
     if event.category == "public" and balance is not None:  # M13 (25)
         names |= public_names(state, data, balance, event.company_id)
     return names
@@ -122,7 +126,8 @@ def template_draft(
                 "mining_step",
                 "geopolitics_step",
                 "refining_step",
-            ):  # M16, M18, M19, M20 too
+                "platform_step",
+            ):  # M16, M18, M19, M20, M31 too
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(

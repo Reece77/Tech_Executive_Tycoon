@@ -1,0 +1,27 @@
+# Platform event templates (docs/formulas.md 44.5, M31): queued by the engine by template id
+# (trigger platforms) when a gatekeeper removes one of the group's apps from its store. {platform}
+# is the store, {owner} its owner and {regions} where the app was removed. The answer is applied
+# by the engine (platform_step): comply relists it at once; an appeal is decided in 1-3 months;
+# regulators (where platform rules exist) answer in 6. The odds shown are a range; the chance
+# itself is never known. Tone: grounded realism (ADR-0011).
+templates:
+  - id: platform_removal
+    category: platforms
+    trigger: platforms
+    severities: [critical]
+    weight: 1.0
+    title: "{platform} removes {product}"
+    body: >-
+      {owner} has pulled {product} from {platform} in {regions}, citing its review guidelines.
+      New users there can no longer download it and existing ones are being nudged to
+      alternatives. Every month it stays down, more of them leave.
+    choices:
+      - key: A
+        label: "Comply: change what they object to and pay their fee"
+        effects: [{ type: platform_step, target: product, stat: comply }]
+      - key: B
+        label: "Appeal the decision (an answer in 1-3 months, odds about 30-60%)"
+        effects: [{ type: platform_step, target: product, stat: appeal }]
+      - key: C
+        label: "Take it to the regulators"
+        effects: [{ type: platform_step, target: product, stat: regulators }]

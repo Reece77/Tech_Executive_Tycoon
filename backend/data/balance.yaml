@@ -2138,3 +2138,77 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
     global_depth: [0.03, 0.06] # a global shock's fall in every region (A)
   global_shock_rate: 0.03 # chance a year of a global shock that hits every region (41.6; A)
   news_months: 36 # months of World news kept (A)
+
+platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rules follow platforms.yaml to 2025; nothing here moves anything before `start` (44.9 target 1). A = an assumption for gameplay
+  start: "2026-01" # the first month users, developers and catalogues are computed and act on demand (44.1-44.3)
+  fees_from: "2010-01" # the first month platform fees post (44.4; Reece 2026-11-14: from 2010, the history calibrated). To 2025 a seller's store revenue is grossed up by its exact fee (net revenue and cash main's to the cent); from 2026 the reference price carries the category's 2010-2025 average drag
+  licence_factor: [0.5, 2.0] # an own OS's pull on the rest of the market's OEMs: (Android's licence + 1) / (its + 1), within this (A)
+  android_licence_cents: 1000 # cents a device unit on a licensed Android (Google's services; EU reports of up to $40 from 2018 not verified; A), from the start
+  reach_exp: 0.5 # alpha: attractiveness ~ users ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a small platform still draws developers)
+  fee_exp: 3.0 # beta: ... x (1 - fee) ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a lasting fee advantage tips developers)
+  dev_inertia: 0.97 # a month's weight on last month's developer share (about 3 years' half-life, 44.2)
+  dev_noise_sd: 0.03 # sd of a month's attractiveness noise from the start (stream platforms; A)
+  multihome_share: 0.35 # the largest developers' share of attention, on every platform with enough users (44.2)
+  multihome_min_users: 0.05 # ... at least this share of a region's users (44.2)
+  catalogue_decay: 0.01 # the catalogue loses this share a month (44.2)
+  catalogue_points: 25 # feature points x (C / C_leader - 1) on a device (44.3)
+  catalogue_floor: 25 # ... never below -this (44.3)
+  stay: 0.85 # a replacing customer stays on the platform at catalogue parity (44.3)
+  stay_drop: 0.10 # ... less this per stay_step index points behind the leader (44.3)
+  stay_step: 25 # catalogue index points
+  rest_tilt: 1.0 # the rest of the market's switchers choose by users x (C / C_leader) ^ this (M31 decision; A)
+  dev_churn_cut: 0.30 # a developer platform's churn x (1 - this x catalogue index / 100) (44.3)
+  developer_growth: 0.03 # developers' growth a year after platforms.yaml's last point (A, Evans Data's 2019-2024 pace)
+  tools: [0.5, 1.5] # T_p's range (44.2)
+  tools_default: 1.0 # a platform's T_p without dev_tools work
+  goodwill: [0.5, 1.2] # G_p's range (44.5)
+  goodwill_fee: 1.0 # goodwill's target = 1 - this x (standard fee - 0.30), within the range (A)
+  goodwill_speed: 0.05 # share of the gap to the target closed a month (A)
+  goodwill_self_pref: { "off": 0.0, mild: 0.05, strong: 0.15 } # goodwill target cut by self-preferencing (44.5; A)
+  self_pref_share: { "off": 0.0, mild: 0.10, strong: 0.20 } # the owner's own apps' share boost in their category on its platform (44.5)
+  alternative_share: 0.2 # share of a regulated country's app sales that take the alternative path (A)
+  steer_share: 0.3 # share of a steering seller's sales paid outside the store (A)
+  os_build_features: 45 # feature score an own OS needs to launch (the long build, 44.1; A)
+  own_fee_range: [0.0, 0.5] # what an owner may set its store's standard fee to
+  energy: { set_device_platform: 5, set_platform_rules: 3, create_developer_platform: 5, open_source: 5, set_steering: 1, comply_listing: 2, adopt_standard: 3 } # founder energy for each platform action (6, 44)
+  switch_energy_months: 3 # a device line switching platforms loses this many months of feature gain (40.2's one-off; A)
+  app_categories: # 44.4: who pays: share of revenue paid through a store, and its subscription mix (A unless marked)
+    consumer_apps: { paid_share: 0.4, subscription_share: 0.5, renewal_share: 0.6, segments: [consumer] } # 44.4: in-app purchases and subscriptions 0.4
+    fintech: { paid_share: 0.1, subscription_share: 0.5, renewal_share: 0.6, segments: [consumer] } # 44.4: its consumer segment
+    ai_models: { paid_share: 0.15, subscription_share: 0.9, renewal_share: 0.5, segments: [consumer, smb] }
+    b2b_saas: { paid_share: 0.05, subscription_share: 1.0, renewal_share: 0.7, segments: [smb] }
+  review: # 44.5: gatekeepers (A throughout; the hidden draws stay engine-side)
+    base: { lenient: 0.002, standard: 0.005, strict: 0.012 } # chance of an action on a product a month
+    first_party: 4.0 # x when it competes with the owner's own apps in that category
+    own_store: 3.0 # x when the seller runs a competing store
+    steering: 2.5 # x when the seller steers users to pay outside
+    weights: { rejected_update: 0.5, fee_dispute: 0.3, removal: 0.2 }
+    appeal_months: [1, 3]
+    appeal_odds: [0.3, 0.6] # the range the player sees; the chance is drawn inside it
+    regulator_odds: 0.5 # going to regulators in a region with rules
+    removed_loss: 0.15 # share of a removed product's customers on that platform lost a month; with the lost reach on new customers, 44.9 target 4: 30-50% in 3 months (41% measured)
+    recovery_months: 4 # months for a relisted product to win them back (target 4: 85%+ in 6)
+    player_removes: { lenient: 0, standard: 1, strict: 3 } # rivals' apps the player's review removes a year in a category
+    player_goodwill: { lenient: 0.0, standard: 0.0, strict: 0.02 } # ... and the goodwill target it costs
+  open_source: # 44.6
+    adoption: 3.0 # customers x this over `months`, toward the addressable market
+    months: 24
+    paid_share: { dev_tools: 0.05, ai_models: 0.03, cloud_hosting: 0.08, os: 0.0, consumer_apps: 0.03, b2b_saas: 0.06, cybersecurity: 0.05, fintech: 0.04 }
+    default_paid_share: 0.05 # a category not listed above (A)
+    feature_mult: 1.5 # the community: x the product's feature gain a month
+    tools_gain: 0.2 # an open OS or developer platform's T_p
+    goodwill_gain: 0.1
+    close_goodwill_loss: 0.4
+  standards: # 44.7
+    rate: 0.5 # seeded contests a December after 2025, on average (A)
+    tip_share: 0.6
+    penalty: 5 # feature points
+    inertia: 0.9 # adoption's weight on last month (A)
+    adopt_months: 2 # development months to adopt the winner (A)
+    categories: [devices, ai_models, cloud_hosting]
+  rivals: # 44.8 (A)
+    fee_step: 0.05
+    respond_below: 0.8 # a rival owner cuts its fee when its developer share < this x its user share
+    raise_above: 1.2 # ... and raises it above this
+    store_chance: 0.25 # a rival store in a region that allows alternative stores, a year (at most one)
+    licence_switch: 0.10 # rest-of-market OEMs re-choosing their licence each December

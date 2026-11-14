@@ -23252,6 +23252,653 @@
         }
       }
     },
+    "/api/saves/{save_id}/platforms": {
+      "get": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Get Platforms",
+        "description": "Every platform's users, developers, catalogue, fees and rules by region; the group's\ndevice lines, apps (fees and listings) and standards (44.10).",
+        "operationId": "getPlatforms",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/device-platform": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Set Device Platform",
+        "operationId": "setDevicePlatform",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevicePlatformIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/rules": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Set Platform Rules",
+        "operationId": "setPlatformRules",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformRulesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/developer": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Create Developer Platform",
+        "operationId": "createDeveloperPlatform",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/open-source": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Open Source",
+        "operationId": "openSourceProduct",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenSourceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/steering": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Set Steering",
+        "operationId": "setSteering",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SteeringIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/comply": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Comply",
+        "operationId": "complyListing",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/platforms/adopt": {
+      "post": {
+        "tags": [
+          "platforms"
+        ],
+        "summary": "Adopt",
+        "operationId": "adoptStandard",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdoptIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -23957,6 +24604,24 @@
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
+      "AdoptIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "standard_id": {
+            "type": "integer",
+            "title": "Standard Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "standard_id"
+        ],
+        "title": "AdoptIn"
+      },
       "AdviceOut": {
         "properties": {
           "mandate": {
@@ -24151,6 +24816,99 @@
           "conflict"
         ],
         "title": "AngelStakeOut"
+      },
+      "AppFeeOut": {
+        "properties": {
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          },
+          "platform_name": {
+            "type": "string",
+            "title": "Platform Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "cents": {
+            "type": "integer",
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform_id",
+          "platform_name",
+          "region",
+          "region_label",
+          "cents"
+        ],
+        "title": "AppFeeOut"
+      },
+      "AppProductOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "steering": {
+            "type": "boolean",
+            "title": "Steering"
+          },
+          "fees": {
+            "items": {
+              "$ref": "#/components/schemas/AppFeeOut"
+            },
+            "type": "array",
+            "title": "Fees",
+            "description": "This month's fees by platform and region"
+          },
+          "fees_total_cents": {
+            "type": "integer",
+            "title": "Fees Total Cents"
+          },
+          "listings": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__platforms__ListingOut"
+            },
+            "type": "array",
+            "title": "Listings",
+            "description": "Removals and appeals; others are listed"
+          },
+          "recent_actions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recent Actions",
+            "description": "Gatekeepers' actions in the last year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "steering",
+          "fees",
+          "fees_total_cents",
+          "listings",
+          "recent_actions"
+        ],
+        "title": "AppProductOut"
       },
       "AppealWeightsOut": {
         "properties": {
@@ -29698,6 +30456,79 @@
         ],
         "title": "DeskStudyOut"
       },
+      "DeviceLineOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          },
+          "platform_name": {
+            "type": "string",
+            "title": "Platform Name"
+          },
+          "previous_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Name"
+          },
+          "previous_share": {
+            "type": "number",
+            "title": "Previous Share",
+            "description": "Customers still on the old platform"
+          },
+          "catalogue_points": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Catalogue Points",
+            "description": "Feature points by region (from 2026)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "platform_id",
+          "platform_name",
+          "previous_name",
+          "previous_share",
+          "catalogue_points"
+        ],
+        "title": "DeviceLineOut"
+      },
+      "DevicePlatformIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "platform_id"
+        ],
+        "title": "DevicePlatformIn"
+      },
       "DigestAreaOut": {
         "properties": {
           "area": {
@@ -33244,6 +34075,69 @@
           "index_year_pct"
         ],
         "title": "FamilyOfficeOut"
+      },
+      "FeeScheduleOut": {
+        "properties": {
+          "standard": {
+            "type": "number",
+            "title": "Standard"
+          },
+          "small_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Small Rate",
+            "description": "Sellers under the threshold pay this"
+          },
+          "small_threshold_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Small Threshold Cents"
+          },
+          "subscription_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Rate"
+          },
+          "subscription_after_year": {
+            "type": "boolean",
+            "title": "Subscription After Year"
+          },
+          "regulated": {
+            "items": {
+              "$ref": "#/components/schemas/RegulatedPathOut"
+            },
+            "type": "array",
+            "title": "Regulated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "standard",
+          "small_rate",
+          "small_threshold_cents",
+          "subscription_rate",
+          "subscription_after_year",
+          "regulated"
+        ],
+        "title": "FeeScheduleOut"
       },
       "FeudOut": {
         "properties": {
@@ -38940,39 +39834,6 @@
         ],
         "title": "ListedOut"
       },
-      "ListingOut": {
-        "properties": {
-          "company_id": {
-            "type": "integer",
-            "title": "Company Id"
-          },
-          "company": {
-            "type": "string",
-            "title": "Company"
-          },
-          "actor_label": {
-            "type": "string",
-            "title": "Actor Label"
-          },
-          "since": {
-            "type": "string",
-            "title": "Since"
-          },
-          "reason": {
-            "type": "string",
-            "title": "Reason"
-          }
-        },
-        "type": "object",
-        "required": [
-          "company_id",
-          "company",
-          "actor_label",
-          "since",
-          "reason"
-        ],
-        "title": "ListingOut"
-      },
       "LoanIn": {
         "properties": {
           "instrument": {
@@ -42605,6 +43466,24 @@
         ],
         "title": "OpenRoundOut"
       },
+      "OpenSourceIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "OpenSourceIn"
+      },
       "OptionsOut": {
         "properties": {
           "granted": {
@@ -45135,6 +46014,497 @@
         ],
         "title": "PlantStaffIn"
       },
+      "PlatformOut": {
+        "properties": {
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "store": {
+            "type": "string",
+            "title": "Store"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "device",
+              "developer"
+            ],
+            "title": "Kind"
+          },
+          "owner_label": {
+            "type": "string",
+            "title": "Owner Label"
+          },
+          "owner_company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Company Id"
+          },
+          "own": {
+            "type": "boolean",
+            "title": "Own"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical"
+          },
+          "launched_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Launched Label"
+          },
+          "ended_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Label"
+          },
+          "open_source": {
+            "type": "boolean",
+            "title": "Open Source"
+          },
+          "licensable": {
+            "type": "boolean",
+            "title": "Licensable"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "app_count_thousands": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "App Count Thousands",
+            "description": "platforms.yaml's latest count, if any"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlatformSettingsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform_id",
+          "key",
+          "name",
+          "store",
+          "kind",
+          "owner_label",
+          "owner_company_id",
+          "own",
+          "historical",
+          "launched_label",
+          "ended_label",
+          "open_source",
+          "licensable",
+          "product_id",
+          "app_count_thousands",
+          "regions",
+          "settings"
+        ],
+        "title": "PlatformOut"
+      },
+      "PlatformRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "users": {
+            "type": "number",
+            "title": "Users",
+            "description": "Share of the region's device users (0-1)"
+          },
+          "developer_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Developer Share",
+            "description": "Exact for the player's own platforms"
+          },
+          "developer_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Developer Range",
+            "description": "A range for rivals' platforms"
+          },
+          "catalogue_index": {
+            "type": "number",
+            "title": "Catalogue Index",
+            "description": "The catalogue against the region's leader (100)"
+          },
+          "goodwill": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goodwill",
+            "description": "Developers' goodwill: own platforms only"
+          },
+          "fees": {
+            "$ref": "#/components/schemas/FeeScheduleOut"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Platform rules in force there, in words"
+          },
+          "side_loading": {
+            "type": "number",
+            "title": "Side Loading",
+            "description": "Share of the region where other stores may serve it"
+          },
+          "rival_stores": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rival Stores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "users",
+          "developer_share",
+          "developer_range",
+          "catalogue_index",
+          "goodwill",
+          "fees",
+          "rules",
+          "side_loading",
+          "rival_stores"
+        ],
+        "title": "PlatformRegionOut"
+      },
+      "PlatformRulesIn": {
+        "properties": {
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee"
+          },
+          "strictness": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "lenient",
+                  "standard",
+                  "strict"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Strictness"
+          },
+          "self_pref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "off",
+                  "mild",
+                  "strong"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Self Pref"
+          },
+          "anti_steering": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anti Steering"
+          },
+          "side_loading": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side Loading"
+          },
+          "licence_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence Cents"
+          },
+          "stop_licensing": {
+            "type": "boolean",
+            "title": "Stop Licensing",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform_id"
+        ],
+        "title": "PlatformRulesIn"
+      },
+      "PlatformSettingsOut": {
+        "properties": {
+          "fee": {
+            "type": "number",
+            "title": "Fee"
+          },
+          "strictness": {
+            "type": "string",
+            "enum": [
+              "lenient",
+              "standard",
+              "strict"
+            ],
+            "title": "Strictness"
+          },
+          "self_pref": {
+            "type": "string",
+            "enum": [
+              "off",
+              "mild",
+              "strong"
+            ],
+            "title": "Self Pref"
+          },
+          "anti_steering": {
+            "type": "boolean",
+            "title": "Anti Steering"
+          },
+          "side_loading": {
+            "type": "boolean",
+            "title": "Side Loading"
+          },
+          "licence_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fee",
+          "strictness",
+          "self_pref",
+          "anti_steering",
+          "side_loading",
+          "licence_cents"
+        ],
+        "title": "PlatformSettingsOut"
+      },
+      "PlatformsActionOut": {
+        "properties": {
+          "platforms": {
+            "$ref": "#/components/schemas/PlatformsOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platforms",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PlatformsActionOut"
+      },
+      "PlatformsOut": {
+        "properties": {
+          "started": {
+            "type": "boolean",
+            "title": "Started",
+            "description": "Computed shares and effects run from January 2026"
+          },
+          "fees_posting": {
+            "type": "boolean",
+            "title": "Fees Posting",
+            "description": "Platform fees post from platforms.fees_from (2010)"
+          },
+          "platforms": {
+            "items": {
+              "$ref": "#/components/schemas/PlatformOut"
+            },
+            "type": "array",
+            "title": "Platforms"
+          },
+          "device_lines": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceLineOut"
+            },
+            "type": "array",
+            "title": "Device Lines"
+          },
+          "apps": {
+            "items": {
+              "$ref": "#/components/schemas/AppProductOut"
+            },
+            "type": "array",
+            "title": "Apps"
+          },
+          "standards": {
+            "items": {
+              "$ref": "#/components/schemas/StandardOut"
+            },
+            "type": "array",
+            "title": "Standards"
+          },
+          "open_products": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Open Products"
+          },
+          "developer_candidates": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Developer Candidates",
+            "description": "Live products that can found one"
+          },
+          "appeal_odds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Appeal Odds",
+            "description": "The range an appeal's odds lie in"
+          },
+          "own_fee_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Own Fee Range"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started",
+          "fees_posting",
+          "platforms",
+          "device_lines",
+          "apps",
+          "standards",
+          "open_products",
+          "developer_candidates",
+          "appeal_odds",
+          "own_fee_range"
+        ],
+        "title": "PlatformsOut"
+      },
       "PortfolioOut": {
         "properties": {
           "mrr_cents": {
@@ -45645,6 +47015,19 @@
           "tariff_cents"
         ],
         "title": "ProductExposureOut"
+      },
+      "ProductIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "ProductIn"
       },
       "ProductMonthOut": {
         "properties": {
@@ -48699,6 +50082,31 @@
         ],
         "title": "RegionalPriceOut",
         "description": "A price the product charges in another region (19.5; M10b)."
+      },
+      "RegulatedPathOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "The country or the alternative store"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Share of the region's store sales on this path"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "share",
+          "rate"
+        ],
+        "title": "RegulatedPathOut"
       },
       "RelationshipOut": {
         "properties": {
@@ -52103,6 +53511,81 @@
         ],
         "title": "StakeOut"
       },
+      "StandardOut": {
+        "properties": {
+          "standard_id": {
+            "type": "integer",
+            "title": "Standard Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Formats"
+          },
+          "adoption": {
+            "type": "number",
+            "title": "Adoption",
+            "description": "Share of new products on the first format"
+          },
+          "winner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winner"
+          },
+          "tipped_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipped Label"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical"
+          },
+          "yours_on_loser": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Yours On Loser",
+            "description": "The group's products on the losing format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "standard_id",
+          "label",
+          "category",
+          "formats",
+          "adoption",
+          "winner",
+          "tipped_label",
+          "historical",
+          "yours_on_loser"
+        ],
+        "title": "StandardOut"
+      },
       "StartProjectIn": {
         "properties": {
           "unit_id": {
@@ -52289,6 +53772,24 @@
           "periods"
         ],
         "title": "StatementsOut"
+      },
+      "SteeringIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "on": {
+            "type": "boolean",
+            "title": "On",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "SteeringIn"
       },
       "StepOut": {
         "properties": {
@@ -55397,7 +56898,7 @@
           },
           "listings": {
             "items": {
-              "$ref": "#/components/schemas/ListingOut"
+              "$ref": "#/components/schemas/tst__api__schemas__geopolitics__ListingOut"
             },
             "type": "array",
             "title": "Listings"
@@ -55642,6 +57143,39 @@
         ],
         "title": "LicenceIn"
       },
+      "tst__api__schemas__geopolitics__ListingOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "actor_label": {
+            "type": "string",
+            "title": "Actor Label"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "actor_label",
+          "since",
+          "reason"
+        ],
+        "title": "ListingOut"
+      },
       "tst__api__schemas__hardware__OptionOut": {
         "properties": {
           "key": {
@@ -55761,6 +57295,62 @@
           "label"
         ],
         "title": "EventLinkOut"
+      },
+      "tst__api__schemas__platforms__ListingOut": {
+        "properties": {
+          "platform_id": {
+            "type": "integer",
+            "title": "Platform Id"
+          },
+          "platform_name": {
+            "type": "string",
+            "title": "Platform Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "listed",
+              "removed",
+              "appealing",
+              "regulators"
+            ],
+            "title": "Status"
+          },
+          "since_label": {
+            "type": "string",
+            "title": "Since Label"
+          },
+          "answer_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform_id",
+          "platform_name",
+          "region",
+          "region_label",
+          "status",
+          "since_label",
+          "answer_label"
+        ],
+        "title": "ListingOut"
       },
       "tst__api__schemas__press__CauseOut": {
         "properties": {

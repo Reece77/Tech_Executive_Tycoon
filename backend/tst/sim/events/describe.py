@@ -131,6 +131,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return MINING_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "geopolitics_step":  # M22 (39.3)
             return GEOPOLITICS_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "platform_step":  # M31 (44.5)
+            return PLATFORM_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -139,6 +141,11 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
 
 
 # M24 (32.1, 32.5): what each founder step does, in words (never the scandal risk).
+PLATFORM_STEP_TEXT: dict[str, str] = {  # M31 (44.5): never the odds' true value
+    "comply": "the app is relisted now; its lost users come back over a few months",
+    "appeal": "an answer in 1-3 months; until then the app stays off the store",
+    "regulators": "an answer in 6 months where platform rules apply; the app stays off until then",
+}
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",
     "defend_price": "the prices stand; so do the complaint's legal costs and discount",
