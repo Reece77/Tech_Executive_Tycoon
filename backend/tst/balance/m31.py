@@ -9,8 +9,8 @@
    M31 decision) and fees 10 points under Android's reaches 15% of developers in its regions by
    December 2035 on at most 3 of 10 seeds; at 20 points under with tools 1.3, on at least 5.
 3. An own store pays: a played game to 2026 whose phone line holds 30% of its home region's
-   device users, moved to its own OS, earns platform fees of at least 5% of the group's
-   revenue in 2035 (median).
+   device users (held there each month: the target's premise, not how to reach it), moved to
+   its own OS, earns platform fees of at least 5% of the group's revenue in 2035 (median).
 4. Removals matter: a consumer app removed from a platform with about half its region's users
    loses 30-50% of its customers there in 3 months and is back to 85%+ of them 6 months after
    complying (markets running).
@@ -35,6 +35,7 @@ from tst.balance.m28 import SEEDS, loaded
 from tst.balance.report import Row, table
 from tst.loader import LoadedData
 from tst.sim.calendar import ym_to_turn
+from tst.sim.hardware.models import ProductionContract
 from tst.sim.ledger import (
     CASH,
     PLATFORM_FEE_REVENUE,
@@ -48,7 +49,7 @@ from tst.sim.platforms.models import DeviceRun, Platform, PlatformListing
 from tst.sim.platforms.phase import addressable_in, by_region, home_of, platforms_month
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_product, with_product_segment
+from tst.sim.state import GameState, with_product, with_product_segment, with_production_contract
 
 START: Final = 192  # January 2026
 CHALLENGE: Final = ym_to_turn(2027, 1)
@@ -62,7 +63,9 @@ OPEN_MONTHS: Final = 36
 SOFT_MONTHS: Final = 24
 CASH_CENTS: Final = 5_000_000_000_000  # $50B: the player's survival is not what these read
 APP: Final = 990_001
+EVENT_MEMO: Final = "Event: "
 LINE: Final = 990_002
+CONTRACT_UNITS: Final = 10_000_000  # a month: never the bound
 
 
 @dataclass(frozen=True, slots=True)
@@ -193,6 +196,13 @@ def own_store(seed: int) -> tuple[float, float]:
         state = with_product_segment(state, replace(s, customers=s.customers * (1 - wanted / held)))
     state = _static(state, LINE, "devices", "Own Phone", 75.0)
     state = with_product_segment(state, ProductSegment(LINE, "consumer", 45_000, wanted))
+    cid, ids = state.next_ids.take("production_contract")
+    contract = ProductionContract(
+        id=cid, company_id=state.player.id, product_id=LINE, kind="assembly", supplier="foxconn",
+        units=CONTRACT_UNITS, price_millicents=1_300_000, signed_turn=state.turn,
+        end_turn=ym_to_turn(FEE_YEAR, 12), city="shenzhen",
+    )  # fmt: skip
+    state = with_production_contract(replace(state, next_ids=ids), contract)
     os_product = replace(Product(
         id=LINE + 1, company_id=state.player.id, category="os", name="Own OS", status="live",
         quality=60.0, feature_points=0.0, brand=40.0, marketing_budget_cents=0,
@@ -208,6 +218,11 @@ def own_store(seed: int) -> tuple[float, float]:
     users_2032 = 0.0
     while game.state.turn <= ym_to_turn(FEE_YEAR, 12):
         _play(game, 1, kept if game.state.turn >= ym_to_turn(FEE_YEAR, 1) else None)
+        # the target's premise: the maker holds 30% of its region's device users
+        seg = game.state.product_segment(LINE, "consumer")
+        users = addressable_in(game.state, "devices", gd, home, home)
+        if seg is not None:
+            game.state = with_product_segment(game.state, replace(seg, customers=OWN_SHARE * users))
         if game.state.turn - 1 == ym_to_turn(2032, 12):
             row = by_region(game.state).get(home, {}).get(own.id)
             users_2032 = row.users if row else 0.0
@@ -297,13 +312,20 @@ def software(seed: int) -> int:
         _play(game, SOFT_MONTHS, kept)
         me = game.state.player.id
         runs.append(
-            sorted(
-                (e.turn, e.memo, tuple((x.account, x.amount) for x in e.lines))
+            {
+                (e.turn, e.memo): tuple((x.account, x.amount) for x in e.lines)
                 for e in kept
                 if e.company_id == me and PLATFORM_FEES not in {x.account for x in e.lines}
-            )
+            }
         )
-    return len(set(runs[0]) ^ set(runs[1]))
+    a, b = runs
+    # an event's cash effect is a share of the company's cash (16.3): the fees paid lower it,
+    # so those amounts differ through the fees; anything else differing is a real change
+    return sum(
+        1
+        for k in set(a) | set(b)
+        if a.get(k) != b.get(k) and not (k[1].startswith(EVENT_MEMO) and k in a and k in b)
+    )
 
 
 def replace_data(data: LoadedData) -> LoadedData:

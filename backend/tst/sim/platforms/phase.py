@@ -449,6 +449,12 @@ def effects(state: GameState, balance: Balance, data: GameData) -> Effects:
             points = device_catalogue_points(state, run.product_id, region, balance)
             if points:
                 bonus[(run.product_id, region)] = points
+    for x in state.platform_listings:  # a removed app reaches none of the platform's users
+        if x.status != "listed":
+            row = rows.get(x.region, {}).get(x.platform_id)
+            if row is not None:
+                key = (x.product_id, x.region)
+                appeal[key] = appeal.get(key, 1.0) * max(0.0, 1 - row.users)
     for (pid, region), penalty in standards.penalties(state, balance, data).items():
         bonus[(pid, region)] = bonus.get((pid, region), 0.0) - penalty
     for p in state.platforms:
@@ -474,7 +480,6 @@ def effects(state: GameState, balance: Balance, data: GameData) -> Effects:
                 default=0.0,
             )
             churn[p.product_id] = pf.dev_churn_factor(index, pb)
-    del rows
     return Effects(
         feature_bonus=bonus,
         appeal_mult=appeal,

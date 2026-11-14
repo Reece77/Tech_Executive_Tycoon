@@ -2171,7 +2171,7 @@ platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rul
     appeal_months: [1, 3]
     appeal_odds: [0.3, 0.6] # the range the player sees; the chance is drawn inside it
     regulator_odds: 0.5 # going to regulators in a region with rules
-    removed_loss: 0.30 # share of a removed product's customers on that platform lost a month (44.9 target 4: 30-50% in 3 months)
+    removed_loss: 0.15 # share of a removed product's customers on that platform lost a month; with the lost reach on new customers, 44.9 target 4: 30-50% in 3 months (41% measured)
     recovery_months: 4 # months for a relisted product to win them back (target 4: 85%+ in 6)
     player_removes: { lenient: 0, standard: 1, strict: 3 } # rivals' apps the player's review removes a year in a category
     player_goodwill: { lenient: 0.0, standard: 0.0, strict: 0.02 } # ... and the goodwill target it costs

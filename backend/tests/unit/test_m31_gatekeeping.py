@@ -137,9 +137,10 @@ def test_an_appeal_is_decided_on_its_month(loaded: LoadedData) -> None:
 
 
 def test_removal_loses_and_compliance_wins_back(loaded: LoadedData) -> None:
-    """44.9 target 4's mechanics: removed from a platform with half the region's users, a third
-    to a half of the app's customers there leave within 3 months; complying wins 85%+ back
-    within 6 months (markets left out: the listing step alone)."""
+    """44.9 target 4's mechanics, the listing step alone (markets left out): removed from a
+    platform with half the region's users, (1 - removed_loss / 2)^3 of the app's customers stay
+    after 3 months (the markets' lost reach on new customers takes the rest of target 4's
+    30-50%: tst.balance.m31); complying wins 85%+ back within 6 months."""
     state = _with_app(loaded)
     home = home_of(state, loaded.balance, loaded.game_data)
     ios = next(p for p in state.platforms if p.key == "ios")
@@ -156,7 +157,8 @@ def test_removal_loses_and_compliance_wins_back(loaded: LoadedData) -> None:
         state = gatekeep.listing_effects(state, loaded.balance, loaded.game_data)
         state = replace(state, turn=state.turn + 1)
     left = state.product_segment(APP_ID, "consumer").customers  # type: ignore[union-attr]
-    assert 0.5 <= left / CUSTOMERS <= 0.7  # 30-50% lost
+    loss = loaded.balance.platforms.review.removed_loss
+    assert left / CUSTOMERS == pytest.approx((1 - loss * 0.5) ** 3)
     state = gatekeep.relist(state, gatekeep.removed_of(state, APP_ID), loaded.balance)
     for _ in range(6):
         state = gatekeep.listing_effects(state, loaded.balance, loaded.game_data)

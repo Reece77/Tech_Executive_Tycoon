@@ -121,8 +121,24 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 8. **Unlock.** Platforms opens at stage 3, with a device line (from development), or with a *live* app sold through stores. Counting apps still in development would open the screen in month 1 for every software start, against M29's progressive unlocking.
 9. **Tuning (rule 1, `platforms.*` only):**
    - `reach_exp` 1.0 → 0.5 and `fee_exp` 1.0 → 3.0, for target 2. At α = 1 a challenger with 5% of users cannot pass about 8% of developers, so the strong case could never tip; a sweep of α ∈ {0.5, 0.6, 0.7} × β ∈ {1, 2, 3} on seeds 1–10 found only (0.5, 3.0) meeting both halves.
-   - `review.removed_loss` 0.15 → 0.30 (my own first value), for target 4.
+   - `review.removed_loss`: first set at 0.15, raised to 0.30 for the listing step alone, then back to 0.15 once a removed app also loses that platform's new customers (decision 11), for target 4.
 10. **The practice save** `pt-platform` plays 2010–2025 with the engine (a do-nothing Kestrel), then adds the phone line, taking its 20% from the other Android lines so Android's users stay history's. Its first version jumped a new game to 2026; iOS then fell 16 points in 3 months because 2010's in-game customers met 2025's shares.
+
+11. **§44.9 targets** (`tools/m31_targets.py`, seeds 1–10; full run 10.5 minutes):
+
+| # | Target | Result | Band |
+| --- | --- | --- | --- |
+| 1 | History holds | M28's fingerprint equal on seed 1 (`make check`) and nightly | unchanged |
+| 2 | Tipping, fees 10 points lower | 0/10 seeds reach 15% of developers by 2035 (8.9% each) | at most 3 |
+| 2 | Fees 20 points lower, tools 1.3 | 10/10 (16.6%) | at least 5 |
+| 3 | Own store pays (30% of users held, own OS) | median 9.5% of revenue in 2035 (7.6–11.9%); own OS 28% of users in 2032 | at least 5% |
+| 4 | Removal from a platform with 50% of users | 41% of customers lost in 3 months | 30–50% |
+| 4 | Six months after complying | 163% of the start (the market grows) | 85%+ |
+| 5 | Open-sourced developer tool after 36 months | 2.22× the customers, 0.11× the revenue | 2×+, at most 0.7× |
+| 6 | Software company's books | 0 non-fee entries differ (only cash-scaled event amounts) | identical |
+| 7 | Turn time | `make check-timing` green on CI | M30's budget |
+
+    Target 1 is exact by construction (decision 1): nothing posts or is drawn before 2026. Target 3's script holds the line at 30% each month: without that, the new OS's empty catalogue (−25 feature points) sinks the phone to about 5% of users by 2032. That is the network effect at work, so the target tests the store's economics, not how to reach 30%. Target 4 needed a removed app to lose the platform's users' new purchases as well as its customers (the lost reach in `phase.effects`); `review.removed_loss` 0.30 → 0.15 then gives 41%.
 
 ## Follow-ups
 

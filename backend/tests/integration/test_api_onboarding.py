@@ -180,6 +180,8 @@ def test_an_action_that_makes_a_screen_relevant_announces_it(
         path, loaded, CreateProduct(founder.id, "Gadget", "devices", ("consumer",))
     )
     items = api.get(f"{BASE}/inbox?kind=unlock")["items"]
-    assert [i["title"] for i in items] == ["New: Hardware"]
-    assert "Gadget is a hardware product" in items[0]["body"]
+    # M31 (44): a device line opens Platforms too
+    assert sorted(i["title"] for i in items) == ["New: Hardware", "New: Platforms"]
+    hardware = next(i for i in items if i["title"] == "New: Hardware")
+    assert "Gadget is a hardware product" in hardware["body"]
     assert "hardware" in _shown(api)
