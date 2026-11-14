@@ -123,8 +123,8 @@ templates:
     body: >-
       The time has come to hand over. An heir from the family would make you their adviser
       on the board and you would play on as them; a professional CEO would run the company
-      while you lead the family from the board. Choose a particular heir or CEO on the Family
-      screen, or answer here.
+      while you lead the family from the board. The Family screen ranks your heirs by
+      readiness; the readiest takes over.
     choices:
       - key: A
         label: "Hand over to the readiest heir"

@@ -178,9 +178,7 @@ def apply_family(
             )
             return Outcome(state, (), (log,))
         case FundTrust():
-            state = spend_energy(
-                state, action.actor_id, action.kind, balance, cost=fb.trust_energy
-            )
+            state = spend_energy(state, action.actor_id, action.kind, balance, cost=fb.trust_energy)
             state, log = estate.fund_trust(state, action.shares, balance)
             return Outcome(state, (), (log,))
         case GiveSharesToFoundation():
