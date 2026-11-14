@@ -232,6 +232,10 @@ def text_prompt(kind: str, lines: list[str], company_name: str) -> tuple[str, st
         "interview after a launch, a reply in their feud with the player's founder, or a "
         "profile) in that CEO's voice, at most 80 words. Use only these facts; keep every "
         "name and number as given and add no new facts.",
+        "digest": "Write the opening paragraph (at most 60 words) of the founder's monthly "
+        "digest in the voice of their chief of staff (the COO): what the team running the "
+        "business did this month and what waits for the founder (40.4). Use only these facts; "
+        "keep every name and number as given and add no new facts.",
         "exit_line": "Write one line, in quotes, that this person said in their exit "
         "interview. Use only these facts; no numbers.",
     }

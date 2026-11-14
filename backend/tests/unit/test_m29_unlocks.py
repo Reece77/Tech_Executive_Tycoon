@@ -32,8 +32,17 @@ def test_stages_open_screens(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     expect = {
         2: {"offices", "research", "rankings"},
-        3: {"offices", "research", "rankings", "infrastructure", "hardware"},
-        4: {"offices", "research", "rankings", "infrastructure", "hardware", "refineries", "fabs"},
+        3: {"offices", "research", "rankings", "infrastructure", "hardware", "automation"},
+        4: {
+            "offices",
+            "research",
+            "rankings",
+            "infrastructure",
+            "hardware",
+            "refineries",
+            "fabs",
+            "automation",  # M27a: the Automation screen opens at stage 3 (40.8)
+        },
     }
     for stage, keys in expect.items():
         got = set(unlocks.conditions(at_stage(state, stage), b, d)) - ALWAYS

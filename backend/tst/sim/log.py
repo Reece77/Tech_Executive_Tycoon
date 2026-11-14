@@ -20,6 +20,7 @@ type LinkKind = Literal[
     "refinery",
     "fab",
     "world",  # M22: the World screen
+    "automation",  # M27a: the Automation screen (the digest)
 ]  # rival: M14 and M14b; rankings: the Rankings screen (M15r addendum b); group: M16;
 # exploration: the Exploration screen's project (M18); mine: the Mines screen's mine (M19);
 # refinery: the Refineries screen's plant (M20); fab: the Fabs screen's fab (M21)
@@ -36,6 +37,7 @@ class LogItem:
     params: tuple[tuple[str, ParamValue], ...] = ()  # names ending _cents render as money
     link_kind: LinkKind | None = None
     link_id: int | None = None
+    in_digest: bool = False  # M27a (40.4): from an automated area; the digest links to it
 
 
 def inbox_item(

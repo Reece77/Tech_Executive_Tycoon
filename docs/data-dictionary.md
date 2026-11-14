@@ -579,6 +579,7 @@ Messages for the player company, rendered from `inbox_templates.yaml` when the t
 | `read` | BOOLEAN | no | Marked read by the player. |
 | `archived` | BOOLEAN | no | Archived by the player (migration `0012_inbox_archive`, M4c): hidden from the inbox unless the Archived filter is on; archiving also marks it read. Since M10b (formulas.md 23.1) an answered event's item archives itself, and a read, unbookmarked item `inbox.auto_archive_months` (3) old archives at month end. UI state only: no game effect, not in `decision_log`. |
 | `bookmarked` | BOOLEAN | no | Starred by the player (migration `0024_inbox_bookmark`, M10b): never auto-archived; starring an archived item brings it back. UI state only. |
+| `in_digest` | BOOLEAN | no | Produced by an automated area (migration `0049_m27a`, M27a, formulas.md 40.4): the inbox's default view leaves it out and the month's digest links to it. |
 
 ## Rivals (migration `0013_rivals`, M5)
 
@@ -1076,13 +1077,13 @@ A CFO or COO proposal waiting for the player (24.1). Pending proposals block Con
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key. |
 | `company_id` | INTEGER FK company | no | The company. |
-| `seat` | VARCHAR(8) | no | `cfo` or `coo`. |
-| `person_id` | INTEGER | no | The executive who proposed it. |
+| `seat` | VARCHAR(8) | no | `cfo` or `coo`; for an area owner's (`auto`, M27a) the area's seat or `lead`. |
+| `person_id` | INTEGER | no | The executive or area owner who proposed it. |
 | `turn` | INTEGER | no | The month it was made. |
-| `kind` | VARCHAR(8) | no | `round`, `loan` or `lease`. |
-| `params` | JSON | no | The terms: a round's series and target, a loan's kind and amount, a lease's city and seats. |
+| `kind` | VARCHAR(8) | no | `round`, `loan` or `lease`; `auto` (M27a, formulas.md 40.2): an area owner's decision at or above its limit, or a one-off. |
+| `params` | JSON | no | The terms: a round's series and target, a loan's kind and amount, a lease's city and seats. An `auto` proposal: `action` (the action's JSON), `area`, `commitment_cents`, `expires_turn` and `why`. |
 | `text` | TEXT | no | The proposal in words. |
-| `status` | VARCHAR(10) | no | `pending`, `approved`, `declined` or `lapsed`. |
+| `status` | VARCHAR(10) | no | `pending`, `approved`, `declined` or `lapsed`; `expired` (M27a): an `auto` proposal unanswered for `automation.proposal_months`, counted as declined. |
 | `resolved_turn` | INTEGER | yes | When it was answered. |
 
 ## Research and eras (migration `0028_research`, M11)
@@ -1458,6 +1459,41 @@ The player's pitch settings per company (27.1).
 | `company_id` | INTEGER FK company | no | Primary key. |
 | `auto_approve_cents` | BIGINT | yes | The Holiday spend limit; NULL = `pitch.auto_approve_cash_bp` of cash (5%); 0 = always ask. |
 | `stop_for_big` | BOOLEAN | no | A Holiday stops for a pitch at or above the limit. |
+
+## Automation (migration `0049_m27a`, M27a)
+
+Existing saves start with no rows, so every area is the player's and they play as before (formulas.md 40.9).
+
+### area_owner
+
+A person who runs an area of a company (formulas.md 40.1). No row: the player manages the area.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `area`. |
+| `area` | VARCHAR(32) | no | A `balance.yaml` `automation.areas` key. |
+| `person_id` | INTEGER | no | The owner: a seat holder, the CEO, a senior area lead or a subsidiary's CEO; never the founder. |
+| `limit_cents` | BIGINT | no | The money limit per decision (40.2): at or above it a decision becomes a proposal. |
+| `priority` | INTEGER | no | The order the owner runs its areas in, lowest first (40.3). |
+| `since_turn` | INTEGER | no | When it was given (the take-back morale rule, 40.1). |
+| `answer_events` | BOOLEAN | no | "Let them answer routine events" (40.5). |
+| `allow_bold` | BOOLEAN | no | Press: "allow bold claims" (40.6). |
+
+### area_decision
+
+One line of an owner's month (40.3, 40.4): the visible record and the digest's source. Written once; never changed.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `turn` and `seq`. |
+| `turn` | INTEGER | no | The month. |
+| `seq` | INTEGER | no | Its order within the company's month (routine events from 10000). |
+| `area` | VARCHAR(32) | no | The area. |
+| `person_id` | INTEGER | no | The owner. |
+| `kind` | VARCHAR(16) | no | `decision`, `mistake` (a visible misstep), `proposal`, `no_time`, `over_budget`, `event` (a routine event answered) or `kpi` (a KPI's month-start value: `text` is its key, `commitment_cents` its value). |
+| `text` | TEXT | no | What they did, in words. |
+| `commitment_cents` | BIGINT | no | The decision's commitment (12 months' cash cost plus fixed obligations, 40.2), or a `kpi` row's value. |
+| `ref_id` | INTEGER | yes | The proposal, pitch or event it concerns. |
 
 ### era_window
 

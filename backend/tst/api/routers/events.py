@@ -81,7 +81,7 @@ def list_events(save_id: str, settings: SettingsDep, data: DataDep) -> EventsOut
     blocking = next((e.id for e in shown if e.severity == "critical"), None)
     # M29 (42.4): major events stop Continue unless Interruptions is critical only
     blocking_ids = interruptions.blocking_ids(
-        state, interruptions.stop_on(settings.resolved_save_dir())
+        state, interruptions.stop_on(settings.resolved_save_dir()), data.balance
     )
     llm = load_settings(settings.resolved_save_dir())
     return EventsOut(

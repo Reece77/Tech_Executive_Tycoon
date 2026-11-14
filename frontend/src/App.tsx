@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { AchievementsScreen } from './screens/AchievementsScreen';
+import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="competitors/rankings" element={<RankingsScreen />} />
           <Route path="competitors/world" element={<WorldScreen />} />
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
+          <Route path="automation" element={<AutomationScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
           <Route path="saves" element={<SavesScreen />} />
           <Route path="history" element={<HistoryScreen />} />

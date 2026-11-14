@@ -243,6 +243,14 @@ function Onboarding() {
               holiday.
             </p>
           </div>
+          <Switch
+            label="Stop a holiday for approvals"
+            description="A one-off from someone running an area (a round, a facility, a sunset) stops the holiday. Off: it waits for you and the holiday carries on."
+            checked={s.stop_for_approvals ?? true}
+            disabled={update.isPending}
+            onChange={(e) => update.mutate({ ...s, stop_for_approvals: e.currentTarget.checked })}
+            data-testid="setting-stop-for-approvals"
+          />
         </div>
       )}
     </section>

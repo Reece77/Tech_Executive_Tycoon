@@ -145,6 +145,14 @@ export const GUIDES: Record<string, Guide> = {
     what: 'Countries, blocs and export controls: where you may sell and buy, and what it costs.',
     start: ['Check which rules bite your products and inputs before you expand.'],
   },
+  automation: {
+    title: 'Automation',
+    path: 'automation',
+    what: 'Hand any area of the business to a person: they act under a money limit, one-offs come to you, and a monthly digest says what they did.',
+    start: [
+      'Give an area to someone with a strong fit and enough energy; a weak owner makes visibly worse calls.',
+    ],
+  },
 };
 
 /** Where a What next item links (the same kinds as the COO's briefing, 17.3, plus guides). */
@@ -166,6 +174,7 @@ export function whatNextHref(saveId: string, item: WhatNextItem): string {
     case 'recruitment':
     case 'org':
     case 'finance':
+    case 'automation': // M27a (40.8)
       return `${base}/${item.link_kind}`;
     default:
       return `${base}/inbox`;

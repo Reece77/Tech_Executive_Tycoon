@@ -23,8 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 48  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
-# M22: 0047; M23a: 0048
+SCHEMA_VERSION = 49  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047; M23a: 0048; M27a: 0049
 
 
 class Base(DeclarativeBase):
@@ -407,6 +407,9 @@ class InboxItemRow(Base):
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
     # Kept in the inbox: never auto-archived (M10b, migration 0024); a UI flag.
     bookmarked: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
+    # Produced by an automated area: the inbox's default view hides it and the month's digest
+    # links to it (M27a, 40.4; migration 0049).
+    in_digest: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="0")
 
 
 # --- Organization (M2a, migration 0005_org) --------------------------------------------------
@@ -1180,6 +1183,38 @@ class PitchPolicyRow(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
     auto_approve_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     stop_for_big: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+class AreaOwnerRow(Base):
+    """A person who runs an area of a company (M27a, 40.1; 0049). No row: the player
+    manages the area."""
+
+    __tablename__ = "area_owner"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    area: Mapped[str] = mapped_column(String(32), primary_key=True)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    limit_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False)
+    since_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    answer_events: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    allow_bold: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+
+class AreaDecisionRow(Base):
+    """One logged line of an area owner's month (M27a, 40.3-40.4; 0049)."""
+
+    __tablename__ = "area_decision"
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), primary_key=True)
+    turn: Mapped[int] = mapped_column(Integer, primary_key=True)
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True)
+    area: Mapped[str] = mapped_column(String(32), nullable=False)
+    person_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    commitment_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    ref_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class MarketingSplitRow(Base):

@@ -143,6 +143,32 @@ def _report_row(session: Session, text: LLMTextRow) -> InboxItemRow | None:
     ).first()
 
 
+DIGEST: Final = "digest"
+PARAGRAPH: Final = "\n\n"
+
+
+def _write_digest(session: Session, state: GameState, text: LLMTextRow, writer: Writer) -> None:
+    """The digest's opening, from its own engine facts (40.4): every line of the item below the
+    opening, none of them a hidden value (40.11). The rest of the item stays as the engine
+    wrote it."""
+    row = session.scalars(
+        select(InboxItemRow).where(
+            InboxItemRow.template == DIGEST,
+            InboxItemRow.turn == text.turn,
+            InboxItemRow.company_id == text.company_id,
+        )
+    ).first()
+    if row is None:
+        text.text, text.source, text.status = "", "template", "written"
+        return
+    opening, _, rest = row.body.partition(PARAGRAPH)
+    facts = [line.lstrip("- ") for line in row.body.splitlines() if line.strip()]
+    text.text, text.source = write_text(state, DIGEST, text.turn, None, writer, (opening, facts))
+    text.status = "written"
+    if text.source != "template" and text.text:
+        row.body = text.text + (PARAGRAPH + rest if rest else "")
+
+
 def write_pending(
     path: Path,
     data: LoadedData,
@@ -185,6 +211,9 @@ def write_pending(
             for text in session.scalars(
                 select(LLMTextRow).where(LLMTextRow.status == "pending").order_by(LLMTextRow.id)
             ):
+                if text.kind == DIGEST:  # M27a (40.4): the opening paragraph only
+                    _write_digest(session, state, text, writer)
+                    continue
                 report = _report_row(session, text) if text.kind in WRITTEN_OVER else None
                 given = (report.body, [report.title, report.body]) if report else None
                 text.text, text.source = write_text(

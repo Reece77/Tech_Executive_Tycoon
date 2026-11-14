@@ -170,6 +170,13 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'competitors',
   },
+  {
+    path: 'automation',
+    label: 'Automation',
+    group: 'automation',
+    unlock: 'automation',
+    side: true,
+  }, // M27a
   ...(
     [
       ['timeline', 'Timeline'],

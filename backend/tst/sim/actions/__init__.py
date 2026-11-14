@@ -10,7 +10,7 @@ generator (stream `delegate`).
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 import numpy as np
@@ -213,6 +213,15 @@ from tst.sim.actions.scaleup import (
     set_product_division,
     set_shared_services,
 )
+from tst.sim.automation.actions import ACTION_TYPES as AUTOMATION_ACTION_TYPES
+from tst.sim.automation.actions import (
+    AutomationAction,
+    SetAreaOwner,
+    SetAreaSettings,
+    TakeBackArea,
+    apply_automation,
+    drop_seat_rows,
+)
 from tst.sim.contracts.termination import ACTION_TYPES as CONTRACT_ACTION_TYPES
 from tst.sim.contracts.termination import TerminateContract, terminate
 from tst.sim.data_models import Balance, GameData
@@ -284,6 +293,7 @@ from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDili
 from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
+from tst.sim.org.models import Proposal
 from tst.sim.refining.actions import ACTION_TYPES as REFINING_ACTION_TYPES
 from tst.sim.refining.actions import (
     BuildRefinery,
@@ -328,6 +338,7 @@ type Action = (
     | GeopoliticsAction  # M22
     | RequestToolLicence  # M22
     | MiningAction  # M19
+    | AutomationAction  # M27a
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -338,6 +349,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **FOUNDRY_ACTION_TYPES,  # M23a
     **CONTRACT_ACTION_TYPES,  # M23a
     **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
+    **AUTOMATION_ACTION_TYPES,  # M27a (40)
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
@@ -629,7 +641,9 @@ def apply_action(
             return ActionResult(close_proposal(state, proposal, "declined"), (), ())
         inner = apply_action(
             state,
-            proposal_action(proposal, action.actor_id),  # type: ignore[arg-type]
+            auto_proposal_action(proposal, action.actor_id)  # M27a (40.2): an owner's
+            if proposal.kind == "auto"
+            else proposal_action(proposal, action.actor_id),  # type: ignore[arg-type]
             rng,
             balance,
             data,
@@ -858,6 +872,11 @@ def apply_action(
             out = set_marketing_split(state, action, balance, data)
         case SetAuthority():
             out = set_authority(state, action, balance, data)
+            if not action.enabled:  # M27a (40.1): the seat's area goes with its authority
+                company = acting_company(state, action.actor_id)
+                out = replace(out, state=drop_seat_rows(out.state, company, action.seat))
+        case SetAreaOwner() | TakeBackArea() | SetAreaSettings():  # M27a (40.1-40.2)
+            out = apply_automation(state, action, balance, data, ledger_balances)
         case SetPitchPolicy():  # M13b (27.1)
             out = set_pitch_policy(state, action)
         case BuildFacility():  # M12a
@@ -904,6 +923,14 @@ def apply_action(
     if actor is not None:  # people live where they work (M9, 19.2)
         new_state = settle_home_cities(new_state, actor.company_id, balance, data)
     return ActionResult(new_state=new_state, ledger_entries=out.entries, log_items=out.log)
+
+
+def auto_proposal_action(proposal: Proposal, actor_id: int) -> Action:
+    """An area owner's proposal (40.2): the stored action, with the player as actor."""
+    import json
+
+    action = action_from_payload(json.loads(str(proposal.param("action"))))
+    return replace(action, actor_id=actor_id)
 
 
 def action_payload(action: Action) -> dict[str, Any]:
