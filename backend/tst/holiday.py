@@ -131,7 +131,12 @@ def check_start(
         if proposal.kind == "auto" and not stop_for_approvals:
             continue
         raise CriticalEventOpenError(f"answer the proposal: {proposal.text}", 0)
+    from tst.sim.automation.events import answered_for_player
+
+    routine = answered_for_player(state, data.balance)  # an owner answers these (M27a, 40.5)
     for event in blocking_events(state):  # major ones too (23.1, M10b)
+        if event.id in routine:
+            continue
         raise CriticalEventOpenError(
             f"answer the {event.severity} event {event.title or event.template_id!r} first",
             event.id,

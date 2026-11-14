@@ -580,3 +580,12 @@ def test_settings_change_only_what_they_name() -> None:
     out = set_area_settings(state, SetAreaSettings(FOUNDER, "hiring", limit_cents=7), B).state
     owner = out.area_owner(1, "hiring")
     assert owner is not None and owner.limit_cents == 7 and owner.answer_events
+
+
+def test_an_event_an_owner_answers_does_not_block_continue() -> None:
+    from tst.api.interruptions import blocking_ids
+
+    state = _own(_company(lead_role="communications_manager"), "press")
+    state = with_event(state, _press_event("major"))
+    assert blocking_ids(state, "major") == [99]  # without the balance: as before
+    assert blocking_ids(state, "major", B) == []  # its owner answers it at Continue

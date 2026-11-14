@@ -15,6 +15,8 @@ from typing import Literal
 from tst.db import repository
 from tst.loader import LoadedData
 from tst.sim.actions import ChooseEvent
+from tst.sim.automation.events import answered_for_player
+from tst.sim.data_models import Balance
 from tst.sim.events.effects import blocking_events
 from tst.sim.state import GameState
 from tst.ui_settings import load_ui
@@ -35,9 +37,13 @@ def stops(severity: str, level: StopOn) -> bool:
     return severity == "critical" or (severity == "major" and level == "major")
 
 
-def blocking_ids(state: GameState, level: StopOn) -> list[int]:
-    """The open events that stop Continue under this setting."""
-    return [e.id for e in blocking_events(state) if stops(e.severity, level)]
+def blocking_ids(state: GameState, level: StopOn, balance: Balance | None = None) -> list[int]:
+    """The open events that stop Continue under this setting. Events an area owner answers at
+    Continue do not (M27a, 40.5), as the engine's own check (`advance_turn`)."""
+    routine = answered_for_player(state, balance) if balance is not None else frozenset()
+    return [
+        e.id for e in blocking_events(state) if stops(e.severity, level) and e.id not in routine
+    ]
 
 
 def answer_waived(path: Path, data: LoadedData, level: StopOn) -> int:
@@ -51,8 +57,9 @@ def answer_waived(path: Path, data: LoadedData, level: StopOn) -> int:
     founder = state.founder_of(state.player.id)
     if founder is None:
         return 0
+    routine = answered_for_player(state, data.balance)  # an owner answers these (M27a)
     for event in blocking_events(state):
-        if event.severity == "major" and event.choices:
+        if event.severity == "major" and event.choices and event.id not in routine:
             repository.run_action(
                 path, data, ChooseEvent(founder.id, event.id, event.choices[0].key)
             )
