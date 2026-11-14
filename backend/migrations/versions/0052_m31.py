@@ -4,8 +4,8 @@ reviews, open-sourced products, standards and products' formats, the player's st
 and rival stores), one row each: `kind` names the collection and `data` the record's fields
 (data-dictionary.md). Existing saves have none: the platforms materialise in the next month.
 
-Revision ID: 0051_m31
-Revises: 0050_m28
+Revision ID: 0052_m31
+Revises: 0051_m27b
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0051_m31"
-down_revision: str | None = "0050_m28"
+revision: str = "0052_m31"
+down_revision: str | None = "0051_m27b"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from tst.sim.automation import owners
+from tst.sim.automation import chain, owners
 from tst.sim.automation.run import month_energy
 from tst.sim.data_models import Balance, GameData
 from tst.sim.money import Cents
@@ -26,21 +26,25 @@ class Assignment:
 def energy_left(state: GameState, person_id: int, b: Balance, data: GameData) -> int:
     """A person's monthly automation energy after the areas they already own (40.3)."""
     used = sum(
-        owners.area_def(b, o.area).energy
-        for o in state.owners_of(state.player.id)
-        if o.person_id == person_id
+        owners.area_def(b, o.area).energy for o in state.area_owners if o.person_id == person_id
     )
     return month_energy(state, person_id, b, data) - used
 
 
 def automate_everything(
-    state: GameState, cash: Cents, b: Balance, data: GameData
+    state: GameState, cash: Cents, b: Balance, data: GameData, company_id: int | None = None
 ) -> list[Assignment]:
-    company = state.player.id
+    """`company_id`: a subsidiary of the group (M27b), whose CEO comes first; None: the
+    player's company. `cash` is that company's."""
+    company = state.player.id if company_id is None else company_id
     left: dict[int, int] = {}
     out: list[Assignment] = []
     limit = owners.default_limit(cash, b)
     for area in owners.area_keys(b):
+        if not owners.automatable_in(state, company, area, b):
+            continue
+        if area in chain.RULES and not chain.relevant(state, company, area, b, data):
+            continue  # M27b: a chain area with nothing to run here yet
         if state.area_owner(company, area) is not None:
             continue
         cost = owners.area_def(b, area).energy

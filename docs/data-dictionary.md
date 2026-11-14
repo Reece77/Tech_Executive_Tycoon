@@ -1478,6 +1478,22 @@ A person who runs an area of a company (formulas.md 40.1). No row: the player ma
 | `since_turn` | INTEGER | no | When it was given (the take-back morale rule, 40.1). |
 | `answer_events` | BOOLEAN | no | "Let them answer routine events" (40.5). |
 | `allow_bold` | BOOLEAN | no | Press: "allow bold claims" (40.6). |
+| `budget_cents` | BIGINT | no | M27b (`0051_m27b`): the area's yearly budget (exploration, lobbying, screening; 40.13); 0 = off. Existing rows: 0. |
+| `guardrails` | JSON | no | M27b: the player's guardrails for the area, `{key: value}`; a key not set takes the area's default in `balance.yaml`. Existing rows: `{}`. |
+
+Area owners of a subsidiary of the player's group are rows with the subsidiary's `company_id` (M27b).
+
+### headcount_target
+
+A unit's headcount in one role, which the Hiring owner fills with plans (M27b sub-task 9; migration `0051_m27b`). No row: no target.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `unit_id` and `role`: the player's company or a subsidiary. |
+| `unit_id` | INTEGER | no | The unit. |
+| `role` | VARCHAR(32) | no | A `roles.yaml` key. |
+| `target` | INTEGER | no | Headcount wanted in the role in the unit (1-1,000). |
+| `set_turn` | INTEGER | no | When the player set it. |
 
 ### area_decision
 
@@ -1998,7 +2014,7 @@ Every living-world record, one row each, rewritten by collection when it changes
 | `kind` | VARCHAR | no | The collection: `chain_companies` (`company_id`, `key` the data key or `other_<good>`, `index` the stable key's position, `country`, `region`, `executives` [[role, name], ...] the CEO first, `ceo_since`, `insolvent_months`, `is_other`, `revenue_cents` and `costs_cents` last month's, `ebitda` the last 12 months' cents), `world_facilities` (`id`, `company_id`, `good`, `country`, `region`, `capacity` units a year, `cost` the cost position 0-1 (hidden: the API shows its third), `status` `building`/`live`/`mothballed`/`closed`, `ordered_turn`, `ready_turn`, `capex_cents`, `depreciated_cents`, `below_months`, `above_months`, `mothballed_turn`, `closed_turn`, `output` last month's units), `world_goods` (`good`, `turn`, `capacity`, `supply` (normal running), `demand`, `player_supply`, `player_demand`, `factor` the balance factor the next month's price takes, `prices` the last 12 months' in dollars a unit, `contracted` rivals' offtakes a year, `output` actual output a year, `short_months`), `region_cycles` (`region`, `turn`, `level`, `phase` `none`/`recession`/`boom`/`global`, `phase_start`, `phase_months`, `depth`, `multiplier`, `previous`; hidden: never in the API), `world_news` (`id`, `turn`, `kind`, `message`, `company_id`, `other_id`, `region`, `good`; the last `world.news_months`), `rival_deals` (`id`, `agreed_turn`, `buyer_id`, `target_id`, `price_cents`, `kind` `vertical`/`horizontal`, `status` `review`/`closed`/`blocked`, `close_turn`, `share` the antitrust test's combined share, negative while a review that will block runs), `rival_mandates` (`company_id`, `owner_id`, `kind` `grow`/`margin`/`cash`, `set_turn`), `world_offtakes` (`id`, `buyer_id`, `seller_id`, `good`, `volume` units a year, `start_turn`, `end_turn`), `world_bids` (`id`, `rival_id`, `turn`, `price_cents` a share, `status` `open`/`accepted`/`rejected`/`lapsed`; the rival's valuation is never stored), `china_lags` (`foundry`, `turn`, `behind` generations, `reached` [[node, turn], ...] after 2025, `binding`). |
 | `data` | JSON | no | The record's fields, as listed under `kind`. |
 
-## Platforms and ecosystems (migration `0051_m31`, M31)
+## Platforms and ecosystems (migration `0052_m31`, M31)
 
 Platforms (formulas.md 44, ADR-0021) live in `platform_record`, one row a record (`tst/db/platforms_io.py`). Accounts `4150_platform_fees` (revenue: a store owner's fees on other companies' app sales, and an own OS's licence from other makers) and `5150_platform_fees` (expense, cost of revenue: store fees on app sales, Android's licence a device unit, an own OS's licence); between companies of the player's group the pair is `5900_intercompany_purchases` / `4300_intercompany_sales`, which consolidation removes. Fees post from `platforms.fees_from` (January 2010): to 2025 as a cash-neutral gross-up (5150 against 4000), from 2026 against cash with a "Store price calibration" revenue entry; licences from `platforms.start` (January 2026). RNG stream `platforms` (58). Balance keys `platforms.*`. Data: `platforms.yaml` (historical platforms, regional user shares by year to 2025 from StatCounter, fee schedules, dated rules, developers by year, app counts, standards and open-source cases, each with its source) and the `os` pseudo-category in `categories.yaml` (`pseudo: true`, no markets; loaded into `GameData.pseudo_categories`, not `categories`). Event templates in `events/platforms.yaml` (trigger `platforms`; effect `platform_step`). `save_meta.schema_version` is 51. Existing saves have no records; the historical platforms materialise in their next month. Never stored: a gatekeeper's review chance or draw, or an appeal's chance (drawn on its answer month).
 

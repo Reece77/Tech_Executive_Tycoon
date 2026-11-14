@@ -10,8 +10,8 @@ from typing import Any
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from tst.db.models import AreaDecisionRow, AreaOwnerRow
-from tst.sim.automation.models import AreaDecision, AreaOwner
+from tst.db.models import AreaDecisionRow, AreaOwnerRow, HeadcountTargetRow
+from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
 from tst.sim.state import GameState
 
 DECISION_MEMORY = 13  # months of area decisions the state holds (a year's record and digest)
@@ -32,6 +32,8 @@ def load_automation(
             r.since_turn,
             bool(r.answer_events),
             bool(r.allow_bold),
+            int(r.budget_cents or 0),
+            tuple(sorted((str(k), float(v)) for k, v in (r.guardrails or {}).items())),
         )
         for r in session.scalars(
             select(AreaOwnerRow).order_by(AreaOwnerRow.company_id, AreaOwnerRow.area)
@@ -55,7 +57,19 @@ def load_automation(
             .order_by(AreaDecisionRow.company_id, AreaDecisionRow.turn, AreaDecisionRow.seq)
         )
     )
-    return replace(state, area_owners=owners, area_decisions=decisions)
+    targets: tuple[HeadcountTarget, ...] = ()
+    if has_table(session, HeadcountTargetRow):
+        targets = tuple(
+            HeadcountTarget(r.company_id, r.unit_id, r.role, r.target, r.set_turn)
+            for r in session.scalars(
+                select(HeadcountTargetRow).order_by(
+                    HeadcountTargetRow.company_id,
+                    HeadcountTargetRow.unit_id,
+                    HeadcountTargetRow.role,
+                )
+            )
+        )
+    return replace(state, area_owners=owners, area_decisions=decisions, headcount_targets=targets)
 
 
 def sync_automation(
@@ -64,6 +78,18 @@ def sync_automation(
     new: GameState,
     has_table: Callable[[Session, Any], bool],
 ) -> None:
+    if old.headcount_targets != new.headcount_targets and has_table(session, HeadcountTargetRow):
+        session.execute(delete(HeadcountTargetRow))
+        for t in new.headcount_targets:
+            session.add(
+                HeadcountTargetRow(
+                    company_id=t.company_id,
+                    unit_id=t.unit_id,
+                    role=t.role,
+                    target=t.target,
+                    set_turn=t.set_turn,
+                )
+            )
     if (old.area_owners, old.area_decisions) == (new.area_owners, new.area_decisions):
         return
     if not has_table(session, AreaOwnerRow):
@@ -90,6 +116,8 @@ def sync_automation(
                         since_turn=o.since_turn,
                         answer_events=o.answer_events,
                         allow_bold=o.allow_bold,
+                        budget_cents=o.budget_cents,
+                        guardrails=dict(o.guardrails),
                     )
                 )
     known = {(d.company_id, d.turn, d.seq) for d in old.area_decisions}

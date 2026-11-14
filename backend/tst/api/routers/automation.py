@@ -24,6 +24,7 @@ from tst.api.schemas.automation import (
     AutomationActionOut,
     AutomationOut,
     DigestOut,
+    HeadcountTargetIn,
     RecordOut,
 )
 from tst.config import Settings
@@ -31,25 +32,42 @@ from tst.db import inbox, repository
 from tst.db.models import InboxItemRow
 from tst.loader import LoadedData
 from tst.sim.actions import Action
-from tst.sim.automation.actions import SetAreaOwner, SetAreaSettings, TakeBackArea
+from tst.sim.automation.actions import (
+    SetAreaOwner,
+    SetAreaSettings,
+    SetHeadcountTarget,
+    TakeBackArea,
+)
 from tst.sim.errors import InvalidActionError
 from tst.sim.state import GameState, company_cash
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["automation"])
 
 
-def _cash(path: Path, state: GameState) -> int:
+def _cash(path: Path, state: GameState, company_id: int | None = None) -> int:
+    company = state.player.id if company_id is None else company_id
     with repository.read_session(path) as session:
-        return company_cash(repository.current_balances(session, state.turn), state.player.id)
+        return company_cash(repository.current_balances(session, state.turn), company)
 
 
-def _out(path: Path, state: GameState, data: LoadedData, settings: Settings) -> AutomationOut:
+def _out(
+    path: Path,
+    state: GameState,
+    data: LoadedData,
+    settings: Settings,
+    company_id: int | None = None,
+) -> AutomationOut:
     stop = interruptions.stop_for_approvals(settings.resolved_save_dir())
-    return automation_views.automation_out(state, _cash(path, state), data, stop)
+    cash = _cash(path, state, company_id)
+    return automation_views.automation_out(state, cash, data, stop, company_id)
 
 
 def _act(
-    path: Path, data: LoadedData, settings: Settings, actions: list[Action]
+    path: Path,
+    data: LoadedData,
+    settings: Settings,
+    actions: list[Action],
+    company_id: int | None = None,
 ) -> AutomationActionOut:
     state = _state(path)
     for action in actions:
@@ -57,7 +75,7 @@ def _act(
     with repository.open_session(path) as session:
         unread = inbox.unread_count(session, state.player.id)
     return AutomationActionOut(
-        automation=_out(path, state, data, settings),
+        automation=_out(path, state, data, settings, company_id),
         energy=views.energy(state, data),
         unread_inbox=unread,
     )
@@ -66,11 +84,17 @@ def _act(
 @router.get(
     "/automation", response_model=AutomationOut, responses=ERRORS, operation_id="getAutomation"
 )
-def get_automation(save_id: str, settings: SettingsDep, data: DataDep) -> AutomationOut:
+def get_automation(
+    save_id: str,
+    settings: SettingsDep,
+    data: DataDep,
+    company_id: Annotated[int | None, Query(description="M27b: a subsidiary")] = None,
+) -> AutomationOut:
     """Every area: who runs it (or why nobody can yet), the people who could, limits,
-    priority, this month's decisions and proposals waiting (40.8)."""
+    priority, this month's decisions and proposals waiting (40.8); for the player's company or
+    (M27b) one of its group's subsidiaries."""
     path = _path(settings, save_id)
-    return _out(path, _state(path), data, settings)
+    return _out(path, _state(path), data, settings, company_id)
 
 
 @router.post(
@@ -85,8 +109,10 @@ def set_area_owner(
     """Give an area to a person (energy automation.change_energy)."""
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    action = SetAreaOwner(founder, body.area, body.person_id, body.limit_cents, body.priority)
-    return _act(path, data, settings, [action])
+    action = SetAreaOwner(
+        founder, body.area, body.person_id, body.limit_cents, body.priority, body.company_id
+    )
+    return _act(path, data, settings, [action], body.company_id)
 
 
 @router.post(
@@ -101,7 +127,8 @@ def take_back_area(
     """Manage an area yourself again."""
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    return _act(path, data, settings, [TakeBackArea(founder, body.area)])
+    action = TakeBackArea(founder, body.area, body.company_id)
+    return _act(path, data, settings, [action], body.company_id)
 
 
 @router.post(
@@ -116,10 +143,39 @@ def set_area_settings(
     """An owned area's limit, priority, routine events and bold claims. Free."""
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
-    action = SetAreaSettings(
-        founder, body.area, body.limit_cents, body.priority, body.answer_events, body.allow_bold
+    rails = (
+        None
+        if body.guardrails is None
+        else tuple(sorted((g.key, g.value) for g in body.guardrails))
     )
-    return _act(path, data, settings, [action])
+    action = SetAreaSettings(
+        founder,
+        body.area,
+        body.limit_cents,
+        body.priority,
+        body.answer_events,
+        body.allow_bold,
+        body.company_id,
+        body.budget_cents,
+        rails,
+    )
+    return _act(path, data, settings, [action], body.company_id)
+
+
+@router.post(
+    "/automation/headcount",
+    response_model=AutomationActionOut,
+    responses=ERRORS,
+    operation_id="setHeadcountTarget",
+)
+def set_headcount_target(
+    save_id: str, body: HeadcountTargetIn, settings: SettingsDep, data: DataDep
+) -> AutomationActionOut:
+    """M27b: a unit's headcount target in a role (0 removes it), which Hiring fills. Free."""
+    path = _path(settings, save_id)
+    founder = _founder_id(_state(path))
+    action = SetHeadcountTarget(founder, body.unit_id, body.role, body.target, body.company_id)
+    return _act(path, data, settings, [action], body.company_id)
 
 
 @router.get(
@@ -128,11 +184,17 @@ def set_area_settings(
     responses=ERRORS,
     operation_id="getAutomatePlan",
 )
-def get_plan(save_id: str, settings: SettingsDep, data: DataDep) -> AutomatePlanOut:
-    """Automate everything, before anything changes: who would run each area (40.8)."""
+def get_plan(
+    save_id: str,
+    settings: SettingsDep,
+    data: DataDep,
+    company_id: Annotated[int | None, Query(description="M27b: a subsidiary")] = None,
+) -> AutomatePlanOut:
+    """Automate everything, before anything changes: who would run each area (40.8); inside a
+    subsidiary its CEO first."""
     path = _path(settings, save_id)
     state = _state(path)
-    return automation_views.plan_out(state, _cash(path, state), data)
+    return automation_views.plan_out(state, _cash(path, state, company_id), data, company_id)
 
 
 @router.post(
@@ -150,10 +212,10 @@ def automate_all(
     path = _path(settings, save_id)
     founder = _founder_id(_state(path))
     actions: list[Action] = [
-        SetAreaOwner(founder, a.area, a.person_id, a.limit_cents, a.priority)
+        SetAreaOwner(founder, a.area, a.person_id, a.limit_cents, a.priority, a.company_id)
         for a in body.assignments
     ]
-    return _act(path, data, settings, actions)
+    return _act(path, data, settings, actions, body.assignments[0].company_id)
 
 
 @router.get(

@@ -11,6 +11,7 @@ import {
   useAutomation,
   useDigest,
   useSetAreaOwner,
+  useHeadcountTarget,
   useTakeBackArea,
   type Area,
   type Automation,
@@ -20,27 +21,72 @@ import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 
 const helper = createColumnHelper<GameTableFeatures, Area>();
 const CENTS = 100;
+// M27b (formulas.md 40.7): what each guardrail means, for the settings dialog.
+const RAIL_LABELS: Record<string, string> = {
+  cover_low_weeks: 'Lowest cover (weeks of demand)',
+  cover_high_weeks: 'Highest cover (weeks of demand)',
+  order_weeks: 'An order brings cover to (weeks)',
+  contract_months: 'An order runs (months)',
+  cover_low: 'Lowest 12-month input cover (share)',
+  cover_high: 'Highest 12-month input cover (share)',
+  min_grade: 'Give up below (x the median grade)',
+  projects: 'Live projects a front',
+  safety: 'Mine safety (0 low, 1 normal, 2 high)',
+  contract_share: 'Share of a mine contracted when the group needs none',
+  margin: 'Foundry price at least (share over cost a start)',
+  contracted_share: 'Most of a fab under contract (share)',
+};
 
 /** Automation (M27a, formulas.md 40.8): who runs each area, under what limit, and what they did. */
 export function AutomationScreen() {
   const { saveId = '' } = useParams();
-  const auto = useAutomation(saveId);
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  const auto = useAutomation(saveId, companyId);
   if (auto.isPending) return <Loading />;
   if (auto.error) return <LoadError title="Could not load automation" error={auto.error} />;
-  return <Body saveId={saveId} a={auto.data} />;
+  return <Body saveId={saveId} a={auto.data} onCompany={setCompanyId} />;
 }
 
-function Body({ saveId, a }: { saveId: string; a: Automation }) {
+function Body({
+  saveId,
+  a,
+  onCompany,
+}: {
+  saveId: string;
+  a: Automation;
+  onCompany: (id: number | null) => void;
+}) {
   const [confirming, setConfirming] = useState(false);
   const [editing, setEditing] = useState<Area | null>(null);
+  const company = a.subsidiary ? a.company_id : null;
   const setOwner = useSetAreaOwner(saveId);
-  const takeBack = useTakeBackArea(saveId);
+  const takeBack = useTakeBackArea(saveId, company);
   const error = setOwner.error ?? takeBack.error;
   const open = a.areas.filter((x) => x.status === 'manage').length;
+  const companies = a.companies ?? [];
   return (
     <>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>Automation</h1>
+        {companies.length > 1 && (
+          <Select
+            size="xs"
+            aria-label="Company"
+            data-testid="automation-company"
+            data={companies.map((c) => ({
+              value: String(c.company_id),
+              label: c.subsidiary ? `${c.name} (subsidiary)` : c.name,
+            }))}
+            value={String(a.company_id)}
+            allowDeselect={false}
+            onChange={(v) => {
+              if (!v) return;
+              const chosen = companies.find((c) => String(c.company_id) === v);
+              onCompany(chosen && chosen.subsidiary ? chosen.company_id : null);
+            }}
+            comboboxProps={{ withinPortal: true }}
+          />
+        )}
         <span className="tst-muted" style={{ fontSize: 13 }}>
           {a.company_name} · default limit {formatMoneyWhole(a.default_limit_cents)} a decision ·
           one-offs always come to you
@@ -64,7 +110,9 @@ function Body({ saveId, a }: { saveId: string; a: Automation }) {
         <AreasTable
           areas={a.areas}
           busy={setOwner.isPending || takeBack.isPending}
-          onOwner={(area, personId) => setOwner.mutate({ area, person_id: personId })}
+          onOwner={(area, personId) =>
+            setOwner.mutate({ area, person_id: personId, company_id: company })
+          }
           onTakeBack={(area) => takeBack.mutate(area)}
           onEdit={setEditing}
         />
@@ -73,11 +121,24 @@ function Body({ saveId, a }: { saveId: string; a: Automation }) {
           selling, rounds, loans, facilities, sunsets, big layoffs, appointments), they propose and
           you decide. Each person has a month&apos;s energy: areas past it get no time. Fit comes
           from what you know of them.
+          {a.subsidiary
+            ? ' Inside a subsidiary its CEO comes first, its mandate is the guardrail, and the decisions are in its own books.'
+            : ''}
         </p>
       </Panel>
+      <HeadcountPanel saveId={saveId} a={a} company={company} />
       <DigestPanel saveId={saveId} />
-      {confirming && <ConfirmAll saveId={saveId} onClose={() => setConfirming(false)} />}
-      {editing && <EditArea saveId={saveId} area={editing} onClose={() => setEditing(null)} />}
+      {confirming && (
+        <ConfirmAll saveId={saveId} company={company} onClose={() => setConfirming(false)} />
+      )}
+      {editing && (
+        <EditArea
+          saveId={saveId}
+          area={editing}
+          company={company}
+          onClose={() => setEditing(null)}
+        />
+      )}
     </>
   );
 }
@@ -222,8 +283,16 @@ function AreasTable({
   return <DataTable table={table} label="Areas" rowTestId="area-row" />;
 }
 
-function ConfirmAll({ saveId, onClose }: { saveId: string; onClose: () => void }) {
-  const plan = useAutomatePlan(saveId, true);
+function ConfirmAll({
+  saveId,
+  company,
+  onClose,
+}: {
+  saveId: string;
+  company: number | null;
+  onClose: () => void;
+}) {
+  const plan = useAutomatePlan(saveId, true, company);
   const apply = useAutomateEverything(saveId);
   return (
     <Modal opened onClose={onClose} title="Automate everything" size="lg">
@@ -265,6 +334,7 @@ function ConfirmAll({ saveId, onClose }: { saveId: string; onClose: () => void }
                   area: x.area,
                   person_id: x.person_id,
                   limit_cents: x.limit_cents,
+                  company_id: company,
                 })),
                 { onSuccess: onClose },
               )
@@ -278,12 +348,26 @@ function ConfirmAll({ saveId, onClose }: { saveId: string; onClose: () => void }
   );
 }
 
-function EditArea({ saveId, area, onClose }: { saveId: string; area: Area; onClose: () => void }) {
+function EditArea({
+  saveId,
+  area,
+  company,
+  onClose,
+}: {
+  saveId: string;
+  area: Area;
+  company: number | null;
+  onClose: () => void;
+}) {
   const save = useAreaSettings(saveId);
   const [limit, setLimit] = useState<number>((area.limit_cents ?? 0) / CENTS);
   const [priority, setPriority] = useState<number>(area.priority ?? 0);
   const [events, setEvents] = useState(area.answer_events);
   const [bold, setBold] = useState(area.allow_bold);
+  const [budget, setBudget] = useState<number>((area.budget_cents ?? 0) / CENTS);
+  const [rails, setRails] = useState<Record<string, number>>(
+    Object.fromEntries((area.guardrails ?? []).map((g) => [g.key, g.value])),
+  );
   return (
     <Modal opened onClose={onClose} title={area.label}>
       <div style={{ display: 'grid', gap: 12 }}>
@@ -315,9 +399,31 @@ function EditArea({ saveId, area, onClose }: { saveId: string; area: Area; onClo
             onChange={(e) => setBold(e.currentTarget.checked)}
           />
         )}
+        {area.budgeted && (
+          <NumberInput
+            label="Yearly budget ($; 0 keeps it off)"
+            value={budget}
+            min={0}
+            thousandSeparator=","
+            onChange={(v) => setBudget(Number(v) || 0)}
+            data-testid="budget-input"
+          />
+        )}
+        {(area.guardrails ?? []).map((g) => (
+          <NumberInput
+            key={g.key}
+            label={`${RAIL_LABELS[g.key] ?? g.key} (default ${g.default})`}
+            value={rails[g.key] ?? g.value}
+            min={0}
+            decimalScale={2}
+            onChange={(v) => setRails({ ...rails, [g.key]: Number(v) || 0 })}
+            data-testid={`rail-${g.key}`}
+          />
+        ))}
         {save.error && <Alert color="warn">{save.error.message}</Alert>}
         <Button
           loading={save.isPending}
+          data-testid="settings-save"
           onClick={() =>
             save.mutate(
               {
@@ -326,6 +432,9 @@ function EditArea({ saveId, area, onClose }: { saveId: string; area: Area; onClo
                 priority,
                 answer_events: events,
                 allow_bold: bold,
+                company_id: company,
+                budget_cents: area.budgeted ? Math.round(budget * CENTS) : null,
+                guardrails: Object.entries(rails).map(([key, value]) => ({ key, value })),
               },
               { onSuccess: onClose },
             )
@@ -335,6 +444,109 @@ function EditArea({ saveId, area, onClose }: { saveId: string; area: Area; onClo
         </Button>
       </div>
     </Modal>
+  );
+}
+
+/** M27b sub-task 9: headcount targets per unit, which the Hiring owner fills. */
+function HeadcountPanel({
+  saveId,
+  a,
+  company,
+}: {
+  saveId: string;
+  a: Automation;
+  company: number | null;
+}) {
+  const set = useHeadcountTarget(saveId);
+  const [unit, setUnit] = useState<string | null>(null);
+  const [role, setRole] = useState<string>('software_engineer');
+  const [target, setTarget] = useState<number>(1);
+  const units = a.units ?? [];
+  const targets = a.headcount_targets ?? [];
+  const hiring = a.areas.find((x) => x.area === 'hiring');
+  if (units.length === 0 && targets.length === 0) return null;
+  return (
+    <Panel title="Headcount targets" testId="headcount-panel">
+      <p className="tst-muted" style={{ marginTop: 0, fontSize: 12 }}>
+        {hiring?.status === 'automated'
+          ? `${hiring.owner?.name ?? 'Hiring'} opens plans to keep each unit at its target.`
+          : 'Give Hiring to someone and they open plans to keep each unit at its target.'}
+      </p>
+      {targets.length > 0 && (
+        <table className="tst-table" aria-label="Headcount targets">
+          <tbody>
+            {targets.map((t) => (
+              <tr key={`${t.unit_id}-${t.role}`} data-testid="headcount-row">
+                <td>{t.unit_name}</td>
+                <td>{t.role_label}</td>
+                <td className="tst-num">
+                  {t.staff} of {t.target}
+                  {t.gap > 0 ? ` (${t.gap} to plan)` : ''}
+                </td>
+                <td>
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    onClick={() =>
+                      set.mutate({
+                        unit_id: t.unit_id,
+                        role: t.role,
+                        target: 0,
+                        company_id: company,
+                      })
+                    }
+                  >
+                    Remove
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {units.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <Select
+            size="xs"
+            label="Unit"
+            data-testid="headcount-unit"
+            data={units.map((u) => ({ value: String(u.unit_id), label: u.name }))}
+            value={unit}
+            onChange={setUnit}
+            comboboxProps={{ withinPortal: true }}
+          />
+          <Select
+            size="xs"
+            label="Role"
+            searchable
+            data={(a.roles ?? []).map((r) => ({ value: r.key, label: r.label }))}
+            value={role}
+            onChange={(v) => v && setRole(v)}
+            comboboxProps={{ withinPortal: true }}
+          />
+          <NumberInput
+            size="xs"
+            label="Target"
+            min={0}
+            value={target}
+            onChange={(v) => setTarget(Number(v) || 0)}
+          />
+          <Button
+            size="xs"
+            disabled={unit === null}
+            loading={set.isPending}
+            data-testid="headcount-set"
+            onClick={() =>
+              unit !== null &&
+              set.mutate({ unit_id: Number(unit), role, target, company_id: company })
+            }
+          >
+            Set target
+          </Button>
+        </div>
+      )}
+      {set.error && <Alert color="warn">{set.error.message}</Alert>}
+    </Panel>
   );
 }
 
