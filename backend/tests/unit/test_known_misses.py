@@ -18,7 +18,7 @@ def _ai(gap: float) -> Row:
 def test_the_list_after_m23b() -> None:
     assert [m.target for m in KNOWN_MISSES] == ["V3.ai", "V5.cells", "V5.cats", "I1"]
     owners = {m.target: m.owner for m in KNOWN_MISSES}
-    assert owners == {"V3.ai": "M23", "V5.cells": "M23", "V5.cats": "M23", "I1": "M28"}
+    assert owners == {"V3.ai": "M28", "V5.cells": "M28", "V5.cats": "M28", "I1": "M28"}
     assert known_miss("T2") is None and known_miss("M10.T3") is None
 
 

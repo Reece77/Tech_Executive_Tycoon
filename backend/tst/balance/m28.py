@@ -125,3 +125,17 @@ def history_diffs(got: dict[str, Fingerprint], want: dict[str, Fingerprint]) -> 
                 if want.get(seed, {}).get(name, {}).get(year) != h:
                     out.append(f"seed {seed} {name} {year}")
     return out
+
+
+def run(seeds: Sequence[int] = SEEDS, workers: int = 1) -> object:
+    """Targets 2-6 (tst.balance.m28_world)."""
+    from tst.balance import m28_world
+
+    return m28_world.run(seeds, workers)
+
+
+def report(results: object) -> str:
+    from tst.balance import m28_world
+
+    assert isinstance(results, m28_world.Results)
+    return m28_world.report(results)

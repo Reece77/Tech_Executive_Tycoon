@@ -77,6 +77,7 @@ from tst.sim.press.config import (
 )
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
+from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 
@@ -1284,6 +1285,7 @@ class Balance(_Frozen):
     mining: MiningBalance  # M19 (formulas.md 35)
     fab: FabBalance  # M21 (formulas.md 38)
     contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
+    world: WorldBalance  # M28 (formulas.md 41): chain companies, groups, bids, cycles
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1989,6 +1991,7 @@ class GameData(_Frozen):
     countries: CountriesFile | None = None
     controls: ExportControlsFile | None = None
     tariffs: TariffsFile | None = None
+    chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

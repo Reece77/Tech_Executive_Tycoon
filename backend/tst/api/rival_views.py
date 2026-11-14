@@ -22,6 +22,7 @@ from tst.api.schemas.rivals import (
     RivalsOut,
 )
 from tst.api.views import person_name, role_label
+from tst.api.world_views import company_world
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.hiring.formulas import energy_cost
@@ -303,6 +304,7 @@ def rival_profile(
         key_people=people,
         recent_moves=[move_out(m) for m in reversed(moves) if m.company_id == company.id],
         poach_energy=energy_cost("poach_search", data.balance),
+        world=company_world(state, company, balances, data),  # M28 (41.7)
     )
 
 

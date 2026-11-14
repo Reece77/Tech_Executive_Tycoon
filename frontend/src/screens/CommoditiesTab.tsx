@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { components } from '../api/schema';
+import { CompanyLink } from '../components/CompanyLink';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { Term } from '../components/Term';
@@ -59,9 +60,9 @@ export function CommoditiesTab({ saveId }: { saveId: string }) {
       {good && <PriceChart good={good} />}
       <PlanPanel saveId={saveId} />
       <PowerPanel c={c} />
-      <DealsPanel deals={c.deals} />
+      <DealsPanel saveId={saveId} deals={c.deals} />
       <OfftakeForm saveId={saveId} c={c} defaultGood={good?.good ?? ''} />
-      <SuppliersTable suppliers={c.suppliers} />
+      <SuppliersTable saveId={saveId} suppliers={c.suppliers} />
     </div>
   );
 }
@@ -223,7 +224,7 @@ function PowerPanel({ c }: { c: Commodities }) {
   );
 }
 
-function DealsPanel({ deals }: { deals: Deal[] }) {
+function DealsPanel({ saveId, deals }: { saveId: string; deals: Deal[] }) {
   const columns = useMemo(
     () =>
       dealHelper.columns([
@@ -234,7 +235,14 @@ function DealsPanel({ deals }: { deals: Deal[] }) {
             <div>
               <div>
                 {row.original.good_label} {row.original.kind}
-                {row.original.supplier_name ? ` with ${row.original.supplier_name}` : ''}
+                {row.original.supplier_name && ' with '}
+                {row.original.supplier_name && (
+                  <CompanyLink
+                    saveId={saveId}
+                    companyId={row.original.supplier_company_id}
+                    name={row.original.supplier_name}
+                  />
+                )}
               </div>
               <div className="tst-muted" style={{ fontSize: 12 }}>
                 {row.original.signed} – {row.original.ends} · {row.original.status} ·{' '}
@@ -269,7 +277,7 @@ function DealsPanel({ deals }: { deals: Deal[] }) {
           cell: ({ getValue }) => <span className="tst-num">{formatMoney(getValue())}</span>,
         }),
       ]),
-    [],
+    [saveId],
   );
   const table = useTable({
     features: gameTableFeatures,
@@ -389,7 +397,7 @@ function OfftakeForm({
   );
 }
 
-function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
+function SuppliersTable({ saveId, suppliers }: { saveId: string; suppliers: Supplier[] }) {
   const columns = useMemo(
     () =>
       supplierHelper.columns([
@@ -398,7 +406,13 @@ function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
           meta: { term: 'commodity.supplier' },
           cell: ({ row }) => (
             <div>
-              <div>{row.original.name}</div>
+              <div>
+                <CompanyLink
+                  saveId={saveId}
+                  companyId={row.original.company_id}
+                  name={row.original.name}
+                />
+              </div>
               <div className="tst-muted" style={{ fontSize: 12 }}>
                 {row.original.region_label} · {row.original.listing} ·{' '}
                 {row.original.goods.map((g) => `${g.label} ${pct(g.share)}`).join(', ') ||
@@ -424,7 +438,7 @@ function SuppliersTable({ suppliers }: { suppliers: Supplier[] }) {
           ),
         }),
       ]),
-    [],
+    [saveId],
   );
   const table = useTable({
     features: gameTableFeatures,

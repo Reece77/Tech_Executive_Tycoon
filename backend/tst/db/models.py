@@ -23,8 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 48  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
-# M22: 0047; M23a: 0048
+SCHEMA_VERSION = 49  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047; M23a: 0048; M28: 0049
 
 
 class Base(DeclarativeBase):
@@ -2154,6 +2154,22 @@ class GeoRecordRow(Base):
     `data` its fields; rows keep each collection's order."""
 
     __tablename__ = "geo_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M28 (formulas.md 41; migration 0049): a living world ------------------------------------
+
+
+class WorldRecordRow(Base):
+    """One living-world record (41; 0049): `kind` names its GameState collection
+    (chain_companies, world_facilities, world_goods, region_cycles, world_news, rival_deals,
+    rival_mandates, world_offtakes, world_bids, china_lags) and `data` its fields; rows keep
+    each collection's order."""
+
+    __tablename__ = "world_record"
 
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)

@@ -1,0 +1,128 @@
+# Chain companies (docs/formulas.md 41.1, M28, v3.5 lane B): the miners, refiners, gas companies
+# and foundries that supply the chain, as rival companies with facilities and books from
+# January 2026. Their capacity per good sums to world supply each year to 2025: each named
+# company holds its suppliers.yaml share of the good (`goods`, with its from/until window) or,
+# for a foundry, its nodes.yaml capacity; "other producers" (one aggregate company per good)
+# hold the rest. Nothing here moves anything before 2026 (41.8 target 1).
+#
+# Tags (the dossier's): R widely reported (recalled; USGS Mineral Commodity Summaries, ICSG,
+# IEA, company reports), A an assumption for gameplay where no public series exists.
+#
+# world_supply: good -> {year: world output a year, in the good's volume_unit (commodities.yaml:
+#   t, kg, lot)}; linear between the year points and held at the ends. foundry_wafer is in
+#   wafers a year and is the named foundries' nodes.yaml capacity / (1 - foundry_other_share).
+# demand_growth: the rest of the world's demand for the good grows this fraction a year after
+#   2025 (A, from the dossier's demand outlooks: batteries and AI lift lithium, cobalt, NdPr and
+#   foundry wafers fastest). Through 2025 demand is the history's output.
+# build_months: months from a December expansion decision to the new capacity (35, 36, 38: a
+#   mine or brine expansion 24-36, a refinery line 18-24, a fab 36), by good (A).
+# companies: one entry for each suppliers.yaml supplier selling a commodity in December 2025
+#   and each nodes.yaml foundry. personality: a rivals personality (15.3) that sizes its
+#   expansions (aggressive large, cost leader medium, premium small); cost: its position on the
+#   good's cost curve, 0 the lowest-cost producer and 1 the highest (A: from the dossier's notes
+#   on grades, brine against hard rock, and power); country: where its facilities sit when
+#   countries.yaml `sites` has none. A supplier whose share ended before December 2025 (Rockwood,
+#   Molycorp, MEMC, Ingas, Cryoin) or that sells no M17 good (the wafer makers) has no entry.
+# others: the aggregate producer of each good: its cost position and country.
+foundry_other_share: 0.12 # A: Tower, Vanguard, Hua Hong, PSMC and smaller foundries' share of wafer capacity
+world_supply:
+  quartz_hp: { 2010: 20000, 2025: 40000 } # A: crucible-grade HPQ, no public series (dossier 1.2)
+  silicon_metal: { 2010: 2000000, 2015: 2600000, 2020: 3200000, 2024: 4600000, 2025: 4700000 } # R: USGS (4.6 Mt in 2024, commodities.yaml)
+  polysilicon: { 2010: 25000000, 2015: 30000000, 2020: 36000000, 2025: 42000000 } # A: semiconductor-grade kg (the good's price is semiconductor grade; solar volume excluded)
+  gallium: { 2010: 180000, 2014: 440000, 2019: 320000, 2022: 550000, 2024: 848000, 2025: 870000 } # R: USGS primary low-purity kg (848 t in 2024)
+  germanium: { 2010: 120000, 2015: 160000, 2020: 140000, 2025: 140000 } # R: USGS refinery kg
+  copper: { 2010: 19000000, 2015: 22800000, 2020: 24500000, 2024: 27000000, 2025: 27500000 } # R: ICSG refined copper t
+  tin: { 2010: 360000, 2015: 350000, 2020: 360000, 2025: 380000 } # R: ITA refined tin t
+  tantalum: { 2010: 830000, 2015: 1350000, 2020: 2100000, 2025: 2500000 } # R: USGS mine Ta x 1.22, kg Ta2O5
+  cobalt: { 2010: 89000, 2015: 126000, 2020: 142000, 2023: 230000, 2024: 290000, 2025: 300000 } # R: USGS mine cobalt t
+  lithium_carbonate: { 2010: 150000, 2015: 170000, 2018: 450000, 2020: 440000, 2022: 700000, 2024: 1200000, 2025: 1350000 } # R: USGS lithium x 5.32, t LCE
+  ndpr_oxide: { 2010: 25000000, 2015: 26000000, 2020: 48000000, 2025: 80000000 } # A: about 20% of USGS rare-earth oxide, kg
+  neon: { 2010: 20000, 2025: 40000 } # A: semiconductor neon lots ($1,000 at index 1.0; no public series)
+demand_growth:
+  quartz_hp: 0.04
+  silicon_metal: 0.04
+  polysilicon: 0.05
+  gallium: 0.05
+  germanium: 0.03
+  copper: 0.025
+  tin: 0.015
+  tantalum: 0.03
+  cobalt: 0.06
+  lithium_carbonate: 0.10
+  ndpr_oxide: 0.07
+  neon: 0.04
+  foundry_wafer: 0.06
+build_months:
+  quartz_hp: 18
+  silicon_metal: 18
+  polysilicon: 24
+  gallium: 12
+  germanium: 12
+  copper: 36
+  tin: 24
+  tantalum: 24
+  cobalt: 24
+  lithium_carbonate: 24
+  ndpr_oxide: 30
+  neon: 12
+  foundry_wafer: 36
+companies:
+  # --- Miners and primary producers (suppliers.yaml 3.1) -----------------------------------------
+  - { key: freeport, personality: cost_leader, cost: 0.45 } # Grasberg and the Americas: large, mid-curve
+  - { key: bhp, personality: cost_leader, cost: 0.35 } # Escondida: bottom-half copper
+  - { key: rio_tinto, personality: premium, cost: 0.5 } # copper and Arcadium's lithium from 2025
+  - { key: glencore, personality: aggressive, cost: 0.55 } # copper and Katanga/Mutanda cobalt
+  - { key: codelco, personality: cost_leader, cost: 0.6 } # older, deeper mines
+  - { key: albemarle, personality: premium, cost: 0.4 } # Atacama brine and Greenbushes
+  - { key: sqm, personality: cost_leader, cost: 0.2 } # Atacama brine: the lowest-cost lithium
+  - { key: lynas, personality: premium, cost: 0.55 } # Mt Weld and Malaysian separation
+  - { key: mp_materials, personality: aggressive, cost: 0.6 } # Mountain Pass
+  - { key: umicore, personality: premium, cost: 0.6 } # cobalt and germanium refining
+  - { key: china_northern_re, personality: aggressive, cost: 0.25 } # Bayan Obo: the lowest-cost NdPr
+  # --- Silicon and polysilicon (3.2) ---------------------------------------------------------------
+  - { key: wacker, personality: premium, cost: 0.45 }
+  - { key: hemlock, personality: premium, cost: 0.55 }
+  - { key: gcl_poly, personality: aggressive, cost: 0.25 } # cheap Chinese power
+  - { key: oci, personality: fast_follower, cost: 0.6 }
+  - { key: tokuyama, personality: premium, cost: 0.65 }
+  # --- Producers the dossier names (added in M17) --------------------------------------------------
+  - { key: sibelco, personality: premium, cost: 0.3 } # Spruce Pine
+  - { key: quartz_corp, personality: fast_follower, cost: 0.4 } # Spruce Pine
+  - { key: globe_metals, personality: fast_follower, cost: 0.7 }
+  - { key: elkem, personality: cost_leader, cost: 0.5 } # Norwegian hydro power
+  - { key: chalco, personality: aggressive, cost: 0.2 } # gallium from its own alumina liquor
+  - { key: dowa, personality: premium, cost: 0.7 }
+  - { key: teck, personality: cost_leader, cost: 0.5 }
+  - { key: yunnan_germanium, personality: aggressive, cost: 0.3 }
+  - { key: pt_timah, personality: cost_leader, cost: 0.55 }
+  - { key: yunnan_tin, personality: aggressive, cost: 0.4 }
+  - { key: msc, personality: fast_follower, cost: 0.6 }
+  - { key: gam, personality: premium, cost: 0.65 }
+  - { key: ningxia_tantalum, personality: aggressive, cost: 0.45 }
+  - { key: cmoc, personality: aggressive, cost: 0.3 } # Tenke Fungurume and Kisanfu
+  - { key: tianqi, personality: aggressive, cost: 0.45 } # Greenbushes share and Sichuan converters
+  - { key: ganfeng, personality: aggressive, cost: 0.5 }
+  - { key: linde, personality: premium, cost: 0.4 }
+  - { key: air_liquide, personality: premium, cost: 0.45 }
+  - { key: air_products, personality: cost_leader, cost: 0.5 }
+  # --- Rival foundries (nodes.yaml 38.3) ----------------------------------------------------------
+  - { key: tsmc, personality: premium, cost: 0.3 }
+  - { key: samsung, personality: aggressive, cost: 0.45 }
+  - { key: intel, personality: fast_follower, cost: 0.7, country: us }
+  - { key: globalfoundries, personality: cost_leader, cost: 0.5, country: us }
+  - { key: umc, personality: cost_leader, cost: 0.45, country: taiwan }
+  - { key: smic, personality: aggressive, cost: 0.55, country: china }
+others: # the rest of each good's producers: cost position and country (commodities.yaml's top country, A)
+  quartz_hp: { cost: 0.7, country: china }
+  silicon_metal: { cost: 0.4, country: china }
+  polysilicon: { cost: 0.5, country: china }
+  gallium: { cost: 0.35, country: china }
+  germanium: { cost: 0.5, country: china }
+  copper: { cost: 0.55, country: chile }
+  tin: { cost: 0.6, country: china }
+  tantalum: { cost: 0.5, country: drc }
+  cobalt: { cost: 0.5, country: drc }
+  lithium_carbonate: { cost: 0.6, country: china }
+  ndpr_oxide: { cost: 0.45, country: china }
+  neon: { cost: 0.55, country: china }
+  foundry_wafer: { cost: 0.6, country: china }

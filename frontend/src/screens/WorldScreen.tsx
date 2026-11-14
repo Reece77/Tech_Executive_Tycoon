@@ -56,6 +56,9 @@ export function WorldBody({ saveId, w }: { saveId: string; w: World }) {
       </Link>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>World</h1>
+        <Link to={`/game/${saveId}/competitors/world-news`} data-testid="world-news-link">
+          World news
+        </Link>
         <span className="tst-muted" style={{ fontSize: 13 }} data-testid="tension">
           US-China tension {w.tension.toFixed(0)}/100 {now ? `(${now.label})` : ''}
         </span>

@@ -100,6 +100,7 @@ from tst.sim.state import (
     with_person_state,
     with_proposal,
 )
+from tst.sim.world.phase import world_month
 
 
 @dataclass(frozen=True, slots=True)
@@ -360,6 +361,11 @@ def financing(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balances, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*integration_entries).log(*integration_logs)
+    # M28 (41): the living world from January 2026 (chain companies, groups, bids, cycles).
+    state, world_entries, world_logs = world_month(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+    )
+    ctx = replace(ctx, state=state).post(*world_entries).log(*world_logs)
     if ctx.state.stakes:  # M16 (31.3): associates' share of the month; December fair value
         types = {a.code: a.type for a in ctx.data.accounts}
         targets = {x.company_id for x in ctx.state.stakes if x.is_open}

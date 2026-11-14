@@ -22251,6 +22251,220 @@
         }
       }
     },
+    "/api/saves/{save_id}/world-news": {
+      "get": {
+        "tags": [
+          "world"
+        ],
+        "summary": "World News",
+        "description": "Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest\nfirst, filtered by company, region, good and kind (41.7).",
+        "operationId": "getWorldNews",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Company"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Region"
+            }
+          },
+          {
+            "name": "good",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Good"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 32
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldNewsOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/chain": {
+      "get": {
+        "tags": [
+          "world"
+        ],
+        "summary": "Chain",
+        "description": "Chain companies by good: capacity, output and utilisation (41.1).",
+        "operationId": "getChain",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -25345,6 +25559,59 @@
         "title": "CeoProfileOut",
         "description": "What the player has learned of a rival CEO (M15b addendum 11): ranges only, narrowed\nby public appearances, poach approaches and diligence. Never true values."
       },
+      "ChainGoodOut": {
+        "properties": {
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "capacity_year": {
+            "type": "number",
+            "title": "Capacity Year"
+          },
+          "output_year": {
+            "type": "number",
+            "title": "Output Year",
+            "description": "Last month's output a year"
+          },
+          "utilisation": {
+            "type": "number",
+            "title": "Utilisation"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market",
+            "description": "tight, balanced or slack: last month's market"
+          },
+          "producers": {
+            "items": {
+              "$ref": "#/components/schemas/ChainProducerOut"
+            },
+            "type": "array",
+            "title": "Producers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "good",
+          "label",
+          "unit",
+          "capacity_year",
+          "output_year",
+          "utilisation",
+          "market",
+          "producers"
+        ],
+        "title": "ChainGoodOut"
+      },
       "ChainLinkOut": {
         "properties": {
           "stage": {
@@ -25382,6 +25649,84 @@
           "supplies"
         ],
         "title": "ChainLinkOut"
+      },
+      "ChainOut": {
+        "properties": {
+          "started": {
+            "type": "boolean",
+            "title": "Started"
+          },
+          "goods": {
+            "items": {
+              "$ref": "#/components/schemas/ChainGoodOut"
+            },
+            "type": "array",
+            "title": "Goods"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started",
+          "goods"
+        ],
+        "title": "ChainOut"
+      },
+      "ChainProducerOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "capacity_year": {
+            "type": "number",
+            "title": "Capacity Year",
+            "description": "Live capacity a year, the good's volume unit"
+          },
+          "building": {
+            "type": "number",
+            "title": "Building",
+            "description": "Announced capacity under construction"
+          },
+          "mothballed": {
+            "type": "number",
+            "title": "Mothballed"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Share of the good's live world capacity"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "country_label",
+          "capacity_year",
+          "building",
+          "mothballed",
+          "share",
+          "owner"
+        ],
+        "title": "ChainProducerOut"
       },
       "ChangePreviewOut": {
         "properties": {
@@ -26527,6 +26872,18 @@
             ],
             "title": "Supplier Name"
           },
+          "supplier_company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Company Id",
+            "description": "M28: the supplier's company page (from 2026)"
+          },
           "signed": {
             "type": "string",
             "title": "Signed"
@@ -26908,6 +27265,24 @@
           "plans"
         ],
         "title": "CommodityPlansOut"
+      },
+      "CompanyRefOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name"
+        ],
+        "title": "CompanyRefOut"
       },
       "ComponentOut": {
         "properties": {
@@ -29415,6 +29790,29 @@
         ],
         "title": "EventsOut"
       },
+      "ExecutiveOut": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "since_label": {
+            "type": "string",
+            "title": "Since Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "name",
+          "since_label"
+        ],
+        "title": "ExecutiveOut"
+      },
       "ExitChoiceOut": {
         "properties": {
           "game_state": {
@@ -31510,6 +31908,68 @@
           "bridge_energy"
         ],
         "title": "FinanceSummaryOut"
+      },
+      "FinancialsOut": {
+        "properties": {
+          "listed": {
+            "type": "boolean",
+            "title": "Listed"
+          },
+          "revenue_year_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue Year Cents",
+            "description": "Listed: last month x 12"
+          },
+          "ebitda_year_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ebitda Year Cents",
+            "description": "Listed: the last 12 months"
+          },
+          "revenue_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Private: an estimate"
+          },
+          "ebitda_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MoneyRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "listed",
+          "revenue_year_cents",
+          "ebitda_year_cents",
+          "revenue_range",
+          "ebitda_range"
+        ],
+        "title": "FinancialsOut"
       },
       "FireOut": {
         "properties": {
@@ -38949,7 +39409,7 @@
           },
           "subsidiaries": {
             "items": {
-              "$ref": "#/components/schemas/SubsidiaryOut"
+              "$ref": "#/components/schemas/tst__api__schemas__mna__SubsidiaryOut"
             },
             "type": "array",
             "title": "Subsidiaries"
@@ -39140,6 +39600,24 @@
           "can_promise"
         ],
         "title": "MomentOut"
+      },
+      "MoneyRangeOut": {
+        "properties": {
+          "low_cents": {
+            "type": "integer",
+            "title": "Low Cents"
+          },
+          "high_cents": {
+            "type": "integer",
+            "title": "High Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "low_cents",
+          "high_cents"
+        ],
+        "title": "MoneyRangeOut"
       },
       "MoraleBreakdownOut": {
         "properties": {
@@ -40265,6 +40743,42 @@
           "volume_year"
         ],
         "title": "OfftakeIn"
+      },
+      "OfftakeOut": {
+        "properties": {
+          "buyer": {
+            "$ref": "#/components/schemas/CompanyRefOut"
+          },
+          "seller": {
+            "$ref": "#/components/schemas/CompanyRefOut"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "volume": {
+            "type": "number",
+            "title": "Volume"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "ends_label": {
+            "type": "string",
+            "title": "Ends Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "buyer",
+          "seller",
+          "good_label",
+          "volume",
+          "unit",
+          "ends_label"
+        ],
+        "title": "OfftakeOut"
       },
       "Onboarding": {
         "properties": {
@@ -47150,6 +47664,17 @@
           "poach_energy": {
             "type": "integer",
             "title": "Poach Energy"
+          },
+          "world": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorldCompanyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "M28 (41.7): owner and group, executives, facilities, financials, deals"
           }
         },
         "type": "object",
@@ -50387,49 +50912,6 @@
         "title": "SubsidiaryColumnOut",
         "description": "A kept brand's own numbers for each period (M14, 28.5): a column on the Finance screen."
       },
-      "SubsidiaryOut": {
-        "properties": {
-          "company_id": {
-            "type": "integer",
-            "title": "Company Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "directive": {
-            "type": "string",
-            "enum": [
-              "grow",
-              "harvest",
-              "defend"
-            ],
-            "title": "Directive"
-          },
-          "mrr_cents": {
-            "type": "integer",
-            "title": "Mrr Cents"
-          },
-          "cash_cents": {
-            "type": "integer",
-            "title": "Cash Cents"
-          },
-          "staff": {
-            "type": "integer",
-            "title": "Staff"
-          }
-        },
-        "type": "object",
-        "required": [
-          "company_id",
-          "name",
-          "directive",
-          "mrr_cents",
-          "cash_cents",
-          "staff"
-        ],
-        "title": "SubsidiaryOut"
-      },
       "SubsidiaryUpdateOut": {
         "properties": {
           "company_id": {
@@ -50637,6 +51119,18 @@
           "listing": {
             "type": "string",
             "title": "Listing"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id",
+            "description": "M28: its company page (from 2026)"
           },
           "reliability": {
             "type": "number",
@@ -52707,6 +53201,362 @@
         ],
         "title": "WorldActionOut"
       },
+      "WorldCompanyOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "chain (a miner, refiner or foundry) or tech"
+          },
+          "country_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Label"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "subsidiaries": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__world__SubsidiaryOut"
+            },
+            "type": "array",
+            "title": "Subsidiaries"
+          },
+          "mandate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mandate",
+            "description": "What its owner runs it for"
+          },
+          "executives": {
+            "items": {
+              "$ref": "#/components/schemas/ExecutiveOut"
+            },
+            "type": "array",
+            "title": "Executives"
+          },
+          "facilities": {
+            "items": {
+              "$ref": "#/components/schemas/WorldFacilityOut"
+            },
+            "type": "array",
+            "title": "Facilities"
+          },
+          "financials": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinancialsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/WorldDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "offtakes": {
+            "items": {
+              "$ref": "#/components/schemas/OfftakeOut"
+            },
+            "type": "array",
+            "title": "Offtakes"
+          },
+          "news": {
+            "items": {
+              "$ref": "#/components/schemas/WorldNewsItemOut"
+            },
+            "type": "array",
+            "title": "News"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "country_label",
+          "owner",
+          "subsidiaries",
+          "mandate",
+          "executives",
+          "facilities",
+          "financials",
+          "deals",
+          "offtakes",
+          "news"
+        ],
+        "title": "WorldCompanyOut"
+      },
+      "WorldDealOut": {
+        "properties": {
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "buyer": {
+            "$ref": "#/components/schemas/CompanyRefOut"
+          },
+          "target": {
+            "$ref": "#/components/schemas/CompanyRefOut"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date_label",
+          "buyer",
+          "target",
+          "price_cents",
+          "kind",
+          "status"
+        ],
+        "title": "WorldDealOut"
+      },
+      "WorldFacilityOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "good": {
+            "type": "string",
+            "title": "Good"
+          },
+          "good_label": {
+            "type": "string",
+            "title": "Good Label"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "capacity_year": {
+            "type": "number",
+            "title": "Capacity Year"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "live, building, mothballed or closed"
+          },
+          "cost_band": {
+            "type": "string",
+            "title": "Cost Band",
+            "description": "Its third of the good's cost curve: low, middle or high"
+          },
+          "ready_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ready Label",
+            "description": "An announced build's month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "good",
+          "good_label",
+          "country",
+          "country_label",
+          "region",
+          "capacity_year",
+          "unit",
+          "status",
+          "cost_band",
+          "ready_label"
+        ],
+        "title": "WorldFacilityOut"
+      },
+      "WorldNewsItemOut": {
+        "properties": {
+          "news_id": {
+            "type": "integer",
+            "title": "News Id"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "kind_label": {
+            "type": "string",
+            "title": "Kind Label"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "other": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyRefOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "region": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/tst__api__schemas__world__NamedOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "good": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/tst__api__schemas__world__NamedOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "news_id",
+          "turn",
+          "date_label",
+          "kind",
+          "kind_label",
+          "message",
+          "company",
+          "other",
+          "region",
+          "good"
+        ],
+        "title": "WorldNewsItemOut"
+      },
+      "WorldNewsOut": {
+        "properties": {
+          "started": {
+            "type": "boolean",
+            "title": "Started",
+            "description": "The living world runs from January 2026"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorldNewsItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Newest first, after the filters"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyRefOut"
+            },
+            "type": "array",
+            "title": "Companies",
+            "description": "Every company the feed names"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__world__NamedOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "goods": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__world__NamedOut"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__world__NamedOut"
+            },
+            "type": "array",
+            "title": "Kinds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started",
+          "items",
+          "companies",
+          "regions",
+          "goods",
+          "kinds"
+        ],
+        "title": "WorldNewsOut"
+      },
       "WorldOut": {
         "properties": {
           "turn": {
@@ -53040,6 +53890,49 @@
         ],
         "title": "IndexPointOut"
       },
+      "tst__api__schemas__mna__SubsidiaryOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "directive": {
+            "type": "string",
+            "enum": [
+              "grow",
+              "harvest",
+              "defend"
+            ],
+            "title": "Directive"
+          },
+          "mrr_cents": {
+            "type": "integer",
+            "title": "Mrr Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "directive",
+          "mrr_cents",
+          "cash_cents",
+          "staff"
+        ],
+        "title": "SubsidiaryOut"
+      },
       "tst__api__schemas__people__EventLinkOut": {
         "properties": {
           "event_id": {
@@ -53153,6 +54046,46 @@
           "home"
         ],
         "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__world__NamedOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "NamedOut"
+      },
+      "tst__api__schemas__world__SubsidiaryOut": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/CompanyRefOut"
+          },
+          "mandate": {
+            "type": "string",
+            "title": "Mandate"
+          },
+          "since_label": {
+            "type": "string",
+            "title": "Since Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "mandate",
+          "since_label"
+        ],
+        "title": "SubsidiaryOut"
       }
     }
   }

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from tst.api.schemas.modes import ScoreOut
 from tst.api.schemas.people import AttributeOut
+from tst.api.schemas.world import WorldCompanyOut
 
 
 class RivalRowOut(BaseModel):
@@ -107,6 +108,10 @@ class RivalProfileOut(BaseModel):
     key_people: list[KeyPersonOut]
     recent_moves: list[RivalMoveOut]
     poach_energy: int
+    world: WorldCompanyOut | None = Field(
+        default=None,
+        description="M28 (41.7): owner and group, executives, facilities, financials, deals",
+    )
 
 
 class NewsMonthOut(BaseModel):

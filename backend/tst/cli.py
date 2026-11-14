@@ -3870,8 +3870,9 @@ def upgrade_fab_cmd(
 
 @app.command("world")
 def world_cmd(save: SaveOpt) -> None:
-    """Blocs, tension, the export rules announced so far, licences and your exposure (39)."""
-    from tst.api import geopolitics_views
+    """Blocs, tension, the export rules announced so far, licences and your exposure (39);
+    from 2026 the chain companies by good: capacity and utilisation (M28, 41.1)."""
+    from tst.api import geopolitics_views, world_views
 
     _, data, state = _game(save)
     w = geopolitics_views.world_out(state, data)
@@ -3901,6 +3902,22 @@ def world_cmd(save: SaveOpt) -> None:
         )
     for lx in w.listings:
         typer.echo(f"  listed: {lx.company} on {lx.actor_label}'s entity list since {lx.since}")
+    chain = world_views.chain(state, data)
+    if not chain.started:
+        typer.echo("Chain companies run from January 2026 (41.1).")
+    for g in chain.goods:
+        typer.echo(
+            f"{g.label}: {g.capacity_year:,.0f} {g.unit} a year, "
+            f"{g.utilisation:.0%} used, {g.market}"
+        )
+        for pr in g.producers:
+            extra = f", building {pr.building:,.0f}" if pr.building else ""
+            extra += f", mothballed {pr.mothballed:,.0f}" if pr.mothballed else ""
+            owner = f" (owned by {pr.owner.name})" if pr.owner else ""
+            typer.echo(
+                f"  {pr.company_id:>4}  {pr.name:<36} {pr.country_label:<16}"
+                f" {pr.capacity_year:>14,.0f} {pr.share:>5.0%}{extra}{owner}"
+            )
 
 
 @app.command("licence-request")
@@ -3933,6 +3950,73 @@ def compliant_variant_cmd(
     result = _run(path, data, LaunchVariant(_founder(state), product))
     typer.echo(f"Compliant variant of product {product} launched {format_turn(state.turn)}")
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- M28 (formulas.md 41): a living world ------------------------------------------------------
+
+
+@app.command("company")
+def company_cmd(
+    save: SaveOpt,
+    rival: Annotated[str, typer.Option("--rival", help="A rival's name (or the start of it)")],
+) -> None:
+    """A rival's company page (41.7): owner and group, executives, facilities, financials,
+    deals and news."""
+    from tst.api import rival_views
+
+    _, data, state, balances = _rival_view(save)
+    wanted = rival.casefold()
+    found = [c for c in state.companies if not c.is_player and c.name.casefold() == wanted]
+    found = found or [
+        c for c in state.companies if not c.is_player and c.name.casefold().startswith(wanted)
+    ]
+    if not found:
+        raise _fail(f"no rival named {rival!r}")
+    company = min(found, key=lambda c: c.id)
+    p = rival_views.rival_profile(state, company, balances, data, list(state.rival_moves))
+    typer.echo(f"{p.name} ({p.personality_label}){' - failed' if p.failed else ''}")
+    w = p.world
+    if w is None:
+        typer.echo("  The living world starts in January 2026 (41.1).")
+        return
+    if w.country_label:
+        typer.echo(f"  {w.kind} company in {w.country_label}")
+    if w.owner:
+        typer.echo(f"  owned by {w.owner.name}, run for {w.mandate or '-'}")
+    for s in w.subsidiaries:
+        typer.echo(f"  subsidiary: {s.company.name} ({s.mandate}) since {s.since_label}")
+    for ex in w.executives:
+        typer.echo(f"  {ex.role}: {ex.name} (since {ex.since_label})")
+    for f in w.facilities:
+        ready = f", ready {f.ready_label}" if f.ready_label else ""
+        typer.echo(
+            f"  facility {f.facility_id}: {f.good_label} in {f.country_label}, "
+            f"{f.capacity_year:,.0f} {f.unit} a year, {f.status}{ready}, {f.cost_band} cost"
+        )
+    fin = w.financials
+    if fin is not None and fin.listed:
+        typer.echo(
+            f"  revenue {format_money(fin.revenue_year_cents or 0)} a year, EBITDA "
+            f"{format_money(fin.ebitda_year_cents or 0)}"
+        )
+    elif fin is not None and fin.revenue_range is not None and fin.ebitda_range is not None:
+        rr, er = fin.revenue_range, fin.ebitda_range
+        typer.echo(
+            f"  revenue {format_money(rr.low_cents)}-{format_money(rr.high_cents)} a year "
+            f"(estimated), EBITDA {format_money(er.low_cents)}-{format_money(er.high_cents)}"
+        )
+    for d in w.deals:
+        typer.echo(
+            f"  deal {d.date_label}: {d.buyer.name} buys {d.target.name} for "
+            f"{format_money(d.price_cents)} ({d.kind}, {d.status})"
+        )
+    for o in w.offtakes:
+        typer.echo(
+            f"  offtake: {o.buyer.name} from {o.seller.name}, {o.volume:,.0f} {o.unit} of "
+            f"{o.good_label} a year to {o.ends_label}"
+        )
+    for n in w.news:
+        typer.echo(f"  {n.date_label} [{n.kind_label}] {n.message}")
 
 
 if __name__ == "__main__":
