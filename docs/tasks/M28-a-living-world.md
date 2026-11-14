@@ -138,9 +138,20 @@ Read on this branch (weekly run 43569674208, before the M27a merge) and on seeds
     | v3 L3 longest index run outside [1/3, 3] | 31 months (lithium) | 22 months (polysilicon) | ≤ 36 | met |
     | v3 L4 (printed) | 1 of 10 | 1 of 10 | printed | |
     | V5.cats research_heavy (weekly-v5) | fintech 2030s 7/9: FAIL | identical: FAIL | | rule 3: the same reading on main (weekly 43605652584) and the branch (43606818446); decision above records it as seed variance (rule 4) |
-    | V6 extended (weekly-v6-integrator, 2039 turn) | 908 ms (908/816/942) | 1101 ms (1101/1025/1101) on the first run | < 1.0 s | rule 6: profiled in memory on both trees (same full_integrator game to December 2039, 149 staff): branch 2880 ms against main 3034 ms a turn under cProfile, 271 world facilities against 326, the pipeline's code idle after 2029; the CI save build was already 7% slower at turn 240, where the code is identical. Re-run of the job: see below |
+    | V6 extended (weekly-v6-integrator, 2039 turn) | 908 ms (908/816/942) | 1101 ms (1101/1025/1101) on the first run | < 1.0 s | rule 6: profiled in memory on both trees (same full_integrator game to December 2039, 149 staff): branch 2880 ms against main 3034 ms a turn under cProfile, 271 world facilities against 326, the pipeline's code idle after 2029; the CI save build was already 7% slower at turn 240, where the code is identical. Re-runs: 1105 ms (1105/1032/1111), then 1118 ms (1118/1034/1130) in weekly 43639486286, run alongside main's 43639488593 (5e5095b): 677 ms (677/554/687). Handed to M30 (product manager ruling 2026-11-14): see below |
 
     Main's weekly: 43605652584 (42a8037). The branch's: 43606818446 (fd3cc75; later commits are docs and a test's import order).
+
+    **V6 on the full_integrator save, handed to M30** (product manager ruling 2026-11-14). The branch misses the 1.0 s budget on CI's runner in all three readings (1,101, 1,105 and 1,118 ms); main reads 677 to 908 ms. The other V6 job (its own 2039 save) reads the same on both refs in the same weekly: branch 702 ms, main 736 ms. On this session's machine (4 vCPU, 16 GB, a 260 MB L3 cache), built through the save path and run alone (`make weekly-v6-integrator`'s test, rule 6):
+
+    | | branch | main (f030020) |
+    |---|---|---|
+    | V6 median, two runs | 850 ms, 923 ms | 862 ms, 881 ms |
+    | 2039 turns under cProfile | 1,675 ms | 1,793 ms |
+    | 9 save-path turns: median, peak RSS, live Python objects | 917 ms, 204 MB, 418,561 | 943 ms, 204 MB, 417,400 |
+    | save: staff, table rows | 134; within 0.3% of main's in every table | 133 |
+
+    No step is slower on the branch here, so rule 6 found nothing to make proportional; the gap shows only on CI's hardware (smaller CPU caches are the likely difference). The turn-time budget on that save is handed to M30 (performance), whose target is a 400 ms median for 2039 turns on the CI runner; the product manager records the hand-off in M30's lane, so it is not added to `known_misses.py`.
 
 ## Follow-ups
 
