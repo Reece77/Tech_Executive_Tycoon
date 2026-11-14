@@ -1,6 +1,6 @@
 # ADR-0004: One SQLite file per save, transactional turns, backups, history
 
-- Status: Accepted
+- Status: Accepted. §6 amended 2026-11-14 (M30, Reece): old history rows may be summarised past a retention window.
 - Date: 2026-10-20
 - Spec sections: §1 (pillar 5), §14, §15
 
@@ -16,6 +16,7 @@
 4. **Turn transaction:** the API or CLI loads state, calls `advance_turn`, and writes all results (state updates, ledger entries, log, snapshot, `save_meta.current_turn += 1`) inside one `session.begin()` block. Any exception rolls back everything.
 5. **Backups:** after every 12th committed turn and before any migration, copy the database with SQLite's online backup API to `saves/backups/<slug>/<slug>.turn-<NNN>.sqlite`. Keep the latest 10 periodic backups plus every pre-migration backup.
 6. **History is append-only:** `turn_snapshot` (KPIs as JSON per company per turn), `decision_log`, `event`, `event_resolution`, `ledger_entry`, and `employment` (with start and end turns) are never updated or deleted, only appended or closed.
+   **Amended (Reece, 2026-11-14, M30):** past `balance.yaml` `retention` windows, old history is summarised, not lost, at the month's commit inside the turn transaction (`tst.db.history`): `turn_snapshot` rows older than 5 years keep the quarter's last month, each company's first year and every record high of a value the Hall of Fame shows; `turn_log` rows become yearly counts in `turn_log_summary`; major World news items leaving the state's window go to `world_news_archive`. The engine reads none of these rows back, so play is unchanged. `decision_log`, `event`, `event_resolution`, `ledger_entry` and `employment` stay append-only.
 7. **Current-state tables** (`person_state`, `company`, etc.) may be updated in place, because history tables hold what is needed to reconstruct the past.
 
 ## Consequences
