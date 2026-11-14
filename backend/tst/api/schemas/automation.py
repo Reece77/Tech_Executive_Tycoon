@@ -20,6 +20,44 @@ class CandidateOut(BaseModel):
     energy_left: int = Field(description="Automation energy a month left after their areas")
 
 
+class GuardrailOut(BaseModel):
+    """M27b (40.7): one of the area's guardrails, the player's value or the default."""
+
+    key: str
+    value: float
+    default: float
+
+
+class CompanyChoiceOut(BaseModel):
+    """M27b: a company of the group the Automation screen can switch to."""
+
+    company_id: int
+    name: str
+    subsidiary: bool
+
+
+class HeadcountTargetOut(BaseModel):
+    """M27b sub-task 9: a unit's headcount target in one role, which Hiring fills."""
+
+    unit_id: int
+    unit_name: str
+    role: str
+    role_label: str
+    target: int
+    staff: int
+    gap: int = Field(description="Hires still short after open plans")
+
+
+class UnitChoiceOut(BaseModel):
+    unit_id: int
+    name: str
+
+
+class RoleChoiceOut(BaseModel):
+    key: str
+    label: str
+
+
 class AreaOut(BaseModel):
     area: str
     label: str
@@ -40,6 +78,9 @@ class AreaOut(BaseModel):
     no_time: bool
     over_budget: bool
     screen: str = Field(description="The front-end path of the area's own screen")
+    budget_cents: int = Field(0, description="M27b: the area's yearly budget (0: off)")
+    budgeted: bool = Field(False, description="M27b: the area spends only within a budget")
+    guardrails: list[GuardrailOut] = Field(default_factory=list)
 
 
 class AutomationOut(BaseModel):
@@ -48,6 +89,11 @@ class AutomationOut(BaseModel):
     areas: list[AreaOut]
     default_limit_cents: int
     stop_for_approvals: bool
+    companies: list[CompanyChoiceOut] = Field(default_factory=list)
+    subsidiary: bool = False
+    headcount_targets: list[HeadcountTargetOut] = Field(default_factory=list)
+    units: list[UnitChoiceOut] = Field(default_factory=list)
+    roles: list[RoleChoiceOut] = Field(default_factory=list, description="Roles a target may name")
 
 
 class AssignmentOut(BaseModel):
@@ -69,10 +115,17 @@ class AreaOwnerIn(BaseModel):
     person_id: int
     limit_cents: int | None = Field(None, ge=0)
     priority: int | None = Field(None, ge=0)
+    company_id: int | None = Field(None, description="M27b: a subsidiary; null: your company")
 
 
 class AreaIn(BaseModel):
     area: str
+    company_id: int | None = None
+
+
+class GuardrailIn(BaseModel):
+    key: str
+    value: float = Field(ge=0)
 
 
 class AreaSettingsIn(BaseModel):
@@ -81,12 +134,22 @@ class AreaSettingsIn(BaseModel):
     priority: int | None = Field(None, ge=0)
     answer_events: bool | None = None
     allow_bold: bool | None = None
+    company_id: int | None = None
+    budget_cents: int | None = Field(None, ge=0)
+    guardrails: list[GuardrailIn] | None = None
 
 
 class AutomateAllIn(BaseModel):
     """The plan the player confirmed (from GET automation/plan)."""
 
     assignments: list[AreaOwnerIn]
+
+
+class HeadcountTargetIn(BaseModel):
+    unit_id: int
+    role: str
+    target: int = Field(ge=0)
+    company_id: int | None = None
 
 
 class AutomationActionOut(BaseModel):
@@ -148,3 +211,7 @@ class RecordOut(BaseModel):
     pitches_hit: int
     pitches_missed: int
     recent: list[str]
+    company_id: int = 0
+    kpis: list[str] = Field(
+        default_factory=list, description="M27b: their areas' KPIs at the latest month"
+    )

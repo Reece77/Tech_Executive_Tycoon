@@ -26,7 +26,7 @@ function fixture(kind: 'auto' | 'cfo', save: string) {
 test('(a) automate everything, Continue three months, read the digest', async ({ page }) => {
   fixture('auto', AUTO);
   await page.goto(`/game/${AUTO}/automation`);
-  await expect(page.getByTestId('area-row')).toHaveCount(12);
+  await expect(page.getByTestId('area-row')).toHaveCount(19); // M27b appended the chain's seven
   await page.getByTestId('automate-all').click();
   const dialog = page.getByRole('dialog', { name: 'Automate everything' });
   await expect(dialog.getByTestId('plan-row').first()).toBeVisible();

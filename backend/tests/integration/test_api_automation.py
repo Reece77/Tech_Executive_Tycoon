@@ -117,3 +117,44 @@ def test_the_inbox_hides_digest_items_by_default(tmp_path: Path, loaded: LoadedD
         assert all(not i["in_digest"] for i in shown)
         assert len(everything) >= len(shown)
         assert any(i["kind"] == "digest" for i in shown)  # the digest itself stays
+
+
+def test_m27b_settings_budget_guardrails_and_headcount_targets(
+    tmp_path: Path, loaded: LoadedData
+) -> None:
+    """M27b: an area's yearly budget and guardrails, a unit's headcount target, the company
+    switcher (the player's company alone here) and the chain's areas on the screen."""
+    from tst.sim.org.models import OrgUnit
+    from tst.sim.state import with_unit
+
+    with hiring_client(tmp_path) as api:
+        path = _seed(tmp_path, loaded)
+        with open_session(path) as session, session.begin():
+            before = load_state(session)
+            uid, ids = before.next_ids.take("unit")
+            unit = OrgUnit(uid, 1, "team", "Platform", None, None, None, before.turn)
+            sync_state(session, before, replace(with_unit(before, unit), next_ids=ids))
+        base = f"/api/saves/{SAVE}"
+        out = api.get(f"{base}/automation")
+        assert [c["company_id"] for c in out["companies"]] == [1]
+        assert out["subsidiary"] is False
+        areas = {a["area"]: a for a in out["areas"]}
+        assert {"production", "supply", "exploration", "mines", "fabs", "government"} <= set(areas)
+        assert areas["exploration"]["budgeted"] is True
+        assert "geologist" in areas["exploration"]["reason"]
+        rails = {g["key"]: g for g in areas["supply"]["guardrails"]}
+        assert rails["cover_low"]["value"] == rails["cover_low"]["default"] == 0.6
+        api.post(f"{base}/automation/owner", {"area": "hiring", "person_id": LEAD})
+        assert [u["unit_id"] for u in api.get(f"{base}/automation")["units"]] == [uid]
+        got = api.post(
+            f"{base}/automation/headcount",
+            {"unit_id": uid, "role": "software_engineer", "target": 3},
+        )
+        (t,) = got["automation"]["headcount_targets"]
+        assert (t["unit_id"], t["target"], t["unit_name"]) == (uid, 3, "Platform")
+        moved = api.post(
+            f"{base}/automation/settings",
+            {"area": "hiring", "budget_cents": 1_000_000},
+        )
+        hiring = next(a for a in moved["automation"]["areas"] if a["area"] == "hiring")
+        assert hiring["budget_cents"] == 1_000_000

@@ -59,6 +59,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M23r-review-6-fixes.md](M23r-review-6-fixes.md) | Codex review 6 fixes (beside M23b and M29): depletion across mine lifetimes, group fabs manageable, contracts that move with their facility, server-enforced read-only while a critical event is open, exact foundry money, own supply in commodity planning, Explain's mine capex | M23a |
 | [M30-performance-at-scale.md](M30-performance-at-scale.md) | Performance at scale (v3.5, lane B): a benchmark and a 360-turn state-cache check first; faster 2039 turns, Holiday, saves and screens with identical results | M28 |
 | [M31-platforms-and-ecosystems.md](M31-platforms-and-ecosystems.md) | Platforms and ecosystems (v4, lane C): device and developer platforms, own OS and store, developers and catalogues, network effects and lock-in, fee schedules from history, gatekeeping and removals, open source, standards wars (formulas §44, ADR-0021) | M27a, M28 |
+| [M36-family-and-succession.md](M36-family-and-succession.md) | Family and succession (v5, lane D): a partner and children with their own stats; family time and the relationship; education and mentoring; heirs in the company; succession to an heir (the player plays them) or a professional CEO with the old founder as board adviser; estate tax and planning; the dynasty legacy (formulas §45) | M24, M26 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

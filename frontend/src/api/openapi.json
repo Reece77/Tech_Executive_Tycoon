@@ -22267,7 +22267,7 @@
           "automation"
         ],
         "summary": "Get Automation",
-        "description": "Every area: who runs it (or why nobody can yet), the people who could, limits,\npriority, this month's decisions and proposals waiting (40.8).",
+        "description": "Every area: who runs it (or why nobody can yet), the people who could, limits,\npriority, this month's decisions and proposals waiting (40.8); for the player's company or\n(M27b) one of its group's subsidiaries.",
         "operationId": "getAutomation",
         "parameters": [
           {
@@ -22278,6 +22278,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "M27b: a subsidiary",
+              "title": "Company Id"
+            },
+            "description": "M27b: a subsidiary"
           }
         ],
         "responses": {
@@ -22583,13 +22601,96 @@
         }
       }
     },
+    "/api/saves/{save_id}/automation/headcount": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Set Headcount Target",
+        "description": "M27b: a unit's headcount target in a role (0 removes it), which Hiring fills. Free.",
+        "operationId": "setHeadcountTarget",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeadcountTargetIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/automation/plan": {
       "get": {
         "tags": [
           "automation"
         ],
         "summary": "Get Plan",
-        "description": "Automate everything, before anything changes: who would run each area (40.8).",
+        "description": "Automate everything, before anything changes: who would run each area (40.8); inside a\nsubsidiary its CEO first.",
         "operationId": "getAutomatePlan",
         "parameters": [
           {
@@ -22600,6 +22701,24 @@
               "type": "string",
               "title": "Save Id"
             }
+          },
+          {
+            "name": "company_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "M27b: a subsidiary",
+              "title": "Company Id"
+            },
+            "description": "M27b: a subsidiary"
           }
         ],
         "responses": {
@@ -24237,6 +24356,17 @@
           "area": {
             "type": "string",
             "title": "Area"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
           }
         },
         "type": "object",
@@ -24372,6 +24502,25 @@
             "type": "string",
             "title": "Screen",
             "description": "The front-end path of the area's own screen"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents",
+            "description": "M27b: the area's yearly budget (0: off)",
+            "default": 0
+          },
+          "budgeted": {
+            "type": "boolean",
+            "title": "Budgeted",
+            "description": "M27b: the area spends only within a budget",
+            "default": false
+          },
+          "guardrails": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailOut"
+            },
+            "type": "array",
+            "title": "Guardrails"
           }
         },
         "type": "object",
@@ -24425,6 +24574,18 @@
               }
             ],
             "title": "Priority"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id",
+            "description": "M27b: a subsidiary; null: your company"
           }
         },
         "type": "object",
@@ -24485,6 +24646,43 @@
               }
             ],
             "title": "Allow Bold"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Cents"
+          },
+          "guardrails": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GuardrailIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guardrails"
           }
         },
         "type": "object",
@@ -24803,6 +25001,40 @@
           "stop_for_approvals": {
             "type": "boolean",
             "title": "Stop For Approvals"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyChoiceOut"
+            },
+            "type": "array",
+            "title": "Companies"
+          },
+          "subsidiary": {
+            "type": "boolean",
+            "title": "Subsidiary",
+            "default": false
+          },
+          "headcount_targets": {
+            "items": {
+              "$ref": "#/components/schemas/HeadcountTargetOut"
+            },
+            "type": "array",
+            "title": "Headcount Targets"
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__automation__UnitChoiceOut"
+            },
+            "type": "array",
+            "title": "Units"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleChoiceOut"
+            },
+            "type": "array",
+            "title": "Roles",
+            "description": "Roles a target may name"
           }
         },
         "type": "object",
@@ -28377,6 +28609,30 @@
           "plans"
         ],
         "title": "CommodityPlansOut"
+      },
+      "CompanyChoiceOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subsidiary": {
+            "type": "boolean",
+            "title": "Subsidiary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "subsidiary"
+        ],
+        "title": "CompanyChoiceOut",
+        "description": "M27b: a company of the group the Automation screen can switch to."
       },
       "CompanyRefOut": {
         "properties": {
@@ -35469,6 +35725,49 @@
         "title": "GuardChoiceOut",
         "description": "One value a list guardrail may hold (M13b): a unit, a product or a category."
       },
+      "GuardrailIn": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "title": "GuardrailIn"
+      },
+      "GuardrailOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "default": {
+            "type": "number",
+            "title": "Default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "default"
+        ],
+        "title": "GuardrailOut",
+        "description": "M27b (40.7): one of the area's guardrails, the player's value or the default."
+      },
       "GuidanceIn": {
         "properties": {
           "revenue_cents": {
@@ -35928,6 +36227,86 @@
           "plant_staff_per"
         ],
         "title": "HardwareOut"
+      },
+      "HeadcountTargetIn": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "target": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Target"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "role",
+          "target"
+        ],
+        "title": "HeadcountTargetIn"
+      },
+      "HeadcountTargetOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "unit_name": {
+            "type": "string",
+            "title": "Unit Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "target": {
+            "type": "integer",
+            "title": "Target"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "gap": {
+            "type": "integer",
+            "title": "Gap",
+            "description": "Hires still short after open plans"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "unit_name",
+          "role",
+          "role_label",
+          "target",
+          "staff",
+          "gap"
+        ],
+        "title": "HeadcountTargetOut",
+        "description": "M27b sub-task 9: a unit's headcount target in one role, which Hiring fills."
       },
       "HireBanksIn": {
         "properties": {
@@ -47226,6 +47605,19 @@
             },
             "type": "array",
             "title": "Recent"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id",
+            "default": 0
+          },
+          "kpis": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Kpis",
+            "description": "M27b: their areas' KPIs at the latest month"
           }
         },
         "type": "object",
@@ -48515,7 +48907,7 @@
           },
           "units": {
             "items": {
-              "$ref": "#/components/schemas/UnitChoiceOut"
+              "$ref": "#/components/schemas/tst__api__schemas__research__UnitChoiceOut"
             },
             "type": "array",
             "title": "Units",
@@ -49342,6 +49734,24 @@
           "rivals"
         ],
         "title": "RivalsOut"
+      },
+      "RoleChoiceOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "RoleChoiceOut"
       },
       "RoleOut": {
         "properties": {
@@ -54024,30 +54434,6 @@
         "type": "object",
         "title": "UISettings"
       },
-      "UnitChoiceOut": {
-        "properties": {
-          "unit_id": {
-            "type": "integer",
-            "title": "Unit Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "researchers": {
-            "type": "integer",
-            "title": "Researchers",
-            "description": "Members in builder roles who would research"
-          }
-        },
-        "type": "object",
-        "required": [
-          "unit_id",
-          "name",
-          "researchers"
-        ],
-        "title": "UnitChoiceOut"
-      },
       "UnitOfficeIn": {
         "properties": {
           "office_id": {
@@ -55072,6 +55458,24 @@
         ],
         "title": "WorldOut"
       },
+      "tst__api__schemas__automation__UnitChoiceOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name"
+        ],
+        "title": "UnitChoiceOut"
+      },
       "tst__api__schemas__events__EventLinkOut": {
         "properties": {
           "path": {
@@ -55453,6 +55857,30 @@
           "home"
         ],
         "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__research__UnitChoiceOut": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers",
+            "description": "Members in builder roles who would research"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "name",
+          "researchers"
+        ],
+        "title": "UnitChoiceOut"
       },
       "tst__api__schemas__world__NamedOut": {
         "properties": {
