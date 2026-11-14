@@ -4,6 +4,10 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M28r the world starts with its pipeline (product manager ruling 2026-11-14; no migration, golden snapshots unchanged):
+  - Each chain facility the world opens with in January 2026 grows month by month along its good's pre-M28 path (38.3's seeded growth for a named foundry, the data's `demand_growth` for a commodity) until the first December 2026 decisions can land; December decisions count the pipeline still to arrive; its capex is in the opening books (`tst/sim/world/pipeline.py`, new key `world.pipeline_share`, formulas §41.2 and §41.10).
+  - Fixes §38.5 target 3 on main after m28-done (seed 3, two nodes behind: 5.07% → 4.09%). Readings in the M28 brief, decision 28.
+
 - M27a automation everywhere (v3.5 lane A; migration `0049_m27a`; golden snapshots unchanged):
   - Every area of the business (formulas §40.1: hiring, engineering teams, product launches, pricing, marketing, support and offices, treasury, research, regions, cloud capacity, press, routine events) can be given to a seat holder, the CEO or a senior area lead; the founder never. `balance.yaml` `automation.*` lists the areas with their skill weights, lead roles, energy and KPIs; six lead roles appended to `roles.yaml` (`founder_fit: false`, so no founder's best fit moves).
   - New `tst/sim/automation/`: owners and eligibility, the money limit and monthly budget, one-offs that always become proposals (kind `auto`, expiring after 3 months), decision quality from the owner's true area score on stream `automation` (56), workload in energy with "no time" logs, the new area rules (§40.6), routine events answered at Continue (critical never), and the monthly `digest` inbox item with an LLM-worded opening.
