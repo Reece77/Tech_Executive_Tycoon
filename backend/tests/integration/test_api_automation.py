@@ -139,9 +139,7 @@ def test_m27b_settings_budget_guardrails_and_headcount_targets(
         assert [c["company_id"] for c in out["companies"]] == [1]
         assert out["subsidiary"] is False
         areas = {a["area"]: a for a in out["areas"]}
-        assert {"production", "supply", "exploration", "mines", "fabs", "government"} <= set(
-            areas
-        )
+        assert {"production", "supply", "exploration", "mines", "fabs", "government"} <= set(areas)
         assert areas["exploration"]["budgeted"] is True
         assert "geologist" in areas["exploration"]["reason"]
         rails = {g["key"]: g for g in areas["supply"]["guardrails"]}

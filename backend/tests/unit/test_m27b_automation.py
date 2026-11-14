@@ -607,3 +607,16 @@ def _fork_game(game: Game) -> Game:
     from tst.balance.m27b import _fork
 
     return _fork(game)
+
+
+# --- 40.9: a company with no automated areas plays exactly as before -------------------------
+
+
+def test_no_owner_rows_anywhere_in_the_group_changes_nothing(device_game: Game) -> None:
+    game, _sub, _ceo = _group()
+    for state, balances in ((device_game.state, device_game.balances), (game.state, game.balances)):
+        assert state.area_owners == ()
+        out, entries, logs, taken = automation_month(
+            state, RngFactory(1), B, LOADED.game_data, balances
+        )
+        assert out is state and entries == () and logs == () and taken == ()
