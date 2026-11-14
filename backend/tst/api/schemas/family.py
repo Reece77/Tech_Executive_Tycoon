@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.dynasty import DynastyOut
 from tst.api.schemas.people import AttributeOut, EnergyOut
 
 
@@ -99,25 +100,6 @@ class EstateOut(BaseModel):
     lifetime_gifts_cents: int
     gift_tax_paid_cents: int
     estate_tax_paid_cents: int
-
-
-class GenerationOut(BaseModel):
-    person_id: int
-    name: str
-    from_label: str
-    to_label: str | None
-    legacy: int
-    how: str | None
-
-
-class DynastyOut(BaseModel):
-    generations: list[GenerationOut]
-    legacies: int
-    family_value_cents: int
-    value_points: float
-    control_losses: int
-    loss_points: float
-    total: int
 
 
 class NoteOut(BaseModel):

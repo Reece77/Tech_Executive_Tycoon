@@ -37606,6 +37606,17 @@
             "type": "array",
             "title": "Rivals Outlasted"
           },
+          "dynasty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DynastyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The family tree's generations and dynasty score (M36, 45.7)"
+          },
           "legacy": {
             "anyOf": [
               {

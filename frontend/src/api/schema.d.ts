@@ -11116,6 +11116,8 @@ export interface components {
             best_product_quality: components["schemas"]["ProductRecordOut"] | null;
             /** Rivals Outlasted */
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+            /** @description The family tree's generations and dynasty score (M36, 45.7) */
+            dynasty?: components["schemas"]["DynastyOut"] | null;
             /** @description The founder's legacy score with its parts (M24, 32.6) */
             legacy?: components["schemas"]["LegacyOut"] | null;
             /**

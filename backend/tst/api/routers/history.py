@@ -117,8 +117,18 @@ def get_hall_of_fame(
     from tst.mods.store import save_mod
 
     mod = save_mod(_path(settings, save_id))  # M25: a modded game's records stand apart
+    dynasty = None
+    if state.family is not None:  # M36 (45.7): the family tree
+        from tst.api.family_views import family_out
+
+        with repository.read_session(_path(settings, save_id)) as session:
+            dynasty = family_out(state, repository.ledger_balances(session), data).dynasty
     return out.model_copy(
-        update={"legacy": legacy_out(state, data), "mod_name": mod.name if mod else None}
+        update={
+            "legacy": legacy_out(state, data),
+            "mod_name": mod.name if mod else None,
+            "dynasty": dynasty,
+        }
     )
 
 

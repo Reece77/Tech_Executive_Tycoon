@@ -91,7 +91,7 @@ export function FamilyBody({ saveId, family }: { saveId: string; family: Family 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             <TimePanel saveId={saveId} family={family} />
             <PartnerPanel family={family} />
-            {family.dynasty && <DynastyPanel family={family} />}
+            {family.dynasty && <DynastyPanel dynasty={family.dynasty} />}
           </div>
           <ChildrenPanel saveId={saveId} family={family} />
           {family.adviser && <AdviserPanel saveId={saveId} family={family} />}
@@ -515,9 +515,9 @@ function AdviserPanel({ saveId, family }: { saveId: string; family: Family }) {
   );
 }
 
-function DynastyPanel({ family }: { family: Family }) {
-  const d = family.dynasty;
-  if (!d) return null;
+/** The dynasty score and its family tree (45.7): the Family screen and the Hall of Fame. */
+export function DynastyPanel({ dynasty }: { dynasty: NonNullable<Family['dynasty']> }) {
+  const d = dynasty;
   return (
     <Panel title="Dynasty" style={{ ...COL, flex: '1 1 260px' }} testId="dynasty-panel">
       <span

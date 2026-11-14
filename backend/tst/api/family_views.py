@@ -3,14 +3,13 @@ from the player's revealed ranges only; potential is a phrase; hidden traits nev
 
 from __future__ import annotations
 
+from tst.api.schemas.dynasty import DynastyOut, GenerationOut
 from tst.api.schemas.family import (
     AdviserOut,
-    DynastyOut,
     EducationChoiceOut,
     EstateOut,
     FamilyMemberOut,
     FamilyOut,
-    GenerationOut,
     NoteOut,
     OpinionOut,
     ReadinessOut,
