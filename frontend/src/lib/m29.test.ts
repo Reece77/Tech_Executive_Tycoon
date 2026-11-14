@@ -21,6 +21,12 @@ describe('side bar', () => {
   it('shows a screen once it unlocks, and everything while loading', () => {
     const chain = sideGroups(new Set(['fabs'])).find((g) => g.key === 'chain');
     expect(chain?.screens.map((s) => s.path)).toEqual(['products/fabs']);
+    const people = (unlocked: Set<string>) =>
+      sideGroups(unlocked)
+        .find((g) => g.key === 'people')
+        ?.screens.map((s) => s.path);
+    expect(people(new Set())).not.toContain('people/family'); // M36: only with a family
+    expect(people(new Set(['family']))).toContain('people/family');
     const all = sideGroups(null).flatMap((g) => g.screens);
     expect(all.length).toBe(SCREENS.filter((s) => s.side).length);
   });
@@ -50,6 +56,10 @@ describe('breadcrumbs', () => {
     ]);
     expect(crumbs('inbox', names)).toEqual([{ label: 'Inbox', path: null }]);
     expect(screenOf('finance/captable')?.label).toBe('Cap table');
+    expect(crumbs('people/family', names)).toEqual([
+      { label: 'People', path: 'people' },
+      { label: 'Family', path: null },
+    ]);
   });
 });
 

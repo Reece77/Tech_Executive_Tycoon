@@ -39,6 +39,7 @@ from tst.sim.facilities.config import (
     FacilityBalance,
     SupplyBalance,
 )
+from tst.sim.family.config import EstateRegion, FamilyBalance
 from tst.sim.founder.config import (
     AngelBalance,
     FamilyOfficeBalance,
@@ -1357,6 +1358,8 @@ class Balance(_Frozen):
     contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
     automation: AutomationBalance  # M27a (formulas.md 40)
     world: WorldBalance  # M28 (formulas.md 41): chain companies, groups, bids, cycles
+    family: FamilyBalance  # M36 (formulas.md 45.1-45.7)
+    estate_tax: dict[str, EstateRegion]  # M36 (formulas.md 45.6): by home region
     platforms: PlatformsBalance  # M31 (formulas.md 44): platforms and ecosystems
 
     @model_validator(mode="after")

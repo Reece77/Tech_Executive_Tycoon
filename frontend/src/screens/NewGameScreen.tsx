@@ -2,6 +2,7 @@ import {
   Alert,
   Button,
   Collapse,
+  NativeSelect,
   NumberInput,
   Select,
   TextInput,
@@ -27,6 +28,13 @@ import { formatMoneyWhole, humanize } from '../lib/format';
 import { toSaveSlug } from '../lib/slug';
 
 const SEED_RE = /^\d*$/;
+const FAMILY_SETTINGS = [
+  { value: 'none', label: 'None' },
+  { value: 'partner', label: 'A partner' },
+  { value: 'children', label: 'A partner and children' },
+];
+const MAX_CHILDREN = 4; // the setup form's limit (M36, 45.1)
+const NEW_CHILD_AGE = 5;
 const SURPRISE = 'surprise';
 const PREVIEW_DEBOUNCE_MS = 250;
 const GROUPS = ['technical', 'business', 'leadership'] as const;
@@ -164,6 +172,8 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const [mode, setMode] = useState<ModeChoice>({ kind: 'campaign' }); // M15b (30.2-30.3)
   const mods = useMods(); // M25: a data-editor mod for the new game
   const [mod, setMod] = useState<string | null>(null);
+  const [familySetting, setFamilySetting] = useState('none'); // M36 (45.1)
+  const [childAges, setChildAges] = useState<number[]>([NEW_CHILD_AGE]);
 
   const backgroundDef = meta.backgrounds.find((b) => b.key === background) ?? firstBackground;
   const skillLabel = useMemo(
@@ -232,6 +242,13 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         sandbox: mode.kind === 'sandbox' ? mode.sandbox : null,
         historical: mode.kind === 'historical' ? mode.key : null,
         mod,
+        family:
+          familySetting === 'none'
+            ? null
+            : {
+                setting: familySetting,
+                child_ages: familySetting === 'children' ? childAges : [],
+              },
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -394,6 +411,12 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
             data-testid="age"
           />
         </div>
+        <FamilySetup
+          setting={familySetting}
+          onSetting={setFamilySetting}
+          ages={childAges}
+          onAges={setChildAges}
+        />
         <div style={{ fontSize: 14, fontWeight: 500 }}>Background</div>
         <CardGrid min={200} label="Background">
           {meta.backgrounds.map((b) => (
@@ -662,6 +685,80 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         </Button>
       </div>
     </form>
+  );
+}
+
+/** The Family setting (M36, 45.1): none, a partner, or a partner and children of chosen
+ * ages. The backend checks each child is young enough for the founder and says if not. */
+function FamilySetup({
+  setting,
+  onSetting,
+  ages,
+  onAges,
+}: {
+  setting: string;
+  onSetting: (setting: string) => void;
+  ages: number[];
+  onAges: (ages: number[]) => void;
+}) {
+  const setAge = (i: number, v: number | string) =>
+    onAges(ages.map((a, j) => (j === i ? (typeof v === 'number' ? v : 0) : a)));
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
+      <NativeSelect
+        style={{ flex: '0 1 240px' }}
+        label="Family"
+        value={setting}
+        onChange={(e) => onSetting(e.currentTarget.value)}
+        data={FAMILY_SETTINGS}
+        data-testid="family-setting"
+      />
+      {setting === 'children' && (
+        <>
+          {ages.map((a, i) => (
+            <div key={i} style={{ display: 'flex', gap: 4, alignItems: 'flex-end' }}>
+              <NumberInput
+                style={{ width: 100 }}
+                label={`Child ${i + 1} age`}
+                value={a}
+                min={0}
+                allowDecimal={false}
+                onChange={(v) => setAge(i, v)}
+                classNames={{ input: 'tst-num' }}
+                data-testid={`family-child-age-${i}`}
+              />
+              <Button
+                variant="subtle"
+                size="xs"
+                mb={6}
+                aria-label={`Remove child ${i + 1}`}
+                disabled={ages.length <= 1}
+                onClick={() => onAges(ages.filter((_, j) => j !== i))}
+                data-testid={`family-remove-child-${i}`}
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+          <Button
+            variant="default"
+            disabled={ages.length >= MAX_CHILDREN}
+            onClick={() => onAges([...ages, NEW_CHILD_AGE])}
+            data-testid="family-add-child"
+          >
+            Add a child
+          </Button>
+        </>
+      )}
+      {setting !== 'none' && (
+        <span className="tst-muted" style={{ fontSize: 12, flexBasis: '100%' }}>
+          {setting === 'children'
+            ? 'Each child must be at least 18 years younger than the founder. '
+            : ''}
+          Family time eases stress but costs energy; children can grow up to succeed you.
+        </span>
+      )}
+    </div>
   );
 }
 

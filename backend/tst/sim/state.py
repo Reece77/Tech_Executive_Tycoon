@@ -18,6 +18,7 @@ from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
 from tst.sim.fabs.models import Fab
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
+from tst.sim.family.models import PARTNER, Family, FamilyMember
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
@@ -422,6 +423,9 @@ class GameState:
     world_offtakes: tuple[WorldOfftake, ...] = ()
     world_bids: tuple[WorldBid, ...] = ()
     china_lags: tuple[ChinaLag, ...] = ()
+    # M36 (45): the player's family (None: Family set to none) and its members by person id
+    family: Family | None = None
+    family_members: tuple[FamilyMember, ...] = ()
     # M31 (44): platforms by id, their regions by (platform, region), device lines' platforms
     # by product, listings by (product, platform, region), gatekeepers' reviews (a year),
     # open-sourced products by product, standards contests by id and products' formats. Empty
@@ -1696,3 +1700,35 @@ def with_feud(state: GameState, feud: Feud) -> GameState:
 
 def with_statement(state: GameState, statement: Statement) -> GameState:
     return replace(state, statements=_upsert(state.statements, statement, lambda s: s.id))
+
+
+# --- M36 (formulas.md 45): the family ---------------------------------------------------------
+
+
+def family_member(state: GameState, person_id: int) -> FamilyMember | None:
+    for m in state.family_members:
+        if m.person_id == person_id:
+            return m
+    return None
+
+
+def with_family_member(state: GameState, member: FamilyMember) -> GameState:
+    return replace(
+        state,
+        family_members=_upsert(state.family_members, member, attrgetter("person_id")),
+    )
+
+
+def with_family(state: GameState, family: Family | None) -> GameState:
+    return replace(state, family=family)
+
+
+def family_partner(state: GameState) -> FamilyMember | None:
+    """The current head's partner, if any (45.1)."""
+    family = state.family
+    if family is None:
+        return None
+    for m in state.family_members:
+        if m.relation == PARTNER and m.head_id == family.head_id:
+            return m
+    return None

@@ -13,6 +13,7 @@ from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent
+from tst.sim.family.steps import FAMILY_STEPS
 from tst.sim.founder import foundation, influence, persona, personal, stress
 from tst.sim.founder.events import queue
 from tst.sim.founder.models import FounderLife
@@ -42,6 +43,7 @@ FOUNDER_STEPS: Final = (  # events.data's founder_step stats
     "conceal",
     "accept_finding",  # M26 (37.3)
     "deny_finding",
+    *FAMILY_STEPS,  # M36 (45): data/events/family.yaml
 )
 
 
@@ -101,6 +103,11 @@ def founder_month(
     if began:
         state = queue(state, cid, BURNOUT_TEMPLATE, turn + 1)
         logs.append(inbox_item(turn, cid, "burnout_started", stress=f"{life.stress:.0f}"))
+    if state.family is not None:  # M36 (45.1-45.5): nothing without a family
+        from tst.sim.family.phase import family_month
+
+        state, life, family_logs = family_month(state, life, rng, balance, data)
+        logs += family_logs
     state = _burnt_backfires(state, start, life, balance)
     state, granted = foundation.grants_month(state, balance)
     logs += granted
@@ -265,6 +272,10 @@ def next_budget(state: GameState, balance: Balance) -> GameState:
     if ps.energy is None:
         return state
     energy = stress.budget_after_cut(ps.energy, life, balance.stress)
+    if state.family is not None:  # M36 (45.2, 45.4): family time and mentoring come first
+        from tst.sim.family.answers import family_energy
+
+        energy = max(0, energy - family_energy(state, balance))
     if energy != ps.energy:
         state = with_person_state(state, replace(ps, energy=energy))
     return with_life(state, replace(life, budget=energy))

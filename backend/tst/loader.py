@@ -314,6 +314,7 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                 f"{sorted(rv.weights)}"
             )
     _check_facilities(balance, data)
+    _check_family(balance, data)
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -333,6 +334,20 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                     f"{BACKGROUNDS_FILE}: {bg.key!r} puts {skill} at {value}, "
                     f"above founder.skill_cap = {founder.skill_cap}"
                 )
+
+
+def _check_family(balance: Balance, data: GameData) -> None:
+    """M36 (45.3, 45.6): estate tax for every region; the education and mentoring skills."""
+    regions = set(data.region_keys)
+    if set(balance.estate_tax) != regions:
+        raise DataLoadError(f"{BALANCE_FILE}: estate_tax must cover exactly {sorted(regions)}")
+    fb = balance.family
+    named = {*fb.mentor_skills, *fb.education.mba_skills}
+    for skills in fb.education.degree_skills.values():
+        named.update(skills)
+    unknown = sorted(named - set(data.skill_keys))
+    if unknown:
+        raise DataLoadError(f"{BALANCE_FILE}: family skills {unknown} are not in skills.yaml")
 
 
 def _check_facilities(balance: Balance, data: GameData) -> None:

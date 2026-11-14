@@ -1,4 +1,5 @@
 import { LegacyPanel } from '../components/FounderPanels';
+import { DynastyPanel } from './FamilyScreen';
 import { Alert, Button, NativeSelect, SegmentedControl, TextInput } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
@@ -616,6 +617,7 @@ function FameTab({ saveId, companyId }: { saveId: string; companyId?: number }) 
         </Alert>
       )}
       <LegacyPanel legacy={f.legacy} />
+      {f.dynasty && <DynastyPanel dynasty={f.dynasty} />}
       <div
         style={{
           display: 'grid',

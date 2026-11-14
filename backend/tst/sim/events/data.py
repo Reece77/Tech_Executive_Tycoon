@@ -12,6 +12,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.family.steps import FAMILY_STEPS
+
 type Severity = Literal["minor", "major", "critical"]
 SEVERITIES: Final = ("minor", "major", "critical")
 
@@ -179,6 +181,7 @@ FOUNDER_STEPS: Final = (
     "conceal",
     "accept_finding",  # M26 (37.3): an insider-trading finding
     "deny_finding",
+    *FAMILY_STEPS,  # M36 (45): data/events/family.yaml
 )
 GROUP_STEPS: Final = ("correct_price", "defend_price")
 EXPLORATION_STEPS: Final = ("consult", "benefit", "push_on")  # M18 (34.3)
@@ -343,7 +346,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "outage": frozenset({"segment"}),
     PUBLIC_TRIGGER: frozenset({"bank", "price", "demand", "ticker", "ceo"}),  # M13
     PRESS_TRIGGER: frozenset({"segment", "rival", "rival_ceo", "era", "result", "promise"}),
-    FOUNDER_TRIGGER: frozenset(),  # M24: company and founder only
+    FOUNDER_TRIGGER: frozenset({"person"}),  # M24: company and founder; M36: a family member
     GROUP_TRIGGER: frozenset(),  # M16: company and founder only
     EXPLORATION_TRIGGER: frozenset(),  # M18: company and founder only
     REFINING_TRIGGER: frozenset(),  # M20: company and founder only

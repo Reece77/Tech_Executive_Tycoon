@@ -5193,6 +5193,207 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/family": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Family
+         * @description Members, ages, relationships, education, ratings as ranges, readiness, family time,
+         *     the adviser, the estate quote and the dynasty score (45.9).
+         */
+        get: operations["getFamily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Time
+         * @description Energy a month for the family, 0-20 (45.2).
+         */
+        post: operations["setFamilyTime"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/educate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Educate
+         * @description A school at 12, a university at 18, an MBA from 22, paid from personal cash (45.3).
+         */
+        post: operations["educate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/mentor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mentor
+         * @description Mentor an heir in the group: 3 energy a month (45.4).
+         */
+        post: operations["setMentoring"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Job
+         * @description Offer a grown child a role in a group company (45.4).
+         */
+        post: operations["offerFamilyJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/succession": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Name Successor
+         * @description Hand over to an heir (you then play them) or a professional CEO (45.5).
+         */
+        post: operations["nameSuccessor"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/gift": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gift
+         * @description Gift shares to a child; gift tax above the lifetime exemption (45.6).
+         */
+        post: operations["giftShares"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/trust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trust
+         * @description Put shares in the family trust, outside the estate (45.6).
+         */
+        post: operations["fundTrust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/foundation-shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Foundation Shares
+         * @description Give shares to the foundation: they leave the estate and count toward legacy (45.6).
+         */
+        post: operations["giveSharesToFoundation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/family/adviser/retire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retire Adviser
+         * @description The adviser leaves the board (45.5).
+         */
+        post: operations["retireAdviser"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/platforms": {
         parameters: {
             query?: never;
@@ -5727,6 +5928,19 @@ export interface components {
             label: string;
             /** Current */
             current: boolean;
+        };
+        /** AdviserOut */
+        AdviserOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Age */
+            age: number;
+            /** Retires At */
+            retires_at: number;
+            /** Opinions */
+            opinions: components["schemas"]["OpinionOut"][];
         };
         /** AnalystOut */
         AnalystOut: {
@@ -8097,6 +8311,8 @@ export interface components {
              * @description A data-editor mod in saves/mods (M25); earns no achievements
              */
             mod?: string | null;
+            /** @description The Family setting (M36, 45.1) */
+            family?: components["schemas"]["FamilyIn"] | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -8652,6 +8868,23 @@ export interface components {
             /** Detail */
             detail: string;
         };
+        /** DynastyOut */
+        DynastyOut: {
+            /** Generations */
+            generations: components["schemas"]["GenerationOut"][];
+            /** Legacies */
+            legacies: number;
+            /** Family Value Cents */
+            family_value_cents: number;
+            /** Value Points */
+            value_points: number;
+            /** Control Losses */
+            control_losses: number;
+            /** Loss Points */
+            loss_points: number;
+            /** Total */
+            total: number;
+        };
         /** EditorFileOut */
         EditorFileOut: {
             /** File */
@@ -8689,6 +8922,29 @@ export interface components {
             file: string;
             /** Label */
             label: string;
+        };
+        /** EducateIn */
+        EducateIn: {
+            /** Person Id */
+            person_id: number;
+            /** Stage */
+            stage: string;
+            /** Tier */
+            tier: string;
+            /** Degree */
+            degree?: string | null;
+        };
+        /** EducationChoiceOut */
+        EducationChoiceOut: {
+            /**
+             * Stage
+             * @description school | university | mba
+             */
+            stage: string;
+            /** Tier */
+            tier: string;
+            /** Cost Cents */
+            cost_cents: number;
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -8858,6 +9114,51 @@ export interface components {
              * @description True: refused before anything was written, so the same request may be sent again (save_busy; M8r). Absent: do not retry automatically.
              */
             retryable?: boolean | null;
+        };
+        /** EstateOut */
+        EstateOut: {
+            /** Region */
+            region: string;
+            /** Rate */
+            rate: number;
+            /** Exemption Cents */
+            exemption_cents: number;
+            /** Used Exemption Cents */
+            used_exemption_cents: number;
+            /** Shares */
+            shares: number;
+            /** Share Price Cents */
+            share_price_cents: number;
+            /** Shares Cents */
+            shares_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Other Cents */
+            other_cents: number;
+            /** Estate Cents */
+            estate_cents: number;
+            /** Taxable Cents */
+            taxable_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Shares To Sell */
+            shares_to_sell: number;
+            /** Family Bp Now */
+            family_bp_now: number;
+            /** Family Bp After */
+            family_bp_after: number;
+            /** Control Bp */
+            control_bp: number;
+            /** Trust Shares */
+            trust_shares: number;
+            /** Gift Tax */
+            gift_tax: boolean;
+            /** Lifetime Gifts Cents */
+            lifetime_gifts_cents: number;
+            /** Gift Tax Paid Cents */
+            gift_tax_paid_cents: number;
+            /** Estate Tax Paid Cents */
+            estate_tax_paid_cents: number;
         };
         /** EstimateRangeOut */
         EstimateRangeOut: {
@@ -9708,6 +10009,99 @@ export interface components {
              */
             sale_value_cents: number;
         };
+        /** FamilyActionOut */
+        FamilyActionOut: {
+            family: components["schemas"]["FamilyOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /**
+         * FamilyIn
+         * @description The new game's Family setting (45.1).
+         */
+        FamilyIn: {
+            /**
+             * Setting
+             * @description none | partner | children
+             * @default none
+             */
+            setting?: string;
+            /**
+             * Child Ages
+             * @description 'children': each one's age
+             */
+            child_ages?: number[];
+        };
+        /** FamilyJobIn */
+        FamilyJobIn: {
+            /** Person Id */
+            person_id: number;
+            /** Company Id */
+            company_id: number;
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+        };
+        /** FamilyMemberOut */
+        FamilyMemberOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Relation
+             * @description partner | child | ex_partner
+             */
+            relation: string;
+            /** Age */
+            age: number;
+            /**
+             * Closeness
+             * @description A child's closeness, 0-100
+             */
+            closeness: number | null;
+            /** School */
+            school: string | null;
+            /** University */
+            university: string | null;
+            /** Degree */
+            degree: string | null;
+            /** Mba */
+            mba: boolean;
+            /** Company Id */
+            company_id: number | null;
+            /** Company Name */
+            company_name: string | null;
+            /** Role */
+            role: string | null;
+            /** Level */
+            level: string | null;
+            /** Mentored */
+            mentored: boolean;
+            /** Own Way */
+            own_way: string | null;
+            /** Interests */
+            interests: string[];
+            /** Skills */
+            skills: components["schemas"]["AttributeOut"][];
+            /** Personality */
+            personality: components["schemas"]["AttributeOut"][];
+            /**
+             * Potential
+             * @description The potential phrase from the revealed range (as people)
+             */
+            potential: string;
+            readiness: components["schemas"]["ReadinessOut"] | null;
+            /**
+             * Choices
+             * @description Education open to choose now
+             */
+            choices: components["schemas"]["EducationChoiceOut"][];
+            /** Can Join */
+            can_join: boolean;
+        };
         /** FamilyOfficeFormOut */
         FamilyOfficeFormOut: {
             /** Can Form */
@@ -9757,6 +10151,72 @@ export interface components {
              * @description The market index over the same year
              */
             index_year_pct: number | null;
+        };
+        /** FamilyOut */
+        FamilyOut: {
+            /**
+             * Exists
+             * @description False when Family was set to none
+             */
+            exists: boolean;
+            /** Setting */
+            setting: string;
+            /** Head Id */
+            head_id: number | null;
+            /** Head Name */
+            head_name: string | null;
+            /**
+             * Head Mode
+             * @description founder | family_head (a professional CEO runs it)
+             */
+            head_mode: string;
+            /** Family Time */
+            family_time: number;
+            /** Max Time */
+            max_time: number;
+            /**
+             * Time Now
+             * @description This month's family time (at least 15 under a promise)
+             */
+            time_now: number;
+            /**
+             * Energy Cost
+             * @description Family time plus mentoring, taken from the budget
+             */
+            energy_cost: number;
+            /** Relationship */
+            relationship: number | null;
+            /** Married */
+            married: boolean;
+            partner: components["schemas"]["FamilyMemberOut"] | null;
+            /** Children */
+            children: components["schemas"]["FamilyMemberOut"][];
+            /**
+             * Others
+             * @description Ex-partners and the head's siblings
+             */
+            others: components["schemas"]["FamilyMemberOut"][];
+            /**
+             * Heirs
+             * @description Children who can succeed now, readiest first
+             */
+            heirs: number[];
+            /** Succession Open */
+            succession_open: string | null;
+            /** Step Back Open */
+            step_back_open: boolean;
+            adviser: components["schemas"]["AdviserOut"] | null;
+            estate: components["schemas"]["EstateOut"] | null;
+            dynasty: components["schemas"]["DynastyOut"] | null;
+            /** Notes */
+            notes: components["schemas"]["NoteOut"][];
+            /** Trust Since */
+            trust_since: string | null;
+        };
+        /** FamilyTimeIn */
+        FamilyTimeIn: {
+            /** Energy */
+            energy: number;
         };
         /** FeeScheduleOut */
         FeeScheduleOut: {
@@ -10385,6 +10845,21 @@ export interface components {
              */
             directors: components["schemas"]["GameOverDirectorOut"][];
         };
+        /** GenerationOut */
+        GenerationOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string | null;
+            /** Legacy */
+            legacy: number;
+            /** How */
+            how: string | null;
+        };
         /** GeoActionOut */
         GeoActionOut: {
             geo: components["schemas"]["GeoOut"];
@@ -10510,11 +10985,6 @@ export interface components {
             speaker: string;
             /** Steps */
             steps: components["schemas"]["StepOut"][];
-        };
-        /** GiftIn */
-        GiftIn: {
-            /** Amount Cents */
-            amount_cents: number;
         };
         /**
          * GlossaryOut
@@ -10884,6 +11354,8 @@ export interface components {
             best_product_quality: components["schemas"]["ProductRecordOut"] | null;
             /** Rivals Outlasted */
             rivals_outlasted: components["schemas"]["RivalOutlastedOut"][];
+            /** @description The family tree's generations and dynasty score (M36, 45.7) */
+            dynasty?: components["schemas"]["DynastyOut"] | null;
             /** @description The founder's legacy score with its parts (M24, 32.6) */
             legacy?: components["schemas"]["LegacyOut"] | null;
             /**
@@ -12553,6 +13025,13 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** MentorIn */
+        MentorIn: {
+            /** Person Id */
+            person_id: number;
+            /** On */
+            on: boolean;
+        };
         /** MessageOut */
         MessageOut: {
             /** Title */
@@ -13329,6 +13808,17 @@ export interface components {
             /** Person Id */
             person_id: number;
         };
+        /** NoteOut */
+        NoteOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Kind */
+            kind: string;
+            /** Text */
+            text: string;
+        };
         /** OfferIn */
         OfferIn: {
             /** Salary Cents */
@@ -13570,6 +14060,25 @@ export interface components {
              * @default true
              */
             open?: boolean;
+        };
+        /** OpinionOut */
+        OpinionOut: {
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Subject */
+            subject: string;
+            /** Subject Id */
+            subject_id: number;
+            /** Title */
+            title: string;
+            /** Stance */
+            stance: string;
+            /** Text */
+            text: string;
+            /** Overruled */
+            overruled: boolean;
         };
         /**
          * OptionsOut
@@ -15893,6 +16402,33 @@ export interface components {
              */
             years: number[];
         };
+        /** ReadinessOut */
+        ReadinessOut: {
+            /**
+             * Band
+             * @description not_ready | developing | ready | strong
+             */
+            band: string;
+            /**
+             * Points
+             * @description From displayed values only
+             */
+            points: number;
+            /**
+             * Fit
+             * @description The CEO-seat score from displayed ranges (25.6's weights)
+             */
+            fit: number;
+            /** Years */
+            years: number;
+            /** Seats */
+            seats: number;
+            /**
+             * Board
+             * @description (board confidence - 50) / divisor
+             */
+            board: number;
+        };
         /** RecipeOut */
         RecipeOut: {
             /** Key */
@@ -17613,6 +18149,11 @@ export interface components {
              */
             services: string;
         };
+        /** SharesIn */
+        SharesIn: {
+            /** Shares */
+            shares: number;
+        };
         /** SiteOut */
         SiteOut: {
             /** Company Id */
@@ -18184,6 +18725,18 @@ export interface components {
         SubsidiaryUpdatesOut: {
             /** Updates */
             updates: components["schemas"]["SubsidiaryUpdateOut"][];
+        };
+        /** SuccessionIn */
+        SuccessionIn: {
+            /** Heir Id */
+            heir_id?: number | null;
+            /** Ceo Person Id */
+            ceo_person_id?: number | null;
+            /**
+             * Professional
+             * @default false
+             */
+            professional?: boolean;
         };
         /** SupplierGoodOut */
         SupplierGoodOut: {
@@ -19316,6 +19869,18 @@ export interface components {
             label: string;
             /** Is Home */
             is_home: boolean;
+        };
+        /** GiftIn */
+        tst__api__schemas__family__GiftIn: {
+            /** Heir Id */
+            heir_id: number;
+            /** Shares */
+            shares: number;
+        };
+        /** GiftIn */
+        tst__api__schemas__founder__GiftIn: {
+            /** Amount Cents */
+            amount_cents: number;
         };
         /** RegionOptionOut */
         tst__api__schemas__founder__RegionOptionOut: {
@@ -30577,7 +31142,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GiftIn"];
+                "application/json": components["schemas"]["tst__api__schemas__founder__GiftIn"];
             };
         };
         responses: {
@@ -36281,6 +36846,618 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChainOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFamily: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setFamilyTime: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FamilyTimeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    educate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMentoring: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MentorIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    offerFamilyJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FamilyJobIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    nameSuccessor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuccessionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    giftShares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["tst__api__schemas__family__GiftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    fundTrust: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    giveSharesToFoundation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SharesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    retireAdviser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyActionOut"];
                 };
             };
             /** @description Bad Request */
