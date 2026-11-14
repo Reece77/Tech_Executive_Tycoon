@@ -31,7 +31,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `game_state` | VARCHAR(16) | no | `active`, `bankrupt` or `founder_removed` (ADR-0018 §4). Once ended, turns and actions are refused (HTTP 409); reads still work (M4a). |
 | `ended_turn` | INTEGER | yes | Turn the game ended; null while active (M4a). |
 | `display_name` | VARCHAR(80) | yes | The save's name on the Saves screen; null shows `name` (M7b, `0017_save_display_name`). Renaming a save changes only this; the company name and the file stay. Mapped as a deferred column, because migration 0013 reads `save_meta` through the current models. |
-| `history_pruned_through` | INTEGER | yes | M30 (`0051_m30`): the last month whose old history rows were thinned (`tst.db.history`; see *Old history summarised*); null before any. Deferred, as `display_name`. |
+| `history_pruned_through` | INTEGER | yes | M30 (`0052_m30`): the last month whose old history rows were thinned (`tst.db.history`; see *Old history summarised*); null before any. Deferred, as `display_name`. |
 | `next_cap_entry_id` / `next_grant_id` / `next_safe_id` / `next_round_id` / `next_term_sheet_id` / `next_seat_id` | INTEGER | no | Next ids for the finance tables (M4a). |
 | `mod_name` | VARCHAR(64) | yes | The data-editor mod the game started with (M25, `0040_m25`): a `saves/mods/<name>.yaml` name; null for a game without a mod (and every save from before M25). A modded game earns no achievements and is flagged on the Saves list and in the Hall of Fame. |
 | `mod_hash` | VARCHAR(64) | yes | SHA-256 of the merged data files (base files with the overlay merged, canonical JSON) the game started with (M25); a later difference (the base files changed) is logged, as `data_hashes` is. Null without a mod. |
@@ -1479,6 +1479,22 @@ A person who runs an area of a company (formulas.md 40.1). No row: the player ma
 | `since_turn` | INTEGER | no | When it was given (the take-back morale rule, 40.1). |
 | `answer_events` | BOOLEAN | no | "Let them answer routine events" (40.5). |
 | `allow_bold` | BOOLEAN | no | Press: "allow bold claims" (40.6). |
+| `budget_cents` | BIGINT | no | M27b (`0051_m27b`): the area's yearly budget (exploration, lobbying, screening; 40.13); 0 = off. Existing rows: 0. |
+| `guardrails` | JSON | no | M27b: the player's guardrails for the area, `{key: value}`; a key not set takes the area's default in `balance.yaml`. Existing rows: `{}`. |
+
+Area owners of a subsidiary of the player's group are rows with the subsidiary's `company_id` (M27b).
+
+### headcount_target
+
+A unit's headcount in one role, which the Hiring owner fills with plans (M27b sub-task 9; migration `0051_m27b`). No row: no target.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `unit_id` and `role`: the player's company or a subsidiary. |
+| `unit_id` | INTEGER | no | The unit. |
+| `role` | VARCHAR(32) | no | A `roles.yaml` key. |
+| `target` | INTEGER | no | Headcount wanted in the role in the unit (1-1,000). |
+| `set_turn` | INTEGER | no | When the player set it. |
 
 ### area_decision
 
@@ -1999,9 +2015,9 @@ Every living-world record, one row each, rewritten by collection when it changes
 | `kind` | VARCHAR | no | The collection: `chain_companies` (`company_id`, `key` the data key or `other_<good>`, `index` the stable key's position, `country`, `region`, `executives` [[role, name], ...] the CEO first, `ceo_since`, `insolvent_months`, `is_other`, `revenue_cents` and `costs_cents` last month's, `ebitda` the last 12 months' cents), `world_facilities` (`id`, `company_id`, `good`, `country`, `region`, `capacity` units a year, `cost` the cost position 0-1 (hidden: the API shows its third), `status` `building`/`live`/`mothballed`/`closed`, `ordered_turn`, `ready_turn`, `capex_cents`, `depreciated_cents`, `below_months`, `above_months`, `mothballed_turn`, `closed_turn`, `output` last month's units), `world_goods` (`good`, `turn`, `capacity`, `supply` (normal running), `demand`, `player_supply`, `player_demand`, `factor` the balance factor the next month's price takes, `prices` the last 12 months' in dollars a unit, `contracted` rivals' offtakes a year, `output` actual output a year, `short_months`), `region_cycles` (`region`, `turn`, `level`, `phase` `none`/`recession`/`boom`/`global`, `phase_start`, `phase_months`, `depth`, `multiplier`, `previous`; hidden: never in the API), `world_news` (`id`, `turn`, `kind`, `message`, `company_id`, `other_id`, `region`, `good`; the last `world.news_months`), `rival_deals` (`id`, `agreed_turn`, `buyer_id`, `target_id`, `price_cents`, `kind` `vertical`/`horizontal`, `status` `review`/`closed`/`blocked`, `close_turn`, `share` the antitrust test's combined share, negative while a review that will block runs), `rival_mandates` (`company_id`, `owner_id`, `kind` `grow`/`margin`/`cash`, `set_turn`), `world_offtakes` (`id`, `buyer_id`, `seller_id`, `good`, `volume` units a year, `start_turn`, `end_turn`), `world_bids` (`id`, `rival_id`, `turn`, `price_cents` a share, `status` `open`/`accepted`/`rejected`/`lapsed`; the rival's valuation is never stored), `china_lags` (`foundry`, `turn`, `behind` generations, `reached` [[node, turn], ...] after 2025, `binding`). |
 | `data` | JSON | no | The record's fields, as listed under `kind`. |
 
-## Old history summarised (migration `0051_m30`, M30)
+## Old history summarised (migration `0052_m30`, M30)
 
-Past a retention window (`balance.yaml` `retention`) old history rows are summarised, not lost, at each month's commit for the months that just left the window (`tst.db.history`); migration `0051_m30` thins an existing save once to its current month. The engine reads none of these rows back, so a game plays exactly as before.
+Past a retention window (`balance.yaml` `retention`) old history rows are summarised, not lost, at each month's commit for the months that just left the window (`tst.db.history`); migration `0052_m30` thins an existing save once to its current month. The engine reads none of these rows back, so a game plays exactly as before.
 
 - `turn_snapshot` rows older than `retention.snapshot_months` keep the quarter's last month (March, June, September, December), every month of the company's first year (from `company.founded_turn`), and every month that set a new high of `arr_cents` or `headcount` (the Hall of Fame's peaks, which are therefore unchanged). History and Finance charts show the older years quarterly.
 - `turn_log` rows older than `retention.log_months` become counts in `turn_log_summary`, a whole year at a time.

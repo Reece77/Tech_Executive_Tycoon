@@ -982,6 +982,8 @@ class AutomationArea(_Frozen):
     kpis: tuple[str, ...] = Field(min_length=1)  # the digest's KPIs (40.4)
     rule: str = Field(min_length=1)  # the engine rule (40.6)
     events: tuple[str, ...] = ()  # event categories it answers (40.5)
+    guardrails: dict[str, float] = {}  # M27b (40.7): the rule's guardrail defaults, by key
+    subsidiary: bool = False  # M27b: automatable inside a subsidiary of the group too
 
     @model_validator(mode="after")
     def _check(self) -> AutomationArea:

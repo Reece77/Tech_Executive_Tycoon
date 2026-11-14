@@ -4,6 +4,7 @@ only fit bands from displayed ranges (18.8, 40.11)."""
 
 from __future__ import annotations
 
+from tst.sim.automation import scope
 from tst.sim.automation.config import SEAT_AREA
 from tst.sim.automation.models import AreaOwner, OwnerKind
 from tst.sim.data_models import LEVELS, AutomationArea, Balance, GameData
@@ -30,6 +31,12 @@ def area_index(balance: Balance, area: str) -> int:
     return area_keys(balance).index(area)
 
 
+def automatable_in(state: GameState, company_id: int, area: str, b: Balance) -> bool:
+    """Every area in the player's company; inside a subsidiary the areas flagged `subsidiary`
+    (hiring and the chain's, M27b): the seat rules and pitched moves stay the player's."""
+    return company_id == state.player.id or area_def(b, area).subsidiary
+
+
 def is_existing(area: str) -> bool:
     """An area whose monthly rule is a seat's existing rule (24.1, 27.1)."""
     return area in SEAT_AREA.values()
@@ -47,12 +54,16 @@ def owner_kind(
     person = state.person(person_id)
     if person.is_founder or not _active(state, person_id, company_id):
         return None
+    if not automatable_in(state, company_id, area, b):
+        return None
     a = area_def(b, area)
     if a.seat is not None and state.seat_holder(company_id, a.seat) == person_id:
         return "seat"
     ceo = ceo_of(state, company_id)
     if ceo is not None and ceo.person_id == person_id:
         return "subsidiary_ceo" if company_id != state.player.id else "ceo"
+    if company_id != state.player.id and scope.subsidiary_ceo(state, company_id) == person_id:
+        return "subsidiary_ceo"  # M27b (40.1): a subsidiary's CEO may own every area there
     e = state.employment_of(person_id)
     min_level = LEVELS.index(b.automation.lead_min_level)
     if (
@@ -85,14 +96,18 @@ def cant_automate(
     """Why nobody can own the area yet, with how to fix it (40.8), or None."""
     if eligible_people(state, company_id, area, b):
         return None
+    if not automatable_in(state, company_id, area, b):
+        return "run by the group: automate it on your own company's table"
     a = area_def(b, area)
     level = b.automation.lead_min_level
     roles = [data.role(r).label.lower() for r in a.roles]
     fixes = []
     if roles:
         fixes.append(f"hire a {level} {' or '.join(roles)}")
-    if a.seat is not None:
+    if a.seat is not None and company_id == state.player.id:
         fixes.append(f"fill the {a.seat.upper()} seat")
+    if company_id != state.player.id:
+        fixes.append("give the company a CEO")
     return " or ".join(fixes) if fixes else "appoint a CEO"
 
 
@@ -119,7 +134,7 @@ def shown_area_score(
     a = area_def(b, area)
     if kind == "seat" and a.seat is not None:
         return displayed_score(state, company_id, person_id, a.seat, b)
-    reveal = state.reveal(company_id, person_id)
+    reveal = state.reveal(company_id, person_id) or state.reveal(state.player.id, person_id)
     if reveal is None:
         return NEUTRAL_SCORE
     person = state.person(person_id)

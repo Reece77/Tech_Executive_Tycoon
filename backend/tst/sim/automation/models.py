@@ -30,6 +30,14 @@ class AreaOwner:
     since_turn: int
     answer_events: bool = True  # "Let them answer routine events" (40.5)
     allow_bold: bool = False  # press: "allow bold claims" (40.6)
+    budget_cents: int = (
+        0  # M27b: a yearly budget the player sets (exploration, lobbying, screening)
+    )
+    guardrails: tuple[tuple[str, float], ...] = ()  # M27b: the player's guardrails, by key
+
+    def guardrail(self, key: str, default: float) -> float:
+        """A guardrail the player set for the area, else the area's default (40.7)."""
+        return next((v for k, v in self.guardrails if k == key), default)
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,3 +53,14 @@ class AreaDecision:
     text: str
     commitment_cents: int = 0  # cash cost over 12 months plus fixed obligations (40.2)
     ref_id: int | None = None  # the proposal or event it concerns
+
+
+@dataclass(frozen=True, slots=True)
+class HeadcountTarget:
+    """A unit's headcount in one role that the Hiring owner fills (M27b sub-task 9)."""
+
+    company_id: int
+    unit_id: int
+    role: str
+    target: int
+    set_turn: int

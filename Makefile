@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -55,6 +55,8 @@ weekly-v3-integration:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_integration_thirty_years
 weekly-v3-long:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_chain_thirty_years
+weekly-m27b:
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_m27b_balance.py
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
 	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: its targets on CI's runner

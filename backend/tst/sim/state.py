@@ -13,7 +13,7 @@ from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
 
-from tst.sim.automation.models import AreaDecision, AreaOwner
+from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.errors import GroupDataError
@@ -279,6 +279,7 @@ class GameState:
     # (company_id, turn, seq). No owner row: the player manages the area.
     area_owners: tuple[AreaOwner, ...] = ()
     area_decisions: tuple[AreaDecision, ...] = ()
+    headcount_targets: tuple[HeadcountTarget, ...] = ()  # M27b: Hiring's per-unit targets
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
@@ -1343,6 +1344,17 @@ def with_area_owner(state: GameState, owner: AreaOwner) -> GameState:
 def without_area_owner(state: GameState, company_id: int, area: str) -> GameState:
     kept = tuple(o for o in state.area_owners if (o.company_id, o.area) != (company_id, area))
     return replace(state, area_owners=kept)
+
+
+def with_headcount_target(state: GameState, target: HeadcountTarget) -> GameState:
+    """Set a unit's target in a role; a target of 0 removes it (M27b)."""
+    key = (target.company_id, target.unit_id, target.role)
+    rest = tuple(t for t in state.headcount_targets if (t.company_id, t.unit_id, t.role) != key)
+    kept = (*rest, target) if target.target > 0 else rest
+    return replace(
+        state,
+        headcount_targets=tuple(sorted(kept, key=lambda t: (t.company_id, t.unit_id, t.role))),
+    )
 
 
 def with_area_decisions(state: GameState, decisions: list[AreaDecision]) -> GameState:

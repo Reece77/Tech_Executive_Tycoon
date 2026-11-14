@@ -59,7 +59,18 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 
 ## Phase 4: v5, the dynasty and new industries
 
-The founder's life part 3 (family, heirs, succession, playing on as the next generation); electric vehicles, robotics, space and medical devices on the player's chain.
+**Reece's decisions (2026-11-14, "defaults", plus pharmaceuticals):** play the heir, with the old founder as board adviser; an optional dynasty mode to 2069; electric vehicles and robotics first, then space, medical devices and pharmaceuticals; realistic approval stages. Outline: `docs/v5-outline.md`.
+
+| Milestone | Starts |
+| --- | --- |
+| M36, family and succession | now, as a fourth lane (brief `docs/tasks/M36-family-and-succession.md`, formulas §45) |
+| M37, dynasty mode (the second 30 years) | after v4 |
+| M38, electric vehicles | after M32 and M31 |
+| M39, robotics | after M32 |
+| M40, space and satellites | after M32 |
+| M41, medical devices | after M34 |
+| M42, pharmaceuticals | after M41 |
+| M43, v5 balance and polish | last; closes v5 |
 
 ## Process
 

@@ -177,7 +177,7 @@ def _archive() -> Table:
 
 def archived_news(session: Session) -> list[WorldNews]:
     """The archive, oldest first (World news shows it after the state's items); none in a
-    save from before 0051."""
+    save from before 0052."""
     from tst.db.state_io import has_table
 
     if not has_table(session, WorldNewsArchiveRow):

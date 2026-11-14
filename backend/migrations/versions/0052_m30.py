@@ -6,8 +6,8 @@ the last month thinned; `ix_turn_snapshot_company_turn` serves a company's histo
 save's history is thinned here, once, to its current month (the turn then thins a month at a
 time). The game reads none of these rows, so nothing it plays changes.
 
-Revision ID: 0051_m30
-Revises: 0050_m28
+Revision ID: 0052_m30
+Revises: 0051_m27b
 """
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0051_m30"
-down_revision: str | None = "0050_m28"
+revision: str = "0052_m30"
+down_revision: str | None = "0051_m27b"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -48,7 +48,7 @@ def upgrade() -> None:
     op.create_index("ix_candidate_status", "candidate", ["status"])
     op.create_index("ix_person_is_founder", "person", ["is_founder"])
     op.add_column("save_meta", sa.Column("history_pruned_through", sa.Integer(), nullable=True))
-    op.execute("UPDATE save_meta SET schema_version = 51")
+    op.execute("UPDATE save_meta SET schema_version = 52")
     _catch_up()
 
 
@@ -76,4 +76,4 @@ def downgrade() -> None:
     op.drop_table("world_news_archive")
     op.drop_index("ix_turn_log_summary_year", table_name="turn_log_summary")
     op.drop_table("turn_log_summary")
-    op.execute("UPDATE save_meta SET schema_version = 50")
+    op.execute("UPDATE save_meta SET schema_version = 51")

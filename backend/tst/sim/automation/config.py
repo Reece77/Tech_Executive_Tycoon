@@ -31,6 +31,14 @@ RULES: Final = frozenset(
         "cloud",
         "press",
         "events",
+        # M27b (40.7): the chain's
+        "production",
+        "supply",
+        "exploration",
+        "mines",
+        "fabs",
+        "government",
+        "corp_dev",
     }
 )
 KPIS: Final = frozenset(
@@ -57,6 +65,21 @@ KPIS: Final = frozenset(
         "press_waiting",
         "events_answered",
         "events_waiting",
+        # M27b (40.7)
+        "device_cover_weeks",
+        "devices_made",
+        "supply_cover_pct",
+        "supply_deals",
+        "projects",
+        "exploration_cents",
+        "plants_staffed_pct",
+        "plants",
+        "fab_use_pct",
+        "foundry_share_pct",
+        "lobbying_cents",
+        "blocked_sales",
+        "deals_open",
+        "targets_screened",
     }
 )
 
@@ -121,8 +144,42 @@ ONE_OFF_ACTIONS: Final = frozenset(
         # licensing deals (40.6's research rule)
         "license_in",
         "license_out",
+        # M27b (40.7): the chain's one-offs
+        "abandon_deal",  # every bid and abandoning a deal (corporate development)
+        "upgrade_fab",  # an upgrade, conversion or new node
+        "close_mine",
+        "care_maintenance",
+        "take_local_partner",
+        "set_grey_route",  # never taken by a delegate (40.7): a proposal at most
+        "launch_variant",  # a product decision: a proposal
     }
 )
+
+# M27b: actions the chain's rules give that only the founder may act on (the group's mines,
+# fabs' foundry contracts, lobbying, other group companies' facilities and projects). An owner
+# carries them out in the founder's name; the cost is the owner's workload, so the founder's
+# energy is left as it was.
+FOUNDER_ACTIONS: Final = frozenset(
+    {
+        "staff_mine",
+        "set_mine_sales",
+        "sign_mine_sale",
+        "set_mine_safety",
+        "sign_foundry_contract",
+        "set_lobbying",
+        "staff_facility",
+        "start_desk_study",
+        "take_licence",
+        "start_stage",
+        "order_drilling",
+        "renew_licence",
+        "relinquish_project",
+        "sign_refining_deal",
+        "build_mine",
+    }
+)
+# 40.7 target (c): no delegate ever carries these out, whatever its settings.
+NEVER_ACTIONS: Final = frozenset({"set_grey_route", "terminate_contract"})
 LAYOFF_ACTIONS: Final = frozenset({"fire", "layoff"})  # one-offs at automation.layoff_share
 CONTRACT_ACTIONS: Final = frozenset({"sign_contract"})  # one-offs above long_contract_months
 
