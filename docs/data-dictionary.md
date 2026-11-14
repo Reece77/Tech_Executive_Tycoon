@@ -2026,5 +2026,7 @@ Past a retention window (`balance.yaml` `retention`) old history rows are summar
 | `turn` | INTEGER | no | The month it was published. |
 | `kind` | VARCHAR(32) | no | Its kind, one of `retention.major_news`. |
 | `message` | TEXT | no | Its text. |
-| `company_id`, `other_id` | INTEGER | yes | The companies it links to (no FK). |
-| `region`, `good` | VARCHAR(64) | yes | The region and good it links to. |
+| `company_id` | INTEGER | yes | The company it is about (no FK). |
+| `other_id` | INTEGER | yes | The other company it links to (no FK). |
+| `region` | VARCHAR(64) | yes | The region it links to. |
+| `good` | VARCHAR(64) | yes | The good it links to. |
