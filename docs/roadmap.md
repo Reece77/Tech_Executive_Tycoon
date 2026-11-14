@@ -43,7 +43,15 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 
 ## Phase 3: v4, power, platforms and regulation
 
-Regional power markets and owning power plants; platforms and ecosystems (app stores, developer ecosystems, lock-in, standards); regulation with teeth (unbundling, gatekeeper rules); and the **semiconductor equipment lane** (lithography and EUV) alongside. Details in `docs/ideas-backlog.md`.
+**Reece's decisions (2026-11-13, "defaults"):** an own app store and developer ecosystem, with rivals' stores as competitors and gatekeepers; power contracts and owned plants (from stage 4); break-ups possible but rare, visible and warned years ahead; EUV first as a chokepoint, own tools as a late, very expensive research path. Outline: `docs/v4-outline.md`.
+
+| Milestone | Lane | Starts |
+| --- | --- | --- |
+| M31, platforms and ecosystems | C | after `m27a-done` (about 2026-11-17) |
+| M32, power and owned plants | A or B | after `m28-done` (about 2026-11-20) |
+| M33, semiconductor equipment (EUV) | A or B | after `m28-done`, beside M32 |
+| M34, regulation with teeth | C | after `m31-done` |
+| M35, v4 balance and polish | single | after M32–M34; closes v4 |
 
 ## Phase 4: v5, the dynasty and new industries
 
