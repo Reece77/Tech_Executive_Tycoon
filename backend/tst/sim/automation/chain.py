@@ -480,7 +480,6 @@ def _wafers(run: AutoRun, owner: AreaOwner, lo: float, mid: float, data: GameDat
 
 # --- Exploration (40.7; M27b sub-task 4) --------------------------------------------------------
 
-HOLES: Final = 40  # a programme to an indicated resource (34.2's 40-hole measured resource)
 STUDIES: Final[tuple[StageName, ...]] = ("scoping", "definitive")  # the screen, then the study
 MISTAKE_STUDY: Final[StageName] = "pre_feasibility"  # the second-best study: 8 months more
 
@@ -593,12 +592,13 @@ def exploration(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
                 )
             continue
         drilled = sum(1 for h in state.holes if h.project_id == p.id)
-        if drilled < HOLES:
+        holes = int(_rail(owner, b, "holes"))
+        if drilled < holes:
             _act(
                 run,
                 owner,
-                OrderDrilling(owner.person_id, p.id, HOLES - drilled),
-                f"ordered {HOLES - drilled} holes at project #{p.id}",
+                OrderDrilling(owner.person_id, p.id, holes - drilled),
+                f"ordered {holes - drilled} holes at project #{p.id}",
                 False,
             )
             continue

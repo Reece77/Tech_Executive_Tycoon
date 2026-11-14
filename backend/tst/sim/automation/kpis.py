@@ -227,7 +227,7 @@ def chain_kpi(state: GameState, company: int, key: str, b: Balance, data: GameDa
             )
         case "supply_cover_pct":
             needs = chain.supply_needs(state, company, b, data)
-            return round(min(min(n.cover for n in needs), 9.99) * PCT) if needs else PCT
+            return round(min(min(n.cover for n in needs), MAX_COVERAGE) * PCT) if needs else PCT
         case "supply_deals":
             return sum(
                 1 for d in state.commodity_deals if d.company_id == company and d.status == "active"
