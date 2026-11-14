@@ -66,6 +66,8 @@ SYSTEMS: tuple[System, ...] = (
     System(20, "group", "Group", "finance"),  # tunable-exempt: stable id
     System(21, "world", "World", "world"),  # tunable-exempt: stable id
     System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
+    # 23 is M31's platforms (lane B)
+    System(24, "family", "Family", "people"),  # tunable-exempt: stable id (M36)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -218,6 +220,11 @@ def _automation(state: GameState, _ids: set[int], balance: Balance, _d: GameData
     return None
 
 
+def _family(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
+    """M36 (45.1): a family exists (never with Family set to none)."""
+    return "you have a family" if state.family is not None else None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -231,6 +238,7 @@ CHECKS: dict[str, Check] = {
     "group": _any(_by_stage(STAGE_GROUP, "stage 5"), _group),
     "world": _world,
     "automation": _any(_by_stage(STAGE_GROWTH, "stage 3"), _automation),
+    "family": _family,  # M36
 }
 
 
