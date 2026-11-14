@@ -131,6 +131,16 @@ Read on this branch (weekly run 43569674208, before the M27a merge) and on seeds
     | 41.8 T7 software company to 2025 | in T1's fingerprint | identical | identical | met |
     | 41.8 T8 2039 turn, world / none | 1.04× | 1.03× (427 / 415 ms, under load) | ≤ 1.3× | met |
     | 33.6 M17 T1-T5 | 0 months off; +7.3%; min 3.1 pts; 0.85; shocks 7-10, longest above 3.0 24 months | identical | | met |
+    | v3 I1 year 30 (known miss, M28) | +0.1 pts | +0.0 pts | ≥ −2.0 (bound) | known |
+    | v3 I2 / I3 | 1.04× / 0 wins | 1.03× / 0 wins | 0.90-1.40× / ≤ 4 | met |
+    | v3 S1 / S2 | +7.3% / 22.8% (10 of 10) | identical | ≥ +3% / ≥ 5% | met |
+    | v3 F1 / L1 / L2 | 10 of 10 / all / all | identical | ≥ 7 / every run / every category | met |
+    | v3 L3 longest index run outside [1/3, 3] | 31 months (lithium) | 22 months (polysilicon) | ≤ 36 | met |
+    | v3 L4 (printed) | 1 of 10 | 1 of 10 | printed | |
+    | V5.cats research_heavy (weekly-v5) | fintech 2030s 7/9: FAIL | identical: FAIL | | rule 3: the same reading on main (weekly 43605652584) and the branch (43606818446); decision above records it as seed variance (rule 4) |
+    | V6 extended (weekly-v6-integrator, 2039 turn) | 908 ms (908/816/942) | 1101 ms (1101/1025/1101) on the first run | < 1.0 s | rule 6: profiled in memory on both trees (same full_integrator game to December 2039, 149 staff): branch 2880 ms against main 3034 ms a turn under cProfile, 271 world facilities against 326, the pipeline's code idle after 2029; the CI save build was already 7% slower at turn 240, where the code is identical. Re-run of the job: see below |
+
+    Main's weekly: 43605652584 (42a8037). The branch's: 43606818446 (fd3cc75; later commits are docs and a test's import order).
 
 ## Follow-ups
 
