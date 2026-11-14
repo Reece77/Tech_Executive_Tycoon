@@ -20,6 +20,7 @@ from tst.api.routers import (
     exploration,
     fabs,
     facilities,
+    family,
     finance,
     founder,
     game,
@@ -38,6 +39,7 @@ from tst.api.routers import (
     mods,
     onboarding,
     org,
+    platforms,
     press,
     products,
     profile,
@@ -130,6 +132,8 @@ def create_app() -> FastAPI:
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
     app.include_router(living.router)  # M28
+    app.include_router(family.router)  # M36
+    app.include_router(platforms.router)  # M31
     app.include_router(events.settings_router)
     app.include_router(onboarding.settings_router)  # M29
     app.include_router(meta.router)

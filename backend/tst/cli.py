@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 
 import typer
 
@@ -72,6 +72,9 @@ from tst.sim.people.founder import FounderSpec
 from tst.sim.people.models import current_ability, growth_role
 from tst.sim.setup import DEFAULT_FOUNDER
 from tst.sim.state import GameState, company_cash
+
+if TYPE_CHECKING:
+    from tst.api.schemas.family import FamilyOut
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="Tech Startup Tycoon")
 
@@ -141,6 +144,11 @@ def new_game(
     mod: Annotated[
         str | None, typer.Option("--mod", help="A data-editor mod in saves/mods (M25; tst mods)")
     ] = None,
+    family: Annotated[str, typer.Option(help="Family (M36, 45.1): none|partner|children")] = "none",
+    children: Annotated[
+        str | None, typer.Option(help="With --family children: ages, comma-separated (e.g. 4,7)")
+    ] = None,
+    age: Annotated[int | None, typer.Option(help="The founder's age; default 28")] = None,
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background. A
     historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
@@ -173,8 +181,15 @@ def new_game(
             rivals,  # type: ignore[arg-type]
             eras,  # type: ignore[arg-type]
         )
-    founder = FounderSpec(background=founder_background, personality_preset=founder_preset)
+    founder = FounderSpec(background=founder_background, personality_preset=founder_preset, age=age)
     chosen = None if mission is None else tuple(k.strip() for k in mission.split(",") if k.strip())
+    from tst.sim.family.setup import FamilySpec
+
+    try:
+        ages = tuple(int(a) for a in (children or "").split(",") if a.strip())
+    except ValueError as exc:
+        raise _fail("--children takes ages, e.g. 4,7") from exc
+    family_spec = FamilySpec(family, ages)
     try:
         path = repository.create_save(
             name,
@@ -188,6 +203,7 @@ def new_game(
             data=data,
             save_dir=settings.resolved_save_dir(),
             mode=mode,
+            family=family_spec,
         )
     except SimError as exc:
         raise _fail(exc.message) from exc
@@ -3086,6 +3102,90 @@ def net_worth_cmd(save: SaveOpt) -> None:
         typer.echo(f"{label:<20} {format_money(cents_):>18}")
 
 
+# --- The family (M36, formulas.md 45) -------------------------------------------------------
+
+
+def _family(path: Path, data: LoadedData) -> FamilyOut:
+    from tst.api.family_views import family_out
+
+    with repository.open_session(path) as session:
+        state = repository.load_state(session)
+        balances = repository.ledger_balances(session)
+    return family_out(state, balances, data)
+
+
+@app.command("family")
+def family_cmd(
+    save: SaveOpt,
+    time: Annotated[int | None, typer.Option(help="Set family time, energy a month (0-20)")] = None,
+) -> None:
+    """Your family (45): members, closeness, education, readiness, the estate and the dynasty."""
+    from tst.sim.actions.family import SetFamilyTime
+
+    path, data, state = _game(save)
+    if time is not None:
+        state = _run(path, data, SetFamilyTime(_founder(state), time)).new_state
+        typer.echo(f"Family time {time}; {_energy(state, data)}")
+    f = _family(path, data)
+    if not f.exists:
+        typer.echo("No family (the game was started with Family set to none).")
+        return
+    typer.echo(
+        f"{f.head_name} (head, {f.head_mode.replace('_', ' ')}); family time {f.time_now}/"
+        f"{f.max_time}, energy {f.energy_cost} a month"
+    )
+    if f.partner is not None:
+        married = "married" if f.married else "partner"
+        typer.echo(f"  {f.partner.name:<24} {married:<8} age {f.partner.age:>2}  "
+                   f"relationship {f.relationship:.0f}")  # fmt: skip
+    for c in f.children:
+        ready = c.readiness.band.replace("_", " ") if c.readiness else ""
+        job = f"{c.role} at {c.company_name}" if c.company_name else "—"
+        edu = "/".join(x for x in (c.school, c.university, "mba" if c.mba else None) if x)
+        typer.echo(
+            f"  {c.person_id:>7} {c.name:<24} age {c.age:>2}  closeness {c.closeness or 0:>3.0f}"
+            f"  {edu or '—':<16} {job:<32} {ready}"
+        )
+    if f.heirs:
+        typer.echo("Heirs, readiest first: " + ", ".join(str(h) for h in f.heirs))
+    if f.estate is not None:
+        e = f.estate
+        typer.echo(
+            f"Estate {format_money(e.estate_cents)}; tax {format_money(e.tax_cents)} "
+            f"({e.rate:.0%} above {format_money(e.exemption_cents)}); shares to sell "
+            f"{e.shares_to_sell:,}; family holds {e.family_bp_now / 100:.1f}% "
+            f"-> {e.family_bp_after / 100:.1f}% (control {e.control_bp / 100:.0f}%)"
+        )
+    if f.adviser is not None:
+        typer.echo(f"Adviser: {f.adviser.name}, {f.adviser.age}")
+        for o in f.adviser.opinions[:5]:
+            typer.echo(f"  {o.date_label} {o.stance:<7} {o.title}: {o.text}")
+    if f.dynasty is not None:
+        typer.echo(f"Dynasty score {f.dynasty.total}")
+
+
+@app.command("succession")
+def succession_cmd(
+    save: SaveOpt,
+    heir: Annotated[
+        int | None, typer.Option(help="Hand over to this child (you play them)")
+    ] = None,
+    ceo: Annotated[
+        bool, typer.Option(help="Appoint a professional CEO and lead the family from the board")
+    ] = False,
+) -> None:
+    """Succession (45.5): --heir <id>, or --ceo for a professional CEO."""
+    from tst.sim.actions.family import NameSuccessor
+
+    path, data, state = _game(save)
+    if heir is None and not ceo:
+        raise typer.BadParameter("give --heir <id> or --ceo")
+    state = _run(path, data, NameSuccessor(_founder(state), heir, None, ceo)).new_state
+    founder = state.founder_of(state.player.id)
+    name = f"{founder.first_name} {founder.last_name}" if founder else "nobody"
+    typer.echo(f"The company is led by {name}; you play as {name}.")
+
+
 # --- The group (M16, formulas.md 31) ----------------------------------------------------------
 
 
@@ -4114,3 +4214,56 @@ def company_cmd(
 
 if __name__ == "__main__":
     app()
+
+
+@app.command("platforms")
+def platforms_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="One region key; default every region")] = None,
+) -> None:
+    """Platforms (M31, 44): users, developers, catalogue and fees by region; your device lines'
+    platforms and your apps' store fees and listings."""
+    from tst.api import platform_views
+
+    _, data, state = _game(save)
+    p = platform_views.platforms_out(state, data)
+    if not p.platforms:
+        typer.echo("No platforms yet.")
+        return
+    typer.echo(
+        f"{format_turn(state.turn)}: platforms {'computed' if p.started else 'from the record'};"
+        f" store fees {'posting' if p.fees_posting else 'from 2026'}"
+    )
+    regions = [region] if region else list(data.game_data.region_keys)
+    for key in regions:
+        typer.echo(f"{key}:")
+        for pl in p.platforms:
+            r = next((x for x in pl.regions if x.region == key), None)
+            if r is None or (r.users <= 0 and not pl.own):
+                continue
+            devs = (
+                f"{r.developer_share:.1%}"
+                if r.developer_share is not None
+                else f"{r.developer_range[0]:.0%}-{r.developer_range[1]:.0%}"
+            )
+            paths = "; ".join(f"{x.label} {x.rate:.0%}" for x in r.fees.regulated)
+            typer.echo(
+                f"  {pl.name} ({pl.store}, {pl.owner_label}): users {r.users:.1%}, developers"
+                f" {devs}, catalogue {r.catalogue_index:.0f}, fee {r.fees.standard:.0%}"
+                + (f", small {r.fees.small_rate:.0%}" if r.fees.small_rate is not None else "")
+                + (
+                    f", subscriptions {r.fees.subscription_rate:.0%}"
+                    if r.fees.subscription_rate
+                    else ""
+                )
+                + (f" [{paths}]" if paths else "")
+                + (f" rules: {', '.join(r.rules)}" if r.rules else "")
+            )
+    for d in p.device_lines:
+        typer.echo(f"  device line {d.name}: {d.platform_name}")
+    for a in p.apps:
+        listing = "; ".join(f"{x.platform_name} {x.region}: {x.status}" for x in a.listings)
+        typer.echo(
+            f"  app {a.name}: store fees {format_money(a.fees_total_cents)} a month"
+            + (f"; {listing}" if listing else "")
+        )

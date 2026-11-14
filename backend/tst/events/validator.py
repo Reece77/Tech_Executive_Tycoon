@@ -19,6 +19,7 @@ from tst.sim.events.data import (
     GROUP_STEPS,
     MINING_STEPS,
     MODIFIER_STATS,
+    PLATFORM_STEPS,
     PRESS_STEPS,
     PUBLIC_STEPS,
     REFINING_STEPS,
@@ -82,6 +83,8 @@ def allowed_effects(
             continue  # M19 (35.4): only a mining template's own answers
         if effect == "geopolitics_step" and "geopolitics_step" not in template_types:
             continue  # M22 (39.3): only a geopolitics template's own answers
+        if effect == "platform_step" and "platform_step" not in template_types:
+            continue  # M31 (44.5): only a removal template's own answers
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -171,6 +174,7 @@ def validate_event(
                 "refining_step",
                 "mining_step",
                 "geopolitics_step",
+                "platform_step",
             ):  # engine steps
                 stat = item.get("stat")
                 steps = {
@@ -182,6 +186,7 @@ def validate_event(
                     "refining_step": REFINING_STEPS,
                     "mining_step": MINING_STEPS,
                     "geopolitics_step": GEOPOLITICS_STEPS,
+                    "platform_step": PLATFORM_STEPS,
                 }[kind]
                 if stat not in steps:
                     dropped += 1

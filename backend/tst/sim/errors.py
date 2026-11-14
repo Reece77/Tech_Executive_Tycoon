@@ -75,6 +75,12 @@ class InvalidMissionError(SimError):
     code = "invalid_mission"
 
 
+class InvalidFamilyError(SimError):
+    """M36 (45.1): a Family setting the game cannot start with."""
+
+    code = "invalid_family"
+
+
 # --- Player actions (M1b, ADR-0014) ---------------------------------------------------------
 
 
@@ -355,3 +361,9 @@ class GeopoliticsRuleError(SimError):
     (M22, formulas.md 39)."""
 
     code = "geopolitics_rule"
+
+
+class PlatformRuleError(SimError):
+    """A platform action the rules do not allow (M31, formulas.md 44)."""
+
+    code = "platform_rule"

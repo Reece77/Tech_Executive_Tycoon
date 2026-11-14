@@ -26,6 +26,7 @@ from tst.db import saves as saves_db
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.errors import InvalidModeError
+from tst.sim.family.setup import FamilySpec
 from tst.sim.finance.options import pool_left_bp
 from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
@@ -236,6 +237,11 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         data=data,
         save_dir=settings.resolved_save_dir(),
         mode=_mode_spec(body, data),
+        family=(
+            FamilySpec(body.family.setting, tuple(body.family.child_ages))
+            if body.family is not None
+            else None
+        ),
     )
     return _save_out(saves_db.describe(path))
 

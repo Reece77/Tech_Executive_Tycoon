@@ -66,6 +66,8 @@ SYSTEMS: tuple[System, ...] = (
     System(20, "group", "Group", "finance"),  # tunable-exempt: stable id
     System(21, "world", "World", "world"),  # tunable-exempt: stable id
     System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
+    System(23, "platforms", "Platforms", "markets"),  # tunable-exempt: stable id (M31)
+    System(24, "family", "Family", "people"),  # tunable-exempt: stable id (M36)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -218,6 +220,23 @@ def _automation(state: GameState, _ids: set[int], balance: Balance, _d: GameData
     return None
 
 
+def _family(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
+    """M36 (45.1): a family exists (never with Family set to none)."""
+    return "you have a family" if state.family is not None else None
+
+
+def _platforms(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str | None:
+    """M31 (44): a device line (from development) or a live app sold through stores."""
+    for p in state.products:
+        if p.company_id not in ids or p.status == "retired":
+            continue
+        if p.category in ("devices", "os"):
+            return f"{p.name} runs on a platform"
+        if p.category in b.platforms.app_categories and p.status in ("live", "sunset"):
+            return f"{p.name} is sold through app stores"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -231,6 +250,8 @@ CHECKS: dict[str, Check] = {
     "group": _any(_by_stage(STAGE_GROUP, "stage 5"), _group),
     "world": _world,
     "automation": _any(_by_stage(STAGE_GROWTH, "stage 3"), _automation),
+    "family": _family,  # M36
+    "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
 }
 
 

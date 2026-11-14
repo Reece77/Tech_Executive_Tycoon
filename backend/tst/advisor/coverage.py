@@ -32,7 +32,64 @@ _RESEARCH = exempt("a research level or rate, explained by the Research screen's
 _GROUP = exempt("a company's public number on the Group screen, from its own statements")
 _RULE = exempt("a world rule's figure (a tariff, a share, an allocation) from its data file")
 
+_PLATFORM = exempt(
+    "a platform's public figure (users, a fee rate, a share) from the data or its month"
+)
 SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
+    # M36 (45.4, 45.6): the Family screen and the founder's Family tab
+    "family.ReadinessOut": {
+        "points": "heir_readiness",
+        "fit": "heir_readiness",
+        "years": "heir_readiness",
+        "seats": "heir_readiness",
+        "board": "heir_readiness",
+    },
+    "family.EstateOut": {
+        "tax_cents": "estate_tax",
+        "estate_cents": "estate_tax",
+        "taxable_cents": "estate_tax",
+        "shares_to_sell": "estate_tax",
+        "family_bp_after": "estate_tax",
+        "rate": _THRESHOLD,
+        "exemption_cents": _THRESHOLD,
+        "used_exemption_cents": "estate_tax",
+        "shares": _COUNT,
+        "share_price_cents": _PRICE,
+        "shares_cents": "estate_tax",
+        "cash_cents": "estate_tax",
+        "other_cents": "estate_tax",
+        "family_bp_now": "estate_tax",
+        "control_bp": _THRESHOLD,
+        "trust_shares": _COUNT,
+        "lifetime_gifts_cents": _INPUT,
+        "gift_tax_paid_cents": _TOTAL,
+        "estate_tax_paid_cents": _TOTAL,
+    },
+    # v4 (M31): the Platforms screen and its product sections
+    "platforms.PlatformRegionOut": {
+        "users": _PLATFORM,
+        "developer_share": _PLATFORM,
+        "catalogue_index": "catalogue_effect",
+        "goodwill": _PLATFORM,
+        "side_loading": _RULE,
+    },
+    "platforms.FeeScheduleOut": {
+        "standard": _RULE,
+        "small_rate": _RULE,
+        "small_threshold_cents": _THRESHOLD,
+        "subscription_rate": _RULE,
+    },
+    "platforms.RegulatedPathOut": {"share": _RULE, "rate": _RULE},
+    "platforms.PlatformSettingsOut": {"fee": _INPUT, "licence_cents": _INPUT},
+    "platforms.PlatformOut": {"app_count_thousands": _PLATFORM},
+    "platforms.DeviceLineOut": {
+        "previous_share": exempt(
+            "a switched line's devices still on its old platform, replaced at the market's pace"
+        )
+    },
+    "platforms.AppFeeOut": {"cents": "platform_fees"},
+    "platforms.AppProductOut": {"fees_total_cents": "platform_fees"},
+    "platforms.StandardOut": {"adoption": _PLATFORM},
     # Overview and the top bar
     "saves.OverviewOut": {
         "deals_due": _COUNT,

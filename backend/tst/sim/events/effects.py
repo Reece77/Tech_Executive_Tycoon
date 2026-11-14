@@ -13,6 +13,7 @@ from tst.sim.events.data import LOAN_EFFECTS
 from tst.sim.events.formulas import cash_cap, clamp_effect
 from tst.sim.events.models import EventChoice, GameEvent, QueuedEvent
 from tst.sim.events.modifiers import start as start_modifier
+from tst.sim.family.steps import FAMILY_STEPS
 from tst.sim.finance.debt import repay as repay_loan
 from tst.sim.ledger import (
     CASH,
@@ -359,11 +360,31 @@ def apply_choice(
             state, posted, logged = geopolitics_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "platform_step" and effect.stat:  # M31 (44.5): a removal's answer
+            from tst.sim.platforms.gatekeep import platform_step
+            from tst.sim.rng import RngFactory
+
+            rng = RngFactory(state.save_meta.master_seed)
+            state, posted, logged = platform_step(state, event, effect.stat, rng, balance, data)
+            entries += posted
+            logs += logged
         elif t == "mining_step" and effect.stat:  # M19 (35.4): a mine event's answer
             from tst.sim.mining.risk import mining_step
 
             state, posted, logged = mining_step(state, event, effect.stat, balance, data)
             entries += posted
+            logs += logged
+        elif t == "founder_step" and effect.stat in FAMILY_STEPS:  # M36 (45)
+            from tst.sim.family.answers import family_step
+
+            state, logged = family_step(
+                state,
+                event,
+                effect.stat,
+                None if balances is None else apply_entries(balances, entries),
+                balance,
+                data,
+            )
             logs += logged
         elif t == "founder_step" and effect.stat:  # M24 (32.1, 32.5)
             from tst.sim.founder.phase import founder_step

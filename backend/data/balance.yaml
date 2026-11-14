@@ -2139,3 +2139,231 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
     global_depth: [0.03, 0.06] # a global shock's fall in every region (A)
   global_shock_rate: 0.03 # chance a year of a global shock that hits every region (41.6; A)
   news_months: 36 # months of World news kept (A)
+
+# --- Family and succession (formulas.md section 45, M36 lane D) ----------------------------
+family: # 45.1-45.7: a partner and children, heirs, succession and the dynasty (Family none: none of it runs)
+  default_time: 10 # energy a month given to the family once one exists (45.2)
+  max_time: 20 # energy; the most family time a month (45.2)
+  calm: 6 # stress points a month family time removes at max_time: calm x time / max_time (45.2)
+  bond: 2 # relationship (and closeness) points a month at the extremes: bond x (time - pivot) / pivot (45.2)
+  bond_pivot: 8 # energy; family time that holds the relationship steady (45.2)
+  burnout_strain: 3 # relationship points lost each burnout month (45.2)
+  relationship_start: 70 # points 0-100 (45.2)
+  closeness_start: 70 # points 0-100, each child (45.2)
+  strain_below: 30 # relationship points; a critical strain event below this (45.2)
+  strain_cooldown: 12 # months between strain events (M36 decision)
+  strain_time: 15 # energy; "more time" keeps family time at least this ... (45.2)
+  strain_months: 6 # ... for this many months
+  counselling_cents: 2500000 # cents ($25k) of personal spending for counselling (M36 decision)
+  counselling_gain: 10 # relationship points (45.2)
+  carry_on_loss: 10 # relationship points lost carrying on (45.2)
+  divorce_below: 15 # relationship points ... (45.2)
+  divorce_months: 6 # ... for this many months brings divorce
+  divorce_share: 0.5 # share of the founder's shares (and personal cash and investments) the partner leaves with (45.2)
+  divorce_beloved: 10 # persona Beloved points lost (45.2)
+  inherit: 0.5 # weight of the parents' mean in a child's personality (45.1)
+  trait_noise_sd: 1.5 # attribute points; noise on an inherited trait (45.1)
+  parent_interest: 0.6 # chance each of a child's interests comes from a parent (M36 decision)
+  partner_rate: 0.15 # chance a year a single founder meets a partner (45.1)
+  partner_ages: [24, 45] # years; the founder's ages for meeting one (45.1)
+  partner_stress_below: 60 # stress points (45.1)
+  partner_age_sd: 3 # years; a partner's age around the founder's (M36 decision)
+  marriage_months: 12 # months after meeting until the marriage choice (M36 decision)
+  child_rate: 0.25 # chance a year of a child while the partner is under child_parent_age_max (45.1)
+  child_parent_age_max: 45 # years (45.1)
+  max_children: 4 # count (45.1)
+  start_child_ages: [0, 40] # years a child may be at the setup (M36 decision: a founder of up to 60 may have adult children)
+  child_pa: [80, 160] # potential ability, uniform; hidden (45.1, as 2.4's scale)
+  child_skill_birth: 1.0 # attribute points every skill starts at (M36 decision)
+  child_skill_year: 0.15 # attribute points a year before develop_from (M36 decision)
+  child_skill_sd: 0.5 # attribute points; noise at generation (M36 decision)
+  child_growth: 0.3 # x growth.rate for a child's development from develop_from (45.3); 0.55 before M36's tuning: a 22-year-old lands at junior-to-mid level (45.8 target 3 is carried, see the brief)
+  develop_from: 5 # years (45.3)
+  milestones: [5, 12, 18, 22] # years; minor events (45.1)
+  pa_hw_floor: 10 # CA points; a child's potential range never narrows below this half-width (45.3, CLAUDE.md 8)
+  mba_months: 24 # months an MBA's skills grow faster (45.3)
+  reveal_rate: 0.03 # a child's range half-width x (1 - this x family time / max_time) a month (45.3, 18.8's rule)
+  education: # 45.3: choices at 12, 18 and 22, paid from personal cash (9300) once; dossier docs/v5-research/estate-tax.md
+    school_age: 12 # years
+    university_age: 18 # years
+    mba_from: 22 # years
+    graduate_age: 22 # years; the university multiplier applies until this age
+    mult: { school_standard: 1.0, school_elite: 1.2, uni_none: 1.0, uni_standard: 1.15, uni_top: 1.3, mba: 1.3 } # e (45.3); mba on mba_skills only
+    cents: { elite_school: 33000000, uni_standard: 12400000, uni_top: 34800000, mba: 25300000 } # cents: elite school 6 years x $55k; university 4 years x $31k or $87k; a two-year MBA $253k (2025 dossier)
+    degree_mult: 1.5 # a degree's skills grow x this more at university (M36 decision)
+    degree_skills:
+      engineering: [software_engineering, infrastructure, hardware_design, chip_design, security]
+      business: [sales, marketing, finance, operations, strategy]
+      design: [design, product, communication]
+      science: [ml_research, data, geology, mining_engineering]
+      medicine: [data, judgment_of_talent, communication]
+    mba_skills: [leadership, strategy, finance, operations, negotiation] # the "management skills" (45.3)
+    reveal: 0.3 # share of a child's range half-width an education choice's reports remove (M36 decision)
+  join_age: 22 # years (45.4)
+  join_closeness: 40 # closeness points; below this a child turns an offer down (45.4)
+  own_way_rate: 0.3 # chance a turned-down offer sends the child to a rival or their own startup (45.4)
+  mentor_energy: 3 # energy a month per heir mentored (45.4)
+  mentor_growth: 0.3 # extra growth share on mentor_skills (45.4)
+  mentor_closeness: 1 # closeness points a month (45.4)
+  mentor_skills: [leadership, mentoring, strategy, communication, judgment_of_talent] # 45.4's management and leadership skills
+  ready: # 45.4: readiness points = displayed CEO-seat fit (1-20) + years + seats + board
+    per_year: 0.5 # points a year in the group
+    years_cap: 8 # years that count
+    per_seat: 1.0 # points per executive seat held
+    board_divisor: 10 # (board confidence - 50) / this
+    bands: [10, 14, 17] # points: developing, ready, strong
+  nepotism_morale: -2 # morale in the unit when a family member's displayed fit is below the median passed over (45.4)
+  merit_morale: 1 # morale when above (45.4)
+  step_back_from: 70 # years; health events from this age (45.5)
+  step_back_rate: 0.05 # chance a year x (age - 69) (45.5)
+  step_back_delays: 2 # delays allowed; the next is final (45.5)
+  heir_min_age: 25 # years (45.5)
+  heir_stress: 20 # stress points the heir starts with (45.5)
+  heir_persona_start: 20 # trait points each of the heir's traits starts at (45.5)
+  heir_persona_share: 0.25 # x the parent's traits added (45.5)
+  adviser_retire_age: 80 # years (45.5)
+  adviser_oppose: 5 # board confidence points each voting director loses when the adviser's objection is overruled (45.5)
+  adviser_memory: 24 # opinions kept
+  control_bp: 2500 # bp of fully diluted shares the family must hold to keep control (45.6-45.8; M36 decision)
+  trust_setup_cents: 50000000 # cents ($500k) of legal fees to set up a family trust (45.6)
+  trust_energy: 3 # energy to set up a trust (M36 decision)
+  gift_energy: 1 # energy to gift shares (M36 decision)
+  dynasty_points: 100 # 45.7: points per decade of family-held value
+  dynasty_unit_dollars: 1000000000 # dollars ($1B), 45.7's unit
+  control_loss_points: 50 # points off the dynasty score per loss of family control (45.7)
+  history: 40 # family events kept for History
+
+estate_tax: # 45.6: by the founder's home region, from docs/v5-research/estate-tax.md (rate on the estate above the exemption; gift_tax: lifetime gifts share the exemption)
+  north_america: # US federal estate and gift tax (unified exemption)
+    rate: 0.40
+    exemption_cents: 1500000000 # $15M from 2026 (OBBBA)
+    gift_tax: true
+    history:
+      - { year: 2010, rate: 0.35, exemption_cents: 500000000 } # repeal year; the elective $5M at 35%
+      - { year: 2012, rate: 0.35, exemption_cents: 512000000 }
+      - { year: 2013, rate: 0.40, exemption_cents: 525000000 }
+      - { year: 2014, rate: 0.40, exemption_cents: 534000000 }
+      - { year: 2015, rate: 0.40, exemption_cents: 543000000 }
+      - { year: 2016, rate: 0.40, exemption_cents: 545000000 }
+      - { year: 2017, rate: 0.40, exemption_cents: 549000000 }
+      - { year: 2018, rate: 0.40, exemption_cents: 1118000000 } # TCJA doubled it
+      - { year: 2019, rate: 0.40, exemption_cents: 1140000000 }
+      - { year: 2020, rate: 0.40, exemption_cents: 1158000000 }
+      - { year: 2021, rate: 0.40, exemption_cents: 1170000000 }
+      - { year: 2022, rate: 0.40, exemption_cents: 1206000000 }
+      - { year: 2023, rate: 0.40, exemption_cents: 1292000000 }
+      - { year: 2024, rate: 0.40, exemption_cents: 1361000000 }
+      - { year: 2025, rate: 0.40, exemption_cents: 1399000000 }
+      - { year: 2026, rate: 0.40, exemption_cents: 1500000000 }
+  europe: # UK inheritance tax, the GBP 325k nil-rate band (USD at the year's rate)
+    rate: 0.40
+    exemption_cents: 41600000
+    gift_tax: true
+    history:
+      - { year: 2010, rate: 0.40, exemption_cents: 50375000 }
+      - { year: 2025, rate: 0.40, exemption_cents: 41600000 }
+  east_asia: # Japan, a spouse and two children (base plus per-heir deduction)
+    rate: 0.55
+    exemption_cents: 32000000
+    gift_tax: true
+    history:
+      - { year: 2010, rate: 0.50, exemption_cents: 90900000 }
+      - { year: 2015, rate: 0.55, exemption_cents: 32000000 } # the 2015 cut and 55% top rate
+  south_southeast_asia: # India: no estate duty since 1985
+    rate: 0.0
+    exemption_cents: 0
+    gift_tax: false
+    history:
+      - { year: 2010, rate: 0.0, exemption_cents: 0 }
+  latin_america: # Brazil's ITCMD at its 8% cap
+    rate: 0.08
+    exemption_cents: 0
+    gift_tax: true
+    history:
+      - { year: 2010, rate: 0.08, exemption_cents: 0 }
+  africa: # South Africa's estate duty (20% to 2018, 25% above R30M after; one rate here)
+    rate: 0.25
+    exemption_cents: 19100000
+    gift_tax: true
+    history:
+      - { year: 2010, rate: 0.20, exemption_cents: 47900000 }
+      - { year: 2018, rate: 0.25, exemption_cents: 19100000 }
+  oceania: # Australia: no inheritance tax since 1979
+    rate: 0.0
+    exemption_cents: 0
+    gift_tax: false
+    history:
+      - { year: 2010, rate: 0.0, exemption_cents: 0 }
+platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rules follow platforms.yaml to 2025; nothing here moves anything before `start` (44.9 target 1). A = an assumption for gameplay
+  start: "2026-01" # the first month users, developers and catalogues are computed and act on demand (44.1-44.3)
+  fees_from: "2010-01" # the first month platform fees post (44.4; Reece 2026-11-14: from 2010, the history calibrated). To 2025 a seller's store revenue is grossed up by its exact fee (net revenue and cash main's to the cent); from 2026 the reference price carries the category's 2010-2025 average drag
+  licence_factor: [0.5, 2.0] # an own OS's pull on the rest of the market's OEMs: (Android's licence + 1) / (its + 1), within this (A)
+  android_licence_cents: 1000 # cents a device unit on a licensed Android (Google's services; EU reports of up to $40 from 2018 not verified; A), from the start
+  reach_exp: 0.5 # alpha: attractiveness ~ users ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a small platform still draws developers)
+  fee_exp: 3.0 # beta: ... x (1 - fee) ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a lasting fee advantage tips developers)
+  dev_inertia: 0.97 # a month's weight on last month's developer share (about 3 years' half-life, 44.2)
+  dev_noise_sd: 0.03 # sd of a month's attractiveness noise from the start (stream platforms; A)
+  multihome_share: 0.35 # the largest developers' share of attention, on every platform with enough users (44.2)
+  multihome_min_users: 0.05 # ... at least this share of a region's users (44.2)
+  catalogue_decay: 0.01 # the catalogue loses this share a month (44.2)
+  catalogue_points: 25 # feature points x (C / C_leader - 1) on a device (44.3)
+  catalogue_floor: 25 # ... never below -this (44.3)
+  stay: 0.85 # a replacing customer stays on the platform at catalogue parity (44.3)
+  stay_drop: 0.10 # ... less this per stay_step index points behind the leader (44.3)
+  stay_step: 25 # catalogue index points
+  rest_tilt: 1.0 # the rest of the market's switchers choose by users x (C / C_leader) ^ this (M31 decision; A)
+  dev_churn_cut: 0.30 # a developer platform's churn x (1 - this x catalogue index / 100) (44.3)
+  developer_growth: 0.03 # developers' growth a year after platforms.yaml's last point (A, Evans Data's 2019-2024 pace)
+  tools: [0.5, 1.5] # T_p's range (44.2)
+  tools_default: 1.0 # a platform's T_p without dev_tools work
+  goodwill: [0.5, 1.2] # G_p's range (44.5)
+  goodwill_fee: 1.0 # goodwill's target = 1 - this x (standard fee - 0.30), within the range (A)
+  goodwill_speed: 0.05 # share of the gap to the target closed a month (A)
+  goodwill_self_pref: { "off": 0.0, mild: 0.05, strong: 0.15 } # goodwill target cut by self-preferencing (44.5; A)
+  self_pref_share: { "off": 0.0, mild: 0.10, strong: 0.20 } # the owner's own apps' share boost in their category on its platform (44.5)
+  alternative_share: 0.2 # share of a regulated country's app sales that take the alternative path (A)
+  steer_share: 0.3 # share of a steering seller's sales paid outside the store (A)
+  os_build_features: 45 # feature score an own OS needs to launch (the long build, 44.1; A)
+  own_fee_range: [0.0, 0.5] # what an owner may set its store's standard fee to
+  energy: { set_device_platform: 5, set_platform_rules: 3, create_developer_platform: 5, open_source: 5, set_steering: 1, comply_listing: 2, adopt_standard: 3 } # founder energy for each platform action (6, 44)
+  switch_energy_months: 3 # a device line switching platforms loses this many months of feature gain (40.2's one-off; A)
+  app_categories: # 44.4: who pays: share of revenue paid through a store, and its subscription mix (A unless marked)
+    consumer_apps: { paid_share: 0.4, subscription_share: 0.5, renewal_share: 0.6, segments: [consumer] } # 44.4: in-app purchases and subscriptions 0.4
+    fintech: { paid_share: 0.1, subscription_share: 0.5, renewal_share: 0.6, segments: [consumer] } # 44.4: its consumer segment
+    ai_models: { paid_share: 0.15, subscription_share: 0.9, renewal_share: 0.5, segments: [consumer, smb] }
+    b2b_saas: { paid_share: 0.05, subscription_share: 1.0, renewal_share: 0.7, segments: [smb] }
+  review: # 44.5: gatekeepers (A throughout; the hidden draws stay engine-side)
+    base: { lenient: 0.002, standard: 0.005, strict: 0.012 } # chance of an action on a product a month
+    first_party: 4.0 # x when it competes with the owner's own apps in that category
+    own_store: 3.0 # x when the seller runs a competing store
+    steering: 2.5 # x when the seller steers users to pay outside
+    weights: { rejected_update: 0.5, fee_dispute: 0.3, removal: 0.2 }
+    appeal_months: [1, 3]
+    appeal_odds: [0.3, 0.6] # the range the player sees; the chance is drawn inside it
+    regulator_odds: 0.5 # going to regulators in a region with rules
+    removed_loss: 0.15 # share of a removed product's customers on that platform lost a month; with the lost reach on new customers, 44.9 target 4: 30-50% in 3 months (41% measured)
+    recovery_months: 4 # months for a relisted product to win them back (target 4: 85%+ in 6)
+    player_removes: { lenient: 0, standard: 1, strict: 3 } # rivals' apps the player's review removes a year in a category
+    player_goodwill: { lenient: 0.0, standard: 0.0, strict: 0.02 } # ... and the goodwill target it costs
+  open_source: # 44.6
+    adoption: 3.0 # customers x this over `months`, toward the addressable market
+    months: 24
+    paid_share: { dev_tools: 0.05, ai_models: 0.03, cloud_hosting: 0.08, os: 0.0, consumer_apps: 0.03, b2b_saas: 0.06, cybersecurity: 0.05, fintech: 0.04 }
+    default_paid_share: 0.05 # a category not listed above (A)
+    feature_mult: 1.5 # the community: x the product's feature gain a month
+    tools_gain: 0.2 # an open OS or developer platform's T_p
+    goodwill_gain: 0.1
+    close_goodwill_loss: 0.4
+  standards: # 44.7
+    rate: 0.5 # seeded contests a December after 2025, on average (A)
+    tip_share: 0.6
+    penalty: 5 # feature points
+    inertia: 0.9 # adoption's weight on last month (A)
+    adopt_months: 2 # development months to adopt the winner (A)
+    categories: [devices, ai_models, cloud_hosting]
+  rivals: # 44.8 (A)
+    fee_step: 0.05
+    respond_below: 0.8 # a rival owner cuts its fee when its developer share < this x its user share
+    raise_above: 1.2 # ... and raises it above this
+    store_chance: 0.25 # a rival store in a region that allows alternative stores, a year (at most one)
+    licence_switch: 0.10 # rest-of-market OEMs re-choosing their licence each December

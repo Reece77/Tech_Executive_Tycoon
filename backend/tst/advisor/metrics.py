@@ -70,6 +70,9 @@ METRICS: dict[str, MetricDef] = {
             "project",
             "The latest study's NPV, mid of its range",
         ),
+        # M36 (45.4, 45.6): the family; readiness's entity is the child's person id
+        _m("heir_readiness", "Readiness", "points", "person", "An heir's readiness points"),
+        _m("estate_tax", "Estate tax", "cents", "company", "What the estate would owe now"),
         _m("mine_cost", "Mine cost a tonne", "cents", "mine", "All-in sustaining cost a tonne"),
         _m(
             "fab_die_cost", "Cost per good die", "cents", "fab", "A start's cost over its good dies"
@@ -80,6 +83,17 @@ METRICS: dict[str, MetricDef] = {
             "cents",
             "refinery",
             "Full cost a unit of output",
+        ),
+        # v4 (M31): an app's platform fees and a device line's catalogue effect
+        _m(
+            "platform_fees", "Platform fees", "cents", "product", "Store fees on the app this month"
+        ),
+        _m(
+            "catalogue_effect",
+            "Catalogue effect",
+            "points",
+            "product",
+            "Feature points from the platform's catalogue",
         ),
     )
 }

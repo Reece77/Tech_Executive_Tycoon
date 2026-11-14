@@ -27,6 +27,7 @@ from tst.db.automation_io import load_automation, sync_automation
 from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
+from tst.db.family_io import family_people, live_family, load_family, sync_family
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.geopolitics_io import load_geopolitics, sync_geopolitics
@@ -172,6 +173,7 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.db.modes_io import load_modes, sync_modes
+from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.refining_io import load_refining, sync_refining
 from tst.db.world_io import load_world, sync_world
 from tst.sim.errors import SaveNotFoundError
@@ -425,6 +427,7 @@ def load_state(session: Session) -> GameState:
         | {s.person_id for s in seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
         | set(investing_people(session, has_table))  # M26 (37.2, 37.4)
+        | family_people(session, has_table)  # M36 (45)
     )
 
     people, reveals = load_people(session, live_ids)
@@ -574,6 +577,7 @@ def load_state(session: Session) -> GameState:
     state = load_mna(session, state, has_table)  # M14 (0034)
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
+    state = load_family(session, state, has_table)  # M36 (0052)
     state = load_group(session, state, has_table)  # M16 (0039)
     state = load_automation(session, state, has_table)  # M27a (0049)
     state = load_investing(session, state, has_table)  # M26 (0043)
@@ -583,6 +587,7 @@ def load_state(session: Session) -> GameState:
     state = load_fabs(session, state, has_table)  # M21 (0046)
     state = load_geopolitics(session, state, has_table)  # M22 (0047)
     state = load_world(session, state, has_table)  # M28 (0050)
+    state = load_platforms(session, state, has_table)  # M31 (0051)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
@@ -1840,6 +1845,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     old_people = {p.id: p for p in old.people}
     skill_updates: list[dict[str, Any]] = []
     asks: list[dict[str, Any]] = []  # a poached key person's new ask (M5, 15.6)
+    headers: list[dict[str, Any]] = []
     added = [p for p in new.people if p.id not in old_people]
     rows = [person_to_rows(p) for p in added]
     session.add_all(r[0] for r in rows)  # person rows first: children reference them
@@ -1854,6 +1860,19 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
             asks.append(
                 {"id": person.id, "salary_expectation_cents": person.salary_expectation_cents}
             )
+        if before is not None and (before.role, before.level, before.is_founder) != (
+            person.role,
+            person.level,
+            person.is_founder,
+        ):  # M36 (45.4-45.5): a family member joins the company or becomes the founder
+            headers.append(
+                {
+                    "id": person.id,
+                    "role": person.role,
+                    "level": person.level,
+                    "is_founder": person.is_founder,
+                }
+            )
         if before is not None and before is not person and before != person:
             old_skills = before.skills.as_dict()
             skill_updates += [
@@ -1864,6 +1883,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.flush()
     _update_rows(session, PersonSkillRow, skill_updates)
     _update_rows(session, PersonRow, asks)
+    _update_rows(session, PersonRow, headers)
 
     # Units before employments and plans, which reference them; plans before offers.
     for unit in _changed(old.units, new.units, lambda u: u.id):
@@ -1954,6 +1974,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.flush()
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
+    sync_family(session, old, new, has_table)  # M36 (0052)
     sync_group(session, old, new, has_table)  # M16 (0039)
     sync_automation(session, old, new, has_table)  # M27a (0049)
     sync_investing(session, old, new, has_table)  # M26 (0043)
@@ -1963,6 +1984,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_fabs(session, old, new, has_table)  # M21 (0046)
     sync_geopolitics(session, old, new, has_table)  # M22 (0047)
     sync_world(session, old, new, has_table)  # M28 (0050)
+    sync_platforms(session, old, new, has_table)  # M31 (0051)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)
@@ -2378,6 +2400,7 @@ def live_view(state: GameState) -> GameState:
         | {s.person_id for s in state.seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
         | live_investing(state)  # M26 (37.2, 37.4)
+        | live_family(state)  # M36 (45)
     )
     products = tuple(p for p in state.products if p.status != "retired")
     product_ids = {p.id for p in products}

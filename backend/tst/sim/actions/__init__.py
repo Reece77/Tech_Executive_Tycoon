@@ -47,6 +47,20 @@ from tst.sim.actions.facilities import (
     sign_contract,
     staff_facility,
 )
+from tst.sim.actions.family import (
+    FAMILY_ACTION_TYPES,
+    EducateChild,
+    FamilyAction,
+    FundTrust,
+    GiftShares,
+    GiveSharesToFoundation,
+    NameSuccessor,
+    OfferFamilyJob,
+    RetireAdviser,
+    SetFamilyTime,
+    SetMentoring,
+    apply_family,
+)
 from tst.sim.actions.finance import (
     AcceptBridge,
     AcceptTermSheet,
@@ -295,6 +309,18 @@ from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
 from tst.sim.org.models import Proposal
+from tst.sim.platforms.actions import ACTION_TYPES as PLATFORM_ACTION_TYPES
+from tst.sim.platforms.actions import (
+    AdoptStandard,
+    ComplyListing,
+    CreateDeveloperPlatform,
+    OpenSourceProduct,
+    PlatformAction,
+    SetDevicePlatform,
+    SetPlatformRules,
+    SetSteering,
+    apply_platforms,
+)
 from tst.sim.refining.actions import ACTION_TYPES as REFINING_ACTION_TYPES
 from tst.sim.refining.actions import (
     BuildRefinery,
@@ -340,6 +366,8 @@ type Action = (
     | RequestToolLicence  # M22
     | MiningAction  # M19
     | AutomationAction  # M27a
+    | FamilyAction  # M36
+    | PlatformAction  # M31
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -351,8 +379,10 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **CONTRACT_ACTION_TYPES,  # M23a
     **GEOPOLITICS_ACTION_TYPES,  # M22 (39.3)
     **AUTOMATION_ACTION_TYPES,  # M27a (40)
+    **FAMILY_ACTION_TYPES,  # M36 (45)
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
+    **PLATFORM_ACTION_TYPES,  # M31 (44)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -458,6 +488,7 @@ __all__ = [
     "Action",
     "ActionResult",
     "AddSegment",
+    "AdoptStandard",
     "AnswerGroupPitch",
     "AnswerPitch",
     "AnswerProposal",
@@ -477,6 +508,8 @@ __all__ = [
     "CloseOffice",
     "ClosePlan",
     "CloseSearch",
+    "ComplyListing",
+    "CreateDeveloperPlatform",
     "CreateFoundation",
     "CreatePlan",
     "CreateProduct",
@@ -506,6 +539,7 @@ __all__ = [
     "MoveUnit",
     "NameNominee",
     "OpenSearch",
+    "OpenSourceProduct",
     "OverrideCeo",
     "Promote",
     "RaiseSafe",
@@ -526,6 +560,7 @@ __all__ = [
     "SellStake",
     "SetAuthority",
     "SetCeoAuthority",
+    "SetDevicePlatform",
     "SetGreyRoute",
     "SetGuidance",
     "SetLeader",
@@ -534,12 +569,14 @@ __all__ = [
     "SetMarketing",
     "SetMarketingSplit",
     "SetOfficeMandate",
+    "SetPlatformRules",
     "SetPolicy",
     "SetPrice",
     "SetProductDivision",
     "SetProjectBudget",
     "SetRegionalPrice",
     "SetSharedServices",
+    "SetSteering",
     "SetTransferPrice",
     "SetUnitOffice",
     "SignCommodityContract",
@@ -736,7 +773,7 @@ def apply_action(
         case GiveRaise():
             out = give_raise(state, action, balance)
         case Promote():
-            out = promote(state, action, balance)
+            out = promote(state, action, balance, data)
         case CreatePlan():
             out = create_plan(state, action, balance, data)
         case UpdatePlan():
@@ -779,6 +816,18 @@ def apply_action(
             out = choose_event(state, action, balance, data, ledger_balances)
         case MakePromise():  # M14b (29.2)
             out = make_promise(state, action, balance, data)
+        case (
+            SetFamilyTime()
+            | EducateChild()
+            | SetMentoring()
+            | OfferFamilyJob()
+            | NameSuccessor()
+            | GiftShares()
+            | FundTrust()
+            | GiveSharesToFoundation()
+            | RetireAdviser()
+        ):  # M36 (45)
+            out = apply_family(state, action, rng, ledger_balances, balance, data)
         case SellFounderShares() | CreateFoundation() | GiveToFoundation() | SetLobbying():
             out = apply_founder(state, action, balance, data)  # M24 (32)
         case (
@@ -840,6 +889,16 @@ def apply_action(
             | AnswerRivalBid()
         ):  # M19 (35)
             out = apply_mining(state, action, rng, ledger_balances, balance, data)
+        case (
+            SetDevicePlatform()
+            | SetPlatformRules()
+            | CreateDeveloperPlatform()
+            | OpenSourceProduct()
+            | SetSteering()
+            | ComplyListing()
+            | AdoptStandard()
+        ):  # M31 (44)
+            out = apply_platforms(state, action, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

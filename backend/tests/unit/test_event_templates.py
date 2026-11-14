@@ -28,7 +28,8 @@ def test_the_library(loaded: LoadedData) -> None:
         "finance": 9,  # M16: the minority complaint (31.6)
         "board": 6,
         "rivals": 4,
-        "founder": 21,  # M7a: early days (early_days); M24: burnout, scandal, first grants;
+        "founder": 29,  # M7a: early days (early_days); M24: burnout, scandal, first grants;
+        # M36: eight family events (family.yaml)
         # M26: conflict, filing, investigation, finding
         "lender": 2,  # M10: queued by the debt phase (20.3)
         "public": 11,  # M13: IPO chain and public life (25); M14: takeover_offer
@@ -40,6 +41,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "mining": 5,  # M19: two accidents, a takeover, a price crash and a protest (35.4)
         # M22: a rule announced, sales hit (two), supply hit, a détente, a listing (39)
         "geopolitics": 6,
+        "platforms": 1,  # M31: a gatekeeper's removal (44.5)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

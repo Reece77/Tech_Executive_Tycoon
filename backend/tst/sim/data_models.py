@@ -39,6 +39,7 @@ from tst.sim.facilities.config import (
     FacilityBalance,
     SupplyBalance,
 )
+from tst.sim.family.config import EstateRegion, FamilyBalance
 from tst.sim.founder.config import (
     AngelBalance,
     FamilyOfficeBalance,
@@ -69,6 +70,7 @@ from tst.sim.modes.config import (
 )
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
+from tst.sim.platforms.config import PlatformsBalance, PlatformsFile
 from tst.sim.press.config import (
     FeudBalance,
     PressBalance,
@@ -1356,6 +1358,9 @@ class Balance(_Frozen):
     contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
     automation: AutomationBalance  # M27a (formulas.md 40)
     world: WorldBalance  # M28 (formulas.md 41): chain companies, groups, bids, cycles
+    family: FamilyBalance  # M36 (formulas.md 45.1-45.7)
+    estate_tax: dict[str, EstateRegion]  # M36 (formulas.md 45.6): by home region
+    platforms: PlatformsBalance  # M31 (formulas.md 44): platforms and ecosystems
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1645,7 +1650,8 @@ class CategoryDef(_Frozen):
     scope: float = Field(gt=0)
     brand_constant: float = Field(gt=0)
     dev_weights: dict[str, float]
-    markets: tuple[MarketDef, ...] = Field(min_length=1)
+    markets: tuple[MarketDef, ...] = ()
+    pseudo: bool = False  # M31 (44.1): `os`, built like a product but sold through devices
     launch_quality: float | None = Field(default=None, ge=0, le=SCORE_MAX)  # M8: compliance
     # M8 (18.6): annual growth from each listed year on, instead of `growth`
     growth_by_year: dict[int, float] | None = None
@@ -1676,6 +1682,8 @@ class CategoryDef(_Frozen):
 
     @model_validator(mode="after")
     def _check(self) -> CategoryDef:
+        if not self.markets and not self.pseudo:
+            raise ValueError(f"category {self.key!r}: needs at least one market")
         if self.growth_by_year is not None and any(g < 0 for g in self.growth_by_year.values()):
             raise ValueError(f"category {self.key!r}: growth_by_year must be >= 0")
         if any(w < 0 for w in self.dev_weights.values()) or not _sums_to_one(
@@ -2030,6 +2038,9 @@ class GameData(_Frozen):
     segments: tuple[SegmentDef, ...]
     categories: tuple[CategoryDef, ...]
     incumbents: tuple[IncumbentCompany, ...]
+    # M31 (44.1): pseudo-categories (`os`), kept out of `categories` so markets, rivals and
+    # every per-category loop never see them; `category()` still finds them.
+    pseudo_categories: tuple[CategoryDef, ...] = ()
     investors: tuple[InvestorFirm, ...] = ()  # M4
     lenders: tuple[Lender, ...] = ()  # M10 (20.3)
     macro_history: MacroHistory | None = None  # M10 (20.1); replaces M4's climate.yaml
@@ -2063,6 +2074,7 @@ class GameData(_Frozen):
     controls: ExportControlsFile | None = None
     tariffs: TariffsFile | None = None
     chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
+    platforms: PlatformsFile | None = None  # M31 (44); None = no platforms
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:
@@ -2346,6 +2358,9 @@ class GameData(_Frozen):
 
     def category(self, key: str) -> CategoryDef:
         for cat in self.categories:
+            if cat.key == key:
+                return cat
+        for cat in self.pseudo_categories:  # M31 (44.1)
             if cat.key == key:
                 return cat
         raise KeyError(key)

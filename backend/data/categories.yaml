@@ -299,3 +299,16 @@ categories:
     dev_weights: { manufacturing: 0.50, hardware_design: 0.30, operations: 0.20 }
     markets:
       - { segment: device_oems, addressable: 200, reference_price_cents: 13000000, hosting_cents: 6000000, units_per_customer: 10000 }
+
+  # M31 (formulas.md 44.1): an operating system and its store. A pseudo-category: no markets of
+  # its own; it is built like a product (dev weights of devices' software side, a long build to
+  # platforms.os_build_features) and, launched, runs the owner's chosen device lines.
+  - key: os
+    label: Operating system
+    pseudo: true
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 2.0
+    scope: 8
+    brand_constant: 150
+    dev_weights: { software_engineering: 0.50, infrastructure: 0.20, security: 0.15, product: 0.15 }

@@ -64,6 +64,7 @@ from tst.sim.markets_public.config import BanksFile
 from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
+from tst.sim.platforms.config import PlatformsFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -103,6 +104,7 @@ COUNTRIES_FILE = "countries.yaml"  # M22 (formulas.md 39.1)
 CONTROLS_FILE = "export_controls.yaml"  # M22 (39.2)
 TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
+PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -123,6 +125,7 @@ DATA_FILES = (
     INBOX_FILE,
     INCUMBENTS_FILE,
     INVESTORS_FILE,
+    PLATFORMS_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
@@ -311,6 +314,7 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                 f"{sorted(rv.weights)}"
             )
     _check_facilities(balance, data)
+    _check_family(balance, data)
     founder = balance.founder
     for bg in data.backgrounds:
         spent = sum(bg.default_allocation.values())
@@ -330,6 +334,20 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                     f"{BACKGROUNDS_FILE}: {bg.key!r} puts {skill} at {value}, "
                     f"above founder.skill_cap = {founder.skill_cap}"
                 )
+
+
+def _check_family(balance: Balance, data: GameData) -> None:
+    """M36 (45.3, 45.6): estate tax for every region; the education and mentoring skills."""
+    regions = set(data.region_keys)
+    if set(balance.estate_tax) != regions:
+        raise DataLoadError(f"{BALANCE_FILE}: estate_tax must cover exactly {sorted(regions)}")
+    fb = balance.family
+    named = {*fb.mentor_skills, *fb.education.mba_skills}
+    for skills in fb.education.degree_skills.values():
+        named.update(skills)
+    unknown = sorted(named - set(data.skill_keys))
+    if unknown:
+        raise DataLoadError(f"{BALANCE_FILE}: family skills {unknown} are not in skills.yaml")
 
 
 def _check_facilities(balance: Balance, data: GameData) -> None:
@@ -519,6 +537,50 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
 
 
 SPECIAL_DESTINATIONS: Final = ("all", "affiliates")  # export_controls.yaml `to` words (39.2)
+
+
+def platforms_problems(balance: Balance, data: GameData) -> list[str]:
+    """M31 (44): platforms.yaml names known regions, categories and owners; every region has a
+    share row for every year of the history; balance's app categories and segments exist."""
+    pf = data.platforms
+    if pf is None:
+        return []
+    problems: list[str] = []
+    regions = set(data.region_keys)
+    categories = {c.key: c for c in (*data.categories, *data.pseudo_categories)}
+    owners = {c.name for c in data.incumbents}
+    first, last = 2010, 2010 + pf.history_end_turn // 12
+    for p in pf.platforms:
+        if p.owner is not None and p.owner not in owners:
+            problems.append(f"platform {p.key}: owner {p.owner!r} is not in incumbents.yaml")
+        if p.regions and set(p.regions) - regions:
+            problems.append(f"platform {p.key}: unknown regions")
+        if set(p.first_party) - set(categories):
+            problems.append(f"platform {p.key}: first_party names unknown categories")
+    if set(pf.user_shares) != regions:
+        problems.append(f"user_shares must list exactly the regions {sorted(regions)}")
+    for region, years in pf.user_shares.items():
+        if missing := sorted(set(range(first, last + 1)) - set(years)):
+            problems.append(f"user_shares {region}: missing years {missing}")
+    for rule in pf.fee_rules:
+        if rule.region is not None and rule.region not in regions:
+            problems.append(f"fee rule {rule.platform} {rule.from_}: unknown region")
+    if set(pf.region_parts) - regions:
+        problems.append("region_parts names unknown regions")
+    for s in pf.standards:
+        if s.category not in categories:
+            problems.append(f"standard {s.key}: unknown category")
+    pb = balance.platforms
+    for key, app in pb.app_categories.items():
+        if key not in categories:
+            problems.append(f"platforms.app_categories: unknown category {key!r}")
+        elif set(app.segments) - set(categories[key].segment_keys):
+            problems.append(f"platforms.app_categories.{key}: unknown segments")
+    if "os" not in categories or not categories["os"].pseudo:
+        problems.append("categories.yaml needs the `os` pseudo-category")
+    if pb.start_turn != pf.history_end_turn + 1:
+        problems.append("platforms.start must be the month after platforms.yaml's history_end")
+    return problems
 
 
 def world_problems(balance: Balance, data: GameData) -> list[str]:
@@ -842,6 +904,7 @@ def load_all(
     controls = _validate(ExportControlsFile, parsed[CONTROLS_FILE], CONTROLS_FILE)
     tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)
     chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
+    platforms = _validate(PlatformsFile, parsed[PLATFORMS_FILE], PLATFORMS_FILE)
     game_data = _validate(
         GameData,
         {
@@ -863,7 +926,8 @@ def load_all(
             "startup_names": names.companies,
             "inbox_templates": inbox.templates,
             "segments": categories.segments,
-            "categories": categories.categories,
+            "categories": tuple(c for c in categories.categories if not c.pseudo),
+            "pseudo_categories": tuple(c for c in categories.categories if c.pseudo),
             "incumbents": incumbents.companies,
             "investors": investors.firms,
             "lenders": investors.lenders,
@@ -891,6 +955,7 @@ def load_all(
             "controls": controls,
             "tariffs": tariffs,
             "chain_companies": chain,
+            "platforms": platforms,
         },
         "seed data cross-check",
     )
@@ -908,6 +973,8 @@ def load_all(
         raise DataLoadError(f"{NODES_FILE}, {BALANCE_FILE} fab: " + "; ".join(problems))
     if problems := world_problems(balance, game_data):
         raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
+    if problems := platforms_problems(balance, game_data):
+        raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

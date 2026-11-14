@@ -834,6 +834,30 @@ class Builder:
     def refinery_cost(self, m: MetricDef, entity: str | None) -> Explanation:
         return v3.refinery_cost(self, m, entity)
 
+    # --- the family (M36, 45.4 and 45.6) ------------------------------------------------------
+
+    def heir_readiness(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import family
+
+        return family.heir_readiness(self, m, entity)
+
+    def estate_tax(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import family
+
+        return family.estate_tax(self, m, entity)
+
+    # --- v4 (M31): platforms -----------------------------------------------------------------
+
+    def platform_fees(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4
+
+        return v4.platform_fees(self, m, entity)
+
+    def catalogue_effect(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4
+
+        return v4.catalogue_effect(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(

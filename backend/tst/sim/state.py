@@ -18,6 +18,7 @@ from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
 from tst.sim.fabs.models import Fab
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
+from tst.sim.family.models import PARTNER, Family, FamilyMember
 from tst.sim.finance.macro import MacroMonth
 from tst.sim.finance.models import (
     BoardSeat,
@@ -99,6 +100,17 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.platforms.models import (
+    DeviceRun,
+    OpenSource,
+    Platform,
+    PlatformListing,
+    PlatformRegion,
+    ProductStandard,
+    Review,
+    RivalStore,
+    Standard,
+)
 from tst.sim.press.models import (
     Credibility,
     Departure,
@@ -411,7 +423,40 @@ class GameState:
     world_offtakes: tuple[WorldOfftake, ...] = ()
     world_bids: tuple[WorldBid, ...] = ()
     china_lags: tuple[ChinaLag, ...] = ()
+    # M36 (45): the player's family (None: Family set to none) and its members by person id
+    family: Family | None = None
+    family_members: tuple[FamilyMember, ...] = ()
+    # M31 (44): platforms by id, their regions by (platform, region), device lines' platforms
+    # by product, listings by (product, platform, region), gatekeepers' reviews (a year),
+    # open-sourced products by product, standards contests by id and products' formats. Empty
+    # until the first platforms month materialises the historical platforms.
+    platforms: tuple[Platform, ...] = ()
+    platform_regions: tuple[PlatformRegion, ...] = ()
+    device_runs: tuple[DeviceRun, ...] = ()
+    platform_listings: tuple[PlatformListing, ...] = ()
+    platform_reviews: tuple[Review, ...] = ()
+    open_sources: tuple[OpenSource, ...] = ()
+    standards: tuple[Standard, ...] = ()
+    product_standards: tuple[ProductStandard, ...] = ()
+    steering_products: tuple[int, ...] = ()  # the player's apps that link to pay outside (44.5)
+    rival_stores: tuple[RivalStore, ...] = ()  # alternative stores where the law allows (44.8)
     next_ids: NextIds = field(default_factory=NextIds)
+
+    def platform(self, platform_id: int) -> Platform | None:  # M31 (44.1)
+        return next((p for p in self.platforms if p.id == platform_id), None)
+
+    def platform_region(self, platform_id: int, region: str) -> PlatformRegion | None:
+        return next(
+            (
+                r
+                for r in self.platform_regions
+                if r.platform_id == platform_id and r.region == region
+            ),
+            None,
+        )
+
+    def device_run(self, product_id: int) -> DeviceRun | None:
+        return next((d for d in self.device_runs if d.product_id == product_id), None)
 
     def mine(self, mine_id: int) -> Mine | None:
         return next((m for m in self.mines if m.id == mine_id), None)
@@ -1655,3 +1700,35 @@ def with_feud(state: GameState, feud: Feud) -> GameState:
 
 def with_statement(state: GameState, statement: Statement) -> GameState:
     return replace(state, statements=_upsert(state.statements, statement, lambda s: s.id))
+
+
+# --- M36 (formulas.md 45): the family ---------------------------------------------------------
+
+
+def family_member(state: GameState, person_id: int) -> FamilyMember | None:
+    for m in state.family_members:
+        if m.person_id == person_id:
+            return m
+    return None
+
+
+def with_family_member(state: GameState, member: FamilyMember) -> GameState:
+    return replace(
+        state,
+        family_members=_upsert(state.family_members, member, attrgetter("person_id")),
+    )
+
+
+def with_family(state: GameState, family: Family | None) -> GameState:
+    return replace(state, family=family)
+
+
+def family_partner(state: GameState) -> FamilyMember | None:
+    """The current head's partner, if any (45.1)."""
+    family = state.family
+    if family is None:
+        return None
+    for m in state.family_members:
+        if m.relation == PARTNER and m.head_id == family.head_id:
+            return m
+    return None

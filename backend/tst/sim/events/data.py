@@ -12,6 +12,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.family.steps import FAMILY_STEPS
+
 type Severity = Literal["minor", "major", "critical"]
 SEVERITIES: Final = ("minor", "major", "critical")
 
@@ -32,6 +34,7 @@ CATEGORIES: Final = (
     "refining",  # M20: plant incidents (36.4), queued by the engine
     "mining",  # M19: mine accidents, takeovers and price crashes (35.4), queued by the engine
     "geopolitics",  # M22: export rules, détentes and listings (39), queued by the engine
+    "platforms",  # M31: a gatekeeper's removal (44.5), queued by the engine
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -87,6 +90,8 @@ REFINING_TRIGGER: Final = "refining"
 MINING_TRIGGER: Final = "mining"
 # M22 (39): rule announcements, détentes and entity listings, queued by the engine.
 GEOPOLITICS_TRIGGER: Final = "geopolitics"
+# M31 (44.5): a gatekeeper's removal of a product, queued by the engine by template id.
+PLATFORMS_TRIGGER: Final = "platforms"
 SCHEDULED: Final = (
     "storyline",
     "follow_up",
@@ -99,6 +104,7 @@ SCHEDULED: Final = (
     REFINING_TRIGGER,
     MINING_TRIGGER,
     GEOPOLITICS_TRIGGER,
+    PLATFORMS_TRIGGER,
 )
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
@@ -117,7 +123,8 @@ CRITICAL_TRIGGERS: Final = (
     MINING_TRIGGER,
     REFINING_TRIGGER,
     GEOPOLITICS_TRIGGER,
-)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3
+    PLATFORMS_TRIGGER,
+)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3; 44.5
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -159,6 +166,8 @@ EFFECT_TYPES: Final = (
     "mining_step",
     # M22 (39.3): an export-control event's answer (GEOPOLITICS_STEPS), applied by the engine.
     "geopolitics_step",
+    # M31 (44.5): a removal's answer (PLATFORM_STEPS), applied by the engine.
+    "platform_step",
 )
 PRESS_STEPS: Final = ("bold", "measured", "deflect")
 FOUNDER_STEPS: Final = (
@@ -172,6 +181,7 @@ FOUNDER_STEPS: Final = (
     "conceal",
     "accept_finding",  # M26 (37.3): an insider-trading finding
     "deny_finding",
+    *FAMILY_STEPS,  # M36 (45): data/events/family.yaml
 )
 GROUP_STEPS: Final = ("correct_price", "defend_price")
 EXPLORATION_STEPS: Final = ("consult", "benefit", "push_on")  # M18 (34.3)
@@ -186,6 +196,7 @@ GEOPOLITICS_STEPS: Final = (  # M22 (39.3): export rules, supply cuts and listin
     "accept",
     "appeal",
 )
+PLATFORM_STEPS: Final = ("comply", "appeal", "regulators")  # M31 (44.5): a removal
 MINING_STEPS: Final = (  # M19 (35.4): accidents, takeovers, price crashes
     "investigate",
     "compensate",
@@ -238,6 +249,7 @@ VALUELESS: Final = (
     "refining_step",
     "mining_step",
     "geopolitics_step",
+    "platform_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
@@ -269,6 +281,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "refining_step": ("company",),
     "mining_step": ("company",),
     "geopolitics_step": ("company",),
+    "platform_step": ("product",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -333,12 +346,13 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     "outage": frozenset({"segment"}),
     PUBLIC_TRIGGER: frozenset({"bank", "price", "demand", "ticker", "ceo"}),  # M13
     PRESS_TRIGGER: frozenset({"segment", "rival", "rival_ceo", "era", "result", "promise"}),
-    FOUNDER_TRIGGER: frozenset(),  # M24: company and founder only
+    FOUNDER_TRIGGER: frozenset({"person"}),  # M24: company and founder; M36: a family member
     GROUP_TRIGGER: frozenset(),  # M16: company and founder only
     EXPLORATION_TRIGGER: frozenset(),  # M18: company and founder only
     REFINING_TRIGGER: frozenset(),  # M20: company and founder only
     MINING_TRIGGER: frozenset(),  # M19: company and founder only
     GEOPOLITICS_TRIGGER: frozenset({"rule"}),  # M22: the rule (or détente) the event is about
+    PLATFORMS_TRIGGER: frozenset({"product", "platform", "owner", "regions"}),  # M31 (44.5)
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -364,6 +378,9 @@ PLACEHOLDERS: Final = (
     "promise",  # M14b: a broken promise, in words
     "persona",  # M24 (32.4): the founder's strongest public trait, in words
     "rule",  # M22 (39.2): the export rule or détente an event is about
+    "platform",  # M31 (44.5): the store that removed the product
+    "owner",  # M31: the store's owner
+    "regions",  # M31: the regions it was removed in
 )
 
 
@@ -416,6 +433,9 @@ class EffectSpec(_Frozen):
         elif self.type == "geopolitics_step":
             if self.stat not in GEOPOLITICS_STEPS or self.months is not None:
                 raise ValueError(f"a geopolitics_step needs a stat in {list(GEOPOLITICS_STEPS)}")
+        elif self.type == "platform_step":
+            if self.stat not in PLATFORM_STEPS or self.months is not None:
+                raise ValueError(f"a platform_step needs a stat in {list(PLATFORM_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -581,6 +601,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             REFINING_TRIGGER,
             MINING_TRIGGER,
             GEOPOLITICS_TRIGGER,
+            PLATFORMS_TRIGGER,
         ):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:

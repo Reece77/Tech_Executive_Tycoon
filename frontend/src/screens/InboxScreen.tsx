@@ -551,6 +551,16 @@ function MessageDetail({
             Open Fabs
           </Button>
         )}
+        {item.link_kind === 'platforms' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/competitors/platforms`}
+            h={44}
+            data-testid="view-platforms"
+          >
+            Open Platforms
+          </Button>
+        )}
         {item.link_kind === 'world' && (
           <Button
             component={Link}

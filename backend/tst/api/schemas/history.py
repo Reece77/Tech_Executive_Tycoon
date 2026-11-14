@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.dynasty import DynastyOut
 from tst.api.schemas.founder_parts import LegacyOut
 
 
@@ -154,6 +155,9 @@ class HallOfFameOut(BaseModel):
     best_product_mrr: ProductRecordOut | None
     best_product_quality: ProductRecordOut | None
     rivals_outlasted: list[RivalOutlastedOut]
+    dynasty: DynastyOut | None = Field(
+        default=None, description="The family tree's generations and dynasty score (M36, 45.7)"
+    )
     legacy: LegacyOut | None = Field(
         default=None, description="The founder's legacy score with its parts (M24, 32.6)"
     )
