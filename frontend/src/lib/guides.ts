@@ -159,7 +159,7 @@ export const GUIDES: Record<string, Guide> = {
     what: 'App stores and operating systems: who has the users and the developers, what each store charges, and the rules a store sets for your apps. Your own OS and store, when you build one, are run from here.',
     start: [
       'Your devices run Android unless you build an operating system: a thin catalogue costs them features.',
-      'Apps sold through stores pay their fees from 2026; a store can remove an app, and you answer it as a critical event.',
+      "Apps sold through stores pay the stores' fees; from 2026 a store can remove an app, and you answer it as a critical event.",
     ],
   },
 };

@@ -122,7 +122,7 @@ class StandardOut(BaseModel):
 
 class PlatformsOut(BaseModel):
     started: bool = Field(description="Computed shares and effects run from January 2026")
-    fees_posting: bool = Field(description="Platform fees post from platforms.fees_from")
+    fees_posting: bool = Field(description="Platform fees post from platforms.fees_from (2010)")
     platforms: list[PlatformOut]
     device_lines: list[DeviceLineOut]
     apps: list[AppProductOut]

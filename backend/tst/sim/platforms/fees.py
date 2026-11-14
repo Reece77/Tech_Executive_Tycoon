@@ -15,6 +15,7 @@ The player's device lines on Android pay `platforms.android_licence_cents` a uni
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
@@ -25,6 +26,7 @@ from tst.sim.ledger import (
     INTERCOMPANY_SALES,
     PLATFORM_FEE_REVENUE,
     PLATFORM_FEES,
+    REVENUE_SUBSCRIPTIONS,
     LedgerEntry,
     LedgerLine,
 )
@@ -127,9 +129,58 @@ def _steering(state: GameState) -> tuple[int, ...]:
     return state.steering_products
 
 
+def fee_drag(category: str, balance: Balance, data: GameData) -> float:
+    """The category's 2010-2025 average fee drag (44.4's calibration): paid_share x the users'
+    effective fee (a large seller's, every platform with users, the regions weighted by their
+    market sizes), averaged over the history's years. Data only: the same on every seed."""
+    key = (id(data), category)
+    if key in _DRAG:
+        return _DRAG[key]
+    pf = pdata.file(data)
+    app = balance.platforms.app_categories[category]
+    weights = pdata.region_weights(data)
+    platforms = {p.key: p for p in pdata.historical_platforms_from_file(data)}
+    first, last = pdata.FIRST_YEAR, pdata.year_of(pf.history_end_turn)
+    years = []
+    for year in range(first, last + 1):
+        turn = (year - pdata.FIRST_YEAR) * MONTHS_PER_YEAR + MONTHS_PER_YEAR // 2
+        drag = 0.0
+        for region, w in weights.items():
+            shares = pf.user_shares[region][year]
+            for key_, users in shares.items():
+                p = platforms.get(key_)
+                if p is None or users <= 0 or region not in p.regions or p.launched_turn > turn:
+                    continue
+                if p.ended_turn is not None and turn >= p.ended_turn:
+                    continue
+                sched = pdata.schedule(p, region, turn, balance, data)
+                fee = pdata.fee_for(sched, category, BIG_SELLER, False, balance)
+                drag += w * users * fee
+        years.append(app.paid_share * drag)
+    _DRAG[key] = sum(years) / len(years)
+    return _DRAG[key]
+
+
+_DRAG: dict[tuple[int, str], float] = {}
+BIG_SELLER: Final = 10**12  # tunable-exempt: a seller far over any small-business threshold
+
+
+def store_revenue_cents(
+    state: GameState, product: Product, balance: Balance, data: GameData
+) -> int:
+    home = home_of(state, balance, data)
+    return sum(app_revenue_cents(state, product, r, home, balance) for r in data.region_keys)
+
+
 def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[LedgerEntry]:
+    """Fees from `fees_from` (44.4). To 2025 the calibration is exact: each seller's store
+    revenue is grossed up by the month's fee and the fee booked against it (no cash moves), so
+    net revenue and cash are main's to the cent. From 2026 the reference price carries the
+    category's 2010-2025 average drag (gross store revenue x 1 / (1 - drag)) and the fee is
+    paid in cash. Owners in the game earn 4150 throughout (5900 / 4300 inside the group)."""
     if not pdata.enabled(data) or not state.platforms or state.turn < balance.platforms.fees_turn:
         return []
+    history = pdata.in_history(state.turn, data)
     due = fees_due(state, balance, data)
     group = {c.id for c in world.group(state)}
     books = {c.id for c in state.ledger_companies()}
@@ -143,11 +194,12 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
         if owner >= 0 and owner in books:
             earned[(owner, inter)] = earned.get((owner, inter), 0) + cents
     entries: list[LedgerEntry] = []
-    for (product_id, owner, inter), cents in sorted(paid.items()):
+    for (product_id, _owner, inter), cents in sorted(paid.items()):
         product = state.product(product_id)
         assert product is not None
         d = product.division_id
         label = "Platform fees (group store)" if inter else "Platform fees"
+        against = REVENUE_SUBSCRIPTIONS if history else CASH  # the exact calibration, to 2025
         entries.append(
             LedgerEntry(
                 turn=state.turn,
@@ -155,11 +207,31 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
                 memo=f"{label}: {product.name}",
                 lines=(
                     LedgerLine(INTERCOMPANY_PURCHASES if inter else PLATFORM_FEES, cents, d),
-                    LedgerLine(CASH, -cents, d),
+                    LedgerLine(against, -cents, d),
                 ),
             )
         )
-        del owner
+    if not history:  # 44.4's calibration from 2026: the reference price carries the drag
+        books_products = [
+            p
+            for p in state.products
+            if p.status in SELLING and p.company_id in books and app_category(p.category, balance)
+        ]
+        for product in books_products:
+            drag = fee_drag(product.category, balance, data)
+            uplift = round(store_revenue_cents(state, product, balance, data) * drag / (1 - drag))
+            if uplift > 0:
+                entries.append(
+                    LedgerEntry(
+                        turn=state.turn,
+                        company_id=product.company_id,
+                        memo=f"Store price calibration: {product.name}",
+                        lines=(
+                            LedgerLine(CASH, uplift, product.division_id),
+                            LedgerLine(REVENUE_SUBSCRIPTIONS, -uplift, product.division_id),
+                        ),
+                    )
+                )
     for (owner, inter), cents in sorted(earned.items()):
         entries.append(
             LedgerEntry.transfer(
@@ -179,7 +251,7 @@ def licence_entries(
 ) -> list[LedgerEntry]:
     """The player's group's device units sold on Android this month pay its licence (44.1)."""
     pb = balance.platforms
-    if not pdata.enabled(data) or state.turn < pb.fees_turn or pb.android_licence_cents <= 0:
+    if not pdata.enabled(data) or state.turn < pb.start_turn or pb.android_licence_cents <= 0:
         return []
     group = {c.id for c in world.group(state)}
     android = {p.id for p in state.platforms if p.key in pdata.ANDROID_FAMILY}
@@ -208,7 +280,7 @@ def own_licence_entries(
     state: GameState, units: Mapping[int, float], balance: Balance, data: GameData
 ) -> list[LedgerEntry]:
     """Rival OEMs' device lines on the player's licensed OS pay its licence a unit (44.1)."""
-    if not pdata.enabled(data) or state.turn < balance.platforms.fees_turn:
+    if not pdata.enabled(data) or state.turn < balance.platforms.start_turn:
         return []
     books = {c.id for c in state.ledger_companies()}
     entries = []

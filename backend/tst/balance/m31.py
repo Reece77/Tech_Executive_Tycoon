@@ -1,9 +1,10 @@
 """M31's balance targets (docs/formulas.md 44.9), printed by tools/m31_targets.py.
 
-1. History holds: fees post from `platforms.fees_from` (January 2026) and nothing else of M31
-   moves 2010-2025, so every app-category company's net revenue to 2025 equals main's: M28's
-   history fingerprint (every ledger entry of every company, hashed by year, seeds 1-10;
-   tests/balance/test_m28_history.py) is the guard.
+1. History holds: fees post from 2010 (`platforms.fees_from`), calibrated exactly to 2025: a
+   seller's store revenue is grossed up by its fee, so its net revenue and cash are main's.
+   M28's history fingerprint guards prices, wafers, capacities and events unchanged; its books
+   series is re-recorded (Reece, 2026-11-14), and tools/m31_history_diff.py shows the books
+   differ only by platform-fee entries, every company's 2010-2025 net revenue 0.00% from main.
 2. Tipping is hard (a platforms-only run, the in-game devices held as they are): a challenger
    OS licensed free to OEMs in January 2027 with 5% of every region's users (an OEM's launch:
    M31 decision) and fees 10 points under Android's reaches 15% of developers in its regions by
@@ -64,6 +65,7 @@ SOFT_MONTHS: Final = 24
 CASH_CENTS: Final = 5_000_000_000_000  # $50B: the player's survival is not what these read
 APP: Final = 990_001
 EVENT_MEMO: Final = "Event: "
+CALIBRATION_MEMO: Final = "Store price calibration"
 LINE: Final = 990_002
 CONTRACT_UNITS: Final = 10_000_000  # a month: never the bound
 
@@ -315,7 +317,9 @@ def software(seed: int) -> int:
             {
                 (e.turn, e.memo): tuple((x.account, x.amount) for x in e.lines)
                 for e in kept
-                if e.company_id == me and PLATFORM_FEES not in {x.account for x in e.lines}
+                if e.company_id == me
+                and PLATFORM_FEES not in {x.account for x in e.lines}
+                and not e.memo.startswith(CALIBRATION_MEMO)
             }
         )
     a, b = runs
@@ -365,7 +369,7 @@ def report(results: Sequence[SeedResult]) -> str:
     mild = sum(r.tip_mild >= TIP_DEVS for r in results)
     strong = sum(r.tip_strong >= TIP_DEVS for r in results)
     rows = [
-        Row("1", "history holds", "M28 fingerprint", "test_m28_history", True),
+        Row("1", "history holds", "books only; net 0.00%", "m31_history_diff", True),
         Row(
             "2",
             "tipping, 10 points",

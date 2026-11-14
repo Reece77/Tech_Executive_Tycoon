@@ -190,8 +190,16 @@ def allows_side_loading(data: GameData, platform: Platform, region: str, turn: i
 # --- Materialising (44.1) -----------------------------------------------------------------------
 
 
+def historical_platforms_from_file(data: GameData) -> tuple[Platform, ...]:
+    """The historical platforms with no owners resolved (the fee calibration's view)."""
+    return _historical(data, {})
+
+
 def historical_platforms(state: GameState, data: GameData) -> tuple[Platform, ...]:
-    owners = {c.name: c.id for c in state.companies}
+    return _historical(data, {c.name: c.id for c in state.companies})
+
+
+def _historical(data: GameData, owners: dict[str, int]) -> tuple[Platform, ...]:
     out = []
     for i, p in enumerate(file(data).platforms):
         out.append(

@@ -46050,7 +46050,7 @@
           "fees_posting": {
             "type": "boolean",
             "title": "Fees Posting",
-            "description": "Platform fees post from platforms.fees_from"
+            "description": "Platform fees post from platforms.fees_from (2010)"
           },
           "platforms": {
             "items": {

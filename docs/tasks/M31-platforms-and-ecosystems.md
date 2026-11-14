@@ -92,7 +92,47 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 
 ## Decisions made
 
-1. **Fees post from January 2026** (`platforms.fees_from: "2026-01"`). §44.4 posts fees in 2010–2025 with a reference-price calibration, but M28's §41.8 target 1 fingerprint hashes every ledger entry of every company to December 2025, so any history fee line fails that guard by construction (rules 1–4 cannot fix a hash). I put the choice to Reece; the question was declined, so I took the option that leaves every earlier guard unchanged (the acceptance criteria). Shares, fee schedules and rules still follow the data to 2025 as state, and every demand effect also starts in 2026. The §44.4 calibration has nothing to offset and is not applied. Setting `fees_from: "2010-01"` gives §44.4 as written; it then needs the calibration and a re-recorded M28 books fingerprint. **Reece to confirm.**
+1. **Fees post from 2010, as §44.4 is written** (Reece, 2026-11-14, answering my question: "A"; `platforms.fees_from: "2010-01"`).
+   - **The calibration.**
+     - To December 2025 it is exact, month by month: each seller's store revenue is grossed up by its fee, and the fee is booked against it (5150 debit, 4000 credit). No cash moves, so every seller's net revenue and cash, and hence every decision, are main's to the cent.
+     - From January 2026 the reference price carries each category's 2010–2025 average fee drag (`fees.fee_drag`: paid_share × the users' effective fee, regions weighted by market size, averaged over the years). Gross store revenue is × 1 / (1 − drag), booked as "Store price calibration" against cash, and fees are paid in cash.
+     - In-game owners (Apple, Microsoft) earn 4150 in cash throughout. Platform licences (Android's, an own OS's) start in 2026 with the platforms' other effects.
+   - **What changed, measured.** `tools/m31_history_diff.py` compares a 2010–2025 do-nothing game with fees from 2010 against the same game with fees from 2026, which is main's books to 2025. On seed 1:
+     - 0 entries were lost or changed;
+     - the 10,005 extra entries are all platform-fee entries;
+     - the largest change in any company's 2010–2025 net revenue is 0.0000%.
+
+     | Year | Extra entries | Gross-up (5150 = 4000 credit) | Owners' 4150 |
+     | --- | --- | --- | --- |
+     | 2010 | 477 | $26,676,940 | $11,169,405 |
+     | 2013 | 597 | $76,608,933 | $32,144,530 |
+     | 2016 | 768 | $198,421,781 | $63,120,348 |
+     | 2019 | 793 | $447,539,387 | $124,930,241 |
+     | 2022 | 564 | $976,461,612 | $296,121,800 |
+     | 2025 | 540 | $2,981,036,518 | $776,091,508 |
+
+   - **M28's §41.8 target 1 fingerprint** was recomputed on seeds 1–10. The only differences are the books series, all 16 years on every seed (160 of 160 differences). Prices, wafers, capacity and events are identical on all ten seeds, so every price, capacity total, user share and dated event to 2025 holds. The books series alone was re-recorded in `tests/fixtures/m28_history.json`: a 320-line diff, 160 hashes, nothing outside `books`. Seed 1's books hashes, before (main) and after (first 12 characters):
+
+     | Year | Before | After |
+     | --- | --- | --- |
+     | 2010 | `fc39a4470bb6` | `e33869719c65` |
+     | 2011 | `ca91515e35ac` | `445b145d9d1b` |
+     | 2012 | `4e4e0bb999d1` | `c609f88eba15` |
+     | 2013 | `84d012eec9db` | `682488a2f0d8` |
+     | 2014 | `cf72f62bd1aa` | `482771ee3a85` |
+     | 2015 | `67513329b595` | `0eedc6433c9a` |
+     | 2016 | `30667683e1c3` | `cf8586e19633` |
+     | 2017 | `aa56675e9841` | `f2cbf91bebb4` |
+     | 2018 | `d4619cf42a64` | `0148868c10cb` |
+     | 2019 | `8b11e0382c88` | `32a6662ae8e6` |
+     | 2020 | `ff8c86978dcc` | `58b5f154d912` |
+     | 2021 | `0537a5c25d23` | `2d74bba01dd3` |
+     | 2022 | `46209cc50426` | `2dc0cb6f8a45` |
+     | 2023 | `e6cd744c0c2e` | `ed6c8204a817` |
+     | 2024 | `21f78ac42121` | `baec65867eb3` |
+     | 2025 | `8dcb9790dd31` | `f786f6087e0d` |
+
+   - **History of this decision.** My first build posted fees from 2026, because a history fee line fails the fingerprint by construction. That was put to Reece, who chose A.
 2. **Shares are StatCounter's** yearly mobile OS usage share (web traffic), the dossier's measure, fetched as CSV for 17 regions and countries (2010–2025). Game regions come from StatCounter regions: North America, Europe, South America, Africa and Oceania as they are. East Asia blends China, Japan and South Korea, and South and Southeast Asia blends India and Indonesia, both by 2020 population (World Bank; fixed weights, A). China's Android goes to Android (China); feature phones, bada, consoles and the rest go to `other`. Each row is normalised to 1. HarmonyOS is not separated by StatCounter (it counts inside Android in China), so Counterpoint's sales shares were left out.
 3. **Dossier figures corrected or left out.** Corrected:
    - Google Play peaked at about 3.6M apps (March 2018), not 3.5M.
@@ -128,7 +168,7 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 
 | # | Target | Result | Band |
 | --- | --- | --- | --- |
-| 1 | History holds | M28's fingerprint equal on seed 1 (`make check`) and nightly | unchanged |
+| 1 | History holds | books differ only by fee entries; app companies' 2010–2025 net revenue 0.00% from main; prices, wafers, capacity and events identical on 10 seeds | within 1% |
 | 2 | Tipping, fees 10 points lower | 0/10 seeds reach 15% of developers by 2035 (8.9% each) | at most 3 |
 | 2 | Fees 20 points lower, tools 1.3 | 10/10 (16.6%) | at least 5 |
 | 3 | Own store pays (30% of users held, own OS) | median 9.5% of revenue in 2035 (7.6–11.9%); own OS 28% of users in 2032 | at least 5% |
@@ -138,7 +178,7 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 | 6 | Software company's books | 0 non-fee entries differ (only cash-scaled event amounts) | identical |
 | 7 | Turn time | `make check-timing` green on CI | M30's budget |
 
-    Target 1 is exact by construction (decision 1): nothing posts or is drawn before 2026. Target 3's script holds the line at 30% each month: without that, the new OS's empty catalogue (−25 feature points) sinks the phone to about 5% of users by 2032. That is the network effect at work, so the target tests the store's economics, not how to reach 30%. Target 4 needed a removed app to lose the platform's users' new purchases as well as its customers (the lost reach in `phase.effects`); `review.removed_loss` 0.30 → 0.15 then gives 41%.
+    Target 1 (decision 1): the books differ from main's only by platform-fee entries, and net revenue is unchanged (0.00%). Target 3's script holds the line at 30% each month: without that, the new OS's empty catalogue (−25 feature points) sinks the phone to about 5% of users by 2032. That is the network effect at work, so the target tests the store's economics, not how to reach 30%. Target 4 needed a removed app to lose the platform's users' new purchases as well as its customers (the lost reach in `phase.effects`); `review.removed_loss` 0.30 → 0.15 then gives 41%.
 
 12. **Earlier guards** (nightly 43615929851 on the branch, at 58c2cfa):
     - `make balance` and nightly shards 1–3 pass.
@@ -146,7 +186,6 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 
 ## Follow-ups
 
-- **Fees in history** (decision 1): if Reece wants §44.4 as written, set `fees_from: "2010-01"`, apply the reference-price calibration, and re-record M28's books fingerprint with a recorded reason. The other fingerprint series are unaffected.
 - **M34:**
   - regulated paths for Google Play (the EU DMA, Epic v. Google from October 2025) and Apple's 2025–2026 EU and Japan terms, as `platform_fee_rule` data once rates are sourced;
   - designations read platform users and developer shares;

@@ -14709,7 +14709,7 @@ export interface components {
             started: boolean;
             /**
              * Fees Posting
-             * @description Platform fees post from platforms.fees_from
+             * @description Platform fees post from platforms.fees_from (2010)
              */
             fees_posting: boolean;
             /** Platforms */

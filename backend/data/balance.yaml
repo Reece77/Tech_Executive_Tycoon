@@ -2126,7 +2126,7 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
 
 platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rules follow platforms.yaml to 2025; nothing here moves anything before `start` (44.9 target 1). A = an assumption for gameplay
   start: "2026-01" # the first month users, developers and catalogues are computed and act on demand (44.1-44.3)
-  fees_from: "2026-01" # the first month platform fees post (44.4). M31 decision: the start, so 2010-2025 books stay main's (M28's 41.8 target 1 fingerprint); "2010-01" books 44.4's history calibration instead
+  fees_from: "2010-01" # the first month platform fees post (44.4; Reece 2026-11-14: from 2010, the history calibrated). To 2025 a seller's store revenue is grossed up by its exact fee (net revenue and cash main's to the cent); from 2026 the reference price carries the category's 2010-2025 average drag
   licence_factor: [0.5, 2.0] # an own OS's pull on the rest of the market's OEMs: (Android's licence + 1) / (its + 1), within this (A)
   android_licence_cents: 1000 # cents a device unit on a licensed Android (Google's services; EU reports of up to $40 from 2018 not verified; A), from the start
   reach_exp: 0.5 # alpha: attractiveness ~ users ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a small platform still draws developers)

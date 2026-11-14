@@ -65,13 +65,26 @@ def test_an_app_pays_store_fees(loaded: LoadedData) -> None:
     # paid share 0.4 x an effective fee between 15% and 30% x every platform's users (about all)
     assert 0.4 * 0.15 * revenue * 0.9 <= total <= 0.4 * 0.30 * revenue
     entries = fees.fee_entries(state, loaded.balance, loaded.game_data)
-    mine = [e for e in entries if e.company_id == state.player.id]
+    mine = [e for e in entries if e.company_id == state.player.id and e.memo.startswith("Platform")]
     assert sum(e.lines[0].amount for e in mine) == total
+    # 44.4's calibration from 2026: the store price carries the 2010-2025 average drag
+    drag = fees.fee_drag("consumer_apps", loaded.balance, loaded.game_data)
+    uplift = [e for e in entries if e.company_id == state.player.id and "calibration" in e.memo]
+    assert uplift and uplift[0].lines[0].amount == round(revenue * drag / (1 - drag))
+    assert 0.05 < drag < 0.15  # paid share 0.4 x a fee between 15% and 30% over the users
 
 
-def test_fees_wait_for_fees_from(loaded: LoadedData) -> None:
+def test_history_fees_are_an_exact_cash_neutral_gross_up(loaded: LoadedData) -> None:
+    """To 2025 (fees from 2010, Reece 2026-11-14): a seller's store revenue is grossed up by
+    its fee and the fee booked against it, so no cash moves and net revenue is main's."""
     state = _with_app(loaded, turn=START - 1)
-    assert fees.fee_entries(state, loaded.balance, loaded.game_data) == []
+    entries = fees.fee_entries(state, loaded.balance, loaded.game_data)
+    mine = [e for e in entries if e.company_id == state.player.id]
+    assert mine
+    for e in mine:
+        assert {x.account for x in e.lines} == {"5150_platform_fees", "4000_revenue_subscriptions"}
+        assert sum(x.amount for x in e.lines) == 0
+    assert not [e for e in entries if "calibration" in e.memo]
 
 
 def test_a_removal_queues_a_critical_event_and_comply_relists(loaded: LoadedData) -> None:
