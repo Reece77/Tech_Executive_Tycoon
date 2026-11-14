@@ -834,6 +834,18 @@ class Builder:
     def refinery_cost(self, m: MetricDef, entity: str | None) -> Explanation:
         return v3.refinery_cost(self, m, entity)
 
+    # --- v4 (M31): platforms -----------------------------------------------------------------
+
+    def platform_fees(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4
+
+        return v4.platform_fees(self, m, entity)
+
+    def catalogue_effect(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4
+
+        return v4.catalogue_effect(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(

@@ -163,6 +163,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'finance',
   },
   {
+    path: 'competitors/platforms',
+    label: 'Platforms',
+    group: 'markets',
+    unlock: 'platforms',
+    side: true,
+    parent: 'competitors',
+  }, // M31
+  {
     path: 'competitors/world',
     label: 'World',
     group: 'world',
