@@ -158,3 +158,62 @@ def test_phase_effect_arches_to_its_depth() -> None:
     assert min(xs) == pytest.approx(-0.06)
     assert xs[0] > xs[5] < xs[-1]
     assert wf.phase_effect(-0.06, 11, 11) == 0.0
+
+
+def test_china_s_lost_customers_go_to_a_chinese_rival_from_2026(loaded: LoadedData) -> None:
+    """41.5: from 2026 a controlled seller's customers leaving a closed destination go to the
+    Chinese rival with most customers on a product of its category there; before, they leave."""
+    from tst.sim.geopolitics.sales import _to_chinese_rival
+
+    d = loaded.game_data
+    state, _ = world_state(loaded)
+    assert d.countries is not None
+    chinese = {c.id for c in state.rivals() if d.countries.rivals.get(c.name) == "china"}
+    found = None
+    for r in state.regional_segments:
+        p = state.product(r.product_id)
+        if p is not None and p.company_id in chinese and r.region == "east_asia":
+            seller = next(
+                (
+                    x
+                    for x in state.products
+                    if x.category == p.category and x.company_id not in chinese
+                ),
+                None,
+            )
+            if seller is not None:
+                found = (r, seller)
+                break
+    assert found is not None
+    target, seller = found
+    best = max(
+        (x.customers, -x.product_id)
+        for x in state.regional_segments
+        if x.region == "east_asia"
+        and x.segment == target.segment
+        and (q := state.product(x.product_id)) is not None
+        and q.company_id in chinese
+        and q.category == seller.category
+    )
+    pid = -best[1]
+    before = next(
+        x.customers
+        for x in state.regional_segments_of(pid, "east_asia")
+        if x.segment == target.segment
+    )
+    after_state = _to_chinese_rival(
+        state, seller.id, "east_asia", target.segment, "north_america", 100.0, d
+    )
+    after = next(
+        x.customers
+        for x in after_state.regional_segments_of(pid, "east_asia")
+        if x.segment == target.segment
+    )
+    assert after == pytest.approx(before + 100.0)
+    history = replace(state, chain_companies=())
+    assert (
+        _to_chinese_rival(
+            history, seller.id, "east_asia", target.segment, "north_america", 100.0, d
+        )
+        == history
+    )
