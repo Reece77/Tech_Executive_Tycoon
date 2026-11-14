@@ -1478,6 +1478,22 @@ A person who runs an area of a company (formulas.md 40.1). No row: the player ma
 | `since_turn` | INTEGER | no | When it was given (the take-back morale rule, 40.1). |
 | `answer_events` | BOOLEAN | no | "Let them answer routine events" (40.5). |
 | `allow_bold` | BOOLEAN | no | Press: "allow bold claims" (40.6). |
+| `budget_cents` | BIGINT | no | M27b (`0051_m27b`): the area's yearly budget (exploration, lobbying, screening; 40.13); 0 = off. Existing rows: 0. |
+| `guardrails` | JSON | no | M27b: the player's guardrails for the area, `{key: value}`; a key not set takes the area's default in `balance.yaml`. Existing rows: `{}`. |
+
+Area owners of a subsidiary of the player's group are rows with the subsidiary's `company_id` (M27b).
+
+### headcount_target
+
+A unit's headcount in one role, which the Hiring owner fills with plans (M27b sub-task 9; migration `0051_m27b`). No row: no target.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `company_id` | INTEGER FK company | no | Primary key, with `unit_id` and `role`: the player's company or a subsidiary. |
+| `unit_id` | INTEGER | no | The unit. |
+| `role` | VARCHAR(32) | no | A `roles.yaml` key. |
+| `target` | INTEGER | no | Headcount wanted in the role in the unit (1-1,000). |
+| `set_turn` | INTEGER | no | When the player set it. |
 
 ### area_decision
 

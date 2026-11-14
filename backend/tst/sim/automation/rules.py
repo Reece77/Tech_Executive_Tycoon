@@ -70,6 +70,7 @@ def hiring(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
         key=lambda t: (t[0], -1 if t[1] is None else t[1]),
     )
     if not leaving:
+        _targets(run, owner, data)
         return
     if not _right(run, owner):
         run.decisions.append(("mistake", "left a backfill for next month", 0, None))
@@ -91,6 +92,56 @@ def hiring(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
         if run.attempt(company, plan):
             run.decisions.append(
                 ("decision", f"opened a plan to replace {article} {label}", run.last_cost, None)
+            )
+    _targets(run, owner, data)
+
+
+def target_gaps(state: GameState, company: int) -> list[tuple[int, str, int]]:
+    """(unit, role, hires short) for each headcount target the player set (M27b sub-task 9):
+    the target less the unit's active staff in the role and the hires its open plans still
+    want."""
+    out = []
+    for t in state.headcount_targets:
+        if t.company_id != company:
+            continue
+        have = sum(
+            1
+            for e in state.staff(company)
+            if e.unit_id == t.unit_id and e.role == t.role and e.status == "active"
+        )
+        pending = sum(
+            max(0, p.target - p.hired)
+            for p in state.plans
+            if p.company_id == company
+            and p.status == "active"
+            and p.unit_id == t.unit_id
+            and p.role == t.role
+        )
+        gap = t.target - have - pending
+        if gap > 0:
+            out.append((t.unit_id, t.role, gap))
+    return out
+
+
+def _targets(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
+    """M27b sub-task 9: a hiring plan for each unit short of the headcount target the player
+    set in a role, with the owner as delegate. Mistake: waits a month."""
+    gaps = target_gaps(run.state, owner.company_id)
+    if not gaps:
+        return
+    if not _right(run, owner):
+        run.decisions.append(("mistake", "left a headcount target for next month", 0, None))
+        return
+    ratio = run.balance.delegates.max_ratio_bp
+    for unit, role, gap in gaps:
+        label = data.role(role).label.lower()
+        name = next((u.name for u in run.state.units if u.id == unit), f"unit {unit}")
+        text = f"open a plan for {gap} {label}{'s' if gap != 1 else ''} in {name}"
+        run.text = text
+        plan = CreatePlan(owner.person_id, owner.person_id, role, gap, PLAN_CHANNEL, ratio, 0, unit)
+        if run.attempt(owner.company_id, plan):
+            run.decisions.append(
+                ("decision", text.replace("open", "opened", 1), run.last_cost, None)
             )
 
 

@@ -4978,7 +4978,8 @@ export interface paths {
         /**
          * Get Automation
          * @description Every area: who runs it (or why nobody can yet), the people who could, limits,
-         *     priority, this month's decisions and proposals waiting (40.8).
+         *     priority, this month's decisions and proposals waiting (40.8); for the player's company or
+         *     (M27b) one of its group's subsidiaries.
          */
         get: operations["getAutomation"];
         put?: never;
@@ -5049,6 +5050,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/automation/headcount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Headcount Target
+         * @description M27b: a unit's headcount target in a role (0 removes it), which Hiring fills. Free.
+         */
+        post: operations["setHeadcountTarget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/automation/plan": {
         parameters: {
             query?: never;
@@ -5058,7 +5079,8 @@ export interface paths {
         };
         /**
          * Get Plan
-         * @description Automate everything, before anything changes: who would run each area (40.8).
+         * @description Automate everything, before anything changes: who would run each area (40.8); inside a
+         *     subsidiary its CEO first.
          */
         get: operations["getAutomatePlan"];
         put?: never;
@@ -5721,6 +5743,8 @@ export interface components {
         AreaIn: {
             /** Area */
             area: string;
+            /** Company Id */
+            company_id?: number | null;
         };
         /** AreaOut */
         AreaOut: {
@@ -5788,6 +5812,20 @@ export interface components {
              * @description The front-end path of the area's own screen
              */
             screen: string;
+            /**
+             * Budget Cents
+             * @description M27b: the area's yearly budget (0: off)
+             * @default 0
+             */
+            budget_cents?: number;
+            /**
+             * Budgeted
+             * @description M27b: the area spends only within a budget
+             * @default false
+             */
+            budgeted?: boolean;
+            /** Guardrails */
+            guardrails?: components["schemas"]["GuardrailOut"][];
         };
         /** AreaOwnerIn */
         AreaOwnerIn: {
@@ -5799,6 +5837,11 @@ export interface components {
             limit_cents?: number | null;
             /** Priority */
             priority?: number | null;
+            /**
+             * Company Id
+             * @description M27b: a subsidiary; null: your company
+             */
+            company_id?: number | null;
         };
         /** AreaSettingsIn */
         AreaSettingsIn: {
@@ -5812,6 +5855,12 @@ export interface components {
             answer_events?: boolean | null;
             /** Allow Bold */
             allow_bold?: boolean | null;
+            /** Company Id */
+            company_id?: number | null;
+            /** Budget Cents */
+            budget_cents?: number | null;
+            /** Guardrails */
+            guardrails?: components["schemas"]["GuardrailIn"][] | null;
         };
         /** AssignIn */
         AssignIn: {
@@ -5941,6 +5990,22 @@ export interface components {
             default_limit_cents: number;
             /** Stop For Approvals */
             stop_for_approvals: boolean;
+            /** Companies */
+            companies?: components["schemas"]["CompanyChoiceOut"][];
+            /**
+             * Subsidiary
+             * @default false
+             */
+            subsidiary?: boolean;
+            /** Headcount Targets */
+            headcount_targets?: components["schemas"]["HeadcountTargetOut"][];
+            /** Units */
+            units?: components["schemas"]["tst__api__schemas__automation__UnitChoiceOut"][];
+            /**
+             * Roles
+             * @description Roles a target may name
+             */
+            roles?: components["schemas"]["RoleChoiceOut"][];
         };
         /** BackStartupIn */
         BackStartupIn: {
@@ -7550,6 +7615,18 @@ export interface components {
             months: number;
             /** Plans */
             plans: components["schemas"]["CommodityPlanOut"][];
+        };
+        /**
+         * CompanyChoiceOut
+         * @description M27b: a company of the group the Automation screen can switch to.
+         */
+        CompanyChoiceOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Subsidiary */
+            subsidiary: boolean;
         };
         /** CompanyRefOut */
         CompanyRefOut: {
@@ -10474,6 +10551,25 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** GuardrailIn */
+        GuardrailIn: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: number;
+        };
+        /**
+         * GuardrailOut
+         * @description M27b (40.7): one of the area's guardrails, the player's value or the default.
+         */
+        GuardrailOut: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: number;
+            /** Default */
+            default: number;
+        };
         /** GuidanceIn */
         GuidanceIn: {
             /** Revenue Cents */
@@ -10625,6 +10721,40 @@ export interface components {
              * @description Units a month per manufacturing engineer
              */
             plant_staff_per: number;
+        };
+        /** HeadcountTargetIn */
+        HeadcountTargetIn: {
+            /** Unit Id */
+            unit_id: number;
+            /** Role */
+            role: string;
+            /** Target */
+            target: number;
+            /** Company Id */
+            company_id?: number | null;
+        };
+        /**
+         * HeadcountTargetOut
+         * @description M27b sub-task 9: a unit's headcount target in one role, which Hiring fills.
+         */
+        HeadcountTargetOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Unit Name */
+            unit_name: string;
+            /** Role */
+            role: string;
+            /** Role Label */
+            role_label: string;
+            /** Target */
+            target: number;
+            /** Staff */
+            staff: number;
+            /**
+             * Gap
+             * @description Hires still short after open plans
+             */
+            gap: number;
         };
         /** HireBanksIn */
         HireBanksIn: {
@@ -15430,6 +15560,16 @@ export interface components {
             pitches_missed: number;
             /** Recent */
             recent: string[];
+            /**
+             * Company Id
+             * @default 0
+             */
+            company_id?: number;
+            /**
+             * Kpis
+             * @description M27b: their areas' KPIs at the latest month
+             */
+            kpis?: string[];
         };
         /** RefineriesActionOut */
         RefineriesActionOut: {
@@ -15952,7 +16092,7 @@ export interface components {
              * Units
              * @description Units free to start a project
              */
-            units: components["schemas"]["UnitChoiceOut"][];
+            units: components["schemas"]["tst__api__schemas__research__UnitChoiceOut"][];
             /** Rivals */
             rivals: components["schemas"]["DomainRivalsOut"][];
             /** Licenses */
@@ -16278,6 +16418,13 @@ export interface components {
             startups_failed: number;
             /** Rivals */
             rivals: components["schemas"]["RivalRowOut"][];
+        };
+        /** RoleChoiceOut */
+        RoleChoiceOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
         };
         /** RoleOut */
         RoleOut: {
@@ -18303,18 +18450,6 @@ export interface components {
             };
             onboarding?: components["schemas"]["Onboarding"];
         };
-        /** UnitChoiceOut */
-        UnitChoiceOut: {
-            /** Unit Id */
-            unit_id: number;
-            /** Name */
-            name: string;
-            /**
-             * Researchers
-             * @description Members in builder roles who would research
-             */
-            researchers: number;
-        };
         /** UnitOfficeIn */
         UnitOfficeIn: {
             /**
@@ -18666,6 +18801,13 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /** UnitChoiceOut */
+        tst__api__schemas__automation__UnitChoiceOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Name */
+            name: string;
+        };
         /**
          * EventLinkOut
          * @description A screen the event is about (M23c): look before answering.
@@ -18823,6 +18965,18 @@ export interface components {
              * @description The HQ's region, whose markets are v1's (19.5)
              */
             home: boolean;
+        };
+        /** UnitChoiceOut */
+        tst__api__schemas__research__UnitChoiceOut: {
+            /** Unit Id */
+            unit_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Researchers
+             * @description Members in builder roles who would research
+             */
+            researchers: number;
         };
         /** NamedOut */
         tst__api__schemas__world__NamedOut: {
@@ -35000,7 +35154,10 @@ export interface operations {
     };
     getAutomation: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description M27b: a subsidiary */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;
@@ -35242,9 +35399,74 @@ export interface operations {
             };
         };
     };
-    getAutomatePlan: {
+    setHeadcountTarget: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HeadcountTargetIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getAutomatePlan: {
+        parameters: {
+            query?: {
+                /** @description M27b: a subsidiary */
+                company_id?: number | null;
+            };
             header?: never;
             path: {
                 save_id: string;

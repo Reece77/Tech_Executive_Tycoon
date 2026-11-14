@@ -4,6 +4,7 @@
 # strategies, which pushed the nightly past two hours. The nightly keeps the milestone guards. Sundays, and on
 # demand from the Actions tab. M23b adds the v3 targets (tst.balance.v3): the chain's shocks, 20
 # years of the founder-played strategies, the v3 scripts to 2039, and V6 on a full_integrator save.
+# M27b adds its chain targets (full_integrator automated from 2025 to 2039).
 name: weekly
 
 on:
@@ -22,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6, weekly-v3-shocks, weekly-v3-integration, weekly-v3-long, weekly-v6-integrator]
+        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6, weekly-v3-shocks, weekly-v3-integration, weekly-v3-long, weekly-v6-integrator, weekly-m27b]
     steps:
       - uses: actions/checkout@v4
 

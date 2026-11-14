@@ -13,10 +13,13 @@ export type Digest = Schemas['DigestOut'];
 export type OwnerRecord = Schemas['RecordOut'];
 export type AreaOwnerIn = Schemas['AreaOwnerIn'];
 export type AreaSettingsIn = Schemas['AreaSettingsIn'];
+export type HeadcountTargetIn = Schemas['HeadcountTargetIn'];
 
 export const automationKeys = {
-  automation: (saveId: string) => ['saves', saveId, 'automation'] as const,
-  plan: (saveId: string) => ['saves', saveId, 'automation', 'plan'] as const,
+  automation: (saveId: string, companyId: number | null = null) =>
+    ['saves', saveId, 'automation', companyId] as const,
+  plan: (saveId: string, companyId: number | null = null) =>
+    ['saves', saveId, 'automation', 'plan', companyId] as const,
   digest: (saveId: string, turn: number | null) =>
     ['saves', saveId, 'automation', 'digest', turn] as const,
   record: (saveId: string, personId: number) =>
@@ -25,20 +28,36 @@ export const automationKeys = {
 
 const path = (saveId: string) => ({ params: { path: { save_id: saveId } } });
 
-export function useAutomation(saveId: string) {
+/** The Automation screen for the player's company, or (M27b) one of its subsidiaries. */
+export function useAutomation(saveId: string, companyId: number | null = null) {
   return useQuery({
-    queryKey: automationKeys.automation(saveId),
-    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/automation', path(saveId))),
+    queryKey: automationKeys.automation(saveId, companyId),
+    queryFn: async () =>
+      unwrap(
+        await api.GET('/api/saves/{save_id}/automation', {
+          params: {
+            path: { save_id: saveId },
+            query: companyId === null ? {} : { company_id: companyId },
+          },
+        }),
+      ),
     enabled: saveId !== '',
   });
 }
 
 /** Automate everything's plan, fetched only when the player opens the confirmation. */
-export function useAutomatePlan(saveId: string, enabled: boolean) {
+export function useAutomatePlan(saveId: string, enabled: boolean, companyId: number | null = null) {
   return useQuery({
-    queryKey: automationKeys.plan(saveId),
+    queryKey: automationKeys.plan(saveId, companyId),
     queryFn: async () =>
-      unwrap(await api.GET('/api/saves/{save_id}/automation/plan', path(saveId))),
+      unwrap(
+        await api.GET('/api/saves/{save_id}/automation/plan', {
+          params: {
+            path: { save_id: saveId },
+            query: companyId === null ? {} : { company_id: companyId },
+          },
+        }),
+      ),
     enabled,
   });
 }
@@ -78,15 +97,27 @@ export function useSetAreaOwner(saveId: string) {
   });
 }
 
-export function useTakeBackArea(saveId: string) {
+export function useTakeBackArea(saveId: string, companyId: number | null = null) {
   const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: async (area: string) =>
       unwrap(
         await api.POST('/api/saves/{save_id}/automation/take-back', {
           ...path(saveId),
-          body: { area },
+          body: { area, company_id: companyId },
         }),
+      ),
+    onSuccess: () => void invalidate(),
+  });
+}
+
+/** M27b: a unit's headcount target in a role, which Hiring fills (0 removes it). */
+export function useHeadcountTarget(saveId: string) {
+  const invalidate = useInvalidateSave(saveId);
+  return useMutation({
+    mutationFn: async (body: HeadcountTargetIn) =>
+      unwrap(
+        await api.POST('/api/saves/{save_id}/automation/headcount', { ...path(saveId), body }),
       ),
     onSuccess: () => void invalidate(),
   });

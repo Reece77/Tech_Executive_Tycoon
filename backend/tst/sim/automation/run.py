@@ -23,8 +23,8 @@ from typing import Final
 import numpy as np
 
 from tst.sim.actions import Action, action_payload, apply_action
-from tst.sim.automation import limits, owners
-from tst.sim.automation.config import AREA_SEAT_RULE
+from tst.sim.automation import limits, owners, scope
+from tst.sim.automation.config import AREA_SEAT_RULE, FOUNDER_ACTIONS, NEVER_ACTIONS
 from tst.sim.automation.models import AreaDecision, AreaOwner, DecisionKind
 from tst.sim.data_models import AUTHORITY_SEATS, Balance, GameData
 from tst.sim.errors import SimError
@@ -69,6 +69,7 @@ class AutoRun(DelegateRun):
     over_budget: bool = False
     fired: int = 0
     last_cost: int = 0  # the last applied action's commitment
+    central: int | None = None  # M27b: a proposal's displayed central case, when it has one
 
     def draw(self) -> float:
         """One quality uniform for a new-area decision (40.3)."""
@@ -87,7 +88,17 @@ class AutoRun(DelegateRun):
         if limits.is_one_off(self.state, company_id, action, b, fired_this_month=self.fired):
             self.propose(action, 0, "it is a one-off")
             return False
-        cost = limits.commitment(self.state, action, b, self.data)
+        category = getattr(action, "category", None)
+        region = getattr(action, "region", None)
+        if scope.outside_mandate(
+            self.state,
+            company_id,
+            category if isinstance(category, str) else None,
+            region if isinstance(region, str) else None,
+        ):
+            self.propose(action, 0, "it is outside the mandate")
+            return False
+        cost = limits.commitment(self.state, action, b, self.data, self.balances)
         if cost >= o.limit_cents and cost > 0:
             self.propose(action, cost, "it is at or above the limit")
             return False
@@ -97,11 +108,18 @@ class AutoRun(DelegateRun):
                 self.decisions.append(("over_budget", "over this month's budget", 0, None))
                 self.over_budget = True
             return False
+        if action.kind in NEVER_ACTIONS:  # 40.7 target (c): never a delegate's
+            return False
         turn, actor, key, n = self.state.turn, action.actor_id, ACTION_KEY + self.area_index, self.n
 
         def draws() -> np.random.Generator:
             return automation_draws(self.rng, turn, actor, key, n)
 
+        founder = self.state.founder_of(self.state.player.id)
+        kept = None
+        if action.kind in FOUNDER_ACTIONS and founder is not None:  # M27b: in the founder's name
+            kept = self.state.person_state(founder.id)
+            action = replace(action, actor_id=founder.id)
         try:
             out = apply_action(
                 self.state, action, self.rng, b, self.data, self.balances, seq=0, draws=draws
@@ -110,6 +128,8 @@ class AutoRun(DelegateRun):
             return False
         self.n += 1
         self.state = out.new_state
+        if kept is not None:  # the founder's energy is left as it was
+            self.state = with_person_state(self.state, kept)
         self.balances = apply_entries(self.balances, out.ledger_entries)
         self.entries += out.ledger_entries
         self.logs += [replace(i, in_digest=True) for i in out.log_items]
@@ -128,7 +148,7 @@ class AutoRun(DelegateRun):
         payload = json.dumps(action_payload(action), sort_keys=True, default=list)
         quiet = b.automation.repropose_months
         for p in state.proposals:
-            if p.company_id != o.company_id or p.kind != "auto":
+            if p.kind != "auto" or scope.acting_for(p) != o.company_id:
                 continue
             if dict(p.params).get("action") != payload:
                 continue
@@ -146,14 +166,20 @@ class AutoRun(DelegateRun):
             ("expires_turn", state.turn + b.automation.proposal_months),
             ("why", why),
         )
+        if self.central is not None:  # M27b: e.g. a mine's study NPV (the founder reads it)
+            params = tuple(sorted((*params, ("central_cents", self.central))))
+        player = state.player.id
+        if o.company_id != player:  # M27b: filed with the player, acting for the subsidiary
+            params = tuple(sorted((*params, (scope.COMPANY_PARAM, o.company_id))))
+            text = f"{text} at {state.company(o.company_id).name}"
         seat = owners.area_def(b, o.area).seat or "lead"
-        proposal = Proposal(pid, o.company_id, seat, o.person_id, state.turn, "auto", params, text)
+        proposal = Proposal(pid, player, seat, o.person_id, state.turn, "auto", params, text)
         self.state = with_proposal(replace(state, next_ids=ids), proposal)
         person = state.person(o.person_id)
         self.logs.append(
             inbox_item(
                 state.turn,
-                o.company_id,
+                player,
                 "exec_proposal",
                 link_kind="person",
                 link_id=o.person_id,
@@ -197,7 +223,8 @@ def month_energy(state: GameState, person_id: int, b: Balance, data: GameData) -
     from tst.sim.org.scaleup import delegate_energy_factor
 
     base = b.automation.owner_energy
-    company = state.player
+    e = state.employment_of(person_id)
+    company = state.company(e.company_id) if e is not None else state.player
     if not is_scaleup(company, b):
         return base
     view = org_view(state, company.id)
@@ -265,7 +292,9 @@ def run_area(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
         if owner.area == "pricing":
             rules.pricing(run, owner, data)
         return
-    rules.RULES[a.rule](run, owner, data)
+    from tst.sim.automation import chain
+
+    (rules.RULES.get(a.rule) or chain.RULES[a.rule])(run, owner, data)
 
 
 # --- Phase 2 -----------------------------------------------------------------------------------
@@ -274,15 +303,15 @@ def run_area(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
 def _gone(state: GameState, b: Balance) -> tuple[GameState, list[LogItem]]:
     """Owners who left or lost their seat or role: the area returns to the player (40.1)."""
     logs: list[LogItem] = []
-    for o in state.owners_of(state.player.id):
-        if owners.valid_owner(state, o, b):
+    for o in state.area_owners:
+        if owners.valid_owner(state, o, b) and scope.in_scope(state, o.company_id):
             continue
         state = without_area_owner(state, o.company_id, o.area)
         person = state.person(o.person_id)
         logs.append(
             inbox_item(
                 state.turn,
-                o.company_id,
+                state.player.id,
                 "area_returned",
                 name=f"{person.first_name} {person.last_name}",
                 area=owners.area_def(b, o.area).label,
@@ -298,9 +327,9 @@ def automation_month(
     data: GameData,
     balances: Mapping[tuple[int, AccountCode], Cents],
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
-    """Phase 2 for every owned area of the player's company, owner by owner (40.3)."""
-    company = state.player.id
-    if not state.owners_of(company):
+    """Phase 2 for every owned area of the player's company and then of each subsidiary of
+    its group (M27b), owner by owner (40.3). Each company's decisions act in its own books."""
+    if not state.area_owners:
         return state, (), (), ()
     from tst.sim.automation.kpis import kpi_values
 
@@ -310,52 +339,55 @@ def automation_month(
     taken: list[DelegateAction] = []
     current = dict(balances)
     lines: list[AreaDecision] = []
-    seq = 0
-    by_person: dict[int, list[AreaOwner]] = {}
-    for o in state.owners_of(company):
-        by_person.setdefault(o.person_id, []).append(o)
+    seqs: dict[int, int] = {}
 
     def note(o: AreaOwner, kind: DecisionKind, text: str, cost: int, ref: int | None) -> None:
-        nonlocal seq
+        seq = seqs.get(o.company_id, 0)
         lines.append(
-            AreaDecision(company, state.turn, seq, o.area, o.person_id, kind, text, cost, ref)
+            AreaDecision(o.company_id, state.turn, seq, o.area, o.person_id, kind, text, cost, ref)
         )
-        seq += 1
+        seqs[o.company_id] = seq + 1
 
-    for person_id in sorted(by_person):
-        areas = sorted(
-            by_person[person_id], key=lambda o: (o.priority, owners.area_index(balance, o.area))
-        )
-        ps = state.person_state(person_id)
-        if ps.energy is None:  # an owner acts with an executive's energy (24.1)
-            state = with_person_state(
-                state, replace(ps, energy=balance.exec_authority.energy_per_month)
+    for company in scope.companies(state):
+        by_person: dict[int, list[AreaOwner]] = {}
+        for o in state.owners_of(company):
+            by_person.setdefault(o.person_id, []).append(o)
+        for person_id in sorted(by_person):
+            areas = sorted(
+                by_person[person_id],
+                key=lambda o: (o.priority, owners.area_index(balance, o.area)),
             )
-        energy = month_energy(state, person_id, balance, data)
-        for o in areas:
-            cost = owners.area_def(balance, o.area).energy
-            if energy < cost:
-                note(o, "no_time", "no time this month", 0, None)
-                continue
-            energy -= cost
-            run = AutoRun(
-                state=state,
-                balances=current,
-                rng=rng,
-                balance=balance,
-                data=data,
-                owner=o,
-                area_index=owners.area_index(balance, o.area),
-            )
-            run_area(run, o, data)
-            state, current = run.state, run.balances
-            entries += run.entries
-            logs += run.logs
-            taken += run.taken
-            for kind, text, c, ref in run.decisions:
-                note(o, kind, text, c, ref)
-    for o in state.owners_of(company):  # month-start KPIs; the digest compares them (40.4)
-        for key, value in kpi_values(state, current, o.area, balance, data).items():
+            ps = state.person_state(person_id)
+            if ps.energy is None:  # an owner acts with an executive's energy (24.1)
+                state = with_person_state(
+                    state, replace(ps, energy=balance.exec_authority.energy_per_month)
+                )
+            energy = month_energy(state, person_id, balance, data)
+            for o in areas:
+                cost = owners.area_def(balance, o.area).energy
+                if energy < cost:
+                    note(o, "no_time", "no time this month", 0, None)
+                    continue
+                energy -= cost
+                guarded = scope.guarded(state, o)
+                run = AutoRun(
+                    state=state,
+                    balances=current,
+                    rng=rng,
+                    balance=balance,
+                    data=data,
+                    owner=guarded,
+                    area_index=owners.area_index(balance, o.area),
+                )
+                run_area(run, guarded, data)
+                state, current = run.state, run.balances
+                entries += run.entries
+                logs += run.logs
+                taken += run.taken
+                for kind, text, c, ref in run.decisions:
+                    note(o, kind, text, c, ref)
+    for o in state.area_owners:  # month-start KPIs; the digest compares them (40.4)
+        for key, value in kpi_values(state, current, o.area, balance, data, o.company_id).items():
             note(o, KPI, key, value, None)
     state = with_area_decisions(state, lines)
     return state, tuple(entries), tuple(logs), tuple(taken)
