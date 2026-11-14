@@ -553,3 +553,56 @@ def test_no_owner_ever_terminates_a_contract_or_takes_the_grey_route() -> None:
         run = _run(game, AreaOwner(PLAYER, "supply", ceo, LIMIT, 0, 0))
         assert not run.attempt(PLAYER, action)
         assert run.taken == []
+
+
+# --- Sub-task 9: headcount targets ----------------------------------------------------------
+
+
+def test_hiring_fills_the_headcount_target_the_player_set_per_unit(device_game: Game) -> None:
+    from tst.sim.actions import CreateUnit
+    from tst.sim.automation import rules
+    from tst.sim.automation.actions import SetHeadcountTarget
+
+    game = _fork_game(device_game)
+    _energy(game)
+    uid = game.state.next_ids.unit
+    assert game.act(CreateUnit(game.founder_id, "team", "Plant crew")), dict(game.refused)
+    assert game.act(SetHeadcountTarget(game.founder_id, uid, "manufacturing_engineer", 5))
+    assert rules.target_gaps(game.state, PLAYER) == [(uid, "manufacturing_engineer", 5)]
+    (recruiter,) = add_staff_at(game, PLAYER, "recruiter", "senior", 1, skill=20.0)
+    owner = AreaOwner(PLAYER, "hiring", recruiter, 10**12, 0, 0)
+    run = _chain_run(game.state, game.balances, owner)
+    rules.hiring(run, owner, LOADED.game_data)
+    plans = [p for p in run.state.plans if p.unit_id == uid]
+    if _kinds(run) == ["mistake"]:
+        assert plans == []
+    else:
+        (plan,) = plans
+        assert (plan.role, plan.target, plan.owner_id) == ("manufacturing_engineer", 5, recruiter)
+        assert rules.target_gaps(run.state, PLAYER) == []
+    assert game.act(SetHeadcountTarget(game.founder_id, uid, "manufacturing_engineer", 0))
+    assert game.state.headcount_targets == ()
+
+
+def test_a_headcount_target_needs_a_unit_of_the_company() -> None:
+    from tst.sim.actions import apply_action
+    from tst.sim.automation.actions import SetHeadcountTarget
+    from tst.sim.errors import InvalidActionError
+
+    game = start_game(LOADED, 1)
+    with pytest.raises(InvalidActionError, match="no unit"):
+        apply_action(
+            game.state,
+            SetHeadcountTarget(game.founder_id, 9_999, "recruiter", 2),
+            RngFactory(1),
+            B,
+            LOADED.game_data,
+            game.balances,
+            seq=0,
+        )
+
+
+def _fork_game(game: Game) -> Game:
+    from tst.balance.m27b import _fork
+
+    return _fork(game)

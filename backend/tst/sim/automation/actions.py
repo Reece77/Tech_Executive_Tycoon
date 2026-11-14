@@ -14,7 +14,7 @@ from typing import Final, Literal
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.automation import owners, scope
 from tst.sim.automation.config import AREA_SEAT_RULE
-from tst.sim.automation.models import AreaOwner
+from tst.sim.automation.models import AreaOwner, HeadcountTarget
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError, OrgRuleError
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
@@ -25,6 +25,7 @@ from tst.sim.state import (
     GameState,
     with_area_owner,
     with_authority,
+    with_headcount_target,
     with_person_state,
     without_area_owner,
 )
@@ -72,13 +73,42 @@ class SetAreaSettings:
     kind: Literal["set_area_settings"] = "set_area_settings"
 
 
-type AutomationAction = SetAreaOwner | TakeBackArea | SetAreaSettings
+@dataclass(frozen=True, slots=True)
+class SetHeadcountTarget:
+    """A unit's headcount in one role, which the Hiring owner fills (M27b sub-task 9). A
+    target of 0 removes it. Free, like an area's other settings."""
+
+    actor_id: int
+    unit_id: int
+    role: str
+    target: int
+    company_id: int | None = None  # a subsidiary of the group; None: the player's company
+    kind: Literal["set_headcount_target"] = "set_headcount_target"
+
+
+type AutomationAction = SetAreaOwner | TakeBackArea | SetAreaSettings | SetHeadcountTarget
 
 ACTION_TYPES: dict[str, type] = {
     "set_area_owner": SetAreaOwner,
     "take_back_area": TakeBackArea,
     "set_area_settings": SetAreaSettings,
+    "set_headcount_target": SetHeadcountTarget,
 }
+
+MAX_TARGET: Final = 1_000  # tunable-exempt: a sanity bound on one unit's target in one role
+
+
+def set_headcount_target(state: GameState, action: SetHeadcountTarget, data: GameData) -> Outcome:
+    company = _founder_only(state, action.actor_id, action.company_id)
+    unit = next((u for u in state.units if u.id == action.unit_id), None)
+    if unit is None or unit.company_id != company:
+        raise InvalidActionError(f"no unit {action.unit_id} in this company")
+    if action.role not in {r.key for r in data.roles} or action.role == "founder":
+        raise InvalidActionError(f"unknown role {action.role!r}")
+    if not 0 <= action.target <= MAX_TARGET:
+        raise InvalidActionError(f"a target is 0 to {MAX_TARGET}")
+    target = HeadcountTarget(company, action.unit_id, action.role, action.target, state.turn)
+    return Outcome(with_headcount_target(state, target))
 
 
 def _check_area(area: str, b: Balance) -> None:
@@ -273,6 +303,8 @@ def apply_automation(
             return take_back_area(state, action, balance)
         case SetAreaSettings():
             return set_area_settings(state, action, balance)
+        case SetHeadcountTarget():
+            return set_headcount_target(state, action, data)
 
 
 def drop_seat_rows(state: GameState, company: int, seat: str) -> GameState:

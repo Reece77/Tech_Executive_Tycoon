@@ -218,6 +218,7 @@ from tst.sim.automation.actions import (
     AutomationAction,
     SetAreaOwner,
     SetAreaSettings,
+    SetHeadcountTarget,
     TakeBackArea,
     apply_automation,
     drop_seat_rows,
@@ -877,7 +878,9 @@ def apply_action(
             if not action.enabled:  # M27a (40.1): the seat's area goes with its authority
                 company = acting_company(state, action.actor_id)
                 out = replace(out, state=drop_seat_rows(out.state, company, action.seat))
-        case SetAreaOwner() | TakeBackArea() | SetAreaSettings():  # M27a (40.1-40.2)
+        case (
+            SetAreaOwner() | TakeBackArea() | SetAreaSettings() | SetHeadcountTarget()
+        ):  # M27a (40.1-40.2); M27b's headcount targets
             out = apply_automation(state, action, balance, data, ledger_balances)
         case SetPitchPolicy():  # M13b (27.1)
             out = set_pitch_policy(state, action)

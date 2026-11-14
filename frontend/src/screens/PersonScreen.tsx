@@ -6,6 +6,7 @@ import { AttributeRange } from '../components/AttributeRange';
 import { MoraleBar } from '../components/MoraleBar';
 import { Explain } from '../components/Explain';
 import { ActiveEffects } from '../components/ActiveEffects';
+import { OwnerRecordPanel } from '../components/OwnerRecord';
 import { FounderPanels } from '../components/FounderPanels';
 import { RelationshipsPanel } from '../components/Relationships';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
@@ -223,6 +224,7 @@ function ProfileBody({
       </section>
       <MoraleBreakdownPanel saveId={saveId} p={p} overview={overview} />
       <ActiveEffects saveId={saveId} effects={p.active_effects} />
+      <OwnerRecordPanel saveId={saveId} personId={p.person_id} />
       {p.pitch_record && (
         <p
           className="tst-muted"
