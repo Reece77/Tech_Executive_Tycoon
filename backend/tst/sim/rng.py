@@ -97,6 +97,7 @@ STREAM_IDS: Final = MappingProxyType(
         # and rule uniforms); (1, licence id): a licence decision; (2, company id): an entity
         # listing (M22, 39.1-39.3)
         "geopolitics": 55,
+        "automation": 56,  # M27a (formulas.md 40.3)
         "misc": 99,
     }
 )

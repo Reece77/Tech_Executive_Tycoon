@@ -241,3 +241,77 @@ roles:
     work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
     interest_weights: { ai: 0, hardware: 1, crypto: 0, climate: 2, security: 0, gaming: 0, mining: 8, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
     salary_band_mid_cents: { junior: 6500000, mid: 8800000, senior: 11000000, staff: 13500000, principal: 16000000, exec: 18500000 }
+  # --- M27a (formulas.md 40.1): area leads, appended. founder_fit: false keeps them out of the
+  # founder's best-fit role (formulas.md 1), so a founder's CA and growth are as before.
+  - key: engineering_manager
+    label: Engineering manager
+    product_function: none
+    founder_fit: false
+    summary: "Leads engineering teams: who works on what, and the hiring plans to fill gaps. A lead; software engineering and leadership matter most."
+    why_hire: "Hire one, senior, to run Engineering teams on the Automation screen without filling the CTO seat (40.1)."
+    primary: [software_engineering, leadership]
+    secondary: [strategy, infrastructure, mentoring, communication]
+    work_style: operator
+    work_style_weights: { builder: 4, operator: 5, researcher: 1, seller: 0 }
+    interest_weights: { ai: 2, hardware: 1, crypto: 0, climate: 1, security: 1, gaming: 1, mining: 0, policy: 0, design: 1, fintech: 1, consumer: 1, enterprise: 2, open_source: 2 }
+    salary_band_mid_cents: { junior: 8000000, mid: 10500000, senior: 13000000, staff: 15500000, principal: 18000000, exec: 21000000 }
+  - key: sales_manager
+    label: Sales manager
+    product_function: none
+    founder_fit: false
+    summary: "Runs pricing and regional expansion: price steps, where to sell next. A lead; sales and negotiation matter most."
+    why_hire: "Hire one, senior, to run Pricing or Regions on the Automation screen without filling the CRO seat (40.1)."
+    primary: [sales, negotiation]
+    secondary: [strategy, communication, leadership, finance]
+    work_style: seller
+    work_style_weights: { builder: 0, operator: 4, researcher: 0, seller: 6 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 1, security: 1, gaming: 0, mining: 0, policy: 1, design: 0, fintech: 2, consumer: 2, enterprise: 4, open_source: 0 }
+    salary_band_mid_cents: { junior: 6500000, mid: 8500000, senior: 11000000, staff: 13000000, principal: 15000000, exec: 17500000 }
+  - key: marketing_manager
+    label: Marketing manager
+    product_function: none
+    founder_fit: false
+    summary: "Runs marketing budgets across products. A lead; marketing and communication matter most."
+    why_hire: "Hire one, senior, to run Marketing on the Automation screen without filling the CMO seat (40.1)."
+    primary: [marketing, communication]
+    secondary: [strategy, leadership, design, data]
+    work_style: operator
+    work_style_weights: { builder: 0, operator: 5, researcher: 1, seller: 4 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 1, security: 0, gaming: 2, mining: 0, policy: 1, design: 3, fintech: 1, consumer: 4, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 5500000, mid: 7500000, senior: 9500000, staff: 11500000, principal: 13500000, exec: 16000000 }
+  - key: research_scientist
+    label: Research scientist
+    product_function: none
+    founder_fit: false
+    summary: "Chooses and runs research projects within a budget. A lead; ML research and strategy matter most."
+    why_hire: "Hire one, senior, to run Research on the Automation screen without giving it to the CTO (40.1)."
+    primary: [ml_research, strategy]
+    secondary: [software_engineering, data, leadership, communication]
+    work_style: researcher
+    work_style_weights: { builder: 2, operator: 1, researcher: 7, seller: 0 }
+    interest_weights: { ai: 5, hardware: 2, crypto: 0, climate: 2, security: 1, gaming: 0, mining: 0, policy: 0, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 3 }
+    salary_band_mid_cents: { junior: 8000000, mid: 10500000, senior: 13500000, staff: 16000000, principal: 19000000, exec: 22000000 }
+  - key: site_reliability_engineer
+    label: Site reliability engineer
+    product_function: none
+    founder_fit: false
+    summary: "Keeps cloud capacity in line with demand: spot compute bought or sold, data centres planned. A lead; infrastructure matters most."
+    why_hire: "Hire one, senior, to run Cloud capacity on the Automation screen without giving it to the CTO (40.1)."
+    primary: [infrastructure, operations]
+    secondary: [software_engineering, security, finance, data]
+    work_style: operator
+    work_style_weights: { builder: 3, operator: 6, researcher: 1, seller: 0 }
+    interest_weights: { ai: 2, hardware: 2, crypto: 0, climate: 1, security: 2, gaming: 0, mining: 0, policy: 0, design: 0, fintech: 1, consumer: 0, enterprise: 3, open_source: 3 }
+    salary_band_mid_cents: { junior: 7500000, mid: 10000000, senior: 12500000, staff: 15000000, principal: 17500000, exec: 20000000 }
+  - key: communications_manager
+    label: Communications manager
+    product_function: none
+    founder_fit: false
+    summary: "Answers the press and keeps the company's claims to what its plans support. A lead; communication matters most."
+    why_hire: "Hire one, senior, to run Press and communications on the Automation screen without giving it to the CMO (40.1)."
+    primary: [communication, marketing]
+    secondary: [strategy, judgment_of_talent, legal, leadership]
+    work_style: operator
+    work_style_weights: { builder: 0, operator: 5, researcher: 1, seller: 4 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 2, security: 1, gaming: 1, mining: 0, policy: 3, design: 1, fintech: 1, consumer: 2, enterprise: 1, open_source: 1 }
+    salary_band_mid_cents: { junior: 5500000, mid: 7500000, senior: 9800000, staff: 12000000, principal: 14000000, exec: 16500000 }

@@ -23,6 +23,7 @@ from typing import Any, cast
 from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
 from sqlalchemy.orm import Session
 
+from tst.db.automation_io import load_automation, sync_automation
 from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
@@ -573,6 +574,7 @@ def load_state(session: Session) -> GameState:
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
     state = load_group(session, state, has_table)  # M16 (0039)
+    state = load_automation(session, state, has_table)  # M27a (0049)
     state = load_investing(session, state, has_table)  # M26 (0043)
     state = load_commodities(session, state, has_table)  # M17 (0041)
     state = load_exploration(session, state, has_table)  # M18 (0041)
@@ -1951,6 +1953,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
     sync_group(session, old, new, has_table)  # M16 (0039)
+    sync_automation(session, old, new, has_table)  # M27a (0049)
     sync_investing(session, old, new, has_table)  # M26 (0043)
     sync_commodities(session, old, new, has_table)  # M17 (0041)
     sync_exploration(session, old, new, has_table)  # M18 (0041)

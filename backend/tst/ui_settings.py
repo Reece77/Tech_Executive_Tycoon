@@ -63,6 +63,8 @@ class Onboarding(BaseModel):
     show_everything: bool = Field(default=False, description="Turn progressive unlocking off")
     guided_first_year: bool = Field(default=True, description="Show Getting started")
     stop_on: Literal["major", "critical"] = "major"
+    # M27a (40.2): a one-off waiting for approval stops a holiday; off, it waits
+    stop_for_approvals: bool = True
     dismissed_checklists: list[str] = Field(
         default_factory=list, description="Save ids whose Getting started was dismissed"
     )

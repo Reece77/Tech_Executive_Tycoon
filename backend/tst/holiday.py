@@ -34,7 +34,9 @@ from tst.sim.turn import TurnResult
 log = logging.getLogger(__name__)
 
 type StopLevel = Literal["minor", "major", "critical"]
-type StopReason = Literal["game_over", "event", "pitch", "runway", "offer", "months", "stopped"]
+type StopReason = Literal[
+    "game_over", "event", "pitch", "approval", "runway", "offer", "months", "stopped"
+]
 
 STOP_LEVELS: tuple[StopLevel, ...] = ("minor", "major", "critical")  # rank: the index
 SUMMARY_TEMPLATE = "holiday_summary"
@@ -55,6 +57,7 @@ REASON_TEXT: dict[StopReason, str] = {
     "game_over": "the game is over",
     "event": "an event needs your answer",
     "pitch": "an executive pitched a move above your auto-approve limit",
+    "approval": "someone running an area needs your approval",  # M27a (40.2)
     "runway": "runway is getting short",
     "offer": "investors made an offer",
     "months": "the months you chose have passed",
@@ -109,9 +112,12 @@ def _vitals(path: Path, data: LoadedData) -> tuple[GameState, Vitals]:
     )
 
 
-def check_start(path: Path, data: LoadedData, months: int, stop: str) -> None:
+def check_start(
+    path: Path, data: LoadedData, months: int, stop: str, *, stop_for_approvals: bool = True
+) -> None:
     """Refuse a holiday that cannot start (17.1): bad months or stop level, the game over,
-    or an open critical event."""
+    or an open critical event. An area owner's proposal waits through a holiday when
+    `stop_for_approvals` is off (M27a, 40.2)."""
     limit = data.balance.holiday.max_months
     if not 1 <= months <= limit:
         raise HolidayError(f"a holiday lasts 1 to {limit} months, not {months}")
@@ -122,6 +128,8 @@ def check_start(path: Path, data: LoadedData, months: int, stop: str) -> None:
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     for proposal in state.pending_proposals(state.player.id):  # M10c (24.1)
+        if proposal.kind == "auto" and not stop_for_approvals:
+            continue
         raise CriticalEventOpenError(f"answer the proposal: {proposal.text}", 0)
     for event in blocking_events(state):  # major ones too (23.1, M10b)
         raise CriticalEventOpenError(
@@ -156,10 +164,12 @@ def run_holiday(
     adapter: LLMAdapter | None = None,
     should_stop: Callable[[], bool] = lambda: False,
     on_month: Callable[[int, int], None] | None = None,
+    stop_for_approvals: bool = True,
 ) -> HolidayResult:
     """Play up to `months` Continues and write the summary. The caller holds the save's
-    reservation (or nobody does, in a single-threaded CLI)."""
-    check_start(path, data, months, stop)
+    reservation (or nobody does, in a single-threaded CLI). `stop_for_approvals` (M27a, 40.2):
+    a one-off from an area owner stops the holiday; off, it waits and the holiday goes on."""
+    check_start(path, data, months, stop, stop_for_approvals=stop_for_approvals)
     _, start = _vitals(path, data)
     limit = data.balance.holiday.stop_runway_months
     warned = start.runway_months is not None and start.runway_months < limit
@@ -174,7 +184,16 @@ def run_holiday(
         if on_month is not None:
             on_month(done, end.turn)
         reason = _reason(
-            result, end, stop, limit, warned, done, months, should_stop(), data.balance
+            result,
+            end,
+            stop,
+            limit,
+            warned,
+            done,
+            months,
+            should_stop(),
+            data.balance,
+            stop_for_approvals=stop_for_approvals,
         )
         if end.runway_months is not None and end.runway_months < limit:
             warned = True  # only the first fall below the limit stops a holiday
@@ -195,6 +214,16 @@ def big_pitch_waiting(state: GameState, cash: Cents, balance: Balance) -> bool:
     return any(p.cost_cents >= limit for p in state.pending_pitches(player))
 
 
+def approval_waiting(state: GameState) -> bool:
+    """An area owner's proposal, or a one-off pitch, waits for the player (40.2)."""
+    from tst.sim.automation.config import ONE_OFF_PITCHES
+
+    player = state.player.id
+    return any(p.kind == "auto" for p in state.pending_proposals(player)) or any(
+        p.kind in ONE_OFF_PITCHES for p in state.pending_pitches(player)
+    )
+
+
 def _reason(
     result: TurnResult,
     end: Vitals,
@@ -205,6 +234,8 @@ def _reason(
     months: int,
     pressed: bool,
     balance: Balance | None = None,
+    *,
+    stop_for_approvals: bool = True,
 ) -> StopReason | None:
     """The first stop reason after a month, in the order of 17.1 (None: keep going)."""
     state = result.new_state
@@ -218,8 +249,11 @@ def _reason(
     ):
         return "event"
     major = STOP_LEVELS.index("major")
-    if rank <= major and state.pending_proposals(player):  # a proposal is major (24.1)
+    proposals = state.pending_proposals(player)
+    if rank <= major and any(p.kind != "auto" for p in proposals):  # major (24.1)
         return "event"
+    if stop_for_approvals and approval_waiting(state):  # M27a (40.2)
+        return "approval"
     if balance is not None and big_pitch_waiting(state, end.cash_cents, balance):  # M13b
         return "pitch"
     runway = end.runway_months
@@ -346,10 +380,11 @@ def start_job(
     stop: StopLevel,
     *,
     adapter: LLMAdapter | None = None,
+    stop_for_approvals: bool = True,
 ) -> HolidayJob:
     """Check the holiday can start, reserve the save, and play it in a background thread.
     The reservation is taken before this returns, so the next write is already busy."""
-    check_start(path, data, months, stop)
+    check_start(path, data, months, stop, stop_for_approvals=stop_for_approvals)
     token = repository.reserve(path)
     with repository.read_session(path) as session:
         turn = repository.read_state(session).turn
@@ -373,6 +408,7 @@ def start_job(
                     adapter=adapter,
                     should_stop=job.stop_requested.is_set,
                     on_month=progress,
+                    stop_for_approvals=stop_for_approvals,
                 )
         except Exception as exc:  # the job reports it; the months played stay committed
             log.exception("Holiday on %s failed", save_id)

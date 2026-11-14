@@ -190,6 +190,7 @@ def run_ceo(
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...], tuple[DelegateAction, ...]]:
     """Phase 2, after the executives with authority (25.6); then the CEO's quarterly pitch
     across the functions it runs (27.1, M13b)."""
+    from tst.sim.automation.config import SEAT_AREA
     from tst.sim.ledger import CASH, account_balance
     from tst.sim.org.pitches import CEO_SCOPE_SEAT, SEAT_KINDS, pitch_month
     from tst.sim.org.reports import EXEC_REPORT, ceo_letter, is_report_month
@@ -219,6 +220,9 @@ def run_ceo(
         covered = {a.seat for a, _ in acting_seats(run.state, company.id)}
         if "cpo" in covered:  # a CPO with authority runs product priorities (M13b, 27.1)
             covered.add("products")
+        for scope_seat, area in SEAT_AREA.items():  # M27a (40.1): owned areas run in automation
+            if run.state.area_owner(company.id, area) is not None:
+                covered.add("products" if scope_seat == "cpo" else scope_seat)
         lines: list[str] = []
         for index, scope in enumerate(CEO_SCOPES):
             if scope not in ceo.scopes or scope in covered:
