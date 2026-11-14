@@ -29,7 +29,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot
 from tst.sim.state import GameState, group_companies
-from tst.sim.turn import advance_turn
+from tst.sim.turn import TurnResult, advance_turn
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +69,7 @@ class Game:
     group_pnl: dict[int, tuple[int, int]] = field(default_factory=dict)
     group_lines: list[tuple[int, int, str, int]] = field(default_factory=list)  # this month
     _group: frozenset[int] = frozenset({PLAYER})
+    last_result: TurnResult | None = None  # M28: the last month's whole result (41.8 target 1)
     _writer: Writer = field(
         default_factory=lambda: Writer(MockLLMAdapter(), LLMSettings(), lambda: 1_000_000.0)
     )
@@ -159,6 +160,7 @@ class Game:
         self._group = group_ids(result.new_state)
         self.month_lines = []
         self.last_product_months = result.product_months
+        self.last_result = result
         self.state = result.new_state
         self.balances = apply_entries(self.balances, result.ledger_entries)
         snap = result.snapshot.for_company(PLAYER)
