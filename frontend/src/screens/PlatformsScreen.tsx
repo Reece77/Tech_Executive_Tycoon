@@ -163,15 +163,7 @@ function RegionTable({ p, region }: { p: Platforms; region: string }) {
   return <DataTable table={table} label="Platforms" rowTestId="platform-row" />;
 }
 
-function OwnPlatform({
-  saveId,
-  pl,
-  range,
-}: {
-  saveId: string;
-  pl: Platform;
-  range: number[];
-}) {
+function OwnPlatform({ saveId, pl, range }: { saveId: string; pl: Platform; range: number[] }) {
   const rules = useSetPlatformRules(saveId);
   const s = pl.settings;
   const [fee, setFee] = useState<number>(Math.round((s?.fee ?? 0.3) * PERCENT));

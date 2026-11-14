@@ -69,7 +69,9 @@ def test_facts_open_screens_before_their_stage(loaded: LoadedData) -> None:
     assert "hardware" in unlocks.conditions(device, b, d)
     assert "platforms" in unlocks.conditions(device, b, d)  # M31 (44)
     app = with_product(state, category="consumer_apps", status="in_development", root=False)
-    assert "is sold through app stores" in unlocks.conditions(app, b, d)["platforms"]
+    assert "platforms" not in unlocks.conditions(app, b, d)  # M31: an app opens it once live
+    live = with_product(state, category="consumer_apps", status="live", root=False)
+    assert "is sold through app stores" in unlocks.conditions(live, b, d)["platforms"]
     study = DeskStudy(1, state.player.id, "north_america", "copper", 0, 3, 1.0)
     explored = replace(state, desk_studies=(study,))
     assert unlocks.conditions(explored, b, d)["exploration"] == "the group ran a desk study"

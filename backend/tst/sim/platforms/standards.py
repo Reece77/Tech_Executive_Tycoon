@@ -19,6 +19,8 @@ from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.platforms import data as pdata
+from tst.sim.platforms import draws
+from tst.sim.platforms.data import EVEN
 from tst.sim.platforms.models import ProductStandard, Standard
 from tst.sim.products.models import SELLING
 from tst.sim.rng import RngFactory
@@ -63,7 +65,7 @@ def standards_month(
             continue
         mine = [ps for ps in rows if ps.standard_id == s.id]
         have = {ps.product_id for ps in mine}
-        bigger = s.formats[0] if s.adoption >= 0.5 else s.formats[1]
+        bigger = s.formats[0] if s.adoption >= EVEN else s.formats[1]
         for p in state.products:  # new products join the larger format
             if p.category == s.category and p.status != "retired" and p.id not in have:
                 rows.append(ProductStandard(p.id, s.id, bigger))
@@ -115,12 +117,12 @@ def standards_month(
 def _new_contests(state: GameState, rng: RngFactory, balance: Balance) -> GameState:
     sb = balance.platforms.standards
     year = pdata.year_of(state.turn)
-    n = int(rng.stream(state.turn, "platforms", 3, 0, year).poisson(sb.rate))
+    n = int(draws.gen(rng, state.turn, draws.STANDARDS, 0, year).poisson(sb.rate))
     contests = list(state.standards)
     rows = list(state.product_standards)
     for k in range(n):
         sid = max([-1, *(s.id for s in contests)]) + 1
-        gen = rng.stream(state.turn, "platforms", 3, 1, sid)
+        gen = draws.gen(rng, state.turn, draws.STANDARDS, 1, sid)
         category = sb.categories[int(gen.integers(len(sb.categories)))]
         label = f"{category.replace('_', ' ').capitalize()} format {year}-{k + 1}"
         formats = (f"{label} A", f"{label} B")
@@ -132,7 +134,7 @@ def _new_contests(state: GameState, rng: RngFactory, balance: Balance) -> GameSt
                 label=label,
                 formats=formats,
                 sponsors=(None, None),
-                adoption=0.5,
+                adoption=EVEN,
                 started_turn=state.turn,
             )
         )

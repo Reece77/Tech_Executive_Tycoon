@@ -43,8 +43,8 @@ def revenue_shares(state: GameState, balance: Balance) -> dict[int, float]:
         product = state.product(o.product_id)
         if product is not None:
             out[o.product_id] = paid.get(
-                product.category, 0.05
-            )  # tunable-exempt: an unlisted category's tier
+                product.category, balance.platforms.open_source.default_paid_share
+            )
     return out
 
 

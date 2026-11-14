@@ -244,6 +244,7 @@ class OpenSourceBalance(_Frozen):
     adoption: float = Field(ge=1)  # customers x this over `months`, toward the market (44.6)
     months: int = Field(ge=1)
     paid_share: dict[str, float]  # category -> share of customers on the paid tier
+    default_paid_share: float = Field(ge=0, le=1)  # a category not listed
     feature_mult: float = Field(ge=1)  # x the product's feature gain a month
     tools_gain: float = Field(ge=0)  # an open OS or developer platform's T_p gain
     goodwill_gain: float = Field(ge=0)
@@ -252,7 +253,7 @@ class OpenSourceBalance(_Frozen):
 
 class StandardsBalance(_Frozen):
     rate: float = Field(ge=0)  # contests a December after the history, on average
-    tip_share: float = Field(gt=0.5, le=1)
+    tip_share: float = Field(gt=0.5, le=1)  # tunable-exempt: a majority of new products
     penalty: float = Field(ge=0)  # feature points off products on a losing standard
     inertia: float = Field(ge=0, lt=1)  # a month's weight on last month's adoption
     adopt_months: int = Field(ge=0)  # development months to adopt the winner
@@ -275,6 +276,9 @@ class PlatformsBalance(_Frozen):
     start: str  # the first month computed shares and effects run (after the history)
     fees_from: str  # the first month fees post (M31 decision: with the start; see the brief)
     android_licence_cents: int = Field(ge=0)  # a device unit on a licensed Android, from the start
+    licence_factor: tuple[
+        float, float
+    ]  # an own OS's pull on OEMs: Android's licence / its, within this
     reach_exp: float = Field(gt=0)  # alpha
     fee_exp: float = Field(gt=0)  # beta
     dev_inertia: float = Field(ge=0, lt=1)

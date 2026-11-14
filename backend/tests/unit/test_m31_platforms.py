@@ -122,8 +122,9 @@ def test_users_carry_on_from_december_2025(loaded: LoadedData) -> None:
 
 def test_attractiveness(loaded: LoadedData) -> None:
     pb = loaded.balance.platforms
-    assert pf.attractiveness(0.5, 0.3, 1.0, 1.0, pb) == pytest.approx(0.35)
-    assert pf.attractiveness(0.5, 0.1, 1.3, 1.0, pb) == pytest.approx(0.5 * 0.9 * 1.3)
+    a, b = pb.reach_exp, pb.fee_exp
+    assert pf.attractiveness(0.5, 0.3, 1.0, 1.0, pb) == pytest.approx(0.5**a * 0.7**b)
+    assert pf.attractiveness(0.5, 0.1, 1.3, 0.9, pb) == pytest.approx(0.5**a * 0.9**b * 1.3 * 0.9)
     assert pf.attractiveness(0.0, 0.3, 1.0, 1.0, pb) == 0.0
 
 

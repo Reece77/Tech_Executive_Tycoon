@@ -19,6 +19,7 @@ DEVICES: Final = "devices"  # tunable-exempt: the device category platforms run 
 ANDROID: Final = "android_play"  # tunable-exempt: the default licensed platform (44.1)
 ANDROID_FAMILY: Final = ("android_play", "android_china")  # tunable-exempt: one OS, two stores
 OWN_ID_FROM: Final = 100  # tunable-exempt: ids of platforms founded in play start here
+EVEN: Final = 0.5  # tunable-exempt: a contest not yet tipped starts even
 CATALOGUE_START: Final = 12.0  # tunable-exempt: months of attention a platform starts with
 
 
@@ -283,7 +284,7 @@ def materialise(state: GameState, balance: Balance, data: GameData) -> GameState
                 label=s.label,
                 formats=s.formats,
                 sponsors=tuple(keys.get(s.sponsors.get(f, "")) for f in s.formats),  # type: ignore[arg-type]
-                adoption=(1.0 if s.winner == s.formats[0] else 0.0) if done else 0.5,
+                adoption=(1.0 if s.winner == s.formats[0] else 0.0) if done else EVEN,
                 started_turn=0,
                 winner=s.winner if done else None,
                 tipped_turn=tipped if done else None,

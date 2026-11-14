@@ -24,12 +24,14 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.geopolitics import world
 from tst.sim.log import LogItem
 from tst.sim.platforms import data as pdata
+from tst.sim.platforms import draws
 from tst.sim.platforms import formulas as pf
 from tst.sim.platforms.models import DeviceRun, RivalStore
 from tst.sim.platforms.phase import by_region, leader_catalogue, live_in
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
+COIN: Final = 0.5  # tunable-exempt: a weak signal moves the fee half the time
 WEAK: Final = 0.1  # tunable-exempt: a signal within 10% of a threshold is weak
 STORE_DISCOUNT: Final = 0.10  # tunable-exempt: a rival store's rate under the platform's
 STORE_NAMES: Final = (
@@ -83,9 +85,7 @@ def _owners(state: GameState, rng: RngFactory, balance: Balance, data: GameData)
             weak = ratio < rb.raise_above * (1 + WEAK)
         else:
             weak = False
-        if (
-            move and weak and float(rng.stream(state.turn, "platforms", 2, p.id).random()) < 0.5
-        ):  # tunable-exempt: a coin for a weak signal
+        if move and weak and float(draws.gen(rng, state.turn, draws.OWNER, p.id).random()) < COIN:
             move = 0.0
         out.append(replace(p, fee=pf.clamp(current + move, lo, hi)) if move else p)
     return replace(state, platforms=tuple(out))
@@ -129,7 +129,7 @@ def _oems(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -
         if score <= index(android.id):
             continue
         if (
-            float(rng.stream(state.turn, "platforms", 4, product.company_id, product.id).random())
+            float(draws.gen(rng, state.turn, draws.OEM, product.company_id, product.id).random())
             < pb.rivals.licence_switch
         ):
             runs[i] = DeviceRun(run.product_id, best.id, state.turn, run.platform_id, 1.0)
@@ -151,7 +151,7 @@ def _stores(state: GameState, rng: RngFactory, balance: Balance, data: GameData)
             if any(s.platform_id == p.id and s.region == region for s in stores):
                 continue
             if (
-                float(rng.stream(state.turn, "platforms", 2, p.id, r_index).random())
+                float(draws.gen(rng, state.turn, draws.OWNER, p.id, r_index).random())
                 >= rb.store_chance
             ):
                 continue

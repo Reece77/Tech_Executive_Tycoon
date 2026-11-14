@@ -2127,9 +2127,10 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
 platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rules follow platforms.yaml to 2025; nothing here moves anything before `start` (44.9 target 1). A = an assumption for gameplay
   start: "2026-01" # the first month users, developers and catalogues are computed and act on demand (44.1-44.3)
   fees_from: "2026-01" # the first month platform fees post (44.4). M31 decision: the start, so 2010-2025 books stay main's (M28's 41.8 target 1 fingerprint); "2010-01" books 44.4's history calibration instead
+  licence_factor: [0.5, 2.0] # an own OS's pull on the rest of the market's OEMs: (Android's licence + 1) / (its + 1), within this (A)
   android_licence_cents: 1000 # cents a device unit on a licensed Android (Google's services; EU reports of up to $40 from 2018 not verified; A), from the start
-  reach_exp: 1.0 # alpha: attractiveness ~ users ^ this (44.2)
-  fee_exp: 1.0 # beta: ... x (1 - fee) ^ this (44.2)
+  reach_exp: 0.5 # alpha: attractiveness ~ users ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a small platform still draws developers)
+  fee_exp: 3.0 # beta: ... x (1 - fee) ^ this (44.2: 1.0; M31 tuning for 44.9 target 2: a lasting fee advantage tips developers)
   dev_inertia: 0.97 # a month's weight on last month's developer share (about 3 years' half-life, 44.2)
   dev_noise_sd: 0.03 # sd of a month's attractiveness noise from the start (stream platforms; A)
   multihome_share: 0.35 # the largest developers' share of attention, on every platform with enough users (44.2)
@@ -2178,6 +2179,7 @@ platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rul
     adoption: 3.0 # customers x this over `months`, toward the addressable market
     months: 24
     paid_share: { dev_tools: 0.05, ai_models: 0.03, cloud_hosting: 0.08, os: 0.0, consumer_apps: 0.03, b2b_saas: 0.06, cybersecurity: 0.05, fintech: 0.04 }
+    default_paid_share: 0.05 # a category not listed above (A)
     feature_mult: 1.5 # the community: x the product's feature gain a month
     tools_gain: 0.2 # an open OS or developer platform's T_p
     goodwill_gain: 0.1

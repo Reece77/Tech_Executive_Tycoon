@@ -30,6 +30,7 @@ from typing import Final
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region
 from tst.sim.platforms import data as pdata
+from tst.sim.platforms import draws
 from tst.sim.platforms import formulas as pf
 from tst.sim.platforms.models import DeviceRun, Platform, PlatformRegion
 from tst.sim.products.models import SELLING, Product
@@ -38,6 +39,8 @@ from tst.sim.state import GameState
 
 BIG_SELLER: Final = 10**12  # tunable-exempt: a seller far over any small-business threshold
 TINY: Final = 1e-12  # tunable-exempt: shares below this count as none
+HALF: Final = 0.5  # tunable-exempt: the reference holds half the developers (M31 decision)
+MIN_REPLACEMENT: Final = 1  # tunable-exempt: categories.yaml always gives devices a cycle
 
 
 # --- Helpers ---------------------------------------------------------------------------------
@@ -211,7 +214,7 @@ def _computed_users(state: GameState, balance: Balance, data: GameData) -> GameS
     rows = by_region(state)
     out = []
     devices = data.category(pdata.DEVICES)
-    replacement = float(devices.market("consumer").replacement_months or 30)
+    replacement = float(devices.market("consumer").replacement_months or MIN_REPLACEMENT)
     for region in data.region_keys:
         here = rows.get(region, {})
         device_ids = [
@@ -244,7 +247,8 @@ def _computed_users(state: GameState, balance: Balance, data: GameData) -> GameS
             tilt = (here[pid].catalogue / leader) ** pb.rest_tilt if leader > 0 else 1.0
             licence = 1.0
             if not p.historical and p.licence_cents is not None:
-                licence = pf.clamp((pb.android_licence_cents + 1) / (p.licence_cents + 1), 0.5, 2.0)
+                lo, hi = pb.licence_factor
+                licence = pf.clamp((pb.android_licence_cents + 1) / (p.licence_cents + 1), lo, hi)
             weights[pid] = base * tilt * licence
         rest = pf.replace_users(rest, stay, weights, replacement)
         for pid in device_ids:
@@ -325,7 +329,7 @@ def _developers(state: GameState, rng: RngFactory, balance: Balance, data: GameD
             )
             if computed and pb.dev_noise_sd > 0:
                 noise = float(
-                    rng.stream(turn, "platforms", 0, pid, r_index).normal(0, pb.dev_noise_sd)
+                    draws.gen(rng, turn, draws.NOISE, pid, r_index).normal(0, pb.dev_noise_sd)
                 )
                 a *= max(0.0, 1 + noise)
             attract[pid] = a
@@ -364,7 +368,7 @@ def _decay_switches(state: GameState, data: GameData) -> GameState:
     """Devices sold before a switch are replaced at the market's pace (44.1)."""
     if not any(d.previous_share > 0 for d in state.device_runs):
         return state
-    r = float(data.category(pdata.DEVICES).market("consumer").replacement_months or 30)
+    r = float(data.category(pdata.DEVICES).market("consumer").replacement_months or MIN_REPLACEMENT)
     runs = tuple(
         replace(d, previous_share=d.previous_share * (1 - 1 / r)) if d.previous_share > 0 else d
         for d in state.device_runs
@@ -485,7 +489,9 @@ def developer_reference(state: GameState, balance: Balance, data: GameData, regi
     pb = balance.platforms
     devs = pdata.developers(data, balance, state.turn) * pdata.region_weights(data).get(region, 0.0)
     return (
-        devs * (pb.multihome_share + (1 - pb.multihome_share) * 0.5) / max(pb.catalogue_decay, 1e-6)
+        devs
+        * (pb.multihome_share + (1 - pb.multihome_share) * HALF)
+        / max(pb.catalogue_decay, TINY)
     )
 
 

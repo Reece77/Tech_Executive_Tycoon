@@ -220,13 +220,13 @@ def _automation(state: GameState, _ids: set[int], balance: Balance, _d: GameData
 
 
 def _platforms(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str | None:
-    """M31 (44): a device line or an app sold through stores."""
+    """M31 (44): a device line (from development) or a live app sold through stores."""
     for p in state.products:
         if p.company_id not in ids or p.status == "retired":
             continue
         if p.category in ("devices", "os"):
             return f"{p.name} runs on a platform"
-        if p.category in b.platforms.app_categories:
+        if p.category in b.platforms.app_categories and p.status in ("live", "sunset"):
             return f"{p.name} is sold through app stores"
     return None
 

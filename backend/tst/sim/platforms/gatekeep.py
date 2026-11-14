@@ -37,6 +37,7 @@ from tst.sim.geopolitics import world
 from tst.sim.ledger import CASH, PLATFORM_FEE_REVENUE, PLATFORM_FEES, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.platforms import data as pdata
+from tst.sim.platforms import draws
 from tst.sim.platforms.fees import app_category, app_revenue_cents, fees_due
 from tst.sim.platforms.models import ListingStatus, Platform, PlatformListing, Review
 from tst.sim.platforms.phase import by_region, first_party, home_of, live_in
@@ -56,6 +57,7 @@ REGULATOR_MONTHS: Final = 6  # tunable-exempt: 44.5 names no length; a regulator
 KEEP_REVIEWS: Final = MONTHS_PER_YEAR  # tunable-exempt: months of reviews kept for the API
 RIVAL_REMOVAL_MONTHS: Final = MONTHS_PER_YEAR  # tunable-exempt: a rival app off the player's store
 PLATFORM_LINK: Final = "platforms"
+NONE_LEFT: Final = 1e-6  # tunable-exempt: customers below this are all won back
 
 
 def _owned_by_group(state: GameState) -> set[int]:
@@ -144,7 +146,7 @@ def reviews_month(
             ]
             if not regions:
                 continue
-            gen = rng.stream(state.turn, "platforms", 1, platform.id, product.id)
+            gen = draws.gen(rng, state.turn, draws.REVIEW, platform.id, product.id)
             if float(gen.random()) >= chance(state, platform, product, balance, data):
                 continue
             pick = float(gen.random()) * sum(rb.weights[a] for a in ACTIONS)
@@ -322,7 +324,9 @@ def platform_step(
         return replace(state, steering_products=steering), [], []
     if step == "appeal" or (step == "regulators" and not _ruled(state, rows, data)):
         lo, hi = rb.appeal_months
-        gen = rng.stream(state.turn, "platforms", 1, rows[0].platform_id, rows[0].product_id, 2)
+        gen = draws.gen(
+            rng, state.turn, draws.REVIEW, rows[0].platform_id, rows[0].product_id, draws.LENGTH
+        )
         until = state.turn + lo + int(gen.integers(hi - lo + 1))
         status: ListingStatus = "appealing"
     else:
@@ -364,7 +368,7 @@ def answers_month(
         ):
             due.setdefault((x.product_id, x.platform_id), []).append(x)
     for (product_id, platform_id), rows in sorted(due.items()):
-        gen = rng.stream(state.turn, "platforms", 1, platform_id, product_id, 1)
+        gen = draws.gen(rng, state.turn, draws.REVIEW, platform_id, product_id, draws.ANSWER)
         if rows[0].status == "appealing":
             lo, hi = rb.appeal_odds
             odds = lo + (hi - lo) * float(gen.random())
@@ -434,7 +438,7 @@ def listing_effects(state: GameState, balance: Balance, data: GameData) -> GameS
             months_left = max(1, x.winback_until - state.turn + 1)
             back = x.lost / months_left
             state, got = _add(state, product, x.region, home, back, balance)
-            if x.winback_until > state.turn and x.lost - got > 1e-6:
+            if x.winback_until > state.turn and x.lost - got > NONE_LEFT:
                 keep.append(replace(x, lost=x.lost - got))
     return replace(
         state,
