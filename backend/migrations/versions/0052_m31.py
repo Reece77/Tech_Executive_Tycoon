@@ -28,9 +28,9 @@ def upgrade() -> None:
         sa.Column("kind", sa.String(), nullable=False),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 51")
+    op.execute("UPDATE save_meta SET schema_version = 52")
 
 
 def downgrade() -> None:
     op.drop_table("platform_record")
-    op.execute("UPDATE save_meta SET schema_version = 50")
+    op.execute("UPDATE save_meta SET schema_version = 51")
