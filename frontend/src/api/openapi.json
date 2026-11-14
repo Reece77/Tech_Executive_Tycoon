@@ -22925,7 +22925,7 @@
           "world"
         ],
         "summary": "World News",
-        "description": "Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest\nfirst, filtered by company, region, good and kind (41.7).",
+        "description": "Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest\nfirst, filtered by company, region, good and kind (41.7); older major items from the\narchive after them (M30). One page: `offset`, `limit`.",
         "operationId": "getWorldNews",
         "parameters": [
           {
@@ -23003,6 +23003,29 @@
                 }
               ],
               "title": "Kind"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
             }
           }
         ],
@@ -54915,13 +54938,18 @@
             "title": "Started",
             "description": "The living world runs from January 2026"
           },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Items after the filters, on every page (M30)"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/WorldNewsItemOut"
             },
             "type": "array",
             "title": "Items",
-            "description": "Newest first, after the filters"
+            "description": "Newest first, after the filters: one page (offset, limit)"
           },
           "companies": {
             "items": {
@@ -54956,6 +54984,7 @@
         "type": "object",
         "required": [
           "started",
+          "total",
           "items",
           "companies",
           "regions",

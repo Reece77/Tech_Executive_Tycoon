@@ -33,7 +33,10 @@ class WorldNewsItemOut(BaseModel):
 
 class WorldNewsOut(BaseModel):
     started: bool = Field(description="The living world runs from January 2026")
-    items: list[WorldNewsItemOut] = Field(description="Newest first, after the filters")
+    total: int = Field(description="Items after the filters, on every page (M30)")
+    items: list[WorldNewsItemOut] = Field(
+        description="Newest first, after the filters: one page (offset, limit)"
+    )
     companies: list[CompanyRefOut] = Field(description="Every company the feed names")
     regions: list[NamedOut]
     goods: list[NamedOut]

@@ -6,6 +6,7 @@ valuation of anyone, a cost position, a capex decision before its news, or a cyc
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Final
 
 from tst.api.schemas.world import (
@@ -108,9 +109,15 @@ def world_news(
     region: str | None = None,
     good: str | None = None,
     kind: str | None = None,
+    *,
+    archived: Sequence[WorldNews] = (),
+    offset: int = 0,
+    limit: int | None = None,
 ) -> WorldNewsOut:
+    """Newest first: the state's window, then the archive's major items (M30, oldest last);
+    filtered on the server, one page (`offset`, `limit`) of `total`."""
     d = data.game_data
-    items = list(reversed(state.world_news))
+    items = [*reversed(state.world_news), *reversed(archived)]
     named = sorted(
         {x for n in items for x in (n.company_id, n.other_id) if x is not None},
         key=lambda cid: state.company(cid).name,
@@ -126,9 +133,11 @@ def world_news(
         and (good is None or n.good == good)
         and (kind is None or n.kind == kind)
     ]
+    page = picked[offset:] if limit is None else picked[offset : offset + limit]
     return WorldNewsOut(
         started=wq.started(state),
-        items=[news_item(state, d, n) for n in picked],
+        total=len(picked),
+        items=[news_item(state, d, n) for n in page],
         companies=[r for r in (_ref(state, c) for c in named) if r is not None],
         regions=[r for r in (_region(d, x) for x in regions) if r is not None],
         goods=[g for g in (_good(d, x) for x in goods) if g is not None],

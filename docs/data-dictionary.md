@@ -3,7 +3,7 @@
 Column-level reference for a save file (`saves/<slug>.tst.sqlite`). Kept current with the Alembic migrations in `backend/migrations/versions/`; ORM models are in `backend/tst/db/models.py`.
 
 - **Schema version:** 27 (migrations `0001_initial`, `0002_people`, `0003_hiring`, `0004_inbox`, `0005_org`, `0006_search_plan`, `0007_plan_focus`, `0008_products`, `0009_finance`, `0010_stage_board_history`, `0011_board_nominee`, `0012_inbox_archive`, `0013_rivals`, `0014_free_agents`, `0015_relationships`, `0016_events`, `0017_save_display_name`, `0018_person_rating_log`, `0019_coo_answer`, `0020_divisions`, `0021_former_staff`, `0022_capital_macro`, `0023_geo`, `0024_inbox_bookmark`, `0025_event_modifiers`, `0026_marketing_split`, `0027_exec_authority`). Alembic also records its revision in its own `alembic_version` table.
-- **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6).
+- **Conventions:** integer ids; money is integer US cents in `*_cents` columns (ADR-0003); every time-varying row carries a `turn` (0 = January 2010, ADR-0006). History tables are append-only and never updated or deleted (ADR-0004 §6), except that M30 thins `turn_snapshot` and summarises `turn_log` past their retention windows (*Old history summarised*).
 - **Connection pragmas:** `journal_mode=WAL`, `foreign_keys=ON`, `synchronous=NORMAL`.
 
 ## save_meta
@@ -31,6 +31,7 @@ One row describing the save. Current-state table (updated in place each turn).
 | `game_state` | VARCHAR(16) | no | `active`, `bankrupt` or `founder_removed` (ADR-0018 §4). Once ended, turns and actions are refused (HTTP 409); reads still work (M4a). |
 | `ended_turn` | INTEGER | yes | Turn the game ended; null while active (M4a). |
 | `display_name` | VARCHAR(80) | yes | The save's name on the Saves screen; null shows `name` (M7b, `0017_save_display_name`). Renaming a save changes only this; the company name and the file stay. Mapped as a deferred column, because migration 0013 reads `save_meta` through the current models. |
+| `history_pruned_through` | INTEGER | yes | M30 (`0051_m30`): the last month whose old history rows were thinned (`tst.db.history`; see *Old history summarised*); null before any. Deferred, as `display_name`. |
 | `next_cap_entry_id` / `next_grant_id` / `next_safe_id` / `next_round_id` / `next_term_sheet_id` / `next_seat_id` | INTEGER | no | Next ids for the finance tables (M4a). |
 | `mod_name` | VARCHAR(64) | yes | The data-editor mod the game started with (M25, `0040_m25`): a `saves/mods/<name>.yaml` name; null for a game without a mod (and every save from before M25). A modded game earns no achievements and is flagged on the Saves list and in the Hall of Fame. |
 | `mod_hash` | VARCHAR(64) | yes | SHA-256 of the merged data files (base files with the overlay merged, canonical JSON) the game started with (M25); a later difference (the base files changed) is logged, as `data_hashes` is. Null without a mod. |
@@ -105,7 +106,7 @@ Month-end KPIs per company per turn, written by phase 11. Append-only history.
 | `company_id` | INTEGER FK → company.id | no | Company. |
 | `kpis` | JSON | no | `{cash_cents, monthly_burn_cents, headcount, payroll_cents, avg_morale, mrr_cents, arr_cents, founder_bp, board_confidence}`. `founder_bp` is the founder's shares in bp of fully diluted shares, rounded down, and `board_confidence` the average investor and independent director confidence, null without a board (M4a). Only companies with a ledger (the player until M5) get a row. `mrr_cents` is this month's subscription revenue and `arr_cents` 12 × MRR (formulas.md §11.8, M3a). `cash_cents` equals the `1000_cash` balance through this turn; `monthly_burn_cents` is the net cash decrease this month (0 if cash did not fall); `headcount` counts the company's `active` and `notice` employments (1 for the founder from turn 0). |
 
-Unique index `ux_turn_snapshot_turn_company (turn, company_id)`.
+Unique index `ux_turn_snapshot_turn_company (turn, company_id)`; index `ix_turn_snapshot_company_turn (company_id, turn)` (M30: a company's history, the screens' query). Rows older than `retention.snapshot_months` are thinned (M30, *Old history summarised*).
 
 ## decision_log
 
@@ -1997,3 +1998,33 @@ Every living-world record, one row each, rewritten by collection when it changes
 | `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position (keeps each collection's order). |
 | `kind` | VARCHAR | no | The collection: `chain_companies` (`company_id`, `key` the data key or `other_<good>`, `index` the stable key's position, `country`, `region`, `executives` [[role, name], ...] the CEO first, `ceo_since`, `insolvent_months`, `is_other`, `revenue_cents` and `costs_cents` last month's, `ebitda` the last 12 months' cents), `world_facilities` (`id`, `company_id`, `good`, `country`, `region`, `capacity` units a year, `cost` the cost position 0-1 (hidden: the API shows its third), `status` `building`/`live`/`mothballed`/`closed`, `ordered_turn`, `ready_turn`, `capex_cents`, `depreciated_cents`, `below_months`, `above_months`, `mothballed_turn`, `closed_turn`, `output` last month's units), `world_goods` (`good`, `turn`, `capacity`, `supply` (normal running), `demand`, `player_supply`, `player_demand`, `factor` the balance factor the next month's price takes, `prices` the last 12 months' in dollars a unit, `contracted` rivals' offtakes a year, `output` actual output a year, `short_months`), `region_cycles` (`region`, `turn`, `level`, `phase` `none`/`recession`/`boom`/`global`, `phase_start`, `phase_months`, `depth`, `multiplier`, `previous`; hidden: never in the API), `world_news` (`id`, `turn`, `kind`, `message`, `company_id`, `other_id`, `region`, `good`; the last `world.news_months`), `rival_deals` (`id`, `agreed_turn`, `buyer_id`, `target_id`, `price_cents`, `kind` `vertical`/`horizontal`, `status` `review`/`closed`/`blocked`, `close_turn`, `share` the antitrust test's combined share, negative while a review that will block runs), `rival_mandates` (`company_id`, `owner_id`, `kind` `grow`/`margin`/`cash`, `set_turn`), `world_offtakes` (`id`, `buyer_id`, `seller_id`, `good`, `volume` units a year, `start_turn`, `end_turn`), `world_bids` (`id`, `rival_id`, `turn`, `price_cents` a share, `status` `open`/`accepted`/`rejected`/`lapsed`; the rival's valuation is never stored), `china_lags` (`foundry`, `turn`, `behind` generations, `reached` [[node, turn], ...] after 2025, `binding`). |
 | `data` | JSON | no | The record's fields, as listed under `kind`. |
+
+## Old history summarised (migration `0051_m30`, M30)
+
+Past a retention window (`balance.yaml` `retention`) old history rows are summarised, not lost, at each month's commit for the months that just left the window (`tst.db.history`); migration `0051_m30` thins an existing save once to its current month. The engine reads none of these rows back, so a game plays exactly as before.
+
+- `turn_snapshot` rows older than `retention.snapshot_months` keep the quarter's last month (March, June, September, December), every month of the company's first year (from `company.founded_turn`), and every month that set a new high of `arr_cents` or `headcount` (the Hall of Fame's peaks, which are therefore unchanged). History and Finance charts show the older years quarterly.
+- `turn_log` rows older than `retention.log_months` become counts in `turn_log_summary`, a whole year at a time.
+- World news leaves the state after `world.news_months` (unchanged); items of the `retention.major_news` kinds go to `world_news_archive` as they leave, and World news lists them after the state's.
+- Indexes for the screens' and loads' queries: `ix_turn_snapshot_company_turn (company_id, turn)`, `ix_candidate_status (status)` (a load reads the open candidates among every one ever made) and `ix_person_is_founder (is_founder)`.
+
+### turn_log_summary
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | Row id. |
+| `year` | INTEGER | no | Game year, 0 = 2010. Index `ix_turn_log_summary_year`. |
+| `company_id` | INTEGER | yes | The company the items concerned; null for world-level items. No FK. |
+| `kind` | VARCHAR(64) | no | `turn_log.kind`. |
+| `items` | INTEGER | no | How many `turn_log` rows of that year, company and kind there were. |
+
+### world_news_archive
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER PK | no | The World news item's own id. |
+| `turn` | INTEGER | no | The month it was published. |
+| `kind` | VARCHAR(32) | no | Its kind, one of `retention.major_news`. |
+| `message` | TEXT | no | Its text. |
+| `company_id`, `other_id` | INTEGER | yes | The companies it links to (no FK). |
+| `region`, `good` | VARCHAR(64) | yes | The region and good it links to. |

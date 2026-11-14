@@ -19,7 +19,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from tst.db import inbox, migrate
+from tst.db import history, inbox, migrate
 from tst.db import unlocks as unlocks_db
 from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
 from tst.db.events import has_pending, write_pending
@@ -47,6 +47,7 @@ from tst.db.models import (
     PersonRow,
     ProductMonthRow,
     SaveMetaRow,
+    TurnLogSummaryRow,
     TurnSnapshotRow,
 )
 from tst.db.session import make_sessionmaker, shared_engine
@@ -797,6 +798,10 @@ def apply_turn_result(
             ),
         ],
     )
+    if has_table(session, TurnLogSummaryRow):  # M30: old history summarised, not lost
+        keep = data.balance.retention
+        history.archive_news(session, before.world_news, result.new_state.world_news, keep)
+        history.prune(session, played, keep)
     meta.current_turn = result.new_state.turn
     session.flush()
 
