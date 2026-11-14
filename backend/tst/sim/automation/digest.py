@@ -234,6 +234,7 @@ AREA_TEMPLATES: dict[str, str] = {
     "search_closed": "hiring",
     "sales_capacity_limited": "pricing",
     "region_live": "regions",
+    "choices_month": "events",  # the month's event choices, made by the owners (40.5)
     "exec_decisions": "",  # an executive's monthly decisions: filed when any area is automated
 }
 

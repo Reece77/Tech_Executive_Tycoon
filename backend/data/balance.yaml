@@ -2026,12 +2026,12 @@ automation: # 40: automation everywhere (M27a, v3.5). Only companies with an are
   price_band: 0.10 # pricing: prices stay within this fraction of the player's last price (40.6)
   price_step: 0.05 # pricing: one quarterly step, as a fraction of the price (40.6)
   churn_low: 0.20 # pricing: shown churn at least this fraction below the category's average allows a step up (40.6)
-  research_budget_bp: 800 # research: spending at most this many bp of trailing 12-month revenue (40.6 guardrail default)
+  research_budget_bp: 400 # research: spending at most this many bp of trailing 12-month revenue (40.6 guardrail default; 40.10 target 1: 800 -> 400)
   research_stop_months: 24 # research: stop a project whose displayed months to finish exceed this when no live product draws on its domain (40.6)
   cloud_band: [0.60, 0.90] # cloud: projected data-centre use kept between these shares (40.6 guardrail default)
   cloud_step: 0.10 # cloud: a month's spot purchase or sale moves projected use by at most this share of capacity
-  regions_every_months: 24 # regions: months between an owner's region launches or pitches (as 27.5 target 7's founder script)
-  research_every_months: 12 # research: months between an owner's new research teams or pitches
+  regions_every_months: 48 # regions: months between an owner's region launches or pitches (40.10 target 1: 24 -> 48)
+  research_every_months: 36 # research: months between an owner's new research teams or pitches (40.10 target 1: 12 -> 36)
   digest_lines: 3 # digest: at most this many "what they did" lines per area and attention lines in all (40.4)
   # Areas, in a fixed order (an area's index keys its draws in stream `automation`; append only).
   # seat: the seat whose holder owns it (null: none). roles: lead roles. energy: an owner's energy a month to run it.
