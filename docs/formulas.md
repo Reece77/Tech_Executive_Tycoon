@@ -3232,6 +3232,20 @@ Roles a lead needs that are not yet in `roles.yaml` are added by the milestone t
 
 Areas, owners, eligibility and its reasons, displayed fit bands, limits, priorities, energy used, decisions and mistakes as outcomes, proposals, digests and records. Never an owner's true skills or score, the quality probability, the draws, or which option was best.
 
+### 40.12 Notes as built (M27a)
+
+- **One setting.** Giving an existing seat area (engineering, products, pricing, marketing, support, treasury) to its seat holder also gives the seat its authority (24.1); taking it back withdraws it, and withdrawing authority takes the area back. Authority given the old way (24.1's dialog) creates no area row, so such a company plays exactly as before (40.9). A seat holder running its own seat's existing rule keeps stream `delegate` and the rule's old key; everyone else draws from `automation` (ADR-0013 row 56).
+- **Commitment** (40.2), cents: a hiring plan's hires × the role's mid salary in the home region × 12; a marketing change's increase × 12; a repayment's amount; a research team's monthly cost × 12; a pitched move's cost over `pitch.cost_months` (capex plus 12 months' running cost). Setting a price, moving a person, launching a ready product and answering an event commit nothing.
+- **Proposals** are `exec_proposal` rows of kind `auto` holding the action; approving runs it with the founder as actor. They expire after `automation.proposal_months`; a CFO's or COO's own proposals (24.1) still lapse at the next Continue. A move pitched through 27.1 (a region, a research team, a data centre) waits as a pitch.
+- **Hiring** backfills: a plan for each role and unit someone is leaving or left last month, with the owner as delegate. Per-unit headcount targets are a follow-up.
+- **Pricing**'s anchors are the prices when the area was given, kept in the CRO's authority record (disabled unless the CRO seat was given too). Shown churn is the product screen's (11.7, from current appeal).
+- **Research** stops a project whose domain feeds no live product (projects have no displayed months to finish); a new team at most every `automation.research_every_months`, a region at most every `automation.regions_every_months` (40.10 target 1).
+- **Cloud capacity** below the band starts selling spare capacity at spot (22.3); there is no separate buy action, since products already buy spot compute they lack. Above the band (or with no data centre) it pitches 27.1's data centre, a one-off.
+- **Press** answers are the press moments' tones: measured; bold when the area allows it and monthly revenue grew for three months running; the mistake is the bolder answer. **Routine events** score a choice by its listed effects (cash per $10,000, morale, brand, quality and customers in points, a modifier per 5%), ties to a do-nothing or smaller choice.
+- **Workload** is counted apart from the owner's action energy: 100 × the support pool's coverage a month, areas in priority order.
+- **Digest filing** (40.4): while their area is automated, hiring-pipeline items (candidates, offers, plan activity), sales-capacity and region-live items, and executives' monthly decision lists are flagged `in_digest`.
+- The Automation screen opens at stage 3, or as soon as someone could run an area. Subsidiaries keep their CEO and mandate (31.4); the runner acts for the player's company.
+
 ## 41. A living world (M28; v3.5)
 
 The roadmap's first product risk: the world is shallower than the player. Miners, refiners and foundries are data; rivals don't form groups or fight each other. In Capitalism Lab rivals play the same game. Here they will, within the simulation's budget, and **2010–2025 history stays the anchor**: until 2026 prices, capacity totals and dated events follow the data exactly.
@@ -3286,6 +3300,21 @@ The roadmap's first product risk: the world is shallower than the player. Miners
 
 Rival companies' public facts: names, owners, products, facilities, public financials or estimated ranges, deals and news. Never a rival's hidden valuation, true costs beyond published ranges, capex intentions before they are announced, or seeded cycle paths.
 
+### 41.10 As built (M28 notes)
+
+- **When the world starts.** Chain companies come into being in `world.start` (January 2026): before it nothing is drawn, posted or stored, so 2010–2025 play exactly as on main (target 1's fingerprint, `tests/fixtures/m28_history.json`). The first December decision is December 2026 (41.2's "from 2025" would date a decision before 2026).
+- **Who they are.** `chain_companies.yaml` lists every supplier selling a commodity in December 2025 and every foundry, with a personality and a cost position (0–1); one "other producers" company per good holds the rest of world supply (`world_supply`, by year; foundry wafers are the foundries' nodes.yaml capacity over `1 − foundry_other_share`). A supplier's share is suppliers.yaml's, so capacities sum to world supply each year to 2025. An aggregate's capacity sits in `world.other_tranches` facilities along the cost curve (its position ± `other_spread`), so its dearest mothball first. Wafer makers (no M17 good) and suppliers whose share ended before 2026 have no company. Chain companies are `company` rows with `rival_key = (7, position)`; they are not 15.3's rivals (`rivals()` and `ledger_companies()` leave them out) and the world phase keeps their books. Their CEO and named executives are names drawn from the region's pool (stream `world`, key (4, 7, position, 0)), not people on a payroll; a CEO changes with `world.ceo_change` a year (key (4, 7, position, 1)).
+- **Facilities** are `world_facilities` (a simplified kind of the facility model): capacity a year, cost position, status `building`/`live`/`mothballed`/`closed`. A unit's cash cost is the long-run price × `cost_range` at its position, its `power_share` moving with the region's power index; fixed costs are `fixed_share` of capacity × the long-run price a year (`mothball_fixed` of it when mothballed); plant depreciates over `life_years`. A foundry wafer's long-run price is `foundry_wafer_cents` × the foundry wafer index (wafers cheapen as nodes age), its price that × the foundry market's factor.
+- **Supply and the factor.** Demand a year = December 2025's output (`base_utilisation` of capacity) grown at the data's `demand_growth`, × the regions' mean cycle multiplier, plus the player's purchases (deals, refineries' bought inputs). Supply is producers' output at normal running: `base_utilisation` × chain producers' live capacity, plus the player's output to the market (M28 decision: so a tight or slack market moves the price, not only one at the edge of capacity). What chain producers actually make is demand less the player's supply, inside `utilisation` of capacity. The factor `clamp((demand / supply) ^ elasticity, factor_min, factor_max)` multiplies the next month's seeded index (never the AR(1) base). In a real shortage (demand over actual output) spot buyers get what rivals' offtakes leave: allocation ≤ (output − contracted) / (demand − contracted). From 2026 the foundry market's 38.3 factor reads the named foundries' live chain capacity instead of their seeded growth.
+- **December decisions.** In order of cost, each company looks at each good it makes. It expands when the market at the build's arrival (`build_months` of the good) would be tight without it (that projected factor ≥ 1: M28 decision), its outlook (`outlook_spot_weight` × the last 12 months' mean price + the rest × the long-run price) × the projected factor with its expansion tops a new unit's full cost (cash cost + fixed + capex / life) × (1 + `hurdle`), and net debt is under `max_leverage` × a year's EBITDA. Size: `expand_share` by personality × its capacity × a draw in [0.75, 1.25] (stream `world`, key (0, 7, position, good index)). Capex is paid at the order, borrowed beyond cash within the leverage test. A mothballed facility restarts after spot tops its cash cost × (1 + hurdle) for `restart_months` (M28 decision: 41.2 names no restart).
+- **Books.** One entry a company a month: revenue (4400; foundries 4420), cost of goods (5000), fixed costs (6900), interest at the base rate + `interest_spread` (7000), depreciation (6700/1510). Opening books in January 2026: cash `open_cash_months` of revenue, plant at `open_book` of replacement capex (`capex_years` × the long-run price per unit of yearly capacity), debt `open_leverage` × EBITDA, equity the rest. A cash shortfall is borrowed while net debt stays under the leverage line; otherwise it counts, and after `insolvent_months` the company fails and closes its plants. Cash above `repay_cash_months` of costs repays debt. Aggregates always borrow.
+- **Breach risk** (from 2026): 33.3's chance × `breach_distress` when the supplier's costs top its revenue, it has insolvent months or a mothballed plant of the good; × `breach_healthy` above 80% utilisation; a failed supplier, or one with every plant of the good closed, breaches at once and signs nothing new.
+- **Groups.** A quarter's first month: incumbents and named chain companies no one owns, with cash above `groups.cash_months` of costs, draw (stream `world`, key (3, *rival_key, 0)) against `rival_mna_rate`. A buyer scores the chain companies (and, for an incumbent, incumbents) it can pay for from cash beyond the buffer by `groups.fit` for the deal's kind ÷ price, and considers only vertical deals (an incumbent selling devices, servers or chips buying a producer of a secured input or foundry wafers) and horizontal ones (the same good, or a shared category). Price: value × (1 + `groups.premium`), a chain company's value `ev_multiple` × EBITDA less net debt, an incumbent's market cap or V_f. Antitrust is 28.4's lines and strictness on the two groups' combined share of a good's world capacity (28.4's customers test for two incumbents); a review lasts `groups.review_months`, its outcome drawn at agreement. At closing the buyer's cash goes to 1810, an `ownership` row records the holding, and the target runs under `groups.mandate[buyer personality]` with that mandate's personality (grow aggressive, margin premium, cash cost leader); a `cash` subsidiary does not expand, a `margin` one doubles its hurdle. Spin-offs (December): a listed rival owner whose group's 31.7 discount (segments: its distinct goods and categories) exceeds `spinoff_discount` spins its least related subsidiary off to its shareholders (1810 against equity), one a year. Supply security (January): each incumbent selling hardware needs, of each `security_goods` input, its revenue share of `security_need` × world demand; under `security_cover` of it under offtakes it signs one with the producer with most uncontracted capacity, up to `security_target`, for `security_years`.
+- **Bids.** From 2026 the 25.4 takeover trigger gives way to rivals' own valuations: while the player's group is listed and no bid is open, each incumbent no one owns values it at V_f × (1 + `bids.tilt[personality]` + `bids.view_sd` × z) (stream `world`, key (3, *rival_key, 1); drawn each month, never stored); under `bid_discount` × that, with `bids.fund` × the price in cash, it bids with chance `bids.monthly` (at most once a year per rival), at the share price × (1 + `bids.premium`). The bid is 25.4's critical event next month; accepting sells to that rival at its bid; rejecting ends it; it lapses after 3 months. A private player gets no bids.
+- **China.** A Chinese foundry's lag is generations behind the leading node; each month it grows by the leader's new generations and shrinks by `china_catchup` / 12 while a biting rule on `china_control_goods` to China, every destination or the foundry by name applies (from October 2022's rules on), else `china_free_pace` / 12. When the leader's generation less the lag reaches a node, the foundry reaches it that month (whatever its EUV gate), never before the node's first volume; the market timeline uses these reaches for it after 2025. While controls bind it spends `china_subsidy` × its plant's capex a year on research, funded by an equal state grant.
+- **Cycles.** Stream `world`: key (2,) three uniforms a month (a global shock's start, depth and months); then each region, key (1, region index), a normal and four uniforms. A recession (`recession_depth`) or boom (`boom_depth`) starts with `recession_rate` + `boom_rate` a year in a region with none running and lasts `cycle.months`; a global shock (`global_shock_rate`, `global_depth`) replaces every region's phase. The effect is a sine arch to its depth; the multiplier is the AR(1) level × (1 + effect). Each market's addressable demand grows by the ratio of its region's multiplier to last month's (the home market reads the founder's default region).
+- **What the API shows** (41.9): capacities, statuses, a facility's cost band (its third of the cost curve), listed chain companies' revenue and EBITDA (private ones' as 28.1's displayed ranges), owners, mandates, deals, offtakes, executives and World news; a market as tight, balanced or slack. Never a rival's view of anyone, a cost position, a capex decision before its news, a cycle's level, depth or months, or the factor itself.
+
 ## 42. Onboarding, navigation and the launcher (M29; v3.5)
 
 The roadmap's third product risk: complexity has outgrown the experience. About 40 screens, many concepts, and a PowerShell setup. Nothing here changes a simulation rule.
@@ -3330,3 +3359,110 @@ Measured by `tst/balance/v3.py` (printed by `tools/v3_targets.py`, checked weekl
 - **F1. Foundry demand.** The foundry script's first 28 nm fab, with foundry contracts, reaches 70%+ use within 36 months of going live on at least 7 of 10 seeds.
 - **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039.
 - **L4 (printed).** full_integrator has ordered its whole chain (mine, refinery, wafer plant, fab, devices) by December 2024 (year 15).
+
+## 44. Platforms and ecosystems (M31; v4)
+
+Reece (2026-11-13): the player can run **its own app store and developer ecosystem**, and rivals' stores (Apple's, Google's and others) are real competitors and **gatekeepers**. Platforms are where tech's profits pooled in the 2010s: whoever owns the store owns the customer. This section adds platforms, developers, network effects, lock-in, fees, gatekeeping, open source and standards. **History holds to 2025:** platform shares, fee schedules and dated rule changes follow `platforms.yaml` (research: `docs/v4-research/platforms-dossier.md`); seeded after.
+
+### 44.1 Platforms
+
+- A **platform** is a record owned by a company (ADR-0021): a kind, a name, a region list, a fee schedule, rules (§44.5) and a state (users, developers, catalogue).
+- **Kinds:**
+  - **device platforms**: an OS and its store, attached to the owner's `devices` products;
+  - **developer platforms**: a model API, a cloud marketplace or a developer tool ecosystem, attached to the owner's `ai_models`, `cloud_hosting` or `dev_tools` products.
+- **Historical platforms** come from the data with their dates, owners and regional shares to 2025:
+  - iOS and the App Store (Apple);
+  - Android with Google Play (Google, licensed to OEMs such as Samsung);
+  - Android with Chinese stores (Huawei, Xiaomi, Tencent and others; Google Play absent in China);
+  - BlackBerry, Symbian (Nokia) and Windows Phone (Microsoft), each ending on its historical date.
+- **Device platform users.** A device platform's users in a region are the installed base of the devices running it: its owner's devices plus licensees'. Through 2025, installed-base shares by region follow the data exactly. From 2026, the installed base follows device sales and replacement (§26's `replacement_months`).
+- **The player's devices** run a licensed platform (Android by default, licence fee `platforms.android_licence_cents` per unit, with the platform's rules) or the player's own OS.
+- **Building an OS.** It is a product in a new pseudo-category `os`, with dev weights like `devices`' software side and a long build. When launched, it is attached to the player's chosen device products. Switching a device line between platforms is a one-off (§40.2).
+- **Licensing an own OS** to other OEMs (free or per unit) adds their devices' users. Rival OEMs choose a licence by fee and catalogue each December after 2025.
+
+### 44.2 Developers and the catalogue
+
+- **Developers** are a population per region (data: `developers_by_year`, then growing with `platforms.developer_growth`). Each platform holds a share of them. Every developer can be on several platforms; the share is of developer attention.
+- **Attractiveness** of platform `p` in region `r`, each month:
+
+  `A_p = U_p^α × (1 − f_p)^β × T_p × G_p`
+
+  - `U_p` is users;
+  - `f_p` is the effective fee (§44.4);
+  - `T_p` is a tools score (from the owner's `dev_tools` and SDK work, 0.5–1.5);
+  - `G_p` is developer goodwill (§44.5, 0.5–1.2);
+  - `α` = `platforms.reach_exp` (1.0) and `β` = `platforms.fee_exp` (1.0).
+- **Developer share** moves toward `A_p / Σ A` with inertia `platforms.dev_inertia` (0.97 a month, about 3 years' half-life).
+- **Multi-homing:** the top `platforms.multihome_share` (35%) of developers by size are on every platform with at least `platforms.multihome_min_users` (5%) of users.
+- **The catalogue** `C_p` accumulates developer months and decays by `platforms.catalogue_decay` (1% a month). It is shown as an index relative to the regional leader (100).
+
+### 44.3 Network effects and lock-in
+
+- **Devices.** A device's feature score gains `platforms.catalogue_points × (C_p / C_leader − 1)`, capped between −`platforms.catalogue_floor` (−25 points) and 0. A platform with a thin catalogue makes its devices less attractive, so users go to the leader, which draws more developers: the loop tips.
+- **Lock-in.** A customer of a device on platform `p` who replaces their device stays on `p` with probability `platforms.stay` (0.85 at catalogue parity, falling 0.1 per 25 index points behind the leader). Otherwise they choose afresh. Lock-in also lowers churn for developer-platform products by `platforms.dev_churn_cut` (up to 30% at full catalogue).
+- **The tipping guard (§44.9 target 2):** a challenger needs a large, sustained advantage (lower fee, better tools, better devices) for years to tip developers. Windows Phone's fate in 2010–2017 is the reference case.
+
+### 44.4 Fees
+
+- **The effective fee** `f_p` for a sale in region `r` comes from the platform's schedule: the standard rate, the subscription rate after a year, the small-business rate (sellers under the threshold), and regulated rates by region from their dates (§44.5).
+- **To 2025** the schedules follow the data:
+  - 30% standard since 2008;
+  - Apple's 15% on subscriptions after a year (2016);
+  - Apple's Small Business Program (15% under $1M, January 2021);
+  - Google's 15% on the first $1M (July 2021) and on all subscriptions (January 2022);
+  - South Korea's alternative-payment law (2021);
+  - the EU's Digital Markets Act duties (March 2024);
+  - US anti-steering rulings (2021, 2025);
+  - Japan's smartphone act (December 2025).
+- **Who pays.** Products in app-distributed categories (`platforms.app_categories`: `consumer_apps`, the consumer segment of `fintech`, `ai_models` and `b2b_saas`) pay the fee on a `paid_share` of their revenue in each region (per category: consumer apps 0.4 for in-app purchases and subscriptions; the rest smaller). Each platform's share of that revenue is its share of users in the region.
+- **Calibration that keeps history:** each app category's reference price is raised by the 2010–2025 average fee drag, so that net revenue per user to 2025 is unchanged (§44.9 target 1). The books now show gross revenue and a platform-fee cost (account `5150_platform_fees`, new).
+- **An own platform's revenue:** `fee × paid_share × revenue of every other company's app-distributed products × the platform's share of their users`, posted monthly (account `4150_platform_fees`). Rivals' apps on the player's store pay it, so the store is a business.
+
+### 44.5 Rules and gatekeeping
+
+- **A platform owner sets rules:** fee rates (within its regions' regulated limits); review strictness (lenient, standard, strict); **self-preferencing** (off, mild, strong: its own apps get `platforms.self_pref_share` (up to +20%) more share in their category on its platform); **anti-steering** (allowed or not, where law permits); and **side-loading** (allowed or not, where law permits).
+- **Developer goodwill** `G_p` falls with higher fees, strong self-preferencing and removals of large apps; it rises with fee cuts and tools.
+- **Gatekeeping the player.** Each month a rival platform owner reviews the player's app-distributed products on its platform. The chance of an action rises when the player competes with the owner's first-party products in that category, when the player's own store or payments compete with it, or when the player steers users to pay outside (stream `platforms`). Actions are a rejected update (a month's delay to the product's next feature release), a fee dispute, or a **removal**: the product loses that platform's users in the affected regions until resolved.
+- **A removal is a critical event** with three choices:
+  - **comply** (drop the feature or the steering link and pay the fee);
+  - **appeal** (1–3 months, with odds shown as a range);
+  - **go to regulators** (in regions with rules, which also feeds M34).
+- **The player as gatekeeper** reviews rivals' apps by its strictness. Strict review removes a few rivals in a category (more share for its own apps) at a goodwill and regulatory cost.
+
+### 44.6 Open source
+
+- **Open-sourcing a product** is a one-off. Its base becomes free:
+  - customers rise by `platforms.open_adoption` (×3 over 24 months, toward the category's addressable market);
+  - revenue comes only from a paid tier (`platforms.open_paid_share` of customers, 3–8% by category);
+  - the community adds `platforms.open_feature_mult` (×1.5) to the product's features per month;
+  - an open-sourced OS or developer platform gains `T_p` and goodwill.
+- It cannot be closed again without a large goodwill loss and a fork: a rival product appears with the open version's features.
+- **Historical cases** in the data: Android (open-source base), and open AI model releases from 2023.
+
+### 44.7 Standards wars
+
+- A **standard** is a format in a category: a connector, a codec, a wireless charging format, an AI model format, a cloud API. Each has sponsors and adopters.
+- Each December after 2025, a few seeded standards contests appear per `platforms.standards_rate`. Adoption moves toward the standard with the larger installed base and the better terms, with inertia.
+- **A contest tips** when one standard reaches `platforms.tip_share` (60%) of new products. Products on the losing standard lose `platforms.standard_penalty` (5 feature points) until they adopt the winner, which costs development months and, for a standard a rival owns, a licence.
+- **History to 2025 in the data:** USB-C over Lightning (the EU's common-charger rule from December 2024) and Qi over PMA.
+
+### 44.8 Rivals
+
+- **Rival platform owners** set their fees and rules by personality and history to 2025. From 2026 they respond to developer share and regulation (M34).
+- **Rival app makers** pay fees the same way.
+- **Rival OEMs** licence platforms (§44.1).
+- **A rival may launch its own store** where law allows side-loading or alternative stores (EU from 2024, Japan from December 2025), at most one a year per region.
+
+### 44.9 Balance targets (printed)
+
+1. **History holds.** Every platform share, fee schedule and dated rule to 2025 follows the data. Every app-category company's net revenue to 2025 stays within 1% of `main` before M31 (median, 10 seeds), and every earlier guard is unchanged.
+2. **Tipping is hard.** A scripted challenger platform launched in 2027 with fees 10 points lower and equal devices reaches at least 15% of developers in its regions by 2035 on at most 3 of 10 seeds. With fees 20 points lower and better tools (T 1.3), it does so on at least 5 of 10.
+3. **An own store pays.** A device maker that reaches 30% of users in its regions by 2032 earns platform fees of at least 5% of group revenue by 2035 (median).
+4. **Removals matter.** A consumer app removed from a platform with 50% of a region's users loses 30–50% of its customers there within 3 months, and recovers to 85%+ within 6 months of compliance.
+5. **Open source works.** An open-sourced developer tool has at least 2× the customers and at most 0.7× the revenue of the closed version after 36 months (median).
+6. **A software company's game** changes only through fees and rules on its apps (books otherwise identical to `main` before M31).
+7. **Turn time** within M30's budget.
+
+### 44.10 What the API may show
+
+Platforms' public facts: owners, users and developer shares as published (exact for the player's own platform; ranges for rivals' developers), fee schedules, rules, the catalogue index, removals and disputes, standards and their adoption. Never a gatekeeper's review draw or chance, rivals' private plans, or seeded future rules before they are announced.

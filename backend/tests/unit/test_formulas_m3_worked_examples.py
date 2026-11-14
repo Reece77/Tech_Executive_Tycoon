@@ -53,14 +53,21 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
     assert sorted(by_function["seller"]) == ["account_executive", "sales_representative"]
     assert by_function["marketer"] == ["marketer"]
     assert sorted(by_function["none"]) == [
+        "communications_manager",
+        "engineering_manager",
         "fab_engineer",
         "finance_manager",
         "geologist",
+        "marketing_manager",
         "mining_engineer",
         "operations_manager",
         "process_engineer",
         "recruiter",
-    ]  # M18: geologist; M19: mining engineer; M20: process engineer; M21: fab engineer
+        "research_scientist",
+        "sales_manager",
+        "site_reliability_engineer",
+    ]  # M18: geologist; M19: mining engineer; M20: process engineer; M21: fab engineer;
+    # M27a: the six area leads (40.1), none of them on a product
 
 
 def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:

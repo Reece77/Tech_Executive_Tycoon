@@ -376,11 +376,14 @@ def get_inbox(
     offset: int = Query(default=0, ge=0),
     archived: bool = False,
     needs_you: bool = False,
+    include_digest: bool = False,
 ) -> InboxOut:
     """Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
     keep only those message kinds, across every page (M3b). Archived items are hidden;
     `archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open
-    major and critical events and waiting proposals and pitches (M29, 42.4)."""
+    major and critical events and waiting proposals and pitches (M29, 42.4). Items an
+    automated area produced are left out unless `include_digest` (the digest links to them,
+    M27a 40.4)."""
     path = _path(settings, save_id)
     with repository.read_session(path) as session:
         state = repository.read_state(session)
@@ -395,6 +398,7 @@ def get_inbox(
             offset=offset,
             archived=archived,
             only=only,
+            in_digest=None if include_digest else False,
         )
         return InboxOut(
             unread=inbox.unread_count(session, player.id),
@@ -405,6 +409,7 @@ def get_inbox(
                 kinds=kind,
                 archived=archived,
                 only=only,
+                in_digest=None if include_digest else False,
             ),
             offset=offset,
             items=[

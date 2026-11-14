@@ -48,7 +48,12 @@ def test_a_new_game_shows_stage_one_screens_and_show_everything_shows_all(
     assert not ({"fabs", "mines", "world", "group", "exploration"} & shown)
     assert out["fresh"] == []
     settings = api.get("/api/settings/ui/onboarding")
-    assert settings == {"show_everything": False, "guided_first_year": True, "stop_on": "major"}
+    assert settings == {
+        "show_everything": False,
+        "guided_first_year": True,
+        "stop_on": "major",
+        "stop_for_approvals": True,  # M27a (40.2)
+    }
     api.call("PUT", "/api/settings/ui/onboarding", json={**settings, "show_everything": True})
     assert _shown(api) == {s["key"] for s in out["systems"]}
 

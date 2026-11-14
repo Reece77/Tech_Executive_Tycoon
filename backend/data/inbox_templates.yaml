@@ -627,3 +627,13 @@ templates:
   listing_appeal_lost:
     title: "Appeal rejected"
     body: "{lister} rejected the appeal. The company stays on its entity list."
+  # --- M27a (formulas.md 40) ---
+  digest: # 40.4: one a month for a company with an automated area; minor, never blocks Continue
+    title: "Your month: {month}"
+    body: "{body}"
+  area_returned: # 40.1: an area owner left or lost the seat or role; the area is the player's again
+    title: "{area} is yours again"
+    body: "{name} can no longer run {area}, so it is back with you. Give it to someone else on the Automation screen."
+  area_taken_back: # 40.1: the player took an area back
+    title: "You took back {area}"
+    body: "You now run {area} yourself; {name} no longer does.{sting}"

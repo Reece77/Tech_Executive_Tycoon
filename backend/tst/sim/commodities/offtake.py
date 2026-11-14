@@ -23,6 +23,7 @@ prices (costs.py). A deal changes what the company pays for the volume it covers
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import Final
 
 from tst.sim.calendar import format_turn
 from tst.sim.commodities import commodity, costs
@@ -125,6 +126,8 @@ def offtake_quote(
         raise CommodityRuleError(f"unknown supplier {supplier!r}")
     if not s.sells(good, state.turn):
         raise CommodityRuleError(f"{s.name} does not sell {good} in {format_turn(state.turn)}")
+    if supplier_state(state, supplier, good, balance) is None:  # M28 (41.1): failed or closed
+        raise CommodityRuleError(f"{s.name} no longer produces {good}")
     if not ob.years.lo <= years <= ob.years.hi:
         raise CommodityRuleError(f"an offtake runs {ob.years.lo:g} to {ob.years.hi:g} years")
     if volume_year <= 0:
@@ -266,13 +269,14 @@ def start_of_month(
         elif deal.kind == "offtake" and deal.supplier and data.suppliers is not None:
             s = data.suppliers.supplier(deal.supplier)
             _, until = s.window(deal.good) if s else (0, None)
-            if s is None or (until is not None and state.turn > until):
+            mult = supplier_state(state, deal.supplier, deal.good, balance)
+            if s is None or (until is not None and state.turn > until) or mult is None:
                 status = "breached"
             else:
                 spot = spot_price(state, deal.good, data, balance)
                 if spot >= deal.ceiling * ob.breach.spot_over_ceiling:
                     u = float(commodity.generator(rng, state.turn, BREACH_KEY, deal.id).random())
-                    if u < (1 - s.reliability) * ob.breach.monthly_scale:
+                    if u < (1 - s.reliability) * ob.breach.monthly_scale * mult:
                         status = "breached"
         if status is None:
             continue
@@ -333,3 +337,35 @@ def settle_month(
             entries += more
         state = with_commodity_deal(state, deal)
     return state, entries
+
+
+HEALTHY_UTILISATION: Final = 0.8  # tunable-exempt: 41.1's "running above 80%"
+
+
+def supplier_state(state: GameState, key: str, good: str, balance: Balance) -> float | None:
+    """41.1 (M28): from 2026 a supplier's breach chance reads its chain company: x
+    `world.breach_distress` with cash short (insolvent months) or costs above revenue last
+    month, or its facility of the good mothballed; x `world.breach_healthy` when its plants of
+    the good run above 80%. None when it has failed or closed every plant of the good (it
+    breaches at once); 1 before the world runs."""
+    rec = next((c for c in state.chain_companies if c.key == key), None)
+    if rec is None:
+        return 1.0
+    if not state.company(rec.company_id).alive:
+        return None
+    plants = [
+        f for f in state.world_facilities if f.company_id == rec.company_id and f.good == good
+    ]
+    if plants and all(f.status == "closed" for f in plants):
+        return None
+    wb = balance.world
+    if rec.insolvent_months > 0 or rec.costs_cents > rec.revenue_cents:
+        return wb.breach_distress
+    if any(f.status == "mothballed" for f in plants):
+        return wb.breach_distress
+    live = [f for f in plants if f.status == "live"]
+    capacity = sum(f.capacity for f in live)
+    made = sum(f.output for f in live) * MONTHS_PER_YEAR
+    if capacity > 0 and made / capacity > HEALTHY_UTILISATION:
+        return wb.breach_healthy
+    return 1.0

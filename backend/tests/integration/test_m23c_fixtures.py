@@ -35,6 +35,7 @@ V3 = [
     *[("e2e_m20_save", m, "/refineries", True) for m in ("smelter", "wafers", "curb", "gallium")],
     *[("e2e_m21_save", m, "/fabs", True) for m in ("nodes", "mature", "euv", "slots", "chipfab")],
     *[("e2e_m22_save", m, "/world", True) for m in ("chips", "gallium", "influence")],
+    ("e2e_m28_save", "world", "/world-news", True),  # M28: the practice save pt-world
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

@@ -415,7 +415,9 @@ export interface paths {
          * @description Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to
          *     keep only those message kinds, across every page (M3b). Archived items are hidden;
          *     `archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open
-         *     major and critical events and waiting proposals and pitches (M29, 42.4).
+         *     major and critical events and waiting proposals and pitches (M29, 42.4). Items an
+         *     automated area produced are left out unless `include_digest` (the digest links to them,
+         *     M27a 40.4).
          */
         get: operations["getInbox"];
         put?: never;
@@ -4966,6 +4968,209 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/automation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Automation
+         * @description Every area: who runs it (or why nobody can yet), the people who could, limits,
+         *     priority, this month's decisions and proposals waiting (40.8).
+         */
+        get: operations["getAutomation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/owner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Area Owner
+         * @description Give an area to a person (energy automation.change_energy).
+         */
+        post: operations["setAreaOwner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/take-back": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take Back Area
+         * @description Manage an area yourself again.
+         */
+        post: operations["takeBackArea"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Area Settings
+         * @description An owned area's limit, priority, routine events and bold claims. Free.
+         */
+        post: operations["setAreaSettings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plan
+         * @description Automate everything, before anything changes: who would run each area (40.8).
+         */
+        get: operations["getAutomatePlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Automate All
+         * @description Apply the confirmed plan, area by area.
+         */
+        post: operations["automateEverything"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Digest
+         * @description A month's digest (40.4): the last month played unless `turn` names one; null when no
+         *     area was automated that month.
+         */
+        get: operations["getDigest"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/automation/record/{person_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Record
+         * @description An owner's record (40.3): decisions, proposals and their outcomes, pitches.
+         */
+        get: operations["getOwnerRecord"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/world-news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * World News
+         * @description Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest
+         *     first, filtered by company, region, good and kind (41.7).
+         */
+        get: operations["getWorldNews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/chain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chain
+         * @description Chain companies by good: capacity, output and utilisation (41.1).
+         */
+        get: operations["getChain"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5512,6 +5717,102 @@ export interface components {
             /** Answer Date Label */
             answer_date_label: string;
         };
+        /** AreaIn */
+        AreaIn: {
+            /** Area */
+            area: string;
+        };
+        /** AreaOut */
+        AreaOut: {
+            /** Area */
+            area: string;
+            /** Label */
+            label: string;
+            /** Seat */
+            seat: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "manage" | "automated" | "cant";
+            /**
+             * Reason
+             * @description Can't automate yet: why, and how to fix it
+             */
+            reason?: string | null;
+            owner?: components["schemas"]["CandidateOut"] | null;
+            /** Candidates */
+            candidates: components["schemas"]["CandidateOut"][];
+            /** Limit Cents */
+            limit_cents?: number | null;
+            /** Priority */
+            priority?: number | null;
+            /**
+             * Answer Events
+             * @default true
+             */
+            answer_events?: boolean;
+            /**
+             * Allow Bold
+             * @default false
+             */
+            allow_bold?: boolean;
+            /**
+             * Events
+             * @description The area answers routine events of its categories
+             */
+            events: boolean;
+            /**
+             * Energy
+             * @description Energy an owner spends a month running it
+             */
+            energy: number;
+            /**
+             * Decisions
+             * @description Decisions this month
+             */
+            decisions: number;
+            /**
+             * Mistakes
+             * @description Visible missteps this month
+             */
+            mistakes: number;
+            /** Proposals Waiting */
+            proposals_waiting: number;
+            /** No Time */
+            no_time: boolean;
+            /** Over Budget */
+            over_budget: boolean;
+            /**
+             * Screen
+             * @description The front-end path of the area's own screen
+             */
+            screen: string;
+        };
+        /** AreaOwnerIn */
+        AreaOwnerIn: {
+            /** Area */
+            area: string;
+            /** Person Id */
+            person_id: number;
+            /** Limit Cents */
+            limit_cents?: number | null;
+            /** Priority */
+            priority?: number | null;
+        };
+        /** AreaSettingsIn */
+        AreaSettingsIn: {
+            /** Area */
+            area: string;
+            /** Limit Cents */
+            limit_cents?: number | null;
+            /** Priority */
+            priority?: number | null;
+            /** Answer Events */
+            answer_events?: boolean | null;
+            /** Allow Bold */
+            allow_bold?: boolean | null;
+        };
         /** AssignIn */
         AssignIn: {
             /**
@@ -5529,6 +5830,21 @@ export interface components {
             unit_id: number | null;
             /** Name */
             name: string;
+        };
+        /** AssignmentOut */
+        AssignmentOut: {
+            /** Area */
+            area: string;
+            /** Label */
+            label: string;
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Fit */
+            fit: string;
+            /** Limit Cents */
+            limit_cents: number;
         };
         /** AttributeOut */
         AttributeOut: {
@@ -5587,6 +5903,44 @@ export interface components {
              * @description What the seat does with authority
              */
             acts_on: string;
+        };
+        /**
+         * AutomateAllIn
+         * @description The plan the player confirmed (from GET automation/plan).
+         */
+        AutomateAllIn: {
+            /** Assignments */
+            assignments: components["schemas"]["AreaOwnerIn"][];
+        };
+        /** AutomatePlanOut */
+        AutomatePlanOut: {
+            /** Assignments */
+            assignments: components["schemas"]["AssignmentOut"][];
+            /**
+             * Left Out
+             * @description Areas nobody can run yet
+             */
+            left_out: string[];
+        };
+        /** AutomationActionOut */
+        AutomationActionOut: {
+            automation: components["schemas"]["AutomationOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** AutomationOut */
+        AutomationOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Areas */
+            areas: components["schemas"]["AreaOut"][];
+            /** Default Limit Cents */
+            default_limit_cents: number;
+            /** Stop For Approvals */
+            stop_for_approvals: boolean;
         };
         /** BackStartupIn */
         BackStartupIn: {
@@ -6006,6 +6360,30 @@ export interface components {
              */
             offer_blocked_reason: string | null;
         };
+        /** CandidateOut */
+        CandidateOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "seat" | "ceo" | "lead" | "subsidiary_ceo";
+            /**
+             * Fit
+             * @description weak fit, fair fit or strong fit, from displayed ranges
+             */
+            fit: string;
+            /**
+             * Energy Left
+             * @description Automation energy a month left after their areas
+             */
+            energy_left: number;
+        };
         /** CapTableOut */
         CapTableOut: {
             /** Fd Shares */
@@ -6383,6 +6761,31 @@ export interface components {
              */
             learned_label: string;
         };
+        /** ChainGoodOut */
+        ChainGoodOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Capacity Year */
+            capacity_year: number;
+            /**
+             * Output Year
+             * @description Last month's output a year
+             */
+            output_year: number;
+            /** Utilisation */
+            utilisation: number;
+            /**
+             * Market
+             * @description tight, balanced or slack: last month's market
+             */
+            market: string;
+            /** Producers */
+            producers: components["schemas"]["ChainProducerOut"][];
+        };
         /** ChainLinkOut */
         ChainLinkOut: {
             /**
@@ -6401,6 +6804,40 @@ export interface components {
              * @description Names of the links it feeds
              */
             supplies: string[];
+        };
+        /** ChainOut */
+        ChainOut: {
+            /** Started */
+            started: boolean;
+            /** Goods */
+            goods: components["schemas"]["ChainGoodOut"][];
+        };
+        /** ChainProducerOut */
+        ChainProducerOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Country Label */
+            country_label: string;
+            /**
+             * Capacity Year
+             * @description Live capacity a year, the good's volume unit
+             */
+            capacity_year: number;
+            /**
+             * Building
+             * @description Announced capacity under construction
+             */
+            building: number;
+            /** Mothballed */
+            mothballed: number;
+            /**
+             * Share
+             * @description Share of the good's live world capacity
+             */
+            share: number;
+            owner: components["schemas"]["CompanyRefOut"] | null;
         };
         /** ChangePreviewOut */
         ChangePreviewOut: {
@@ -6897,6 +7334,11 @@ export interface components {
             supplier: string | null;
             /** Supplier Name */
             supplier_name: string | null;
+            /**
+             * Supplier Company Id
+             * @description M28: the supplier's company page (from 2026)
+             */
+            supplier_company_id?: number | null;
             /** Signed */
             signed: string;
             /** Ends */
@@ -7108,6 +7550,13 @@ export interface components {
             months: number;
             /** Plans */
             plans: components["schemas"]["CommodityPlanOut"][];
+        };
+        /** CompanyRefOut */
+        CompanyRefOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
         };
         /** ComponentOut */
         ComponentOut: {
@@ -7543,6 +7992,55 @@ export interface components {
             done_turn: number;
             /** Done */
             done: boolean;
+        };
+        /** DigestAreaOut */
+        DigestAreaOut: {
+            /** Area */
+            area: string;
+            /** Label */
+            label: string;
+            /** Person Id */
+            person_id: number;
+            /** Owner */
+            owner: string;
+            /** Did */
+            did: number;
+            /** Lines */
+            lines: string[];
+            /** Committed Cents */
+            committed_cents: number;
+            /** Limit Cents */
+            limit_cents: number;
+            /** Mistakes */
+            mistakes: string[];
+            /** Proposals */
+            proposals: number[];
+            /** Kpis */
+            kpis: components["schemas"]["KpiOut"][];
+            /** Notes */
+            notes: string[];
+        };
+        /** DigestOut */
+        DigestOut: {
+            /** Turn */
+            turn: number;
+            /** Month */
+            month: string;
+            /** Opening */
+            opening: string;
+            /** Areas */
+            areas: components["schemas"]["DigestAreaOut"][];
+            /** Attention */
+            attention: string[];
+            /** Quarter Reports */
+            quarter_reports: boolean;
+            /** Inbox Item Id */
+            inbox_item_id?: number | null;
+            /**
+             * Items
+             * @description Inbox items the automated areas produced this month
+             */
+            items?: number[];
         };
         /** DiligenceIn */
         DiligenceIn: {
@@ -8197,6 +8695,15 @@ export interface components {
             ai_spend_cents: number;
             /** Ai Budget Cents */
             ai_budget_cents: number;
+        };
+        /** ExecutiveOut */
+        ExecutiveOut: {
+            /** Role */
+            role: string;
+            /** Name */
+            name: string;
+            /** Since Label */
+            since_label: string;
         };
         /**
          * ExitChoiceOut
@@ -9018,6 +9525,24 @@ export interface components {
             open_bridge_expires_label: string | null;
             /** Bridge Energy */
             bridge_energy: number;
+        };
+        /** FinancialsOut */
+        FinancialsOut: {
+            /** Listed */
+            listed: boolean;
+            /**
+             * Revenue Year Cents
+             * @description Listed: last month x 12
+             */
+            revenue_year_cents: number | null;
+            /**
+             * Ebitda Year Cents
+             * @description Listed: the last 12 months
+             */
+            ebitda_year_cents: number | null;
+            /** @description Private: an estimate */
+            revenue_range: components["schemas"]["MoneyRangeOut"] | null;
+            ebitda_range: components["schemas"]["MoneyRangeOut"] | null;
         };
         /** FireOut */
         FireOut: {
@@ -10477,6 +11002,12 @@ export interface components {
              */
             quote?: string | null;
             /**
+             * In Digest
+             * @description From an automated area; the month's digest links to it (40.4)
+             * @default false
+             */
+            in_digest?: boolean;
+            /**
              * Event Links
              * @description Events this message links to (M7c)
              */
@@ -10808,6 +11339,23 @@ export interface components {
              * @description Interests and work style are visible
              */
             profile_known: boolean;
+        };
+        /** KpiOut */
+        KpiOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Now */
+            now: number;
+            /** Last */
+            last: number | null;
+            /** Target */
+            target: number | null;
+            /** Money */
+            money: boolean;
+            /** Text */
+            text: string;
         };
         /** KpiPointOut */
         KpiPointOut: {
@@ -12031,7 +12579,7 @@ export interface components {
             /** Acquisitions */
             acquisitions: components["schemas"]["AcquisitionOut"][];
             /** Subsidiaries */
-            subsidiaries: components["schemas"]["SubsidiaryOut"][];
+            subsidiaries: components["schemas"]["tst__api__schemas__mna__SubsidiaryOut"][];
             /**
              * Listed
              * @description Whether you can pay in shares
@@ -12108,6 +12656,13 @@ export interface components {
              * @description Answered this month, not with no comment
              */
             can_promise: boolean;
+        };
+        /** MoneyRangeOut */
+        MoneyRangeOut: {
+            /** Low Cents */
+            low_cents: number;
+            /** High Cents */
+            high_cents: number;
         };
         /**
          * MoraleBreakdownOut
@@ -12559,6 +13114,19 @@ export interface components {
              */
             prepay?: number;
         };
+        /** OfftakeOut */
+        OfftakeOut: {
+            buyer: components["schemas"]["CompanyRefOut"];
+            seller: components["schemas"]["CompanyRefOut"];
+            /** Good Label */
+            good_label: string;
+            /** Volume */
+            volume: number;
+            /** Unit */
+            unit: string;
+            /** Ends Label */
+            ends_label: string;
+        };
         /**
          * Onboarding
          * @description M29 (42.1-42.4). `stop_on`: the lowest severity that stops Continue and is a holiday's
@@ -12584,6 +13152,11 @@ export interface components {
              */
             stop_on?: "major" | "critical";
             /**
+             * Stop For Approvals
+             * @default true
+             */
+            stop_for_approvals?: boolean;
+            /**
              * Dismissed Checklists
              * @description Save ids whose Getting started was dismissed
              */
@@ -12601,6 +13174,12 @@ export interface components {
              * @enum {string}
              */
             stop_on: "major" | "critical";
+            /**
+             * Stop For Approvals
+             * @description A one-off from someone running an area stops a holiday (M27a, 40.2)
+             * @default true
+             */
+            stop_for_approvals?: boolean;
         };
         /** OpenRoundOut */
         OpenRoundOut: {
@@ -14822,6 +15401,36 @@ export interface components {
             /** Incident Rate */
             incident_rate: number;
         };
+        /**
+         * RecordOut
+         * @description An owner's record (40.3): outcomes only.
+         */
+        RecordOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Areas */
+            areas: string[];
+            /** Decisions Year */
+            decisions_year: number;
+            /** Mistakes Year */
+            mistakes_year: number;
+            /** Proposals */
+            proposals: number;
+            /** Proposals Approved */
+            proposals_approved: number;
+            /** Proposals Declined */
+            proposals_declined: number;
+            /** Proposals Expired */
+            proposals_expired: number;
+            /** Pitches Hit */
+            pitches_hit: number;
+            /** Pitches Missed */
+            pitches_missed: number;
+            /** Recent */
+            recent: string[];
+        };
         /** RefineriesActionOut */
         RefineriesActionOut: {
             refineries: components["schemas"]["RefineriesOut"];
@@ -15577,6 +16186,8 @@ export interface components {
             recent_moves: components["schemas"]["RivalMoveOut"][];
             /** Poach Energy */
             poach_energy: number;
+            /** @description M28 (41.7): owner and group, executives, facilities, financials, deals */
+            world?: components["schemas"]["WorldCompanyOut"] | null;
         };
         /** RivalRowOut */
         RivalRowOut: {
@@ -16905,24 +17516,6 @@ export interface components {
              */
             cash_cents: number[];
         };
-        /** SubsidiaryOut */
-        SubsidiaryOut: {
-            /** Company Id */
-            company_id: number;
-            /** Name */
-            name: string;
-            /**
-             * Directive
-             * @enum {string}
-             */
-            directive: "grow" | "harvest" | "defend";
-            /** Mrr Cents */
-            mrr_cents: number;
-            /** Cash Cents */
-            cash_cents: number;
-            /** Staff */
-            staff: number;
-        };
         /** SubsidiaryUpdateOut */
         SubsidiaryUpdateOut: {
             /** Company Id */
@@ -17017,6 +17610,11 @@ export interface components {
             country_label?: string | null;
             /** Listing */
             listing: string;
+            /**
+             * Company Id
+             * @description M28: its company page (from 2026)
+             */
+            company_id?: number | null;
             /**
              * Reliability
              * @description Chance it keeps delivering through a severe shock
@@ -17914,6 +18512,125 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** WorldCompanyOut */
+        WorldCompanyOut: {
+            /**
+             * Kind
+             * @description chain (a miner, refiner or foundry) or tech
+             */
+            kind: string;
+            /** Country Label */
+            country_label: string | null;
+            owner: components["schemas"]["CompanyRefOut"] | null;
+            /** Subsidiaries */
+            subsidiaries: components["schemas"]["tst__api__schemas__world__SubsidiaryOut"][];
+            /**
+             * Mandate
+             * @description What its owner runs it for
+             */
+            mandate: string | null;
+            /** Executives */
+            executives: components["schemas"]["ExecutiveOut"][];
+            /** Facilities */
+            facilities: components["schemas"]["WorldFacilityOut"][];
+            financials: components["schemas"]["FinancialsOut"] | null;
+            /** Deals */
+            deals: components["schemas"]["WorldDealOut"][];
+            /** Offtakes */
+            offtakes: components["schemas"]["OfftakeOut"][];
+            /** News */
+            news: components["schemas"]["WorldNewsItemOut"][];
+        };
+        /** WorldDealOut */
+        WorldDealOut: {
+            /** Date Label */
+            date_label: string;
+            buyer: components["schemas"]["CompanyRefOut"];
+            target: components["schemas"]["CompanyRefOut"];
+            /** Price Cents */
+            price_cents: number;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+        };
+        /** WorldFacilityOut */
+        WorldFacilityOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Country */
+            country: string;
+            /** Country Label */
+            country_label: string;
+            /** Region */
+            region: string;
+            /** Capacity Year */
+            capacity_year: number;
+            /** Unit */
+            unit: string;
+            /**
+             * Status
+             * @description live, building, mothballed or closed
+             */
+            status: string;
+            /**
+             * Cost Band
+             * @description Its third of the good's cost curve: low, middle or high
+             */
+            cost_band: string;
+            /**
+             * Ready Label
+             * @description An announced build's month
+             */
+            ready_label: string | null;
+        };
+        /** WorldNewsItemOut */
+        WorldNewsItemOut: {
+            /** News Id */
+            news_id: number;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Kind */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Message */
+            message: string;
+            company: components["schemas"]["CompanyRefOut"] | null;
+            other: components["schemas"]["CompanyRefOut"] | null;
+            region: components["schemas"]["tst__api__schemas__world__NamedOut"] | null;
+            good: components["schemas"]["tst__api__schemas__world__NamedOut"] | null;
+        };
+        /** WorldNewsOut */
+        WorldNewsOut: {
+            /**
+             * Started
+             * @description The living world runs from January 2026
+             */
+            started: boolean;
+            /**
+             * Items
+             * @description Newest first, after the filters
+             */
+            items: components["schemas"]["WorldNewsItemOut"][];
+            /**
+             * Companies
+             * @description Every company the feed names
+             */
+            companies: components["schemas"]["CompanyRefOut"][];
+            /** Regions */
+            regions: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+            /** Goods */
+            goods: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+            /** Kinds */
+            kinds: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+        };
         /** WorldOut */
         WorldOut: {
             /** Turn */
@@ -18042,6 +18759,24 @@ export interface components {
             /** Level */
             level: number;
         };
+        /** SubsidiaryOut */
+        tst__api__schemas__mna__SubsidiaryOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Directive
+             * @enum {string}
+             */
+            directive: "grow" | "harvest" | "defend";
+            /** Mrr Cents */
+            mrr_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Staff */
+            staff: number;
+        };
         /** EventLinkOut */
         tst__api__schemas__people__EventLinkOut: {
             /** Event Id */
@@ -18088,6 +18823,21 @@ export interface components {
              * @description The HQ's region, whose markets are v1's (19.5)
              */
             home: boolean;
+        };
+        /** NamedOut */
+        tst__api__schemas__world__NamedOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** SubsidiaryOut */
+        tst__api__schemas__world__SubsidiaryOut: {
+            company: components["schemas"]["CompanyRefOut"];
+            /** Mandate */
+            mandate: string;
+            /** Since Label */
+            since_label: string;
         };
     };
     responses: never;
@@ -19549,6 +20299,7 @@ export interface operations {
                 offset?: number;
                 archived?: boolean;
                 needs_you?: boolean;
+                include_digest?: boolean;
             };
             header?: never;
             path: {
@@ -34207,6 +34958,610 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaletteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getAutomation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setAreaOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AreaOwnerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    takeBackArea: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AreaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setAreaSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AreaSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getAutomatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomatePlanOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    automateEverything: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomateAllIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getDigest: {
+        parameters: {
+            query?: {
+                turn?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestOut"] | null;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getOwnerRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getWorldNews: {
+        parameters: {
+            query?: {
+                company?: number | null;
+                region?: string | null;
+                good?: string | null;
+                kind?: string | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldNewsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getChain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChainOut"];
                 };
             };
             /** @description Bad Request */

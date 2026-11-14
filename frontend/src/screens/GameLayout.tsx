@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router';
 import { AchievementToasts } from '../components/AchievementToast';
 import { Breadcrumbs } from '../components/Breadcrumbs';
+import { RunBy } from '../components/RunBy';
 import { CommandPalette } from '../components/CommandPalette';
 import { CooPanel } from '../components/CooPanel';
 import { CriticalEventModal, SetAsideBanner } from '../components/EventCard';
@@ -136,6 +137,7 @@ export function GameLayout() {
         />
         <main className="tst-main" data-testid="working-pane">
           <Breadcrumbs saveId={saveId} />
+          <RunBy />
           {overview.error && (
             <Alert color="red" title="Could not load the game" role="alert">
               {overview.error.message}

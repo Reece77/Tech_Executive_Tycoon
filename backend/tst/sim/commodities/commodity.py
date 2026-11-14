@@ -11,7 +11,8 @@ history (`commodities_history.yaml`, the same on every seed); after it, a seeded
   `gap_months` months after the latest ended: the price rises by a drawn share for a drawn
   number of months, spot allocation falls to a drawn level, then the rise fades over as many
   months (M12a's rule);
-- `index = base x (1 + the shock's premium)`.
+- `index = base x (1 + the shock's premium)`, x the good's balance factor from 2026 (41.2, M28:
+  `world_month`).
 
 Power is a good by region (`power_<region>`): an index with North America 1.0 in every month;
 history to 2025 (`power_history.yaml`), then the same AR(1) toward the region's 2010-2019 mean
@@ -44,6 +45,7 @@ UNIFORMS = 5  # tunable-exempt: start, kind, rise, allocation and length draws
 COMMODITY_KEY = 0  # tunable-exempt: stream key family for commodities (0, good_index)
 POWER_KEY = 1  # tunable-exempt: stream key family for power (1, region_index)
 POWER_PREFIX = "power_"  # tunable-exempt: a power good's key is power_<region>
+TINY = 1e-9  # tunable-exempt: a floor against dividing by zero
 EXPORT_BAN = "export_ban"  # tunable-exempt: the shock kind that concentration makes likelier
 
 
@@ -233,7 +235,23 @@ def commodity_month(
     cb = balance.commodity
     top = data.commodities.good(history.key).top_share
     level = history.long_run / mean
-    return step_commodity(prev, turn, draws(rng, turn, i), level, cb.vol[history.key], top, cb)
+    month = step_commodity(prev, turn, draws(rng, turn, i), level, cb.vol[history.key], top, cb)
+    return world_month(state, month)
+
+
+def world_month(state: GameState, month: GoodMonth) -> GoodMonth:
+    """41.2 (M28): from 2026 the seeded month's index x last month's balance factor of the
+    good's world month, and in a shortage spot buyers get what rivals' offtakes leave. The AR(1)
+    `base` never takes the factor. Without a world month (before 2026) the month is unchanged."""
+    w = next((g for g in state.world_goods if g.good == month.good), None)
+    if w is None:
+        return month
+    allocation = month.allocation
+    if w.demand > w.output > 0:
+        left = max(0.0, w.output - w.contracted)
+        wanted = max(w.demand - w.contracted, TINY)
+        allocation = min(allocation, max(0.0, min(1.0, left / wanted)))
+    return replace(month, index=month.index * w.factor, allocation=allocation)
 
 
 def power_month(

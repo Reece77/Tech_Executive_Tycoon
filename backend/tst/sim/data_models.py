@@ -77,6 +77,7 @@ from tst.sim.press.config import (
 )
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
+from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
 
@@ -962,6 +963,73 @@ class ExecAuthorityBalance(_Frozen):
         return self
 
 
+class AutomationArea(_Frozen):
+    """One automatable area (formulas.md 40.1, M27a)."""
+
+    label: str = Field(min_length=1)
+    seat: str | None = None  # the seat whose holder owns it (18.3); None: none
+    roles: tuple[str, ...]  # lead roles (40.1)
+    energy: int = Field(gt=0)  # an owner's energy a month to run it (40.3)
+    weights: dict[str, float]  # the area score's skill weights, summing to 1 (40.3)
+    kpis: tuple[str, ...] = Field(min_length=1)  # the digest's KPIs (40.4)
+    rule: str = Field(min_length=1)  # the engine rule (40.6)
+    events: tuple[str, ...] = ()  # event categories it answers (40.5)
+
+    @model_validator(mode="after")
+    def _check(self) -> AutomationArea:
+        if abs(sum(self.weights.values()) - 1) > WEIGHT_TOLERANCE:
+            raise ValueError(f"automation area {self.label!r}: weights must sum to 1")
+        if any(w < 0 for w in self.weights.values()):
+            raise ValueError(f"automation area {self.label!r}: weights must not be negative")
+        if self.seat is not None and self.seat not in AUTHORITY_SEATS:
+            raise ValueError(f"automation area {self.label!r}: unknown seat {self.seat!r}")
+        return self
+
+
+class AutomationBalance(_Frozen):
+    """Automation everywhere (formulas.md 40, M27a)."""
+
+    lead_min_level: str
+    change_energy: int = Field(ge=0)
+    take_back_months: int = Field(ge=0)
+    take_back_ego: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale 1-20
+    take_back_morale: float = Field(ge=0)
+    default_limit_bp: int = Field(ge=0)
+    limit_round_cents: int = Field(gt=0)
+    min_limit_cents: int = Field(ge=0)
+    monthly_limit_mult: int = Field(gt=0)
+    commitment_months: int = Field(gt=0)
+    layoff_share: float = Field(gt=0, le=1)
+    long_contract_months: int = Field(gt=0)
+    proposal_months: int = Field(gt=0)
+    repropose_months: int = Field(ge=0)
+    owner_energy: int = Field(gt=0)
+    quality: ExecQuality
+    mistake_off: float = Field(ge=0, le=1)
+    price_band: float = Field(ge=0, le=1)
+    price_step: float = Field(gt=0, le=1)
+    churn_low: float = Field(ge=0, le=1)
+    research_budget_bp: int = Field(ge=0)
+    research_stop_months: int = Field(gt=0)
+    cloud_band: tuple[float, float]
+    cloud_step: float = Field(gt=0, le=1)
+    regions_every_months: int = Field(gt=0)
+    research_every_months: int = Field(gt=0)
+    digest_lines: int = Field(gt=0)
+    areas: dict[str, AutomationArea]
+
+    @model_validator(mode="after")
+    def _check(self) -> AutomationBalance:
+        if self.lead_min_level not in LEVELS:
+            raise ValueError(f"automation.lead_min_level must be one of {list(LEVELS)}")
+        lo, hi = self.cloud_band
+        if not 0 <= lo < hi <= 1:
+            raise ValueError("automation.cloud_band must be 0 <= low < high <= 1")
+        if not self.areas:
+            raise ValueError("automation.areas must list at least one area")
+        return self
+
+
 class PitchSpread(_Frozen):
     at_zero: float = Field(ge=0)
     per_score: float = Field(ge=0)
@@ -1284,6 +1352,8 @@ class Balance(_Frozen):
     mining: MiningBalance  # M19 (formulas.md 35)
     fab: FabBalance  # M21 (formulas.md 38)
     contracts: ContractsBalance  # M23a: breaking contracts, counterparties, foundry contracts
+    automation: AutomationBalance  # M27a (formulas.md 40)
+    world: WorldBalance  # M28 (formulas.md 41): chain companies, groups, bids, cycles
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1431,6 +1501,7 @@ class Role(_Frozen):
     work_style_weights: dict[str, float]
     interest_weights: dict[str, float]
     salary_band_mid_cents: dict[str, int]
+    founder_fit: bool = True  # M27a: False keeps a lead role out of the founder's best fit (1)
 
     @model_validator(mode="after")
     def _check(self) -> Role:
@@ -1989,6 +2060,7 @@ class GameData(_Frozen):
     countries: CountriesFile | None = None
     controls: ExportControlsFile | None = None
     tariffs: TariffsFile | None = None
+    chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

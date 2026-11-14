@@ -63,6 +63,7 @@ class InboxMessage:
     read: bool
     archived: bool = False
     bookmarked: bool = False  # M10b (23.1)
+    in_digest: bool = False  # M27a (40.4)
     event_links: tuple[tuple[int, str], ...] = ()  # (event id, label), M7c
 
 
@@ -105,6 +106,7 @@ def inbox_rows(
                 read=False,
                 archived=False,
                 bookmarked=False,
+                in_digest=item.in_digest,
             )
         )
     return rows
@@ -120,6 +122,7 @@ def list_inbox(
     offset: int = 0,
     archived: bool | None = None,
     only: ColumnElement[bool] | None = None,
+    in_digest: bool | None = None,
 ) -> list[InboxMessage]:
     """Newest first; `offset` skips that many (paging, M2b); `kinds` keeps only those
     templates (M3b); `archived` keeps only archived (True) or unarchived (False) items, or
@@ -133,6 +136,8 @@ def list_inbox(
         stmt = stmt.where(InboxItemRow.template.in_(kinds))
     if archived is not None:
         stmt = stmt.where(InboxItemRow.archived.is_(archived))
+    if in_digest is not None:  # M27a (40.4): the default view hides the digest's items
+        stmt = stmt.where(InboxItemRow.in_digest.is_(in_digest))
     stmt = stmt.order_by(InboxItemRow.id.desc()).offset(offset)
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -147,6 +152,7 @@ def inbox_total(
     kinds: Sequence[str] | None = None,
     archived: bool | None = None,
     only: ColumnElement[bool] | None = None,
+    in_digest: bool | None = None,
 ) -> int:
     stmt = (
         select(func.count()).select_from(InboxItemRow).where(InboxItemRow.company_id == company_id)
@@ -159,6 +165,8 @@ def inbox_total(
         stmt = stmt.where(InboxItemRow.template.in_(kinds))
     if archived is not None:
         stmt = stmt.where(InboxItemRow.archived.is_(archived))
+    if in_digest is not None:  # M27a (40.4): the default view hides the digest's items
+        stmt = stmt.where(InboxItemRow.in_digest.is_(in_digest))
     return int(session.scalar(stmt) or 0)
 
 
@@ -285,6 +293,7 @@ def _message(row: InboxItemRow) -> InboxMessage:
         read=row.read,
         archived=row.archived,
         bookmarked=row.bookmarked,
+        in_digest=bool(row.in_digest),
     )
 
 

@@ -24,7 +24,7 @@ class KnownMiss:
 KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
         target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
-        owner="M23",
+        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
         # score: minus the margin gap (larger is worse); known while the AI integrator is no
         # more than 2 points below ai_regions (product manager, 2026-11-07)
         worse_than=0.02,
@@ -32,7 +32,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="V5.cells",  # 30.7 V5: >= 75% of (run, category, decade after 2020) cells
-        owner="M23",
+        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
         # score: the empty share; known while at most 40% empty (product manager,
         # 2026-11-07, fifth round: owned by M23, fails below 60%)
         worse_than=0.40,
@@ -40,7 +40,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="V5.cats",  # 30.7 V5: no category misses a decade in more than 2 of 10 runs
-        owner="M23",
+        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
         # score: the most runs a category-decade is empty in, as a share; known up to 70%
         worse_than=0.70,
         reason="2030s category-decades empty in up to 6 of 10 runs (M15a): as V5.cells",

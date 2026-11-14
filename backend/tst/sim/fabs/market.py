@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
@@ -46,7 +47,30 @@ def nodes_file(data: GameData) -> NodesFile:
 
 
 def timeline(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
-    return nd.timeline(state.save_meta.master_seed, nodes_file(data), balance.fab)
+    """The seed's node timeline; from 2026 a Chinese foundry's reach after 2025 is the living
+    world's (41.5, M28: tst.sim.world.china) instead of its seeded lag."""
+    base = nd.timeline(state.save_meta.master_seed, nodes_file(data), balance.fab)
+    if not state.china_lags:
+        return base
+    key = (id(base), tuple((x.foundry, x.reached) for x in state.china_lags))
+    got = _OVERLAY.get(key)
+    if got is None:
+        if len(_OVERLAY) > _OVERLAY_SIZE:
+            _OVERLAY.clear()
+        reach = {
+            k: t
+            for k, t in base.reach.items()
+            if not (t > HISTORY_END and any(k[0] == x.foundry for x in state.china_lags))
+        }
+        for x in state.china_lags:
+            for node, turn in x.reached:
+                reach[(x.foundry, node)] = turn
+        got = _OVERLAY[key] = replace(base, reach=reach)
+    return got
+
+
+_OVERLAY: dict[tuple[object, ...], nd.Timeline] = {}
+_OVERLAY_SIZE: Final = 256  # tunable-exempt: memo entries kept
 
 
 def player_slots(state: GameState) -> float:
@@ -59,14 +83,39 @@ def price_factor(state: GameState, balance: Balance, data: GameData) -> float:
     if data.nodes is None:
         return 1.0
     tl = timeline(state, balance, data)
-    return nd.price_factor(tl, data.nodes, state.turn, balance.fab, player_slots(state))
+    rivals = world_capacity(state, data)
+    return nd.price_factor(tl, data.nodes, state.turn, balance.fab, player_slots(state), rivals)
 
 
 def allocation_factor(state: GameState, balance: Balance, data: GameData) -> float:
     if data.nodes is None:
         return 1.0
     tl = timeline(state, balance, data)
-    return nd.allocation_factor(tl, data.nodes, state.turn, balance.fab, player_slots(state))
+    rivals = world_capacity(state, data)
+    return nd.allocation_factor(
+        tl, data.nodes, state.turn, balance.fab, player_slots(state), rivals
+    )
+
+
+def world_capacity(state: GameState, data: GameData) -> float | None:
+    """The rival foundries' open capacity after 2025 from the living world (41.2, M28): each
+    named foundry's live chain capacity (wafers a year as thousand starts a month) x its open
+    share. None before the world runs (the seeded growth of 38.3 applies)."""
+    if state.turn <= HISTORY_END or not state.world_facilities or data.nodes is None:
+        return None
+    named = {f.key: f for f in data.nodes.foundries}
+    total = 0.0
+    for rec in state.chain_companies:
+        f = named.get(rec.key)
+        if f is None:
+            continue
+        wafers = sum(
+            x.capacity
+            for x in state.world_facilities
+            if x.company_id == rec.company_id and x.status == "live"
+        )
+        total += wafers / (THOUSAND * MONTHS) * nd.open_share(f, state.turn)
+    return total
 
 
 def in_volume(state: GameState, node: str, balance: Balance, data: GameData) -> bool:

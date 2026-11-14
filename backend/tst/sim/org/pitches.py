@@ -1273,9 +1273,13 @@ def pitch_month(
     kinds: tuple[PitchKind, ...],
     true_score: float,
     at_controls: bool,
+    *,
+    limit_cents: int | None = None,
 ) -> None:
     """One executive's quarterly pitch (27.1): lapse a still-pending pitch, draw, choose,
-    then pend or (on Holiday, under the limit) carry it out."""
+    then pend or (on Holiday, under the limit) carry it out. `limit_cents`: the area owner's
+    money limit, which replaces auto_approve_cents (M27a, 40.2); one-offs always wait."""
+    from tst.sim.automation.config import ONE_OFF_PITCHES
     from tst.sim.org.delegates import DelegateRun
 
     assert isinstance(run, DelegateRun)
@@ -1305,9 +1309,14 @@ def pitch_month(
     person = state.person(holder)
     name = f"{person.first_name} {person.last_name}"
     policy = state.pitch_policy(company)
-    limit = auto_approve_limit(cash, policy.auto_approve_cents, b.pitch)
-    # acquisitions never go ahead on their own, whatever the limit (28.7)
-    if pitch.kind != "acquisition" and auto_approves(
+    limit = (
+        auto_approve_limit(cash, policy.auto_approve_cents, b.pitch)
+        if limit_cents is None
+        else limit_cents
+    )
+    # acquisitions never go ahead on their own, whatever the limit (28.7); nor, from M27a,
+    # any one-off (40.2)
+    if pitch.kind not in ONE_OFF_PITCHES and auto_approves(
         pitch.cost_cents, limit, on_holiday=not at_controls
     ):
         founder = state.founder_of(company)

@@ -32,7 +32,11 @@ export async function setupGame(page: Page, opts: SetupOptions): Promise<string>
 export async function answerBlocking(page: Page, opts: { proposals?: boolean } = {}) {
   const save = new URL(page.url()).pathname.split('/')[2];
   const events = await (await page.request.get(`/api/saves/${save}/events`)).json();
-  for (const id of events.blocking_event_ids as number[]) {
+  // A critical event first: the save is read only until it is answered (M23r), so another
+  // event answered before it is refused (M27a's flow (a) found this).
+  const critical = events.blocking_event_id as number | null;
+  const ids = (events.blocking_event_ids as number[]).filter((id) => id !== critical);
+  for (const id of critical ? [critical, ...ids] : ids) {
     await page.request.post(`/api/saves/${save}/events/${id}/choose`, { data: { choice: 'A' } });
   }
   // An executive's proposal blocks too (24.1, M10c): flows not about it decline it.

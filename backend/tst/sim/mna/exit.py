@@ -15,12 +15,22 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna.models import Deal
 from tst.sim.money import exact, format_money
 from tst.sim.state import GameState, public_of, with_acquisition
+from tst.sim.world.models import WorldBid
 
 EXIT: Final = "exit"
 
 
+def open_bid(state: GameState) -> WorldBid | None:
+    """The living world's open bid for the player (41.4, M28), if any: the latest."""
+    return next((b for b in reversed(state.world_bids) if b.status == "open"), None)
+
+
 def buyer_of(state: GameState) -> int | None:
-    """The bidder: the rival with the highest last monthly revenue (ties: lowest id)."""
+    """The bidder: the rival whose bid is open (41.4, M28), else the rival with the highest
+    last monthly revenue (ties: lowest id)."""
+    bid = open_bid(state)
+    if bid is not None and state.company(bid.rival_id).alive:
+        return bid.rival_id
     rivals = [c for c in state.rivals() if c.parent_id is None]
     if not rivals:
         return None
@@ -50,6 +60,15 @@ def sell_company(
     if public is None or buyer is None:
         return state, [], []
     per_share = round(public.price_cents * (1 + exact(balance.public.takeover.premium)))
+    bid = open_bid(state)
+    if bid is not None and bid.rival_id == buyer:  # 41.4: the rival's own bid a share
+        per_share = bid.price_cents
+        state = replace(
+            state,
+            world_bids=tuple(
+                replace(b, status="accepted") if b.id == bid.id else b for b in state.world_bids
+            ),
+        )
     shares = fd_shares(state, company_id)
     price = per_share * shares
     buyer_name = state.company(buyer).name

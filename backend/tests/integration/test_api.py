@@ -311,6 +311,24 @@ EXPLORATION_FORBIDDEN_NAMES = frozenset(
     }
 )
 
+# M28 (41.9): never a rival's valuation of anyone, a facility's cost position (only its band),
+# a cycle's level, depth or months, a facility's mothball counters or the world's balance factor
+# (caught above as `factor`).
+WORLD_FORBIDDEN_NAMES = frozenset(
+    {
+        "cost_position",
+        "view_cents",
+        "valuation_cents",
+        "rival_view",
+        "phase_months",
+        "phase_start",
+        "below_months",
+        "above_months",
+        "multiplier",
+        "cycle_level",
+    }
+)
+
 
 def forbidden(name: str) -> bool:
     """ADR-0007 exact-name rule (potential_phrase is allowed), plus the 11.13 names."""
@@ -324,6 +342,7 @@ def forbidden(name: str) -> bool:
         or name in FOUNDER_FORBIDDEN_NAMES
         or name in INVESTING_FORBIDDEN_NAMES
         or name in EXPLORATION_FORBIDDEN_NAMES
+        or name in WORLD_FORBIDDEN_NAMES
         or name.startswith(FORBIDDEN_PREFIXES)
     )
 

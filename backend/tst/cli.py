@@ -3870,8 +3870,9 @@ def upgrade_fab_cmd(
 
 @app.command("world")
 def world_cmd(save: SaveOpt) -> None:
-    """Blocs, tension, the export rules announced so far, licences and your exposure (39)."""
-    from tst.api import geopolitics_views
+    """Blocs, tension, the export rules announced so far, licences and your exposure (39);
+    from 2026 the chain companies by good: capacity and utilisation (M28, 41.1)."""
+    from tst.api import geopolitics_views, world_views
 
     _, data, state = _game(save)
     w = geopolitics_views.world_out(state, data)
@@ -3901,6 +3902,22 @@ def world_cmd(save: SaveOpt) -> None:
         )
     for lx in w.listings:
         typer.echo(f"  listed: {lx.company} on {lx.actor_label}'s entity list since {lx.since}")
+    chain = world_views.chain(state, data)
+    if not chain.started:
+        typer.echo("Chain companies run from January 2026 (41.1).")
+    for g in chain.goods:
+        typer.echo(
+            f"{g.label}: {g.capacity_year:,.0f} {g.unit} a year, "
+            f"{g.utilisation:.0%} used, {g.market}"
+        )
+        for pr in g.producers:
+            extra = f", building {pr.building:,.0f}" if pr.building else ""
+            extra += f", mothballed {pr.mothballed:,.0f}" if pr.mothballed else ""
+            owner = f" (owned by {pr.owner.name})" if pr.owner else ""
+            typer.echo(
+                f"  {pr.company_id:>4}  {pr.name:<36} {pr.country_label:<16}"
+                f" {pr.capacity_year:>14,.0f} {pr.share:>5.0%}{extra}{owner}"
+            )
 
 
 @app.command("licence-request")
@@ -3933,6 +3950,166 @@ def compliant_variant_cmd(
     result = _run(path, data, LaunchVariant(_founder(state), product))
     typer.echo(f"Compliant variant of product {product} launched {format_turn(state.turn)}")
     typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- Automation (M27a, formulas.md 40) -----------------------------------------------------------
+
+
+def _automation_cash(path: Path, state: GameState) -> int:
+    from tst.sim.state import company_cash
+
+    with repository.open_session(path) as session:
+        return company_cash(repository.current_balances(session, state.turn), state.player.id)
+
+
+@app.command("automation")
+def automation_cmd(save: SaveOpt) -> None:
+    """Every area: who runs it, or who could, or why nobody can yet (40.8)."""
+    from tst.api import automation_views
+
+    path, data, state = _game(save)
+    out = automation_views.automation_out(state, _automation_cash(path, state), data, True)
+    typer.echo(
+        f"Automation for {out.company_name} (default limit {format_money(out.default_limit_cents)})"
+    )
+    for a in out.areas:
+        if a.owner is not None:
+            limit = format_money(a.limit_cents or 0)
+            status = f"run by {a.owner.name} ({a.owner.role}, {a.owner.fit}), limit {limit}"
+            status += f", priority {a.priority}; {a.decisions} decisions this month"
+            if a.proposals_waiting:
+                status += f", {a.proposals_waiting} proposals waiting"
+            if a.no_time:
+                status += ", no time this month"
+        elif a.status == "cant":
+            status = f"can't automate yet: {a.reason}"
+        else:
+            names = ", ".join(f"{c.name} [{c.person_id}] ({c.fit})" for c in a.candidates)
+            status = f"you manage it; could go to {names}"
+        typer.echo(f"  {a.area:<12} {a.label}: {status}")
+
+
+@app.command("automate")
+def automate_cmd(
+    save: SaveOpt,
+    area: Annotated[str | None, typer.Option("--area", help="An area key (tst automation)")] = None,
+    owner: Annotated[int | None, typer.Option("--owner", help="The person's id")] = None,
+    limit: Annotated[int | None, typer.Option("--limit", help="Money limit in cents")] = None,
+    everything: Annotated[bool, typer.Option("--all", help="Automate everything (40.8)")] = False,
+) -> None:
+    """Give an area to a person, or automate everything with the best displayed fits."""
+    from tst.sim.automation.actions import SetAreaOwner
+    from tst.sim.automation.plan import automate_everything
+
+    path, data, state = _game(save)
+    actor = _actor(state)
+    if everything:
+        plan = automate_everything(
+            state, _automation_cash(path, state), data.balance, data.game_data
+        )
+        if not plan:
+            raise _fail("nothing left that anyone can run")
+        result = None
+        for a in plan:
+            result = _run(path, data, SetAreaOwner(actor, a.area, a.person_id, a.limit_cents))
+            person = state.person(a.person_id)
+            typer.echo(
+                f"{a.area}: {person.first_name} {person.last_name}, "
+                f"limit {format_money(a.limit_cents)}"
+            )
+        if result is not None:
+            typer.echo(f"  {_energy(result.new_state, data)}")
+        return
+    if area is None or owner is None:
+        raise _fail("give --area and --owner, or --all")
+    result = _run(path, data, SetAreaOwner(actor, area, owner, limit))
+    o = result.new_state.area_owner(result.new_state.player.id, area)
+    person = result.new_state.person(owner)
+    typer.echo(
+        f"{area}: {person.first_name} {person.last_name}, "
+        f"limit {format_money(o.limit_cents if o else 0)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("take-back")
+def take_back_cmd(
+    save: SaveOpt, area: Annotated[str, typer.Option("--area", help="An area key")]
+) -> None:
+    """Manage an area yourself again (40.1)."""
+    from tst.sim.automation.actions import TakeBackArea
+
+    path, data, state = _game(save)
+    result = _run(path, data, TakeBackArea(_actor(state), area))
+    typer.echo(f"You manage {area} again")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+# --- M28 (formulas.md 41): a living world ------------------------------------------------------
+
+
+@app.command("company")
+def company_cmd(
+    save: SaveOpt,
+    rival: Annotated[str, typer.Option("--rival", help="A rival's name (or the start of it)")],
+) -> None:
+    """A rival's company page (41.7): owner and group, executives, facilities, financials,
+    deals and news."""
+    from tst.api import rival_views
+
+    _, data, state, balances = _rival_view(save)
+    wanted = rival.casefold()
+    found = [c for c in state.companies if not c.is_player and c.name.casefold() == wanted]
+    found = found or [
+        c for c in state.companies if not c.is_player and c.name.casefold().startswith(wanted)
+    ]
+    if not found:
+        raise _fail(f"no rival named {rival!r}")
+    company = min(found, key=lambda c: c.id)
+    p = rival_views.rival_profile(state, company, balances, data, list(state.rival_moves))
+    typer.echo(f"{p.name} ({p.personality_label}){' - failed' if p.failed else ''}")
+    w = p.world
+    if w is None:
+        typer.echo("  The living world starts in January 2026 (41.1).")
+        return
+    if w.country_label:
+        typer.echo(f"  {w.kind} company in {w.country_label}")
+    if w.owner:
+        typer.echo(f"  owned by {w.owner.name}, run for {w.mandate or '-'}")
+    for s in w.subsidiaries:
+        typer.echo(f"  subsidiary: {s.company.name} ({s.mandate}) since {s.since_label}")
+    for ex in w.executives:
+        typer.echo(f"  {ex.role}: {ex.name} (since {ex.since_label})")
+    for f in w.facilities:
+        ready = f", ready {f.ready_label}" if f.ready_label else ""
+        typer.echo(
+            f"  facility {f.facility_id}: {f.good_label} in {f.country_label}, "
+            f"{f.capacity_year:,.0f} {f.unit} a year, {f.status}{ready}, {f.cost_band} cost"
+        )
+    fin = w.financials
+    if fin is not None and fin.listed:
+        typer.echo(
+            f"  revenue {format_money(fin.revenue_year_cents or 0)} a year, EBITDA "
+            f"{format_money(fin.ebitda_year_cents or 0)}"
+        )
+    elif fin is not None and fin.revenue_range is not None and fin.ebitda_range is not None:
+        rr, er = fin.revenue_range, fin.ebitda_range
+        typer.echo(
+            f"  revenue {format_money(rr.low_cents)}-{format_money(rr.high_cents)} a year "
+            f"(estimated), EBITDA {format_money(er.low_cents)}-{format_money(er.high_cents)}"
+        )
+    for d in w.deals:
+        typer.echo(
+            f"  deal {d.date_label}: {d.buyer.name} buys {d.target.name} for "
+            f"{format_money(d.price_cents)} ({d.kind}, {d.status})"
+        )
+    for o in w.offtakes:
+        typer.echo(
+            f"  offtake: {o.buyer.name} from {o.seller.name}, {o.volume:,.0f} {o.unit} of "
+            f"{o.good_label} a year to {o.ends_label}"
+        )
+    for n in w.news:
+        typer.echo(f"  {n.date_label} [{n.kind_label}] {n.message}")
 
 
 if __name__ == "__main__":

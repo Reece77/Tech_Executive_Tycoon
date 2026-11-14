@@ -261,6 +261,7 @@ def get_onboarding_settings(settings: SettingsDep) -> OnboardingSettings:
         show_everything=ob.show_everything,
         guided_first_year=ob.guided_first_year,
         stop_on=ob.stop_on,
+        stop_for_approvals=ob.stop_for_approvals,
     )
 
 
@@ -276,6 +277,7 @@ def update_onboarding_settings(
             show_everything=body.show_everything,
             guided_first_year=body.guided_first_year,
             stop_on=body.stop_on,
+            stop_for_approvals=body.stop_for_approvals,
         ),
     )
     return get_onboarding_settings(settings)

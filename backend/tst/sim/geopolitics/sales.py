@@ -35,6 +35,7 @@ part of today's customers; one that falls (a licence approved) keeps the rest.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region
@@ -286,11 +287,63 @@ def exits(state: GameState, balance: Balance, data: GameData) -> GameState:
         leave = remaining * rate
         if leave > 0:
             state = _remove(state, pid, region, segment, home, leave)
+            state = _to_chinese_rival(state, pid, region, segment, home, leave, data)
             remaining -= leave
         if share > EPS or remaining > EPS:
             out.append(Exit(pid, region, segment, remaining, share))
     out.sort(key=lambda x: (x.product_id, x.region, x.segment))
     return replace(state, exits=tuple(out))
+
+
+CHINA: Final = "china"  # tunable-exempt: countries.yaml key of China (41.5)
+
+
+def _to_chinese_rival(
+    state: GameState,
+    pid: int,
+    region: str,
+    segment: str,
+    home: str | None,
+    n: float,
+    data: GameData,
+) -> GameState:
+    """41.5 (M28): from 2026 the customers a controlled seller loses in a closed destination go
+    to the Chinese rival (countries.yaml `rivals`) with the most customers on a product of the
+    same category in that region and segment; before 2026 (and with none) they leave the market,
+    as M22 had it."""
+    if not state.chain_companies or data.countries is None:
+        return state
+    seller = state.product(pid)
+    if seller is None:
+        return state
+    chinese = {
+        c.id
+        for c in state.rivals()
+        if data.countries.rivals.get(c.name) == CHINA and c.id != seller.company_id
+    }
+    best: tuple[float, int] | None = None
+    for p in state.products:
+        if p.company_id not in chinese or p.category != seller.category:
+            continue
+        if p.status not in ("live", "sunset"):
+            continue
+        if region == home:
+            seg = state.product_segment(p.id, segment)
+            have = seg.customers if seg is not None else None
+        else:
+            have = next(
+                (
+                    r.customers
+                    for r in state.regional_segments_of(p.id, region)
+                    if r.segment == segment
+                ),
+                None,
+            )
+        if have is not None and (best is None or (have, -p.id) > (best[0], -best[1])):
+            best = (have, p.id)
+    if best is None:
+        return state
+    return _remove(state, best[1], region, segment, home, -n)
 
 
 def _remove(

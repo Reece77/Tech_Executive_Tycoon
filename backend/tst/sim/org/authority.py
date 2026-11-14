@@ -437,6 +437,7 @@ def run_executives(
     """Phase 2, after the hiring delegates (ADR-0015): every executive with authority, the
     player's company only, seats in 24.1 order; then each one's quarterly pitch (27.1, M13b).
     `at_controls`: the player's own Continue, so pitches wait for the founder."""
+    from tst.sim.automation.config import AREA_PITCH_KINDS, SEAT_AREA
     from tst.sim.org.pitches import SEAT_KINDS, follow_through, pitch_month
 
     if state.pitches:
@@ -452,7 +453,16 @@ def run_executives(
         score = true_score(run.state, holder, a.seat, balance)  # never shown (24.4)
         u = float(delegate_draws(rng, state.turn, holder, QUALITY_KEY + index).random())
         seat = _Seat(run, a, holder, u < decision_quality(score, ea.quality))
-        match a.seat:
+        owned = state.area_owner(company, SEAT_AREA[a.seat]) is not None
+        kinds = tuple(  # M27a (40.6): an owned area's rule makes these moves itself
+            k
+            for k in SEAT_KINDS[a.seat]
+            if not any(
+                k in pk and state.area_owner(company, area) is not None
+                for area, pk in AREA_PITCH_KINDS.items()
+            )
+        )
+        match a.seat if not owned else "":  # M27a (40.3): an owned area runs in automation
             case "cto":
                 _cto(seat, data)
             case "cro":
@@ -475,7 +485,17 @@ def run_executives(
                 ExecDecision(did, company, a.seat, holder, state.turn, text, mistake),
             )
             lines.append(f"{name} ({a.seat.upper()}) {text}{' (a misstep)' if mistake else ''}")
-        pitch_month(run, company, a.seat, holder, SEAT_KINDS[a.seat], score, at_controls)
+        limit = state.area_owner(company, SEAT_AREA[a.seat])  # 40.2: the owner's limit
+        pitch_month(
+            run,
+            company,
+            a.seat,
+            holder,
+            kinds,
+            score,
+            at_controls,
+            limit_cents=limit.limit_cents if limit is not None else None,
+        )
     if lines:
         run.logs.append(
             inbox_item(state.turn, company, "exec_decisions", summary="; ".join(lines) + ".")

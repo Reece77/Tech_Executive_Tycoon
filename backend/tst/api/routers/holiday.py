@@ -86,6 +86,7 @@ def start_holiday(
         data,
         body.months if body.months is not None else keys.default_months,
         body.stop or _default_stop(settings, data),
+        stop_for_approvals=interruptions.stop_for_approvals(settings.resolved_save_dir()),
     )
     return _out(job, job.turn, data, _default_stop(settings, data))
 

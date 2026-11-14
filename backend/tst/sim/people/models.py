@@ -163,9 +163,10 @@ def role_ability(skills: Skills, role: Role) -> float:
 
 def best_fit_role(skills: Skills, data: GameData) -> tuple[Role, float]:
     """The role giving the highest CA; ties go to the role listed first (formulas.md 1)."""
-    best = data.roles[0]
+    roles = [r for r in data.roles if r.founder_fit]  # M27a: lead roles are not a best fit
+    best = roles[0]
     best_ca = role_ability(skills, best)
-    for role in data.roles[1:]:
+    for role in roles[1:]:
         ca = role_ability(skills, role)
         if ca > best_ca:
             best, best_ca = role, ca

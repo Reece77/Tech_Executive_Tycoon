@@ -55,6 +55,9 @@ class CommodityDealOut(BaseModel):
     good_label: str
     supplier: str | None
     supplier_name: str | None
+    supplier_company_id: int | None = Field(
+        default=None, description="M28: the supplier's company page (from 2026)"
+    )
     signed: str
     ends: str
     volume_year: float
@@ -86,6 +89,7 @@ class SupplierOut(BaseModel):
     country: str | None = Field(default=None, description="M23a: where the supplier sits")
     country_label: str | None = None
     listing: str
+    company_id: int | None = Field(default=None, description="M28: its company page (from 2026)")
     reliability: float = Field(description="Chance it keeps delivering through a severe shock")
     goods: list[SupplierGoodOut]
     revenue_2010_usd_m: float | None

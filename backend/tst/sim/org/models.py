@@ -101,7 +101,7 @@ class HiringPlan:
 # --- Executives with authority (formulas.md 24, M10c) -----------------------------------------
 
 type GuardValue = int | float | tuple[int, ...] | tuple[str, ...]
-type ProposalKind = Literal["round", "loan", "lease"]
+type ProposalKind = Literal["round", "loan", "lease", "auto"]  # auto: an area owner's (M27a, 40.2)
 # M13b (27.1): big moves an executive pitches
 type PitchKind = Literal[
     "new_product",
@@ -119,7 +119,8 @@ type PitchKind = Literal[
 type PitchStatus = Literal["pending", "approved", "auto_approved", "declined", "modified", "lapsed"]
 type PitchOutcome = Literal["hit", "miss", "too_early"]
 type CaseUnit = Literal["cents_month", "points", "people", "customers", "cents"]
-type ProposalStatus = Literal["pending", "approved", "declined", "lapsed"]
+# expired: an automation proposal left unanswered for automation.proposal_months (M27a, 40.2)
+type ProposalStatus = Literal["pending", "approved", "declined", "lapsed", "expired"]
 
 
 @dataclass(frozen=True, slots=True)

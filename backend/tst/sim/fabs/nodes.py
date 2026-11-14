@@ -211,14 +211,21 @@ def market_expected(nodes: NodesFile, turn: int, fb: FabBalance) -> float:
 
 
 def price_factor(
-    tl: Timeline, nodes: NodesFile, turn: int, fb: FabBalance, player_slots: float
+    tl: Timeline,
+    nodes: NodesFile,
+    turn: int,
+    fb: FabBalance,
+    player_slots: float,
+    rivals: float | None = None,
 ) -> float:
     """The foundry market's price factor (38.3): (expected / actual)^elasticity, actual being
     the rivals' open capacity plus the player's sold slots (thousand starts a month). Exactly
-    1 through 2025 when the player sells none: M12b's prices (38.5 target 6)."""
+    1 through 2025 when the player sells none: M12b's prices (38.5 target 6). `rivals`, when
+    given, is the rivals' open capacity from the living world (41.2, M28)."""
     if turn <= HISTORY_END and player_slots <= 0:
         return 1.0
-    actual = market_capacity(tl, nodes, turn, fb) + player_slots
+    open_rivals = market_capacity(tl, nodes, turn, fb) if rivals is None else rivals
+    actual = open_rivals + player_slots
     expected = market_expected(nodes, turn, fb)
     if actual <= 0:
         return fb.capacity.bounds.hi
@@ -227,7 +234,12 @@ def price_factor(
 
 
 def allocation_factor(
-    tl: Timeline, nodes: NodesFile, turn: int, fb: FabBalance, player_slots: float
+    tl: Timeline,
+    nodes: NodesFile,
+    turn: int,
+    fb: FabBalance,
+    player_slots: float,
+    rivals: float | None = None,
 ) -> float:
     """Allocation in the foundry market x this (38.3): 1 through 2025 without the player's
     slots; after it, short when the rivals' capacity lags what the market expects."""
@@ -236,7 +248,8 @@ def allocation_factor(
     expected = market_expected(nodes, turn, fb)
     if expected <= 0:
         return 1.0
-    actual = market_capacity(tl, nodes, turn, fb) + player_slots
+    open_rivals = market_capacity(tl, nodes, turn, fb) if rivals is None else rivals
+    actual = open_rivals + player_slots
     value = float((actual / expected) ** fb.capacity.elasticity)
     return min(fb.capacity.bounds.hi, max(fb.capacity.bounds.lo, value))
 

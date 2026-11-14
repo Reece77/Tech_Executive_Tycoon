@@ -80,6 +80,12 @@ def _note(month: GoodMonth, turn: int) -> str:
     return "Full allocation"
 
 
+def chain_company_id(state: GameState, key: str | None) -> int | None:
+    """A supplier's chain company (M28, 41.1), once the world runs."""
+    rec = next((c for c in state.chain_companies if c.key == key), None) if key else None
+    return rec.company_id if rec is not None else None
+
+
 def deal_out(state: GameState, deal_id: int, data: LoadedData) -> CommodityDealOut:
     d, b = data.game_data, data.balance
     deal = next(x for x in state.commodity_deals if x.id == deal_id)
@@ -94,6 +100,7 @@ def deal_out(state: GameState, deal_id: int, data: LoadedData) -> CommodityDealO
         good_label=d.commodities.good(deal.good).label,
         supplier=deal.supplier,
         supplier_name=supplier.name if supplier else None,
+        supplier_company_id=chain_company_id(state, deal.supplier),
         supplier_country_label=(
             supplier_country_label(d, supplier.key, supplier.region) if supplier else None
         ),
@@ -178,6 +185,7 @@ def commodities_out(
                 country=supplier_country(d, s.key, s.region),
                 country_label=supplier_country_label(d, s.key, s.region),
                 listing=s.listing,
+                company_id=chain_company_id(state, s.key),
                 reliability=s.reliability,
                 goods=[
                     SupplierGoodOut(

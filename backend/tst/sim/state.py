@@ -10,6 +10,7 @@ from operator import attrgetter
 from types import MappingProxyType
 from typing import Any, Final
 
+from tst.sim.automation.models import AreaDecision, AreaOwner
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.errors import GroupDataError
@@ -116,12 +117,25 @@ from tst.sim.research.models import (
     ResearchProject,
 )
 from tst.sim.rivals.models import (
+    CHAIN_KEY,
     FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
     SegmentShare,
     WorkforcePool,
+)
+from tst.sim.world.models import (
+    ChainCompany,
+    ChinaLag,
+    RegionCycle,
+    RivalDeal,
+    RivalMandate,
+    WorldBid,
+    WorldFacility,
+    WorldGood,
+    WorldNews,
+    WorldOfftake,
 )
 
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
@@ -188,6 +202,11 @@ class CompanyState:
         return not self.is_player
 
     @property
+    def is_chain(self) -> bool:
+        """A chain company (M28, 41.1): a miner, refiner, gas company or foundry from 2026."""
+        return self.rival_key[:1] == (CHAIN_KEY,)
+
+    @property
     def alive(self) -> bool:
         return self.failed_turn is None
 
@@ -248,6 +267,10 @@ class GameState:
     proposals: tuple[Proposal, ...] = ()
     pitches: tuple[Pitch, ...] = ()  # M13b (27.1): pending and recent pitches, by id
     pitch_policies: tuple[PitchPolicy, ...] = ()  # M13b: by company_id
+    # M27a (40): area owners by (company_id, area); the last months' area decisions by
+    # (company_id, turn, seq). No owner row: the player manages the area.
+    area_owners: tuple[AreaOwner, ...] = ()
+    area_decisions: tuple[AreaDecision, ...] = ()
     macro: MacroMonth | None = None  # the indicators phase 1 last set (M10, 20.1)
     loans: tuple[Loan, ...] = ()  # every loan, sorted by id (M10, 20.3)
     # M9 (19.2, 19.5): open offices by id; other regions' markets by (category, segment,
@@ -372,6 +395,21 @@ class GameState:
     sites: tuple[Site, ...] = ()
     exits: tuple[Exit, ...] = ()
     geo_notices: tuple[Notice, ...] = ()
+    # M28 (41): the living world from January 2026: chain companies by company id, their
+    # facilities by id, each good's last world month by good, regions' cycles by region, World
+    # news by id (the last world.news_months), rival-on-rival deals by id, rival owners'
+    # mandates by company id, rivals' offtakes by id, bids for the player by id, Chinese
+    # foundries' lags by foundry. All empty before 2026.
+    chain_companies: tuple[ChainCompany, ...] = ()
+    world_facilities: tuple[WorldFacility, ...] = ()
+    world_goods: tuple[WorldGood, ...] = ()
+    region_cycles: tuple[RegionCycle, ...] = ()
+    world_news: tuple[WorldNews, ...] = ()
+    rival_deals: tuple[RivalDeal, ...] = ()
+    rival_mandates: tuple[RivalMandate, ...] = ()
+    world_offtakes: tuple[WorldOfftake, ...] = ()
+    world_bids: tuple[WorldBid, ...] = ()
+    china_lags: tuple[ChinaLag, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def mine(self, mine_id: int) -> Mine | None:
@@ -567,15 +605,26 @@ class GameState:
         return tuple(s for s in self.seats if s.company_id == company_id)
 
     def ledger_companies(self) -> tuple[CompanyState, ...]:
-        """Companies with books: the player and every rival still in business (M5, 15.1)."""
-        return tuple(c for c in self.companies if c.is_player or c.failed_turn is None)
+        """Companies with books: the player and every rival still in business (M5, 15.1).
+        Chain companies keep books too, but the world phase runs them (M28, 41.1)."""
+        return tuple(
+            c for c in self.companies if c.is_player or (c.failed_turn is None and not c.is_chain)
+        )
 
     def company_pools(self, company_id: int) -> tuple[WorkforcePool, ...]:
         return tuple(p for p in self.pools if p.company_id == company_id)
 
     def rivals(self) -> tuple[CompanyState, ...]:
-        """Rival companies still in business (M5)."""
-        return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
+        """Rival companies still in business (M5); chain companies are the world's (M28)."""
+        return tuple(
+            c
+            for c in self.companies
+            if not c.is_player and c.failed_turn is None and not c.is_chain
+        )
+
+    def chain(self) -> tuple[CompanyState, ...]:
+        """Chain companies still in business (M28, 41.1)."""
+        return tuple(c for c in self.companies if c.is_chain and c.failed_turn is None)
 
     def event(self, event_id: int) -> GameEvent | None:
         return next((e for e in self.events if e.id == event_id), None)
@@ -600,6 +649,14 @@ class GameState:
             (p for p in self.pitch_policies if p.company_id == company_id),
             PitchPolicy(company_id),
         )
+
+    def area_owner(self, company_id: int, area: str) -> AreaOwner | None:
+        return next(
+            (o for o in self.area_owners if o.company_id == company_id and o.area == area), None
+        )
+
+    def owners_of(self, company_id: int) -> tuple[AreaOwner, ...]:
+        return tuple(o for o in self.area_owners if o.company_id == company_id)
 
     def pending_proposals(self, company_id: int) -> tuple[Proposal, ...]:
         return tuple(
@@ -1090,6 +1147,26 @@ def with_pitch(state: GameState, pitch: Pitch) -> GameState:
 def with_pitch_policy(state: GameState, policy: PitchPolicy) -> GameState:
     return replace(
         state, pitch_policies=_upsert(state.pitch_policies, policy, lambda p: p.company_id)
+    )
+
+
+def with_area_owner(state: GameState, owner: AreaOwner) -> GameState:
+    return replace(
+        state, area_owners=_upsert(state.area_owners, owner, lambda o: (o.company_id, o.area))
+    )
+
+
+def without_area_owner(state: GameState, company_id: int, area: str) -> GameState:
+    kept = tuple(o for o in state.area_owners if (o.company_id, o.area) != (company_id, area))
+    return replace(state, area_owners=kept)
+
+
+def with_area_decisions(state: GameState, decisions: list[AreaDecision]) -> GameState:
+    return replace(
+        state,
+        area_decisions=_upsert_many(
+            state.area_decisions, decisions, lambda d: (d.company_id, d.turn, d.seq)
+        ),
     )
 
 

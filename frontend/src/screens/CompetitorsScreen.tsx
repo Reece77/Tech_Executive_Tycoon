@@ -56,6 +56,9 @@ export function CompetitorsScreen() {
             <Link to={`/game/${saveId}/competitors/world`} data-testid="world-link">
               World
             </Link>
+            <Link to={`/game/${saveId}/competitors/world-news`} data-testid="world-news-link">
+              World news
+            </Link>
             <div
               role="group"
               aria-label="Filter rivals"

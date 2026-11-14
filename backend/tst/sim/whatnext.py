@@ -57,6 +57,47 @@ def _from_issue(issue: Issue) -> Item:
     return Item(issue.key, issue.text, issue.link_kind, issue.link_id)
 
 
+def automation_items(state: GameState, balance: Balance) -> list[Item]:
+    """Areas whose owner ran out of time or budget last month, else areas the team could run
+    (40.3, 40.8): at most one line each."""
+    from tst.sim.automation import owners
+
+    cid = state.player.id
+    month = [d for d in state.area_decisions if d.company_id == cid and d.turn == state.turn - 1]
+    short = sorted(
+        {
+            owners.area_def(balance, d.area).label
+            for d in month
+            if d.kind in ("no_time", "over_budget")
+        }
+    )
+    if short:
+        return [
+            Item(
+                "automation_short",
+                f"{', '.join(short)} went short last month: change priorities, limits or owners.",
+                "automation",
+            )
+        ]
+    if state.player.stage < balance.exec_seats.stage:
+        return []
+    open_areas = [
+        a
+        for a in owners.area_keys(balance)
+        if state.area_owner(cid, a) is None and owners.eligible_people(state, cid, a, balance)
+    ]
+    if not open_areas:
+        return []
+    n = len(open_areas)
+    return [
+        Item(
+            "automation_open",
+            f"Your team could run {n} area{'s' if n != 1 else ''} for you: see Automation.",
+            "automation",
+        )
+    ]
+
+
 def what_next(
     state: GameState,
     cash: Cents,
@@ -79,6 +120,7 @@ def what_next(
         if risk is not None and risk.link_kind == "event" and issue.link_id == risk.link_id:
             continue  # the same event, already first
         items.append(_from_issue(issue))
+    items += automation_items(state, balance)  # M27a (40.8; M29 follow-up 4)
     for system in unlocked_now:
         items.append(
             Item(
