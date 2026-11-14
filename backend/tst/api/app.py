@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
 from tst.api.routers import (
+    automation,
     commodities,
     contracts,
     coo,
@@ -126,6 +127,7 @@ def create_app() -> FastAPI:
     app.include_router(profile.router)  # M25
     app.include_router(mods.router)  # M25
     app.include_router(onboarding.router)  # M29
+    app.include_router(automation.router)  # M27a
     app.include_router(events.settings_router)
     app.include_router(onboarding.settings_router)  # M29
     app.include_router(meta.router)

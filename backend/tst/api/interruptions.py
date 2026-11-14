@@ -26,6 +26,11 @@ def stop_on(save_dir: Path) -> StopOn:
     return load_ui(save_dir).onboarding.stop_on
 
 
+def stop_for_approvals(save_dir: Path) -> bool:
+    """M27a (40.2): whether a one-off waiting for approval stops a holiday."""
+    return load_ui(save_dir).onboarding.stop_for_approvals
+
+
 def stops(severity: str, level: StopOn) -> bool:
     return severity == "critical" or (severity == "major" and level == "major")
 

@@ -4,6 +4,12 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M27a automation everywhere (v3.5 lane A; migration `0049_m27a`; golden snapshots unchanged):
+  - Every area of the business (formulas §40.1: hiring, engineering teams, product launches, pricing, marketing, support and offices, treasury, research, regions, cloud capacity, press, routine events) can be given to a seat holder, the CEO or a senior area lead; the founder never. `balance.yaml` `automation.*` lists the areas with their skill weights, lead roles, energy and KPIs; six lead roles appended to `roles.yaml` (`founder_fit: false`, so no founder's best fit moves).
+  - New `tst/sim/automation/`: owners and eligibility, the money limit and monthly budget, one-offs that always become proposals (kind `auto`, expiring after 3 months), decision quality from the owner's true area score on stream `automation` (56), workload in energy with "no time" logs, the new area rules (§40.6), routine events answered at Continue (critical never), and the monthly `digest` inbox item with an LLM-worded opening.
+  - Pitches that are one-offs (sunsets, data centres, plants, buybacks, dividends) no longer go ahead on Holiday; an area owner's limit replaces `auto_approve_cents` for its seat's pitches. Holiday stops for an owner's one-off unless Interruptions' new "Stop a holiday for approvals" is off.
+  - Items automated areas produce are flagged `inbox_item.in_digest`: the inbox's default view leaves them out and the digest links to them.
+  - The Automation screen (owner picker with fit bands, "Can't automate yet" with the fix, limits, priority, Automate everything with confirmation), "Run by … · Take back" on each area's screen, What next's automation lines, the Overview digest's attention lines; API `/automation*`; CLI `tst automation`, `tst automate`, `tst take-back`; practice save `tools/e2e_m27a_save.py auto` (`pt-auto`); §40.10 targets in `tst/balance/m27.py` and `tools/m27_targets.py`.
 - M23b v3 balance (lane B, merged last; no balance key tuned, golden snapshots unchanged):
   - Strategies (`tst/balance/strategies_v3.py`):
     - `full_integrator`: mines, a lithium converter, a wafer plant and a 28 nm fab under a device and SoC line, supplied at transfer price; its fab replaces the TSMC contract and sells spare starts on foundry contracts.
