@@ -15,8 +15,8 @@ snapshots, the state-cache check and every earlier guard, run as they are.
   executive set to every skill 15, known exactly (equal displayed fit, a strong heir). Arm
   `heir` hands over (45.5); arm `ceo` appoints the executive. Then 120 months of the steady
   script; 28.1's company value at the end.
-- Target 5 (estate planning pays): a founder of 70 in 2030 holding $10B of a listed company's shares,
-  a seeded stake of 26-50% of the company (above family control), no other wealth; a health
+- Target 5 (estate planning pays): a founder of 70 in 2030 holding $10B of a listed company's
+  shares, a seeded stake of 26-50% of the company (above family control), no other wealth; a health
   succession to the heir with no planning, and with 80% of the shares in a trust set up ten
   years before.
 

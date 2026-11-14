@@ -333,7 +333,7 @@ def test_succession_needs_an_eligible_heir(loaded: LoadedData) -> None:
 def test_a_professional_ceo_makes_the_family_head(loaded: LoadedData) -> None:
     game, _ = _heir_game(loaded)
     rng = RngFactory(game.state.save_meta.master_seed)
-    state, logs = succession.appoint_professional(
+    state, _logs = succession.appoint_professional(
         game.state, None, "choice", rng, loaded.balance, loaded.game_data
     )
     from tst.sim.state import ceo_of
@@ -352,11 +352,11 @@ def test_health_step_back_chance(loaded: LoadedData) -> None:
 
 
 def test_board_removal_opens_succession_not_game_over(loaded: LoadedData) -> None:
-    game, kids = _heir_game(loaded)
+    game, _kids = _heir_game(loaded)
     assert succession.can_succeed_on_removal(game.state, loaded.balance) == bool(
         rules.eligible_heirs(game.state, loaded.balance, "developing")
     )
-    state, logs = succession.on_removal(game.state, loaded.balance)
+    state, _logs = succession.on_removal(game.state, loaded.balance)
     assert state.family is not None and state.family.succession_open == "board"
     assert any(q.template_id == "family_succession" for q in state.queued)
     assert not state.ended
@@ -400,7 +400,7 @@ def test_gifts_use_the_exemption_then_pay_tax(loaded: LoadedData) -> None:
     state = with_cash(game.state, head, 10_000_000_00)
     cid = listed_id(state)
     shares = person_shares(state, cid, head) // 10
-    state, log = estate.gift_shares(
+    state, _log = estate.gift_shares(
         state, kids[0], shares, game.balances, loaded.balance, loaded.game_data
     )
     assert person_shares(state, cid, kids[0]) == shares
@@ -427,7 +427,7 @@ def test_a_trust_keeps_shares_in_the_family(loaded: LoadedData) -> None:
 
 
 def test_dynasty_score(loaded: LoadedData) -> None:
-    game, kids = _heir_game(loaded)
+    game, _kids = _heir_game(loaded)
     d = dynasty.dynasty(game.state, game.balances, loaded.balance, loaded.game_data)
     assert d is not None and len(d.generations) == 1
     assert d.total == round(d.legacies + d.value_points - d.loss_points)
