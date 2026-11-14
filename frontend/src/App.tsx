@@ -3,6 +3,7 @@ import { AchievementsScreen } from './screens/AchievementsScreen';
 import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
+import { FamilyScreen } from './screens/FamilyScreen';
 import { FinanceScreen } from './screens/FinanceScreen';
 import { GameLayout } from './screens/GameLayout';
 import { GameOverScreen } from './screens/GameOverScreen';
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="events/:eventId" element={<EventRedirect />} />
           <Route path="overview" element={<OverviewScreen />} />
           <Route path="people" element={<PeopleScreen />} />
+          <Route path="people/family" element={<FamilyScreen />} />
           <Route path="people/:personId" element={<PersonScreen />} />
           <Route path="recruitment" element={<RecruitmentScreen />} />
           <Route path="org" element={<OrgScreen />} />

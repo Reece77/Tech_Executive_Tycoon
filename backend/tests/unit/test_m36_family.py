@@ -126,6 +126,8 @@ def test_setup_rules(loaded: LoadedData) -> None:
     with pytest.raises(InvalidFamilyError):
         check_spec(FamilySpec("children", (15,)), 30, b)  # older than the founder allows
     with pytest.raises(InvalidFamilyError):
+        check_spec(FamilySpec("children", (41,)), 60, b)  # older than the founder allows
+    with pytest.raises(InvalidFamilyError):
         check_spec(FamilySpec("dynasty"), 30, b)
 
 
