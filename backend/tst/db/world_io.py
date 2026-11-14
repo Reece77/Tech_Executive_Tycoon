@@ -90,9 +90,7 @@ def _write_changes(
     if start + len(after) - same >= STRIDE:  # out of numbers: renumber from the start
         offset, dropped, same, start = 0, 0, 0, 0
         session.execute(
-            delete(WorldRecordRow).where(
-                WorldRecordRow.n >= base, WorldRecordRow.n < base + STRIDE
-            )
+            delete(WorldRecordRow).where(WorldRecordRow.n >= base, WorldRecordRow.n < base + STRIDE)
         )
     else:
         if dropped:

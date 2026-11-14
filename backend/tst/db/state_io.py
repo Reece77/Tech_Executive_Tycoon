@@ -15,12 +15,12 @@ proportion to what happened, not to the size of the save.
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import asdict, replace
 from functools import cache
 from typing import Any, cast
 
-from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
+from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select, tuple_
 from sqlalchemy.orm import Session
 
 from tst.db.automation_io import load_automation, sync_automation
@@ -54,7 +54,7 @@ from tst.db.mappers import (
     person_from_rows,
     person_state_from_row,
     person_state_to_row,
-    person_to_rows,
+    person_values,
     plan_from_row,
     plan_to_row,
     product_from_row,
@@ -63,7 +63,7 @@ from tst.db.mappers import (
     product_to_row,
     queued_from_row,
     queued_to_row,
-    reveal_to_rows,
+    reveal_values,
     rival_from_row,
     rival_to_row,
     round_nominee_row,
@@ -1685,6 +1685,47 @@ def _update_rows(session: Session, model: Any, rows: list[dict[str, Any]]) -> No
         session.execute(_update_statement(model, keys), params)
 
 
+SAVE_CHUNK = 500  # tunable-exempt: primary keys per existence query (SQLite's variable limit)
+
+
+def _save(session: Session, rows: Sequence[Any]) -> None:
+    """`session.merge` for many rows of one table (M30): one query finds which primary keys
+    exist, then one bulk UPDATE for those (every column, as a merge sets them) and one
+    executemany INSERT for the rest. A merge each cost a SELECT each. Keys must be unique."""
+    if not rows:
+        return
+    model = type(rows[0])
+    mapper = model.__mapper__
+    pk_cols = list(mapper.primary_key)
+    pk_keys = [mapper.get_property_by_column(c).key for c in pk_cols]
+    session.flush()
+    keys = [tuple(getattr(r, k) for k in pk_keys) for r in rows]
+    existing: set[tuple[Any, ...]] = set()
+    for i in range(0, len(keys), SAVE_CHUNK):
+        chunk = keys[i : i + SAVE_CHUNK]
+        if len(pk_cols) == 1:
+            found = session.execute(select(pk_cols[0]).where(pk_cols[0].in_([k[0] for k in chunk])))
+        else:
+            found = session.execute(select(*pk_cols).where(tuple_(*pk_cols).in_(chunk)))
+        existing |= {tuple(r) for r in found}
+    updates = [
+        {a.key: getattr(r, a.key) for a in mapper.column_attrs}
+        for r, k in zip(rows, keys, strict=True)
+        if k in existing
+    ]
+    _update_rows(session, model, updates)
+    _insert(session, [r for r, k in zip(rows, keys, strict=True) if k not in existing])
+
+
+def _save_all(session: Session, rows: Iterable[Any]) -> None:
+    """`_save` for rows of several tables, a table at a time in first-seen order."""
+    by_model: dict[Any, list[Any]] = {}
+    for row in rows:
+        by_model.setdefault(type(row), []).append(row)
+    for same in by_model.values():
+        _save(session, same)
+
+
 def _insert(session: Session, rows: Iterable[Any]) -> None:
     """Insert new rows with one executemany per table instead of the unit of work (a new
     save writes thousands of people's child rows; M6 sub-task 0). A column left None that
@@ -1791,11 +1832,13 @@ def _sync_reveal(
     old: RevealState | None,
     new: RevealState,
     changed: list[dict[str, Any]],
+    fresh: list[RevealState],
 ) -> None:
-    """Write one reveal; its changed attribute records go to `changed`, which the caller
-    writes for every reveal at once (M7a: one UPDATE per reveal was a tenth of a turn)."""
+    """Write one reveal; its changed attribute records go to `changed`, and a new reveal's
+    rows to `fresh`, which the caller writes for every reveal at once (M7a: one UPDATE per
+    reveal was a tenth of a turn; M30: one INSERT per new reveal)."""
     if old is None:
-        _insert(session, reveal_to_rows(new))
+        fresh.append(new)
         return
     base = {"person_id": new.person_id, "observer_company_id": new.observer_company_id}
     old_records = dict(old.attributes)
@@ -1820,6 +1863,30 @@ def _sync_reveal(
     )
 
 
+def _insert_reveals(session: Session, reveals: list[RevealState]) -> None:
+    """New reveals' rows as one executemany a table, from plain parameter rows
+    (`reveal_values`): an ORM row per attribute record cost more than the SQL (M30)."""
+    if not reveals:
+        return
+    records: list[dict[str, Any]] = []
+    profiles: list[dict[str, Any]] = []
+    tags: list[dict[str, Any]] = []
+    for r in reveals:
+        rec, profile, tag = reveal_values(r)
+        records += rec
+        tags += tag
+        if profile is not None:
+            profiles.append(profile)
+    session.flush()
+    for model, values in (
+        (PersonRevealRow, records),
+        (PersonProfileRevealRow, profiles),
+        (PersonTagRevealRow, tags),
+    ):
+        if values:
+            session.execute(insert(cast(Table, model.__table__)), values)
+
+
 def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     """Write the differences between `old` (as loaded, or None for a new save) and `new`."""
     old = old or GameState(save_meta=new.save_meta, turn=new.turn, companies=())
@@ -1841,10 +1908,15 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     skill_updates: list[dict[str, Any]] = []
     asks: list[dict[str, Any]] = []  # a poached key person's new ask (M5, 15.6)
     added = [p for p in new.people if p.id not in old_people]
-    rows = [person_to_rows(p) for p in added]
-    session.add_all(r[0] for r in rows)  # person rows first: children reference them
+    # M30: one executemany a table, person rows first (children reference them)
+    tables: dict[Any, list[dict[str, Any]]] = {}
+    for p in added:
+        for model, values in person_values(p):
+            tables.setdefault(model, []).extend(values)
     session.flush()
-    _insert(session, (child for r in rows for child in r[1:]))
+    for model, values in tables.items():
+        if values:
+            session.execute(insert(cast(Table, model.__table__)), values)
     for person in new.people:
         before = old_people.get(person.id)
         if (
@@ -1877,8 +1949,13 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     for plan in _changed(old.plans, new.plans, lambda p: p.id):
         session.merge(plan_to_row(plan))
     session.flush()
-    for candidate in _changed(old.candidates, new.candidates, lambda c: c.person_id):
-        session.merge(candidate_to_row(candidate))
+    _save(  # M30: a bulk write (each month adds and expires a hundred candidates)
+        session,
+        [
+            candidate_to_row(c)
+            for c in _changed(old.candidates, new.candidates, lambda c: c.person_id)
+        ],
+    )
     for offer in _changed(old.offers, new.offers, lambda o: o.id):
         session.merge(offer_to_row(offer))
     _write(
@@ -1887,10 +1964,12 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
 
     old_reveals = {(r.observer_company_id, r.person_id): r for r in old.reveals}
     reveal_updates: list[dict[str, Any]] = []
+    fresh: list[RevealState] = []  # new records, inserted at once (M30: an executemany each)
     for reveal in new.reveals:
         known = old_reveals.get((reveal.observer_company_id, reveal.person_id))
-        if known != reveal:
-            _sync_reveal(session, known, reveal, reveal_updates)
+        if known is not reveal and known != reveal:
+            _sync_reveal(session, known, reveal, reveal_updates, fresh)
+    _insert_reveals(session, fresh)
     _update_rows(session, PersonRevealRow, reveal_updates)
 
     # Finance (M4): rounds before their term sheets.
@@ -2108,8 +2187,7 @@ def _sync_geo(session: Session, old: GameState, new: GameState) -> None:
     if not (rows or segs or markets_changed) or not has_table(session, RegionalSegmentRow):
         return
     session.flush()
-    for row in rows:
-        session.merge(row)
+    _save_all(session, rows)  # M30: a bulk write a table (new candidates bring their cities)
     # Every regional market grows every month: one bulk UPDATE, not a merge (a SELECT) per
     # row (M12b: six more categories made this most of a turn's write).
     _write(
