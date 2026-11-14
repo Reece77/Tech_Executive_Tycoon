@@ -143,6 +143,7 @@ from tst.sim.world.models import (
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
 _REVEAL_KEY = attrgetter("observer_company_id", "person_id")  # reveals' sort key (M30)
 _PERSON_ID = attrgetter("person_id")
+_KEY = attrgetter("key")
 
 
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
@@ -809,7 +810,10 @@ class GameState:
         )
 
     def era_arrival(self, key: str) -> EraArrival | None:
-        return next((a for a in self.era_arrivals if a.key == key), None)
+        by_key: dict[str, EraArrival] = from_inputs(
+            self.era_arrivals, "by_key", lambda: _first_by(self.era_arrivals, _KEY)
+        )
+        return by_key.get(key)
 
     @property
     def player(self) -> CompanyState:
@@ -841,23 +845,14 @@ def from_inputs[T](source: object, key: object, compute: Callable[[], T]) -> T:
     state: a state made by `replace` that keeps the tuple keeps its derived values. The
     input is held with its values, so its id cannot be reused while they are kept."""
     hit = _ONE_INPUT.get(id(source))  # the hot path: no lock, no key tuple (atomic reads)
-    if hit is not None and hit[0] is source and key in hit[1] and not MEMO_CHECK:
-        value: T = hit[1][key]
-        return value
-    with _INPUT_MEMO_GUARD:
-        hit = _ONE_INPUT.get(id(source))
-        if hit is None or hit[0] is not source:
-            hit = _ONE_INPUT[id(source)] = (source, {})
-            while len(_ONE_INPUT) > INPUT_MEMO_SIZE:
-                del _ONE_INPUT[next(iter(_ONE_INPUT))]  # the oldest first
-        memo = hit[1]
-        if key not in memo:
-            value = memo[key] = compute()
-            return value
-        value = memo[key]
-    if compute() != value:
-        raise AssertionError(f"input-derived value {key!r} differs from a recompute")
-    return value
+    if hit is None or hit[0] is not source:
+        with _INPUT_MEMO_GUARD:
+            hit = _ONE_INPUT.get(id(source))
+            if hit is None or hit[0] is not source:
+                hit = _ONE_INPUT[id(source)] = (source, {})
+                while len(_ONE_INPUT) > INPUT_MEMO_SIZE:
+                    del _ONE_INPUT[next(iter(_ONE_INPUT))]  # the oldest first
+    return _kept(hit[1], key, compute)
 
 
 def from_all[T](sources: tuple[object, ...], key: object, compute: Callable[[], T]) -> T:
@@ -868,26 +863,28 @@ def from_all[T](sources: tuple[object, ...], key: object, compute: Callable[[], 
         hit = _INPUT_MEMO.get(ids)
         if hit is not None and all(a is b for a, b in zip(hit[0], sources, strict=True)):
             _INPUT_MEMO.move_to_end(ids)
-            memo = hit[1]
         else:
-            memo = {}
-            _INPUT_MEMO[ids] = (sources, memo)
+            hit = _INPUT_MEMO[ids] = (sources, {})
             while len(_INPUT_MEMO) > INPUT_MEMO_SIZE:
                 _INPUT_MEMO.popitem(last=False)
-        if key in memo:
-            value: T = memo[key]
-            if not MEMO_CHECK:
-                return value
-        else:
-            value = memo[key] = compute()
-            return value
-    if compute() != value:
-        raise AssertionError(f"input-derived value {key!r} differs from a recompute")
-    return value
+    return _kept(hit[1], key, compute)
 
 
-def _first_by[T](items: tuple[T, ...], key: Callable[[T], int]) -> dict[int, T]:
-    out: dict[int, T] = {}
+def _kept[T](memo: dict[object, Any], key: object, compute: Callable[[], T]) -> T:
+    """The value under `key`, computed (outside any lock: a computation may use other kept
+    values) when missing. Two threads may both compute it; they get equal values."""
+    if key in memo:
+        value: T = memo[key]
+        if MEMO_CHECK and compute() != value:
+            raise AssertionError(f"input-derived value {key!r} differs from a recompute")
+        return value
+    value = compute()
+    kept: T = memo.setdefault(key, value)
+    return kept
+
+
+def _first_by[T, K](items: tuple[T, ...], key: Callable[[T], K]) -> dict[K, T]:
+    out: dict[K, T] = {}
     for x in items:
         out.setdefault(key(x), x)  # the first, as a scan finds it
     return out

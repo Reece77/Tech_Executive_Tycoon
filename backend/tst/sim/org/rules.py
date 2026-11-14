@@ -23,7 +23,7 @@ from tst.sim.org.formulas import (
 )
 from tst.sim.org.models import OrgUnit, WorkPolicy
 from tst.sim.people.models import Employment
-from tst.sim.state import GameState
+from tst.sim.state import GameState, from_all
 
 LEADERSHIP = "leadership"
 COMMUNICATION = "communication"
@@ -59,6 +59,16 @@ class OrgView:
 
 
 def org_view(state: GameState, company_id: int) -> OrgView:
+    """The company's org as it stands: from its staff, units, holdings and people alone, so
+    kept while they are the same (M30). Callers read it; nobody changes it."""
+    return from_all(
+        (state.employments, state.units, state.holdings, state.people),
+        ("org_view", company_id),
+        lambda: _org_view(state, company_id),
+    )
+
+
+def _org_view(state: GameState, company_id: int) -> OrgView:
     staff = sorted(state.staff(company_id), key=lambda e: e.person_id)
     founder = state.founder_of(company_id)
     founder_id = founder.id if founder else None
