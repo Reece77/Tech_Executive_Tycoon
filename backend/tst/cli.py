@@ -4214,3 +4214,56 @@ def company_cmd(
 
 if __name__ == "__main__":
     app()
+
+
+@app.command("platforms")
+def platforms_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="One region key; default every region")] = None,
+) -> None:
+    """Platforms (M31, 44): users, developers, catalogue and fees by region; your device lines'
+    platforms and your apps' store fees and listings."""
+    from tst.api import platform_views
+
+    _, data, state = _game(save)
+    p = platform_views.platforms_out(state, data)
+    if not p.platforms:
+        typer.echo("No platforms yet.")
+        return
+    typer.echo(
+        f"{format_turn(state.turn)}: platforms {'computed' if p.started else 'from the record'};"
+        f" store fees {'posting' if p.fees_posting else 'from 2026'}"
+    )
+    regions = [region] if region else list(data.game_data.region_keys)
+    for key in regions:
+        typer.echo(f"{key}:")
+        for pl in p.platforms:
+            r = next((x for x in pl.regions if x.region == key), None)
+            if r is None or (r.users <= 0 and not pl.own):
+                continue
+            devs = (
+                f"{r.developer_share:.1%}"
+                if r.developer_share is not None
+                else f"{r.developer_range[0]:.0%}-{r.developer_range[1]:.0%}"
+            )
+            paths = "; ".join(f"{x.label} {x.rate:.0%}" for x in r.fees.regulated)
+            typer.echo(
+                f"  {pl.name} ({pl.store}, {pl.owner_label}): users {r.users:.1%}, developers"
+                f" {devs}, catalogue {r.catalogue_index:.0f}, fee {r.fees.standard:.0%}"
+                + (f", small {r.fees.small_rate:.0%}" if r.fees.small_rate is not None else "")
+                + (
+                    f", subscriptions {r.fees.subscription_rate:.0%}"
+                    if r.fees.subscription_rate
+                    else ""
+                )
+                + (f" [{paths}]" if paths else "")
+                + (f" rules: {', '.join(r.rules)}" if r.rules else "")
+            )
+    for d in p.device_lines:
+        typer.echo(f"  device line {d.name}: {d.platform_name}")
+    for a in p.apps:
+        listing = "; ".join(f"{x.platform_name} {x.region}: {x.status}" for x in a.listings)
+        typer.echo(
+            f"  app {a.name}: store fees {format_money(a.fees_total_cents)} a month"
+            + (f"; {listing}" if listing else "")
+        )

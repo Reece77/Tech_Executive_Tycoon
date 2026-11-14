@@ -103,6 +103,7 @@ STREAM_IDS: Final = MappingProxyType(
         # generation; (founder_id, 0, k) life events of kind k; (person_id, 1) a child's
         # development; (founder_id, 2) a health step-back; (founder_id, 3, n) an action's draw
         "family": 59,
+        "platforms": 58,  # M31 (formulas.md 44): developers, gatekeepers, rivals, standards
         "misc": 99,
     }
 )

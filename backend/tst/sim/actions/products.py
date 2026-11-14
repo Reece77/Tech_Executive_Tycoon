@@ -191,8 +191,14 @@ def launch_problems(
     if product.quality < needed:  # a category's launch_quality adds compliance (M8, 18.6)
         problems.append(f"quality {product.quality:.0f} of the {needed:.0f} needed")
     feature = current_feature(product, data, shown_turn(state))
-    if feature < pb.launch_min_feature:
-        problems.append(f"feature score {feature:.0f} of the {pb.launch_min_feature:.0f} needed")
+    # M31 (44.1): an operating system's long build
+    min_feature = (
+        balance.platforms.os_build_features
+        if data.category(product.category).pseudo
+        else pb.launch_min_feature
+    )
+    if feature < min_feature:
+        problems.append(f"feature score {feature:.0f} of the {min_feature:.0f} needed")
     for seg in state.segments_of(product.id):
         if seg.price_cents is None:
             problems.append(f"a price for {data.segment(seg.segment).label}")
@@ -219,7 +225,8 @@ def create_product(
 ) -> Outcome:
     company = acting_company(state, action.actor_id)
     name = _clean_name(state, company, action.name)
-    if action.category not in {c.key for c in data.categories}:
+    pseudo = {c.key for c in data.pseudo_categories}  # M31 (44.1): `os`, no segments
+    if action.category not in {c.key for c in data.categories} | pseudo:
         raise ProductRuleError(f"unknown category {action.category!r}")
     category = data.category(action.category)
     if category.capacity_market:  # M12a (22.3)
@@ -230,7 +237,9 @@ def create_product(
         raise ProductRuleError(
             f"{category.label} sells spare assembly-plant capacity: start it from Hardware"
         )
-    if not action.segments:
+    if category.pseudo and action.segments:
+        raise ProductRuleError(f"{category.label} sells through devices: it has no segments")
+    if not action.segments and not category.pseudo:
         raise ProductRuleError("a product needs at least one segment")
     if len(set(action.segments)) != len(action.segments):
         raise ProductRuleError("a segment is listed twice")
@@ -363,6 +372,10 @@ def launch_product(
         segments=_join(labels),
     )
     state = with_product(state, launched)
+    if data.category(product.category).pseudo:  # M31 (44.1): an OS founds its platform
+        from tst.sim.platforms.actions import on_launch
+
+        state = on_launch(state, launched, data)
     rival_id, segment = main_rival(state, product.id)  # M14b (29.1): a launch press moment
     facts: dict[str, int | str] = {"product_id": product.id}
     if rival_id is not None:

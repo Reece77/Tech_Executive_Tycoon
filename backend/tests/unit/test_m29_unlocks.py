@@ -32,7 +32,15 @@ def test_stages_open_screens(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     expect = {
         2: {"offices", "research", "rankings"},
-        3: {"offices", "research", "rankings", "infrastructure", "hardware", "automation"},
+        3: {
+            "offices",
+            "research",
+            "rankings",
+            "infrastructure",
+            "hardware",
+            "automation",
+            "platforms",  # M31: the Platforms screen opens at stage 3 (44)
+        },
         4: {
             "offices",
             "research",
@@ -42,6 +50,7 @@ def test_stages_open_screens(loaded: LoadedData) -> None:
             "refineries",
             "fabs",
             "automation",  # M27a: the Automation screen opens at stage 3 (40.8)
+            "platforms",  # M31
         },
     }
     for stage, keys in expect.items():
@@ -58,6 +67,11 @@ def test_facts_open_screens_before_their_stage(loaded: LoadedData) -> None:
     assert "is a chip product" in unlocks.conditions(chip, b, d)["fabs"]
     device = with_product(state, category="devices", status="in_development", root=False)
     assert "hardware" in unlocks.conditions(device, b, d)
+    assert "platforms" in unlocks.conditions(device, b, d)  # M31 (44)
+    app = with_product(state, category="consumer_apps", status="in_development", root=False)
+    assert "platforms" not in unlocks.conditions(app, b, d)  # M31: an app opens it once live
+    live = with_product(state, category="consumer_apps", status="live", root=False)
+    assert "is sold through app stores" in unlocks.conditions(live, b, d)["platforms"]
     study = DeskStudy(1, state.player.id, "north_america", "copper", 0, 3, 1.0)
     explored = replace(state, desk_studies=(study,))
     assert unlocks.conditions(explored, b, d)["exploration"] == "the group ran a desk study"

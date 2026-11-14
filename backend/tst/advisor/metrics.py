@@ -84,5 +84,16 @@ METRICS: dict[str, MetricDef] = {
             "refinery",
             "Full cost a unit of output",
         ),
+        # v4 (M31): an app's platform fees and a device line's catalogue effect
+        _m(
+            "platform_fees", "Platform fees", "cents", "product", "Store fees on the app this month"
+        ),
+        _m(
+            "catalogue_effect",
+            "Catalogue effect",
+            "points",
+            "product",
+            "Feature points from the platform's catalogue",
+        ),
     )
 }

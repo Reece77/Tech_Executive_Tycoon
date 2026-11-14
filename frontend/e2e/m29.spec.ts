@@ -51,8 +51,10 @@ test("(a) a new game's first unlock and the checklist ticking", async ({ page })
     data: { unit_id: null },
   });
   await page.reload();
-  const toast = page.getByTestId('unlock-toast');
-  await expect(toast).toHaveAttribute('data-key', 'hardware');
+  // M31: a device line opens Platforms too, so two toasts arrive; this flow follows Hardware's
+  const toast = page.locator('[data-testid="unlock-toast"][data-key="hardware"]');
+  await expect(toast).toBeVisible();
+  await expect(page.locator('[data-testid="unlock-toast"][data-key="platforms"]')).toBeVisible();
   await expect(toast).toContainText('Gizmo is a hardware product');
   await expect(nav.getByTestId('nav-products-hardware')).toBeVisible();
   await expect(page.getByTestId('step-product_team')).toHaveAttribute('data-done', 'true');

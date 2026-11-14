@@ -3,6 +3,30 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  platform_rejected: # M31 (44.5)
+    title: "{platform} rejected an update to {product}"
+    body: "{owner}'s review held back this month's release: a month of new features is lost while the team reworks it."
+  platform_fee_dispute: # M31 (44.5)
+    title: "{owner} disputes {product}'s fees"
+    body: "{platform} says sales went around its payment system and has charged {cents} in back fees."
+  platform_appeal_won: # M31 (44.5)
+    title: "{product} is back on {platform}"
+    body: "The appeal (or the regulators) went our way: the store lists the app again, and lost users are coming back."
+  platform_appeal_lost: # M31 (44.5)
+    title: "{product} stays off {platform}"
+    body: "The appeal failed. Comply from the Platforms screen to be relisted, or accept the lost users."
+  platform_complied: # M31 (44.5)
+    title: "{product} complied and is relisted"
+    body: "The changes the store asked for are in and its fee is paid; the app is listed again and its users are coming back."
+  platform_removed_rival: # M31 (44.5)
+    title: "{platform} removed {product}"
+    body: "Our review took a rival's app off our store for a year. Developers notice strict review."
+  platform_forked: # M31 (44.6)
+    title: "{product} has been forked as {fork}"
+    body: "Closing the source again cost goodwill, and a rival has shipped the open version under its own name."
+  standard_tipped: # M31 (44.7)
+    title: "{standard}: {winner} has won"
+    body: "Most new products now use {winner}. Products on the other format lose features until they adopt it, which takes a couple of months of work."
   minority_complaint_filed: # M16 (31.6)
     title: "Minority complaint: {seller} to {buyer}"
     body: "The transfer price has been unfair to outside shareholders for months. Legal costs and a valuation discount apply until it is fair; answer the complaint."
