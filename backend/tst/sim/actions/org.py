@@ -481,7 +481,9 @@ def next_level(level: str) -> str | None:
     return PROMOTION_LADDER[index + 1] if index + 1 < len(PROMOTION_LADDER) else None
 
 
-def promote(state: GameState, action: Promote, balance: Balance) -> Outcome:
+def promote(
+    state: GameState, action: Promote, balance: Balance, data: GameData | None = None
+) -> Outcome:
     """One level up; the new level's market rate applies from now on (13.8)."""
     company = acting_company(state, action.actor_id)
     employment = employee(state, company, action.person_id, "be promoted")
@@ -490,7 +492,12 @@ def promote(state: GameState, action: Promote, balance: Balance) -> Outcome:
         raise InvalidActionError(f"{employment.level} is the highest level a promotion reaches")
     state = spend_energy(state, action.actor_id, "promote", balance)
     state = with_employment(state, replace(employment, level=level))
-    return Outcome(bump_morale(state, action.person_id, balance.org.promote_morale))
+    state = bump_morale(state, action.person_id, balance.org.promote_morale)
+    if state.family is not None and data is not None:  # M36 (45.4): staff see a family promotion
+        from tst.sim.family.answers import promotion_reaction
+
+        state = promotion_reaction(state, action.person_id, employment.level, balance, data)
+    return Outcome(state)
 
 
 # --- Hiring plans ---------------------------------------------------------------------------

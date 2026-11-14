@@ -15391,7 +15391,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GiftIn"
+                "$ref": "#/components/schemas/tst__api__schemas__founder__GiftIn"
               }
             }
           }
@@ -23275,6 +23275,816 @@
         }
       }
     },
+    "/api/saves/{save_id}/family": {
+      "get": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Get Family",
+        "description": "Members, ages, relationships, education, ratings as ranges, readiness, family time,\nthe adviser, the estate quote and the dynasty score (45.9).",
+        "operationId": "getFamily",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/time": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Set Time",
+        "description": "Energy a month for the family, 0-20 (45.2).",
+        "operationId": "setFamilyTime",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FamilyTimeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/educate": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Educate",
+        "description": "A school at 12, a university at 18, an MBA from 22, paid from personal cash (45.3).",
+        "operationId": "educate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EducateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/mentor": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Mentor",
+        "description": "Mentor an heir in the group: 3 energy a month (45.4).",
+        "operationId": "setMentoring",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MentorIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/job": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Job",
+        "description": "Offer a grown child a role in a group company (45.4).",
+        "operationId": "offerFamilyJob",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FamilyJobIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/succession": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Name Successor",
+        "description": "Hand over to an heir (you then play them) or a professional CEO (45.5).",
+        "operationId": "nameSuccessor",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuccessionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/gift": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Gift",
+        "description": "Gift shares to a child; gift tax above the lifetime exemption (45.6).",
+        "operationId": "giftShares",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tst__api__schemas__family__GiftIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/trust": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Trust",
+        "description": "Put shares in the family trust, outside the estate (45.6).",
+        "operationId": "fundTrust",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/foundation-shares": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Foundation Shares",
+        "description": "Give shares to the foundation: they leave the estate and count toward legacy (45.6).",
+        "operationId": "giveSharesToFoundation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharesIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/family/adviser/retire": {
+      "post": {
+        "tags": [
+          "family"
+        ],
+        "summary": "Retire Adviser",
+        "description": "The adviser leaves the board (45.5).",
+        "operationId": "retireAdviser",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/platforms": {
       "get": {
         "tags": [
@@ -24668,6 +25478,42 @@
           "current"
         ],
         "title": "AdviceOut"
+      },
+      "AdviserOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "retires_at": {
+            "type": "integer",
+            "title": "Retires At"
+          },
+          "opinions": {
+            "items": {
+              "$ref": "#/components/schemas/OpinionOut"
+            },
+            "type": "array",
+            "title": "Opinions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "age",
+          "retires_at",
+          "opinions"
+        ],
+        "title": "AdviserOut"
       },
       "AnalystOut": {
         "properties": {
@@ -30060,6 +30906,17 @@
             ],
             "title": "Mod",
             "description": "A data-editor mod in saves/mods (M25); earns no achievements"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyIn"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The Family setting (M36, 45.1)"
           }
         },
         "type": "object",
@@ -31381,6 +32238,52 @@
         ],
         "title": "DriverOut"
       },
+      "DynastyOut": {
+        "properties": {
+          "generations": {
+            "items": {
+              "$ref": "#/components/schemas/GenerationOut"
+            },
+            "type": "array",
+            "title": "Generations"
+          },
+          "legacies": {
+            "type": "integer",
+            "title": "Legacies"
+          },
+          "family_value_cents": {
+            "type": "integer",
+            "title": "Family Value Cents"
+          },
+          "value_points": {
+            "type": "number",
+            "title": "Value Points"
+          },
+          "control_losses": {
+            "type": "integer",
+            "title": "Control Losses"
+          },
+          "loss_points": {
+            "type": "number",
+            "title": "Loss Points"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generations",
+          "legacies",
+          "family_value_cents",
+          "value_points",
+          "control_losses",
+          "loss_points",
+          "total"
+        ],
+        "title": "DynastyOut"
+      },
       "EditorFileOut": {
         "properties": {
           "file": {
@@ -31442,6 +32345,64 @@
           "label"
         ],
         "title": "EditorFileRefOut"
+      },
+      "EducateIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "tier": {
+            "type": "string",
+            "title": "Tier"
+          },
+          "degree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Degree"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "stage",
+          "tier"
+        ],
+        "title": "EducateIn"
+      },
+      "EducationChoiceOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage",
+            "description": "school | university | mba"
+          },
+          "tier": {
+            "type": "string",
+            "title": "Tier"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "tier",
+          "cost_cents"
+        ],
+        "title": "EducationChoiceOut"
       },
       "EmploymentOut": {
         "properties": {
@@ -31864,6 +32825,119 @@
         ],
         "title": "ErrorOut",
         "description": "Stable error body for every 4xx response."
+      },
+      "EstateOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate"
+          },
+          "exemption_cents": {
+            "type": "integer",
+            "title": "Exemption Cents"
+          },
+          "used_exemption_cents": {
+            "type": "integer",
+            "title": "Used Exemption Cents"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "share_price_cents": {
+            "type": "integer",
+            "title": "Share Price Cents"
+          },
+          "shares_cents": {
+            "type": "integer",
+            "title": "Shares Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "other_cents": {
+            "type": "integer",
+            "title": "Other Cents"
+          },
+          "estate_cents": {
+            "type": "integer",
+            "title": "Estate Cents"
+          },
+          "taxable_cents": {
+            "type": "integer",
+            "title": "Taxable Cents"
+          },
+          "tax_cents": {
+            "type": "integer",
+            "title": "Tax Cents"
+          },
+          "shares_to_sell": {
+            "type": "integer",
+            "title": "Shares To Sell"
+          },
+          "family_bp_now": {
+            "type": "integer",
+            "title": "Family Bp Now"
+          },
+          "family_bp_after": {
+            "type": "integer",
+            "title": "Family Bp After"
+          },
+          "control_bp": {
+            "type": "integer",
+            "title": "Control Bp"
+          },
+          "trust_shares": {
+            "type": "integer",
+            "title": "Trust Shares"
+          },
+          "gift_tax": {
+            "type": "boolean",
+            "title": "Gift Tax"
+          },
+          "lifetime_gifts_cents": {
+            "type": "integer",
+            "title": "Lifetime Gifts Cents"
+          },
+          "gift_tax_paid_cents": {
+            "type": "integer",
+            "title": "Gift Tax Paid Cents"
+          },
+          "estate_tax_paid_cents": {
+            "type": "integer",
+            "title": "Estate Tax Paid Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "rate",
+          "exemption_cents",
+          "used_exemption_cents",
+          "shares",
+          "share_price_cents",
+          "shares_cents",
+          "cash_cents",
+          "other_cents",
+          "estate_cents",
+          "taxable_cents",
+          "tax_cents",
+          "shares_to_sell",
+          "family_bp_now",
+          "family_bp_after",
+          "control_bp",
+          "trust_shares",
+          "gift_tax",
+          "lifetime_gifts_cents",
+          "gift_tax_paid_cents",
+          "estate_tax_paid_cents"
+        ],
+        "title": "EstateOut"
       },
       "EstimateRangeOut": {
         "properties": {
@@ -33979,6 +35053,279 @@
         ],
         "title": "FacilityOut"
       },
+      "FamilyActionOut": {
+        "properties": {
+          "family": {
+            "$ref": "#/components/schemas/FamilyOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "family",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FamilyActionOut"
+      },
+      "FamilyIn": {
+        "properties": {
+          "setting": {
+            "type": "string",
+            "title": "Setting",
+            "description": "none | partner | children",
+            "default": "none"
+          },
+          "child_ages": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Child Ages",
+            "description": "'children': each one's age"
+          }
+        },
+        "type": "object",
+        "title": "FamilyIn",
+        "description": "The new game's Family setting (45.1)."
+      },
+      "FamilyJobIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "company_id",
+          "role",
+          "level"
+        ],
+        "title": "FamilyJobIn"
+      },
+      "FamilyMemberOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "relation": {
+            "type": "string",
+            "title": "Relation",
+            "description": "partner | child | ex_partner"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "closeness": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closeness",
+            "description": "A child's closeness, 0-100"
+          },
+          "school": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "School"
+          },
+          "university": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "University"
+          },
+          "degree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Degree"
+          },
+          "mba": {
+            "type": "boolean",
+            "title": "Mba"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "mentored": {
+            "type": "boolean",
+            "title": "Mentored"
+          },
+          "own_way": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Way"
+          },
+          "interests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Interests"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "personality": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeOut"
+            },
+            "type": "array",
+            "title": "Personality"
+          },
+          "potential": {
+            "type": "string",
+            "title": "Potential",
+            "description": "The potential phrase from the revealed range (as people)"
+          },
+          "readiness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadinessOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "choices": {
+            "items": {
+              "$ref": "#/components/schemas/EducationChoiceOut"
+            },
+            "type": "array",
+            "title": "Choices",
+            "description": "Education open to choose now"
+          },
+          "can_join": {
+            "type": "boolean",
+            "title": "Can Join"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "relation",
+          "age",
+          "closeness",
+          "school",
+          "university",
+          "degree",
+          "mba",
+          "company_id",
+          "company_name",
+          "role",
+          "level",
+          "mentored",
+          "own_way",
+          "interests",
+          "skills",
+          "personality",
+          "potential",
+          "readiness",
+          "choices",
+          "can_join"
+        ],
+        "title": "FamilyMemberOut"
+      },
       "FamilyOfficeFormOut": {
         "properties": {
           "can_form": {
@@ -34098,6 +35445,215 @@
           "index_year_pct"
         ],
         "title": "FamilyOfficeOut"
+      },
+      "FamilyOut": {
+        "properties": {
+          "exists": {
+            "type": "boolean",
+            "title": "Exists",
+            "description": "False when Family was set to none"
+          },
+          "setting": {
+            "type": "string",
+            "title": "Setting"
+          },
+          "head_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Id"
+          },
+          "head_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Name"
+          },
+          "head_mode": {
+            "type": "string",
+            "title": "Head Mode",
+            "description": "founder | family_head (a professional CEO runs it)"
+          },
+          "family_time": {
+            "type": "integer",
+            "title": "Family Time"
+          },
+          "max_time": {
+            "type": "integer",
+            "title": "Max Time"
+          },
+          "time_now": {
+            "type": "integer",
+            "title": "Time Now",
+            "description": "This month's family time (at least 15 under a promise)"
+          },
+          "energy_cost": {
+            "type": "integer",
+            "title": "Energy Cost",
+            "description": "Family time plus mentoring, taken from the budget"
+          },
+          "relationship": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relationship"
+          },
+          "married": {
+            "type": "boolean",
+            "title": "Married"
+          },
+          "partner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyMemberOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMemberOut"
+            },
+            "type": "array",
+            "title": "Children"
+          },
+          "others": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMemberOut"
+            },
+            "type": "array",
+            "title": "Others",
+            "description": "Ex-partners and the head's siblings"
+          },
+          "heirs": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Heirs",
+            "description": "Children who can succeed now, readiest first"
+          },
+          "succession_open": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Succession Open"
+          },
+          "step_back_open": {
+            "type": "boolean",
+            "title": "Step Back Open"
+          },
+          "adviser": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdviserOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EstateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dynasty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DynastyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/NoteOut"
+            },
+            "type": "array",
+            "title": "Notes"
+          },
+          "trust_since": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Since"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exists",
+          "setting",
+          "head_id",
+          "head_name",
+          "head_mode",
+          "family_time",
+          "max_time",
+          "time_now",
+          "energy_cost",
+          "relationship",
+          "married",
+          "partner",
+          "children",
+          "others",
+          "heirs",
+          "succession_open",
+          "step_back_open",
+          "adviser",
+          "estate",
+          "dynasty",
+          "notes",
+          "trust_since"
+        ],
+        "title": "FamilyOut"
+      },
+      "FamilyTimeIn": {
+        "properties": {
+          "energy": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "energy"
+        ],
+        "title": "FamilyTimeIn"
       },
       "FeeScheduleOut": {
         "properties": {
@@ -35802,6 +37358,58 @@
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
       },
+      "GenerationOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Label"
+          },
+          "legacy": {
+            "type": "integer",
+            "title": "Legacy"
+          },
+          "how": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "How"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "from_label",
+          "to_label",
+          "legacy",
+          "how"
+        ],
+        "title": "GenerationOut"
+      },
       "GeoActionOut": {
         "properties": {
           "geo": {
@@ -36077,20 +37685,6 @@
           "steps"
         ],
         "title": "GettingStartedOut"
-      },
-      "GiftIn": {
-        "properties": {
-          "amount_cents": {
-            "type": "integer",
-            "exclusiveMinimum": 0.0,
-            "title": "Amount Cents"
-          }
-        },
-        "type": "object",
-        "required": [
-          "amount_cents"
-        ],
-        "title": "GiftIn"
       },
       "GlossaryOut": {
         "properties": {
@@ -36928,6 +38522,17 @@
             },
             "type": "array",
             "title": "Rivals Outlasted"
+          },
+          "dynasty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DynastyOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The family tree's generations and dynasty score (M36, 45.7)"
           },
           "legacy": {
             "anyOf": [
@@ -40913,6 +42518,24 @@
         "title": "MarketingSplitIn",
         "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
       },
+      "MentorIn": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "on": {
+            "type": "boolean",
+            "title": "On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "on"
+        ],
+        "title": "MentorIn"
+      },
       "MessageOut": {
         "properties": {
           "title": {
@@ -43003,6 +44626,34 @@
         ],
         "title": "NomineeIn"
       },
+      "NoteOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "kind",
+          "text"
+        ],
+        "title": "NoteOut"
+      },
       "OfferIn": {
         "properties": {
           "salary_cents": {
@@ -43506,6 +45157,54 @@
           "product_id"
         ],
         "title": "OpenSourceIn"
+      },
+      "OpinionOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "subject_id": {
+            "type": "integer",
+            "title": "Subject Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "stance": {
+            "type": "string",
+            "title": "Stance"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "overruled": {
+            "type": "boolean",
+            "title": "Overruled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "date_label",
+          "subject",
+          "subject_id",
+          "title",
+          "stance",
+          "text",
+          "overruled"
+        ],
+        "title": "OpinionOut"
       },
       "OptionsOut": {
         "properties": {
@@ -48820,6 +50519,48 @@
         "title": "RankingsOut",
         "description": "The latest January's industry rankings (30.4)."
       },
+      "ReadinessOut": {
+        "properties": {
+          "band": {
+            "type": "string",
+            "title": "Band",
+            "description": "not_ready | developing | ready | strong"
+          },
+          "points": {
+            "type": "number",
+            "title": "Points",
+            "description": "From displayed values only"
+          },
+          "fit": {
+            "type": "number",
+            "title": "Fit",
+            "description": "The CEO-seat score from displayed ranges (25.6's weights)"
+          },
+          "years": {
+            "type": "number",
+            "title": "Years"
+          },
+          "seats": {
+            "type": "integer",
+            "title": "Seats"
+          },
+          "board": {
+            "type": "number",
+            "title": "Board",
+            "description": "(board confidence - 50) / divisor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "band",
+          "points",
+          "fit",
+          "years",
+          "seats",
+          "board"
+        ],
+        "title": "ReadinessOut"
+      },
       "RecipeOut": {
         "properties": {
           "key": {
@@ -53059,6 +54800,20 @@
         ],
         "title": "SharedServicesIn"
       },
+      "SharesIn": {
+        "properties": {
+          "shares": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shares"
+        ],
+        "title": "SharesIn"
+      },
       "SiteOut": {
         "properties": {
           "company_id": {
@@ -54385,6 +56140,39 @@
           "updates"
         ],
         "title": "SubsidiaryUpdatesOut"
+      },
+      "SuccessionIn": {
+        "properties": {
+          "heir_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heir Id"
+          },
+          "ceo_person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceo Person Id"
+          },
+          "professional": {
+            "type": "boolean",
+            "title": "Professional",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "SuccessionIn"
       },
       "SupplierGoodOut": {
         "properties": {
@@ -57107,6 +58895,39 @@
           "is_home"
         ],
         "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__family__GiftIn": {
+        "properties": {
+          "heir_id": {
+            "type": "integer",
+            "title": "Heir Id"
+          },
+          "shares": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "heir_id",
+          "shares"
+        ],
+        "title": "GiftIn"
+      },
+      "tst__api__schemas__founder__GiftIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents"
+        ],
+        "title": "GiftIn"
       },
       "tst__api__schemas__founder__RegionOptionOut": {
         "properties": {

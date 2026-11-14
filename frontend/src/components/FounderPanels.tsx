@@ -1,7 +1,8 @@
 // The founder's life on their profile (M24, formulas.md 32): Personal (the founder's own book,
 // apart from the company's, and selling shares once listed), Foundation (create, give, grants
 // and their effects), Persona (the four traits with their causes) and Government affairs
-// (influence by region, lobbying spend, exposure as a word), and M26's Investments (37).
+// (influence by region, lobbying spend, exposure as a word), M26's Investments (37) and
+// M36's Family (45.5-45.6: succession and estate planning).
 // Values come from the API only.
 import {
   Alert,
@@ -13,6 +14,7 @@ import {
 } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import {
   useCreateFoundation,
   useFounder,
@@ -25,14 +27,16 @@ import {
 import { formatMoneyWhole, formatWhole, humanize } from '../lib/format';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
 import { DataTable } from './DataTable';
+import { FamilyTab } from './FamilyTab';
 import { InvestmentsTab } from './InvestmentsTab';
 import { Panel } from './ScreenState';
 import { Term } from './Term';
 
-type Tab = 'personal' | 'investments' | 'foundation' | 'persona' | 'government';
+type Tab = 'personal' | 'investments' | 'family' | 'foundation' | 'persona' | 'government';
 const TABS: { value: Tab; label: string }[] = [
   { value: 'personal', label: 'Personal' },
   { value: 'investments', label: 'Investments' },
+  { value: 'family', label: 'Family' }, // M36 (45.5-45.6)
   { value: 'foundation', label: 'Foundation' },
   { value: 'persona', label: 'Persona' },
   { value: 'government', label: 'Government affairs' },
@@ -45,7 +49,10 @@ function signed(n: number): string {
 
 export function FounderPanels({ saveId }: { saveId: string }) {
   const founder = useFounder(saveId);
-  const [tab, setTab] = useState<Tab>('personal');
+  const [params] = useSearchParams(); // ?tab=family from the Family screen (M36)
+  const [tab, setTab] = useState<Tab>(
+    TABS.find((t) => t.value === params.get('tab'))?.value ?? 'personal',
+  );
   if (!founder.data) return null;
   return (
     <section
@@ -62,6 +69,7 @@ export function FounderPanels({ saveId }: { saveId: string }) {
       />
       {tab === 'personal' && <PersonalTab saveId={saveId} f={founder.data} />}
       {tab === 'investments' && <InvestmentsTab saveId={saveId} />}
+      {tab === 'family' && <FamilyTab saveId={saveId} />}
       {tab === 'foundation' && <FoundationTab saveId={saveId} f={founder.data} />}
       {tab === 'persona' && <PersonaTab f={founder.data} />}
       {tab === 'government' && <GovernmentTab saveId={saveId} f={founder.data} />}

@@ -15,6 +15,7 @@ from tst.sim.errors import (
     UnknownScenarioError,
 )
 from tst.sim.exploration.geology import with_geology
+from tst.sim.family.setup import FamilySpec, start_family
 from tst.sim.finance.setup import initial_cap_table
 from tst.sim.hiring.models import NextIds, PersonState
 from tst.sim.ledger import CASH, LedgerEntry
@@ -80,6 +81,7 @@ def new_game(
     data: GameData,
     mission: tuple[str, ...] | None = None,
     hq_city: str | None = None,
+    family: FamilySpec | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """Return the turn-0 state and the opening ledger entries. The caller persists both.
 
@@ -173,6 +175,8 @@ def new_game(
     state = initial_cap_table(state, PLAYER_COMPANY_ID, person.id, scenario, rng, balance, data)
     state, rival_cash = setup_incumbents(state, rng, balance, data)  # M5 (formulas.md 15.1)
     state = with_geology(state, rng, balance, data)  # M18 (34.1): blocks and hidden deposits
+    if family is not None and family.setting != "none":  # M36 (45.1): Family none adds nothing
+        state = start_family(state, family, rng, balance, data)
     entries: tuple[LedgerEntry, ...] = rival_cash
     if cash:
         entries = (

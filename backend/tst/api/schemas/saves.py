@@ -7,6 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from tst.api.schemas.family import FamilyIn
 from tst.api.schemas.founder_parts import StressOut
 from tst.api.schemas.modes import ScoreOut
 from tst.api.schemas.people import ActiveEffectOut, EnergyOut, InboxItemOut
@@ -76,6 +77,7 @@ class CreateSaveIn(BaseModel):
     mod: str | None = Field(
         default=None, description="A data-editor mod in saves/mods (M25); earns no achievements"
     )
+    family: FamilyIn | None = Field(default=None, description="The Family setting (M36, 45.1)")
 
 
 class SaveOut(BaseModel):

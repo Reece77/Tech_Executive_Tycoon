@@ -661,3 +661,52 @@ templates:
   area_taken_back: # 40.1: the player took an area back
     title: "You took back {area}"
     body: "You now run {area} yourself; {name} no longer does.{sting}"
+  # --- M36 (formulas.md 45): family and succession ---------------------------------------
+  family_milestone:
+    title: "{name} turns {age}"
+    body: "A milestone for the family. Their school reports tell you a little more about them."
+  family_partner_met:
+    title: "You have met {name}"
+    body: "Someone outside the company at last. The Family screen shows them; time together keeps you close."
+  family_child_born:
+    title: "{name} is born"
+    body: "Congratulations. A new member of the family; their ratings show as ranges that narrow with the time you spend with them."
+  family_divorce:
+    title: "Divorced: {name}"
+    body: "{name} leaves with half of your personal cash and investments and half of your shares, which they now hold independently."
+  family_educated:
+    title: "{name}: {stage} chosen ({tier})"
+    body: "Paid {cost_cents} from your personal cash. Their reports narrow what you know of them."
+  family_job_declined:
+    title: "{name} turned the job down"
+    body: "They want a role closer to their interests, or to be closer to you first."
+  family_joined:
+    title: "{name} joined {company}"
+    body: "A family member on the staff. Mentor them to build their readiness to succeed you; promoting them past better people will be noticed."
+  family_gift:
+    title: "Gave {shares} shares to {name}"
+    body: "Gift tax paid: {tax_cents}. Gifts use your lifetime exemption first."
+  family_trust:
+    title: "{shares} shares in the family trust"
+    body: "The trust holds them outside your estate; you still vote them. Set-up fees: {cost_cents}."
+  family_foundation_shares:
+    title: "Gave {shares} shares to the foundation"
+    body: "Worth {value_cents}. They leave your estate and count toward your legacy."
+  estate_settled:
+    title: "The estate is settled"
+    body: "Estate tax of {tax_cents} paid; {shares} shares sold to pay it. What is left passes to your heir."
+  board_succession:
+    title: "The board wants new leadership"
+    body: "A majority voted to replace you, but the family has a successor ready. Choose who takes over."
+  succession_heir:
+    title: "{name} now leads the company"
+    body: "{old} hands over and joins the board as adviser. You now play as {name}."
+  succession_ceo:
+    title: "{name} is the new CEO"
+    body: "A professional CEO runs the company. You lead the family from the board and the Automation screen."
+  adviser_opinion:
+    title: "{name}: {stance} \"{subject}\""
+    body: "{text}"
+  adviser_retired:
+    title: "{name} retires from the board"
+    body: "Your adviser has stepped down after years of opinions, wanted and unwanted."

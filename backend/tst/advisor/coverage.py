@@ -36,6 +36,35 @@ _PLATFORM = exempt(
     "a platform's public figure (users, a fee rate, a share) from the data or its month"
 )
 SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
+    # M36 (45.4, 45.6): the Family screen and the founder's Family tab
+    "family.ReadinessOut": {
+        "points": "heir_readiness",
+        "fit": "heir_readiness",
+        "years": "heir_readiness",
+        "seats": "heir_readiness",
+        "board": "heir_readiness",
+    },
+    "family.EstateOut": {
+        "tax_cents": "estate_tax",
+        "estate_cents": "estate_tax",
+        "taxable_cents": "estate_tax",
+        "shares_to_sell": "estate_tax",
+        "family_bp_after": "estate_tax",
+        "rate": _THRESHOLD,
+        "exemption_cents": _THRESHOLD,
+        "used_exemption_cents": "estate_tax",
+        "shares": _COUNT,
+        "share_price_cents": _PRICE,
+        "shares_cents": "estate_tax",
+        "cash_cents": "estate_tax",
+        "other_cents": "estate_tax",
+        "family_bp_now": "estate_tax",
+        "control_bp": _THRESHOLD,
+        "trust_shares": _COUNT,
+        "lifetime_gifts_cents": _INPUT,
+        "gift_tax_paid_cents": _TOTAL,
+        "estate_tax_paid_cents": _TOTAL,
+    },
     # v4 (M31): the Platforms screen and its product sections
     "platforms.PlatformRegionOut": {
         "users": _PLATFORM,

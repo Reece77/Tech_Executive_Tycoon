@@ -1,0 +1,152 @@
+# Family and succession event templates (docs/formulas.md 45, M36): queued by the engine by id
+# (trigger founder_life, tst.sim.family); the director never draws them, and nothing queues
+# them while Family is set to none. Answers are founder_step effects the engine applies; the
+# LLM may word them, never change the choices, and never sees a family member's potential,
+# hidden traits or the draws behind life events (45.9). The first choice is what happens when
+# a minor event is left unanswered at Continue.
+templates:
+  - id: family_strain
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "Home is coming apart"
+    body: >-
+      Your partner says they barely see you any more, and that {company} has had all of you
+      for too long. Something has to change, or the marriage will not last.
+    choices:
+      - key: A
+        label: "Promise more time: at least 15 energy a month for six months"
+        effects: [{ type: founder_step, target: founder, stat: family_more_time }]
+      - key: B
+        label: "Go to counselling together ($25k)"
+        effects: [{ type: founder_step, target: founder, stat: family_counselling }]
+      - key: C
+        label: "Carry on as you are"
+        effects: [{ type: founder_step, target: founder, stat: family_carry_on }]
+
+  - id: family_marriage
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "Time to talk about the future"
+    body: >-
+      {person} has been part of your life for a year now. Friends keep asking whether you two
+      will marry.
+    choices:
+      - key: A
+        label: "Not yet"
+        effects: [{ type: founder_step, target: founder, stat: family_not_yet }]
+      - key: B
+        label: "Propose"
+        effects: [{ type: founder_step, target: founder, stat: family_marry }]
+
+  - id: family_school
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "Choosing a school"
+    body: >-
+      {person} is twelve and starts secondary school this autumn. The local school is good;
+      the elite one costs $55k a year and stretches its pupils further.
+    choices:
+      - key: A
+        label: "The local school"
+        effects: [{ type: founder_step, target: founder, stat: family_school_standard }]
+      - key: B
+        label: "The elite school ($330k over six years)"
+        effects: [{ type: founder_step, target: founder, stat: family_school_elite }]
+
+  - id: family_university
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "University, or not"
+    body: >-
+      {person} is eighteen. A state university has offered a place; a top one would cost far
+      more and open more doors. Or they could start working now.
+    choices:
+      - key: A
+        label: "A state university ($124k)"
+        effects: [{ type: founder_step, target: founder, stat: family_uni_standard }]
+      - key: B
+        label: "A top university ($348k)"
+        effects: [{ type: founder_step, target: founder, stat: family_uni_top }]
+      - key: C
+        label: "No university"
+        effects: [{ type: founder_step, target: founder, stat: family_uni_none }]
+
+  - id: family_career
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "What comes next"
+    body: >-
+      {person} is twenty-two and wondering what to do with their life. They could join a
+      company in the group, take a job elsewhere, or study for an MBA first.
+    choices:
+      - key: A
+        label: "Let them find their own way for now"
+        do_nothing: true
+      - key: B
+        label: "Pay for an MBA ($253k)"
+        effects: [{ type: founder_step, target: founder, stat: family_mba }]
+
+  - id: family_step_back
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "Your doctor's advice"
+    body: >-
+      {founder}'s doctor has been blunt: the hours are no longer sustainable at this age. The
+      family asks you to step back and name who comes next. You can put it off, but not
+      forever: after two delays the decision is made for you.
+    choices:
+      - key: A
+        label: "Step back and choose a successor"
+        effects: [{ type: founder_step, target: founder, stat: family_step_back }]
+      - key: B
+        label: "Not yet"
+        effects: [{ type: founder_step, target: founder, stat: family_delay }]
+
+  - id: family_succession
+    category: founder
+    trigger: founder_life
+    severities: [critical]
+    weight: 1.0
+    title: "Who runs {company} next"
+    body: >-
+      The time has come to hand over. An heir from the family would make you their adviser
+      on the board and you would play on as them; a professional CEO would run the company
+      while you lead the family from the board. The Family screen ranks your heirs by
+      readiness; the readiest takes over.
+    choices:
+      - key: A
+        label: "Hand over to the readiest heir"
+        effects: [{ type: founder_step, target: founder, stat: family_heir }]
+      - key: B
+        label: "Appoint a professional CEO and lead the family from the board"
+        effects: [{ type: founder_step, target: founder, stat: family_ceo }]
+
+  - id: family_own_way
+    category: founder
+    trigger: founder_life
+    severities: [minor]
+    weight: 1.0
+    title: "Going their own way"
+    body: >-
+      {person} has turned the family company down. They say they want to prove themselves
+      somewhere else first.
+    choices:
+      - key: A
+        label: "Wish them well"
+        do_nothing: true
+      - key: B
+        label: "Tell them the door stays open"
+        effects:
+          - { type: energy_delta, target: founder, share: -0.05 }

@@ -85,6 +85,7 @@ from tst.sim.errors import (
     UpgradeNeededError,
 )
 from tst.sim.events.effects import check_read_only
+from tst.sim.family.setup import FamilySpec
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
@@ -416,6 +417,7 @@ def create_save(
     mission: tuple[str, ...] | None = None,
     hq_city: str | None = None,
     mode: ModeSpec | None = None,
+    family: FamilySpec | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
     `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
@@ -443,6 +445,7 @@ def create_save(
         data=data.game_data,
         mission=mission,
         hq_city=hq_city,
+        family=family,
     )
     if mode is not None:
         state, entries = start_mode(
@@ -496,6 +499,7 @@ def create_save(
                         state.player.mission,
                         state.player.hq_city,
                         mode,
+                        family,
                     ),
                     seq=0,
                 )
@@ -1076,11 +1080,12 @@ def new_game_payload(
     mission: tuple[str, ...],
     hq_city: str | None = None,
     mode: ModeSpec | None = None,
+    family: FamilySpec | None = None,
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
     spec["interests"] = None if founder.interests is None else list(founder.interests)
-    return {
+    out: dict[str, Any] = {
         "company_name": company_name,
         "scenario": scenario,
         "difficulty": difficulty,
@@ -1089,6 +1094,9 @@ def new_game_payload(
         "hq_city": hq_city,  # M9; older saves' payloads lack it (San Francisco)
         "mode": None if mode is None else asdict(mode),  # M15b; older payloads lack it
     }
+    if family is not None and family.setting != "none":  # M36 (45.1); none leaves it out
+        out["family"] = {"setting": family.setting, "child_ages": list(family.child_ages)}
+    return out
 
 
 def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
@@ -1148,6 +1156,11 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         mission=tuple(setup["mission"]),
         hq_city=setup.get("hq_city"),
         mode=ModeSpec(**setup["mode"]) if setup.get("mode") else None,
+        family=(
+            FamilySpec(setup["family"]["setting"], tuple(setup["family"]["child_ages"]))
+            if setup.get("family")
+            else None
+        ),
     )
     for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):

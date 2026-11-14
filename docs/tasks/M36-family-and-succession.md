@@ -70,8 +70,49 @@ Load `pt-family`. Look at your children, set up a trust, and mentor the child in
 
 ## Decisions made
 
-(filled in by the agent)
+Engineering and design gaps the spec and ADRs left open (CLAUDE.md §9), decided and recorded here.
+
+- **Family none is a true no-op.** No `Family` record, no rows, no draws: `founder_month` and `next_budget` call into `tst/sim/family/` only when `state.family` exists. Golden snapshots unchanged (11/11 passed on the branch, Family none); the state-cache check runs over family games in `tests/integration/test_api_family.py`.
+- **Family members are people** (`person` rows, role `family` outside a company) with the player's `reveal_state` view, started as a stranger's ranges. The live set (`load_state`, `live_view`) now includes the family's people. **Person rows now persist `role`, `level` and `is_founder` changes**; before M36 no flow changed them, so existing saves and goldens are unaffected.
+- **Setup:** children's ages 0–40 (`family.start_child_ages`), at least 18 years younger than the founder; a setup child has already grown as development would have made them (no noise); choices already past at setup default to standard school and university.
+- **Children's development** uses §3's growth formula on every skill with the child's general ability (10 × the mean skill) as CA, × `family.child_growth` × e × closeness. University multipliers apply from 18 to 22; an MBA's for 24 months (`family.mba_months`); a degree's skills × `family.education.degree_mult` (1.5). Education is a one-off cost (`family.education.cents`, from the dossier's 2025 figures).
+- **Seeing a child:** ranges narrow each month by `family.reveal_rate × time / 20` and by `family.education.reveal` at each education choice; potential is shown as the usual phrase and its half-width never falls below `family.pa_hw_floor` (10).
+- **Joining:** an offer pays the role's band midpoint at the level; "the role matches their interests" means a role whose interest weight for one of the child's interests is above the role's mean weight. A refusal sends the child their own way with `family.own_way_rate` (a minor event; founding a rival company is a follow-up).
+- **Readiness points** = displayed CEO-seat fit + 0.5 a year in the group (up to 8) + 1 per executive seat held + (board confidence − 50) / 10; bands at 10, 14 and 17 (`family.ready.*`).
+- **Staff reactions:** on a family member's promotion, the unit's others at the old level or above are "passed over"; ratings are their displayed role ratings.
+- **Succession hand-over:** the heir's employment becomes the founder's (role `founder`, level exec) at the player company; the old founder's ends (`retired`); the heir takes the founder's board seat and the old founder a new common seat as adviser (exempt from the vacated-nominee rule). The heir's energy is the founder's (or Chair's) less family time. The heir's own life starts fresh; the old founder's life, shares, investments and foundation stay theirs except at a **health** succession, when the estate settles and everything left passes to the heir.
+- **Estate tax applies only at a health succession to an heir** (and, in M37, death). A professional CEO on health grounds leaves the founder's estate in place (the founder is alive and still plays). Private shares are valued at 28.1's value per share (the last round's price without balances).
+- **Gift tax** is the region's rate on the part of a gift above what lifetime gifts leave of the exemption (unified, as the US); the trust costs `family.trust_setup_cents` once and no gift tax; shares given to the foundation count toward the giving term of the generation's legacy (not M24's `legacy_of`, so earlier guards are unchanged).
+- **Family control** = the family's people (not ex-partners) and the trust holding at least `family.control_bp` (25%) of fully diluted shares; a loss is counted when it falls below after having it (checked at December, a divorce, an estate and foundation gifts).
+- **The adviser's stance** comes from their persona (Visionary + Reckless against Ruthless + Beloved): a bold adviser backs rounds, loans and high-risk pitches and doubts the rest; a cautious one the reverse; the wording is a template in their strongest trait's voice (LLM wording is a follow-up). "That director's board confidence falls (−5)" is applied to every voting director when the player approves something the adviser opposed.
+- **Board removal with a successor** resets each voting seat to `board.start` (a new leader's patience) and opens the succession choice next month; the readiest heir at least developing takes over, else a professional CEO.
+- **A professional CEO** is 25.6's CEO record at any stage, the best senior-or-above insider by displayed fit, else an executive found by a search (stream `family`, key `(head, 3, 0)`).
+- **Life events** use stream `family` keys `(head_id, 0, k)` (k 0 a partner, 2 a child), `(head_id, 2)` health each January, `(person_id, 1)` development, `(person_id, 4)` an offer turned down.
+- **Unlock:** Family is M29 system 24 (23 is M31's platforms), opening when a family exists.
+- **Estate-tax data** (`estate_tax.*`, `docs/v5-research/estate-tax.md`): one jurisdiction per region (US federal, UK, Japan with a spouse and two children, India, Brazil's 8% cap, South Africa, Australia), rate and exemption by year from 2010; the US uses the OBBBA's $15M from 2026.
+
+### §45.8 targets (10 seeds, `tools/m36_targets.py`, 2026-11-14)
+
+| # | Target | Reading | Result |
+|---|---|---|---|
+| 1 | Nothing moves without a family | goldens 11/11 unchanged; full suite and guards as on `main` | PASS |
+| 2 | Family time matters | time 10 above 50 on 10/10; neglect with burnout divorces 10/10 | PASS |
+| 3 | Upbringing matters (≥ 3 points) | median CEO-seat score at 22: 8.28 vs 7.21, gap 1.07 | **carried** |
+| 4 | Succession is a real choice (±20%) | median value 10 years on: heir $1.42B vs CEO $2.86B (0.49); heir within 20% or ahead on 3/10 seeds | **carried** |
+| 5 | Estate planning pays | control lost 7/10 without planning, 0/10 with a trust | PASS |
+| 6 | Turn time | a family adds one month of family rules per head; the timing suite passes | PASS |
+
+- **Target 3, tuned and carried (rule 1).** `family.child_growth` 0.55 → 0.30 (a 22-year-old lands at junior-to-mid level). With §45.3's multipliers (school e ≤ 1.2, university ≤ 1.3, closeness × 0.8–1.2) and §3's headroom (growth slows as ability nears potential), the gap cannot reach 3 points: the sweep found 1.07 at the spec's values and 2.4 even with e doubled (elite 2.0, top 2.5). Reaching 3 would need multipliers far from the spec's, which is a design change: Reece to decide whether to raise them or move the target.
+- **Target 4, carried.** No `family.*` or `estate_tax.*` key moves company value. The gap is structural: in the CEO arm two decision-makers act (the CEO with every authority, and the old founder as Chair running the script), and the CEO arm listed earlier on several seeds; the heir arm has one. Neither is always right (seeds 4, 9 and 10 within 20% or the heir ahead), but the median favours the CEO. A follow-up for Reece: whether the family head should act less once a CEO runs the company (e.g. Chair energy for the family head), or the target compare like with like.
+- **Target 5's scenario:** a seeded founder stake of 26–50% of a listed company (the stakes at which a family holds control), $10B of shares, 2030's US rules; the trust holds 80% of the shares.
+- **pt-family** opens at $8B of the founder's shares at the save's share price; the market reprices toward the company's fundamentals from the next month (its value is near $1B), so the estate quote falls after Continue.
 
 ## Follow-ups
 
-(filled in by the agent)
+- Reece: targets 3 and 4 above (multipliers or target for upbringing; the family head's role beside a professional CEO).
+- The adviser's opinions in the LLM's voice within §16's budget (templates now), and opinions on one-off actions from the screens (the engine hook `adviser.opinion_on_one_off` exists, unused).
+- Trust distributions to heirs, and dividends on trust and foundation shares (they hold shares; nothing pays out yet).
+- A child who goes their own way founding a rival company record (the event and the flag exist).
+- The heir's own partner and children start empty; life events give them a family from then on.
+- A secondary offering when an estate's sale exceeds the free float (§25.5) is not modelled; the estate sells into the float at the share price.
+- Dynasty mode and death (M37); the Hall of Fame family tree reads `dynasty` but the Game over screen does not show it yet.

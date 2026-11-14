@@ -52,6 +52,15 @@ export const GUIDES: Record<string, Guide> = {
     what: 'Teams and departments, who leads them, what they work on, and executive seats.',
     start: ['Point a team at a product so it improves.', 'Give a seat authority to delegate.'],
   },
+  family: {
+    title: 'Family',
+    path: 'people/family',
+    what: 'Your partner and children: family time, the relationship, education, ratings as ranges and how ready each heir is to succeed you.',
+    start: [
+      'Give your family time each month: under 8 the relationship and closeness slip.',
+      "Plan succession and the estate on your founder profile's Family tab.",
+    ],
+  },
   offices: {
     title: 'Offices',
     path: 'org/offices',
