@@ -5130,6 +5130,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/world-news": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * World News
+         * @description Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest
+         *     first, filtered by company, region, good and kind (41.7).
+         */
+        get: operations["getWorldNews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/chain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chain
+         * @description Chain companies by good: capacity, output and utilisation (41.1).
+         */
+        get: operations["getChain"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -6720,6 +6761,31 @@ export interface components {
              */
             learned_label: string;
         };
+        /** ChainGoodOut */
+        ChainGoodOut: {
+            /** Good */
+            good: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Capacity Year */
+            capacity_year: number;
+            /**
+             * Output Year
+             * @description Last month's output a year
+             */
+            output_year: number;
+            /** Utilisation */
+            utilisation: number;
+            /**
+             * Market
+             * @description tight, balanced or slack: last month's market
+             */
+            market: string;
+            /** Producers */
+            producers: components["schemas"]["ChainProducerOut"][];
+        };
         /** ChainLinkOut */
         ChainLinkOut: {
             /**
@@ -6738,6 +6804,40 @@ export interface components {
              * @description Names of the links it feeds
              */
             supplies: string[];
+        };
+        /** ChainOut */
+        ChainOut: {
+            /** Started */
+            started: boolean;
+            /** Goods */
+            goods: components["schemas"]["ChainGoodOut"][];
+        };
+        /** ChainProducerOut */
+        ChainProducerOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /** Country Label */
+            country_label: string;
+            /**
+             * Capacity Year
+             * @description Live capacity a year, the good's volume unit
+             */
+            capacity_year: number;
+            /**
+             * Building
+             * @description Announced capacity under construction
+             */
+            building: number;
+            /** Mothballed */
+            mothballed: number;
+            /**
+             * Share
+             * @description Share of the good's live world capacity
+             */
+            share: number;
+            owner: components["schemas"]["CompanyRefOut"] | null;
         };
         /** ChangePreviewOut */
         ChangePreviewOut: {
@@ -7234,6 +7334,11 @@ export interface components {
             supplier: string | null;
             /** Supplier Name */
             supplier_name: string | null;
+            /**
+             * Supplier Company Id
+             * @description M28: the supplier's company page (from 2026)
+             */
+            supplier_company_id?: number | null;
             /** Signed */
             signed: string;
             /** Ends */
@@ -7445,6 +7550,13 @@ export interface components {
             months: number;
             /** Plans */
             plans: components["schemas"]["CommodityPlanOut"][];
+        };
+        /** CompanyRefOut */
+        CompanyRefOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
         };
         /** ComponentOut */
         ComponentOut: {
@@ -8584,6 +8696,15 @@ export interface components {
             /** Ai Budget Cents */
             ai_budget_cents: number;
         };
+        /** ExecutiveOut */
+        ExecutiveOut: {
+            /** Role */
+            role: string;
+            /** Name */
+            name: string;
+            /** Since Label */
+            since_label: string;
+        };
         /**
          * ExitChoiceOut
          * @description After the choice: the game's state and the company the player now runs.
@@ -9404,6 +9525,24 @@ export interface components {
             open_bridge_expires_label: string | null;
             /** Bridge Energy */
             bridge_energy: number;
+        };
+        /** FinancialsOut */
+        FinancialsOut: {
+            /** Listed */
+            listed: boolean;
+            /**
+             * Revenue Year Cents
+             * @description Listed: last month x 12
+             */
+            revenue_year_cents: number | null;
+            /**
+             * Ebitda Year Cents
+             * @description Listed: the last 12 months
+             */
+            ebitda_year_cents: number | null;
+            /** @description Private: an estimate */
+            revenue_range: components["schemas"]["MoneyRangeOut"] | null;
+            ebitda_range: components["schemas"]["MoneyRangeOut"] | null;
         };
         /** FireOut */
         FireOut: {
@@ -12440,7 +12579,7 @@ export interface components {
             /** Acquisitions */
             acquisitions: components["schemas"]["AcquisitionOut"][];
             /** Subsidiaries */
-            subsidiaries: components["schemas"]["SubsidiaryOut"][];
+            subsidiaries: components["schemas"]["tst__api__schemas__mna__SubsidiaryOut"][];
             /**
              * Listed
              * @description Whether you can pay in shares
@@ -12517,6 +12656,13 @@ export interface components {
              * @description Answered this month, not with no comment
              */
             can_promise: boolean;
+        };
+        /** MoneyRangeOut */
+        MoneyRangeOut: {
+            /** Low Cents */
+            low_cents: number;
+            /** High Cents */
+            high_cents: number;
         };
         /**
          * MoraleBreakdownOut
@@ -12967,6 +13113,19 @@ export interface components {
              * @default 0
              */
             prepay?: number;
+        };
+        /** OfftakeOut */
+        OfftakeOut: {
+            buyer: components["schemas"]["CompanyRefOut"];
+            seller: components["schemas"]["CompanyRefOut"];
+            /** Good Label */
+            good_label: string;
+            /** Volume */
+            volume: number;
+            /** Unit */
+            unit: string;
+            /** Ends Label */
+            ends_label: string;
         };
         /**
          * Onboarding
@@ -16027,6 +16186,8 @@ export interface components {
             recent_moves: components["schemas"]["RivalMoveOut"][];
             /** Poach Energy */
             poach_energy: number;
+            /** @description M28 (41.7): owner and group, executives, facilities, financials, deals */
+            world?: components["schemas"]["WorldCompanyOut"] | null;
         };
         /** RivalRowOut */
         RivalRowOut: {
@@ -17355,24 +17516,6 @@ export interface components {
              */
             cash_cents: number[];
         };
-        /** SubsidiaryOut */
-        SubsidiaryOut: {
-            /** Company Id */
-            company_id: number;
-            /** Name */
-            name: string;
-            /**
-             * Directive
-             * @enum {string}
-             */
-            directive: "grow" | "harvest" | "defend";
-            /** Mrr Cents */
-            mrr_cents: number;
-            /** Cash Cents */
-            cash_cents: number;
-            /** Staff */
-            staff: number;
-        };
         /** SubsidiaryUpdateOut */
         SubsidiaryUpdateOut: {
             /** Company Id */
@@ -17467,6 +17610,11 @@ export interface components {
             country_label?: string | null;
             /** Listing */
             listing: string;
+            /**
+             * Company Id
+             * @description M28: its company page (from 2026)
+             */
+            company_id?: number | null;
             /**
              * Reliability
              * @description Chance it keeps delivering through a severe shock
@@ -18364,6 +18512,125 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** WorldCompanyOut */
+        WorldCompanyOut: {
+            /**
+             * Kind
+             * @description chain (a miner, refiner or foundry) or tech
+             */
+            kind: string;
+            /** Country Label */
+            country_label: string | null;
+            owner: components["schemas"]["CompanyRefOut"] | null;
+            /** Subsidiaries */
+            subsidiaries: components["schemas"]["tst__api__schemas__world__SubsidiaryOut"][];
+            /**
+             * Mandate
+             * @description What its owner runs it for
+             */
+            mandate: string | null;
+            /** Executives */
+            executives: components["schemas"]["ExecutiveOut"][];
+            /** Facilities */
+            facilities: components["schemas"]["WorldFacilityOut"][];
+            financials: components["schemas"]["FinancialsOut"] | null;
+            /** Deals */
+            deals: components["schemas"]["WorldDealOut"][];
+            /** Offtakes */
+            offtakes: components["schemas"]["OfftakeOut"][];
+            /** News */
+            news: components["schemas"]["WorldNewsItemOut"][];
+        };
+        /** WorldDealOut */
+        WorldDealOut: {
+            /** Date Label */
+            date_label: string;
+            buyer: components["schemas"]["CompanyRefOut"];
+            target: components["schemas"]["CompanyRefOut"];
+            /** Price Cents */
+            price_cents: number;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+        };
+        /** WorldFacilityOut */
+        WorldFacilityOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Good */
+            good: string;
+            /** Good Label */
+            good_label: string;
+            /** Country */
+            country: string;
+            /** Country Label */
+            country_label: string;
+            /** Region */
+            region: string;
+            /** Capacity Year */
+            capacity_year: number;
+            /** Unit */
+            unit: string;
+            /**
+             * Status
+             * @description live, building, mothballed or closed
+             */
+            status: string;
+            /**
+             * Cost Band
+             * @description Its third of the good's cost curve: low, middle or high
+             */
+            cost_band: string;
+            /**
+             * Ready Label
+             * @description An announced build's month
+             */
+            ready_label: string | null;
+        };
+        /** WorldNewsItemOut */
+        WorldNewsItemOut: {
+            /** News Id */
+            news_id: number;
+            /** Turn */
+            turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Kind */
+            kind: string;
+            /** Kind Label */
+            kind_label: string;
+            /** Message */
+            message: string;
+            company: components["schemas"]["CompanyRefOut"] | null;
+            other: components["schemas"]["CompanyRefOut"] | null;
+            region: components["schemas"]["tst__api__schemas__world__NamedOut"] | null;
+            good: components["schemas"]["tst__api__schemas__world__NamedOut"] | null;
+        };
+        /** WorldNewsOut */
+        WorldNewsOut: {
+            /**
+             * Started
+             * @description The living world runs from January 2026
+             */
+            started: boolean;
+            /**
+             * Items
+             * @description Newest first, after the filters
+             */
+            items: components["schemas"]["WorldNewsItemOut"][];
+            /**
+             * Companies
+             * @description Every company the feed names
+             */
+            companies: components["schemas"]["CompanyRefOut"][];
+            /** Regions */
+            regions: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+            /** Goods */
+            goods: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+            /** Kinds */
+            kinds: components["schemas"]["tst__api__schemas__world__NamedOut"][];
+        };
         /** WorldOut */
         WorldOut: {
             /** Turn */
@@ -18492,6 +18759,24 @@ export interface components {
             /** Level */
             level: number;
         };
+        /** SubsidiaryOut */
+        tst__api__schemas__mna__SubsidiaryOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Directive
+             * @enum {string}
+             */
+            directive: "grow" | "harvest" | "defend";
+            /** Mrr Cents */
+            mrr_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Staff */
+            staff: number;
+        };
         /** EventLinkOut */
         tst__api__schemas__people__EventLinkOut: {
             /** Event Id */
@@ -18538,6 +18823,21 @@ export interface components {
              * @description The HQ's region, whose markets are v1's (19.5)
              */
             home: boolean;
+        };
+        /** NamedOut */
+        tst__api__schemas__world__NamedOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** SubsidiaryOut */
+        tst__api__schemas__world__SubsidiaryOut: {
+            company: components["schemas"]["CompanyRefOut"];
+            /** Mandate */
+            mandate: string;
+            /** Since Label */
+            since_label: string;
         };
     };
     responses: never;
@@ -35141,6 +35441,127 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getWorldNews: {
+        parameters: {
+            query?: {
+                company?: number | null;
+                region?: string | null;
+                good?: string | null;
+                kind?: string | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorldNewsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getChain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChainOut"];
                 };
             };
             /** @description Bad Request */

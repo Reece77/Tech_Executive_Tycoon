@@ -30,6 +30,7 @@ from tst.api.routers import (
     history,
     holiday,
     investing,
+    living,
     meta,
     mining,
     mna,
@@ -128,6 +129,7 @@ def create_app() -> FastAPI:
     app.include_router(mods.router)  # M25
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
+    app.include_router(living.router)  # M28
     app.include_router(events.settings_router)
     app.include_router(onboarding.settings_router)  # M29
     app.include_router(meta.router)

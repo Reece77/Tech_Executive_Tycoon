@@ -98,6 +98,7 @@ STREAM_IDS: Final = MappingProxyType(
         # listing (M22, 39.1-39.3)
         "geopolitics": 55,
         "automation": 56,  # M27a (formulas.md 40.3)
+        "world": 57,  # M28 (formulas.md 41); 56 is M27a's automation
         "misc": 99,
     }
 )

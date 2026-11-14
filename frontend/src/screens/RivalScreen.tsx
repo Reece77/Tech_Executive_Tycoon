@@ -9,6 +9,7 @@ import { KpiTile } from '../components/KpiTile';
 import { RivalDealPanel } from '../components/RivalDealPanel';
 import { RivalLeaderPanel } from '../components/RivalLeaderPanel';
 import { Term } from '../components/Term';
+import { WorldCompanyPanel } from '../components/WorldCompanyPanel';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import { useOpenSearch, useRival, type RivalProfile } from '../hooks/api';
 import {
@@ -58,6 +59,7 @@ function RivalBody({ saveId, r }: { saveId: string; r: RivalProfile }) {
         {r.style_text} Founded {r.founded_label}.{r.failed ? ' Closed.' : ''}
       </p>
       <RivalLeaderPanel saveId={saveId} rivalId={r.company_id} />
+      {r.world && <WorldCompanyPanel saveId={saveId} companyId={r.company_id} w={r.world} />}
       <PersonalInvestPanel saveId={saveId} companyId={r.company_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
         <KpiTile

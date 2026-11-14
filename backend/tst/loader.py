@@ -65,6 +65,7 @@ from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
+from tst.sim.world.config import ChainCompaniesFile
 
 POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
 BALANCE_FILE = "balance.yaml"
@@ -101,6 +102,7 @@ NODES_FILE = "nodes.yaml"  # M21 (formulas.md 38.1, 38.3)
 COUNTRIES_FILE = "countries.yaml"  # M22 (formulas.md 39.1)
 CONTROLS_FILE = "export_controls.yaml"  # M22 (39.2)
 TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
+CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -108,6 +110,7 @@ DATA_FILES = (
     BACKGROUNDS_FILE,
     BALANCE_FILE,
     CATEGORIES_FILE,
+    CHAIN_FILE,
     CITIES_FILE,
     COMMODITIES_FILE,
     COMMODITY_HISTORY_FILE,
@@ -518,6 +521,59 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
 SPECIAL_DESTINATIONS: Final = ("all", "affiliates")  # export_controls.yaml `to` words (39.2)
 
 
+def world_problems(balance: Balance, data: GameData) -> list[str]:
+    """M28 (41.1): every chain company is a supplier selling a commodity in December 2025 or a
+    foundry, sits in a known country, and no good's named shares exceed 1 in any month."""
+    from tst.sim.world.config import FOUNDRY_GOOD
+    from tst.sim.world.data import named_shares
+
+    chain = data.chain_companies
+    if chain is None:
+        return []
+    problems: list[str] = []
+    if data.suppliers is None or data.nodes is None or data.commodities is None:
+        return ["needs suppliers.yaml, nodes.yaml and commodities.yaml"]
+    if data.countries is None:
+        return ["needs countries.yaml"]
+    goods = {g.key for g in data.commodities.goods}
+    foundries = {f.key for f in data.nodes.foundries}
+    suppliers = {s.key for s in data.suppliers.suppliers}
+    countries = {c.key for c in data.countries.countries}
+    if bad := sorted(set(chain.world_supply) ^ goods):
+        problems.append(f"world_supply must name exactly the commodities: {bad}")
+    every = goods | {FOUNDRY_GOOD}
+    for name, table in (
+        ("demand_growth", chain.demand_growth),
+        ("build_months", chain.build_months),
+        ("others", chain.others),
+    ):
+        if bad := sorted(set(table) ^ every):
+            problems.append(f"{name} must name every commodity and {FOUNDRY_GOOD}: {bad}")
+    if bad := sorted(c.key for c in chain.companies if c.key not in suppliers | foundries):
+        problems.append(f"companies that are neither suppliers nor foundries: {bad}")
+    if bad := sorted(foundries - {c.key for c in chain.companies}):
+        problems.append(f"foundries without an entry: {bad}")
+    for c in chain.companies:
+        country = c.country or data.countries.sites.get(c.key)
+        if country is None or country not in countries:
+            problems.append(f"{c.key}: no known country")
+    if bad := sorted({o.country for o in chain.others.values()} - countries):
+        problems.append(f"others in unknown countries: {bad}")
+    from tst.sim.world.data import specs
+
+    rivals = {c.name for c in data.incumbents} | {e.name for e in data.entrants}
+    if bad := sorted(s.name for s in specs(data) if s.name in rivals):
+        problems.append(f"chain companies named as rivals: {bad} (give them a name)")
+    if bad := sorted(set(balance.world.groups.security_goods) - goods):
+        problems.append(f"world.groups.security_goods not commodities: {bad}")
+    for good in sorted(goods):
+        for turn in range(0, balance.world.start_turn):
+            if sum(named_shares(data, good, turn).values()) > 1.0 + 1e-9:
+                problems.append(f"{good}: named shares above 1 in turn {turn}")
+                break
+    return problems
+
+
 def geopolitics_problems(balance: Balance, data: GameData) -> list[str]:
     """M22 (formulas.md 39): countries cover every region and city; rules and tariffs name
     known actors, goods and destinations; controlled commodities exist."""
@@ -785,6 +841,7 @@ def load_all(
     countries = _validate(CountriesFile, parsed[COUNTRIES_FILE], COUNTRIES_FILE)
     controls = _validate(ExportControlsFile, parsed[CONTROLS_FILE], CONTROLS_FILE)
     tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)
+    chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
     game_data = _validate(
         GameData,
         {
@@ -833,6 +890,7 @@ def load_all(
             "countries": countries,
             "controls": controls,
             "tariffs": tariffs,
+            "chain_companies": chain,
         },
         "seed data cross-check",
     )
@@ -848,6 +906,8 @@ def load_all(
         )
     if problems := fab_problems(balance, game_data):
         raise DataLoadError(f"{NODES_FILE}, {BALANCE_FILE} fab: " + "; ".join(problems))
+    if problems := world_problems(balance, game_data):
+        raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

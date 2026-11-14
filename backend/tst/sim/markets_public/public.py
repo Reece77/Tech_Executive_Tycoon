@@ -343,8 +343,11 @@ def _triggers(
     ):
         state = ipo.queue_public(state, cid, ACTIVIST, turn + 1)
         public = replace(public, last_activist_turn=turn, below_value_months=0)
-    if cheap >= tt.months and (
-        public.last_takeover_turn is None or turn - public.last_takeover_turn >= tt.gap_months
+    world = bool(state.chain_companies)  # 41.4 (M28): from 2026 rivals' own valuations bid
+    if (
+        not world
+        and cheap >= tt.months
+        and (public.last_takeover_turn is None or turn - public.last_takeover_turn >= tt.gap_months)
     ):
         state = ipo.queue_public(state, cid, TAKEOVER, turn + 1)
         public = replace(public, last_takeover_turn=turn, below_takeover_months=0)
@@ -434,7 +437,14 @@ def apply_public_step(
             raise ValueError("accepting a takeover needs the game data and ledger balances")
         state, entries, sold = sell_company(state, company_id, balance, data, balances)
         logs += sold
-    # takeover_reject: the template's board effect is all
+    elif step == "takeover_reject" and state.world_bids:  # 41.4 (M28): the bid is turned down
+        state = replace(
+            state,
+            world_bids=tuple(
+                replace(b, status="rejected") if b.status == "open" else b for b in state.world_bids
+            ),
+        )
+    # takeover_reject: otherwise the template's board effect is all
     return state, entries, logs
 
 

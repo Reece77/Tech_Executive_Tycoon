@@ -117,12 +117,25 @@ from tst.sim.research.models import (
     ResearchProject,
 )
 from tst.sim.rivals.models import (
+    CHAIN_KEY,
     FreeAgent,
     PoachApproach,
     RivalEffect,
     RivalMove,
     SegmentShare,
     WorkforcePool,
+)
+from tst.sim.world.models import (
+    ChainCompany,
+    ChinaLag,
+    RegionCycle,
+    RivalDeal,
+    RivalMandate,
+    WorldBid,
+    WorldFacility,
+    WorldGood,
+    WorldNews,
+    WorldOfftake,
 )
 
 _ID = attrgetter("id")  # sort key of id-sorted collections (C speed for bisect)
@@ -187,6 +200,11 @@ class CompanyState:
     @property
     def is_rival(self) -> bool:
         return not self.is_player
+
+    @property
+    def is_chain(self) -> bool:
+        """A chain company (M28, 41.1): a miner, refiner, gas company or foundry from 2026."""
+        return self.rival_key[:1] == (CHAIN_KEY,)
 
     @property
     def alive(self) -> bool:
@@ -377,6 +395,21 @@ class GameState:
     sites: tuple[Site, ...] = ()
     exits: tuple[Exit, ...] = ()
     geo_notices: tuple[Notice, ...] = ()
+    # M28 (41): the living world from January 2026: chain companies by company id, their
+    # facilities by id, each good's last world month by good, regions' cycles by region, World
+    # news by id (the last world.news_months), rival-on-rival deals by id, rival owners'
+    # mandates by company id, rivals' offtakes by id, bids for the player by id, Chinese
+    # foundries' lags by foundry. All empty before 2026.
+    chain_companies: tuple[ChainCompany, ...] = ()
+    world_facilities: tuple[WorldFacility, ...] = ()
+    world_goods: tuple[WorldGood, ...] = ()
+    region_cycles: tuple[RegionCycle, ...] = ()
+    world_news: tuple[WorldNews, ...] = ()
+    rival_deals: tuple[RivalDeal, ...] = ()
+    rival_mandates: tuple[RivalMandate, ...] = ()
+    world_offtakes: tuple[WorldOfftake, ...] = ()
+    world_bids: tuple[WorldBid, ...] = ()
+    china_lags: tuple[ChinaLag, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
 
     def mine(self, mine_id: int) -> Mine | None:
@@ -572,15 +605,26 @@ class GameState:
         return tuple(s for s in self.seats if s.company_id == company_id)
 
     def ledger_companies(self) -> tuple[CompanyState, ...]:
-        """Companies with books: the player and every rival still in business (M5, 15.1)."""
-        return tuple(c for c in self.companies if c.is_player or c.failed_turn is None)
+        """Companies with books: the player and every rival still in business (M5, 15.1).
+        Chain companies keep books too, but the world phase runs them (M28, 41.1)."""
+        return tuple(
+            c for c in self.companies if c.is_player or (c.failed_turn is None and not c.is_chain)
+        )
 
     def company_pools(self, company_id: int) -> tuple[WorkforcePool, ...]:
         return tuple(p for p in self.pools if p.company_id == company_id)
 
     def rivals(self) -> tuple[CompanyState, ...]:
-        """Rival companies still in business (M5)."""
-        return tuple(c for c in self.companies if not c.is_player and c.failed_turn is None)
+        """Rival companies still in business (M5); chain companies are the world's (M28)."""
+        return tuple(
+            c
+            for c in self.companies
+            if not c.is_player and c.failed_turn is None and not c.is_chain
+        )
+
+    def chain(self) -> tuple[CompanyState, ...]:
+        """Chain companies still in business (M28, 41.1)."""
+        return tuple(c for c in self.companies if c.is_chain and c.failed_turn is None)
 
     def event(self, event_id: int) -> GameEvent | None:
         return next((e for e in self.events if e.id == event_id), None)
