@@ -40,8 +40,32 @@ LABELS: dict[str, str] = {
     "press_waiting": "Press moments waiting",
     "events_answered": "Events answered this month",
     "events_waiting": "Events waiting",
+    # M27b (40.7)
+    "device_cover_weeks": "Lowest device cover (weeks)",
+    "devices_made": "Devices made last month",
+    "supply_cover_pct": "Lowest input cover %",
+    "supply_deals": "Supply contracts running",
+    "projects": "Exploration projects",
+    "exploration_cents": "Exploration committed (12 months)",
+    "plants_staffed_pct": "Plants staffed %",
+    "plants": "Mines and plants",
+    "fab_use_pct": "Fab use %",
+    "foundry_share_pct": "Starts under contract %",
+    "lobbying_cents": "Lobbying a month",
+    "blocked_sales": "Blocked sales",
+    "deals_open": "Deals open",
+    "targets_screened": "Targets screened",
 }
-MONEY = frozenset({"mrr", "marketing_cents", "cash_cents", "research_cents"})
+MONEY = frozenset(
+    {
+        "mrr",
+        "marketing_cents",
+        "cash_cents",
+        "research_cents",
+        "exploration_cents",
+        "lobbying_cents",
+    }
+)
 # Targets the player has set elsewhere: coverage (the COO's guardrail) and runway (the CFO's).
 TARGETS: dict[str, Callable[[GameState, int, Balance], int | None]] = {
     "coverage_pct": lambda s, c, b: round(
@@ -121,8 +145,9 @@ def kpi_value(
     key: str,
     b: Balance,
     data: GameData,
+    company_id: int | None = None,
 ) -> int:
-    company = state.player.id
+    company = state.player.id if company_id is None else company_id
     products = state.company_products(company)
     live = [p for p in products if p.status in SELLING]
     match key:
@@ -176,6 +201,96 @@ def kpi_value(
             )
         case "events_waiting":
             return len(state.open_events(company))
+    return chain_kpi(state, company, key, b, data)
+
+
+def chain_kpi(state: GameState, company: int, key: str, b: Balance, data: GameData) -> int:
+    """M27b's KPIs (40.7), from the company's own rows."""
+    from tst.sim.automation import chain
+
+    match key:
+        case "device_cover_weeks":
+            weeks = [
+                chain.cover_weeks(*chain.device_cover(state, pid, b, state.turn))
+                for pid in chain.device_products(state, company, b)
+            ]
+            shown = [w for w in weeks if w is not None]
+            return round(min(shown)) if shown else 0
+        case "devices_made":
+            return round(
+                sum(
+                    r.units
+                    for r in state.production
+                    if r.company_id == company
+                    and r.product_id in chain.device_products(state, company, b)
+                )
+            )
+        case "supply_cover_pct":
+            needs = chain.supply_needs(state, company, b, data)
+            return round(min(min(n.cover for n in needs), 9.99) * PCT) if needs else PCT
+        case "supply_deals":
+            return sum(
+                1 for d in state.commodity_deals if d.company_id == company and d.status == "active"
+            ) + sum(
+                1
+                for c in state.production_contracts
+                if c.company_id == company and c.status == "active"
+            )
+        case "projects":
+            return sum(
+                1
+                for p in state.projects
+                if p.company_id == company and p.status in ("active", "permitted")
+            )
+        case "exploration_cents":
+            return chain.exploration_spent(state, company)
+        case "plants_staffed_pct":
+            from tst.sim.facilities.lifecycle import staffing
+
+            kinds = chain._plant_kinds(b) | {"mine"}
+            plants = [
+                f
+                for f in state.company_facilities(company)
+                if f.kind in kinds and f.status not in ("closed", "mothballed")
+            ]
+            if not plants:
+                return PCT
+            return round(sum(staffing(state, f, b).coverage for f in plants) / len(plants) * PCT)
+        case "plants":
+            kinds = chain._plant_kinds(b) | {"mine"}
+            return sum(
+                1
+                for f in state.company_facilities(company)
+                if f.kind in kinds and f.status != "closed"
+            )
+        case "fab_use_pct" | "foundry_share_pct":
+            months = [
+                f.month for f in state.fabs if f.company_id == company and f.month is not None
+            ]
+            available = sum(m.available for m in months)
+            if available <= 0:
+                return 0
+            if key == "fab_use_pct":
+                return round(sum(m.own + m.sold + m.contracted for m in months) / available * PCT)
+            return round(sum(m.contracted for m in months) / available * PCT)
+        case "lobbying_cents":
+            return sum(i.spend_cents for i in state.influence if i.company_id == company)
+        case "blocked_sales":
+            return len(chain.blocked(state, company, b, data))
+        case "deals_open":
+            from tst.sim.mna.models import OPEN_DEALS
+
+            return sum(
+                1 for d in state.deals if d.acquirer_id == company and d.status in OPEN_DEALS
+            )
+        case "targets_screened":
+            return sum(
+                1
+                for f in state.target_files
+                if f.acquirer_id == company
+                and f.diligence_done_turn is not None
+                and f.diligence_done_turn <= state.turn
+            )
     raise KeyError(key)
 
 
@@ -185,8 +300,9 @@ def kpi_values(
     area: str,
     b: Balance,
     data: GameData,
+    company_id: int | None = None,
 ) -> dict[str, int]:
-    return {k: kpi_value(state, balances, k, b, data) for k in area_def(b, area).kpis}
+    return {k: kpi_value(state, balances, k, b, data, company_id) for k in area_def(b, area).kpis}
 
 
 def kpi_target(state: GameState, company: int, key: str, b: Balance) -> int | None:

@@ -641,7 +641,9 @@ def apply_action(
             return ActionResult(close_proposal(state, proposal, "declined"), (), ())
         inner = apply_action(
             state,
-            auto_proposal_action(proposal, action.actor_id)  # M27a (40.2): an owner's
+            auto_proposal_action(  # M27a (40.2): an owner's; M27b: a subsidiary's own staff
+                proposal, proposal_actor(state, proposal, action.actor_id)
+            )
             if proposal.kind == "auto"
             else proposal_action(proposal, action.actor_id),  # type: ignore[arg-type]
             rng,
@@ -923,6 +925,13 @@ def apply_action(
     if actor is not None:  # people live where they work (M9, 19.2)
         new_state = settle_home_cities(new_state, actor.company_id, balance, data)
     return ActionResult(new_state=new_state, ledger_entries=out.entries, log_items=out.log)
+
+
+def proposal_actor(state: GameState, proposal: Proposal, founder_id: int) -> int:
+    """Who carries out an approved automation proposal (M27b: tst.sim.automation.scope)."""
+    from tst.sim.automation.scope import proposal_actor as actor
+
+    return actor(state, proposal, founder_id) if proposal.kind == "auto" else founder_id
 
 
 def auto_proposal_action(proposal: Proposal, actor_id: int) -> Action:

@@ -315,3 +315,76 @@ roles:
     work_style_weights: { builder: 0, operator: 5, researcher: 1, seller: 4 }
     interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 2, security: 1, gaming: 1, mining: 0, policy: 3, design: 1, fintech: 1, consumer: 2, enterprise: 1, open_source: 1 }
     salary_band_mid_cents: { junior: 5500000, mid: 7500000, senior: 9800000, staff: 12000000, principal: 14000000, exec: 16500000 }
+  # --- M27b (formulas.md 40.1, 40.7): chain area leads, appended (founder_fit: false) ---
+  - key: procurement_manager
+    label: Procurement manager
+    product_function: none
+    founder_fit: false
+    summary: "Buys the chain's inputs: commodity contracts, offtakes, wafers and refining deals, group supply first. A lead; procurement and negotiation matter most."
+    why_hire: "Hire one, senior, to run Supply and commodities on the Automation screen without giving it to the COO (40.7)."
+    primary: [procurement, negotiation]
+    secondary: [operations, finance, strategy, communication]
+    work_style: operator
+    work_style_weights: { builder: 0, operator: 6, researcher: 1, seller: 3 }
+    interest_weights: { ai: 0, hardware: 3, crypto: 0, climate: 2, security: 0, gaming: 0, mining: 3, policy: 2, design: 0, fintech: 1, consumer: 1, enterprise: 2, open_source: 0 }
+    salary_band_mid_cents: { junior: 6000000, mid: 8000000, senior: 10500000, staff: 12500000, principal: 14500000, exec: 17000000 }
+  - key: plant_manager
+    label: Plant manager
+    product_function: none
+    founder_fit: false
+    summary: "Runs mines and refineries day to day: crews, safety, and where the output goes. A lead; operations and manufacturing matter most."
+    why_hire: "Hire one, senior, to run Mines and refineries on the Automation screen (40.7)."
+    primary: [operations, manufacturing]
+    secondary: [mining_engineering, leadership, procurement, security]
+    work_style: operator
+    work_style_weights: { builder: 1, operator: 7, researcher: 1, seller: 1 }
+    interest_weights: { ai: 0, hardware: 2, crypto: 0, climate: 3, security: 1, gaming: 0, mining: 6, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 6500000, mid: 8500000, senior: 11000000, staff: 13500000, principal: 15500000, exec: 18000000 }
+  - key: fab_manager
+    label: Fab manager
+    product_function: none
+    founder_fit: false
+    summary: "Runs a fab's wafer starts: the group's own chips first, then foundry customers and spot slots. A lead; manufacturing and operations matter most."
+    why_hire: "Hire one, senior, to run Fabs and foundry customers on the Automation screen without giving it to the CTO (40.7)."
+    primary: [manufacturing, operations]
+    secondary: [chip_design, sales, negotiation, leadership]
+    work_style: operator
+    work_style_weights: { builder: 2, operator: 6, researcher: 1, seller: 1 }
+    interest_weights: { ai: 1, hardware: 6, crypto: 0, climate: 0, security: 1, gaming: 0, mining: 0, policy: 1, design: 0, fintech: 0, consumer: 0, enterprise: 2, open_source: 0 }
+    salary_band_mid_cents: { junior: 8000000, mid: 10500000, senior: 13500000, staff: 16000000, principal: 18500000, exec: 21500000 }
+  - key: legal_counsel
+    label: Legal counsel
+    product_function: none
+    founder_fit: false
+    summary: "Handles export licences, compliance and the rules each country sets. A lead; legal and communication matter most."
+    why_hire: "Hire one, senior, to run Government affairs on the Automation screen (40.7)."
+    primary: [legal, communication]
+    secondary: [negotiation, strategy, finance, judgment_of_talent]
+    work_style: operator
+    work_style_weights: { builder: 0, operator: 6, researcher: 2, seller: 2 }
+    interest_weights: { ai: 0, hardware: 1, crypto: 1, climate: 1, security: 2, gaming: 0, mining: 1, policy: 6, design: 0, fintech: 2, consumer: 0, enterprise: 2, open_source: 0 }
+    salary_band_mid_cents: { junior: 8000000, mid: 11000000, senior: 15000000, staff: 18000000, principal: 21000000, exec: 25000000 }
+  - key: public_policy_manager
+    label: Public policy manager
+    product_function: none
+    founder_fit: false
+    summary: "Lobbies governments region by region and keeps the company's case in front of them. A lead; communication and negotiation matter most."
+    why_hire: "Hire one, senior, to run Government affairs on the Automation screen (40.7)."
+    primary: [communication, negotiation]
+    secondary: [legal, strategy, leadership, marketing]
+    work_style: seller
+    work_style_weights: { builder: 0, operator: 4, researcher: 1, seller: 5 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 0, climate: 3, security: 1, gaming: 0, mining: 1, policy: 8, design: 0, fintech: 1, consumer: 1, enterprise: 1, open_source: 0 }
+    salary_band_mid_cents: { junior: 6500000, mid: 9000000, senior: 12000000, staff: 14500000, principal: 17000000, exec: 20000000 }
+  - key: corporate_development_manager
+    label: Corporate development manager
+    product_function: none
+    founder_fit: false
+    summary: "Screens acquisition targets each quarter and pitches the best. A lead; finance, strategy and negotiation matter most."
+    why_hire: "Hire one, senior, to run Corporate development on the Automation screen without giving it to the CFO (40.7)."
+    primary: [finance, strategy]
+    secondary: [negotiation, judgment_of_talent, communication, legal]
+    work_style: operator
+    work_style_weights: { builder: 0, operator: 5, researcher: 3, seller: 2 }
+    interest_weights: { ai: 1, hardware: 1, crypto: 1, climate: 1, security: 0, gaming: 0, mining: 1, policy: 1, design: 0, fintech: 4, consumer: 1, enterprise: 3, open_source: 0 }
+    salary_band_mid_cents: { junior: 8500000, mid: 11500000, senior: 15000000, staff: 18000000, principal: 21000000, exec: 24500000 }

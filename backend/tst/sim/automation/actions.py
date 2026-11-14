@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 from typing import Final, Literal
 
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
-from tst.sim.automation import owners
+from tst.sim.automation import owners, scope
 from tst.sim.automation.config import AREA_SEAT_RULE
 from tst.sim.automation.models import AreaOwner
 from tst.sim.data_models import Balance, GameData
@@ -42,6 +42,7 @@ class SetAreaOwner:
     person_id: int
     limit_cents: int | None = None
     priority: int | None = None
+    company_id: int | None = None  # M27b: a subsidiary of the group; None: the player's company
     kind: Literal["set_area_owner"] = "set_area_owner"
 
 
@@ -51,6 +52,7 @@ class TakeBackArea:
 
     actor_id: int
     area: str
+    company_id: int | None = None  # M27b: a subsidiary of the group; None: the player's company
     kind: Literal["take_back_area"] = "take_back_area"
 
 
@@ -64,6 +66,9 @@ class SetAreaSettings:
     priority: int | None = None
     answer_events: bool | None = None
     allow_bold: bool | None = None
+    company_id: int | None = None  # M27b: a subsidiary of the group; None: the player's company
+    budget_cents: int | None = None  # M27b: the area's yearly budget (exploration, lobbying, ...)
+    guardrails: tuple[tuple[str, float], ...] | None = None  # M27b: the area's guardrails
     kind: Literal["set_area_settings"] = "set_area_settings"
 
 
@@ -81,11 +86,15 @@ def _check_area(area: str, b: Balance) -> None:
         raise InvalidActionError(f"no area {area!r}")
 
 
-def _founder_only(state: GameState, actor_id: int) -> int:
+def _founder_only(state: GameState, actor_id: int, company_id: int | None = None) -> int:
     company = acting_company(state, actor_id)
     if not state.person(actor_id).is_founder:
         raise OrgRuleError("only the founder hands out areas")
-    return company
+    if company_id is None or company_id == company:
+        return company
+    if company != state.player.id or not scope.in_scope(state, company_id):
+        raise OrgRuleError("only the group's own subsidiaries can be automated")
+    return company_id  # M27b (sub-task 1): a subsidiary of the player's group
 
 
 def _anchors(state: GameState, company: int) -> tuple[tuple[int, str, int], ...]:
@@ -146,7 +155,7 @@ def set_area_owner(
     balances: LedgerBalances,
 ) -> Outcome:
     _check_area(action.area, balance)
-    company = _founder_only(state, action.actor_id)
+    company = _founder_only(state, action.actor_id, action.company_id)
     if state.person(action.person_id).is_founder:
         raise OrgRuleError("the founder is the player: manage the area yourself instead")
     kind = owners.owner_kind(state, company, action.area, action.person_id, balance)
@@ -180,7 +189,7 @@ def set_area_owner(
 
 def take_back_area(state: GameState, action: TakeBackArea, balance: Balance) -> Outcome:
     _check_area(action.area, balance)
-    company = _founder_only(state, action.actor_id)
+    company = _founder_only(state, action.actor_id, action.company_id)
     current = state.area_owner(company, action.area)
     if current is None:
         raise InvalidActionError("you already manage that area")
@@ -216,12 +225,24 @@ def take_back_area(state: GameState, action: TakeBackArea, balance: Balance) -> 
 
 def set_area_settings(state: GameState, action: SetAreaSettings, balance: Balance) -> Outcome:
     _check_area(action.area, balance)
-    company = _founder_only(state, action.actor_id)
+    company = _founder_only(state, action.actor_id, action.company_id)
     current = state.area_owner(company, action.area)
     if current is None:
         raise InvalidActionError("give the area to someone first")
     if action.limit_cents is not None and action.limit_cents < 0:
         raise InvalidActionError("a money limit cannot be negative")
+    if action.budget_cents is not None and action.budget_cents < 0:
+        raise InvalidActionError("a budget cannot be negative")
+    rails = current.guardrails
+    if action.guardrails is not None:
+        known = owners.area_def(balance, action.area).guardrails
+        for key, value in action.guardrails:
+            if key not in known:
+                raise InvalidActionError(f"no guardrail {key!r} for this area")
+            if value < 0:
+                raise InvalidActionError("a guardrail cannot be negative")
+        merged = dict(current.guardrails) | dict(action.guardrails)
+        rails = tuple(sorted(merged.items()))
     new = replace(
         current,
         limit_cents=current.limit_cents if action.limit_cents is None else action.limit_cents,
@@ -230,6 +251,8 @@ def set_area_settings(state: GameState, action: SetAreaSettings, balance: Balanc
         if action.answer_events is None
         else action.answer_events,
         allow_bold=current.allow_bold if action.allow_bold is None else action.allow_bold,
+        budget_cents=current.budget_cents if action.budget_cents is None else action.budget_cents,
+        guardrails=rails,
     )
     if new == current:
         raise InvalidActionError("nothing changes")

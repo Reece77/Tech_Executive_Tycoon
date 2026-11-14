@@ -14,7 +14,7 @@ from dataclasses import dataclass, replace
 
 from tst.sim.automation import owners
 from tst.sim.automation.kpis import LABELS, MONEY, kpi_target
-from tst.sim.automation.models import AreaDecision
+from tst.sim.automation.models import AreaDecision, AreaOwner
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
@@ -51,6 +51,7 @@ class AreaLine:
     proposals: tuple[int, ...]  # proposal or pitch ids waiting
     kpis: tuple[KpiLine, ...]
     notes: tuple[str, ...]  # "no time this month", "over this month's budget"
+    company_id: int = 0  # M27b: the group company the area belongs to
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,55 +101,26 @@ def kpi_text(k: KpiLine) -> str:
 
 
 def build(state: GameState, turn: int, b: Balance, data: GameData) -> Digest | None:
-    """The digest for the player's company and month `turn`, from the month's records."""
+    """The digest for the player's company and month `turn`, from the month's records: its own
+    areas, then each subsidiary's (M27b), labelled with the subsidiary's name."""
+    from tst.sim.automation import scope
+
     company = state.player.id
-    owned = state.owners_of(company)
-    if not owned:
+    groups = [c for c in scope.companies(state) if state.owners_of(c)]
+    if not groups:
         return None
-    month = [d for d in state.area_decisions if d.company_id == company and d.turn == turn]
-    before = [d for d in state.area_decisions if d.company_id == company and d.turn == turn - 1]
     pending = {p.id for p in state.pending_proposals(company)} | {
         p.id for p in state.pending_pitches(company)
     }
     areas: list[AreaLine] = []
     attention: list[tuple[float, str]] = []
     n = b.automation.digest_lines
-    for o in sorted(owned, key=lambda o: owners.area_index(b, o.area)):
-        mine = [d for d in month if d.area == o.area]
-        acted = [d for d in mine if d.kind in DID]
-        label = owners.area_def(b, o.area).label
-        kpis = tuple(_kpis(state, company, o.area, mine, before, b))
-        waiting = tuple(d.ref_id for d in mine if d.kind == "proposal" and d.ref_id in pending)
-        line = AreaLine(
-            area=o.area,
-            label=label,
-            person_id=o.person_id,
-            owner=owner_name(state, o.person_id, data),
-            did=len(acted),
-            lines=tuple(d.text for d in acted[:n]),
-            committed_cents=sum(d.commitment_cents for d in acted),
-            limit_cents=o.limit_cents,
-            mistakes=tuple(d.text for d in mine if d.kind == "mistake"),
-            proposals=tuple(x for x in waiting if x is not None),
-            kpis=kpis,
-            notes=tuple(sorted({d.text for d in mine if d.kind in ("no_time", "over_budget")})),
-        )
-        areas.append(line)
-        for d in mine:
-            if d.kind == "proposal" and d.ref_id in pending:
-                share = d.commitment_cents / max(o.limit_cents, 1)
-                attention.append(
-                    (max(share, 1.0), f"{label}: {owner_name(state, o.person_id, data)} {d.text}")
-                )
-        for k in kpis:
-            if k.target is not None and k.target > 0 and k.now < k.target:
-                attention.append(((k.target - k.now) / k.target, f"{label}: {kpi_text(k)}"))
-            elif k.last not in (None, 0) and k.last is not None:
-                move = abs(k.now - k.last) / abs(k.last)
-                if move > 0:
-                    attention.append((move, f"{label}: {kpi_text(k)}"))
-        for note in line.notes:
-            attention.append((NOTE_WEIGHT, f"{label}: {line.owner} had {note}"))
+    for cid in groups:
+        month = [d for d in state.area_decisions if d.company_id == cid and d.turn == turn]
+        before = [d for d in state.area_decisions if d.company_id == cid and d.turn == turn - 1]
+        prefix = "" if cid == company else f"{state.company(cid).name}: "
+        for o in sorted(state.owners_of(cid), key=lambda o: owners.area_index(b, o.area)):
+            _area(state, o, month, before, pending, prefix, b, data, n, areas, attention)
     attention.sort(key=lambda t: -t[0])
     did = sum(a.did for a in areas)
     asks = sum(len(a.proposals) for a in areas)
@@ -165,6 +137,57 @@ def build(state: GameState, turn: int, b: Balance, data: GameData) -> Digest | N
         attention=tuple(text for _, text in attention[:n]),
         quarter_reports=turn % QUARTER == QUARTER - 1,
     )
+
+
+def _area(
+    state: GameState,
+    o: AreaOwner,
+    month: list[AreaDecision],
+    before: list[AreaDecision],
+    pending: set[int],
+    prefix: str,
+    b: Balance,
+    data: GameData,
+    n: int,
+    areas: list[AreaLine],
+    attention: list[tuple[float, str]],
+) -> None:
+    mine = [d for d in month if d.area == o.area]
+    acted = [d for d in mine if d.kind in DID]
+    label = prefix + owners.area_def(b, o.area).label
+    kpis = tuple(_kpis(state, o.company_id, o.area, mine, before, b))
+    waiting = tuple(d.ref_id for d in mine if d.kind == "proposal" and d.ref_id in pending)
+    line = AreaLine(
+        area=o.area,
+        label=label,
+        person_id=o.person_id,
+        owner=owner_name(state, o.person_id, data),
+        did=len(acted),
+        lines=tuple(d.text for d in acted[:n]),
+        committed_cents=sum(d.commitment_cents for d in acted),
+        limit_cents=o.limit_cents,
+        mistakes=tuple(d.text for d in mine if d.kind == "mistake"),
+        proposals=tuple(x for x in waiting if x is not None),
+        kpis=kpis,
+        notes=tuple(sorted({d.text for d in mine if d.kind in ("no_time", "over_budget")})),
+        company_id=o.company_id,
+    )
+    areas.append(line)
+    for d in mine:
+        if d.kind == "proposal" and d.ref_id in pending:
+            share = d.commitment_cents / max(o.limit_cents, 1)
+            attention.append(
+                (max(share, 1.0), f"{label}: {owner_name(state, o.person_id, data)} {d.text}")
+            )
+    for k in kpis:
+        if k.target is not None and k.target > 0 and k.now < k.target:
+            attention.append(((k.target - k.now) / k.target, f"{label}: {kpi_text(k)}"))
+        elif k.last not in (None, 0) and k.last is not None:
+            move = abs(k.now - k.last) / abs(k.last)
+            if move > 0:
+                attention.append((move, f"{label}: {kpi_text(k)}"))
+    for note in line.notes:
+        attention.append((NOTE_WEIGHT, f"{label}: {line.owner} had {note}"))
 
 
 def _kpis(
