@@ -140,6 +140,10 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 
     Target 1 is exact by construction (decision 1): nothing posts or is drawn before 2026. Target 3's script holds the line at 30% each month: without that, the new OS's empty catalogue (−25 feature points) sinks the phone to about 5% of users by 2032. That is the network effect at work, so the target tests the store's economics, not how to reach 30%. Target 4 needed a removed app to lose the platform's users' new purchases as well as its customers (the lost reach in `phase.effects`); `review.removed_loss` 0.30 → 0.15 then gives 41%.
 
+12. **Earlier guards** (nightly 43615929851 on the branch, at 58c2cfa):
+    - `make balance` and nightly shards 1–3 pass.
+    - Shard 4 fails only M21's §38.5 target 3 (`test_m21_balance.py::test_38_5_targets`). That target also fails on `main` (nightly 43586223483) until M28r merges (PR #56): rule 3, not M31's. It is not added to `known_misses.py`.
+
 ## Follow-ups
 
 - **Fees in history** (decision 1): if Reece wants §44.4 as written, set `fees_from: "2010-01"`, apply the reference-price calibration, and re-record M28's books fingerprint with a recorded reason. The other fingerprint series are unaffected.
