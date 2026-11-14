@@ -23,8 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 52  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
-# M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M30: 0052
+SCHEMA_VERSION = 53  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M30: 0053
 
 
 class Base(DeclarativeBase):
@@ -2237,7 +2237,23 @@ class WorldRecordRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
-# --- M30: old history summarised (migration 0052_m30, tst.db.history) ------------------------
+# --- M31 (formulas.md 44; migration 0051): platforms and ecosystems ----------------------------
+
+
+class PlatformRecordRow(Base):
+    """One platform record (44; 0051): `kind` names its GameState collection (platforms,
+    platform_regions, device_runs, platform_listings, platform_reviews, open_sources, standards,
+    product_standards, steering_products, rival_stores) and `data` its fields; rows keep each
+    collection's order."""
+
+    __tablename__ = "platform_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M30: old history summarised (migration 0053_m30, tst.db.history) ------------------------
 
 
 class TurnLogSummaryRow(Base):

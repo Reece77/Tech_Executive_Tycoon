@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
+from typing import TYPE_CHECKING
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.commodities import offtake
@@ -55,6 +56,9 @@ from tst.sim.state import (
     with_unit,
 )
 from tst.sim.world.cycles import growth_ratio as cycle_ratio
+
+if TYPE_CHECKING:
+    from tst.sim.platforms.phase import Effects
 
 CONSUMER = "consumer"  # M24 (32.3): the consumer segment key (categories.yaml)
 
@@ -145,8 +149,10 @@ def price_appeal(
     turn: int,
     pricing_power: float = 1.0,
     price_index: float = 1.0,
+    feature_bonus: float = 0.0,
 ) -> float | None:
-    """Appeal at a price in a segment (11.6); None without a price."""
+    """Appeal at a price in a segment (11.6); None without a price. `feature_bonus`: feature
+    points from the product's platform and standards (M31, 44.3, 44.7), 0 before 2026."""
     if price_cents is None:
         return None
     reference = reference_price(product, segment, data, pricing_power, price_index)
@@ -155,7 +161,7 @@ def price_appeal(
         product.quality,
         f.price_score(reference, price_cents),
         product.brand,
-        current_feature(product, data, turn),
+        current_feature(product, data, turn) + feature_bonus,
     )
 
 
@@ -201,6 +207,10 @@ def develop(
                 _slipping(turn, product, shown, shown.base_output(balance), category.scope, pb)
             )
         gained = output * team.gain_mult  # CPO (18.3), tech factor (21.2)
+        if state.open_sources:  # M31 (44.6): an open product's community
+            from tst.sim.platforms.opensource import feature_mult
+
+            gained *= feature_mult(state, product.id, balance)
         if localizing(state, product.id):  # 10% slower while localizing (M9, 19.5)
             gained *= 1 - balance.markets.localize_slowdown
         updated = replace(
@@ -228,13 +238,20 @@ class MarketOutcome:
     logs: tuple[LogItem, ...]
     revenue: Mapping[int, Cents]  # company id -> this month's revenue (MRR)
     flows: Mapping[FlowKey, Flow]
+    # M31 (44.1): units sold outside the home region, (product id, region, segment) -> units
+    regional_units: Mapping[tuple[int, str, str], float] = field(default_factory=dict)
 
 
 def run_markets(
-    state: GameState, rng: RngFactory, balance: Balance, data: GameData
+    state: GameState,
+    rng: RngFactory,
+    balance: Balance,
+    data: GameData,
+    effects: Effects | None = None,
 ) -> MarketOutcome:
     """Every category and segment in categories.yaml order (11.7), then every other region's
-    markets in regions.yaml order (M9, 19.5), then revenue (11.8)."""
+    markets in regions.yaml order (M9, 19.5), then revenue (11.8). `effects`: what demand reads
+    from the platforms (M31, 44; none before 2026)."""
     turn = state.turn
     views = _views(state)
     teams: dict[int, Team] = {}
@@ -282,6 +299,7 @@ def run_markets(
                 key,
                 plan,
                 access,
+                effects,
             )
             for s in done:
                 flows[(s.product_id, s.segment)] = done[s]
@@ -327,6 +345,7 @@ def run_markets(
                         key,
                         plan,
                         access,
+                        effects,
                     )
                     for rs, rflow in rdone.items():
                         if rflow.units:
@@ -344,7 +363,7 @@ def run_markets(
         if trimmed in flows:
             flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
     state, entries_out, revenue, flows, more_logs = _revenue(
-        state, flows, data, regional_units, plan
+        state, flows, data, regional_units, plan, effects
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
     deals = any(d.status == "active" for d in state.commodity_deals)  # M17 (33.3)
@@ -362,6 +381,7 @@ def run_markets(
         logs=tuple(logs + more_logs),
         revenue=revenue,
         flows=flows,
+        regional_units=regional_units,
     )
 
 
@@ -383,6 +403,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     key: tuple[int, ...],
     plan: production.ProductionPlan | None = None,
     access: Mapping[tuple[int, str], geo_sales.Access] | None = None,
+    effects: Effects | None = None,
 ) -> tuple[GameState, dict[S, Flow], list[LogItem]]:
     """One market segment's month (11.6-11.7): churn, in play, choice and new customers.
     `region` None or the home region: v1's market; another region: its prices, awareness
@@ -411,7 +432,14 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
         return 1.0 if product.is_static else team(product).pricing_power
 
     def churn_mult(product: Product) -> float:
-        return 1.0 if product.is_static else team(product).churn_mult
+        platform = effects.churn_mult.get(product.id, 1.0) if effects else 1.0  # M31 (44.3)
+        return platform * (1.0 if product.is_static else team(product).churn_mult)
+
+    def bonus(product_id: int) -> float:  # M31 (44.3, 44.7): catalogue and standards points
+        return effects.bonus(product_id, here) if effects else 0.0
+
+    def platform_appeal(product_id: int) -> float:  # M31 (44.5): self-preferencing
+        return effects.appeal(product_id, here) if effects else 1.0
 
     appeals = {
         s.product_id: _times(
@@ -423,10 +451,12 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 turn,
                 power(products[s.product_id]),
                 index,
+                bonus(s.product_id),
             ),
             first_mover_appeal(  # 27.3 (M13b): the first mover's window
                 state, data, balance, products[s.product_id].company_id, category_def.key
-            ),
+            )
+            * platform_appeal(s.product_id),
         )
         for s in entries
     }
@@ -466,8 +496,11 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 p = products[s.product_id]
                 low = replace(p, quality=max(0.0, p.quality - penalty))
                 lowered[s.product_id] = _times(
-                    price_appeal(low, seg_key, s.price_cents, data, turn, power(p), index),
-                    first_mover_appeal(state, data, balance, p.company_id, category_def.key),
+                    price_appeal(
+                        low, seg_key, s.price_cents, data, turn, power(p), index, bonus(p.id)
+                    ),
+                    first_mover_appeal(state, data, balance, p.company_id, category_def.key)
+                    * platform_appeal(p.id),
                 )
         low_shares, _ = f.choice_shares(
             [lowered[s.product_id] or 0.0 for s in live], seg_def.outside_option, mb
@@ -646,6 +679,7 @@ def _revenue(
     data: GameData,
     regional_units: Mapping[tuple[int, str, str], float] | None = None,
     plan: production.ProductionPlan | None = None,
+    effects: Effects | None = None,
 ) -> tuple[
     GameState, tuple[LedgerEntry, ...], dict[int, Cents], dict[FlowKey, Flow], list[LogItem]
 ]:
@@ -666,6 +700,8 @@ def _revenue(
         booked = 0
         category = data.category(product.category)
         units_sold = 0.0
+        # M31 (44.6): an open-sourced product books only its paid tier
+        paid = effects.revenue_share.get(product.id, 1.0) if effects else 1.0
         if product.company_id in revenue:
             for seg in segments:
                 key = (product.id, seg.segment)
@@ -674,7 +710,7 @@ def _revenue(
                     units_sold += sold
                     amount = round(sold * (seg.price_cents or 0))
                 else:
-                    amount = round(seg.customers * (seg.price_cents or 0))
+                    amount = round(seg.customers * (seg.price_cents or 0) * paid)
                 booked += amount
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
@@ -683,7 +719,7 @@ def _revenue(
                     units_sold += sold
                     booked += round(sold * (rseg.price_cents or 0))
                 else:
-                    booked += round(rseg.customers * (rseg.price_cents or 0))
+                    booked += round(rseg.customers * (rseg.price_cents or 0) * paid)
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
                 cogs = round(
                     sum(

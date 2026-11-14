@@ -5194,6 +5194,146 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/platforms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Platforms
+         * @description Every platform's users, developers, catalogue, fees and rules by region; the group's
+         *     device lines, apps (fees and listings) and standards (44.10).
+         */
+        get: operations["getPlatforms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/device-platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Device Platform */
+        post: operations["setDevicePlatform"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Platform Rules */
+        post: operations["setPlatformRules"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/developer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Developer Platform */
+        post: operations["createDeveloperPlatform"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/open-source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open Source */
+        post: operations["openSourceProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/steering": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Steering */
+        post: operations["setSteering"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/comply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Comply */
+        post: operations["complyListing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/platforms/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adopt */
+        post: operations["adoptStandard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -5570,6 +5710,13 @@ export interface components {
             /** Months Left */
             months_left: number;
         };
+        /** AdoptIn */
+        AdoptIn: {
+            /** Product Id */
+            product_id: number;
+            /** Standard Id */
+            standard_id: number;
+        };
         /** AdviceOut */
         AdviceOut: {
             /**
@@ -5650,6 +5797,47 @@ export interface components {
              * @description disclosed | concealed | found, once raised
              */
             conflict: string | null;
+        };
+        /** AppFeeOut */
+        AppFeeOut: {
+            /** Platform Id */
+            platform_id: number;
+            /** Platform Name */
+            platform_name: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Cents */
+            cents: number;
+        };
+        /** AppProductOut */
+        AppProductOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Steering */
+            steering: boolean;
+            /**
+             * Fees
+             * @description This month's fees by platform and region
+             */
+            fees: components["schemas"]["AppFeeOut"][];
+            /** Fees Total Cents */
+            fees_total_cents: number;
+            /**
+             * Listings
+             * @description Removals and appeals; others are listed
+             */
+            listings: components["schemas"]["tst__api__schemas__platforms__ListingOut"][];
+            /**
+             * Recent Actions
+             * @description Gatekeepers' actions in the last year
+             */
+            recent_actions: string[];
         };
         /**
          * AppealWeightsOut
@@ -8071,6 +8259,38 @@ export interface components {
             /** Done */
             done: boolean;
         };
+        /** DeviceLineOut */
+        DeviceLineOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Platform Id */
+            platform_id: number;
+            /** Platform Name */
+            platform_name: string;
+            /** Previous Name */
+            previous_name: string | null;
+            /**
+             * Previous Share
+             * @description Customers still on the old platform
+             */
+            previous_share: number;
+            /**
+             * Catalogue Points
+             * @description Feature points by region (from 2026)
+             */
+            catalogue_points: {
+                [key: string]: number;
+            };
+        };
+        /** DevicePlatformIn */
+        DevicePlatformIn: {
+            /** Product Id */
+            product_id: number;
+            /** Platform Id */
+            platform_id: number;
+        };
         /** DigestAreaOut */
         DigestAreaOut: {
             /** Area */
@@ -9538,6 +9758,24 @@ export interface components {
              * @description The market index over the same year
              */
             index_year_pct: number | null;
+        };
+        /** FeeScheduleOut */
+        FeeScheduleOut: {
+            /** Standard */
+            standard: number;
+            /**
+             * Small Rate
+             * @description Sellers under the threshold pay this
+             */
+            small_rate: number | null;
+            /** Small Threshold Cents */
+            small_threshold_cents: number | null;
+            /** Subscription Rate */
+            subscription_rate: number | null;
+            /** Subscription After Year */
+            subscription_after_year: boolean;
+            /** Regulated */
+            regulated: components["schemas"]["RegulatedPathOut"][];
         };
         /** FeudOut */
         FeudOut: {
@@ -11786,19 +12024,6 @@ export interface components {
              */
             sensitive: boolean;
         };
-        /** ListingOut */
-        ListingOut: {
-            /** Company Id */
-            company_id: number;
-            /** Company */
-            company: string;
-            /** Actor Label */
-            actor_label: string;
-            /** Since */
-            since: string;
-            /** Reason */
-            reason: string;
-        };
         /** LoanIn */
         LoanIn: {
             /** Instrument */
@@ -13337,6 +13562,16 @@ export interface components {
              */
             held_pct: number;
         };
+        /** OpenSourceIn */
+        OpenSourceIn: {
+            /** Product Id */
+            product_id: number;
+            /**
+             * Open
+             * @default true
+             */
+            open?: boolean;
+        };
         /**
          * OptionsOut
          * @description An employee's option grant for the contract panel (M4b, formulas.md 14.2).
@@ -14459,6 +14694,178 @@ export interface components {
             /** Unit Id */
             unit_id: number | null;
         };
+        /** PlatformOut */
+        PlatformOut: {
+            /** Platform Id */
+            platform_id: number;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Store */
+            store: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "device" | "developer";
+            /** Owner Label */
+            owner_label: string;
+            /** Owner Company Id */
+            owner_company_id: number | null;
+            /** Own */
+            own: boolean;
+            /** Historical */
+            historical: boolean;
+            /** Launched Label */
+            launched_label: string | null;
+            /** Ended Label */
+            ended_label: string | null;
+            /** Open Source */
+            open_source: boolean;
+            /** Licensable */
+            licensable: boolean;
+            /** Product Id */
+            product_id: number | null;
+            /**
+             * App Count Thousands
+             * @description platforms.yaml's latest count, if any
+             */
+            app_count_thousands: number | null;
+            /** Regions */
+            regions: components["schemas"]["PlatformRegionOut"][];
+            settings: components["schemas"]["PlatformSettingsOut"] | null;
+        };
+        /** PlatformRegionOut */
+        PlatformRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Users
+             * @description Share of the region's device users (0-1)
+             */
+            users: number;
+            /**
+             * Developer Share
+             * @description Exact for the player's own platforms
+             */
+            developer_share: number | null;
+            /**
+             * Developer Range
+             * @description A range for rivals' platforms
+             */
+            developer_range: number[];
+            /**
+             * Catalogue Index
+             * @description The catalogue against the region's leader (100)
+             */
+            catalogue_index: number;
+            /**
+             * Goodwill
+             * @description Developers' goodwill: own platforms only
+             */
+            goodwill: number | null;
+            fees: components["schemas"]["FeeScheduleOut"];
+            /**
+             * Rules
+             * @description Platform rules in force there, in words
+             */
+            rules: string[];
+            /**
+             * Side Loading
+             * @description Share of the region where other stores may serve it
+             */
+            side_loading: number;
+            /** Rival Stores */
+            rival_stores: string[];
+        };
+        /** PlatformRulesIn */
+        PlatformRulesIn: {
+            /** Platform Id */
+            platform_id: number;
+            /** Fee */
+            fee?: number | null;
+            /** Strictness */
+            strictness?: ("lenient" | "standard" | "strict") | null;
+            /** Self Pref */
+            self_pref?: ("off" | "mild" | "strong") | null;
+            /** Anti Steering */
+            anti_steering?: boolean | null;
+            /** Side Loading */
+            side_loading?: boolean | null;
+            /** Licence Cents */
+            licence_cents?: number | null;
+            /**
+             * Stop Licensing
+             * @default false
+             */
+            stop_licensing?: boolean;
+        };
+        /** PlatformSettingsOut */
+        PlatformSettingsOut: {
+            /** Fee */
+            fee: number;
+            /**
+             * Strictness
+             * @enum {string}
+             */
+            strictness: "lenient" | "standard" | "strict";
+            /**
+             * Self Pref
+             * @enum {string}
+             */
+            self_pref: "off" | "mild" | "strong";
+            /** Anti Steering */
+            anti_steering: boolean;
+            /** Side Loading */
+            side_loading: boolean;
+            /** Licence Cents */
+            licence_cents: number | null;
+        };
+        /** PlatformsActionOut */
+        PlatformsActionOut: {
+            platforms: components["schemas"]["PlatformsOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** PlatformsOut */
+        PlatformsOut: {
+            /**
+             * Started
+             * @description Computed shares and effects run from January 2026
+             */
+            started: boolean;
+            /**
+             * Fees Posting
+             * @description Platform fees post from platforms.fees_from (2010)
+             */
+            fees_posting: boolean;
+            /** Platforms */
+            platforms: components["schemas"]["PlatformOut"][];
+            /** Device Lines */
+            device_lines: components["schemas"]["DeviceLineOut"][];
+            /** Apps */
+            apps: components["schemas"]["AppProductOut"][];
+            /** Standards */
+            standards: components["schemas"]["StandardOut"][];
+            /** Open Products */
+            open_products: number[];
+            /**
+             * Developer Candidates
+             * @description Live products that can found one
+             */
+            developer_candidates: number[];
+            /**
+             * Appeal Odds
+             * @description The range an appeal's odds lie in
+             */
+            appeal_odds: number[];
+            /** Own Fee Range */
+            own_fee_range: number[];
+        };
         /**
          * PortfolioOut
          * @description The Products screen's tiles: the company's revenue and product costs.
@@ -14690,6 +15097,11 @@ export interface components {
              * @description Last month's units at this month's tariff rates
              */
             tariff_cents: number;
+        };
+        /** ProductIn */
+        ProductIn: {
+            /** Product Id */
+            product_id: number;
         };
         /** ProductMonthOut */
         ProductMonthOut: {
@@ -16002,6 +16414,21 @@ export interface components {
              * @description Selling there now (false while localizing)
              */
             live: boolean;
+        };
+        /** RegulatedPathOut */
+        RegulatedPathOut: {
+            /**
+             * Label
+             * @description The country or the alternative store
+             */
+            label: string;
+            /**
+             * Share
+             * @description Share of the region's store sales on this path
+             */
+            share: number;
+            /** Rate */
+            rate: number;
         };
         /** RelationshipOut */
         RelationshipOut: {
@@ -17394,6 +17821,33 @@ export interface components {
             /** Cost Cents */
             cost_cents: number;
         };
+        /** StandardOut */
+        StandardOut: {
+            /** Standard Id */
+            standard_id: number;
+            /** Label */
+            label: string;
+            /** Category */
+            category: string;
+            /** Formats */
+            formats: string[];
+            /**
+             * Adoption
+             * @description Share of new products on the first format
+             */
+            adoption: number;
+            /** Winner */
+            winner: string | null;
+            /** Tipped Label */
+            tipped_label: string | null;
+            /** Historical */
+            historical: boolean;
+            /**
+             * Yours On Loser
+             * @description The group's products on the losing format
+             */
+            yours_on_loser: number[];
+        };
         /** StartProjectIn */
         StartProjectIn: {
             /** Unit Id */
@@ -17485,6 +17939,16 @@ export interface components {
             consolidated?: boolean;
             /** Subsidiaries */
             subsidiaries?: components["schemas"]["SubsidiaryColumnOut"][];
+        };
+        /** SteeringIn */
+        SteeringIn: {
+            /** Product Id */
+            product_id: number;
+            /**
+             * On
+             * @default true
+             */
+            on?: boolean;
         };
         /** StepOut */
         StepOut: {
@@ -18789,7 +19253,7 @@ export interface components {
             /** Variants */
             variants: components["schemas"]["VariantOut"][];
             /** Listings */
-            listings: components["schemas"]["ListingOut"][];
+            listings: components["schemas"]["tst__api__schemas__geopolitics__ListingOut"][];
             /** Products */
             products: components["schemas"]["ProductExposureOut"][];
             /** Supply */
@@ -18884,6 +19348,19 @@ export interface components {
             /** Country */
             country: string;
         };
+        /** ListingOut */
+        tst__api__schemas__geopolitics__ListingOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Actor Label */
+            actor_label: string;
+            /** Since */
+            since: string;
+            /** Reason */
+            reason: string;
+        };
         /** OptionOut */
         tst__api__schemas__hardware__OptionOut: {
             /** Key */
@@ -18931,6 +19408,26 @@ export interface components {
             event_id: number;
             /** Label */
             label: string;
+        };
+        /** ListingOut */
+        tst__api__schemas__platforms__ListingOut: {
+            /** Platform Id */
+            platform_id: number;
+            /** Platform Name */
+            platform_name: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "listed" | "removed" | "appealing" | "regulators";
+            /** Since Label */
+            since_label: string;
+            /** Answer Label */
+            answer_label: string | null;
         };
         /** CauseOut */
         tst__api__schemas__press__CauseOut: {
@@ -35792,6 +36289,498 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChainOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPlatforms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setDevicePlatform: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DevicePlatformIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setPlatformRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformRulesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    createDeveloperPlatform: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openSourceProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenSourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setSteering: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SteeringIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    complyListing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    adoptStandard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdoptIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformsActionOut"];
                 };
             };
             /** @description Bad Request */

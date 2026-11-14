@@ -153,6 +153,15 @@ export const GUIDES: Record<string, Guide> = {
       'Give an area to someone with a strong fit and enough energy; a weak owner makes visibly worse calls.',
     ],
   },
+  platforms: {
+    title: 'Platforms',
+    path: 'competitors/platforms',
+    what: 'App stores and operating systems: who has the users and the developers, what each store charges, and the rules a store sets for your apps. Your own OS and store, when you build one, are run from here.',
+    start: [
+      'Your devices run Android unless you build an operating system: a thin catalogue costs them features.',
+      "Apps sold through stores pay the stores' fees; from 2026 a store can remove an app, and you answer it as a critical event.",
+    ],
+  },
 };
 
 /** Where a What next item links (the same kinds as the COO's briefing, 17.3, plus guides). */

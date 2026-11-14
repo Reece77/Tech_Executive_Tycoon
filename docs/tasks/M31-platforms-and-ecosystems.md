@@ -92,8 +92,108 @@ Load `pt-platform`. Launch your own OS and store on your phone line, set a 20% f
 
 ## Decisions made
 
-(filled in by the agent)
+1. **Fees post from 2010, as §44.4 is written** (Reece, 2026-11-14, answering my question: "A"; `platforms.fees_from: "2010-01"`).
+   - **The calibration.**
+     - To December 2025 it is exact, month by month: each seller's store revenue is grossed up by its fee, and the fee is booked against it (5150 debit, 4000 credit). No cash moves, so every seller's net revenue and cash, and hence every decision, are main's to the cent.
+     - From January 2026 the reference price carries each category's 2010–2025 average fee drag (`fees.fee_drag`: paid_share × the users' effective fee, regions weighted by market size, averaged over the years). Gross store revenue is × 1 / (1 − drag), booked as "Store price calibration" against cash, and fees are paid in cash.
+     - In-game owners (Apple, Microsoft) earn 4150 in cash throughout. Platform licences (Android's, an own OS's) start in 2026 with the platforms' other effects.
+   - **What changed, measured.** `tools/m31_history_diff.py` compares a 2010–2025 do-nothing game with fees from 2010 against the same game with fees from 2026, which is main's books to 2025. On seed 1:
+     - 0 entries were lost or changed;
+     - the 10,005 extra entries are all platform-fee entries;
+     - the largest change in any company's 2010–2025 net revenue is 0.0000%.
+
+     | Year | Extra entries | Gross-up (5150 = 4000 credit) | Owners' 4150 |
+     | --- | --- | --- | --- |
+     | 2010 | 477 | $26,676,940 | $11,169,405 |
+     | 2013 | 597 | $76,608,933 | $32,144,530 |
+     | 2016 | 768 | $198,421,781 | $63,120,348 |
+     | 2019 | 793 | $447,539,387 | $124,930,241 |
+     | 2022 | 564 | $976,461,612 | $296,121,800 |
+     | 2025 | 540 | $2,981,036,518 | $776,091,508 |
+
+   - **M28's §41.8 target 1 fingerprint** was recomputed on seeds 1–10. The only differences are the books series, all 16 years on every seed (160 of 160 differences). Prices, wafers, capacity and events are identical on all ten seeds, so every price, capacity total, user share and dated event to 2025 holds. The books series alone was re-recorded in `tests/fixtures/m28_history.json`: a 320-line diff, 160 hashes, nothing outside `books`. Seed 1's books hashes, before (main) and after (first 12 characters):
+
+     | Year | Before | After |
+     | --- | --- | --- |
+     | 2010 | `fc39a4470bb6` | `e33869719c65` |
+     | 2011 | `ca91515e35ac` | `445b145d9d1b` |
+     | 2012 | `4e4e0bb999d1` | `c609f88eba15` |
+     | 2013 | `84d012eec9db` | `682488a2f0d8` |
+     | 2014 | `cf72f62bd1aa` | `482771ee3a85` |
+     | 2015 | `67513329b595` | `0eedc6433c9a` |
+     | 2016 | `30667683e1c3` | `cf8586e19633` |
+     | 2017 | `aa56675e9841` | `f2cbf91bebb4` |
+     | 2018 | `d4619cf42a64` | `0148868c10cb` |
+     | 2019 | `8b11e0382c88` | `32a6662ae8e6` |
+     | 2020 | `ff8c86978dcc` | `58b5f154d912` |
+     | 2021 | `0537a5c25d23` | `2d74bba01dd3` |
+     | 2022 | `46209cc50426` | `2dc0cb6f8a45` |
+     | 2023 | `e6cd744c0c2e` | `ed6c8204a817` |
+     | 2024 | `21f78ac42121` | `baec65867eb3` |
+     | 2025 | `8dcb9790dd31` | `f786f6087e0d` |
+
+   - **History of this decision.** My first build posted fees from 2026, because a history fee line fails the fingerprint by construction. That was put to Reece, who chose A.
+2. **Shares are StatCounter's** yearly mobile OS usage share (web traffic), the dossier's measure, fetched as CSV for 17 regions and countries (2010–2025). Game regions come from StatCounter regions: North America, Europe, South America, Africa and Oceania as they are. East Asia blends China, Japan and South Korea, and South and Southeast Asia blends India and Indonesia, both by 2020 population (World Bank; fixed weights, A). China's Android goes to Android (China); feature phones, bada, consoles and the rest go to `other`. Each row is normalised to 1. HarmonyOS is not separated by StatCounter (it counts inside Android in China), so Counterpoint's sales shares were left out.
+3. **Dossier figures corrected or left out.** Corrected:
+   - Google Play peaked at about 3.6M apps (March 2018), not 3.5M.
+   - The App Store had 1.96M apps at the end of 2024.
+   - The US contempt ruling (30 April 2025) was upheld on 11 December 2025, with a cost-based rate allowed later; none had been set by December 2025, so the data keeps 0%.
+
+   Left out (no source found):
+   - "About 20M developers in 2015": developers come from Evans Data's points (2013, 2019, 2022, 2024) and hold the 2013 value before it.
+   - The fee rates of Chinese stores, BlackBerry World, the Nokia Store and the Windows Phone Store: 30% (A).
+   - Google's EU DMA alternative billing rate, and its compliance terms after Epic v. Google (October 2025).
+   - Apple's Core Technology Fee and the 2025–2026 EU terms.
+   - The last BlackBerry 10 device.
+
+   Developers' regional split uses categories.yaml's market sizes (A). Region parts (Korea in East Asia, the US in North America, the EU in Europe) are population shares; `platforms.alternative_share` (20%, A) of a regulated country's sales take its path.
+4. **Owners outside the game** (Google, BlackBerry, Nokia and China's stores) set fees and review apps but book nothing; their fees leave the game. Apple and Microsoft book `4150`.
+5. **Users after 2025** = the in-game device lines on a platform plus its share of the rest of the market. The rest replaces at the devices' pace with lock-in and chooses by users × catalogue tilt; in January 2026 the rest is set so users equal December 2025's data (formulas §44.11). Lock-in therefore acts in this users flow, not as a per-customer choice inside the device market. ThinkPad counts as an Android line. Developer shares to 2025 are computed from the data's users and fees, with no draw.
+6. **An own OS may be built and launched before 2026**, but platform effects start in January 2026.
+7. **Smaller choices:**
+   - The `os` pseudo-category is kept out of `GameData.categories`, so no market, rival or loop sees it; `data.category("os")` still finds it.
+   - Platform actions' energy lives in `platforms.energy`, because `founder.energy_cost` is a fixed set.
+   - A developer platform competes with the rest of its category; its catalogue index is measured against a half-share steady state.
+   - A rejected update costs a month of features; a fee dispute charges a month's fees on that platform again; regulators answer in 6 months.
+   - Seeded standards contests have no sponsors, so no standards licence is charged (none after 2025).
+   - Rival stores take real alternative stores' names.
+   - Android's licence is $10 a unit from 2026 (`android_licence_cents`, A: the EU reports of up to $40 a device from 2018 were not verified).
+8. **Unlock.** Platforms opens at stage 3, with a device line (from development), or with a *live* app sold through stores. Counting apps still in development would open the screen in month 1 for every software start, against M29's progressive unlocking.
+9. **Tuning (rule 1, `platforms.*` only):**
+   - `reach_exp` 1.0 → 0.5 and `fee_exp` 1.0 → 3.0, for target 2. At α = 1 a challenger with 5% of users cannot pass about 8% of developers, so the strong case could never tip; a sweep of α ∈ {0.5, 0.6, 0.7} × β ∈ {1, 2, 3} on seeds 1–10 found only (0.5, 3.0) meeting both halves.
+   - `review.removed_loss`: first set at 0.15, raised to 0.30 for the listing step alone, then back to 0.15 once a removed app also loses that platform's new customers (decision 11), for target 4.
+10. **The practice save** `pt-platform` plays 2010–2025 with the engine (a do-nothing Kestrel), then adds the phone line, taking its 20% from the other Android lines so Android's users stay history's. Its first version jumped a new game to 2026; iOS then fell 16 points in 3 months because 2010's in-game customers met 2025's shares.
+
+11. **§44.9 targets** (`tools/m31_targets.py`, seeds 1–10; full run 10.5 minutes):
+
+| # | Target | Result | Band |
+| --- | --- | --- | --- |
+| 1 | History holds | books differ only by fee entries; app companies' 2010–2025 net revenue 0.00% from main; prices, wafers, capacity and events identical on 10 seeds | within 1% |
+| 2 | Tipping, fees 10 points lower | 0/10 seeds reach 15% of developers by 2035 (8.9% each) | at most 3 |
+| 2 | Fees 20 points lower, tools 1.3 | 10/10 (16.6%) | at least 5 |
+| 3 | Own store pays (30% of users held, own OS) | median 9.5% of revenue in 2035 (7.6–11.9%); own OS 28% of users in 2032 | at least 5% |
+| 4 | Removal from a platform with 50% of users | 41% of customers lost in 3 months | 30–50% |
+| 4 | Six months after complying | 163% of the start (the market grows) | 85%+ |
+| 5 | Open-sourced developer tool after 36 months | 2.22× the customers, 0.11× the revenue | 2×+, at most 0.7× |
+| 6 | Software company's books | 0 non-fee entries differ (only cash-scaled event amounts) | identical |
+| 7 | Turn time | `make check-timing` green on CI | M30's budget |
+
+    Target 1 (decision 1): the books differ from main's only by platform-fee entries, and net revenue is unchanged (0.00%). Target 3's script holds the line at 30% each month: without that, the new OS's empty catalogue (−25 feature points) sinks the phone to about 5% of users by 2032. That is the network effect at work, so the target tests the store's economics, not how to reach 30%. Target 4 needed a removed app to lose the platform's users' new purchases as well as its customers (the lost reach in `phase.effects`); `review.removed_loss` 0.30 → 0.15 then gives 41%.
+
+12. **Earlier guards** (nightly 43615929851 on the branch, at 58c2cfa):
+    - `make balance` and nightly shards 1–3 pass.
+    - Shard 4 fails only M21's §38.5 target 3 (`test_m21_balance.py::test_38_5_targets`). That target also fails on `main` (nightly 43586223483) until M28r merges (PR #56): rule 3, not M31's. It is not added to `known_misses.py`.
 
 ## Follow-ups
 
-(filled in by the agent)
+- **M34:**
+  - regulated paths for Google Play (the EU DMA, Epic v. Google from October 2025) and Apple's 2025–2026 EU and Japan terms, as `platform_fee_rule` data once rates are sourced;
+  - designations read platform users and developer shares;
+  - "go to regulators" already marks the regions with rules.
+- **HarmonyOS** as its own platform in China (needs a usage series by year, not Counterpoint's sales shares).
+- **Lock-in inside the device market:** reserve a platform's churned customers for devices on the same platform. It is now in the users flow only.
+- **Developer platforms against named rivals'** (OpenAI's and Anthropic's APIs, the clouds' marketplaces), instead of "the rest of the category".
+- **Automating platform decisions:** M27b's successor; no automation area was added.
+- **Product-screen platform actions** (switching a line, steering) live on the Platforms screen; the product section links there.
+- **Standards licences** for a sponsored winning format after 2025.
+- **Consoles, PCs, cars and headsets** as device platforms (later data).
