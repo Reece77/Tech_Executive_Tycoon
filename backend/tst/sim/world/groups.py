@@ -67,6 +67,7 @@ from tst.sim.world.models import DealKind, RivalDeal, RivalMandate, WorldOfftake
 from tst.sim.world.news import Item
 
 QUARTER: Final = 3  # tunable-exempt: months a quarter
+DEAL_DRAWS: Final = 3  # tunable-exempt: whether, the review's length, its outcome
 MONTHS: Final = 12  # tunable-exempt: calendar
 JANUARY, DECEMBER = 0, 11  # tunable-exempt: month indexes
 MANDATE_PERSONALITY: Final[dict[str, str]] = {  # tunable-exempt: 28.5's directives
@@ -245,7 +246,7 @@ def _new_deals(
         if buyer.id in running or buyer.id in bought or not unowned(state, buyer.id):
             continue
         gen = draws.gen(rng, turn, draws.DEALS, *buyer.rival_key, draws.DEAL_TAG)
-        u_rate, u_review, u_block = (float(x) for x in gen.random(3))
+        u_rate, u_review, u_block = (float(x) for x in gen.random(DEAL_DRAWS))
         if u_rate >= wb.rival_mna_rate:
             continue
         cash = account_balance(balances, buyer.id, CASH)

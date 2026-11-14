@@ -559,6 +559,11 @@ def world_problems(balance: Balance, data: GameData) -> list[str]:
             problems.append(f"{c.key}: no known country")
     if bad := sorted({o.country for o in chain.others.values()} - countries):
         problems.append(f"others in unknown countries: {bad}")
+    from tst.sim.world.data import specs
+
+    rivals = {c.name for c in data.incumbents} | {e.name for e in data.entrants}
+    if bad := sorted(s.name for s in specs(data) if s.name in rivals):
+        problems.append(f"chain companies named as rivals: {bad} (give them a name)")
     if bad := sorted(set(balance.world.groups.security_goods) - goods):
         problems.append(f"world.groups.security_goods not commodities: {bad}")
     for good in sorted(goods):

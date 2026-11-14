@@ -14,6 +14,7 @@ from tst.sim.world.config import FOUNDRY_GOOD
 from tst.sim.world.models import ChainCompany, WorldFacility, WorldGood
 
 CENTS: Final = 100  # tunable-exempt: cents a dollar
+BANDS: Final = 3  # tunable-exempt: the cost curve's published thirds (41.9)
 
 
 def started(state: GameState) -> bool:
@@ -98,7 +99,7 @@ def cash_cost_usd(state: GameState, f: WorldFacility, balance: Balance, data: Ga
 
 def cost_band(cost: float) -> str:
     """The published range of a cost position (41.9): its third of the cost curve."""
-    third = 1 / 3
+    third = 1 / BANDS
     if cost < third:
         return "low"
     if cost < 2 * third:

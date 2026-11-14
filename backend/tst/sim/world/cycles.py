@@ -25,6 +25,7 @@ from tst.sim.world.models import RegionCycle
 from tst.sim.world.news import Item
 
 MONTHS: Final = 12  # tunable-exempt: calendar
+GLOBAL_DRAWS, REGION_DRAWS = 3, 4  # tunable-exempt: uniforms a month (module docstring)
 
 
 def _label(data: GameData, region: str) -> str:
@@ -37,7 +38,7 @@ def cycles_month(
     cb = balance.world.cycle
     turn = state.turn
     g = draws.gen(rng, turn, draws.GLOBAL)
-    g_start, g_depth, g_months = (float(x) for x in g.random(3))
+    g_start, g_depth, g_months = (float(x) for x in g.random(GLOBAL_DRAWS))
     shock = g_start < balance.world.global_shock_rate / MONTHS
     news: list[Item] = []
     if shock:
@@ -50,7 +51,7 @@ def cycles_month(
         c = by_region.get(region.key, RegionCycle(region=region.key, turn=turn - 1))
         gen = draws.gen(rng, turn, draws.CYCLE, i)
         z = float(gen.standard_normal())
-        start, kind, depth_u, months_u = (float(x) for x in gen.random(4))
+        start, kind, depth_u, months_u = (float(x) for x in gen.random(REGION_DRAWS))
         level = wf.ar1_level(c.level, cb.phi, cb.sd, z)
         running = c.phase != "none" and turn < c.phase_start + c.phase_months
         if shock:

@@ -19,4 +19,4 @@ STREAM: Final = "world"
 
 
 def gen(rng: RngFactory, turn: int, family: int, *key: int) -> np.random.Generator:
-    return rng.stream(turn, STREAM, family, *key)
+    return rng.stream(turn, "world", family, *key)

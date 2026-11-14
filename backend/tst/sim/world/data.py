@@ -135,7 +135,7 @@ def specs(data: GameData) -> tuple[ChainSpec, ...]:
             ChainSpec(
                 index=len(out),
                 key=c.key,
-                name=name,
+                name=c.name or name,
                 country=country,
                 region=country_region(data, country),
                 personality=c.personality,

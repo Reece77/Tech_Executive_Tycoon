@@ -110,11 +110,12 @@ def decide(
             u = float(gen.random())
             size = wb.expand_share[company.personality or "fast_follower"] * have
             size *= SIZE_LO + SIZE_SPAN * u
-            p_supply, p_demand = flows[g]
-            demand = future[g] + p_demand
-            if wf.balance_factor(demand, wf.normal_supply(planned[g], p_supply, wb), wb) < 1:
+            # rivals plan on the world's demand against chain capacity: the player's output
+            # reaches them through prices and mothballing, not their plans (41.2)
+            demand = future[g] + flows[g][1]
+            if wf.balance_factor(demand, wf.normal_supply(planned[g], 0.0, wb), wb) < 1:
                 continue  # the market will not need it
-            supply = wf.normal_supply(planned[g] + size, p_supply, wb)
+            supply = wf.normal_supply(planned[g] + size, 0.0, wb)
             factor = wf.balance_factor(demand, supply, wb)
             wg = wq.world_good(state, g)
             lr = wq.long_run_usd(state, g, balance, data)

@@ -4,6 +4,15 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M28 a living world (v3.5, lane B, merged last; migration `0049_m28`, golden snapshots unchanged):
+  - Chain companies (formulas §41.1): every supplier selling a commodity in December 2025, every rival foundry and one "other producers" company per good become companies in January 2026, with facilities at their December 2025 capacity, named executives, opening books and simplified monthly operations on the ledger (`chain_companies.yaml`, `tst/sim/world/`).
+  - Capacity decisions and prices (§41.2): December expansions, mothballing, restarts and closures; a balance factor on M17's seeded path and the foundry market from 2026; offtake breach risk reads the supplier's state.
+  - Rival groups (§41.3): rival-on-rival deals with antitrust, subsidiaries under mandates, spin-offs, rivals' supply-security offtakes. Bids for a cheap listed player from rivals' hidden valuations (§41.4). China's catch-up under equipment controls (§41.5). Regional demand cycles after 2025 (§41.6).
+  - World news with filters and a company page per rival (§41.7): `getWorldNews`, `getChain`, the Rival screen's company panel, contract and supplier links; CLI `tst world` (chain section) and `tst company --rival`.
+  - History holds (§41.8 target 1): a fingerprint of main's 2010-2025 series (`tests/fixtures/m28_history.json`, `tools/m28_targets.py --check-history`).
+  - Practice save `pt-world` and e2e saves: `tools/e2e_m28_save.py`. Targets: `tools/m28_targets.py`.
+  - Known misses V3.ai, V5.cells and V5.cats re-owned to M28 (with I1).
+
 - M23b v3 balance (lane B, merged last; no balance key tuned, golden snapshots unchanged):
   - Strategies (`tst/balance/strategies_v3.py`):
     - `full_integrator`: mines, a lithium converter, a wafer plant and a 28 nm fab under a device and SoC line, supplied at transfer price; its fab replaces the TSMC contract and sells spare starts on foundry contracts.

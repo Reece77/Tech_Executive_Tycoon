@@ -69,15 +69,16 @@ class MarketRun:
 
 
 def _build_to_share(game: Game) -> float:
-    """Each January 2027-2030, enough 50 kt converters for a quarter-way step to 20% of the
-    world's lithium capacity by January 2030; the share reached."""
+    """Each January 2027-2030, enough 50 kt converters for half-way (2027), then all the way
+    (2028 on) to 20% of the world's lithium capacity, topped up each year to January 2030 (so
+    the plants are past their ramp by 2031); the share reached."""
     from tst.balance import m20
 
     turn = game.state.turn
     chain = sum(
         f.capacity for f in game.state.world_facilities if f.good == LITHIUM and f.status == "live"
     )
-    years = (turn - turn_of(2026)) / (4 * MONTHS_PER_YEAR)
+    years = min(1.0, (turn - turn_of(2026)) / (2 * MONTHS_PER_YEAR))
     want = BUILD_SHARE * chain * years
     have = PLANT_T * sum(1 for r in game.state.refineries if r.recipe == "li_converter")
     while have < want:

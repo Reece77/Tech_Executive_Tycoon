@@ -46,4 +46,4 @@ def test_closed_and_unlisted_misses_fail_and_the_table_says_known() -> None:
     assert verdict(Row("T8", "printed", "$1", "printed", None)) == "printed"
     assert verdict(Row("V3.ai", "gap", "x", "y", False)) == "fail"  # no score: no pass
     text = table([_ai(0.009), t2])
-    assert text.splitlines()[0].endswith("KNOWN MISS (M23)") and "FAIL T2" in text
+    assert text.splitlines()[0].endswith("KNOWN MISS (M28)") and "FAIL T2" in text

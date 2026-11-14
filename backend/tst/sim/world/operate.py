@@ -7,17 +7,20 @@ purchases; supply is every producer's output at normal running: `base_utilisatio
 producers' live capacity plus the player's output sold to the market (M28 decision: so the
 price answers a tight or slack market, not only one at the edge of capacity). What chain
 producers actually make is the demand left after the player, inside their utilisation band of
-live capacity, and every live facility of the good runs at that utilisation. The factor for
+live capacity, and every live facility of the good runs at that utilisation. The market turns
+plant by plant: a month mothballs at most the dearest facility of a good that qualifies and
+restarts at most the cheapest (M28 decision). The factor for
 next month is `balance_factor(demand, supply)`.
 
 A facility's month: output x this month's price is revenue; output x its cash cost (region's
 power, cost position) is cost of goods; fixed costs a month (less when mothballed); straight-line
-depreciation. A facility whose cash cost tops spot `mothball_months` in a row mothballs; a
-mothballed one restarts after spot tops its cost x (1 + hurdle) `restart_months` in a row, and
-closes after `close_months` mothballed. A company's books post as one entry a month, interest
-on its debt at the base rate plus the spread; a shortfall of cash is borrowed while net debt
-stays under `max_leverage` x a year's EBITDA, else counts toward failure after
-`insolvent_months`. Cash above `repay_cash_months` of costs repays debt.
+depreciation. A facility whose cash cost tops spot `mothball_months` in a row, in a market
+not short by the hurdle, mothballs; a mothballed one restarts after spot tops its cost x
+(1 + hurdle), or the market is short by the hurdle, `restart_months` in a row, and closes after
+`close_months` mothballed. A company's books post as one entry a month, interest on its debt at
+the base rate plus the spread; a shortfall of cash is borrowed while net debt stays under
+`max_leverage` x a year's EBITDA or `asset_lending` x its plant's net book, else counts toward
+failure after `insolvent_months`. Cash above `repay_cash_months` of costs repays debt.
 """
 
 from __future__ import annotations
@@ -40,6 +43,7 @@ from tst.sim.ledger import (
     FOUNDRY_SALES,
     GENERAL_ADMIN,
     INTEREST,
+    PPE,
     AccountCode,
     LedgerEntry,
     LedgerLine,
@@ -50,7 +54,7 @@ from tst.sim.state import GameState, with_company
 from tst.sim.world import data as wd
 from tst.sim.world import formulas as wf
 from tst.sim.world import query as wq
-from tst.sim.world.config import FOUNDRY_GOOD
+from tst.sim.world.config import FOUNDRY_GOOD, WorldBalance
 from tst.sim.world.models import ChainCompany, WorldFacility, WorldGood
 from tst.sim.world.news import Item
 
@@ -193,6 +197,8 @@ def operate(
     fixed: dict[int, float] = {}
     depreciation: dict[int, int] = {}
     ran: list[WorldFacility] = []
+    factors = {g: wq.factor(state, g) for g in wd.all_goods(data)}  # last month's
+    to_mothball, to_restart = _turning(state, facilities, alive, prices, factors, balance, data)
     for f in facilities:
         if f.status in ("building", "closed") or f.company_id not in alive:
             ran.append(f)
@@ -215,16 +221,16 @@ def operate(
             output = f.capacity * utilisation[f.good] / MONTHS
             revenue[f.company_id] = revenue.get(f.company_id, 0.0) + output * spot
             cogs[f.company_id] = cogs.get(f.company_id, 0.0) + output * cash_cost
-            below = f.below_months + 1 if spot < cash_cost else 0
+            below = f.below_months + 1 if losing(spot, cash_cost, factors[f.good], wb) else 0
             f = replace(f, output=output, below_months=below)
-            if below >= wb.mothball_months:
+            if below >= wb.mothball_months and f.id in to_mothball:
                 f = replace(f, status="mothballed", mothballed_turn=turn, output=0.0)
                 f = replace(f, below_months=0, above_months=0)
                 news.append(_move("mothball", names[f.company_id], f, data, "mothballs"))
         else:  # mothballed
-            above = f.above_months + 1 if spot > cash_cost * (1 + wb.hurdle) else 0
+            above = f.above_months + 1 if winning(spot, cash_cost, factors[f.good], wb) else 0
             f = replace(f, above_months=above)
-            if above >= wb.restart_months:
+            if above >= wb.restart_months and f.id in to_restart:
                 f = replace(f, status="live", mothballed_turn=None, above_months=0)
                 news.append(_move("restart", names[f.company_id], f, data, "restarts"))
             elif f.mothballed_turn is not None and turn - f.mothballed_turn >= wb.close_months:
@@ -238,6 +244,60 @@ def operate(
     )
     news += failed
     return state, entries, news
+
+
+def losing(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> bool:
+    """A month toward mothballing: spot under the cash cost in a market not short by the hurdle
+    (last month's factor under 1 + hurdle). A producer does not idle a plant the market is
+    short of, whatever M17's seeded path says (M28 decision)."""
+    return spot < cash_cost and factor < 1 + wb.hurdle
+
+
+def winning(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> bool:
+    """A month toward restarting: spot over the cash cost x (1 + hurdle), or a market short by
+    the hurdle (factor at least 1 + hurdle)."""
+    return spot > cash_cost * (1 + wb.hurdle) or factor >= 1 + wb.hurdle
+
+
+def _turning(
+    state: GameState,
+    facilities: list[WorldFacility],
+    alive: set[int],
+    prices: Mapping[str, float],
+    factors: Mapping[str, float],
+    balance: Balance,
+    data: GameData,
+) -> tuple[set[int], set[int]]:
+    """The one facility a good that mothballs this month (the dearest of those past
+    `mothball_months` under cost) and the one that restarts (the cheapest past
+    `restart_months` over cost x (1 + hurdle)): a market turns plant by plant (M28 decision),
+    not all at once."""
+    wb = balance.world
+    down: dict[str, WorldFacility] = {}
+    up: dict[str, WorldFacility] = {}
+    for f in facilities:
+        if f.company_id not in alive or f.status not in ("live", "mothballed"):
+            continue
+        cost = wq.cash_cost_usd(state, f, balance, data)
+        spot = prices[f.good]
+        factor = factors[f.good]
+        if (
+            f.status == "live"
+            and losing(spot, cost, factor, wb)
+            and f.below_months + 1 >= wb.mothball_months
+        ):
+            best = down.get(f.good)
+            if best is None or (f.cost, -f.id) > (best.cost, -best.id):
+                down[f.good] = f
+        if (
+            f.status == "mothballed"
+            and winning(spot, cost, factor, wb)
+            and f.above_months + 1 >= wb.restart_months
+        ):
+            best = up.get(f.good)
+            if best is None or (f.cost, f.id) < (best.cost, best.id):
+                up[f.good] = f
+    return {f.id for f in down.values()}, {f.id for f in up.values()}
 
 
 def _country(data: GameData, country: str) -> str:
@@ -303,7 +363,11 @@ def _books(
         year_ebitda = sum(ebitda) * MONTHS // max(1, len(ebitda))
         insolvent = 0
         if cash < 0:
-            room = round(wb.max_leverage * max(0, year_ebitda)) - (debt - cash)
+            plant = account_balance(balances, cid, PPE) + account_balance(
+                balances, cid, ACCUMULATED_DEPRECIATION
+            )
+            limit = max(wb.max_leverage * max(0, year_ebitda), wb.asset_lending * max(0, plant))
+            room = round(limit) - (debt - cash)
             if rec.is_other or room >= 0:
                 entries.append(_borrow(turn, cid, company.name, -cash))
             else:

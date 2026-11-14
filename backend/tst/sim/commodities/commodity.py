@@ -45,6 +45,7 @@ UNIFORMS = 5  # tunable-exempt: start, kind, rise, allocation and length draws
 COMMODITY_KEY = 0  # tunable-exempt: stream key family for commodities (0, good_index)
 POWER_KEY = 1  # tunable-exempt: stream key family for power (1, region_index)
 POWER_PREFIX = "power_"  # tunable-exempt: a power good's key is power_<region>
+TINY = 1e-9  # tunable-exempt: a floor against dividing by zero
 EXPORT_BAN = "export_ban"  # tunable-exempt: the shock kind that concentration makes likelier
 
 
@@ -248,7 +249,7 @@ def world_month(state: GameState, month: GoodMonth) -> GoodMonth:
     allocation = month.allocation
     if w.demand > w.output > 0:
         left = max(0.0, w.output - w.contracted)
-        wanted = max(w.demand - w.contracted, 1e-9)
+        wanted = max(w.demand - w.contracted, TINY)
         allocation = min(allocation, max(0.0, min(1.0, left / wanted)))
     return replace(month, index=month.index * w.factor, allocation=allocation)
 

@@ -316,7 +316,6 @@ EXPLORATION_FORBIDDEN_NAMES = frozenset(
 # (caught above as `factor`).
 WORLD_FORBIDDEN_NAMES = frozenset(
     {
-        "cost",
         "cost_position",
         "view_cents",
         "valuation_cents",

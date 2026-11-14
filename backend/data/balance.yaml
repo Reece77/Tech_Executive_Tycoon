@@ -2031,6 +2031,7 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
   open_leverage: 1.5 # opening debt x a year's EBITDA (A)
   open_book: 0.5 # opening plant at this share of its replacement capex (half depreciated, A)
   interest_spread: 0.03 # debt pays the base rate plus this a year (A)
+  asset_lending: 0.5 # a cash shortfall may also be borrowed up to this x the plant's net book (secured lending: a loss-making year need not sink a producer; M28 tuning for 41.8 target 3)
   repay_cash_months: 12 # cash above this many months of costs repays debt (A)
   insolvent_months: 6 # months of cash below zero before a chain company fails (as 14.7's rivals)
   outlook_spot_weight: 0.34 # the 3-year outlook: this x the last 12 months' mean price + the rest x the long-run price (A: a year of spot, two of the deck, as M18's deck)
@@ -2041,10 +2042,10 @@ world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies
   spinoff_discount: 0.18 # a listed rival group whose conglomerate discount (31.7) exceeds this spins off its least-related subsidiary, at most one a year (41.3)
   bid_discount: 0.7 # 41.4: a rival may bid when the player's market cap is under this x its valuation
   bids:
-    view_sd: 0.12 # sd of a rival's view of the player's value around V_f (hidden, 41.9)
-    tilt: { aggressive: 0.10, premium: 0.0, fast_follower: 0.0, cost_leader: -0.10 } # its view's lean by personality (A)
+    view_sd: 0.06 # sd of a rival's view of the player's value around V_f (hidden, 41.9)
+    tilt: { aggressive: 0.05, premium: 0.0, fast_follower: 0.0, cost_leader: -0.05 } # its view's lean by personality (A)
     fund: 1.3 # the rival must hold this x the price in cash (41.4)
-    monthly: 0.08 # chance a month a qualifying rival bids (41.8 target 5)
+    monthly: 0.01 # chance a month a qualifying rival bids (41.8 target 5)
     premium: 0.35 # the bid over the share price (as public.takeover.premium)
   groups:
     premium: 0.30 # a rival pays this over the target's value (28.3's personality premiums, mid)

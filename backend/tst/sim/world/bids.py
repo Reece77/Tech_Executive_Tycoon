@@ -19,9 +19,10 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.finance.captable import fd_shares
 from tst.sim.ledger import CASH, AccountCode, account_balance
 from tst.sim.markets_public import ipo
-from tst.sim.markets_public.public import TAKEOVER, outstanding_shares
+from tst.sim.markets_public.public import TAKEOVER
 from tst.sim.money import Cents
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, listed_id, public_of
@@ -70,9 +71,10 @@ def bids_month(
     public = public_of(state, lid)
     if public is None or public.value_cents <= 0:
         return state, []
-    cap = public.price_cents * outstanding_shares(state, lid)
+    shares = fd_shares(state, lid)  # V_f is a fully diluted value (25.3), as the sale's price
+    cap = public.price_cents * shares
     per_share = round(public.price_cents * (1 + wb.bids.premium))
-    price = per_share * outstanding_shares(state, lid)
+    price = per_share * shares
     recent = {b.rival_id for b in state.world_bids if turn - b.turn < MONTHS}
     for rival in sorted(state.rivals(), key=lambda c: c.id):
         if not is_incumbent(rival) or rival.id in recent or not unowned(state, rival.id):

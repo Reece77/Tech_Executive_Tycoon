@@ -21,7 +21,8 @@
 #   expansions (aggressive large, cost leader medium, premium small); cost: its position on the
 #   good's cost curve, 0 the lowest-cost producer and 1 the highest (A: from the dossier's notes
 #   on grades, brine against hard rock, and power); country: where its facilities sit when
-#   countries.yaml `sites` has none. A supplier whose share ended before December 2025 (Rockwood,
+#   countries.yaml `sites` has none; name: its name when the supplier's or foundry's would clash
+#   with a rival's (Intel Foundry beside the chip rival Intel). A supplier whose share ended before December 2025 (Rockwood,
 #   Molycorp, MEMC, Ingas, Cryoin) or that sells no M17 good (the wafer makers) has no entry.
 # others: the aggregate producer of each good: its cost position and country.
 foundry_other_share: 0.12 # A: Tower, Vanguard, Hua Hong, PSMC and smaller foundries' share of wafer capacity
@@ -108,7 +109,7 @@ companies:
   # --- Rival foundries (nodes.yaml 38.3) ----------------------------------------------------------
   - { key: tsmc, personality: premium, cost: 0.3 }
   - { key: samsung, personality: aggressive, cost: 0.45 }
-  - { key: intel, personality: fast_follower, cost: 0.7, country: us }
+  - { key: intel, personality: fast_follower, cost: 0.7, country: us, name: Intel Foundry } # the incumbent Intel designs chips (incumbents.yaml)
   - { key: globalfoundries, personality: cost_leader, cost: 0.5, country: us }
   - { key: umc, personality: cost_leader, cost: 0.45, country: taiwan }
   - { key: smic, personality: aggressive, cost: 0.55, country: china }

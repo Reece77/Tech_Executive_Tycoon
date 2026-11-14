@@ -101,6 +101,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "personal": 53,  # M26 (37)
         "fab": 54,  # M21 (38)
         "geopolitics": 55,  # M22 (39)
+        "world": 57,  # M28 (41)
         "misc": 99,
     }
 

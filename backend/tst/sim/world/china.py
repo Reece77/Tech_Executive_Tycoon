@@ -31,6 +31,7 @@ from tst.sim.world.models import ChinaLag
 from tst.sim.world.news import Item
 
 MONTHS: Final = 12  # tunable-exempt: calendar
+EPS: Final = 1e-9  # tunable-exempt: float tolerance on a whole generation
 CHINA_TARGETS: Final = ("china", "all")  # tunable-exempt: destinations that cover China
 
 
@@ -76,7 +77,7 @@ def china_month(
         reached = dict(lag.reached)
         own = {k for k in base.keys if base.foundry_has(lag.foundry, k, nd.HISTORY_END)}
         best = max((base.generation(k) for k in (*own, *reached)), default=0)
-        can = math.floor(lead_now - behind + 1e-9)
+        can = math.floor(lead_now - behind + EPS)
         for g in range(best + 1, min(can, len(base.keys) - 1) + 1):
             node = base.keys[g]
             if base.arrival[node] > turn:  # never ahead of the first to a node

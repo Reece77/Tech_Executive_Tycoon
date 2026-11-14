@@ -35,6 +35,7 @@ class ChainCompanyDef(_Frozen):
     personality: Personality
     cost: float = Field(ge=0, le=1)  # position on the good's cost curve, 0 lowest
     country: str | None = None  # where it operates when countries.yaml sites has none
+    name: str | None = None  # its name when the supplier's or foundry's would clash
 
 
 class OtherProducersDef(_Frozen):
@@ -147,6 +148,7 @@ class WorldBalance(_Frozen):
     open_leverage: float = Field(ge=0)  # opening debt x a year's EBITDA
     open_book: float = Field(ge=0, le=1)  # opening plant at this share of its replacement capex
     interest_spread: float = Field(ge=0)  # over the base rate, a year
+    asset_lending: float = Field(ge=0, le=1)  # a shortfall may also borrow to this x net plant
     repay_cash_months: float = Field(ge=0)  # cash above this many months of costs repays debt
     insolvent_months: int = Field(ge=1)  # months of cash below zero before a company fails
     outlook_spot_weight: float = Field(ge=0, le=1)  # the 3-year outlook's weight on spot
