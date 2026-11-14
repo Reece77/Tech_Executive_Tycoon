@@ -33,17 +33,29 @@ v1, v2 and v3 are built: a founder-to-conglomerate game with people, products, r
 | Milestone | Lane | What | Brief |
 | --- | --- | --- | --- |
 | **M27a, automation everywhere** | A | areas and owners (seat holders, the CEO, area leads, subsidiary CEOs); money limits and one-offs that always need approval; quality from true skills and a workload in energy; routine events; the monthly digest; the Automation screen (formulas §40) | `docs/tasks/M27a-automation-everywhere.md` |
-| **M27b, automation for the chain** | A, after M27a | device production, supply, exploration, mines and refineries, fabs, government affairs, corporate development (§40.7) | `docs/tasks/M27b-automation-for-the-chain.md` (outline) |
+| **M27b, automation for the chain** | A, after M27a | device production, supply, exploration, mines and refineries, fabs, government affairs, corporate development (§40.7) | `docs/tasks/M27b-automation-for-the-chain.md` (revised 2026-11-14) |
 | **M28, a living world** | B, merges last | chain companies as companies, supply-driven prices from 2026, rival groups and bids, China's catch-up, regional cycles, World news and company pages (§41) | `docs/tasks/M28-a-living-world.md` |
 | **M29, onboarding, navigation and the launcher** | C, merges first | double-click launcher, progressive unlocking, guided first year, What next, inbox tabs, grouped navigation and a command palette (§42) | `docs/tasks/M29-onboarding-navigation-and-launcher.md` |
-| **M30, performance at scale** | after M28 | a 2039 group with the full chain and the living world under a second a turn; save size | to be written after M28 |
+| **M30, performance at scale** | after M28 | faster 2039 turns, Holiday, saves and screens with identical results | `docs/tasks/M30-performance-at-scale.md` |
 | **Reece's 30-year campaign** | — | one game, 2010–2039, started after `m23b-done` on `main`; saves upgrade as v3.5 merges, and its notes shape v3.5's last fixes and v4 | campaign log page |
 
 M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of v3) runs alongside them.
 
+**Status (2026-11-14):** M29, M27a and M28 merged. M28r (an M21 guard after M28), M27b, M30 and v4's M31 run next, in parallel.
+
+**Product manager rulings (2026-11-14):** M28's §41.8 target 2 ("markets respond", band 15–40%) read a 12% median drop, because rivals respond by building less and the price recovers by 2032–33. Accepted as met in spirit and recorded; the band stays for v4's power and platform work to revisit.
+
 ## Phase 3: v4, power, platforms and regulation
 
-Regional power markets and owning power plants; platforms and ecosystems (app stores, developer ecosystems, lock-in, standards); regulation with teeth (unbundling, gatekeeper rules); and the **semiconductor equipment lane** (lithography and EUV) alongside. Details in `docs/ideas-backlog.md`.
+**Reece's decisions (2026-11-13, "defaults"):** an own app store and developer ecosystem, with rivals' stores as competitors and gatekeepers; power contracts and owned plants (from stage 4); break-ups possible but rare, visible and warned years ahead; EUV first as a chokepoint, own tools as a late, very expensive research path. Outline: `docs/v4-outline.md`.
+
+| Milestone | Lane | Starts |
+| --- | --- | --- |
+| M31, platforms and ecosystems | C | after `m27a-done` (about 2026-11-17) |
+| M32, power and owned plants | A or B | after `m28-done` (about 2026-11-20) |
+| M33, semiconductor equipment (EUV) | A or B | after `m28-done`, beside M32 |
+| M34, regulation with teeth | C | after `m31-done` |
+| M35, v4 balance and polish | single | after M32–M34; closes v4 |
 
 ## Phase 4: v5, the dynasty and new industries
 
