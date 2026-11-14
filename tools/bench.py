@@ -184,10 +184,15 @@ def _forget(state_too: bool = True) -> None:
 
 
 def _copy(source: Path, into: Path) -> Path:
+    """A copy of the save, upgraded to the code's schema as the app upgrades a save it opens
+    (so a turn never carries a migration's one-off work)."""
+    from tst.db import migrate
+
     into.mkdir(parents=True, exist_ok=True)
     for f in source.parent.glob(source.name.split(".")[0] + ".*"):
         if f.is_file():
             shutil.copy(f, into / f.name)
+    migrate.ensure_current(into / source.name)
     return into / source.name
 
 

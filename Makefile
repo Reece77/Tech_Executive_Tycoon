@@ -44,7 +44,7 @@ weekly-v5:
 	uv run --project backend python tools/v2_targets.py --long --runs
 weekly-v6:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: its targets on CI's runner
 
 # M23b's v3 targets (tst.balance.v3; CI: weekly.yml): the chain's shocks, 20 years of the v2
 # and v3 founder-played strategies (integration pays), the v3 scripts to December 2039, and V6
@@ -57,7 +57,7 @@ weekly-v3-long:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_v3_balance.py::test_v3_chain_thirty_years
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: its targets on CI's runner
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
