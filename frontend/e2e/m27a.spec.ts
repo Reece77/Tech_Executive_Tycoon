@@ -81,8 +81,17 @@ test('(b) a one-off proposal stops a holiday and is approved', async ({ page }) 
   await dialog.getByTestId('holiday-start').click();
   await expect(page.getByTestId('holiday-done')).toBeVisible({ timeout: 60_000 });
   await page.goto(`/game/${CFO}/org`);
-  const proposal = page.getByTestId('exec-proposal').first();
+  await answerBlocking(page, { proposals: false }); // a critical event's modal would cover it
+  const proposal = page
+    .getByTestId('exec-proposal')
+    .filter({ has: page.getByTestId('proposal-approve') })
+    .first();
   await expect(proposal).toContainText('seed round');
   await proposal.getByTestId('proposal-approve').click();
-  await expect(proposal).toContainText('approved');
+  await expect(
+    page
+      .getByTestId('exec-proposal')
+      .filter({ hasText: 'seed round' })
+      .filter({ hasText: 'approved' }),
+  ).not.toHaveCount(0);
 });
