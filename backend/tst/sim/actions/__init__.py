@@ -736,7 +736,7 @@ def apply_action(
         case GiveRaise():
             out = give_raise(state, action, balance)
         case Promote():
-            out = promote(state, action, balance)
+            out = promote(state, action, balance, data)
         case CreatePlan():
             out = create_plan(state, action, balance, data)
         case UpdatePlan():

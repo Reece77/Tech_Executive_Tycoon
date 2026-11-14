@@ -99,6 +99,10 @@ STREAM_IDS: Final = MappingProxyType(
         "geopolitics": 55,
         "automation": 56,  # M27a (formulas.md 40.3)
         "world": 57,  # M28 (formulas.md 41); 56 is M27a's automation
+        # M36 (formulas.md 45; 58 is M31's platforms): (founder_id, member_index) a member's
+        # generation; (founder_id, 0, k) life events of kind k; (person_id, 1) a child's
+        # development; (founder_id, 2) a health step-back; (founder_id, 3, n) an action's draw
+        "family": 59,
         "misc": 99,
     }
 )

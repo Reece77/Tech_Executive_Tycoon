@@ -167,6 +167,10 @@ def appoint_executive(
         replace(employment, level=EXEC_LEVEL, salary_cents=salary, last_raise_turn=last),
     )
     state = with_exec_seat(state, ExecSeat(company, action.seat, action.person_id, state.turn))
+    if state.family is not None:  # M36 (45.4): seats held count toward an heir's readiness
+        from tst.sim.family.answers import note_seat
+
+        state = note_seat(state, action.person_id, action.seat)
     state = bump_morale(state, action.person_id, balance.exec_seats.appoint_morale + raise_bonus)
     person = state.person(action.person_id)
     label = balance.exec_seats.seats[action.seat].label

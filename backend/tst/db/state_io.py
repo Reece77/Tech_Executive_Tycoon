@@ -28,6 +28,7 @@ from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
 from tst.db.former import former_rows
+from tst.db.family_io import family_people, live_family, load_family, sync_family
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.geopolitics_io import load_geopolitics, sync_geopolitics
 from tst.db.group_io import load_group, sync_group
@@ -425,6 +426,7 @@ def load_state(session: Session) -> GameState:
         | {s.person_id for s in seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
         | set(investing_people(session, has_table))  # M26 (37.2, 37.4)
+        | family_people(session, has_table)  # M36 (45)
     )
 
     people, reveals = load_people(session, live_ids)
@@ -574,6 +576,7 @@ def load_state(session: Session) -> GameState:
     state = load_mna(session, state, has_table)  # M14 (0034)
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
+    state = load_family(session, state, has_table)  # M36 (0052)
     state = load_group(session, state, has_table)  # M16 (0039)
     state = load_automation(session, state, has_table)  # M27a (0049)
     state = load_investing(session, state, has_table)  # M26 (0043)
@@ -1954,6 +1957,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     session.flush()
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
+    sync_family(session, old, new, has_table)  # M36 (0052)
     sync_group(session, old, new, has_table)  # M16 (0039)
     sync_automation(session, old, new, has_table)  # M27a (0049)
     sync_investing(session, old, new, has_table)  # M26 (0043)
@@ -2378,6 +2382,7 @@ def live_view(state: GameState) -> GameState:
         | {s.person_id for s in state.seats if s.person_id is not None}
         | {a.person_id for a in free_agents}
         | live_investing(state)  # M26 (37.2, 37.4)
+        | live_family(state)  # M36 (45)
     )
     products = tuple(p for p in state.products if p.status != "retired")
     product_ids = {p.id for p in products}

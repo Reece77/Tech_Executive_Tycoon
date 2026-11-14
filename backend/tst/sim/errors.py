@@ -75,6 +75,12 @@ class InvalidMissionError(SimError):
     code = "invalid_mission"
 
 
+class InvalidFamilyError(SimError):
+    """M36 (45.1): a Family setting the game cannot start with."""
+
+    code = "invalid_family"
+
+
 # --- Player actions (M1b, ADR-0014) ---------------------------------------------------------
 
 

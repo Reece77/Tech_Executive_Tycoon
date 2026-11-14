@@ -175,6 +175,8 @@ def vacate_departed(state: GameState) -> tuple[GameState, tuple[LogItem, ...]]:
         person = state.person(seat.person_id)
         if person.is_founder:
             continue
+        if state.family is not None and state.family.adviser_id == person.id:  # M36 (45.5)
+            continue
         state = with_seat(state, replace(seat, person_id=None))
         logs.append(
             inbox_item(
@@ -289,6 +291,13 @@ def board_month(
         # a majority of all seats; a tie keeps the founder, and so do dual-class shares (M13)
         sandbox = state.mode is not None and state.mode.kind == "sandbox"  # spec 17 (M15b)
         if 2 * votes > len(seats) and not founder_protected(state, company.id) and not sandbox:
+            if company.id == state.player.id and state.family is not None:  # M36 (45.5)
+                from tst.sim.family import succession
+
+                if succession.can_succeed_on_removal(state, balance):
+                    state, handed = succession.on_removal(state, balance)
+                    logs += handed
+                    continue
             state = replace(
                 state,
                 save_meta=replace(
