@@ -24,6 +24,7 @@ from tst.sim.finance.consolidation import INTERCOMPANY
 from tst.sim.finance.fundraising import arr_cents, base_value, climate, company_growth
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
 from tst.sim.ledger import CASH, LedgerEntry, apply_entries
+from tst.sim.log import LogItem
 from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
@@ -61,6 +62,7 @@ class Game:
     event_requests: int = 0
     month_lines: list[tuple[int, str, int]] = field(default_factory=list)  # actions this month
     last_product_months: tuple[ProductMonth, ...] = ()  # the last turn's history rows (M12b)
+    last_logs: tuple[LogItem, ...] = ()  # the last turn's log items (M27a: inbox counts)
     # M15a: turn -> (revenue, operating result) cents, the month's whole P&L (V3's margin)
     pnl: dict[int, tuple[int, int]] = field(default_factory=dict)
     notes: dict[str, int] = field(default_factory=dict)  # M15a: a v2 script's own memory
@@ -160,6 +162,7 @@ class Game:
         self._group = group_ids(result.new_state)
         self.month_lines = []
         self.last_product_months = result.product_months
+        self.last_logs = result.log_items
         self.last_result = result
         self.state = result.new_state
         self.balances = apply_entries(self.balances, result.ledger_entries)

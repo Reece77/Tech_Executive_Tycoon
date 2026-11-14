@@ -5,8 +5,8 @@ each: `kind` names the collection and `data` the record's fields (data-dictionar
 companies are rows of `company` with a `company_rival_key` of (7, position). Existing saves have
 none: the world starts in January 2026 and a save past it starts its world at its next month.
 
-Revision ID: 0049_m28
-Revises: 0048_m23a
+Revision ID: 0050_m28
+Revises: 0049_m27a (re-parented after M27a, which merged first)
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0049_m28"
-down_revision: str | None = "0048_m23a"
+revision: str = "0050_m28"
+down_revision: str | None = "0049_m27a"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -29,9 +29,9 @@ def upgrade() -> None:
         sa.Column("kind", sa.String(), nullable=False),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 49")
+    op.execute("UPDATE save_meta SET schema_version = 50")
 
 
 def downgrade() -> None:
     op.drop_table("world_record")
-    op.execute("UPDATE save_meta SET schema_version = 48")
+    op.execute("UPDATE save_meta SET schema_version = 49")

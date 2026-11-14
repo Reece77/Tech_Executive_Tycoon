@@ -3232,6 +3232,20 @@ Roles a lead needs that are not yet in `roles.yaml` are added by the milestone t
 
 Areas, owners, eligibility and its reasons, displayed fit bands, limits, priorities, energy used, decisions and mistakes as outcomes, proposals, digests and records. Never an owner's true skills or score, the quality probability, the draws, or which option was best.
 
+### 40.12 Notes as built (M27a)
+
+- **One setting.** Giving an existing seat area (engineering, products, pricing, marketing, support, treasury) to its seat holder also gives the seat its authority (24.1); taking it back withdraws it, and withdrawing authority takes the area back. Authority given the old way (24.1's dialog) creates no area row, so such a company plays exactly as before (40.9). A seat holder running its own seat's existing rule keeps stream `delegate` and the rule's old key; everyone else draws from `automation` (ADR-0013 row 56).
+- **Commitment** (40.2), cents: a hiring plan's hires × the role's mid salary in the home region × 12; a marketing change's increase × 12; a repayment's amount; a research team's monthly cost × 12; a pitched move's cost over `pitch.cost_months` (capex plus 12 months' running cost). Setting a price, moving a person, launching a ready product and answering an event commit nothing.
+- **Proposals** are `exec_proposal` rows of kind `auto` holding the action; approving runs it with the founder as actor. They expire after `automation.proposal_months`; a CFO's or COO's own proposals (24.1) still lapse at the next Continue. A move pitched through 27.1 (a region, a research team, a data centre) waits as a pitch.
+- **Hiring** backfills: a plan for each role and unit someone is leaving or left last month, with the owner as delegate. Per-unit headcount targets are a follow-up.
+- **Pricing**'s anchors are the prices when the area was given, kept in the CRO's authority record (disabled unless the CRO seat was given too). Shown churn is the product screen's (11.7, from current appeal).
+- **Research** stops a project whose domain feeds no live product (projects have no displayed months to finish); a new team at most every `automation.research_every_months`, a region at most every `automation.regions_every_months` (40.10 target 1).
+- **Cloud capacity** below the band starts selling spare capacity at spot (22.3); there is no separate buy action, since products already buy spot compute they lack. Above the band (or with no data centre) it pitches 27.1's data centre, a one-off.
+- **Press** answers are the press moments' tones: measured; bold when the area allows it and monthly revenue grew for three months running; the mistake is the bolder answer. **Routine events** score a choice by its listed effects (cash per $10,000, morale, brand, quality and customers in points, a modifier per 5%), ties to a do-nothing or smaller choice.
+- **Workload** is counted apart from the owner's action energy: 100 × the support pool's coverage a month, areas in priority order.
+- **Digest filing** (40.4): while their area is automated, hiring-pipeline items (candidates, offers, plan activity), sales-capacity and region-live items, and executives' monthly decision lists are flagged `in_digest`.
+- The Automation screen opens at stage 3, or as soon as someone could run an area. Subsidiaries keep their CEO and mandate (31.4); the runner acts for the player's company.
+
 ## 41. A living world (M28; v3.5)
 
 The roadmap's first product risk: the world is shallower than the player. Miners, refiners and foundries are data; rivals don't form groups or fight each other. In Capitalism Lab rivals play the same game. Here they will, within the simulation's budget, and **2010–2025 history stays the anchor**: until 2026 prices, capacity totals and dated events follow the data exactly.

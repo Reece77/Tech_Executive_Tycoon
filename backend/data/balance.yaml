@@ -2005,6 +2005,50 @@ contracts: # M23a (playtest 5): breaking contracts, counterparties' memory, foun
     take_or_pay: 0.3 # the buyer pays this share of contracted starts it does not take (as 26.3's wafer contracts)
     energy: 3 # founder energy to sign one (A)
 
+automation: # 40: automation everywhere (M27a, v3.5). Only companies with an area given to a person change.
+  lead_min_level: senior # an area lead is an active employee at this level or above in one of the area's roles (40.1)
+  change_energy: 2 # founder energy to give, change or take back one area (40.1; as exec_authority.change_energy)
+  take_back_months: 6 # an area taken back within this many months of being given ...
+  take_back_ego: 15 # ... from an owner with ego at or above this (attribute points) ...
+  take_back_morale: 2 # ... costs that owner this many morale points, once (40.1)
+  default_limit_bp: 200 # bp of cash at appointment: an owner's default money limit per decision (40.2)
+  limit_round_cents: 1000000 # cents; the default limit rounds down to a multiple of this ($10,000)
+  min_limit_cents: 2500000 # cents; the default limit is at least this ($25,000)
+  monthly_limit_mult: 3 # an owner stops acting in a month once its decisions have committed this x its limit (40.2)
+  commitment_months: 12 # months of cash cost a decision's commitment counts, plus its fixed obligations (40.2)
+  layoff_share: 0.10 # layoffs of at least this share of a unit in one month are a one-off (40.2)
+  long_contract_months: 36 # a contract longer than this many months is a one-off (40.2)
+  proposal_months: 3 # an unanswered automation proposal expires as declined after this many months (40.2)
+  repropose_months: 6 # an owner may not propose the same move again for this many months after a decline or expiry (40.2)
+  owner_energy: 100 # an owner's energy a month for running areas, x the support pool's coverage (40.3; 13.10's delegate energy)
+  quality: { base: 0.55, per_score: 0.03, min: 0.6, max: 0.98 } # P(the right rule) = clamp(base + per_score x s, min, max), s the owner's true area score (40.3; as exec_authority.quality)
+  mistake_off: 0.20 # a mistaken step is off by this fraction (40.3)
+  price_band: 0.10 # pricing: prices stay within this fraction of the player's last price (40.6)
+  price_step: 0.05 # pricing: one quarterly step, as a fraction of the price (40.6)
+  churn_low: 0.20 # pricing: shown churn at least this fraction below the category's average allows a step up (40.6)
+  research_budget_bp: 400 # research: spending at most this many bp of trailing 12-month revenue (40.6 guardrail default; 40.10 target 1: 800 -> 400)
+  research_stop_months: 24 # research: stop a project whose displayed months to finish exceed this when no live product draws on its domain (40.6)
+  cloud_band: [0.60, 0.90] # cloud: projected data-centre use kept between these shares (40.6 guardrail default)
+  cloud_step: 0.10 # cloud: a month's spot purchase or sale moves projected use by at most this share of capacity
+  regions_every_months: 48 # regions: months between an owner's region launches or pitches (40.10 target 1: 24 -> 48)
+  research_every_months: 36 # research: months between an owner's new research teams or pitches (40.10 target 1: 12 -> 36)
+  digest_lines: 3 # digest: at most this many "what they did" lines per area and attention lines in all (40.4)
+  # Areas, in a fixed order (an area's index keys its draws in stream `automation`; append only).
+  # seat: the seat whose holder owns it (null: none). roles: lead roles. energy: an owner's energy a month to run it.
+  # weights: the area score's skill weights (sum 1). kpis: the digest's KPIs. rule: the engine rule. events: event categories it answers (40.5).
+  areas:
+    hiring: { label: Hiring, seat: coo, roles: [recruiter, operations_manager], energy: 20, weights: { recruiting: 0.40, judgment_of_talent: 0.30, leadership: 0.15, communication: 0.15 }, kpis: [headcount, open_plans], rule: hiring, events: [personnel] }
+    engineering: { label: Engineering teams, seat: cto, roles: [engineering_manager], energy: 30, weights: { software_engineering: 0.35, leadership: 0.30, strategy: 0.20, infrastructure: 0.15 }, kpis: [builders, products_below_line], rule: seat_cto, events: [] }
+    products: { label: Product launches and roadmaps, seat: cpo, roles: [product_manager], energy: 25, weights: { product: 0.45, design: 0.15, strategy: 0.20, leadership: 0.20 }, kpis: [live_products, in_development], rule: seat_cpo, events: [] }
+    pricing: { label: Pricing, seat: cro, roles: [sales_manager], energy: 20, weights: { sales: 0.40, negotiation: 0.25, strategy: 0.20, communication: 0.15 }, kpis: [mrr, churn_bp], rule: pricing, events: [] }
+    marketing: { label: Marketing, seat: cmo, roles: [marketing_manager, marketer], energy: 20, weights: { marketing: 0.45, communication: 0.20, strategy: 0.20, leadership: 0.15 }, kpis: [marketing_cents, brand], rule: seat_cmo, events: [market] }
+    support: { label: Support and offices, seat: coo, roles: [operations_manager], energy: 20, weights: { operations: 0.40, leadership: 0.25, procurement: 0.15, communication: 0.20 }, kpis: [coverage_pct, headcount], rule: seat_coo, events: [operations] }
+    treasury: { label: Treasury, seat: cfo, roles: [finance_manager], energy: 15, weights: { finance: 0.45, strategy: 0.20, negotiation: 0.20, communication: 0.15 }, kpis: [cash_cents, runway_months], rule: seat_cfo, events: [finance, lender] }
+    research: { label: Research, seat: cto, roles: [research_scientist], energy: 25, weights: { ml_research: 0.35, software_engineering: 0.20, strategy: 0.25, leadership: 0.20 }, kpis: [research_projects, research_cents], rule: research, events: [research] }
+    regions: { label: Regions, seat: cro, roles: [sales_manager], energy: 20, weights: { sales: 0.35, strategy: 0.30, negotiation: 0.20, communication: 0.15 }, kpis: [regions, mrr], rule: regions, events: [] }
+    cloud: { label: Cloud capacity, seat: cto, roles: [devops_engineer, site_reliability_engineer], energy: 15, weights: { infrastructure: 0.45, operations: 0.20, strategy: 0.20, finance: 0.15 }, kpis: [dc_use_pct, dc_capacity], rule: cloud, events: [] }
+    press: { label: Press and communications, seat: cmo, roles: [communications_manager], energy: 15, weights: { communication: 0.45, marketing: 0.20, strategy: 0.20, judgment_of_talent: 0.15 }, kpis: [credibility, press_waiting], rule: press, events: [press] }
+    events: { label: Routine events, seat: coo, roles: [operations_manager], energy: 15, weights: { operations: 0.30, strategy: 0.30, communication: 0.20, leadership: 0.20 }, kpis: [events_answered, events_waiting], rule: events, events: [rivals] }
 world: # 41: a living world (M28, v3.5 lane B). Chain companies (chain_companies.yaml) run from `start`; nothing here moves anything before 2026 (41.8 target 1). A = an assumption for gameplay
   start: "2026-01" # the first month chain companies run, with books (41.1)
   hurdle: 0.15 # expand when the 3-year price outlook exceeds cost a unit x (1 + this) (41.2)

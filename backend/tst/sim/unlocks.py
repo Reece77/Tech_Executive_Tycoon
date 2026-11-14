@@ -65,6 +65,7 @@ SYSTEMS: tuple[System, ...] = (
     System(19, "finance", "Finance", "finance", always=True),  # tunable-exempt: stable id
     System(20, "group", "Group", "finance"),  # tunable-exempt: stable id
     System(21, "world", "World", "world"),  # tunable-exempt: stable id
+    System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -204,6 +205,19 @@ def _world(state: GameState, ids: set[int], balance: Balance, data: GameData) ->
     return None
 
 
+def _automation(state: GameState, _ids: set[int], balance: Balance, _d: GameData) -> str | None:
+    """M27a (40.1): someone could run an area, or one already does."""
+    from tst.sim.automation import owners
+
+    cid = state.player.id
+    if state.owners_of(cid):
+        return "someone runs an area for you"
+    for area in owners.area_keys(balance):
+        if owners.eligible_people(state, cid, area, balance):
+            return "someone on your team could run an area for you"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -216,6 +230,7 @@ CHECKS: dict[str, Check] = {
     "fabs": _any(_by_stage(STAGE_LISTED, "stage 4"), _fabs),
     "group": _any(_by_stage(STAGE_GROUP, "stage 5"), _group),
     "world": _world,
+    "automation": _any(_by_stage(STAGE_GROWTH, "stage 3"), _automation),
 }
 
 

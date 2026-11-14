@@ -2,6 +2,7 @@ import { Alert, Button } from '@mantine/core';
 import { Link } from 'react-router';
 import { Panel } from './ScreenState';
 import { useEvents, useInbox, type Overview } from '../hooks/api';
+import { useDigest } from '../hooks/automation';
 import { useDismissGettingStarted, useGettingStarted, useWhatNext } from '../hooks/onboarding';
 import { GUIDES, whatNextHref } from '../lib/guides';
 
@@ -116,14 +117,27 @@ export function OverviewAlerts({ saveId, overview }: { saveId: string; overview:
 
 /** The latest monthly digest (kind `digest`, 40.4); it appears once M27a writes them. */
 export function LatestDigest({ saveId }: { saveId: string }) {
-  const digest = useInbox(saveId, 0, ['digest']).data?.items[0];
-  if (!digest) return null;
+  const item = useInbox(saveId, 0, ['digest']).data?.items[0];
+  const digest = useDigest(saveId).data; // M27a (40.4): the attention lines, from its structure
+  if (!item) return null;
+  const lines = digest?.attention ?? [];
   return (
     <Panel title="Your month" label="Latest digest" testId="latest-digest">
-      <Link to={`/game/${saveId}/inbox/${digest.item_id}`}>{digest.title}</Link>
-      <p className="tst-muted" style={{ margin: '6px 0 0', fontSize: 13, whiteSpace: 'pre-line' }}>
-        {digest.body.split('\n').slice(0, 4).join('\n')}
-      </p>
+      <Link to={`/game/${saveId}/inbox/${item.item_id}`}>{item.title}</Link>
+      {lines.length > 0 ? (
+        <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: 13 }} data-testid="digest-lines">
+          {lines.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : (
+        <p
+          className="tst-muted"
+          style={{ margin: '6px 0 0', fontSize: 13, whiteSpace: 'pre-line' }}
+        >
+          {digest?.opening ?? item.body.split('\n').slice(0, 4).join('\n')}
+        </p>
+      )}
     </Panel>
   );
 }

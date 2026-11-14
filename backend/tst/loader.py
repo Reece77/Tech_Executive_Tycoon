@@ -729,6 +729,25 @@ def research_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+def automation_problems(balance: Balance, data: GameData) -> list[str]:
+    """M27a (40): every area names known roles, skills, KPIs and a rule the engine has."""
+    from tst.sim.automation.config import KPIS, RULES
+
+    problems: list[str] = []
+    roles = {r.key for r in data.roles}
+    skills = set(data.skill_keys)
+    for key, area in balance.automation.areas.items():
+        if bad := sorted(set(area.roles) - roles):
+            problems.append(f"automation area {key!r}: unknown roles {bad}")
+        if bad := sorted(set(area.weights) - skills):
+            problems.append(f"automation area {key!r}: unknown skills {bad}")
+        if bad := sorted(set(area.kpis) - KPIS):
+            problems.append(f"automation area {key!r}: unknown KPIs {bad}")
+        if area.rule not in RULES:
+            problems.append(f"automation area {key!r}: no rule {area.rule!r}")
+    return problems
+
+
 def load_all(
     path: Path, overlay: dict[str, Any] | None = None, mod_name: str | None = None
 ) -> LoadedData:
@@ -894,6 +913,8 @@ def load_all(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
             + "; ".join(problems)
         )
+    if problems := automation_problems(balance, game_data):
+        raise DataLoadError("balance.yaml automation: " + "; ".join(problems))
     if problems := research_problems(balance, game_data):
         raise DataLoadError(f"{TECH_FILE}, {ERAS_FILE}: " + "; ".join(problems))
 

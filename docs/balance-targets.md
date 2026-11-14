@@ -683,3 +683,20 @@ No balance key was tuned.
 - I1 is structural: in December 2039 subscriptions are 100% of both groups' revenue and cost of goods 0.2–0.3% (compute 22%, marketing 19%), so an own fab 23–24% cheaper a chip cannot move group margin by points.
 - M21's fab capital costs and lives stay (§38.5).
 - The scripts were changed under rule 2 (the brief's Decisions 10 and 11).
+
+## M27a: automation everywhere (§40.10)
+
+`tools/m27_targets.py`, nightly `tests/balance/test_m27_balance.py`, 10 seeds, measured 2026-11-14 on `m27a-automation`. Each seed forks its steady game at stage 3, hires the six seats and five area leads senior (every skill at the arm's score), and plays 60 months in which the founder only approves proposals and pitches whose central case is positive and refills seats and areas.
+
+| Target | Value | Band | Result |
+| --- | --- | --- | --- |
+| 1 median ARR at 60 months, spread (score 15) / steady + regions script | 1.18 | 0.85–1.2 | pass |
+| 2 score 8 / score 15: median ARR; logged mistakes | 0.64; ×5.3 | ≤ 0.8; ≥ 2× | pass |
+| 3 every area to one owner / spread, median ARR | 0.35 | ≤ 0.9 | pass |
+| 4 proposals a month (median); other inbox items a month (median, no digest) | 1.0; 10.0 | ≤ 2; ≤ 10 | pass |
+| 5 founder energy left unspent, mean | 95% | ≥ 80% | pass |
+
+Tuned keys (target 1, from 1.40 at the first full reading; 3.2 before the cadence keys existed): `automation.research_every_months` 12 → 36, `regions_every_months` 24 → 48, `research_budget_bp` 800 → 400. `price_band` 0.10 → 0.05 was tried and moved nothing (1.27 → 1.26), so it stays.
+
+§27.5 re-run after one-off pitches stopped going ahead on Holiday (same date and branch): target 1 7/10 (was 8/10), target 2 1.40 (was 1.68), target 3 +31 points (was +46), target 4 1.7 a year, target 5 in band on 7 or more seeds, target 7 0.86 (was 1.10). All in band; no measurement changed.
+

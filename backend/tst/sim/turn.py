@@ -12,6 +12,9 @@ from dataclasses import dataclass, field, replace
 from typing import Final
 
 from tst.sim.actions import Action
+from tst.sim.automation.digest import digest_item, file_with_digest
+from tst.sim.automation.events import answer_routine, answered_for_player
+from tst.sim.automation.run import automation_month
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
@@ -195,11 +198,24 @@ def apply_player_decisions(ctx: TurnContext) -> TurnContext:
     """
     ctx = replace(ctx, state=macro.macro_phase(ctx.state, ctx.rng, ctx.balance, ctx.data))
     ctx = replace(ctx, state=rival_research_start(ctx.state, ctx.balance))  # 21.6 (M12r)
-    # Proposals left unanswered (Holiday, scripts) lapse at the next Continue (24.1, M10c).
+    # Proposals left unanswered (Holiday, scripts) lapse at the next Continue (24.1, M10c);
+    # an area owner's wait automation.proposal_months, then expire as declined (M27a, 40.2).
     lapsed = ctx.state
     for proposal in ctx.state.pending_proposals(ctx.state.player.id):
+        if proposal.kind == "auto":
+            if int(proposal.param("expires_turn")) > ctx.turn:
+                continue
+            lapsed = with_proposal(
+                lapsed, replace(proposal, status="expired", resolved_turn=ctx.turn)
+            )
+            continue
         lapsed = with_proposal(lapsed, replace(proposal, status="lapsed", resolved_turn=ctx.turn))
     ctx = replace(ctx, state=lapsed)
+    # M27a (40.5): area owners answer their areas' routine events before the first-choice rule.
+    state, routine_entries, routine_logs = answer_routine(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
+    )
+    ctx = replace(ctx, state=state).post(*routine_entries).log(*routine_logs)
     state, event_entries, event_logs = auto_resolve(ctx.state, ctx.balance, ctx.data, ctx.balances)
     ctx = replace(ctx, state=state).post(*event_entries).log(*event_logs)
     state, ended = phases.end_notices(ctx.state)
@@ -227,6 +243,12 @@ def rival_decisions(ctx: TurnContext) -> TurnContext:
     # Executives with authority act after the hiring delegates (M10c, 24.1).
     state, entries, logs, acted = run_executives(
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances, at_controls=ctx.at_controls
+    )
+    ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
+    ctx = ctx.post(*entries).log(*logs)
+    # Areas given to a person run next, under their owners' limits (M27a, 40.3).
+    state, entries, logs, acted = automation_month(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.balances
     )
     ctx = replace(ctx, state=state, delegate_actions=ctx.delegate_actions + acted)
     ctx = ctx.post(*entries).log(*logs)
@@ -627,6 +649,16 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
         ctx.rival_moves,
     )
     texts = text_requests(ctx.log_items, player, ctx.turn)
+    # M27a (40.4): the month's digest, with an LLM-worded opening; older records leave the state.
+    digest = digest_item(state, ctx.turn, ctx.balance, ctx.data)
+    if digest is not None:
+        ctx = ctx.log(digest)
+        texts = (*texts, TextRequest("digest", player, ctx.turn))
+    if state.area_decisions:
+        keep = ctx.turn - DECISION_MEMORY
+        state = replace(
+            state, area_decisions=tuple(d for d in state.area_decisions if d.turn > keep)
+        )
     ctx = replace(ctx, state=state, event_requests=requests, text_requests=texts)
     return ctx.log(*arrivals)
 
@@ -654,6 +686,9 @@ def text_requests(logs: tuple[LogItem, ...], player: int, turn: int) -> tuple[Te
         if i.template == STORY and i.link_id is not None
     ]
     return tuple(out)
+
+
+DECISION_MEMORY: Final = 13  # tunable-exempt: months of area decisions kept (a year's record)
 
 
 PHASES: Final[tuple[tuple[str, Phase], ...]] = (
@@ -698,7 +733,10 @@ def advance_turn(
             raise CriticalEventOpenError(
                 f"answer the critical event {event.title or event.template_id!r} first", event.id
             )
-    blocking = blocking_events(state) if block_major else ()
+    routine = answered_for_player(state, balance)  # owners answer these (M27a, 40.5)
+    blocking = (
+        tuple(e for e in blocking_events(state) if e.id not in routine) if block_major else ()
+    )
     proposals = state.pending_proposals(state.player.id) if block_major else ()
     pitches = state.pending_pitches(state.player.id) if block_major else ()  # M13b (27.1)
     if blocking or proposals or pitches:
@@ -736,7 +774,7 @@ def advance_turn(
     return TurnResult(
         new_state=replace(final, turn=state.turn + 1),
         ledger_entries=ctx.entries,
-        log_items=ctx.log_items,
+        log_items=file_with_digest(ctx.state, ctx.log_items),  # M27a (40.4)
         snapshot=ctx.snapshot,
         event_requests=ctx.event_requests,
         delegate_actions=ctx.delegate_actions,

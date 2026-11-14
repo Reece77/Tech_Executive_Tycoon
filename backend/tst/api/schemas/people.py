@@ -328,6 +328,9 @@ class InboxItemOut(BaseModel):
     archived: bool = Field(description="Hidden from the inbox unless the archive is shown (M4c)")
     bookmarked: bool = Field(description="Starred: never auto-archived (23.1, M10b)")
     quote: str | None = Field(default=None, description="An exit-interview line (M6, 16.8)")
+    in_digest: bool = Field(
+        default=False, description="From an automated area; the month's digest links to it (40.4)"
+    )
     event_links: list[EventLinkOut] = Field(
         default_factory=list, description="Events this message links to (M7c)"
     )

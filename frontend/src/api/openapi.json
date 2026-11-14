@@ -1917,7 +1917,7 @@
           "game"
         ],
         "summary": "Get Inbox",
-        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open\nmajor and critical events and waiting proposals and pitches (M29, 42.4).",
+        "description": "Newest first. `limit` and `offset` page through a long inbox (M2b); repeat `kind` to\nkeep only those message kinds, across every page (M3b). Archived items are hidden;\n`archived=true` shows only them (M4c). `needs_you` keeps what waits for the player: open\nmajor and critical events and waiting proposals and pitches (M29, 42.4). Items an\nautomated area produced are left out unless `include_digest` (the digest links to them,\nM27a 40.4).",
         "operationId": "getInbox",
         "parameters": [
           {
@@ -2004,6 +2004,16 @@
               "type": "boolean",
               "default": false,
               "title": "Needs You"
+            }
+          },
+          {
+            "name": "include_digest",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Digest"
             }
           }
         ],
@@ -22251,6 +22261,664 @@
         }
       }
     },
+    "/api/saves/{save_id}/automation": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Get Automation",
+        "description": "Every area: who runs it (or why nobody can yet), the people who could, limits,\npriority, this month's decisions and proposals waiting (40.8).",
+        "operationId": "getAutomation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/owner": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Set Area Owner",
+        "description": "Give an area to a person (energy automation.change_energy).",
+        "operationId": "setAreaOwner",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaOwnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/take-back": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Take Back Area",
+        "description": "Manage an area yourself again.",
+        "operationId": "takeBackArea",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/settings": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Set Area Settings",
+        "description": "An owned area's limit, priority, routine events and bold claims. Free.",
+        "operationId": "setAreaSettings",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AreaSettingsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/plan": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Get Plan",
+        "description": "Automate everything, before anything changes: who would run each area (40.8).",
+        "operationId": "getAutomatePlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomatePlanOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/all": {
+      "post": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Automate All",
+        "description": "Apply the confirmed plan, area by area.",
+        "operationId": "automateEverything",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutomateAllIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/digest": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Get Digest",
+        "description": "A month's digest (40.4): the last month played unless `turn` names one; null when no\narea was automated that month.",
+        "operationId": "getDigest",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "turn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Turn"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DigestOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Getdigest"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/automation/record/{person_id}": {
+      "get": {
+        "tags": [
+          "automation"
+        ],
+        "summary": "Get Record",
+        "description": "An owner's record (40.3): decisions, proposals and their outcomes, pitches.",
+        "operationId": "getOwnerRecord",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world-news": {
       "get": {
         "tags": [
@@ -23564,6 +24232,267 @@
         ],
         "title": "ApproachOut"
       },
+      "AreaIn": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area"
+        ],
+        "title": "AreaIn"
+      },
+      "AreaOut": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "seat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seat"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "manage",
+              "automated",
+              "cant"
+            ],
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Can't automate yet: why, and how to fix it"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateOut"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "limit_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Cents"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "answer_events": {
+            "type": "boolean",
+            "title": "Answer Events",
+            "default": true
+          },
+          "allow_bold": {
+            "type": "boolean",
+            "title": "Allow Bold",
+            "default": false
+          },
+          "events": {
+            "type": "boolean",
+            "title": "Events",
+            "description": "The area answers routine events of its categories"
+          },
+          "energy": {
+            "type": "integer",
+            "title": "Energy",
+            "description": "Energy an owner spends a month running it"
+          },
+          "decisions": {
+            "type": "integer",
+            "title": "Decisions",
+            "description": "Decisions this month"
+          },
+          "mistakes": {
+            "type": "integer",
+            "title": "Mistakes",
+            "description": "Visible missteps this month"
+          },
+          "proposals_waiting": {
+            "type": "integer",
+            "title": "Proposals Waiting"
+          },
+          "no_time": {
+            "type": "boolean",
+            "title": "No Time"
+          },
+          "over_budget": {
+            "type": "boolean",
+            "title": "Over Budget"
+          },
+          "screen": {
+            "type": "string",
+            "title": "Screen",
+            "description": "The front-end path of the area's own screen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "label",
+          "seat",
+          "status",
+          "candidates",
+          "events",
+          "energy",
+          "decisions",
+          "mistakes",
+          "proposals_waiting",
+          "no_time",
+          "over_budget",
+          "screen"
+        ],
+        "title": "AreaOut"
+      },
+      "AreaOwnerIn": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "limit_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Cents"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "person_id"
+        ],
+        "title": "AreaOwnerIn"
+      },
+      "AreaSettingsIn": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "limit_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Cents"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          },
+          "answer_events": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer Events"
+          },
+          "allow_bold": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Bold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area"
+        ],
+        "title": "AreaSettingsIn"
+      },
       "AssignIn": {
         "properties": {
           "unit_id": {
@@ -23610,6 +24539,44 @@
           "name"
         ],
         "title": "AssignedUnitOut"
+      },
+      "AssignmentOut": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "fit": {
+            "type": "string",
+            "title": "Fit"
+          },
+          "limit_cents": {
+            "type": "integer",
+            "title": "Limit Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "label",
+          "person_id",
+          "name",
+          "fit",
+          "limit_cents"
+        ],
+        "title": "AssignmentOut"
       },
       "AttributeOut": {
         "properties": {
@@ -23748,6 +24715,105 @@
         ],
         "title": "AuthorityOut",
         "description": "A seat's authority (24.1, M10c): on or off and its guardrails. Never the decision\nquality or the holder's score (24.4)."
+      },
+      "AutomateAllIn": {
+        "properties": {
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/AreaOwnerIn"
+            },
+            "type": "array",
+            "title": "Assignments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assignments"
+        ],
+        "title": "AutomateAllIn",
+        "description": "The plan the player confirmed (from GET automation/plan)."
+      },
+      "AutomatePlanOut": {
+        "properties": {
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentOut"
+            },
+            "type": "array",
+            "title": "Assignments"
+          },
+          "left_out": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Left Out",
+            "description": "Areas nobody can run yet"
+          }
+        },
+        "type": "object",
+        "required": [
+          "assignments",
+          "left_out"
+        ],
+        "title": "AutomatePlanOut"
+      },
+      "AutomationActionOut": {
+        "properties": {
+          "automation": {
+            "$ref": "#/components/schemas/AutomationOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "automation",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "AutomationActionOut"
+      },
+      "AutomationOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "areas": {
+            "items": {
+              "$ref": "#/components/schemas/AreaOut"
+            },
+            "type": "array",
+            "title": "Areas"
+          },
+          "default_limit_cents": {
+            "type": "integer",
+            "title": "Default Limit Cents"
+          },
+          "stop_for_approvals": {
+            "type": "boolean",
+            "title": "Stop For Approvals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company_name",
+          "areas",
+          "default_limit_cents",
+          "stop_for_approvals"
+        ],
+        "title": "AutomationOut"
       },
       "BackStartupIn": {
         "properties": {
@@ -24765,6 +25831,52 @@
           "offer_blocked_reason"
         ],
         "title": "CandidacyOut"
+      },
+      "CandidateOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "seat",
+              "ceo",
+              "lead",
+              "subsidiary_ceo"
+            ],
+            "title": "Kind"
+          },
+          "fit": {
+            "type": "string",
+            "title": "Fit",
+            "description": "weak fit, fair fit or strong fit, from displayed ranges"
+          },
+          "energy_left": {
+            "type": "integer",
+            "title": "Energy Left",
+            "description": "Automation energy a month left after their areas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "kind",
+          "fit",
+          "energy_left"
+        ],
+        "title": "CandidateOut"
       },
       "CapTableOut": {
         "properties": {
@@ -28329,6 +29441,152 @@
           "done"
         ],
         "title": "DeskStudyOut"
+      },
+      "DigestAreaOut": {
+        "properties": {
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "owner": {
+            "type": "string",
+            "title": "Owner"
+          },
+          "did": {
+            "type": "integer",
+            "title": "Did"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "committed_cents": {
+            "type": "integer",
+            "title": "Committed Cents"
+          },
+          "limit_cents": {
+            "type": "integer",
+            "title": "Limit Cents"
+          },
+          "mistakes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Mistakes"
+          },
+          "proposals": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Proposals"
+          },
+          "kpis": {
+            "items": {
+              "$ref": "#/components/schemas/KpiOut"
+            },
+            "type": "array",
+            "title": "Kpis"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "label",
+          "person_id",
+          "owner",
+          "did",
+          "lines",
+          "committed_cents",
+          "limit_cents",
+          "mistakes",
+          "proposals",
+          "kpis",
+          "notes"
+        ],
+        "title": "DigestAreaOut"
+      },
+      "DigestOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "opening": {
+            "type": "string",
+            "title": "Opening"
+          },
+          "areas": {
+            "items": {
+              "$ref": "#/components/schemas/DigestAreaOut"
+            },
+            "type": "array",
+            "title": "Areas"
+          },
+          "attention": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attention"
+          },
+          "quarter_reports": {
+            "type": "boolean",
+            "title": "Quarter Reports"
+          },
+          "inbox_item_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inbox Item Id"
+          },
+          "items": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Inbox items the automated areas produced this month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "month",
+          "opening",
+          "areas",
+          "attention",
+          "quarter_reports"
+        ],
+        "title": "DigestOut"
       },
       "DiligenceIn": {
         "properties": {
@@ -35628,6 +36886,12 @@
             "title": "Quote",
             "description": "An exit-interview line (M6, 16.8)"
           },
+          "in_digest": {
+            "type": "boolean",
+            "title": "In Digest",
+            "description": "From an automated area; the month's digest links to it (40.4)",
+            "default": false
+          },
           "event_links": {
             "items": {
               "$ref": "#/components/schemas/tst__api__schemas__people__EventLinkOut"
@@ -36497,6 +37761,63 @@
         ],
         "title": "KnowledgeOut",
         "description": "How the viewing company has come to know someone (not what it knows)."
+      },
+      "KpiOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "now": {
+            "type": "integer",
+            "title": "Now"
+          },
+          "last": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          },
+          "money": {
+            "type": "boolean",
+            "title": "Money"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "now",
+          "last",
+          "target",
+          "money",
+          "text"
+        ],
+        "title": "KpiOut"
       },
       "KpiPointOut": {
         "properties": {
@@ -40803,6 +42124,11 @@
             "title": "Stop On",
             "default": "major"
           },
+          "stop_for_approvals": {
+            "type": "boolean",
+            "title": "Stop For Approvals",
+            "default": true
+          },
           "dismissed_checklists": {
             "items": {
               "type": "string"
@@ -40834,6 +42160,12 @@
             ],
             "title": "Stop On",
             "description": "The lowest severity that stops Continue and is a holiday's default stop"
+          },
+          "stop_for_approvals": {
+            "type": "boolean",
+            "title": "Stop For Approvals",
+            "description": "A one-off from someone running an area stops a holiday (M27a, 40.2)",
+            "default": true
           }
         },
         "type": "object",
@@ -45838,6 +47170,81 @@
           "incident_rate"
         ],
         "title": "RecipeOut"
+      },
+      "RecordOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "areas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Areas"
+          },
+          "decisions_year": {
+            "type": "integer",
+            "title": "Decisions Year"
+          },
+          "mistakes_year": {
+            "type": "integer",
+            "title": "Mistakes Year"
+          },
+          "proposals": {
+            "type": "integer",
+            "title": "Proposals"
+          },
+          "proposals_approved": {
+            "type": "integer",
+            "title": "Proposals Approved"
+          },
+          "proposals_declined": {
+            "type": "integer",
+            "title": "Proposals Declined"
+          },
+          "proposals_expired": {
+            "type": "integer",
+            "title": "Proposals Expired"
+          },
+          "pitches_hit": {
+            "type": "integer",
+            "title": "Pitches Hit"
+          },
+          "pitches_missed": {
+            "type": "integer",
+            "title": "Pitches Missed"
+          },
+          "recent": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "areas",
+          "decisions_year",
+          "mistakes_year",
+          "proposals",
+          "proposals_approved",
+          "proposals_declined",
+          "proposals_expired",
+          "pitches_hit",
+          "pitches_missed",
+          "recent"
+        ],
+        "title": "RecordOut",
+        "description": "An owner's record (40.3): outcomes only."
       },
       "RefineriesActionOut": {
         "properties": {

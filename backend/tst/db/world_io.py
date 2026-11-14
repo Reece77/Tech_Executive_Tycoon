@@ -1,4 +1,4 @@
-"""Loading and syncing M28's records (formulas.md 41; migration 0049). Every collection lives
+"""Loading and syncing M28's records (formulas.md 41; migration 0050). Every collection lives
 in `world_record`, one row a record (`kind` = the GameState field), its fields in `data`
 (tst.db.mna_io's encoding); a changed collection is rewritten whole (they are small: a few
 hundred rows at most)."""
@@ -46,7 +46,7 @@ STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + p
 def load_world(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every living-world record (0049); a save from before M28 has none."""
+    """Every living-world record (0050); a save from before M28 has none."""
     if not has_table(session, WorldRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

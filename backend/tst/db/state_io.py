@@ -23,6 +23,7 @@ from typing import Any, cast
 from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select
 from sqlalchemy.orm import Session
 
+from tst.db.automation_io import load_automation, sync_automation
 from tst.db.commodity_io import load_commodities, sync_commodities
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
@@ -574,13 +575,14 @@ def load_state(session: Session) -> GameState:
     state = load_modes(session, state, has_table)  # M15b (0035)
     state = load_founder(session, state, has_table)  # M24 (0037)
     state = load_group(session, state, has_table)  # M16 (0039)
+    state = load_automation(session, state, has_table)  # M27a (0049)
     state = load_investing(session, state, has_table)  # M26 (0043)
     state = load_commodities(session, state, has_table)  # M17 (0041)
     state = load_exploration(session, state, has_table)  # M18 (0041)
     state = load_refining(session, state, has_table)  # M20 (0045)
     state = load_fabs(session, state, has_table)  # M21 (0046)
     state = load_geopolitics(session, state, has_table)  # M22 (0047)
-    state = load_world(session, state, has_table)  # M28 (0049)
+    state = load_world(session, state, has_table)  # M28 (0050)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
@@ -1953,13 +1955,14 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_modes(session, old, new, has_table)  # M15b (0035)
     sync_founder(session, old, new, has_table)  # M24 (0037)
     sync_group(session, old, new, has_table)  # M16 (0039)
+    sync_automation(session, old, new, has_table)  # M27a (0049)
     sync_investing(session, old, new, has_table)  # M26 (0043)
     sync_commodities(session, old, new, has_table)  # M17 (0041)
     sync_exploration(session, old, new, has_table)  # M18 (0041)
     sync_refining(session, old, new, has_table)  # M20 (0045)
     sync_fabs(session, old, new, has_table)  # M21 (0046)
     sync_geopolitics(session, old, new, has_table)  # M22 (0047)
-    sync_world(session, old, new, has_table)  # M28 (0049)
+    sync_world(session, old, new, has_table)  # M28 (0050)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)

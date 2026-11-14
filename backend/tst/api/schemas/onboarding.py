@@ -74,3 +74,7 @@ class OnboardingSettings(BaseModel):
     stop_on: Literal["major", "critical"] = Field(
         description="The lowest severity that stops Continue and is a holiday's default stop"
     )
+    stop_for_approvals: bool = Field(
+        default=True,
+        description="A one-off from someone running an area stops a holiday (M27a, 40.2)",
+    )

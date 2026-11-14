@@ -3952,6 +3952,99 @@ def compliant_variant_cmd(
     typer.echo(f"  {_energy(result.new_state, data)}")
 
 
+# --- Automation (M27a, formulas.md 40) -----------------------------------------------------------
+
+
+def _automation_cash(path: Path, state: GameState) -> int:
+    from tst.sim.state import company_cash
+
+    with repository.open_session(path) as session:
+        return company_cash(repository.current_balances(session, state.turn), state.player.id)
+
+
+@app.command("automation")
+def automation_cmd(save: SaveOpt) -> None:
+    """Every area: who runs it, or who could, or why nobody can yet (40.8)."""
+    from tst.api import automation_views
+
+    path, data, state = _game(save)
+    out = automation_views.automation_out(state, _automation_cash(path, state), data, True)
+    typer.echo(
+        f"Automation for {out.company_name} (default limit {format_money(out.default_limit_cents)})"
+    )
+    for a in out.areas:
+        if a.owner is not None:
+            limit = format_money(a.limit_cents or 0)
+            status = f"run by {a.owner.name} ({a.owner.role}, {a.owner.fit}), limit {limit}"
+            status += f", priority {a.priority}; {a.decisions} decisions this month"
+            if a.proposals_waiting:
+                status += f", {a.proposals_waiting} proposals waiting"
+            if a.no_time:
+                status += ", no time this month"
+        elif a.status == "cant":
+            status = f"can't automate yet: {a.reason}"
+        else:
+            names = ", ".join(f"{c.name} [{c.person_id}] ({c.fit})" for c in a.candidates)
+            status = f"you manage it; could go to {names}"
+        typer.echo(f"  {a.area:<12} {a.label}: {status}")
+
+
+@app.command("automate")
+def automate_cmd(
+    save: SaveOpt,
+    area: Annotated[str | None, typer.Option("--area", help="An area key (tst automation)")] = None,
+    owner: Annotated[int | None, typer.Option("--owner", help="The person's id")] = None,
+    limit: Annotated[int | None, typer.Option("--limit", help="Money limit in cents")] = None,
+    everything: Annotated[bool, typer.Option("--all", help="Automate everything (40.8)")] = False,
+) -> None:
+    """Give an area to a person, or automate everything with the best displayed fits."""
+    from tst.sim.automation.actions import SetAreaOwner
+    from tst.sim.automation.plan import automate_everything
+
+    path, data, state = _game(save)
+    actor = _actor(state)
+    if everything:
+        plan = automate_everything(
+            state, _automation_cash(path, state), data.balance, data.game_data
+        )
+        if not plan:
+            raise _fail("nothing left that anyone can run")
+        result = None
+        for a in plan:
+            result = _run(path, data, SetAreaOwner(actor, a.area, a.person_id, a.limit_cents))
+            person = state.person(a.person_id)
+            typer.echo(
+                f"{a.area}: {person.first_name} {person.last_name}, "
+                f"limit {format_money(a.limit_cents)}"
+            )
+        if result is not None:
+            typer.echo(f"  {_energy(result.new_state, data)}")
+        return
+    if area is None or owner is None:
+        raise _fail("give --area and --owner, or --all")
+    result = _run(path, data, SetAreaOwner(actor, area, owner, limit))
+    o = result.new_state.area_owner(result.new_state.player.id, area)
+    person = result.new_state.person(owner)
+    typer.echo(
+        f"{area}: {person.first_name} {person.last_name}, "
+        f"limit {format_money(o.limit_cents if o else 0)}"
+    )
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
+@app.command("take-back")
+def take_back_cmd(
+    save: SaveOpt, area: Annotated[str, typer.Option("--area", help="An area key")]
+) -> None:
+    """Manage an area yourself again (40.1)."""
+    from tst.sim.automation.actions import TakeBackArea
+
+    path, data, state = _game(save)
+    result = _run(path, data, TakeBackArea(_actor(state), area))
+    typer.echo(f"You manage {area} again")
+    typer.echo(f"  {_energy(result.new_state, data)}")
+
+
 # --- M28 (formulas.md 41): a living world ------------------------------------------------------
 
 
