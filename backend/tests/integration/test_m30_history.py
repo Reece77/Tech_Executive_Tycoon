@@ -150,3 +150,18 @@ def test_world_news_pages(tmp_path: Path, loaded: LoadedData) -> None:
     page = world_views.world_news(state, loaded, offset=2, limit=3)
     assert page.total == 7
     assert [x.news_id for x in page.items] == [5, 4, 3]
+
+
+def test_month_by_month_keeps_what_a_catch_up_keeps(tmp_path: Path, loaded: LoadedData) -> None:
+    """The carried peaks give what a scan of the history gives, cached or recomputed."""
+    keep = loaded.balance.retention
+    at_once = _save(tmp_path / "a", loaded)
+    with open_session(at_once) as session, session.begin():
+        history.prune(session, MONTHS - 1, keep)
+    monthly = _save(tmp_path / "b", loaded)
+    for played in range(keep.snapshot_months, MONTHS):
+        if played % 7 == 0:
+            history._PEAKS.clear()  # another process: recomputed from the kept rows
+        with open_session(monthly) as session, session.begin():
+            history.prune(session, played, keep)
+    assert _turns(monthly) == _turns(at_once)

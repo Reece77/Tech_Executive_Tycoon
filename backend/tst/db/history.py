@@ -44,6 +44,13 @@ QUARTER_END: Final = 2  # tunable-exempt: month index within a quarter that is k
 FIRST_YEAR: Final = 12  # tunable-exempt: months of a company's first year, all kept
 
 
+Peaks = dict[tuple[int, str], float]  # (company, key) -> the highest value so far
+
+# M30: per save, (its seed, the last month thinned, the peaks of every month up to it): the
+# peaks only grow, so the next month's prune carries them on instead of scanning the history.
+_PEAKS: dict[str, tuple[int, int, Peaks]] = {}
+
+
 def prune(session: Session, played: int, keep: RetentionBalance) -> None:
     """Thin the months that have left the windows by the month `played` (module docstring),
     from the month after `save_meta.history_pruned_through`."""
@@ -54,16 +61,38 @@ def prune(session: Session, played: int, keep: RetentionBalance) -> None:
         return
     session.flush()
     founded = {i: t for i, t in session.execute(select(CompanyRow.id, CompanyRow.founded_turn))}
+    where = str(session.connection().engine.url.database)
+    kept = _PEAKS.get(where)
+    if kept is not None and kept[:2] == (meta.master_seed, done):
+        peaks = dict(kept[2])
+    else:
+        peaks = _peaks_through(session, done)
     for month in range(done + 1, last + 1):
-        _thin_snapshots(session, month, founded)
+        _thin_snapshots(session, month, founded, peaks)
         if month % MONTHS_PER_YEAR == MONTHS_PER_YEAR - 1:
             _summarise_log_year(session, month // MONTHS_PER_YEAR)
     meta.history_pruned_through = last
+    _PEAKS[where] = (meta.master_seed, last, peaks)  # a rolled-back turn leaves `done` behind
 
 
-def _thin_snapshots(session: Session, month: int, founded: dict[int, int]) -> None:
-    if month % 3 == QUARTER_END:
-        return
+def _peaks_through(session: Session, month: int) -> Peaks:
+    """Every company's highest `PEAK_KEYS` values over the months up to `month`."""
+    peaks: Peaks = {}
+    if month < 0:
+        return peaks
+    columns = [func.max(func.json_extract(TurnSnapshotRow.kpis, f"$.{k}")) for k in PEAK_KEYS]
+    for company_id, *values in session.execute(
+        select(TurnSnapshotRow.company_id, *columns)
+        .where(TurnSnapshotRow.turn <= month)
+        .group_by(TurnSnapshotRow.company_id)
+    ):
+        for key, value in zip(PEAK_KEYS, values, strict=True):
+            if value is not None:
+                peaks[(company_id, key)] = value
+    return peaks
+
+
+def _thin_snapshots(session: Session, month: int, founded: dict[int, int], peaks: Peaks) -> None:
     rows = session.execute(
         select(TurnSnapshotRow.id, TurnSnapshotRow.company_id, TurnSnapshotRow.kpis).where(
             TurnSnapshotRow.turn == month
@@ -71,31 +100,32 @@ def _thin_snapshots(session: Session, month: int, founded: dict[int, int]) -> No
     ).all()
     gone = []
     for row_id, company_id, kpis in rows:
+        record = _sets_a_record(peaks, company_id, kpis)
+        if month % 3 == QUARTER_END or record:
+            continue
         start = founded.get(company_id)
         if start is not None and start <= month < start + FIRST_YEAR:
-            continue
-        if _sets_a_record(session, company_id, month, kpis):
             continue
         gone.append(row_id)
     if gone:
         session.execute(delete(TurnSnapshotRow).where(TurnSnapshotRow.id.in_(gone)))
 
 
-def _sets_a_record(session: Session, company_id: int, month: int, kpis: dict[str, object]) -> bool:
-    """Whether a peak value this month beats every earlier month of the company (the kept
-    rows hold every earlier record, so their maximum is the true one)."""
+def _sets_a_record(peaks: Peaks, company_id: int, kpis: dict[str, object]) -> bool:
+    """Whether a peak value this month beats every earlier month of the company; the month's
+    values join the peaks (the kept rows hold every earlier record, so they are the true
+    highs, as a query over the kept rows would find)."""
+    record = False
     for key in PEAK_KEYS:
         value = kpis.get(key)
-        if not isinstance(value, int | float) or not value:
+        if not isinstance(value, int | float) or isinstance(value, bool):
             continue
-        best = session.scalar(
-            select(func.max(func.json_extract(TurnSnapshotRow.kpis, f"$.{key}"))).where(
-                TurnSnapshotRow.company_id == company_id, TurnSnapshotRow.turn < month
-            )
-        )
+        best = peaks.get((company_id, key))
         if best is None or value > best:
-            return True
-    return False
+            if value:
+                record = True
+            peaks[(company_id, key)] = value
+    return record
 
 
 def _summarise_log_year(session: Session, year: int) -> None:

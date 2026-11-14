@@ -1632,24 +1632,46 @@ def _all[T](session: Session, cls: type[T], row: Any) -> tuple[T, ...]:
 # --- Writing --------------------------------------------------------------------------------
 
 
-def _changed[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[T]:
-    """Items of `new` that are new or differ from the item with the same key in `old`."""
+def _diff[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[tuple[T, bool]]:
+    """Items of `new` that are new or differ from the item with the same key in `old` (keys
+    unique), each with whether `old` had its key. M30: the usual month changes items in place,
+    so when both have the same keys in the same places one pass over the pairs, skipping the
+    unchanged objects, gives the answer; otherwise by key."""
     if old is new:
         return []
-    before = {key(x): x for x in old}
-    return [x for x in new if (o := before.get(key(x))) is not x and o != x]
+    before_items = old if isinstance(old, tuple) else tuple(old)
+    after_items = new if isinstance(new, tuple) else tuple(new)
+    if len(before_items) == len(after_items):
+        out: list[tuple[T, bool]] = []
+        for o, n in zip(before_items, after_items, strict=True):
+            if o is n:
+                continue
+            if key(o) != key(n):
+                break
+            if o != n:
+                out.append((n, True))
+        else:
+            return out
+    before = {key(x): x for x in before_items}
+    return [
+        (x, o is not None) for x in after_items if (o := before.get(key(x))) is not x and o != x
+    ]
+
+
+def _changed[T](old: Iterable[T], new: Iterable[T], key: Any) -> list[T]:
+    """Items of `new` that are new or differ from the item with the same key in `old`."""
+    return [x for x, _ in _diff(old, new, key)]
 
 
 def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to_row: Any) -> None:
     """Write the changed items of `new`: one bulk UPDATE by primary key for items that were in
     `old` (their rows exist), a merge for the rest. A merge per row costs a SELECT, which made
     every turn write rivals' people and shares one at a time (M6 sub-task 0)."""
-    known = {key(x) for x in old}
     updates: list[dict[str, Any]] = []
     model: Any = None
-    for item in _changed(old, new, key):
+    for item, known in _diff(old, new, key):
         row = to_row(item)
-        if key(item) in known:
+        if known:
             model = type(row)
             updates.append({a.key: getattr(row, a.key) for a in model.__mapper__.column_attrs})
         else:
