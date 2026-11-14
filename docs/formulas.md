@@ -3359,3 +3359,110 @@ Measured by `tst/balance/v3.py` (printed by `tools/v3_targets.py`, checked weekl
 - **F1. Foundry demand.** The foundry script's first 28 nm fab, with foundry contracts, reaches 70%+ use within 36 months of going live on at least 7 of 10 seeds.
 - **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039.
 - **L4 (printed).** full_integrator has ordered its whole chain (mine, refinery, wafer plant, fab, devices) by December 2024 (year 15).
+
+## 44. Platforms and ecosystems (M31; v4)
+
+Reece (2026-11-13): the player can run **its own app store and developer ecosystem**, and rivals' stores (Apple's, Google's and others) are real competitors and **gatekeepers**. Platforms are where tech's profits pooled in the 2010s: whoever owns the store owns the customer. This section adds platforms, developers, network effects, lock-in, fees, gatekeeping, open source and standards. **History holds to 2025:** platform shares, fee schedules and dated rule changes follow `platforms.yaml` (research: `docs/v4-research/platforms-dossier.md`); seeded after.
+
+### 44.1 Platforms
+
+- A **platform** is a record owned by a company (ADR-0021): a kind, a name, a region list, a fee schedule, rules (§44.5) and a state (users, developers, catalogue).
+- **Kinds:**
+  - **device platforms**: an OS and its store, attached to the owner's `devices` products;
+  - **developer platforms**: a model API, a cloud marketplace or a developer tool ecosystem, attached to the owner's `ai_models`, `cloud_hosting` or `dev_tools` products.
+- **Historical platforms** come from the data with their dates, owners and regional shares to 2025:
+  - iOS and the App Store (Apple);
+  - Android with Google Play (Google, licensed to OEMs such as Samsung);
+  - Android with Chinese stores (Huawei, Xiaomi, Tencent and others; Google Play absent in China);
+  - BlackBerry, Symbian (Nokia) and Windows Phone (Microsoft), each ending on its historical date.
+- **Device platform users.** A device platform's users in a region are the installed base of the devices running it: its owner's devices plus licensees'. Through 2025, installed-base shares by region follow the data exactly. From 2026, the installed base follows device sales and replacement (§26's `replacement_months`).
+- **The player's devices** run a licensed platform (Android by default, licence fee `platforms.android_licence_cents` per unit, with the platform's rules) or the player's own OS.
+- **Building an OS.** It is a product in a new pseudo-category `os`, with dev weights like `devices`' software side and a long build. When launched, it is attached to the player's chosen device products. Switching a device line between platforms is a one-off (§40.2).
+- **Licensing an own OS** to other OEMs (free or per unit) adds their devices' users. Rival OEMs choose a licence by fee and catalogue each December after 2025.
+
+### 44.2 Developers and the catalogue
+
+- **Developers** are a population per region (data: `developers_by_year`, then growing with `platforms.developer_growth`). Each platform holds a share of them. Every developer can be on several platforms; the share is of developer attention.
+- **Attractiveness** of platform `p` in region `r`, each month:
+
+  `A_p = U_p^α × (1 − f_p)^β × T_p × G_p`
+
+  - `U_p` is users;
+  - `f_p` is the effective fee (§44.4);
+  - `T_p` is a tools score (from the owner's `dev_tools` and SDK work, 0.5–1.5);
+  - `G_p` is developer goodwill (§44.5, 0.5–1.2);
+  - `α` = `platforms.reach_exp` (1.0) and `β` = `platforms.fee_exp` (1.0).
+- **Developer share** moves toward `A_p / Σ A` with inertia `platforms.dev_inertia` (0.97 a month, about 3 years' half-life).
+- **Multi-homing:** the top `platforms.multihome_share` (35%) of developers by size are on every platform with at least `platforms.multihome_min_users` (5%) of users.
+- **The catalogue** `C_p` accumulates developer months and decays by `platforms.catalogue_decay` (1% a month). It is shown as an index relative to the regional leader (100).
+
+### 44.3 Network effects and lock-in
+
+- **Devices.** A device's feature score gains `platforms.catalogue_points × (C_p / C_leader − 1)`, capped between −`platforms.catalogue_floor` (−25 points) and 0. A platform with a thin catalogue makes its devices less attractive, so users go to the leader, which draws more developers: the loop tips.
+- **Lock-in.** A customer of a device on platform `p` who replaces their device stays on `p` with probability `platforms.stay` (0.85 at catalogue parity, falling 0.1 per 25 index points behind the leader). Otherwise they choose afresh. Lock-in also lowers churn for developer-platform products by `platforms.dev_churn_cut` (up to 30% at full catalogue).
+- **The tipping guard (§44.9 target 2):** a challenger needs a large, sustained advantage (lower fee, better tools, better devices) for years to tip developers. Windows Phone's fate in 2010–2017 is the reference case.
+
+### 44.4 Fees
+
+- **The effective fee** `f_p` for a sale in region `r` comes from the platform's schedule: the standard rate, the subscription rate after a year, the small-business rate (sellers under the threshold), and regulated rates by region from their dates (§44.5).
+- **To 2025** the schedules follow the data:
+  - 30% standard since 2008;
+  - Apple's 15% on subscriptions after a year (2016);
+  - Apple's Small Business Program (15% under $1M, January 2021);
+  - Google's 15% on the first $1M (July 2021) and on all subscriptions (January 2022);
+  - South Korea's alternative-payment law (2021);
+  - the EU's Digital Markets Act duties (March 2024);
+  - US anti-steering rulings (2021, 2025);
+  - Japan's smartphone act (December 2025).
+- **Who pays.** Products in app-distributed categories (`platforms.app_categories`: `consumer_apps`, the consumer segment of `fintech`, `ai_models` and `b2b_saas`) pay the fee on a `paid_share` of their revenue in each region (per category: consumer apps 0.4 for in-app purchases and subscriptions; the rest smaller). Each platform's share of that revenue is its share of users in the region.
+- **Calibration that keeps history:** each app category's reference price is raised by the 2010–2025 average fee drag, so that net revenue per user to 2025 is unchanged (§44.9 target 1). The books now show gross revenue and a platform-fee cost (account `5150_platform_fees`, new).
+- **An own platform's revenue:** `fee × paid_share × revenue of every other company's app-distributed products × the platform's share of their users`, posted monthly (account `4150_platform_fees`). Rivals' apps on the player's store pay it, so the store is a business.
+
+### 44.5 Rules and gatekeeping
+
+- **A platform owner sets rules:** fee rates (within its regions' regulated limits); review strictness (lenient, standard, strict); **self-preferencing** (off, mild, strong: its own apps get `platforms.self_pref_share` (up to +20%) more share in their category on its platform); **anti-steering** (allowed or not, where law permits); and **side-loading** (allowed or not, where law permits).
+- **Developer goodwill** `G_p` falls with higher fees, strong self-preferencing and removals of large apps; it rises with fee cuts and tools.
+- **Gatekeeping the player.** Each month a rival platform owner reviews the player's app-distributed products on its platform. The chance of an action rises when the player competes with the owner's first-party products in that category, when the player's own store or payments compete with it, or when the player steers users to pay outside (stream `platforms`). Actions are a rejected update (a month's delay to the product's next feature release), a fee dispute, or a **removal**: the product loses that platform's users in the affected regions until resolved.
+- **A removal is a critical event** with three choices:
+  - **comply** (drop the feature or the steering link and pay the fee);
+  - **appeal** (1–3 months, with odds shown as a range);
+  - **go to regulators** (in regions with rules, which also feeds M34).
+- **The player as gatekeeper** reviews rivals' apps by its strictness. Strict review removes a few rivals in a category (more share for its own apps) at a goodwill and regulatory cost.
+
+### 44.6 Open source
+
+- **Open-sourcing a product** is a one-off. Its base becomes free:
+  - customers rise by `platforms.open_adoption` (×3 over 24 months, toward the category's addressable market);
+  - revenue comes only from a paid tier (`platforms.open_paid_share` of customers, 3–8% by category);
+  - the community adds `platforms.open_feature_mult` (×1.5) to the product's features per month;
+  - an open-sourced OS or developer platform gains `T_p` and goodwill.
+- It cannot be closed again without a large goodwill loss and a fork: a rival product appears with the open version's features.
+- **Historical cases** in the data: Android (open-source base), and open AI model releases from 2023.
+
+### 44.7 Standards wars
+
+- A **standard** is a format in a category: a connector, a codec, a wireless charging format, an AI model format, a cloud API. Each has sponsors and adopters.
+- Each December after 2025, a few seeded standards contests appear per `platforms.standards_rate`. Adoption moves toward the standard with the larger installed base and the better terms, with inertia.
+- **A contest tips** when one standard reaches `platforms.tip_share` (60%) of new products. Products on the losing standard lose `platforms.standard_penalty` (5 feature points) until they adopt the winner, which costs development months and, for a standard a rival owns, a licence.
+- **History to 2025 in the data:** USB-C over Lightning (the EU's common-charger rule from December 2024) and Qi over PMA.
+
+### 44.8 Rivals
+
+- **Rival platform owners** set their fees and rules by personality and history to 2025. From 2026 they respond to developer share and regulation (M34).
+- **Rival app makers** pay fees the same way.
+- **Rival OEMs** licence platforms (§44.1).
+- **A rival may launch its own store** where law allows side-loading or alternative stores (EU from 2024, Japan from December 2025), at most one a year per region.
+
+### 44.9 Balance targets (printed)
+
+1. **History holds.** Every platform share, fee schedule and dated rule to 2025 follows the data. Every app-category company's net revenue to 2025 stays within 1% of `main` before M31 (median, 10 seeds), and every earlier guard is unchanged.
+2. **Tipping is hard.** A scripted challenger platform launched in 2027 with fees 10 points lower and equal devices reaches at least 15% of developers in its regions by 2035 on at most 3 of 10 seeds. With fees 20 points lower and better tools (T 1.3), it does so on at least 5 of 10.
+3. **An own store pays.** A device maker that reaches 30% of users in its regions by 2032 earns platform fees of at least 5% of group revenue by 2035 (median).
+4. **Removals matter.** A consumer app removed from a platform with 50% of a region's users loses 30–50% of its customers there within 3 months, and recovers to 85%+ within 6 months of compliance.
+5. **Open source works.** An open-sourced developer tool has at least 2× the customers and at most 0.7× the revenue of the closed version after 36 months (median).
+6. **A software company's game** changes only through fees and rules on its apps (books otherwise identical to `main` before M31).
+7. **Turn time** within M30's budget.
+
+### 44.10 What the API may show
+
+Platforms' public facts: owners, users and developer shares as published (exact for the player's own platform; ranges for rivals' developers), fee schedules, rules, the catalogue index, removals and disputes, standards and their adoption. Never a gatekeeper's review draw or chance, rivals' private plans, or seeded future rules before they are announced.
