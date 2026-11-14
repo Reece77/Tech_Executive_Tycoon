@@ -53,6 +53,7 @@ from tst.sim.money import Cents
 from tst.sim.state import GameState, with_company
 from tst.sim.world import data as wd
 from tst.sim.world import formulas as wf
+from tst.sim.world import pipeline
 from tst.sim.world import query as wq
 from tst.sim.world.config import FOUNDRY_GOOD, WorldBalance
 from tst.sim.world.models import ChainCompany, WorldFacility, WorldGood
@@ -133,9 +134,9 @@ def operate(
     names = {c.company_id: state.company(c.company_id).name for c in state.chain_companies}
     alive = {c.id for c in state.chain()}
 
-    # Builds finish.
+    # The opening pipeline arrives (41.2, M28r), then builds finish.
     facilities: list[WorldFacility] = []
-    for f in state.world_facilities:
+    for f in pipeline.grow(state, list(state.world_facilities), balance, data):
         if f.status == "building" and f.ready_turn <= turn:
             if f.company_id in alive:
                 f = replace(f, status="live")
