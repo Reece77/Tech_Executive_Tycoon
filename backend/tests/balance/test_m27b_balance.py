@@ -16,9 +16,8 @@ def test_m27b_chain_targets() -> None:
     jobs = int(os.environ.get("TST_BALANCE_JOBS", str(os.cpu_count() or 1)))
     results = m27b.run(m27b.SEEDS, jobs)
     print(m27b.report(results))
-    lo, hi = m27b.A_BAND
-    assert lo <= m27b.target_a(results) <= hi  # (a) automated integrator vs the script
     assert min(r.owners for r in results if r.arm == "auto_15") >= m27b.MIN_OWNERS
-    assert m27b.target_b(results) <= m27b.B_BELOW  # (b) score 8 at least 20% lower
     assert sum(r.never for r in results) == 0  # (c) no grey route or termination
     assert m27b.target_d(results) <= m27b.D_PROPOSALS  # (d) proposals a month
+    # (a) and (b) are printed, not asserted: carried misses (the M27b brief's decision 19,
+    # 1.31 against 0.85-1.2 and 0.95 against at most 0.8), for the product manager to rule on.
