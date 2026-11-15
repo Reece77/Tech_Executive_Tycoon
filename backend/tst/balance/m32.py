@@ -50,6 +50,7 @@ FAB_NODE: Final = "n28"
 CONGESTED: Final = "north_america"  # the data's longest wait by 2025 (power.yaml queue_months)
 EU: Final = "europe"
 MONTHS: Final = 12
+NUCLEAR_MW: Final = 1000  # a large reactor's one size
 
 
 def loaded() -> LoadedData:
@@ -116,12 +117,14 @@ def sign_ppa(game: Game, region: str, producer: str, mwh: float, years: int) -> 
     return pid
 
 
-def size_for(game: Game, kind: str, region: str, load_mw: float) -> float:
-    """The smallest plant size whose energy a year covers `load_mw` (46.3: sized to the load)."""
+def size_for(game: Game, kind: str, region: str, load_mw: float, *, whole: bool = False) -> float:
+    """The smallest plant size whose energy a year covers the share of `load_mw` it can serve,
+    or with `whole` all of it (46.3: sized to the whole load, so the load skips the queue)."""
     b, d = game.loaded.balance, game.loaded.game_data
     cf = plants.capacity_factor(plants.type_def(d, kind), region)
+    need = load_mw * (1.0 if whole else b.power.plants.load_share[kind])
     for mw in b.power.plants.sizes_mw:
-        if mw * cf >= load_mw:
+        if mw * cf >= need:
             return mw
     return b.power.plants.sizes_mw[-1]
 
@@ -168,7 +171,11 @@ def time_to_power(seed: int, behind_meter: bool) -> int | None:
         b, d = game.loaded.balance, game.loaded.game_data
         load = demand.facility_mw(game.state, f, b, d)
         plant(
-            game, "solar_storage", size_for(game, "solar_storage", CONGESTED, load), CONGESTED, fid
+            game,
+            "solar_storage",
+            size_for(game, "solar_storage", CONGESTED, load, whole=True),
+            CONGESTED,
+            fid,
         )
     for _ in range(10 * MONTHS):
         play(game)
@@ -234,7 +241,10 @@ def fab_power(seed: int, kind: str | None, region: str, start: int, years: int) 
         f = game.state.facility(fid)
         assert f is not None
         load = demand.facility_mw(game.state, f, b, d)
-        pid = plant(game, kind, size_for(game, kind, region, load), region, fid)
+        if kind == "nuclear":  # a 1 GW reactor on the grid: it sells what the fab does not use
+            pid = plant(game, kind, NUCLEAR_MW, region)
+        else:
+            pid = plant(game, kind, size_for(game, kind, region, load), region, fid)
     while game.state.turn < start:
         m21.keep_staffed(game)
         play(game)
@@ -242,6 +252,7 @@ def fab_power(seed: int, kind: str | None, region: str, start: int, years: int) 
     starts = lost = 0.0
     yearly: list[float] = []
     saved_year = 0.0
+    live_year = False
     for i in range(years * MONTHS):
         m21.keep_staffed(game)
         play(game)
@@ -253,9 +264,14 @@ def fab_power(seed: int, kind: str | None, region: str, start: int, years: int) 
         if fm is not None:
             starts += fm.run + fm.outage_starts
             lost += fm.outage_starts
+        if pid is not None:
+            pl = plants.plant_of(game.state, pid)
+            live_year = live_year or (pl is not None and pl.live(game.state.turn - 1))
         if (i + 1) % MONTHS == 0:
-            yearly.append(saved_year)
+            if pid is None or live_year:  # the IRR counts its operating years
+                yearly.append(saved_year)
             saved_year = 0.0
+            live_year = False
     irr = overrun = None
     if pid is not None:
         f = game.state.facility(pid)
@@ -264,8 +280,8 @@ def fab_power(seed: int, kind: str | None, region: str, start: int, years: int) 
         capex = f.capex_cents
         overrun = f.capex_cents / p.estimate_cents - 1
         life = plants.type_def(d, kind).life_years  # type: ignore[arg-type]
-        mean = statistics.mean(yearly) if yearly else 0.0
-        irr = pf.irr([-float(capex), *([mean] * life)])
+        if yearly:
+            irr = pf.irr([-float(capex), *([statistics.mean(yearly)] * life)])
     return FabPower(seed, kind, grid_c, net, capex, irr, overrun, starts, lost)
 
 
@@ -337,7 +353,8 @@ def checks(r: Results) -> dict[int, bool]:
     never = 10 * MONTHS + 1
     grid_m = _median([x if x is not None else never for x in r.time_grid]) or 0
     btm_m = _median([x if x is not None else never for x in r.time_btm]) or never
-    t3 = all(
+    # 46.8 target 3's "an owned gas or solar-storage plant": the better of the two (M32 decision)
+    t3 = any(
         (_median(r.saving[k]) or 0) >= 0.15 and 0.06 <= (_median(r.irr[k]) or 0) <= 0.12
         for k in ("gas", "solar_storage")
     )

@@ -63,6 +63,7 @@ class _Book:
     grid_cents: int = 0
     peak: float = 0.0
     loads: dict[int, float] = field(default_factory=dict)  # facility id -> MWh still to supply
+    whole: dict[int, float] = field(default_factory=dict)  # facility id -> its month's MWh
     plant_mwh: float = 0.0
     ppa_mwh: float = 0.0
     exported: float = 0.0
@@ -124,7 +125,9 @@ def settle(
         b.demand += m.mwh
         b.grid_cents += m.grid_cents
         b.loads[m.facility_id] = b.loads.get(m.facility_id, 0.0) + m.mwh
+        b.whole[m.facility_id] = b.loads[m.facility_id]
     rows = _plant_rows(state, balance, data)
+    share = pb.plants.load_share
     for r in rows:
         books.setdefault((r.plant.company_id, r.region), _Book())
     ppas = sorted((p for p in state.ppas if p.running(turn)), key=lambda p: p.id)
@@ -145,7 +148,8 @@ def settle(
         p = grid_price(r.region)
         need = b.loads.get(r.site_id, 0.0)
         runs = r.plant.type not in ("gas",) or r.marginal < p
-        take = min(need, r.available) if runs else 0.0
+        cap = share[r.plant.type] * b.whole.get(r.site_id, 0.0)  # the hours it can serve
+        take = min(need, r.available, cap) if runs else 0.0
         r.used = take
         b.loads[r.site_id] = need - take
         r.curtailed = r.available - take if r.plant.type != "gas" else 0.0
@@ -159,7 +163,7 @@ def settle(
             continue
         left = r.available
         for fid in sorted(b.loads):
-            take = min(left, b.loads[fid])
+            take = min(left, b.loads[fid], share[r.plant.type] * b.whole.get(fid, 0.0))
             if take <= TINY:
                 continue
             b.loads[fid] -= take
@@ -193,6 +197,8 @@ def settle(
         b.displaced += Fraction(r.used) * exact_p
         b.charges += Fraction(gen) * Fraction(r.marginal) + Fraction(r.fixed)
         b.charges += Fraction(r.used_offsite) * exact_p * Fraction(pb.grid_charge_share)
+        onsite = r.used - r.used_offsite  # behind the meter: the utility's standby charge
+        b.charges += Fraction(onsite) * exact_p * Fraction(pb.standby_share)
         b.sales += Fraction(r.exported) * exact_p * Fraction(1 - pb.export_discount)
         b.scope1 += gen * r.intensity
     paid: dict[int, int] = {}
@@ -264,7 +270,10 @@ def settle(
             carbon_cents=round(
                 gen * r.intensity * grid.carbon_price(state, r.region, data) * CENTS
             ),
-            grid_charge_cents=round(r.used_offsite * p * pb.grid_charge_share),
+            grid_charge_cents=round(
+                r.used_offsite * p * pb.grid_charge_share
+                + (r.used - r.used_offsite) * p * pb.standby_share
+            ),
             export_cents=round(r.exported * p * (1 - pb.export_discount)),
             displaced_cents=round(r.used * p),
             tonnes=gen * r.intensity,

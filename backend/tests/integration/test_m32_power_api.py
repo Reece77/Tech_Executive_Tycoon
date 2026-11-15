@@ -63,9 +63,9 @@ def test_power_route_actions_and_hidden_values(tmp_path: Path, loaded: LoadedDat
         api.post(
             f"{base}/power/plants", {"plant_type": "nuclear", "mw": 100, "region": "europe"}, 400
         )
-        gas = api.get(f"{base}/power/quote/plant?plant_type=gas&mw=50&region=north_america")
+        gas = api.get(f"{base}/power/quote/plant?plant_type=gas&mw=25&region=north_america")
         out = api.post(
-            f"{base}/power/plants", {"plant_type": "gas", "mw": 50, "region": "north_america"}
+            f"{base}/power/plants", {"plant_type": "gas", "mw": 25, "region": "north_america"}
         )
         plant = out["power"]["plants"][0]
         assert plant["status"] == "building" and plant["queue_lo_months"] is not None

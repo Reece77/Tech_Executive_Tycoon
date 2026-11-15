@@ -46,8 +46,30 @@ Load `pt-power`. Look at the siting panel for a new data centre in Virginia and 
 
 ## Decisions made
 
-(filled in by the agent)
+1. **Workspace (2026-11-14).** The M34 session worked in the main checkout without a worktree; M32's `git checkout -b m32-power` there put M34's first commit on m32-power. M34 moved to `m34-regulation` itself, nothing was rewritten, and M32 worked only in `.claude/worktrees/m32-power` from then on.
+2. **One meter, one price (ADR-0022).** Facilities keep posting their energy at the grid price in their own phases; a month-end settlement credits back what own plants and PPAs replaced and charges their costs (`5950 energy`, `4950 energy sales`). The alternative, each facility paying a blended price in its phase, cannot balance when a fab's run changes after the forecast. Consequence: a facility's unit cost shows grid-priced energy; the saving is on the Power screen and in 5950.
+3. **History to 2025 is exact, not within 1%.** The grid multiple is M17's index to December 2025 and every site multiplies in the same order as before, so golden snapshots are unchanged and target 1's books hashes are identical on 20 runs (two strategies x seeds 1-10).
+4. **Data centres' draw is their whole opex.** Their old opex was all x the power index (33.5), so their MWh are opex / the reference price (3.676 and 2.941 MWh a CU-month), recorded in power.yaml `draws` as D. Assembly plants and offices are not metered (their power is in fixed costs; metering them would change history).
+5. **Carbon is in the data's prices to 2025.** The grid pays only the change in carbon price since 2025 x its intensity (`carbon.pass_through`); own gas plants pay carbon on their direct emissions from the start.
+6. **From when.** Queues for data centres and fabs, grid outages, the carbon pass-through and power producers start at `power.start` (January 2026, with M28's world); PPAs any time; plants from stage 4. Before 2026 only M12a's outages exist.
+7. **No hidden future is stored.** A queue connects by a monthly hazard (a median at the region's wait), outages are drawn the month they happen, paths only for the current year; the only hidden values are a plant's overrun (capex) and true completion, revealed as the capex is paid.
+8. **Power producers live in power.yaml, not chain_companies.yaml**, so one file cites every power figure (the acceptance criterion) and M33's ASML entry cannot conflict. They are M28 chain companies of each region's power good, appended after every earlier stable key (M33's insert of ASML moves only M33's own indices).
+9. **Rival hyperscalers** are M17-era static incumbents without facilities (ADR-0017), so only rival foundries sign PPAs and build plants (a follow-up).
+10. **Assumptions in power.yaml** where no series was found (each marked A): Europe's and other regions' queue waits, capacity factors outside North America, gas prices outside North America, Europe and East Asia, outage rates outside the US, Africa's generation before 2024, producers' technology mixes. Africa's outage rate is 6 a year (12 would be an outage every month).
+11. **The Power unlock is M29 system 27** (25 is M34's Regulation; 26 is left for M33).
+12. **M30's state-hash fixture** (`tests/fixtures/m30_state_hashes.json`) changes with the new state fields from the first month, as M27b's, M28r's and M31's did. It is recorded on Linux (exact float digests), so it is re-recorded once, after merging M33 and M34, by a temporary CI job.
+13. **Target 3's reading.** "A fab with an owned gas or solar-storage plant" is read as the better of the two, the player's choice; both are printed. Solar with storage misses its IRR band: at North America's $68/MWh (2010 dollars) its levelised cost (about $73 at the data's 2023 capex) is above the grid's, and its 4-hour battery serves half a 24-hour load (`plants.load_share`), so it saves 20% of the fab's energy bill but earns -4.6% on its capital. Carried: the data, not a key, decides it.
+14. **Tuning (rule 1, `power.*` only), seeds 1-10, before -> after:**
+    - `plants.capex_premium` 1.0 -> 1.2, `plants.gas_adder` 0 -> 1.5 $/MMBtu, new `standby_share` 0.2 (behind-the-meter energy pays the utility's standby charge): gas behind a fab saved 66% at a 22% IRR (seed 1) -> **34.4% at 8.3%** (median).
+    - New `plants.load_share` (solar with storage 0.5, wind 0.6): a plant serves only its hours of a load (monthly averages had let solar run a fab around the clock).
+    - `plants.sizes_mw` adds 10 and 25 MW, so a plant can be sized to a fab.
+    - `plants.overrun.nuclear` hi 1.5 -> 2.0: overruns above 50% on 2 -> **5** seeds; nuclear's IRR on its operating years **-2.9% to 2.4%** (inside -5 to 12%).
+15. **Readings (46.8), medians over seeds 1-10:** target 1 met (20 runs identical to main); target 2 met (a 40 MW data centre ordered January 2028 in North America has power after **52 months** on the grid, **20** with solar and storage behind its meter sized to its load); target 3 met for gas, solar carried (decision 13); target 4 met (**10 of 10** seeds: gas -> wind by 2035 in the EU); target 5 met (a grid fab in Africa loses **2.8%** of a year's starts; behind a gas plant **0.0%**); target 6: `make check-timing` passes alone (7 tests); M30's 500 ms guard on the 2039 full_integrator save runs in the weekly workflow (dispatched on the branch before merging).
 
 ## Follow-ups
 
-(filled in by the agent)
+- Rival hyperscalers' load, PPAs and plants (decision 9): needs rival data centres (ADR-0017's static incumbents have none).
+- The named 2025 construction projects for fabs and mines (TSMC Arizona, JASM Kumamoto, ESMC Dresden, Intel Ohio, Samsung Taylor; the largest lithium, copper and nickel projects): not found cheaply in this session's sources; for M28's data.
+- An automation area for power (buying PPAs, siting plants), out of scope by the brief.
+- Hourly or seasonal dispatch: monthly averages with `load_share` stand in for the day's shape; solar's case improves only with a cheaper battery or a higher grid price.
+- Sources to re-read when reachable: EIA SAIDI/SAIFI tables (EIA's annual PDF was over the fetch limit), the World Bank Pink Sheet's annual gas series (2010-2021 values are R), producers' technology mixes (A).

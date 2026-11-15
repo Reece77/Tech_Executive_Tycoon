@@ -578,6 +578,7 @@ def power_problems(balance: Balance, data: GameData) -> list[str]:
         ("plants.outages_a_year", pb.plants.outages_a_year),
         ("plants.outage_months", pb.plants.outage_months),
         ("plants.firm_share", pb.plants.firm_share),
+        ("plants.load_share", pb.plants.load_share),
     ):
         if set(table) != types:
             problems.append(f"power.{name} must cover exactly {sorted(types)}")

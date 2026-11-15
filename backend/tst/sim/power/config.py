@@ -260,6 +260,7 @@ class PlantBalance(_Frozen):
     discount_rate: float = Field(gt=0, lt=1)  # a year: levelised cost and the IRR's hurdle
     outages_a_year: dict[str, float]  # type -> forced outages a year
     outage_months: dict[str, Span]  # type -> months a forced outage lasts (whole)
+    load_share: dict[str, float]  # type -> share of a load it can supply in a month (its hours)
     firm_share: dict[str, float]  # type -> share of its rating it holds through a grid outage
     smr_start: str  # the month the SMR era's draw is made (the last history month's next)
     capex_premium: float = Field(ge=1)  # an owner's site works and connection over the quote
@@ -330,6 +331,7 @@ class PowerExtraBalance(_Frozen):
     """M32's power.* keys (formulas.md 46)."""
 
     start: str  # queues, grid outages, carbon pass-through and producers from this month
+    standby_share: float = Field(ge=0, le=1)  # of the grid price, on behind-the-meter energy
     grid_charge_share: float = Field(ge=0, le=1)  # of the grid price, paid on own energy off-site
     export_discount: float = Field(ge=0, le=1)  # surplus sells at the grid price x (1 - this)
     hours_a_month: float = Field(gt=0)

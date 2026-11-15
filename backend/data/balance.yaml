@@ -1644,6 +1644,7 @@ power:
   paid_by: [data_centre_general, data_centre_gpu] # facility kinds whose operating cost is x their region's index (33.5; fabs and refineries later)
   # --- M32 (formulas.md 46, ADR-0022): power as an input everywhere, contracts, owned plants ----
   start: 2026-01 # queues for data centres and fabs, grid outages, the carbon pass-through and power producers begin here (with world.start; ADR-0022 6)
+  standby_share: 0.2 # share of the grid price a behind-the-meter plant's energy still pays as the utility's standby and backup charges (A: US standby tariffs; M32 tuning for 46.8 target 3)
   grid_charge_share: 0.3 # share of the grid price that is network and system charges, still paid on own-plant energy used off-site (46.2; A: US industrial delivery charges about a third of the bill)
   export_discount: 0.2 # surplus own energy sells to the grid at the grid price x (1 - this) (46.2; A: wholesale under industrial retail)
   hours_a_month: 730 # 8,760 hours / 12 (MW x hours = MWh)
@@ -1651,12 +1652,12 @@ power:
   plants: # 46.2: owned plants (power.yaml holds each type's costs and build times)
     min_stage: 4 # owned plants unlock at stage 4 (Reece, 2026-11-13), a one-off
     energy: 8 # founder energy to order a plant (A: below a fab's, above a data centre's)
-    sizes_mw: [50, 100, 250, 500, 1000] # MW a plant order may choose (A; nuclear only 1,000)
+    sizes_mw: [10, 25, 50, 100, 250, 500, 1000] # MW a plant order may choose (A; nuclear only 1,000; M32 tuning: 10 and 25 added so a plant can be sized to a fab)
     overrun: # hidden capex overrun range (fraction) drawn at the order on stream power (1, facility)
       gas: [0.0, 0.2] # A: as refining's vendor-quoted plants
       solar_storage: [0.0, 0.15] # A: modular builds
       wind: [0.0, 0.2] # A
-      nuclear: [0.0, 1.5] # Vogtle 3 and 4 ran 2.2x their original $14 billion (power.yaml VOG); M32 tuning for 46.8 target 3
+      nuclear: [0.0, 2.0] # Vogtle 3 and 4 ran 2.2x their original $14 billion (power.yaml VOG); M32 tuning 1.5 -> 2.0 for 46.8 target 3 (overruns above 50% on 3 of 10 seeds)
       smr: [0.0, 1.2] # CFPP's estimate rose 75% before cancellation (power.yaml); A beyond
     overrun_skew: 2.0 # overrun = lo + (hi - lo) x u^skew: most builds near the quote, a long tail (A)
     overrun_delay: # build months x (1 + overrun x this): overruns come with delays
@@ -1684,6 +1685,12 @@ power:
       wind: [1, 2]
       nuclear: [2, 4]
       smr: [2, 4]
+    load_share: # share of a load a type can supply in a month (its hours: solar with a 4-hour battery covers the day and evening, A)
+      gas: 1.0
+      solar_storage: 0.5
+      wind: 0.6
+      nuclear: 1.0
+      smr: 1.0
     firm_share: # share of a plant's rating it can hold through a grid outage (batteries firm solar)
       gas: 1.0
       solar_storage: 0.33 # SL24's 50 MW battery on 150 MW of PV
@@ -1691,8 +1698,8 @@ power:
       nuclear: 1.0
       smr: 1.0
     smr_start: 2026-01 # the SMR era's first orderable year is drawn in this month (power.yaml era)
-    capex_premium: 1.0 # an owner's capex x this over the published overnight cost (site works, switchgear, connection; A; tuning key for 46.8 target 3)
-    gas_adder: 0.0 # $/MMBtu (2010 dollars) delivered over the regional hub price (A: industrial gas pays transport; tuning key for 46.8 target 3)
+    capex_premium: 1.2 # M32 tuning 1.0 -> 1.2 for 46.8 target 3; an owner's capex x this over the published overnight cost (site works, switchgear, connection; A; tuning key for 46.8 target 3)
+    gas_adder: 1.5 # $/MMBtu (2010 dollars) delivered over the regional hub price (A: industrial gas pays pipeline transport; M32 tuning 0 -> 1.5 for 46.8 target 3)
   ppa: # 46.2: power-purchase agreements
     energy: 3 # founder energy to sign one (A: as a commodity contract)
     years: [5, 20] # whole years a PPA runs (46.2)
