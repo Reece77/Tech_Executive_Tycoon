@@ -10,11 +10,18 @@ fee when seller and owner are the same company. Fees to owners outside the game 
 the game with the cash.
 
 The player's device lines on Android pay `platforms.android_licence_cents` a unit sold (5150).
+A licensed own OS charges its licence a unit; between two companies of the player's group that
+pair is 5900 / 4300 too (M36r, Codex review 7 finding 4).
+
+Money is exact (ADR-0003; M36r, Codex review 7 finding 3): revenue, paid_share, user shares and
+fees are exact rationals; each (seller product, owner) pair's month is summed exactly over
+regions and platforms and rounded half to even once.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
@@ -30,6 +37,7 @@ from tst.sim.ledger import (
     LedgerEntry,
     LedgerLine,
 )
+from tst.sim.money import exact, times
 from tst.sim.platforms import data as pdata
 from tst.sim.platforms.models import PlatformListing
 from tst.sim.platforms.phase import by_region, home_of, live_in
@@ -76,22 +84,42 @@ def app_revenue_cents(
             for s in state.segments_of(product.id)
             if s.segment in segments
         ]
-    return round(sum(n * (p or 0) for n, p in rows))
+    return round(sum((exact(n) * (p or 0) for n, p in rows), Fraction()))
 
 
 def seller_year_cents(state: GameState, company_id: int) -> int:
     return sum(state.company(company_id).mrr_history[-MONTHS_PER_YEAR:])
 
 
+def intercompany(group: set[int], seller: int, owner: int | None) -> bool:
+    """A seller and an owner both inside the player's group (and not the same company): the
+    pair posts 5900 / 4300, which consolidation removes (31.6)."""
+    return owner is not None and owner != seller and owner in group and seller in group
+
+
 def fees_due(
     state: GameState, balance: Balance, data: GameData
 ) -> dict[tuple[int, int, int, str], int]:
-    """(seller product id, platform id, owner id or -1, region) -> this month's fee in cents."""
+    """(seller product id, platform id, owner id or -1, region) -> this month's fee in cents,
+    each rounded half to even (a display: the books round each pair's exact sum once)."""
+    out = {}
+    for key, fee in fees_due_exact(state, balance, data).items():
+        cents = round(fee)
+        if cents > 0:
+            out[key] = cents
+    return out
+
+
+def fees_due_exact(
+    state: GameState, balance: Balance, data: GameData
+) -> dict[tuple[int, int, int, str], Fraction]:
+    """(seller product id, platform id, owner id or -1, region) -> the exact fee in cents:
+    revenue x paid_share x the platform's share of users x the fee (44.4)."""
     pb = balance.platforms
     home = home_of(state, balance, data)
     rows = by_region(state)
     steering = set(_steering(state))
-    out: dict[tuple[int, int, int, str], int] = {}
+    out: dict[tuple[int, int, int, str], Fraction] = {}
     books = {c.id for c in state.ledger_companies()}
     for product in state.products:
         if product.status not in SELLING or product.company_id not in books:
@@ -100,6 +128,7 @@ def fees_due(
             continue
         app = pb.app_categories[product.category]
         year = seller_year_cents(state, product.company_id)
+        paid = exact(app.paid_share)
         for region in data.region_keys:
             revenue = app_revenue_cents(state, product, region, home, balance)
             if revenue <= 0:
@@ -117,7 +146,7 @@ def fees_due(
                     continue
                 sched = pdata.schedule(p, region, state.turn, balance, data, state.rival_stores)
                 fee = pdata.fee_for(sched, product.category, year, product.id in steering, balance)
-                cents = round(revenue * app.paid_share * row.users * fee)
+                cents = revenue * paid * exact(row.users) * exact(fee)
                 if cents > 0:
                     out[(product.id, pid, p.owner_id if p.owner_id is not None else -1, region)] = (
                         cents
@@ -181,17 +210,12 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
     if not pdata.enabled(data) or not state.platforms or state.turn < balance.platforms.fees_turn:
         return []
     history = pdata.in_history(state.turn, data)
-    due = fees_due(state, balance, data)
     group = {c.id for c in world.group(state)}
     books = {c.id for c in state.ledger_companies()}
-    paid: dict[tuple[int, int, bool], int] = {}  # (seller product, owner, intercompany)
+    paid = pair_fees(state, balance, data, group)
     earned: dict[tuple[int, bool], int] = {}
-    for (product_id, _pid, owner, _region), cents in due.items():
-        product = state.product(product_id)
-        assert product is not None
-        inter = owner >= 0 and owner in group and product.company_id in group
-        paid[(product_id, owner, inter)] = paid.get((product_id, owner, inter), 0) + cents
-        if owner >= 0 and owner in books:
+    for (_product_id, owner, inter), cents in paid.items():
+        if owner >= 0 and owner in books:  # the owner earns exactly what its sellers pay
             earned[(owner, inter)] = earned.get((owner, inter), 0) + cents
     entries: list[LedgerEntry] = []
     for (product_id, _owner, inter), cents in sorted(paid.items()):
@@ -219,7 +243,9 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
         ]
         for product in books_products:
             drag = fee_drag(product.category, balance, data)
-            uplift = round(store_revenue_cents(state, product, balance, data) * drag / (1 - drag))
+            rate = exact(drag)
+            store = Fraction(store_revenue_cents(state, product, balance, data))
+            uplift = round(store * rate / (1 - rate))
             if uplift > 0:
                 entries.append(
                     LedgerEntry(
@@ -246,6 +272,27 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
     return entries
 
 
+def pair_fees(
+    state: GameState, balance: Balance, data: GameData, group: set[int] | None = None
+) -> dict[tuple[int, int, bool], int]:
+    """(seller product, owner or -1, intercompany) -> the month's fee: the exact sum over its
+    regions and platforms, rounded half to even once (ADR-0003)."""
+    if group is None:
+        group = {c.id for c in world.group(state)}
+    exact_paid: dict[tuple[int, int, bool], Fraction] = {}
+    for (product_id, _pid, owner, _region), fee in fees_due_exact(state, balance, data).items():
+        product = state.product(product_id)
+        assert product is not None
+        key = (product_id, owner, intercompany(group, product.company_id, owner))
+        exact_paid[key] = exact_paid.get(key, Fraction()) + fee
+    out = {}
+    for key, fee in exact_paid.items():
+        cents = round(fee)
+        if cents > 0:
+            out[key] = cents
+    return out
+
+
 def licence_entries(
     state: GameState, units: Mapping[int, float], balance: Balance, data: GameData
 ) -> list[LedgerEntry]:
@@ -260,7 +307,7 @@ def licence_entries(
         product = state.product(run.product_id)
         if product is None or product.company_id not in group or run.platform_id not in android:
             continue
-        cents = round(units.get(product.id, 0.0) * pb.android_licence_cents)
+        cents = times(pb.android_licence_cents, units.get(product.id, 0.0))
         if cents > 0:
             entries.append(
                 LedgerEntry(
@@ -279,10 +326,12 @@ def licence_entries(
 def own_licence_entries(
     state: GameState, units: Mapping[int, float], balance: Balance, data: GameData
 ) -> list[LedgerEntry]:
-    """Rival OEMs' device lines on the player's licensed OS pay its licence a unit (44.1)."""
+    """Rival OEMs' device lines on the player's licensed OS pay its licence a unit (44.1):
+    5150 / 4150, or 5900 / 4300 between two companies of the player's group (M36r)."""
     if not pdata.enabled(data) or state.turn < balance.platforms.start_turn:
         return []
     books = {c.id for c in state.ledger_companies()}
+    group = {c.id for c in world.group(state)}
     entries = []
     for run in state.device_runs:
         p = state.platform(run.platform_id)
@@ -297,15 +346,17 @@ def own_licence_entries(
             continue
         if product.company_id == p.owner_id or product.company_id not in books:
             continue
-        cents = round(units.get(product.id, 0.0) * p.licence_cents)
+        cents = times(p.licence_cents, units.get(product.id, 0.0))
         if cents <= 0:
             continue
+        inter = intercompany(group, product.company_id, p.owner_id)
+        label = " (group)" if inter else ""
         entries.append(
             LedgerEntry.transfer(
                 turn=state.turn,
                 company_id=product.company_id,
-                memo=f"OS licence: {product.name}",
-                debit=PLATFORM_FEES,
+                memo=f"OS licence{label}: {product.name}",
+                debit=INTERCOMPANY_PURCHASES if inter else PLATFORM_FEES,
                 credit=CASH,
                 amount=cents,
             )
@@ -314,9 +365,9 @@ def own_licence_entries(
             LedgerEntry.transfer(
                 turn=state.turn,
                 company_id=p.owner_id,
-                memo=f"OS licence earned: {product.name}",
+                memo=f"OS licence earned{label}: {product.name}",
                 debit=CASH,
-                credit=PLATFORM_FEE_REVENUE,
+                credit=INTERCOMPANY_SALES if inter else PLATFORM_FEE_REVENUE,
                 amount=cents,
             )
         )
@@ -337,4 +388,11 @@ def units_sold(
     return out
 
 
-__all__ = ["fee_entries", "fees_due", "licence_entries"]
+__all__ = [
+    "fee_entries",
+    "fees_due",
+    "fees_due_exact",
+    "intercompany",
+    "licence_entries",
+    "pair_fees",
+]

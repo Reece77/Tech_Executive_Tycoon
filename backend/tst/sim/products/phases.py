@@ -15,6 +15,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
+from fractions import Fraction
 from typing import TYPE_CHECKING
 
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
@@ -708,24 +709,27 @@ def _revenue(
                 if category.sells_units:
                     sold = flows.get(key, Flow()).units
                     units_sold += sold
-                    amount = round(sold * (seg.price_cents or 0))
+                    amount = round(exact(sold) * (seg.price_cents or 0))
                 else:
-                    amount = round(seg.customers * (seg.price_cents or 0) * paid)
+                    amount = round(exact(seg.customers) * (seg.price_cents or 0) * exact(paid))
                 booked += amount
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
                 if category.sells_units:
                     sold = regional_units.get((product.id, rseg.region, rseg.segment), 0.0)
                     units_sold += sold
-                    booked += round(sold * (rseg.price_cents or 0))
+                    booked += round(exact(sold) * (rseg.price_cents or 0))
                 else:
-                    booked += round(rseg.customers * (rseg.price_cents or 0) * paid)
+                    booked += round(exact(rseg.customers) * (rseg.price_cents or 0) * exact(paid))
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
                 cogs = round(
                     sum(
-                        flows.get((product.id, seg.segment), Flow()).units
-                        * category.market(seg.segment).hosting_cents
-                        for seg in segments
+                        (
+                            exact(flows.get((product.id, seg.segment), Flow()).units)
+                            * category.market(seg.segment).hosting_cents
+                            for seg in segments
+                        ),
+                        Fraction(),
                     )
                     + sum(
                         regional_units.get((product.id, r.region, r.segment), 0.0)
@@ -812,7 +816,9 @@ def projected_revenue(state: GameState, company_id: int) -> Cents:
             *state.segments_of(product.id),
             *state.regional_segments_of(product.id),
         ]
-        total += sum(round(s.customers * s.price_cents) for s in rows if s.price_cents is not None)
+        total += sum(
+            round(exact(s.customers) * s.price_cents) for s in rows if s.price_cents is not None
+        )
     return total
 
 

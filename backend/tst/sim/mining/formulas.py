@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 from tst.sim.mining.config import AccidentBalance, MiningBalance, SubtypeBalance
+from tst.sim.money import times
 
 LB_PER_T = 2204.62  # tunable-exempt: unit conversion, pounds a tonne
 MONTHS = 12  # tunable-exempt: calendar
@@ -13,7 +14,7 @@ MONTHS = 12  # tunable-exempt: calendar
 def capex_for(estimate_design_cents: int, capacity: float, design: float, scale: float) -> int:
     """35.2: the study's capex for its design capacity, scaled to the chosen capacity by
     (capacity / design) ** scale."""
-    return round(estimate_design_cents * float((capacity / design) ** scale))
+    return times(estimate_design_cents, (capacity / design) ** scale)
 
 
 def overrun(u: float, lo: float, hi: float) -> float:
@@ -70,11 +71,11 @@ def depletion_target(basis_cents: int, ore_mined: float, ore_estimate: float) ->
     estimated (revealed) tonnage, never more than the whole."""
     if ore_estimate <= 0:
         return basis_cents
-    return round(basis_cents * min(1.0, ore_mined / ore_estimate))
+    return times(basis_cents, min(1.0, ore_mined / ore_estimate))
 
 
 def royalty_cents(revenue_cents: int, rate: float) -> int:
-    return round(revenue_cents * rate)
+    return times(revenue_cents, rate)
 
 
 def usd_per_lb(usd_per_t: float) -> float:
@@ -108,7 +109,7 @@ def variable_usd(
 
 
 def reclamation_cents(product_t: float, per_t_cents: int) -> int:
-    return round(product_t * per_t_cents)
+    return times(per_t_cents, product_t)
 
 
 def capacity_bounds(design_t: float, mb: MiningBalance) -> tuple[float, float]:

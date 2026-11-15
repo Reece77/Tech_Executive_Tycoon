@@ -65,7 +65,7 @@ def sites(
     out: list[Site] = []
     per_region: dict[str, tuple[float, float, float, str, float]] = {}
     for r in data.region_keys:
-        price = grid.price_cents(state, r, balance, data) / CENTS
+        price = grid.price_cents(state, r, balance, data) / CENTS  # money-exact: rate
         carbon = grid.carbon_price(state, r, data)
         rate = outages.rate(state, r, balance, data)
         costs = {k: plants.levelised(state, k, r, balance, data) for k in PLANT_CHOICES}

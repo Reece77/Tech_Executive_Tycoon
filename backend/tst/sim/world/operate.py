@@ -27,6 +27,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
@@ -222,7 +223,7 @@ def operate(
         )
         dep = min(
             f.capex_cents - f.depreciated_cents,
-            round(f.capex_cents / (wb.life_years * MONTHS)),
+            round(Fraction(f.capex_cents, wb.life_years * MONTHS)),
         )
         if dep > 0:
             depreciation[f.company_id] = depreciation.get(f.company_id, 0) + dep

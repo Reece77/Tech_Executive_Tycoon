@@ -46,6 +46,7 @@ class ExplainOut(BaseModel):
         "refinery",
         "region",
         "plant",  # M32
+        "order",  # M33: a tool order in ASML's queue
     ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")

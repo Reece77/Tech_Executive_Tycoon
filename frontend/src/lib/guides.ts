@@ -162,6 +162,15 @@ export const GUIDES: Record<string, Guide> = {
       'Give an area to someone with a strong fit and enough energy; a weak owner makes visibly worse calls.',
     ],
   },
+  equipment: {
+    title: 'Equipment',
+    path: 'products/equipment',
+    what: "Lithography tools: ASML's generations, prices and order queue, your orders and their place as a range of months, the controls on who may receive them, and your own lithography programme.",
+    start: [
+      "A new buyer waits behind a year or more of rivals' orders; prepaying moves an order up, and a history of deliveries moves you up for good.",
+      "Your own scanners are a decade-long bet: expensive, uncertain, and worse than ASML's at first.",
+    ],
+  },
   platforms: {
     title: 'Platforms',
     path: 'competitors/platforms',
@@ -178,6 +187,15 @@ export const GUIDES: Record<string, Guide> = {
     start: [
       'From 2026 a large data centre or fab waits in its grid queue for years in congested regions; a plant behind its meter that covers the whole load skips the queue.',
       'A PPA fixes the price of a volume for 5-20 years; energy you do not use still pays 70%.',
+    ],
+  },
+  regulation: {
+    title: 'Regulation',
+    path: 'competitors/regulation',
+    what: 'Regulators by region: who is a designated gatekeeper, the duties that brings, investigations and their stages, fines, and the warning signs of a break-up. Your own position against each designation test is here too.',
+    start: [
+      'A warning comes a year before a designation; duties follow a few months after it.',
+      'Each stage of an investigation comes to Needs you: settling early is cheaper than losing, and breaking a duty makes everything worse.',
     ],
   },
 };

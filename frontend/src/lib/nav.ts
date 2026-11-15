@@ -150,6 +150,14 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'products',
   }, // M32
+  {
+    path: 'products/equipment',
+    label: 'Equipment',
+    group: 'chain',
+    unlock: 'equipment',
+    side: true,
+    parent: 'products',
+  }, // M33
   { path: 'finance', label: 'Finance', group: 'finance', unlock: null, side: true },
   ...(
     [
@@ -186,6 +194,14 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'competitors',
   }, // M31
+  {
+    path: 'competitors/regulation',
+    label: 'Regulation',
+    group: 'world',
+    unlock: 'regulation',
+    side: true,
+    parent: 'competitors',
+  }, // M34
   {
     path: 'competitors/world',
     label: 'World',

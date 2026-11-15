@@ -13,6 +13,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
 from tst.sim.markets_public.models import PublicCompany
+from tst.sim.money import exact
 from tst.sim.state import GameState, public_of, with_cap_entry, with_public
 
 
@@ -33,7 +34,7 @@ def _float_entry(state: GameState, company_id: int) -> CapEntry | None:
 
 
 def buyback_price_cents(public: PublicCompany, balance: Balance) -> int:
-    return round(public.price_cents * (1 + balance.public.capital.buyback_premium))
+    return round(public.price_cents * (1 + exact(balance.public.capital.buyback_premium)))
 
 
 def buyback(
@@ -97,7 +98,7 @@ def secondary(
         raise InvalidActionError(
             f"one offering sells at most {cb.secondary_max_share:.0%} of the shares"
         )
-    price = round(public.price_cents * (1 - cb.secondary_discount))
+    price = round(public.price_cents * (1 - exact(cb.secondary_discount)))
     gross = shares * price
     net = gross - round(gross * cb.secondary_fee)
     entry = _float_entry(state, company_id)

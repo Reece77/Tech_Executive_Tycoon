@@ -66,6 +66,7 @@ def price_usd(state: GameState, good: str, balance: Balance, data: GameData) -> 
     if wd_is_power(good):
         from tst.sim.power import grid
 
+        # money-exact: rate
         return grid.price_cents(state, good.removeprefix("power_"), balance, data) / CENTS
     if good == FOUNDRY_GOOD:
         return foundry_wafer_usd(state, balance, data)
@@ -78,12 +79,13 @@ def long_run_usd(state: GameState, good: str, balance: Balance, data: GameData) 
     the foundry market's capacity factor. M32: a region's power at its 2010-2019 mean index."""
     if wd_is_power(good):
         region = good.removeprefix("power_")
-        ref = balance.refining.power_cents_per_mwh / CENTS
+        ref = balance.refining.power_cents_per_mwh / CENTS  # money-exact: rate
         if data.power_history is None:
             return ref
         return ref * data.power_history.region(region).mean_2010_2019
     if good == FOUNDRY_GOOD:
         index = goods.index_now(state, FOUNDRY_GOOD, data) if data.components else 1.0
+        # money-exact: rate
         return index * balance.world.foundry_wafer_cents / CENTS
     assert data.commodities is not None
     g = data.commodities.good(good)

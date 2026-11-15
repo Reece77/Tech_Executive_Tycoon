@@ -1,0 +1,385 @@
+# Regulation with teeth (docs/formulas.md 48, M34). Built from docs/v4-research/regulation-dossier.md;
+# every value carries its source (researched 2026-11-14). A value marked A is an assumption for
+# gameplay (no public figure) and is listed in the M34 brief's "Decisions made". Dates are "YYYY-MM"
+# (the month a step took effect). Companies: an incumbents.yaml name, or null for a company outside
+# the game (its name in `label`): those records are shown and count as precedent, but book nothing.
+#
+# History holds (48.5 target 1): to `history_end` designations, duties, cases, fines and rulings come
+# only from this file and post nothing (platforms.yaml already carries the dated platform rules and
+# fee rows the duties brought to 2025, 44.4). The model acts on rivals from the month after.
+
+history_end: "2025-12"
+
+# --- Regulators (48.1) ------------------------------------------------------------------------
+# region / part: a game region and, where the regulator covers part of it, a region_parts key from
+# platforms.yaml (its population share weights duties and fines' reach). strictness: by year from
+# the listed year (A: a gameplay index, 1.0 = the EU Commission under the DMA; no public measure),
+# flat after the last year until seeded drift from 2026. structural: whether its law lets it order
+# a break-up or unbundling (48.4).
+regulators:
+  - key: eu_commission
+    name: European Commission (DG Competition)
+    region: europe
+    part: eu # the EU-27 (platforms.yaml region_parts, WB)
+    structural: true # Regulation 1/2003 Art. 7 (structural remedies) and DMA Art. 18 (systematic non-compliance): https://eur-lex.europa.eu/EN/legal-content/summary/digital-markets-act.html
+    strictness: { 2010: 0.7, 2017: 0.85, 2023: 1.0 } # A: rising with the Google decisions (2017-2019) and the DMA (2023)
+    source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en"
+  - key: uk_cma
+    name: Competition and Markets Authority
+    region: europe
+    part: rest # A: the UK sits in Europe's non-EU part (platforms.yaml region_parts)
+    structural: true # A: market investigations can order divestiture (Enterprise Act 2002); SMS conduct duties from 2025
+    strictness: { 2010: 0.6, 2020: 0.8, 2025: 0.9 } # A: the Activision block (April 2023) and the DMCC regime (2025)
+    source: "https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms"
+  - key: us_doj_ftc
+    name: US Department of Justice and Federal Trade Commission
+    region: north_america
+    part: united_states # platforms.yaml region_parts (WB)
+    structural: true # Sherman Act divestiture: the AT&T break-up (1984) and the 2000 Microsoft order (precedents below)
+    strictness: { 2010: 0.5, 2020: 0.8 } # A: the 2020 cases against Google and Meta
+    source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case"
+  - key: jftc
+    name: Japan Fair Trade Commission
+    region: east_asia
+    part: japan # platforms.yaml region_parts (WB)
+    structural: false # A: the MSCA brings conduct duties, not structural powers
+    strictness: { 2010: 0.4, 2024: 0.7 } # A: the Mobile Software Competition Act (enacted 2024)
+    source: "https://www.jftc.go.jp/en/policy_enforcement/digital/index.html"
+  - key: kftc
+    name: Korea Fair Trade Commission and Korea Communications Commission
+    region: east_asia
+    part: south_korea # platforms.yaml region_parts (WB)
+    structural: false # A
+    strictness: { 2010: 0.5, 2021: 0.8 } # A: the app payment law (in force 14 Sep 2021, platforms.yaml rules)
+    source: "https://keia.org/the-peninsula/the-implications-of-south-koreas-anti-google-law/"
+  - key: samr
+    name: State Administration for Market Regulation
+    region: east_asia
+    part: china # platforms.yaml region_parts (WB)
+    structural: false # A
+    strictness: { 2010: 0.4, 2021: 0.8 } # A: the platform campaign of 2021 (no figure used)
+    source: "A"
+
+# --- Designation regimes (48.1) ---------------------------------------------------------------
+# users_share: the platform's share of the part's users that the regime's users test reads (A: the
+# legal count over the part's population, WB in platforms.yaml). turnover / value: in the regime's
+# currency, billions (converted with regulation.fx). None of a test = not part of that regime.
+# duties: what designation brings (48.2), from `comply_months` after the designation.
+regimes:
+  - key: dma
+    regulator: eu_commission
+    name: Digital Markets Act
+    in_force: "2022-11" # in force 1 Nov 2022: https://freshfields.com/en/our-thinking/campaigns/tech-data-and-ai-the-digital-frontier/eu-digital-strategy/digital-markets-act
+    first_designations: "2023-09" # 6 Sep 2023 (Commission, regulators above)
+    users_share: 0.10 # 45M monthly active end users in the EU (Art. 3(2)(b)) / 447M (WB): https://cerre.eu/wp-content/uploads/2022/11/NoteOnDesignationOfGatekeepersintheDMA_Final.pdf ; https://eur-lex.europa.eu/EN/legal-content/summary/digital-markets-act.html
+    business_users: 10000 # yearly active business users (Art. 3(2)(b), same sources); recorded, not tested (A: the game has no business-user count)
+    turnover_b: 7.5 # EUR, EU annual turnover in each of the last three years (Art. 3(2)(a), CERRE above)
+    turnover_scope: region # the test reads the company's turnover in the region
+    value_b: 75 # EUR, average market capitalisation (Art. 3(2)(a), CERRE above)
+    currency: EUR
+    comply_months: 6 # "six months to comply with the other relevant obligations": https://www.euronews.com/2024/05/13/bookingcom-gatekeeper-under-eus-online-competition-rules
+    duties: [side_loading, alt_payments, anti_steering, interoperability, no_self_preferencing, data_portability] # Arts. 5-7: https://www.hsfkramer.com/notes/crt/2024-03/digital-markets-act-overview
+    max_fine_share: 0.10 # Art. 30: https://digital-markets-act.ec.europa.eu/citizens-and-whistleblower-portal/eu-citizens-qa_en
+    repeat_fine_share: 0.20 # Art. 30, repeated infringements (same source)
+    periodic_share: 0.05 # Art. 31: up to 5% of average daily worldwide turnover (same source)
+  - key: uk_dmcc
+    regulator: uk_cma
+    name: Digital Markets, Competition and Consumers Act 2024
+    in_force: "2025-01" # first SMS investigation opened 14 Jan 2025: https://www.clearygottlieb.com/news-and-insights/publication-listing/changes-to-uk-competition-and-consumer-enforcement-2025
+    first_designations: "2025-10" # Google search 10 Oct 2025; Apple and Google mobile 22 Oct 2025 (designations below)
+    users_share: null # no users test: "substantial and entrenched market power" (A: read as regulation.dominance_share of users)
+    turnover_b: 25 # GBP, global turnover, or 1 in the UK: https://www.covingtonblogs.com/2024/06/10/overview-of-the-uks-new-digital-markets-regime/
+    turnover_scope: world
+    value_b: null
+    currency: GBP
+    comply_months: 6 # A: conduct requirements follow designation; none imposed by December 2025
+    duties: [alt_payments, anti_steering, interoperability, no_self_preferencing] # A: the CMA's announced mobile roadmap (steering, interoperability, app review): https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms
+    max_fine_share: 0.10 # DMCC Act penalties up to 10% of global turnover: https://www.covingtonblogs.com/2024/06/10/overview-of-the-uks-new-digital-markets-regime/
+    repeat_fine_share: 0.10 # A: no higher cap for repeats
+    periodic_share: 0.05 # DMCC daily penalties up to 5% of daily global turnover (same source)
+  - key: jp_msca
+    regulator: jftc
+    name: Mobile Software Competition Act
+    in_force: "2025-12" # full effect 18 Dec 2025: https://www.jftc.go.jp/en/policy_enforcement/digital/index.html
+    first_designations: "2025-03" # Apple, iTunes KK and Google, March 2025 (same source)
+    users_share: 0.317 # 40M average monthly smartphone users (Cabinet Order No. 376 of 2024: https://www.jftc.go.jp/file/Cabinet_Order_which_establishes_the_scale_of_business_operations_under_Article_3_Paragraph_1_of_the_MSCA.pdf) / 126M (WB)
+    turnover_b: null
+    turnover_scope: region
+    value_b: null
+    currency: JPY
+    comply_months: 9 # designation March 2025 to full effect December 2025 (above)
+    duties: [side_loading, alt_payments, anti_steering, no_self_preferencing] # app stores, payments, steering and self-preferencing: https://legalblogs.wolterskluwer.com/competition-blog/japans-mobile-software-competition-act-grows-its-guidelines/
+    max_fine_share: 0.20 # MSCA surcharge 20% of the relevant turnover (A: not verified; the game reads it as a share of turnover)
+    repeat_fine_share: 0.30 # A
+    periodic_share: 0.0
+  - key: kr_tba
+    regulator: kftc
+    name: Telecommunications Business Act amendment (app payments)
+    in_force: "2021-09" # in force 14 Sep 2021: https://www.macrumors.com/2021/08/31/south-korea-passes-app-store-bill/
+    first_designations: "2021-09"
+    users_share: 0.0 # applies to every app market operator (same source; A: any platform with users in Korea)
+    turnover_b: null
+    turnover_scope: region
+    value_b: null
+    currency: KRW
+    comply_months: 3 # Google's alternative billing from 18 Dec 2021: https://developers-kr.googleblog.com/2021/11/enabling-alternative-billing-in-korea-en.html
+    duties: [alt_payments] # the law's payment-system duty (KEIA above)
+    max_fine_share: 0.02 # up to 2% of Korean app revenue (A: reported KCC figure, not verified)
+    repeat_fine_share: 0.03 # A
+    periodic_share: 0.0
+
+# --- Designations to 2025 (48.1) --------------------------------------------------------------
+designations:
+  - { regime: dma, company: Apple, label: Apple, from: "2023-09", services: [App Store, iOS, Safari], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en" }
+  - { regime: dma, company: Microsoft, label: Microsoft, from: "2023-09", services: [Windows, LinkedIn], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en" }
+  - { regime: dma, company: Facebook, label: Meta, from: "2023-09", services: [Facebook, Instagram, WhatsApp, Messenger, Meta Ads], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en ; Marketplace de-designated April 2025: https://www.benton.org/headlines/european-commission-finds-apple-and-meta-breach-digital-markets-act" }
+  - { regime: dma, company: null, label: Alphabet, platform: android_play, from: "2023-09", services: [Google Search, Google Play, Android, Chrome, YouTube, Google Maps, Google Shopping, Google Ads], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en" }
+  - { regime: dma, company: null, label: Amazon, from: "2023-09", services: [Amazon Marketplace, Amazon Ads], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en (A: Amazon's retail arm is outside the game; Amazon Web Services' cloud was not designated)" }
+  - { regime: dma, company: null, label: ByteDance, from: "2023-09", services: [TikTok], source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en" }
+  - { regime: dma, company: null, label: Booking, from: "2024-05", services: [Booking.com], source: "13 May 2024: https://www.euronews.com/2024/05/13/bookingcom-gatekeeper-under-eus-online-competition-rules" }
+  - { regime: jp_msca, company: Apple, label: Apple, from: "2025-03", services: [iOS, App Store, Safari], source: "https://www.jftc.go.jp/en/policy_enforcement/digital/index.html" }
+  - { regime: jp_msca, company: null, label: Google, platform: android_play, from: "2025-03", services: [Android, Google Play, Chrome, Google Search], source: "https://www.jftc.go.jp/en/policy_enforcement/digital/index.html" }
+  - { regime: uk_dmcc, company: null, label: Google, from: "2025-10", services: [Google Search], source: "10 Oct 2025: https://webiis08.mondaq.com/unitedstates/antitrust-eu-competition/1696438/cma-completes-its-initial-designations-in-mobile-ecosystems-and-search" }
+  - { regime: uk_dmcc, company: Apple, label: Apple, from: "2025-10", services: [iOS, App Store, Safari, WebKit], source: "22 Oct 2025: https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms" }
+  - { regime: uk_dmcc, company: null, label: Google, platform: android_play, from: "2025-10", services: [Android, Google Play, Chrome], source: "22 Oct 2025: https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms" }
+  - { regime: kr_tba, company: Apple, label: Apple, from: "2021-09", services: [App Store], source: "https://www.macrumors.com/2021/08/31/south-korea-passes-app-store-bill/" }
+  - { regime: kr_tba, company: null, label: Google, platform: android_play, from: "2021-09", services: [Google Play], source: "https://www.macrumors.com/2021/08/31/south-korea-passes-app-store-bill/" }
+
+# --- Cases to 2025 (48.3) ---------------------------------------------------------------------
+# kind: conduct (an abuse or non-compliance case) or merger (a deal's review). conduct: what the
+# case was about (it names the behavioural remedy). stages: each a dated step (inquiry, objections,
+# ruling, appeal, settled, dismissed, abandoned, cleared). fine: in `currency`, as decided; `final`
+# the amount after appeals to December 2025 (0 = annulled). outcome: as of December 2025.
+cases:
+  - key: eu_google_shopping
+    regulator: eu_commission
+    company: null
+    label: Google
+    kind: conduct
+    conduct: self_preferencing
+    title: Google Shopping
+    stages:
+      - { stage: inquiry, at: "2010-11", source: "formal investigation 30 Nov 2010 (IP/10/1624): https://www.europeansources.info/?p=445372" }
+      - { stage: objections, at: "2015-04", source: "15 Apr 2015: https://www.computerworld.com/article/1360915/eu-files-antitrust-charges-against-google-over-search-launches-android-probe.html" }
+      - { stage: ruling, at: "2017-06", source: "https://www.scl.org/google-fined-2-4bn-euros-for-preferring-its-own-comparison-shopping-service/" }
+      - { stage: appeal, at: "2024-09", note: "Court of Justice upheld, 10 Sep 2024", source: "https://curia.europa.eu/jcms/upload/docs/application/pdf/2024-09/cp240135en.pdf" }
+    fine: 2420000000
+    final: 2420000000
+    currency: EUR
+    remedy: no_self_preferencing
+    outcome: fined
+  - key: eu_google_android
+    regulator: eu_commission
+    company: null
+    label: Google
+    kind: conduct
+    conduct: tying
+    title: Google Android
+    stages:
+      - { stage: inquiry, at: "2015-04", source: "formal investigation 15 Apr 2015: https://www.computerworld.com/article/1360915/eu-files-antitrust-charges-against-google-over-search-launches-android-probe.html" }
+      - { stage: objections, at: "2016-04", source: "20 Apr 2016: https://www.androidcentral.com/eu-antitrust-regulators-file-additional-charges-against-google" }
+      - { stage: ruling, at: "2018-07", source: "EUR 4.34B: https://www.cnbc.com/2022/09/14/eu-court-backs-antitrust-ruling-against-google-but-reduces-fine.html" }
+      - { stage: appeal, at: "2022-09", note: "General Court cut the fine to EUR 4.125B, 14 Sep 2022", source: "https://www.cnbc.com/2022/09/14/eu-court-backs-antitrust-ruling-against-google-but-reduces-fine.html" }
+    fine: 4340000000
+    final: 4125000000
+    currency: EUR
+    remedy: interoperability
+    outcome: fined
+  - key: eu_google_adsense
+    regulator: eu_commission
+    company: null
+    label: Google
+    kind: conduct
+    conduct: exclusivity
+    title: Google AdSense
+    stages:
+      - { stage: inquiry, at: "2010-11", source: "part of the Nov 2010 investigation (IP/10/1624 above)" }
+      - { stage: objections, at: "2016-07", source: "14 Jul 2016: https://techcrunch.com/2016/07/14/google-under-fire-again-from-europes-antitrust-regulator-over-adsense-comparison-shopping/" }
+      - { stage: ruling, at: "2019-03", source: "EUR 1.49B: https://techcrunch.com/2024/09/18/google-nets-court-win-against-eus-1-7b-adsense-antitrust-decision/" }
+      - { stage: appeal, at: "2024-09", note: "General Court annulled the decision, 18 Sep 2024", source: "https://stibbe.com/publications-and-insights/you-win-some-you-lose-some-google-adsense-decision-annulled" }
+    fine: 1490000000
+    final: 0
+    currency: EUR
+    remedy: null
+    outcome: annulled
+  - key: eu_apple_music
+    regulator: eu_commission
+    company: Apple
+    label: Apple
+    kind: conduct
+    conduct: anti_steering
+    title: Music streaming (anti-steering)
+    stages:
+      - { stage: inquiry, at: "2020-06", source: "formal investigation after Spotify's 2019 complaint: https://techcrunch.com/2021/04/30/europe-charges-apple-with-antitrust-breach-citing-spotify-app-store-complaint/" }
+      - { stage: objections, at: "2021-04", source: "30 Apr 2021 (same source); refined 28 Feb 2023: https://techcrunch.com/2023/02/28/eu-antitrust-regulators-target-apples-anti-steering-developer-restrictions-but-drop-in-app-purchases-case/" }
+      - { stage: ruling, at: "2024-03", source: "over EUR 1.8B, 4 Mar 2024; anti-steering provisions to be removed: https://www.scl.org/apple-fined-e1-8-billion-over-app-store-rules-for-music-streaming-providers/" }
+    fine: 1800000000
+    final: 1800000000
+    currency: EUR
+    remedy: anti_steering
+    outcome: fined # appeal pending at December 2025
+  - key: eu_apple_dma
+    regulator: eu_commission
+    company: Apple
+    label: Apple
+    kind: conduct
+    conduct: noncompliance
+    title: DMA steering (non-compliance)
+    stages:
+      - { stage: inquiry, at: "2024-03", source: "non-compliance proceedings 25 Mar 2024: https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_24_1689/IP_24_1689_EN.pdf" }
+      - { stage: ruling, at: "2025-04", source: "EUR 500M, 23 Apr 2025: https://www.benton.org/headlines/european-commission-finds-apple-and-meta-breach-digital-markets-act" }
+    fine: 500000000
+    final: 500000000
+    currency: EUR
+    remedy: anti_steering
+    outcome: fined
+  - key: eu_meta_dma
+    regulator: eu_commission
+    company: Facebook
+    label: Meta
+    kind: conduct
+    conduct: noncompliance
+    title: DMA "pay or consent" (non-compliance)
+    stages:
+      - { stage: inquiry, at: "2024-03", source: "25 Mar 2024 (IP/24/1689 above)" }
+      - { stage: ruling, at: "2025-04", source: "EUR 200M, 23 Apr 2025: https://www.benton.org/headlines/european-commission-finds-apple-and-meta-breach-digital-markets-act" }
+    fine: 200000000
+    final: 200000000
+    currency: EUR
+    remedy: data_portability
+    outcome: fined
+  - key: us_google_search
+    regulator: us_doj_ftc
+    company: null
+    label: Google
+    kind: conduct
+    conduct: exclusivity
+    title: United States v. Google (search)
+    stages:
+      - { stage: objections, at: "2020-10", note: "DOJ complaint", source: "https://www.ntu.org/foundation/detail/google-antitrust-ruling-key-takeaways-from-the-district-courts-decision" }
+      - { stage: ruling, at: "2024-08", note: "liability", source: "https://www.ntu.org/foundation/detail/google-antitrust-ruling-key-takeaways-from-the-district-courts-decision" }
+      - { stage: ruling, at: "2025-09", note: "remedies, 2 Sep 2025: no Chrome or Android divestiture; no exclusive contracts; search data shared with rivals; six years", source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: data_portability
+    outcome: remedied
+  - key: us_google_adtech
+    regulator: us_doj_ftc
+    company: null
+    label: Google
+    kind: conduct
+    conduct: tying
+    title: United States v. Google (ad tech)
+    stages:
+      - { stage: objections, at: "2023-01", note: "DOJ complaint", source: "https://www.engadget.com/big-tech/google-is-a-monopoly-in-online-ad-tech-federal-judge-rules-151531919.html" }
+      - { stage: ruling, at: "2025-04", note: "liability, 17 Apr 2025; remedies not decided by December 2025", source: "https://www.engadget.com/big-tech/google-is-a-monopoly-in-online-ad-tech-federal-judge-rules-151531919.html" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: null
+    outcome: open
+  - key: us_epic_apple
+    regulator: us_doj_ftc
+    company: Apple
+    label: Apple
+    authority: US courts (Epic Games)
+    kind: conduct
+    conduct: anti_steering
+    title: Epic Games v. Apple
+    stages:
+      - { stage: objections, at: "2020-08", note: "Epic's suit", source: "https://9to5mac.com/2024/01/16/apple-revises-us-app-store-rules-to-let-developers-link-to-outside-payment-methods-but-it-will-still-charge-a-commission/" }
+      - { stage: ruling, at: "2021-09", note: "anti-steering injunction, 10 Sep 2021", source: "same" }
+      - { stage: appeal, at: "2024-01", note: "Supreme Court declined review, 16 Jan 2024", source: "same" }
+      - { stage: ruling, at: "2025-05", note: "contempt order, 30 Apr 2025: no commission on linked purchases; upheld 11 Dec 2025", source: "https://techcrunch.com/2025/05/02/apple-changes-us-app-store-rules-to-let-apps-redirect-users-to-their-own-websites-for-payments ; https://minnlawyer.com/2025/12/12/apple-epic-games-ninth-circuit-iphone-app-payments/" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: anti_steering
+    outcome: remedied
+  - key: us_epic_google
+    regulator: us_doj_ftc
+    company: null
+    label: Google
+    authority: US courts (Epic Games)
+    kind: conduct
+    conduct: exclusivity
+    title: Epic Games v. Google
+    stages:
+      - { stage: objections, at: "2020-08", note: "Epic's suit", source: "https://www.winston.com/print/v2/content/1102717/epic-v-google-setting-the-bar-for-affirmative-antitrust-remedies-in-the-digital-age.pdf" }
+      - { stage: ruling, at: "2023-12", note: "jury verdict", source: "same" }
+      - { stage: ruling, at: "2024-10", note: "injunction: rival stores in Play, no exclusivity", source: "same" }
+      - { stage: appeal, at: "2025-07", note: "Ninth Circuit affirmed, 31 Jul 2025", source: "https://www.mintz.com/insights-center/viewpoints/2025-08-06-ninth-circuit-upholds-jury-verdict-against-and-remedies" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: side_loading
+    outcome: remedied
+  - key: us_ftc_meta
+    regulator: us_doj_ftc
+    company: Facebook
+    label: Meta
+    kind: conduct
+    conduct: acquisitions
+    title: FTC v. Meta (Instagram and WhatsApp)
+    stages:
+      - { stage: objections, at: "2020-12", note: "FTC complaint", source: "https://www.thewrap.com/meta-wins-ftc-antitrust-case-whatsapp-instagram/" }
+      - { stage: dismissed, at: "2025-11", note: "no monopoly found, 18 Nov 2025; no divestiture", source: "https://www.thewrap.com/meta-wins-ftc-antitrust-case-whatsapp-instagram/" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: null
+    outcome: dismissed
+  - key: nvidia_arm
+    regulator: uk_cma
+    company: NVIDIA
+    label: NVIDIA
+    kind: merger
+    conduct: acquisitions
+    title: NVIDIA's purchase of Arm
+    stages:
+      - { stage: inquiry, at: "2020-09", note: "agreed", source: "https://www.computerweekly.com/news/252513087/Nvidias-Arm-deal-is-dead" }
+      - { stage: abandoned, at: "2022-02", note: "terminated 8 Feb 2022 over regulatory challenges (CMA, FTC, EU)", source: "https://www.iotworldtoday.com/iiot/nvidia-arm-deal-collapses-softbank-pockets-1-25-billion" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: null
+    outcome: abandoned
+  - key: adobe_figma
+    regulator: uk_cma
+    company: null
+    label: Adobe
+    kind: merger
+    conduct: acquisitions
+    title: Adobe's purchase of Figma
+    stages:
+      - { stage: inquiry, at: "2022-09", note: "agreed, about $20B", source: "https://www.bnnbloomberg.ca/adobe-and-figma-terminate-20-billion-deal-after-regulator-clash-1.2013083" }
+      - { stage: abandoned, at: "2023-12", note: "terminated 18 Dec 2023, no clear path to EU and UK approval; $1B fee", source: "same" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: null
+    outcome: abandoned
+  - key: microsoft_activision
+    regulator: uk_cma
+    company: Microsoft
+    label: Microsoft
+    kind: merger
+    conduct: acquisitions
+    title: Microsoft's purchase of Activision Blizzard
+    stages:
+      - { stage: ruling, at: "2023-04", note: "CMA blocked the first deal", source: "https://grip.globalrelay.com/?p=62183" }
+      - { stage: cleared, at: "2023-10", note: "cleared with cloud rights sold to Ubisoft; closed 13 Oct 2023", source: "https://grip.globalrelay.com/?p=62183" }
+    fine: 0
+    final: 0
+    currency: USD
+    remedy: null
+    outcome: cleared
+
+# --- Structural precedents (48.4) -------------------------------------------------------------
+# Before the game's start, shown on the Regulation screen: no Big Tech break-up was ordered and
+# carried out by 2025.
+precedents:
+  - { key: att_1984, label: AT&T, at: "1984-01", note: "Bell System divested into seven regional companies on 1 Jan 1984 (consent decree of 8 Jan 1982)", source: "https://www.rcrwireless.com/20010212/carriers/breaking-ma-bell" }
+  - { key: microsoft_2000, label: Microsoft, at: "2000-06", note: "ordered split in two, 7 Jun 2000; reversed on appeal 28 Jun 2001", source: "https://money.cnn.com/2000/06/07/technology/microsoft_ruling/ ; https://tidbits.com/2001/06/28/appeals-court-unanimously-reverses-microsoft-breakup/" }
+  - { key: google_2025, label: Google, at: "2025-09", note: "Chrome and Android divestiture refused, 2 Sep 2025", source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case" }

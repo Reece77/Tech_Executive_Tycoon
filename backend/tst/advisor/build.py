@@ -870,6 +870,25 @@ class Builder:
 
         return v4_power.plant_levelised(self, m, entity)
 
+    # --- v4 (M34): regulation ----------------------------------------------------------------
+
+    def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_regulation
+
+        return v4_regulation.regulation_fines(self, m, entity)
+
+    def designation_thresholds(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_regulation
+
+        return v4_regulation.designation_thresholds(self, m, entity)
+
+    # --- v4 (M33): equipment ----------------------------------------------------------------
+
+    def tool_wait(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_equipment
+
+        return v4_equipment.tool_wait(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(
@@ -917,6 +936,7 @@ V3_EVENTS: dict[str, tuple[str, ...]] = {
     "mine": ("mining", "geopolitics"),
     "fab": ("geopolitics", "research"),
     "refinery": ("refining", "geopolitics"),
+    "order": ("geopolitics",),  # M33: controls on tools
 }
 
 

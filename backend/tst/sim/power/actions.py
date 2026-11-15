@@ -25,7 +25,7 @@ from tst.sim.errors import InsufficientCashError, PowerRuleError
 from tst.sim.facilities.models import Facility
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import format_money, times
 from tst.sim.power import demand, plants, ppa, queues
 from tst.sim.power.models import Plant
 from tst.sim.rng import RngFactory
@@ -120,7 +120,7 @@ def build_plant(
     state = replace(state, next_ids=ids)
     rng = RngFactory(state.save_meta.master_seed)
     over = plants.draw_overrun(rng, state.turn, facility_id, action.plant_type, balance)
-    capex = round(q.capex_cents * (1 + over))
+    capex = times(q.capex_cents, 1 + over)
     months = plants.true_months(action.plant_type, q.build_months, over, balance)
     facility = Facility(
         id=facility_id,

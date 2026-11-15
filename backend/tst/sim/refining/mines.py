@@ -88,6 +88,7 @@ def feed_from_mine(
             input_cents=pm.input_cents - spot_cents + paid,
         )
         if month.output > EPS:
+            # money-exact: rate
             month = replace(month, unit_cost_cents=month.cost_cents / month.output)
         state = with_refinery(state, replace(ref, month=month, mine_fed=ref.mine_fed + conc))
         taken_t += tonnes

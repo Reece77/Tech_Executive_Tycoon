@@ -16,6 +16,15 @@ from typing import Any, Final
 from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
+from tst.sim.equipment.models import (
+    Delivery,
+    FabTools,
+    OwnTools,
+    Programme,
+    SupplierYear,
+    ToolOrder,
+    ToolStock,
+)
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
@@ -133,6 +142,14 @@ from tst.sim.press.models import (
 )
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.refining.models import OwnSupply, Refinery, RefiningDeal
+from tst.sim.regulation.models import (
+    Case,
+    Designation,
+    DesignationWarning,
+    Duty,
+    Order,
+    Watch,
+)
 from tst.sim.research.models import (
     EraArrival,
     EraWindow,
@@ -468,6 +485,27 @@ class GameState:
     grid_outages: tuple[GridOutage, ...] = ()
     region_paths: tuple[RegionPath, ...] = ()
     power_world: PowerWorld = field(default_factory=PowerWorld)
+    # M34 (48): designations from the model (history's are regulation.yaml's), year-ahead
+    # warnings, duties, investigations, structural warning signs and orders. Ids are max + 1.
+    designations: tuple[Designation, ...] = ()
+    designation_warnings: tuple[DesignationWarning, ...] = ()
+    duties: tuple[Duty, ...] = ()
+    reg_cases: tuple[Case, ...] = ()
+    reg_watches: tuple[Watch, ...] = ()
+    reg_orders: tuple[Order, ...] = ()
+    # (company id, its booked revenue in each of the last 12 months, oldest first), from 2026
+    reg_turnover: tuple[tuple[int, tuple[int, ...]], ...] = ()
+    # M33 (47): ASML's queue (orders by id, open and recent), deliveries (the last
+    # equipment.queue.history_years), each generation's capacity a year from equipment.start,
+    # companies' tools not yet in a fab, the lithography programme's stages, the player's own
+    # tool lines and which tools each fab runs on. Rivals' orders run from turn 0.
+    tool_orders: tuple[ToolOrder, ...] = ()
+    tool_deliveries: tuple[Delivery, ...] = ()
+    supplier_years: tuple[SupplierYear, ...] = ()
+    tool_stock: tuple[ToolStock, ...] = ()
+    programmes: tuple[Programme, ...] = ()
+    own_tools: tuple[OwnTools, ...] = ()
+    fab_tools: tuple[FabTools, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

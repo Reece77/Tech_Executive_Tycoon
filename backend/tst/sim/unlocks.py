@@ -68,7 +68,8 @@ SYSTEMS: tuple[System, ...] = (
     System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
     System(23, "platforms", "Platforms", "markets"),  # tunable-exempt: stable id (M31)
     System(24, "family", "Family", "people"),  # tunable-exempt: stable id (M36)
-    # M32: 25 is M34's Regulation, 26 left for M33 (lanes merging in parallel)
+    System(25, "regulation", "Regulation", "world"),  # tunable-exempt: stable id (M34)
+    System(26, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33; 25 is M34's)
     System(27, "power", "Power", "chain"),  # tunable-exempt: stable id (M32)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
@@ -194,6 +195,13 @@ def _fabs(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str |
     return None
 
 
+def _equipment(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
+    """M33 (47): the group owns a fab (its tools come from ASML's queue)."""
+    if data.equipment is None:
+        return None
+    return "the group owns a fab" if any(f.company_id in ids for f in state.fabs) else None
+
+
 def _power(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str | None:
     """M32 (46): a data centre or fab of the group's (its energy and siting)."""
     for f in state.facilities:
@@ -248,6 +256,17 @@ def _platforms(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str
     return None
 
 
+def _regulation(state: GameState, ids: set[int], _b: Balance, _d: GameData) -> str | None:
+    """M34 (48): the first designation warning, investigation or duty of the group."""
+    if any(w.company_id in ids for w in state.designation_warnings):
+        return "a regulator has warned of a designation"
+    if any(c.company_id in ids for c in state.reg_cases):
+        return "a regulator has opened an investigation"
+    if any(d.company_id in ids for d in state.duties):
+        return "a regulator has given the company duties"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -262,8 +281,10 @@ CHECKS: dict[str, Check] = {
     "world": _world,
     "automation": _any(_by_stage(STAGE_GROWTH, "stage 3"), _automation),
     "family": _family,  # M36
+    "equipment": _equipment,  # M33
     "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
     "power": _any(_by_stage(STAGE_LISTED, "stage 4"), _power),  # M32 (46)
+    "regulation": _regulation,  # M34
 }
 
 

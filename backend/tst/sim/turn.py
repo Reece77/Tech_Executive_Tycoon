@@ -18,6 +18,7 @@ from tst.sim.automation.run import automation_month
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.equipment.phase import equipment_month
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
 from tst.sim.events.describe import month_choices
 from tst.sim.events.director import direct
@@ -77,6 +78,7 @@ from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.refining.phase import refining_month
+from tst.sim.regulation.month import regulation_month
 from tst.sim.research.eras import arrive_eras
 from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
@@ -298,6 +300,9 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     # M19 (35.2, 35.4-35.5): mines' construction, resource nationalism, rivals' bids.
     state, entries, logs = mining.build_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M33 (47): ASML's capacity and queue, deliveries, the lithography programme.
+    state, eq_entries, eq_logs = equipment_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*eq_entries).log(*eq_logs)
     # M21 (38.2): fabs' capex, completion, conversion and yield; their starts on offer.
     if not ctx.state.fabs:
         return ctx
@@ -656,6 +661,11 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     # M22 (39): licences, listings, next month's tension and the rules it announces.
     state, geo_logs = geopolitics.month_end(state, ctx.rng, ctx.balance, ctx.data)
     ctx = ctx.log(*geo_logs)
+    # M34 (48): duties, compliance, designations, investigations and structural orders.
+    state, reg_entries, reg_logs = regulation_month(
+        state, ctx.rng, ctx.balances, ctx.balance, ctx.data, ctx.entries
+    )
+    ctx = ctx.post(*reg_entries).log(*reg_logs)
     player = state.player.id
     state, requests = direct(
         state,

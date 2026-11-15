@@ -240,6 +240,7 @@ def node_price_cents(state: GameState, node: str, balance: Balance, data: GameDa
 
 
 def slot_price_cents(state: GameState, node: str, balance: Balance, data: GameData) -> float:
+    # money-exact: rate
     return node_price_cents(state, node, balance, data) * balance.fab.slot.discount
 
 
@@ -304,6 +305,7 @@ def tool_price_cents(state: GameState, data: GameData) -> float:
     assert data.components is not None
     h = data.components.good(EUV_GOOD)
     ref = h.index_at(month_to_turn(TOOL_PRICE_MONTH))
+    # money-exact: rate
     return nodes_file(data).euv.tool_cents * goods.index_now(state, EUV_GOOD, data) / ref
 
 

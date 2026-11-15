@@ -53,7 +53,7 @@ from tst.sim.ledger import (
 from tst.sim.mna import antitrust, valuation
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.deals import monthly_costs_cents
-from tst.sim.money import Cents, format_money
+from tst.sim.money import Cents, exact, format_money
 from tst.sim.products.models import SELLING
 from tst.sim.rivals.models import INCUMBENT_KEY
 from tst.sim.rng import RngFactory
@@ -250,6 +250,7 @@ def _new_deals(
         if u_rate >= wb.rival_mna_rate:
             continue
         cash = account_balance(balances, buyer.id, CASH)
+        # money-exact: ratio
         buffer = gb.cash_months * costs_cents(state, buyer.id, balance, data)
         if cash <= buffer:
             continue
@@ -265,7 +266,8 @@ def _new_deals(
                 or not (target.is_chain or is_incumbent(target))
             ):
                 continue
-            price = round(value_cents(state, target.id, balances, balance, data) * (1 + gb.premium))
+            value = value_cents(state, target.id, balances, balance, data)
+            price = round(value * (1 + exact(gb.premium)))
             if price <= 0 or price > cash - buffer:
                 continue
             kind = deal_kind(state, buyer, target, balance, data)

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.commodities import costs as commodity_costs
@@ -120,6 +121,7 @@ def _construction(
         reveal = mf.reveal_month(mine.ordered_turn, mine.ready_turn, balance.mining.reveal_at)
         if mine.revised_cents is None and turn >= reveal:
             mine = replace(mine, revised_cents=mine.hidden_total_cents)
+            # money-exact: display
             pct = round(100 * (mine.hidden_total_cents / mine.estimate_cents - 1))
             logs.append(
                 _item(
@@ -132,7 +134,7 @@ def _construction(
                 )
             )
         if mine.revised_cents is None:  # at the estimate's rate: nothing shows the overrun
-            pay = round(mine.estimate_cents / (mine.ready_turn - mine.ordered_turn))
+            pay = round(Fraction(mine.estimate_cents, mine.ready_turn - mine.ordered_turn))
         else:
             pay = mf.capex_payment(
                 mine.revised_cents, mine.capex_paid_cents, mine.ready_turn - turn
@@ -285,7 +287,7 @@ def _reclaim(
     pay = (
         left
         if months_left <= 1
-        else min(left, math.ceil(mine.aro_cents / balance.mining.reclamation_months))
+        else min(left, -(-mine.aro_cents // balance.mining.reclamation_months))
     )
     entry = LedgerEntry.transfer(
         turn=state.turn,
@@ -494,7 +496,7 @@ def _operate(
     est_left = max(EPS, estimated_ore(state, mine, balance) - mine.ore_mined_mt)
     depletion = 0
     if ore_mt > 0 and mine.book_cents > 0:
-        depletion = min(mine.book_cents, round(mine.book_cents * min(1.0, ore_mt / est_left)))
+        depletion = min(mine.book_cents, times(mine.book_cents, min(1.0, ore_mt / est_left)))
     if depletion:
         entries.append(
             LedgerEntry.transfer(
@@ -527,6 +529,7 @@ def _operate(
         cost_usd_t=cost_t,
         revenue_cents=revenue,
         margin_cents=margin,
+        # money-exact: ratio
         energy_mwh=energy_usd * CENTS / balance.refining.power_cents_per_mwh,
         power_cents=round(energy_usd * p_mult * CENTS),
     )

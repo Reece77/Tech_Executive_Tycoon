@@ -43,7 +43,7 @@ class AngelStakeOut(BaseModel):
     company_id: int
     company: str
     category_label: str
-    status: Literal["open", "acquired", "listed", "failed"]
+    status: Literal["open", "acquired", "listed", "failed", "sold"]
     stake_pct: float
     cost_cents: int
     worth_cents: int = Field(description="Stake x the last round's post-money")

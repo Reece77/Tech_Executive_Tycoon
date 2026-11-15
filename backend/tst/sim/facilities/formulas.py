@@ -68,6 +68,7 @@ def allocation_split(units: int, allocation: float, delay_step: float) -> tuple[
 
 def cu_need(hosting_base_cents: float, spot_cents: int) -> float:
     """A product's compute need in CU: its hosting at index 1.0 / one CU's spot price (22.1)."""
+    # money-exact: ratio
     return hosting_base_cents / spot_cents
 
 

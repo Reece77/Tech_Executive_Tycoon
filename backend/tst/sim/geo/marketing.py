@@ -29,9 +29,11 @@ def revenue_shares(state: GameState, product: Product, home: str) -> dict[str, f
     """Each selling region's share of the product's revenue now (home all of it with none)."""
     regions = selling_regions(state, product, home)
     revenue = {r: 0.0 for r in regions}
+    # money-exact: ratio
     revenue[home] = sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product.id))
     for rs in state.regional_segments_of(product.id):
         if rs.region in revenue:
+            # money-exact: ratio
             revenue[rs.region] += rs.customers * (rs.price_cents or 0)
     total = sum(revenue.values())
     if total <= 0:

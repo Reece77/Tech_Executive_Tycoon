@@ -82,12 +82,13 @@ def multiplier(state: GameState, region: str, balance: Balance, data: GameData) 
     uplift = carbon_uplift(state, region, balance, data)
     if uplift == 0.0:
         return index
-    ref_usd = balance.refining.power_cents_per_mwh / CENTS
+    ref_usd = balance.refining.power_cents_per_mwh / CENTS  # money-exact: rate
     return max(index * FLOOR, index + uplift / ref_usd)
 
 
 def price_cents(state: GameState, region: str, balance: Balance, data: GameData) -> float:
     """The grid price this month, cents a MWh (2010 cents)."""
+    # money-exact: rate
     return balance.refining.power_cents_per_mwh * multiplier(state, region, balance, data)
 
 

@@ -51,6 +51,7 @@ def gas_fuel_usd_mwh(heat_rate_btu_kwh: float, gas_usd_mmbtu: float) -> float:
 
 def ppa_price(forward_cents: float, years: int, per_year: float, cap: float) -> float:
     """46.2: the forward price less a term discount (longer terms price lower), capped."""
+    # money-exact: rate
     return forward_cents * (1 - min(cap, per_year * years))
 
 

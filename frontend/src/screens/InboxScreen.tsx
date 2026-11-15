@@ -551,6 +551,16 @@ function MessageDetail({
             Open Fabs
           </Button>
         )}
+        {item.link_kind === 'regulation' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/competitors/regulation`}
+            h={44}
+            data-testid="view-regulation"
+          >
+            Open Regulation
+          </Button>
+        )}
         {item.link_kind === 'platforms' && (
           <Button
             component={Link}

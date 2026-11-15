@@ -142,6 +142,7 @@ def _chip_value(
             )
             weight = s.starts * s.chips_per_start / capacity
             out[country] = out.get(country, 0.0) + sold_own * weight * unit
+    # money-exact: rate
     contract_cents = row.chip_cents - sold_own * balance.chips.packaging_cents
     wafers = [
         c
@@ -154,6 +155,7 @@ def _chip_value(
         for c in wafers:
             country = world.supplier_country(data, c.supplier) or ""
             weight = delivered[c.id] / total if total > EPS else 1 / len(wafers)
+            # money-exact: rate
             out[country] = out.get(country, 0.0) + contract_cents * weight
     return out
 

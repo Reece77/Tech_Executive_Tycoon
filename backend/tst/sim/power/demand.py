@@ -19,6 +19,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Final
 
+from tst.sim.commodities.power import opex_cents
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.models import Facility
 from tst.sim.power import grid
@@ -48,7 +49,7 @@ def _centre(state: GameState, f: Facility, balance: Balance, data: GameData) -> 
         return None
     kind = balance.facility.kinds[f.kind]
     mult = grid.kind_multiplier(state, f.kind, f.region, balance, data)
-    cents = round(live * kind.opex_per_unit_cents * mult)
+    cents = round(opex_cents(live * kind.opex_per_unit_cents, mult))  # as operating_cents
     return Meter(f.id, f.company_id, f.region, f.city, f.kind, live * pf.draws[f.kind], cents)
 
 

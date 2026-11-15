@@ -88,6 +88,8 @@ METRICS: dict[str, MetricDef] = {
         _m(
             "platform_fees", "Platform fees", "cents", "product", "Store fees on the app this month"
         ),
+        # v4 (M33): a tool order's wait in ASML's queue
+        _m("tool_wait", "Tool wait", "months", "order", "Months to the order's last tool"),
         _m(
             "catalogue_effect",
             "Catalogue effect",
@@ -103,6 +105,15 @@ METRICS: dict[str, MetricDef] = {
             "cents",
             "plant",
             "A new plant of this type here, a MWh, at the published capex",
+        ),
+        # v4 (M34): regulators' fines and the designation thresholds
+        _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
+        _m(
+            "designation_thresholds",
+            "Designation test",
+            "percent",
+            "company",
+            "The group against each regime's gatekeeper thresholds",
         ),
     )
 }

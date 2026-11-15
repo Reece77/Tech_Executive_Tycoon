@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 
 from tst.sim.markets_public.config import (
     AnalystsBalance,
@@ -14,6 +15,7 @@ from tst.sim.markets_public.config import (
     SentimentBalance,
 )
 from tst.sim.markets_public.models import Rating, Result
+from tst.sim.money import exact, times
 
 PCT = 100
 BP = 10_000  # tunable-exempt: basis points in one
@@ -34,11 +36,11 @@ def multiple(
 
 def fundamental_value_cents(arr_cents: int, m: float) -> int:
     """V_f = ARR x m (25.3)."""
-    return round(arr_cents * m)
+    return times(arr_cents, m)
 
 
 def per_share_cents(value_cents: int, shares: int) -> int:
-    return round(value_cents / shares) if shares > 0 else 0
+    return round(Fraction(value_cents, shares)) if shares > 0 else 0
 
 
 def new_shares(shares_before: int, share_sold: float) -> int:
@@ -50,7 +52,8 @@ def offer_price_cents(
     value_cents: int, shares_after: int, quality: float, ambition: float, dual_discount: float
 ) -> int:
     """V_f x bank quality x ambition, per post-IPO share; dual-class prices lower (25.2)."""
-    return round(value_cents * quality * ambition * (1 - dual_discount) / shares_after)
+    per_share = Fraction(value_cents, shares_after)
+    return round(per_share * exact(quality) * exact(ambition) * (1 - exact(dual_discount)))
 
 
 def book_demand(z: float, climate: float, db: DemandBalance) -> float:
@@ -73,7 +76,7 @@ def first_day_return(d: float, ambition: float, fb: FirstDayBalance) -> float:
 
 
 def fee_cents(gross_cents: int, fee: float) -> int:
-    return round(gross_cents * fee)
+    return times(gross_cents, fee)
 
 
 def sentiment_step(sentiment: float, z: float, sb: SentimentBalance) -> float:
@@ -83,18 +86,20 @@ def sentiment_step(sentiment: float, z: float, sb: SentimentBalance) -> float:
 
 def share_price_cents(value_cents: int, shares: int, sentiment: float) -> int:
     """P = V_f / shares x S (25.3)."""
-    return max(1, round(value_cents * sentiment / shares)) if shares > 0 else 0
+    return max(1, round(Fraction(value_cents, shares) * exact(sentiment))) if shares > 0 else 0
 
 
 def analyst_count(cap_cents: int, ab: AnalystsBalance) -> int:
     """3 analysts, one more per doubling of market cap above base_cap, at most 8 (25.3)."""
     if cap_cents <= ab.base_cap_cents:
         return ab.min
+    # money-exact: ratio
     return min(ab.max, ab.min + int(math.log2(cap_cents / ab.base_cap_cents)))
 
 
 def rating(target_cents: int, price_cents: int, ab: AnalystsBalance) -> Rating:
     """Buy above 1.15 x the price, sell below 0.9, otherwise hold (25.3)."""
+    # money-exact: ratio
     ratio = target_cents / price_cents if price_cents > 0 else 1.0
     if ratio > ab.buy_above:
         return "buy"
@@ -105,6 +110,7 @@ def rating(target_cents: int, price_cents: int, ab: AnalystsBalance) -> Rating:
 
 def surprise(actual_cents: int, guided_cents: int) -> float:
     """s = actual / guided - 1 (25.4)."""
+    # money-exact: ratio
     return actual_cents / guided_cents - 1 if guided_cents > 0 else 0.0
 
 
@@ -127,7 +133,7 @@ def result_of(s: float, eb: EarningsBalance) -> Result:
 
 
 def margin_bp(op_cents: int, revenue_cents: int) -> int:
-    return round(op_cents * BP / revenue_cents) if revenue_cents > 0 else 0
+    return round(Fraction(op_cents * BP, revenue_cents)) if revenue_cents > 0 else 0
 
 
 def ceo_score(skills: dict[str, float], weights: dict[str, float]) -> float:

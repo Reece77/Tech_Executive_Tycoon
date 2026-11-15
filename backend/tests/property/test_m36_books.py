@@ -126,7 +126,8 @@ def test_gifts_trust_and_estate_tax_balance(
     # The tax left the books; the rest of the cash passed to the heir.
     before = cash_after(s2, head) + cash_after(s2, heir)
     proceeds = q.shares_to_sell * q.share_price_cents
-    paid = min(q.tax_cents, q.cash_cents + proceeds)
+    # M36r: the whole tax is paid (`min(tax, cash + proceeds)` encoded review 7 finding 5's gap)
+    paid = q.tax_cents
     assert cash_after(s3, head) == 0
     assert cash_after(s3, heir) == before + proceeds - paid
     assert person_shares(s3, cid, head) == 0

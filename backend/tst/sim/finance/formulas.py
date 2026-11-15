@@ -13,7 +13,7 @@ from typing import Literal
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import BoardBalance, FinanceBalance, SafeBalance
-from tst.sim.money import BP_DENOMINATOR, Cents
+from tst.sim.money import BP_DENOMINATOR, Cents, exact, times
 
 type Hint = Literal["likely", "uncertain", "unlikely"]
 
@@ -80,7 +80,7 @@ def base_value_cents(
     fb: FinanceBalance,
 ) -> Cents:
     """V_base = max(V_floor, ARR x multiple). Never shown (14.9)."""
-    traction = round(arr_cents * arr_multiple(g6, climate, fb))
+    traction = times(arr_cents, arr_multiple(g6, climate, fb))
     return max(value_floor_cents(live_product, headcount, fb), traction)
 
 
@@ -89,6 +89,7 @@ def base_value_cents(
 
 def safe_ratio(base_cents: Cents, cap_cents: Cents, sb: SafeBalance) -> float:
     """optimism x V_base / cap: 1 is an even chance."""
+    # money-exact: ratio
     return sb.optimism * base_cents / cap_cents
 
 
@@ -118,7 +119,7 @@ def safe_fraction(safes: list[tuple[Cents, Cents]]) -> Fraction:
 
 def quoted_pre_money_cents(base_cents: Cents, bias: float, z: float, sd: float) -> Cents:
     """V_pre = V_base x bias x exp(N(0, sd)), with z a standard normal draw."""
-    return round(base_cents * bias * math.exp(sd * z))
+    return round(base_cents * exact(bias) * exact(math.exp(sd * z)))
 
 
 def offered_amount_cents(
@@ -129,7 +130,7 @@ def offered_amount_cents(
     max_of_pre: float,
 ) -> Cents:
     """clamp(target, check_min, min(check_max, max_of_pre x V_pre))."""
-    hi = min(check_max_cents, round(max_of_pre * pre_money_cents))
+    hi = min(check_max_cents, times(pre_money_cents, max_of_pre))
     return min(max(target_cents, check_min_cents), max(hi, check_min_cents))
 
 

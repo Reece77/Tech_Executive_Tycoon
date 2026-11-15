@@ -12,7 +12,8 @@ from typing import Final, Literal
 STAKE_FULL: Final = 1_000_000  # tunable-exempt: stakes are kept in millionths (ppm)
 
 type RoundSource = Literal["founded", "funded", "venture", "angel", "backed"]
-type StakeStatus = Literal["open", "acquired", "listed", "failed"]
+# "sold": realised by an estate at a succession (45.6; M36r)
+type StakeStatus = Literal["open", "acquired", "listed", "failed", "sold"]
 type Mandate = Literal["conservative", "balanced", "aggressive"]
 MANDATES: Final = ("conservative", "balanced", "aggressive")
 

@@ -133,6 +133,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return GEOPOLITICS_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "platform_step":  # M31 (44.5)
             return PLATFORM_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "regulation_step":  # M34 (48.3-48.4)
+            return REGULATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -145,6 +147,17 @@ PLATFORM_STEP_TEXT: dict[str, str] = {  # M31 (44.5): never the odds' true value
     "comply": "the app is relisted now; its lost users come back over a few months",
     "appeal": "an answer in 1-3 months; until then the app stays off the store",
     "regulators": "an answer in 6 months where platform rules apply; the app stays off until then",
+}
+REGULATION_STEP_TEXT: dict[str, str] = {  # M34 (48.3-48.4): never a draw or a chance
+    "cooperate": "answer the regulator's questions; the inquiry runs 6-12 months",
+    "settle": "offer commitments that end the case: a duty in the region, a smaller fine or none",
+    "contest": "fight it: a ruling in 6-12 months, against you on the odds shown",
+    "lobby": "lobby the government: the next step waits 3 months and the odds improve",
+    "comply": "pay the fine and accept the remedy",
+    "appeal": "appeal: an answer in 1-3 years on the odds shown",
+    "spin_off": "spin the unit off to your shareholders (a subsidiary of a listed holding company)",
+    "sell": "sell the unit to the largest rival in its market",
+    "wait": "do nothing yet; after the deadline, penalties every month",
 }
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",
@@ -232,6 +245,7 @@ def _loan_text(state: GameState, effect: Effect, balance: Balance) -> str:
         now = loan.rate_bp / PCT
         return f"the rate rises {points:g} points, to {now + points:.2f}%"
     share = br.repay_bp if effect.type == "loan_repay" else br.waiver_fee_bp
+    # money-exact: display
     cents = effect.value * loan.balance_cents * share / BP
     if effect.type == "loan_repay":
         return f"repays {dollars(cents)} of the balance from cash now"

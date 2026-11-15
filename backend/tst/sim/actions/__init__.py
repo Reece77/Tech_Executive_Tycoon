@@ -240,6 +240,16 @@ from tst.sim.automation.actions import (
 from tst.sim.contracts.termination import ACTION_TYPES as CONTRACT_ACTION_TYPES
 from tst.sim.contracts.termination import TerminateContract, terminate
 from tst.sim.data_models import Balance, GameData
+from tst.sim.equipment.actions import ACTION_TYPES as EQUIPMENT_ACTION_TYPES
+from tst.sim.equipment.actions import (
+    EquipmentAction,
+    OrderTools,
+    PrepayOrder,
+    SetLithoFunding,
+    StartLitho,
+    StopLitho,
+    apply_equipment,
+)
 from tst.sim.errors import GameOverError, InvalidActionError
 from tst.sim.exploration.pipeline import ACTION_TYPES as EXPLORATION_ACTION_TYPES
 from tst.sim.exploration.pipeline import (
@@ -330,6 +340,13 @@ from tst.sim.refining.actions import (
     SignRefiningDeal,
     apply_refining,
 )
+from tst.sim.regulation.actions import ACTION_TYPES as REGULATION_ACTION_TYPES
+from tst.sim.regulation.actions import (
+    AnswerOrder,
+    ComplyDuties,
+    RegulationAction,
+    apply_regulation,
+)
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -371,6 +388,8 @@ type Action = (
     | FamilyAction  # M36
     | PlatformAction  # M31
     | PowerAction  # M32
+    | RegulationAction  # M34
+    | EquipmentAction  # M33
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -387,6 +406,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     **PLATFORM_ACTION_TYPES,  # M31 (44)
     **POWER_ACTION_TYPES,  # M32 (46)
+    **REGULATION_ACTION_TYPES,  # M34 (48)
+    **EQUIPMENT_ACTION_TYPES,  # M33 (47)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -494,6 +515,7 @@ __all__ = [
     "AddSegment",
     "AdoptStandard",
     "AnswerGroupPitch",
+    "AnswerOrder",
     "AnswerPitch",
     "AnswerProposal",
     "AppointCeo",
@@ -513,6 +535,7 @@ __all__ = [
     "CloseOffice",
     "ClosePlan",
     "CloseSearch",
+    "ComplyDuties",
     "ComplyListing",
     "CreateDeveloperPlatform",
     "CreateFoundation",
@@ -545,7 +568,9 @@ __all__ = [
     "NameNominee",
     "OpenSearch",
     "OpenSourceProduct",
+    "OrderTools",
     "OverrideCeo",
+    "PrepayOrder",
     "Promote",
     "RaiseSafe",
     "ReferenceCheck",
@@ -569,6 +594,7 @@ __all__ = [
     "SetGreyRoute",
     "SetGuidance",
     "SetLeader",
+    "SetLithoFunding",
     "SetLobbying",
     "SetMandate",
     "SetMarketing",
@@ -593,8 +619,10 @@ __all__ = [
     "SignWaferContract",
     "SpinOff",
     "StaffFacility",
+    "StartLitho",
     "StartProject",
     "StartRound",
+    "StopLitho",
     "StopProject",
     "SunsetProduct",
     "TakeLoan",
@@ -907,6 +935,10 @@ def apply_action(
             out = apply_platforms(state, action, balance, data)
         case BuildPlant() | SignPpa():  # M32 (46.2)
             out = apply_power(state, action, ledger_balances, balance, data)
+        case ComplyDuties() | AnswerOrder():  # M34 (48)
+            out = apply_regulation(state, action, ledger_balances, balance, data)
+        case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():
+            out = apply_equipment(state, action, rng, ledger_balances, balance, data)  # M33 (47)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

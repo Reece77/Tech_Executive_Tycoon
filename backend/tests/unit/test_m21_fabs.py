@@ -74,14 +74,18 @@ def test_a_leading_edge_fab_takes_three_years_and_waits_for_euv_tools() -> None:
     lg = m21.loaded()
     b, d = lg.balance, lg.game_data
     game = m21.game_at(1, ym_to_turn(2021, 1))  # the EUV backlog: a 24-month lead
-    q = quote(game.state, 1, "n5", "east_asia", 100_000, b, d)
+    # M33: in Taiwan (m21.build's site for an EUV fab): EUV tools do not ship to China
+    q = quote(game.state, 1, "n5", "east_asia", 100_000, b, d, country="taiwan")
     assert q.euv and q.tools == 50 and q.build_months == 36  # n5 is 9 months old: leading
-    q3 = quote(game.state, 1, "n3", "east_asia", 100_000, b, d)
+    q3 = quote(game.state, 1, "n3", "east_asia", 100_000, b, d, country="taiwan")
     assert q3.build_months == 36
     assert q.tools_turn is not None and q.tools_turn > game.state.turn + 24
     fid = m21.build(game, "n5", "east_asia", 100_000, ready_now=False)
     fab = _fab(game, fid)
     assert fab.live_turn == q.tools_turn + b.fab.euv.install_months > game.state.turn + 24
+    # M33: ASML's queue (47.2) serves a new buyer's 50 tools in about two years; with a second
+    # fab's 50 ordered at once, at least one of them is not in by the end of construction
+    second = m21.build(game, "n5", "east_asia", 100_000, ready_now=False)
     m21.play(game, 36)
     f = game.state.facility(fid)
     assert f is not None and f.status == "building"
@@ -91,7 +95,13 @@ def test_a_leading_edge_fab_takes_three_years_and_waits_for_euv_tools() -> None:
 
     assert game.state.turn == f.ordered_turn + fab.build_months
     _, _, logs = fab_month(game.state, RngFactory(1), b, d)
-    assert [x.template for x in logs] == ["fab_waiting_tools"]
+    waiting = [x.link_id for x in logs if x.template == "fab_waiting_tools"]
+    assert waiting and set(waiting) <= {fid, second}  # at least one waits for its tools
+    for w in waiting:
+        assert w is not None
+        h = game.state.facility(w)
+        assert h is not None and h.status == "building"
+        assert _fab(game, w).live_turn > h.ordered_turn + 36
     # a fab at 7 nm by DUV needs no tools, at the DUV route's yield and cost
     q7 = quote(game.state, 1, "n7", "east_asia", 10_000, b, d, duv=True)
     q7e = quote(game.state, 1, "n7", "east_asia", 10_000, b, d)

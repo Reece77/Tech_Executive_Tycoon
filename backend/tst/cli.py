@@ -4216,6 +4216,61 @@ if __name__ == "__main__":
     app()
 
 
+@app.command("equipment")
+def equipment_cmd(save: SaveOpt) -> None:
+    """Semiconductor equipment (M33, 47): ASML's tool generations, prices and order book; your
+    tool orders with their queue place as a range; stock, controls and the lithography
+    programme."""
+    from tst.api import equipment_views
+
+    _, data, state = _game(save)
+    if data.game_data.equipment is None:
+        typer.echo("No equipment data.")
+        return
+    e = equipment_views.equipment_out(state, data)
+    typer.echo(f"{format_turn(state.turn)}: {e.supplier}'s tools")
+    for g in e.generations:
+        last = g.shipments[-1] if g.shipments else None
+        typer.echo(
+            f"  {g.label} ({g.model}): {g.wph:.0f} wph, uptime {g.uptime:.0%},"
+            f" {format_money(g.price_cents)}"
+            + (f" (list {format_money(g.list_cents)})" if g.price_cents != g.list_cents else "")
+            + (f", {last.tools} in {last.year}" if last else "")
+            + (f", book {g.book}" if g.queued else "")
+            + ("" if g.shipping else f", first shipment {g.first_shipment_label}")
+        )
+    for o in e.orders:
+        typer.echo(
+            f"  order {o.id}: {o.delivered}/{o.tools} {o.generation_label} for {o.fab or 'stock'},"
+            f" placed {o.placed_label}, {o.status}"
+            + (f", last tool in {o.lead_label}" if o.status == "open" else "")
+            + (" (prepaid)" if o.prepaid else "")
+        )
+    for st in e.stock:
+        typer.echo(f"  stock: {st.tools} {st.generation_label} ({st.source})")
+    for c in e.controls:
+        typer.echo(f"  control {c.month_label}: {c.title}{'' if c.in_force else ' (lapsed)'}")
+    p = e.programme
+    typer.echo(
+        "  lithography programme: "
+        + (
+            f"level {p.level:.0f}, {p.researchers} researchers"
+            if p.unlocked
+            else (p.unlock_reason or "")
+        )
+    )
+    for stg in p.stages:
+        typer.echo(
+            f"    {stg.label}: {stg.status}"
+            + (
+                f", since {stg.started_label}, {format_money(stg.spent_cents)} spent"
+                if stg.started_label
+                else ""
+            )
+            + (f", ends {stg.end_window_label}" if stg.end_window_label else "")
+        )
+
+
 @app.command("platforms")
 def platforms_cmd(
     save: SaveOpt,
@@ -4326,3 +4381,49 @@ def power_cmd(
             )
     for o in p.outages[-6:]:
         typer.echo(f"  grid outage: {o.region_label}, {format_turn(o.turn)}")
+
+
+@app.command("regulation")
+def regulation_cmd(
+    save: SaveOpt,
+    history: Annotated[bool, typer.Option(help="Also list history's cases to 2025")] = False,
+) -> None:
+    """Regulation (M34, 48): your position against each designation test, designations,
+    duties, investigations with their stages, warning signs and structural orders."""
+    from tst.api import regulation_views
+    from tst.db import repository
+
+    path, data, state = _game(save)
+    with repository.read_session(path) as session:
+        balances = repository.ledger_balances(session)
+    r = regulation_views.regulation_out(state, data, balances)
+    typer.echo(
+        f"{r.month}: regulation {'running' if r.running else 'from the record'};"
+        f" your fines to date {format_money(r.fines_cents)}"
+    )
+    for t in r.tests:
+        status = "designated" if t.designated else f"warned {t.warned}" if t.warned else "-"
+        typer.echo(f"  test {t.regime_name}: {t.ratio:.0%} of the thresholds ({status})")
+    for b in r.breaches:
+        typer.echo(f"  BREACH {b}")
+    for d in r.designations:
+        if d.player or not d.historical or history:
+            typer.echo(f"  designation {d.company} under {d.regime_name} since {d.since}")
+    for x in r.duties:
+        if x.player:
+            flag = " (breached)" if x.breached else ""
+            typer.echo(f"  duty {x.regulator_name}: {x.label} since {x.since}{flag}")
+    for c in r.cases:
+        if c.historical and not history:
+            continue
+        fine = f", fine {format_money(c.fine_cents)}" if c.fine_cents else ""
+        window = f" ({c.stage_window})" if c.stage_window else ""
+        typer.echo(
+            f"  case {c.company} / {c.regulator_name}: {c.title}; {c.stage}{window}, "
+            f"{c.outcome}{fine}" + (f"; odds {c.odds}" if c.odds else "")
+        )
+    for w in r.watches:
+        signs = ", ".join(f"{s.kind} {s.month}" for s in w.signs)
+        typer.echo(f"  warning signs {w.regulator_name} {w.market}: {signs}")
+    for o in r.orders:
+        typer.echo(f"  order {o.company}: separate {o.unit} by {o.deadline} ({o.status})")

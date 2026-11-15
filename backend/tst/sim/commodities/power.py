@@ -20,6 +20,7 @@ def index(state: GameState, region: str, data: GameData) -> float:
 
 def opex_cents(base_cents: float, power_index: float) -> float:
     """33.5: a GPU data centre's $200 a CU-month costs $170 at 0.85."""
+    # money-exact: rate
     return base_cents * power_index
 
 

@@ -42,6 +42,7 @@ def test_the_library(loaded: LoadedData) -> None:
         # M22: a rule announced, sales hit (two), supply hit, a détente, a listing (39)
         "geopolitics": 6,
         "platforms": 1,  # M31: a gatekeeper's removal (44.5)
+        "regulation": 4,  # M34: an inquiry, charges, a ruling and a structural order (48)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

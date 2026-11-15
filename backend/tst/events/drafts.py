@@ -80,6 +80,10 @@ def event_names(
         from tst.sim.platforms.gatekeep import removal_names
 
         names |= removal_names(state, data, event)
+    if event.category == "regulation" and balance is not None:  # M34 (48.3-48.4)
+        from tst.sim.regulation.answers import event_names as regulation_names
+
+        names |= regulation_names(state, data, balance, event)
     if event.category == "public" and balance is not None:  # M13 (25)
         names |= public_names(state, data, balance, event.company_id)
     return names
@@ -127,7 +131,8 @@ def template_draft(
                 "geopolitics_step",
                 "refining_step",
                 "platform_step",
-            ):  # M16, M18, M19, M20, M31 too
+                "regulation_step",
+            ):  # M16, M18, M19, M20, M31, M34 too
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(

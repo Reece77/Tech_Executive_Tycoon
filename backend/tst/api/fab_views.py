@@ -10,6 +10,7 @@ from dataclasses import replace
 
 from tst.api import howto
 from tst.api.schemas.fabs import (
+    FabCountryOut,
     FabCustomerOut,
     FabHistoryOut,
     FabMonthOut,
@@ -24,6 +25,10 @@ from tst.api.schemas.fabs import (
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.chips import chips
+from tst.sim.equipment.actions import lead_text
+from tst.sim.equipment.fablink import open_order
+from tst.sim.equipment.queue import Lead
+from tst.sim.equipment.queue import lead as eq_lead
 from tst.sim.fabs import actions as fa
 from tst.sim.fabs import formulas as fx
 from tst.sim.fabs import market as fm
@@ -77,6 +82,7 @@ def _status(state: GameState, fab: Fab, f: Facility) -> str:
 
 def fab_out(state: GameState, fab: Fab, f: Facility, data: LoadedData) -> FabOut:
     b, d = data.balance, data.game_data
+    order = open_order(state, fab.facility_id) if d.equipment is not None else None
     staffing = lifecycle.staffing(state, f, b)
     company = state.company(f.company_id)
     uq = fa.upgrade_quote(state, f.company_id, f.id, b, d) if f.status == "live" else None
@@ -128,6 +134,8 @@ def fab_out(state: GameState, fab: Fab, f: Facility, data: LoadedData) -> FabOut
         book_value_cents=f.book_value_cents,
         tools=fab.tools,
         tools_label=_label(fab.tools_turn),
+        tool_order_id=order.id if order is not None else None,
+        tools_wait_label=(lead_text(eq_lead(state, order, b, d)) if order is not None else None),
         staff=staffing.staff,
         staff_needed=staffing.needed,
         coverage=staffing.coverage,
@@ -266,16 +274,42 @@ def fabs_out(state: GameState, data: LoadedData) -> FabsOut:
         process_level=fm.process_level(state, player, b, d),
         sizes=list(kind.sizes or ()),
         regions=list(d.region_keys),
+        countries=[
+            FabCountryOut(key=c.key, label=c.label, region=c.region, default=c.default)
+            for c in (d.countries.countries if d.countries is not None else ())
+        ],
         build_energy=b.fab.build_energy,
         upgrade_energy=b.fab.upgrade.energy,
     )
 
 
 def quote_out(
-    state: GameState, node: str, region: str, size: int, duv: bool, data: LoadedData
+    state: GameState,
+    node: str,
+    region: str,
+    size: int,
+    duv: bool,
+    data: LoadedData,
+    *,
+    country: str | None = None,
+    own_tools: bool = False,
+    prepay: bool = False,
 ) -> FabQuoteOut:
     b, d = data.balance, data.game_data
-    q = fa.quote(state, state.player.id, node, region, size, b, d, duv=duv)
+    q = fa.quote(
+        state,
+        state.player.id,
+        node,
+        region,
+        size,
+        b,
+        d,
+        duv=duv,
+        country=country,
+        own_tools=own_tools,
+        prepay=prepay,
+    )
+    tp = q.tool_plan
     market = fm.node_price_cents(state, node, b, d) if fm.in_volume(state, node, b, d) else None
     life = b.facility.kinds["fab"].life_months
     starts = size
@@ -310,6 +344,15 @@ def quote_out(
         allowed=q.allowed,
         reason=q.reason,
         how=howto.fab_quote_how(state, node, q.need_level, q.level, q.reason, data),
+        tools_from_stock=tp.from_stock if tp else 0,
+        tools_own=tp.from_own if tp else 0,
+        tools_to_order=tp.to_order if tp else 0,
+        tool_price_cents=tp.price_cents if tp and tp.to_order else None,
+        tools_wait_label=(
+            lead_text(Lead(tp.lead_low, tp.lead_high))
+            if tp and tp.to_order and not tp.blocked
+            else None
+        ),
         market_cents=market,
         cost_per_start_cents=per_start,
     )

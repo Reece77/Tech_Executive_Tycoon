@@ -1,4 +1,4 @@
-"""Loading and syncing M32's records (formulas.md 46; migration 0055_m32). Every collection lives
+"""Loading and syncing M32's records (formulas.md 46; migration 0057_m32). Every collection lives
 in `power_record`, one row a record (`kind` = the GameState field), its fields in `data`; a
 changed collection is rewritten whole. A plant's month is nested as a dict; the game-wide draws
 (`power_world`) are one row."""
@@ -72,7 +72,7 @@ def _decode(kind: str, data: dict[str, Any]) -> Any:
 def load_power(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every power record (0055_m32); a save from before M32 has none."""
+    """Every power record (0057_m32); a save from before M32 has none."""
     if not has_table(session, PowerRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

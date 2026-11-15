@@ -268,7 +268,9 @@ def fab_month(
             if fab.months_run > 0 or fab.live_turn < state.turn:
                 fab = _learn(state, fab, facility, rng, balance, data)
             staff = lifecycle.staffing(state, facility, balance)
-            available = facility.capacity * staff.coverage
+            available = (
+                facility.capacity * staff.coverage * _tools_factor(state, fab, balance, data)
+            )
             # M32 (46.5): a grid outage scraps a share of the month's starts in progress
             from tst.sim.power import outages as grid_outages
 
@@ -283,6 +285,15 @@ def fab_month(
             )
         state = with_fab(state, replace(fab, month=month))
     return state, entries, logs
+
+
+def _tools_factor(state: GameState, fab: Fab, balance: Balance, data: GameData) -> float:
+    """M33 (47.3-47.4): a service ban, or own prototype tools, cut the starts on offer."""
+    if data.equipment is None or not state.fab_tools:
+        return 1.0
+    from tst.sim.equipment.fablink import tools_factor
+
+    return tools_factor(state, fab, balance, data)
 
 
 # --- Phase 5 ---------------------------------------------------------------------------------
@@ -319,7 +330,7 @@ def _power_cents(
 
     mwh = power_mwh(state, fab, balance, data)
     return (
-        mwh
+        mwh  # money-exact: rate
         * balance.refining.power_cents_per_mwh
         * grid.multiplier(state, facility.region, balance, data)
     )
@@ -393,8 +404,8 @@ def settle_fabs(
         revenue = round(contract_revenue + exact(spot) * exact(slot))
         run = own + sold
         fixed = fixed_cents(fab, facility, balance)
-        materials = round(run * materials_cents(state, fab, balance, data))
-        power_ = round(run * _power_cents(state, fab, facility, balance, data))
+        materials = round(exact(run) * exact(materials_cents(state, fab, balance, data)))
+        power_ = round(exact(run) * exact(_power_cents(state, fab, facility, balance, data)))
         staff = sum(e.salary_cents for e in lifecycle.staff_of(state, facility, balance)) // MONTHS
         cash = fixed + materials + power_
         if cash:

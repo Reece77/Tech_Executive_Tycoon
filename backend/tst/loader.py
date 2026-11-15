@@ -48,8 +48,10 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
+from tst.sim.equipment.config import EquipmentFile
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.exploration.config import GeologyFile
+from tst.sim.fabs import nodes as nd
 from tst.sim.fabs.config import NodesFile
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
@@ -66,6 +68,7 @@ from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.platforms.config import PlatformsFile
 from tst.sim.power.config import PowerFile
+from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -107,6 +110,8 @@ TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
 POWER_FILE = "power.yaml"  # M32 (formulas.md 46)
+REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
+EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -121,6 +126,7 @@ DATA_FILES = (
     COMPONENTS_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
+    EQUIPMENT_FILE,
     ERAS_FILE,
     VOICES_FILE,
     GEOLOGY_FILE,
@@ -129,6 +135,7 @@ DATA_FILES = (
     INVESTORS_FILE,
     PLATFORMS_FILE,
     POWER_FILE,
+    REGULATION_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
@@ -595,6 +602,37 @@ def power_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+def equipment_problems(balance: Balance, data: GameData) -> list[str]:
+    """M33 (47): equipment.yaml's nodes, countries and suppliers are known; the programme's
+    domain is a tech_frontier.yaml domain; `equipment.start` is the month after the history."""
+    ef = data.equipment
+    if ef is None:
+        return []
+    problems: list[str] = []
+    if data.nodes is not None:
+        known = set(data.nodes.node_keys())
+        for g in ef.generations:
+            if bad := sorted(set(g.nodes) - known):
+                problems.append(f"generation {g.key}: unknown nodes {bad}")
+    if data.countries is not None:
+        countries = {c.key for c in data.countries.countries}
+        named = {*ef.buyer_countries.values(), *(s.country for s in ef.suppliers)}
+        named |= {c for rule in ef.controls for c in rule.to}
+        if bad := sorted(named - countries):
+            problems.append(f"unknown countries {bad}")
+    if data.chain_companies is not None:
+        makers = {s.key for s in ef.suppliers}
+        if bad := sorted({m.key for m in data.chain_companies.equipment_makers} - makers):
+            problems.append(f"chain_companies.yaml equipment_makers: not suppliers {bad}")
+    if data.tech is not None and balance.equipment.programme.domain not in {
+        d.key for d in data.tech.domains
+    }:
+        problems.append(f"programme domain {balance.equipment.programme.domain!r} is not a domain")
+    if balance.equipment.start_turn != nd.HISTORY_END + 1:
+        problems.append("equipment.start must be the month after the history (2026-01)")
+    return problems
+
+
 def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     """M31 (44): platforms.yaml names known regions, categories and owners; every region has a
     share row for every year of the history; balance's app categories and segments exist."""
@@ -636,6 +674,42 @@ def platforms_problems(balance: Balance, data: GameData) -> list[str]:
         problems.append("categories.yaml needs the `os` pseudo-category")
     if pb.start_turn != pf.history_end_turn + 1:
         problems.append("platforms.start must be the month after platforms.yaml's history_end")
+    return problems
+
+
+def regulation_problems(balance: Balance, data: GameData) -> list[str]:
+    """M34 (48): regulation.yaml names known regions, parts, companies, platforms and
+    currencies; its history ends with platforms.yaml's; `regulation.start` is the month after."""
+    rf = data.regulation
+    if rf is None:
+        return []
+    problems: list[str] = []
+    regions = set(data.region_keys)
+    owners = {c.name for c in data.incumbents}
+    parts = data.platforms.region_parts if data.platforms is not None else {}
+    keys = {p.key for p in data.platforms.platforms} if data.platforms is not None else set()
+    for r in rf.regulators:
+        if r.region not in regions:
+            problems.append(f"regulator {r.key}: unknown region {r.region!r}")
+        elif r.part is not None and r.part not in parts.get(r.region, {}):
+            problems.append(f"regulator {r.key}: unknown part {r.part!r} of {r.region}")
+    for g in rf.regimes:
+        if g.currency not in balance.regulation.fx:
+            problems.append(f"regime {g.key}: currency {g.currency} has no regulation.fx rate")
+    for d in rf.designations:
+        if d.company is not None and d.company not in owners:
+            problems.append(f"designation of {d.label}: {d.company!r} is not in incumbents.yaml")
+        if d.platform is not None and d.platform not in keys:
+            problems.append(f"designation of {d.label}: unknown platform {d.platform!r}")
+    for c in rf.cases:
+        if c.company is not None and c.company not in owners:
+            problems.append(f"case {c.key}: {c.company!r} is not in incumbents.yaml")
+        if c.currency not in balance.regulation.fx:
+            problems.append(f"case {c.key}: currency {c.currency} has no regulation.fx rate")
+    if data.platforms is not None and rf.history_end_turn != data.platforms.history_end_turn:
+        problems.append("history_end must be platforms.yaml's")
+    if balance.regulation.start_turn != rf.history_end_turn + 1:
+        problems.append("regulation.start must be the month after regulation.yaml's history_end")
     return problems
 
 
@@ -962,6 +1036,8 @@ def load_all(
     chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
     platforms = _validate(PlatformsFile, parsed[PLATFORMS_FILE], PLATFORMS_FILE)
     power = _validate(PowerFile, parsed[POWER_FILE], POWER_FILE)
+    regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
+    equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
     game_data = _validate(
         GameData,
         {
@@ -1014,6 +1090,8 @@ def load_all(
             "chain_companies": chain,
             "platforms": platforms,
             "power": power,
+            "regulation": regulation,
+            "equipment": equipment,
         },
         "seed data cross-check",
     )
@@ -1035,6 +1113,10 @@ def load_all(
         raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
     if problems := platforms_problems(balance, game_data):
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
+    if problems := regulation_problems(balance, game_data):
+        raise DataLoadError(f"{REGULATION_FILE}, {BALANCE_FILE} regulation: " + "; ".join(problems))
+    if problems := equipment_problems(balance, game_data):
+        raise DataLoadError(f"{EQUIPMENT_FILE}, {BALANCE_FILE} equipment: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

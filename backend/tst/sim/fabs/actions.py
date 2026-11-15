@@ -23,6 +23,8 @@ from typing import Final, Literal
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
+from tst.sim.equipment import fablink
+from tst.sim.equipment.fablink import ToolPlan
 from tst.sim.errors import FabRuleError, InsufficientCashError
 from tst.sim.fabs import formulas as fx
 from tst.sim.fabs import market as fm
@@ -33,7 +35,7 @@ from tst.sim.facilities import formulas as ff
 from tst.sim.facilities import lifecycle
 from tst.sim.facilities.lifecycle import BuildQuote
 from tst.sim.group.assets import check_country, inbox_company, managed_facility, place
-from tst.sim.ledger import CASH, LedgerBalances, account_balance
+from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import inbox_item
 from tst.sim.money import times
 from tst.sim.rng import RngFactory
@@ -50,6 +52,8 @@ class BuildFab:
     city: str | None = None
     company_id: int | None = None  # M23a: a group company the founder builds for (default: own)
     country: str | None = None  # M23a: the country it sits in (default: its city's, the region's)
+    own_tools: bool = False  # M33 (47.4): equip it from the company's own lithography tools
+    prepay: bool = False  # M33 (47.2): prepay its tool order to move up ASML's queue
     kind: Literal["build_fab"] = "build_fab"
 
 
@@ -57,6 +61,8 @@ class BuildFab:
 class UpgradeFab:
     actor_id: int
     facility_id: int
+    own_tools: bool = False  # M33 (47.4)
+    prepay: bool = False  # M33 (47.2)
     kind: Literal["upgrade_fab"] = "upgrade_fab"
 
 
@@ -86,6 +92,8 @@ class FabQuote:
     level: float
     allowed: bool
     reason: str | None
+    tool_plan: ToolPlan | None = None  # M33 (47.2): stock, own tools, the order and its lead
+    tools_capex_cents: int = 0  # M33: the capex change from the tools (inside capex_cents)
 
 
 def _check_node(data: GameData, node: str, duv: bool) -> None:
@@ -107,6 +115,10 @@ def quote(
     data: GameData,
     *,
     duv: bool = False,
+    country: str | None = None,
+    own_tools: bool = False,
+    prepay: bool = False,
+    plan_tools: bool = True,
 ) -> FabQuote:
     _check_node(data, node, duv)
     if region not in data.region_keys:
@@ -124,7 +136,20 @@ def quote(
     )
     euv = fm.uses_euv(data, node, duv)
     tools = fx.tools_needed(capacity, fb.euv.wafers_per_tool) if euv else 0
-    tools_at = fm.tools_turn(state, company, tools, balance, data) if euv else None
+    plan: ToolPlan | None = None
+    extra = 0
+    if euv and data.equipment is not None and plan_tools:  # M33 (47.2): ASML's queue
+        where = country or _default_country(state, region, data)
+        plan = fablink.plan(
+            state, company, node, tools, where, balance, data, own=own_tools, prepay=prepay
+        )
+        tools_at: int | None = plan.tools_turn if plan.tools_turn is not None else fm.NEVER
+        extra = fablink.capex_change(plan, capex, balance, state)
+        if prepay:
+            extra += fablink.prepay_cents(plan, balance)
+        capex += extra
+    else:
+        tools_at = fm.tools_turn(state, company, tools, balance, data) if euv else None
     physical = _physical(state.turn + months, tools_at, fb.euv.install_months)
     ready = max(physical, fm.planning_turn(state, node, balance, data))
     need = fm.need_level(state, node, balance, data)
@@ -136,6 +161,8 @@ def quote(
         reason = (
             f"{node_label(data, node)} needs process research level {need:.0f} (yours {level:.0f})"
         )
+    elif plan is not None and plan.blocked is not None:
+        reason = f"{plan.blocked}: its EUV tools cannot ship there"
     return FabQuote(
         node=node,
         region=region,
@@ -154,7 +181,18 @@ def quote(
         level=level,
         allowed=reason is None,
         reason=reason,
+        tool_plan=plan,
+        tools_capex_cents=extra,
     )
+
+
+def _default_country(state: GameState, region: str, data: GameData) -> str:
+    """The country a fab without a named one sits in (M22's default for the region)."""
+    if data.countries is None:
+        return "us"  # tunable-exempt: countries.yaml's default country
+    from tst.sim.geopolitics.fabs import fab_country
+
+    return fab_country(state, region, None, data)
 
 
 def _company(state: GameState, actor_id: int, company_id: int | None) -> int:
@@ -188,8 +226,23 @@ def build_fab(
     state: GameState, action: BuildFab, balance: Balance, data: GameData, balances: LedgerBalances
 ) -> Outcome:
     company = _company(state, action.actor_id, action.company_id)
+    country = action.country
+    if country is None and action.city is not None and data.countries is not None:
+        from tst.sim.geopolitics.world import city_country
+
+        country = city_country(data, action.city)
     q = quote(
-        state, company, action.node, action.region, action.capacity, balance, data, duv=action.duv
+        state,
+        company,
+        action.node,
+        action.region,
+        action.capacity,
+        balance,
+        data,
+        duv=action.duv,
+        country=country,
+        own_tools=action.own_tools,
+        prepay=action.prepay,
     )
     if not q.allowed:
         raise FabRuleError(q.reason or "this fab cannot be built")
@@ -213,6 +266,7 @@ def build_fab(
         balance.fab.duv.cost_mult if action.duv else 1.0,
     )
     true_capex = times(real, 1 + overrun_share(state, facility_id, balance))
+    true_capex += q.tools_capex_cents  # M33: tools' scarcity, stock and prepayment (no overrun)
     bq = BuildQuote(
         kind=FAB_KIND,
         region=action.region,
@@ -244,6 +298,12 @@ def build_fab(
         live_turn=q.physical_turn,
     )
     state = with_fab(state, fab)
+    entries: list[LedgerEntry] = []
+    if q.tool_plan is not None:
+        where = country or _default_country(state, action.region, data)
+        state, entries = fablink.commit(
+            state, company, facility.id, q.tool_plan, where, action.prepay
+        )
     tools = (
         f"its {q.tools} EUV tools arrive by {_when(q.tools_turn)}"
         if q.tools_turn is not None
@@ -267,7 +327,7 @@ def build_fab(
     from tst.sim.power.actions import after_order  # M32 (46.3): a large fab joins the queue
 
     state, queued = after_order(state, facility, balance, data)
-    return Outcome(state, (), (log, *queued))
+    return Outcome(state, tuple(entries), (log, *queued))
 
 
 def _when(turn: int | None) -> str:
@@ -285,10 +345,32 @@ class UpgradeQuote:
     tools_turn: int | None
     allowed: bool
     reason: str | None
+    tool_plan: ToolPlan | None = None  # M33 (47.2)
+    needed: int = 0  # M33: the tools the new node needs in all
+
+
+def current_generation(state: GameState, fab: Fab, data: GameData) -> str | None:
+    """The queued generation a fab's tools are (M33): its tool records', else its node's."""
+    for x in state.fab_tools:
+        if x.facility_id == fab.facility_id:
+            return x.generation
+    if data.equipment is None or fab.tools <= 0:
+        return None
+    from tst.sim.equipment.data import generation_for
+
+    g = generation_for(data, fab.node)
+    return g.key if g is not None else None
 
 
 def upgrade_quote(
-    state: GameState, company: int, facility_id: int, balance: Balance, data: GameData
+    state: GameState,
+    company: int,
+    facility_id: int,
+    balance: Balance,
+    data: GameData,
+    *,
+    own_tools: bool = False,
+    prepay: bool = False,
 ) -> UpgradeQuote:
     fab = fm.fab_of(state, facility_id)
     facility = state.facility(facility_id)
@@ -300,22 +382,64 @@ def upgrade_quote(
     new = keys[i + 1] if i + 1 < len(keys) else None
     fb = balance.fab
     reason: str | None = None
-    capex = months = tools = 0
+    capex = months = tools = needed = 0
     tools_at: int | None = None
+    plan: ToolPlan | None = None
     if facility.status != "live" or fab.upgrading(state.turn) or state.turn < fab.live_turn:
         reason = "only a fab in production can convert"
     elif new is None:
         reason = "there is no newer node"
     else:
-        q = quote(state, company, new, facility.region, facility.capacity, balance, data)
-        capex = round(q.capex_cents * fb.upgrade.capex_share)
-        tools = max(0, q.tools - fab.tools)
-        tools_at = fm.tools_turn(state, company, tools, balance, data) if tools else None
+        q = quote(
+            state,
+            company,
+            new,
+            facility.region,
+            facility.capacity,
+            balance,
+            data,
+            plan_tools=False,
+        )
+        capex = times(q.capex_cents, fb.upgrade.capex_share)
+        needed = q.tools
+        if q.euv and data.equipment is not None:  # M33 (47.2): ASML's queue
+            from tst.sim.geopolitics.world import facility_country
+
+            country = (
+                facility_country(state, facility, data) if data.countries is not None else "us"
+            )
+            plan = fablink.plan(
+                state,
+                company,
+                new,
+                q.tools,
+                country,
+                balance,
+                data,
+                own=own_tools,
+                prepay=prepay,
+                have_generation=current_generation(state, fab, data),
+                have_tools=fab.tools,
+            )
+            tools = plan.to_order + plan.from_stock + plan.from_own
+            capex += fablink.capex_change(plan, capex, balance, state)
+            if prepay:
+                capex += fablink.prepay_cents(plan, balance)
+            tools_at = (
+                None
+                if tools == 0
+                else (plan.tools_turn if plan.tools_turn is not None else fm.NEVER)
+            )
+        else:
+            tools = max(0, q.tools - fab.tools)
+            tools_at = fm.tools_turn(state, company, tools, balance, data) if tools else None
         months = fb.upgrade.months
         if tools_at is not None:
             months = max(months, tools_at + fb.euv.install_months - state.turn)
         if not fm.in_volume(state, new, balance, data):
             reason = f"{node_label(data, new)} is not in volume yet"
+        elif plan is not None and plan.blocked is not None:
+            reason = f"{plan.blocked}: its EUV tools cannot ship there"
         elif q.level < q.need_level:
             reason = (
                 f"{node_label(data, new)} needs process research level {q.need_level:.0f}"
@@ -331,6 +455,8 @@ def upgrade_quote(
         tools_turn=tools_at,
         allowed=reason is None,
         reason=reason,
+        tool_plan=plan,
+        needed=needed,
     )
 
 
@@ -344,7 +470,15 @@ def upgrade_fab(
     # M23r (finding 2): the founder converts any group fab; its owner pays
     own = acting_company(state, action.actor_id)
     company = managed_facility(state, action.actor_id, action.facility_id, own).company_id
-    uq = upgrade_quote(state, company, action.facility_id, balance, data)
+    uq = upgrade_quote(
+        state,
+        company,
+        action.facility_id,
+        balance,
+        data,
+        own_tools=action.own_tools,
+        prepay=action.prepay,
+    )
     if not uq.allowed or uq.new is None:
         raise FabRuleError(uq.reason or "this fab cannot convert")
     first = -(-uq.capex_cents // uq.months)
@@ -364,10 +498,24 @@ def upgrade_fab(
         upgrade_started=state.turn,
         upgrade_cents=true_capex,
         upgrade_paid_cents=0,
-        tools=fab.tools + uq.tools,
+        tools=max(fab.tools, uq.needed) if uq.tool_plan is not None else fab.tools + uq.tools,
         tools_turn=uq.tools_turn if uq.tools_turn is not None else fab.tools_turn,
     )
     state = with_fab(state, fab)
+    entries: list[LedgerEntry] = []
+    if uq.tool_plan is not None and uq.tool_plan.generation is not None:  # M33
+        from tst.sim.geopolitics.world import facility_country
+
+        facility = state.facility(action.facility_id)
+        assert facility is not None
+        country = facility_country(state, facility, data) if data.countries is not None else "us"
+        if current_generation(state, fab, data) != uq.tool_plan.generation:
+            fab = replace(fab, tools=uq.needed)
+            state = with_fab(state, fab)
+        state = fablink.retire_other_generations(state, fab.facility_id, uq.tool_plan.generation)
+        state, entries = fablink.commit(
+            state, company, fab.facility_id, uq.tool_plan, country, action.prepay
+        )
     log = inbox_item(
         state.turn,
         inbox_company(state, company),
@@ -381,7 +529,7 @@ def upgrade_fab(
         months=uq.months,
         ready=format_turn(ready),
     )
-    return Outcome(state, (), (log,))
+    return Outcome(state, tuple(entries), (log,))
 
 
 def apply_fab(

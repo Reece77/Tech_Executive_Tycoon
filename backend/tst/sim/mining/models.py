@@ -13,6 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Final, Literal
 
+from tst.sim.money import exact
+
 type MineStatus = Literal["building", "producing", "care", "restarting", "seized", "closed"]
 type CloseReason = Literal["depleted", "chosen", "sold_to_state", "seized", "sold"]
 type DealKind = Literal["contract", "offtake"]
@@ -107,7 +109,7 @@ class Mine:
 
     @property
     def hidden_total_cents(self) -> int:
-        return round(self.estimate_cents * (1 + self.hidden_overrun))
+        return round(self.estimate_cents * (1 + exact(self.hidden_overrun)))
 
     @property
     def book_cents(self) -> int:

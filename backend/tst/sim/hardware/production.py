@@ -36,7 +36,7 @@ from tst.sim.hardware import formulas as hf
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.hardware.supply import delivered_share
 from tst.sim.ledger import CASH, COGS, GENERAL_ADMIN, LedgerEntry, LedgerLine
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.products.models import SELLING, Product
 from tst.sim.state import (
     GameState,
@@ -361,7 +361,7 @@ def settle(
                     )
                 continue
             units = use.plant + use.contract
-            bom = round(units * unit_bom_cents(state, product, balance, data))
+            bom = round(exact(units) * exact(unit_bom_cents(state, product, balance, data)))
             chip_type = plan.chip_type[pid]
             own_id = plan.own_chip_of.get((product.company_id, chip_type))
             own_unit = 0.0
@@ -369,11 +369,11 @@ def settle(
                 own_unit = posted.get(own_id, 0.0)
             bought = units - use.own_chips
             chip = round(
-                use.own_chips * own_unit
-                + bought * chips.bought_price_cents(data, balance, chip_type)
+                exact(use.own_chips) * exact(own_unit)
+                + exact(bought) * exact(chips.bought_price_cents(data, balance, chip_type))
             )
             fees = sum(
-                plan.contract_used.get(c, 0.0) * contract.price_cents
+                exact(plan.contract_used.get(c, 0.0)) * exact(contract.price_cents)
                 for c in plan.contracts_of.get(pid, [])
                 if (contract := state.production_contract(c)) is not None
             )
@@ -382,7 +382,9 @@ def settle(
                 if use.plant
                 else 0
             )
-            variable = run * balance.facility.kinds[balance.hardware.plant_kind].variable_cents
+            variable = (
+                exact(run) * balance.facility.kinds[balance.hardware.plant_kind].variable_cents
+            )
             assembly = round(fees + variable)
             rows.append(
                 ProductionMonth(

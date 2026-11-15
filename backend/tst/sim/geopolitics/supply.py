@@ -224,6 +224,7 @@ def surcharge_cents(
         if use is None:
             use = costs.company_use(state, company_id, balance, data)
         x = exposure(state, company_id, line.good, balance, data, use.get(line.good, 0.0))
+        # money-exact: rate
         total += line.cents * x.share * x.premium
     return total
 

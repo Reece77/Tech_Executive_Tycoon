@@ -108,6 +108,11 @@ STREAM_IDS: Final = MappingProxyType(
         # and queue path; (1, facility) a plant's overrun and forced outages; (2, entry) a queued
         # project's connection; (3, type_index) the game-wide learning and SMR-era draws
         "power": 60,
+        "regulation": 62,  # M34 (formulas.md 48): investigations and their outcomes
+        # M33 (formulas.md 47): (0, generation index) the quarter's allocation jitter;
+        # (1, company id, stage index, attempt) a programme's draws and overrun; (2, foundry
+        # index) a Chinese foundry's own EUV-class tools' month
+        "equipment": 61,
         "misc": 99,
     }
 )

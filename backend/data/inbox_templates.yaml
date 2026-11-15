@@ -3,6 +3,39 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  regulation_designation_warning: # M34 (48.1)
+    title: "{regulator}: a designation under the {regime} is likely next year"
+    body: "The company is at {pct} of the {regime}'s thresholds. If it still meets them next December it will be designated a gatekeeper, with duties a few months later."
+  regulation_designated: # M34 (48.1)
+    title: "Designated a gatekeeper under the {regime}"
+    body: "{regulator} has designated the company. Its duties apply in {months} months; the Regulation screen lists them."
+  regulation_duty: # M34 (48.2)
+    title: "A new duty: {duty}"
+    body: "{regulator}'s duty binds the company's platforms there from this month. Keeping a forbidden setting raises the risk of an investigation and its fine."
+  regulation_case_closed: # M34 (48.3)
+    title: "{regulator}'s case is closed: {outcome}"
+    body: "The investigation into the company's conduct in {market} has ended ({outcome}). The record stays on the Regulation screen."
+  regulation_warning_press: # M34 (48.4)
+    title: "Press: calls grow to break up the company's {market} business"
+    body: "Commentators and rivals are asking {regulator} to separate the business. Breaking a ruling's remedy keeps the story alive."
+  regulation_warning_report: # M34 (48.4)
+    title: "{regulator} publishes a report naming a break-up"
+    body: "The report on the company's conduct in {market} lists separation among the possible remedies if it keeps breaking the rules."
+  regulation_warning_political: # M34 (48.4)
+    title: "Lawmakers press {regulator} on the company"
+    body: "A hearing on the company's {market} business ended with calls for structural action. Complying with every duty takes the pressure off."
+  regulation_warning_board: # M34 (48.4)
+    title: "The board is worried about a break-up"
+    body: "Directors ask how the company will answer {regulator} on {market}: a structural order may follow the next ruling."
+  regulation_order_done: # M34 (48.4)
+    title: "{unit} {how}"
+    body: "The structural order is met: {unit} went to {buyer} for {price_cents}."
+  regulation_order_overturned: # M34 (48.4)
+    title: "The order to separate {unit} is overturned"
+    body: "The appeal succeeded: the company keeps it."
+  regulation_spin_off_unavailable: # M34 (48.4)
+    title: "{unit} cannot be spun off as it is"
+    body: "A spin-off needs the unit in a subsidiary of a listed holding company. Sell it from the Regulation screen, or restructure before the deadline."
   platform_rejected: # M31 (44.5)
     title: "{platform} rejected an update to {product}"
     body: "{owner}'s review held back this month's release: a month of new features is lost while the team reworks it."
@@ -522,6 +555,30 @@ templates:
   fab_upgraded:
     title: "Fab converted: {fab}"
     body: "{fab} now runs {node}. Yield restarts at {yield_pct} and learns again."
+  tools_ordered: # M33 (47.2)
+    title: "Tools ordered: {tools} {generation}"
+    body: "{tools} {generation} tools join {supplier}'s queue at {price_cents} each{prepaid}. The last should arrive in {lead}; the place you hold depends on your history with {supplier} and on what rivals order."
+  tools_delivered: # M33 (47.2)
+    title: "Tools delivered: {tools} {generation}"
+    body: "{supplier} delivered {tools} {generation} tools{target}. {left}"
+  tools_order_lost: # M33 (47.3)
+    title: "Tool order lost: {generation}"
+    body: "{rule}: {supplier} cannot ship the {left} {generation} tools still on order{target}. The place in the queue is gone."
+  tools_prepaid: # M33 (47.2)
+    title: "Tool order prepaid: {generation}"
+    body: "You prepaid {cents} on {tools} {generation} tools: {supplier} moves the order up its queue. The prepayment is not refunded."
+  litho_started: # M33 (47.4)
+    title: "Lithography programme started: {stage}"
+    body: "The {stage} programme starts at {funding} of its reference budget ({cents} a month). Its estimate is {estimate_cents} over {months}; programmes like it often run over, and some never work."
+  litho_succeeded: # M33 (47.4)
+    title: "Lithography programme works: {stage}"
+    body: "Our first {stage} tools run at {throughput} of ASML's throughput and cost {yield_cut} yield points at first; both improve as more are installed. The line makes {per_year} a year."
+  litho_failed: # M33 (47.4)
+    title: "Lithography programme failed: {stage}"
+    body: "After {months} and {spent_cents}, the {stage} prototype does not work. The money is spent; a new attempt would start again."
+  tools_sold: # M33 (47.4)
+    title: "Own tools sold: {tools} {generation}"
+    body: "Rival foundries bought {tools} of our {generation} tools for {cents}: ASML's queue is long and our price is lower. Expect ASML to respond."
   refinery_ordered:
     title: "Plant ordered: {plant}"
     body: "{units} in {region}. Estimated capex {capex_cents}, built over {months} months (ready {ready}). It needs {staff} process engineers."

@@ -99,6 +99,7 @@ def benefits_cents(monthly_salary: Cents, payroll: PayrollBalance) -> Cents:
 
 
 def severance_cents(annual_salary_cents: Cents, payroll: PayrollBalance) -> Cents:
+    # money-exact: exact
     return monthly_salary_cents(annual_salary_cents) * payroll.severance_months
 
 
@@ -112,6 +113,7 @@ def market_mid_cents(band_mid_cents: Cents, region_multiplier_bp: int) -> Cents:
 
 def pay_term(salary_cents: Cents, market_mid: Cents, morale: MoraleBalance) -> float:
     """clamp(60 x (salary / market_mid - 1), -20, +15)."""
+    # money-exact: ratio
     raw = morale.pay_slope * (salary_cents / market_mid - 1)
     return min(max(raw, morale.pay_min), morale.pay_max)
 

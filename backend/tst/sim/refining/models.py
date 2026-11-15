@@ -56,12 +56,14 @@ class PlantMonth:
 
     @property
     def market_value_cents(self) -> float:
+        # money-exact: rate
         return self.output * self.market_cents
 
     @property
     def margin(self) -> float | None:
         """Operating margin at market prices (36.5 target 1): (value - cost) / value."""
         value = self.market_value_cents
+        # money-exact: ratio
         return (value - self.cost_cents) / value if value > 0 else None
 
 
