@@ -30,19 +30,26 @@ from typing import Final
 
 from tst.balance.game import Game
 from tst.balance.m28 import SEEDS
-from tst.balance.m31 import LINE, _copy, _static, played
+from tst.balance.m31 import CONTRACT_UNITS, LINE, _copy, _static, played
 from tst.balance.report import Row, table
 from tst.sim.actions import ChooseEvent
 from tst.sim.actions.founder import SetLobbying
 from tst.sim.calendar import ym_to_turn
 from tst.sim.geo.models import RegionalSegment
+from tst.sim.hardware.models import ProductionContract
 from tst.sim.ledger import FINES, LedgerEntry
 from tst.sim.platforms.actions import on_launch
 from tst.sim.platforms.models import DeviceRun
 from tst.sim.platforms.phase import addressable_in, home_of
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.regulation import cases, structural
-from tst.sim.state import GameState, with_product, with_product_segment, with_regional_segment
+from tst.sim.state import (
+    GameState,
+    with_product,
+    with_product_segment,
+    with_production_contract,
+    with_regional_segment,
+)
 
 SHARE: Final = 0.45
 EUROPE: Final = "europe"
@@ -50,6 +57,9 @@ END_2034: Final = ym_to_turn(2034, 12)
 END_2039: Final = ym_to_turn(2039, 12)
 START: Final = 192
 OS_ID: Final = LINE + 1
+APP: Final = LINE + 2  # the player's consumer app: its booked revenue is the group's turnover
+APP_CUSTOMERS: Final = 40_000_000.0  # in each of North America and Europe
+APP_PRICE: Final = 500  # cents a month
 LOBBY_DOLLARS: Final = 500_000
 RIVAL_OWNERS: Final = ("Apple", "Microsoft")
 STRATEGIES: Final = ("default", "defiant", "compliant", "careful")
@@ -70,6 +80,13 @@ def owner(seed: int, self_pref: str) -> tuple[Game, int]:
     b, gd = d.balance, d.game_data
     state = _static(game.state, LINE, "devices", "Own Phone", 75.0)
     state = _hold(state, b, gd)
+    cid, ids = state.next_ids.take("production_contract")
+    contract = ProductionContract(
+        id=cid, company_id=state.player.id, product_id=LINE, kind="assembly", supplier="foxconn",
+        units=CONTRACT_UNITS, price_millicents=1_300_000, signed_turn=state.turn,
+        end_turn=END_2039, city="shenzhen",
+    )  # fmt: skip
+    state = with_production_contract(replace(state, next_ids=ids), contract)
     os_product = Product(
         id=OS_ID, company_id=state.player.id, category="os", name="Own OS", status="live",
         quality=60.0, feature_points=0.0, brand=40.0, marketing_budget_cents=0,
@@ -90,7 +107,8 @@ def owner(seed: int, self_pref: str) -> tuple[Game, int]:
 
 
 def _hold(state: GameState, b: object, gd: object) -> GameState:
-    """The phone at SHARE of North America's (home) and Europe's device users."""
+    """The phone at SHARE of North America's (home) and Europe's device users, and the app's
+    APP_CUSTOMERS in each (the targets' premise: a dominant platform owner with a business)."""
     from tst.sim.data_models import Balance, GameData
 
     assert isinstance(b, Balance) and isinstance(gd, GameData)
@@ -107,6 +125,22 @@ def _hold(state: GameState, b: object, gd: object) -> GameState:
         replace(rows[0], customers=e)
         if rows
         else RegionalSegment(LINE, EUROPE, "consumer", 45_000, e)
+    )
+    state = with_regional_segment(state, row)
+    if state.product(APP) is None:
+        state = _static(state, APP, "consumer_apps", "Own Chat", 80.0)
+    app = state.product_segment(APP, "consumer")
+    state = with_product_segment(
+        state,
+        replace(app, customers=APP_CUSTOMERS)
+        if app
+        else ProductSegment(APP, "consumer", APP_PRICE, APP_CUSTOMERS),
+    )
+    rows = [r for r in state.regional_segments_of(APP, EUROPE) if r.segment == "consumer"]
+    row = (
+        replace(rows[0], customers=APP_CUSTOMERS)
+        if rows
+        else RegionalSegment(APP, EUROPE, "consumer", APP_PRICE, APP_CUSTOMERS)
     )
     return with_regional_segment(state, row)
 

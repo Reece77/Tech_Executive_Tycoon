@@ -3681,6 +3681,7 @@ Reece (2026-11-13): regulators **can force a break-up or unbundling** (for examp
 
 - Each region has a **regulator** record (EU Commission, US DOJ and FTC, UK CMA, Japan JFTC, Korea KFTC, China SAMR) with a strictness path (data to 2025; seeded after, moved by politics and §32.5 influence).
 - **Gatekeeper designation** (EU from 2023, others from their dates): a company is designated in a region when it runs a platform (§44) or a core service with users and revenue above that region's thresholds (data: the DMA's 45M monthly users and €7.5B turnover or €75B value). Designation brings duties (§48.2). The test runs each December; a warning arrives a year before a likely designation (when within 80% of thresholds).
+- **The game's economy (PM ruling, 2026-11-15).** In-game companies earn about a tenth of their real revenue, so every money and user threshold, and the investigation revenue floor (§48.3), is multiplied by `economy_scale` (balance.yaml, shared) before the game compares it: `money` = the designated incumbents' in-game 2025 booked revenue over their real 2025 revenue (Apple 0.095, Microsoft with Azure 0.128, Meta 0.032; mean **0.0849**, `tools/m34_economy_scale.py`, seeds 1-3); `users` = 1.0, because the game's user tests read shares of a region's users, which are already at real scale. Screens show the law's figure with the game-scale amount beside it. Fines stay a share of turnover, unscaled.
 
 ### 48.2 Duties
 

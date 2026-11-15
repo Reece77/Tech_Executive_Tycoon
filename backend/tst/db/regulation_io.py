@@ -24,6 +24,7 @@ COLLECTIONS: Final[dict[str, type]] = {
     "reg_watches": Watch,
     "reg_orders": Order,
 }
+TURNOVER: Final = "reg_turnover"  # (company id, months) rows as {"company_id", "months"}
 STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + position
 
 
@@ -33,8 +34,11 @@ def load_regulation(
     """Every regulation record (0055); a save from before M34 has none."""
     if not has_table(session, RegulationRecordRow):
         return state
-    found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}
+    found: dict[str, list[Any]] = {k: [] for k in (*COLLECTIONS, TURNOVER)}
     for row in session.scalars(select(RegulationRecordRow).order_by(RegulationRecordRow.n)):
+        if row.kind == TURNOVER:
+            found[TURNOVER].append((int(row.data["company_id"]), tuple(row.data["months"])))
+            continue
         cls = COLLECTIONS.get(row.kind)
         if cls is not None:
             found[row.kind].append(from_data(cls, row.data))
@@ -48,7 +52,7 @@ def sync_regulation(
 ) -> None:
     if not has_table(session, RegulationRecordRow):
         return
-    for i, kind in enumerate(COLLECTIONS):
+    for i, kind in enumerate((*COLLECTIONS, TURNOVER)):
         before, after = getattr(old, kind), getattr(new, kind)
         if before == after:
             continue
@@ -57,7 +61,13 @@ def sync_regulation(
             session.execute(
                 insert(RegulationRecordRow),
                 [
-                    {"n": i * STRIDE + j, "kind": kind, "data": to_data(x)}
+                    {
+                        "n": i * STRIDE + j,
+                        "kind": kind,
+                        "data": {"company_id": x[0], "months": list(x[1])}
+                        if kind == TURNOVER
+                        else to_data(x),
+                    }
                     for j, x in enumerate(after)
                 ],
             )

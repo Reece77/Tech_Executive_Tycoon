@@ -39,14 +39,23 @@ from tst.loader import LoadedData, load_all
 from tst.sim.actions import ChooseEvent
 from tst.sim.events.models import QueuedEvent
 from tst.sim.geo.models import RegionalSegment
+from tst.sim.hardware.models import ProductionContract
 from tst.sim.ledger import CASH
 from tst.sim.platforms.actions import on_launch
 from tst.sim.platforms.models import DeviceRun
 from tst.sim.platforms.phase import addressable_in, home_of
+from tst.sim.products.models import ProductSegment
 from tst.sim.regulation import cases, structural
 from tst.sim.regulation.duties import add_duty
 from tst.sim.regulation.models import Case, Designation, Order, Watch
-from tst.sim.state import GameState, with_product, with_queued, with_regional_segment
+from tst.sim.state import (
+    GameState,
+    with_product,
+    with_product_segment,
+    with_production_contract,
+    with_queued,
+    with_regional_segment,
+)
 
 SEED: Final = 34
 COMPANY: Final = "Kestrel"
@@ -56,6 +65,8 @@ REGION: Final = "europe"
 SHARE: Final = 0.45  # the phone line's share of Europe's device users
 EU: Final = "eu_commission"
 MONTHS_A_YEAR: Final = 12
+APP_CUSTOMERS: Final = 40_000_000.0  # Kestrel Chat, in North America and in Europe
+APP_PRICE: Final = 500  # cents a month: about $2.4B a year in each
 
 
 def _played(data: LoadedData, until: int) -> Game:
@@ -92,6 +103,13 @@ def _owner(state: GameState, data: LoadedData, self_pref: str = "off") -> tuple[
     state = with_regional_segment(
         state, RegionalSegment(phone, REGION, "consumer", PHONE_PRICE, min(wanted, held))
     )
+    cid, ids = state.next_ids.take("production_contract")
+    contract = ProductionContract(
+        id=cid, company_id=state.player.id, product_id=phone, kind="assembly", supplier="foxconn",
+        units=4_000_000, price_millicents=1_300_000, signed_turn=state.turn,
+        end_turn=state.turn + 47, city="shenzhen",
+    )  # fmt: skip
+    state = with_production_contract(replace(state, next_ids=ids), contract)
     state, os_id = _new(
         state, data, "os", "Kestrel OS", live=True, feature=b.platforms.os_build_features + 5
     )
@@ -107,6 +125,11 @@ def _owner(state: GameState, data: LoadedData, self_pref: str = "off") -> tuple[
             for p in state.platforms
         ),
         device_runs=(*state.device_runs, DeviceRun(phone, own.id, state.turn - 12)),
+    )
+    state, app = _new(state, data, "consumer_apps", "Kestrel Chat", live=True, feature=80)
+    state = with_product_segment(state, ProductSegment(app, "consumer", APP_PRICE, APP_CUSTOMERS))
+    state = with_regional_segment(
+        state, RegionalSegment(app, REGION, "consumer", APP_PRICE, APP_CUSTOMERS)
     )
     return state, own.id
 

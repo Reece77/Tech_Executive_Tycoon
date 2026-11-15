@@ -464,6 +464,8 @@ class GameState:
     reg_cases: tuple[Case, ...] = ()
     reg_watches: tuple[Watch, ...] = ()
     reg_orders: tuple[Order, ...] = ()
+    # (company id, its booked revenue in each of the last 12 months, oldest first), from 2026
+    reg_turnover: tuple[tuple[int, tuple[int, ...]], ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

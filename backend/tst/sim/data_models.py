@@ -1289,6 +1289,14 @@ class GeoBalance(_Frozen):
     region_entry: RegionEntryBalance
 
 
+class EconomyScaleBalance(_Frozen):
+    """The game's economy against the real one (M34, PM ruling 2026-11-15): real-world money and
+    user thresholds (a regulator's) are multiplied by these before the game compares them."""
+
+    money: float = Field(gt=0, le=1)
+    users: float = Field(gt=0, le=1)
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     costs: CostsBalance  # M4c (formulas.md 8)
@@ -1372,6 +1380,7 @@ class Balance(_Frozen):
     estate_tax: dict[str, EstateRegion]  # M36 (formulas.md 45.6): by home region
     platforms: PlatformsBalance  # M31 (formulas.md 44): platforms and ecosystems
     regulation: RegulationBalance  # M34 (formulas.md 48): regulation with teeth
+    economy_scale: EconomyScaleBalance  # M34: real thresholds read in the game's economy
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

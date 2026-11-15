@@ -78,6 +78,8 @@ def _regulators(data: LoadedData) -> list[RegulatorOut]:
                 turnover_cents=rdata.threshold_cents(g.turnover_b, g.currency, b),
                 turnover_scope=g.turnover_scope,
                 market_value_cents=rdata.threshold_cents(g.value_b, g.currency, b),
+                turnover_game_cents=rdata.game_threshold_cents(g.turnover_b, g.currency, b),
+                market_value_game_cents=rdata.game_threshold_cents(g.value_b, g.currency, b),
                 comply_months=g.comply_months,
                 duties=[DUTY_WORDS[x] for x in g.duties],
                 max_fine_share=g.max_fine_share,
@@ -124,11 +126,13 @@ def _tests(state: GameState, balances: LedgerBalances | None, data: LoadedData) 
                 users=v.users.get((me, reg.region), 0.0),
                 users_needed=b.regulation.dominance_share
                 if g.users_share is None
-                else g.users_share,
+                else rdata.game_users_share(g.users_share, b),
                 turnover_cents=turnover,
-                turnover_needed_cents=rdata.threshold_cents(g.turnover_b, g.currency, b),
+                turnover_needed_cents=rdata.game_threshold_cents(g.turnover_b, g.currency, b),
+                turnover_legal_cents=rdata.threshold_cents(g.turnover_b, g.currency, b),
                 market_value_cents=cap,
-                market_value_needed_cents=rdata.threshold_cents(g.value_b, g.currency, b),
+                market_value_needed_cents=rdata.game_threshold_cents(g.value_b, g.currency, b),
+                market_value_legal_cents=rdata.threshold_cents(g.value_b, g.currency, b),
                 ratio=min(ratio(state, g, me, v, balances, b, d), 10.0),
                 warn_at=b.regulation.warn_ratio,
                 designated=is_designated(state, d, me, g.key),
@@ -302,6 +306,7 @@ def _orders(state: GameState, data: LoadedData) -> list[OrderOut]:
 
 def _explain(data: LoadedData) -> RegulationExplainOut:
     rb = data.balance.regulation
+    b_scale = data.balance.economy_scale.money
     lo, hi = rb.fine.share
     sb = rb.structural
     return RegulationExplainOut(
@@ -315,7 +320,8 @@ def _explain(data: LoadedData) -> RegulationExplainOut:
         thresholds=(
             "Each December a regulator tests the largest share of its region's users on a "
             "platform you own against its users threshold, and your turnover there (or your "
-            "market value) against its money threshold. The test's ratio is the smaller of the "
+            "market value) against its money threshold, read in the game's economy (the law's "
+            f"figure x {b_scale:g}). The test's ratio is the smaller of the "
             f"two: from {rb.warn_ratio:.0%} you are warned, and at 100% a year after a warning "
             "you are designated. Duties start a few months later."
         ),

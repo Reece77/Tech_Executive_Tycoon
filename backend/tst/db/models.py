@@ -2278,8 +2278,8 @@ class PlatformRecordRow(Base):
 
 class RegulationRecordRow(Base):
     """One regulation record (48; 0055): `kind` names its GameState collection (designations,
-    designation_warnings, duties, reg_cases, reg_watches, reg_orders) and `data` its fields;
-    rows keep each collection's order."""
+    designation_warnings, duties, reg_cases, reg_watches, reg_orders, reg_turnover) and `data`
+    its fields; rows keep each collection's order."""
 
     __tablename__ = "regulation_record"
 

@@ -17099,6 +17099,16 @@ export interface components {
              * @description Market value test, US cents
              */
             market_value_cents: number | null;
+            /**
+             * Turnover Game Cents
+             * @description The turnover test in the game's economy
+             */
+            turnover_game_cents: number | null;
+            /**
+             * Market Value Game Cents
+             * @description The value test in the game's economy
+             */
+            market_value_game_cents: number | null;
             /** Comply Months */
             comply_months: number;
             /** Duties */
@@ -19607,12 +19617,25 @@ export interface components {
             users_needed: number | null;
             /** Turnover Cents */
             turnover_cents: number;
-            /** Turnover Needed Cents */
+            /**
+             * Turnover Needed Cents
+             * @description In the game's economy
+             */
             turnover_needed_cents: number | null;
+            /**
+             * Turnover Legal Cents
+             * @description The law's figure, real-world scale
+             */
+            turnover_legal_cents: number | null;
             /** Market Value Cents */
             market_value_cents: number | null;
-            /** Market Value Needed Cents */
+            /**
+             * Market Value Needed Cents
+             * @description In the game's economy
+             */
             market_value_needed_cents: number | null;
+            /** Market Value Legal Cents */
+            market_value_legal_cents: number | null;
             /**
              * Ratio
              * @description The test's ratio: 1 or more meets every threshold

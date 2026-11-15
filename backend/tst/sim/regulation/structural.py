@@ -38,6 +38,7 @@ from tst.sim.regulation import data as rdata
 from tst.sim.regulation import draws
 from tst.sim.regulation.config import RegulatorDef
 from tst.sim.regulation.duties import breaches, platforms_in
+from tst.sim.regulation.measure import turnover_year
 from tst.sim.regulation.models import Case, Order, WarningSign, Watch
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, owner_of, with_product, with_queued
@@ -414,9 +415,5 @@ def periodic_cents(state: GameState, o: Order, balance: Balance, data: GameData)
         if regime is not None
         else balance.regulation.fine.default_max_share / 2
     )
-    turnover = sum(
-        sum(c.mrr_history[-MONTHS_PER_YEAR:])
-        for c in state.companies
-        if owner_of(state, c.id) == o.company_id
-    )
+    turnover = turnover_year(state, o.company_id)
     return round(share * turnover / DAYS_A_YEAR * balance.regulation.structural.periodic_days)

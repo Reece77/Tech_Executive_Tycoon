@@ -7,12 +7,14 @@ duties, cases and fines are regulation.yaml's and platforms.yaml's (48.5 target 
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.regulation import cases, designate, duties, structural
 from tst.sim.regulation import data as rdata
-from tst.sim.regulation.measure import view
+from tst.sim.regulation.measure import record_turnover, view
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -23,9 +25,11 @@ def regulation_month(
     balances: LedgerBalances | None,
     balance: Balance,
     data: GameData,
+    month_entries: Sequence[LedgerEntry] = (),
 ) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
     if not rdata.active(state.turn, balance, data) or not state.platforms:
         return state, [], []
+    state = record_turnover(state, month_entries, data)
     logs: list[LogItem] = []
     state, more = duties.start_month(state, balance, data)
     logs += more

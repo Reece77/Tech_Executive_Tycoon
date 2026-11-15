@@ -52334,6 +52334,30 @@
             "title": "Market Value Cents",
             "description": "Market value test, US cents"
           },
+          "turnover_game_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Game Cents",
+            "description": "The turnover test in the game's economy"
+          },
+          "market_value_game_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Game Cents",
+            "description": "The value test in the game's economy"
+          },
           "comply_months": {
             "type": "integer",
             "title": "Comply Months"
@@ -52363,6 +52387,8 @@
           "turnover_cents",
           "turnover_scope",
           "market_value_cents",
+          "turnover_game_cents",
+          "market_value_game_cents",
           "comply_months",
           "duties",
           "max_fine_share",
@@ -58300,7 +58326,20 @@
                 "type": "null"
               }
             ],
-            "title": "Turnover Needed Cents"
+            "title": "Turnover Needed Cents",
+            "description": "In the game's economy"
+          },
+          "turnover_legal_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Legal Cents",
+            "description": "The law's figure, real-world scale"
           },
           "market_value_cents": {
             "anyOf": [
@@ -58322,7 +58361,19 @@
                 "type": "null"
               }
             ],
-            "title": "Market Value Needed Cents"
+            "title": "Market Value Needed Cents",
+            "description": "In the game's economy"
+          },
+          "market_value_legal_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Legal Cents"
           },
           "ratio": {
             "type": "number",
@@ -58358,8 +58409,10 @@
           "users_needed",
           "turnover_cents",
           "turnover_needed_cents",
+          "turnover_legal_cents",
           "market_value_cents",
           "market_value_needed_cents",
+          "market_value_legal_cents",
           "ratio",
           "warn_at",
           "designated",

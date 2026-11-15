@@ -171,7 +171,7 @@ function Tests({ r }: { r: Regulation }) {
           cell: (c) =>
             c.row.original.turnover_needed_cents === null
               ? 'no test'
-              : `${formatMoneyWhole(c.getValue())} of ${formatMoneyWhole(c.row.original.turnover_needed_cents)}`,
+              : `${formatMoneyWhole(c.getValue())} of ${formatMoneyWhole(c.row.original.turnover_needed_cents)} (the law's ${formatMoneyWhole(c.row.original.turnover_legal_cents ?? 0)})`,
         }),
         testHelper.accessor('ratio', {
           header: 'Test',
@@ -356,9 +356,9 @@ function Regulators({ r }: { r: Regulation }) {
               {g.regime.turnover_cents !== null &&
                 `turnover ${formatMoneyWhole(g.regime.turnover_cents)}${
                   g.regime.turnover_scope === 'world' ? ' worldwide' : ' there'
-                }; `}
+                } (${formatMoneyWhole(g.regime.turnover_game_cents ?? 0)} in the game); `}
               {g.regime.market_value_cents !== null &&
-                `or market value ${formatMoneyWhole(g.regime.market_value_cents)}; `}
+                `or market value ${formatMoneyWhole(g.regime.market_value_cents)} (${formatMoneyWhole(g.regime.market_value_game_cents ?? 0)} in the game); `}
               duties after {g.regime.comply_months} months: {g.regime.duties.join(', ')}. Fines up
               to {formatShare(g.regime.max_fine_share)} of turnover.
             </div>

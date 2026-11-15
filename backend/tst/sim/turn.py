@@ -650,7 +650,7 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     ctx = ctx.log(*geo_logs)
     # M34 (48): duties, compliance, designations, investigations and structural orders.
     state, reg_entries, reg_logs = regulation_month(
-        state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+        state, ctx.rng, ctx.balances, ctx.balance, ctx.data, ctx.entries
     )
     ctx = ctx.post(*reg_entries).log(*reg_logs)
     player = state.player.id

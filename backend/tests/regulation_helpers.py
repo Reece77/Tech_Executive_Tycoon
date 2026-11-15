@@ -11,7 +11,7 @@ from tst.sim.ledger import LedgerBalances
 from tst.sim.platforms import data as pdata
 from tst.sim.platforms.models import Platform, PlatformRegion
 from tst.sim.products.models import Product
-from tst.sim.state import GameState, with_company, with_product
+from tst.sim.state import GameState, with_product
 
 OS_ID = 990_101
 REGION = "europe"
@@ -48,5 +48,5 @@ def owner_state(
     rows = (*rows, PlatformRegion(pid, region, users=users, dev_share=users, catalogue=12.0))
     state = replace(state, platforms=(*state.platforms, platform), platform_regions=rows)
     if mrr_cents:
-        state = with_company(state, replace(state.player, mrr_history=(mrr_cents,) * 12))
+        state = replace(state, reg_turnover=((state.player.id, (mrr_cents,) * 12),))
     return state, balances, platform

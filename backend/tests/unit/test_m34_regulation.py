@@ -209,7 +209,7 @@ def test_no_cause_means_no_chance_and_causes_raise_it(loaded: LoadedData) -> Non
     assert cases.chance(state, me, eu, _view(state, 0.2), b, d) == 0.0  # under 40%
     dominant = cases.chance(state, me, eu, _view(state, 0.6), b, d)
     assert dominant > 0
-    small = cases.chance(state, me, eu, _view(state, 0.6, month=10**9), b, d)  # $120M a year
+    small = cases.chance(state, me, eu, _view(state, 0.6, month=10**8), b, d)  # $12M a year
     assert small == 0.0
     pref = replace(state.platform(platform.id), self_pref="strong")  # type: ignore[arg-type]
     worse = replace(state, platforms=tuple(pref if p.id == pref.id else p for p in state.platforms))
@@ -243,13 +243,7 @@ def test_settling_at_the_objections_ends_it_with_a_commitment_and_a_smaller_fine
     state, case = _opened(loaded)
     case = replace(case, stage="objections", asked_turn=None)
     state = cases.with_case(state, case)
-    state = replace(
-        state,
-        companies=tuple(
-            replace(c, mrr_history=(10**11,) * 12) if c.id == state.player.id else c
-            for c in state.companies
-        ),
-    )
+    state = replace(state, reg_turnover=((state.player.id, (10**11,) * 12),))
     after, entries, _ = cases.settle(state, case, b, d)
     closed = next(c for c in after.reg_cases if c.id == case.id)
     assert closed.stage == "closed" and closed.outcome == "settled"
@@ -263,13 +257,7 @@ def test_settling_at_the_objections_ends_it_with_a_commitment_and_a_smaller_fine
 def test_a_ruling_against_posts_a_fine_within_the_cap_and_a_remedy(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     state, case = _opened(loaded)
-    state = replace(
-        state,
-        companies=tuple(
-            replace(c, mrr_history=(10**11,) * 12) if c.id == state.player.id else c
-            for c in state.companies
-        ),
-    )
+    state = replace(state, reg_turnover=((state.player.id, (10**11,) * 12),))
     case = replace(case, stage="objections", contested=True, due_turn=state.turn, asked_turn=None)
     state = cases.with_case(state, case)
     for seed in range(1, 200):

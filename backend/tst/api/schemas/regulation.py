@@ -20,6 +20,8 @@ class RegimeOut(BaseModel):
     turnover_cents: int | None = Field(description="Turnover test, US cents a year")
     turnover_scope: Literal["region", "world"]
     market_value_cents: int | None = Field(description="Market value test, US cents")
+    turnover_game_cents: int | None = Field(description="The turnover test in the game's economy")
+    market_value_game_cents: int | None = Field(description="The value test in the game's economy")
     comply_months: int
     duties: list[str]
     max_fine_share: float
@@ -44,9 +46,11 @@ class TestOut(BaseModel):
     users: float = Field(description="The largest share of users on a platform of the group")
     users_needed: float | None
     turnover_cents: int
-    turnover_needed_cents: int | None
+    turnover_needed_cents: int | None = Field(description="In the game's economy")
+    turnover_legal_cents: int | None = Field(description="The law's figure, real-world scale")
     market_value_cents: int | None
-    market_value_needed_cents: int | None
+    market_value_needed_cents: int | None = Field(description="In the game's economy")
+    market_value_legal_cents: int | None
     ratio: float = Field(description="The test's ratio: 1 or more meets every threshold")
     warn_at: float
     designated: bool

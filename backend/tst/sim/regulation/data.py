@@ -69,7 +69,19 @@ def usd_cents(amount: float, currency: str, balance: Balance) -> int:
 
 
 def threshold_cents(billions: float | None, currency: str, balance: Balance) -> int | None:
+    """A legal threshold as US cents, at real-world scale (shown on screen)."""
     return None if billions is None else usd_cents(billions * BILLION, currency, balance)
+
+
+def game_threshold_cents(billions: float | None, currency: str, balance: Balance) -> int | None:
+    """The same threshold in the game's economy (`economy_scale.money`): what the tests read."""
+    real = threshold_cents(billions, currency, balance)
+    return None if real is None else round(real * balance.economy_scale.money)
+
+
+def game_users_share(share: float, balance: Balance) -> float:
+    """A users threshold in the game's economy (`economy_scale.users`)."""
+    return share * balance.economy_scale.users
 
 
 def company_ids(state: GameState) -> dict[str, int]:

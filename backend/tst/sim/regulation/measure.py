@@ -5,13 +5,18 @@ Groups: a company's customers and revenue count for its ultimate owner (31.1, as
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass, field, replace
+from typing import Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
+from tst.sim.ledger import INTERCOMPANY_SALES, LedgerEntry
 from tst.sim.platforms.phase import home_of, live_in
 from tst.sim.products.models import SELLING
 from tst.sim.state import GameState, owner_of
+
+OPERATING_END: Final = "4900"  # tunable-exempt: other income and below are not turnover
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,7 +42,44 @@ class View:
         return best, market
 
     def region_year(self, owner: int, region: str) -> int:
-        return self.region_month.get((owner, region), 0) * MONTHS_PER_YEAR
+        """The owner's trailing-year revenue in the region: its revenue (`world_year`) split by
+        its segments' customers x price there (the books keep no regional split)."""
+        total = sum(v for (o, _r), v in self.region_month.items() if o == owner)
+        if total <= 0:
+            return 0
+        return round(
+            self.world_year.get(owner, 0) * self.region_month.get((owner, region), 0) / total
+        )
+
+
+def booked_revenue(entries: Iterable[LedgerEntry], data: GameData) -> dict[int, int]:
+    """Each company's revenue booked this month: credits to its operating revenue accounts
+    (4000-4899, not intercompany sales), the regulators' turnover (`mrr_history` leaves out
+    hardware sales)."""
+    revenue = {a.code for a in data.accounts if a.type == "revenue"}
+    out: dict[int, int] = {}
+    for e in entries:
+        for line in e.lines:
+            code = line.account
+            if code in revenue and code < OPERATING_END and code != INTERCOMPANY_SALES:
+                out[e.company_id] = out.get(e.company_id, 0) - line.amount
+    return out
+
+
+def record_turnover(state: GameState, entries: Iterable[LedgerEntry], data: GameData) -> GameState:
+    month = booked_revenue(entries, data)
+    old = dict(state.reg_turnover)
+    books = [c.id for c in state.ledger_companies()]
+    rows = tuple(
+        (cid, (*old.get(cid, ()), max(0, month.get(cid, 0)))[-MONTHS_PER_YEAR:]) for cid in books
+    )
+    return replace(state, reg_turnover=rows)
+
+
+def turnover_year(state: GameState, owner: int) -> int:
+    """The group's booked revenue over the last 12 months (its companies under `owner`)."""
+    rows = dict(state.reg_turnover)
+    return sum(sum(rows.get(c.id, ())) for c in state.companies if owner_of(state, c.id) == owner)
 
 
 def view(state: GameState, balance: Balance, data: GameData) -> View:
@@ -72,9 +114,10 @@ def view(state: GameState, balance: Balance, data: GameData) -> View:
         owner_region = (owner_of(state, p.owner_id), row.region)
         users[owner_region] = max(users.get(owner_region, 0.0), row.users)
     world: dict[int, int] = defaultdict(int)
+    rows = dict(state.reg_turnover)
     for c in state.companies:
         if c.id in alive:
-            world[owner_of(state, c.id)] += sum(c.mrr_history[-MONTHS_PER_YEAR:])
+            world[owner_of(state, c.id)] += sum(rows.get(c.id, ()))
     return View(
         home=home,
         shares=shares,

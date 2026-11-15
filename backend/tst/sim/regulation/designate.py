@@ -75,9 +75,9 @@ def ratio(
     elif regime.users_share == 0:
         u = NO_TEST if v.users.get((owner, reg.region), 0.0) > 0 else 0.0
     else:
-        u = users / regime.users_share
-    turnover = rdata.threshold_cents(regime.turnover_b, regime.currency, balance)
-    value = rdata.threshold_cents(regime.value_b, regime.currency, balance)
+        u = users / rdata.game_users_share(regime.users_share, balance)
+    turnover = rdata.game_threshold_cents(regime.turnover_b, regime.currency, balance)
+    value = rdata.game_threshold_cents(regime.value_b, regime.currency, balance)
     if turnover is None and value is None:
         money = NO_TEST
     else:

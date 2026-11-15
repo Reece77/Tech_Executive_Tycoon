@@ -50,7 +50,7 @@ from tst.sim.regulation import draws
 from tst.sim.regulation.config import Conduct, DutyKind, RegulatorDef
 from tst.sim.regulation.designate import designated_by
 from tst.sim.regulation.duties import add_duty, breaches, platforms_in
-from tst.sim.regulation.measure import View
+from tst.sim.regulation.measure import View, turnover_year
 from tst.sim.regulation.models import Case, CaseOutcome, CaseStage
 from tst.sim.rivals.models import stream_key
 from tst.sim.rng import RngFactory
@@ -165,7 +165,8 @@ def chance(
     """The month's chance a regulator opens a case on the group (module docstring)."""
     ib = balance.regulation.investigation
     found = causes(state, owner, reg, v, balance, data) if found is None else found
-    if not found or v.region_year(owner, reg.region) < ib.min_revenue_cents:
+    floor = ib.min_revenue_cents * balance.economy_scale.money  # a real-world floor, scaled
+    if not found or v.region_year(owner, reg.region) < floor:
         return 0.0
     c = ib.base * rdata.strictness(reg, state.turn)
     for factor in found.values():
@@ -425,11 +426,7 @@ def fine_cents(
     cap = regime.max_fine_share if regime is not None else fb.default_max_share
     if repeat(state, case, balance, data):
         cap = regime.repeat_fine_share if regime is not None else fb.default_max_share
-    turnover = sum(
-        sum(c.mrr_history[-MONTHS_PER_YEAR:])
-        for c in state.companies
-        if owner_of(state, c.id) == case.company_id
-    )
+    turnover = turnover_year(state, case.company_id)
     return round(min(share, cap) * turnover)
 
 

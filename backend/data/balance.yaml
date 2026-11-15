@@ -2432,3 +2432,6 @@ regulation: # 48: regulation with teeth (M34, v4 lane C). Designations, duties, 
     appeal_win: [0.2, 0.4]
   rivals: # 48.4 rivals face the same rules and always comply with a new duty (A)
     contest: [aggressive, premium] # personalities that contest at objections; the rest settle
+economy_scale: # M34 (PM ruling 2026-11-15): real-world thresholds read in the game's economy. Derived by tools/m34_economy_scale.py on do-nothing games, seeds 1-3
+  money: 0.0849 # Apple 0.0952, Microsoft 0.1275, Meta 0.0319: the designated incumbents' in-game 2025 booked revenue (4000-4899, not intercompany) / their real 2025 revenue, mean of three: Apple $416.2B (FY to Sep 2025: https://yourstory.com/2025/10/apple-extraordinary-year-all-time-record-india-tim-cook), Microsoft $281.7B with Microsoft Azure (FY to Jun 2025: https://www.sec.gov/Archives/edgar/data/0000789019/000095017025100226/msft-ex99_1.htm), Meta $200.97B as Facebook (2025: https://finviz.com/news/290695/meta-reports-fourth-quarter-and-full-year-2025-results)
+  users: 1.0 # the game's user tests read shares of a region's users (platforms.yaml's StatCounter shares and the installed base), not counts, so they are already at real scale

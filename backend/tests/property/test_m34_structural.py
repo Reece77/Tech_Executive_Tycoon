@@ -34,13 +34,7 @@ def _loaded() -> LoadedData:
 @cache
 def _base() -> tuple[GameState, int]:
     state, _, platform = owner_state(_loaded(), turn=START)
-    state = replace(
-        state,
-        companies=tuple(
-            replace(c, mrr_history=(10**11,) * 12) if c.id == state.player.id else c
-            for c in state.companies
-        ),
-    )
+    state = replace(state, reg_turnover=((state.player.id, (10**11,) * 12),))
     return state, platform.id
 
 
