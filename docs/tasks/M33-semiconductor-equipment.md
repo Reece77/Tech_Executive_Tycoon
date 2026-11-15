@@ -68,5 +68,5 @@ Load `pt-litho`. Order high-NA tools and look at your queue place, then prepay a
 - Masks and photoresists as goods; deposition, etch and metrology tools (brief: out of scope).
 - Automating tool orders and prepayments (M27b's fabs area).
 - A DUV queue for a Chinese player under the 2023-2024 DUV rules.
-- The M30 state-cache fixture is re-recorded with M33's state (rivals' order book exists from turn 0): see CHANGELOG.
+- The M30 state-cache fixture is re-recorded on Linux with M33's state (rivals' order book from turn 0; China's EUV gate from August 2027): see CHANGELOG.
 - Money scale (decision 16): whether M21's fab economy (fab capex, wafer and die costs) and with it M33's tool prices move to `economy_scale.money` alongside company revenues — a PM call, since it changes how M21's target 2 is measured.
