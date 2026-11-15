@@ -36,9 +36,9 @@ test('(a) a designation warning arrives a year ahead', async ({ page }) => {
   test.setTimeout(900_000);
   const save = `m34-warning-${stamp}`;
   tool('warning', save);
-  tool('advance', save, '10'); // January to November 2026
+  tool('advance', save, '11'); // January to November 2026 played: the save is at December
   await page.goto(`/game/${save}/overview`);
-  await pressContinue(page); // December 2026: the year's designation test
+  await pressContinue(page); // December 2026 played: the year's designation test
   await page.goto(`/game/${save}/competitors/regulation`);
   const dma = page.getByTestId('test-row').filter({ hasText: 'Digital Markets Act' });
   await expect(dma).toContainText('warned Dec 2026');
