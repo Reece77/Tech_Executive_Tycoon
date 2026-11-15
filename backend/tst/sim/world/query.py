@@ -67,6 +67,7 @@ def long_run_usd(state: GameState, good: str, balance: Balance, data: GameData) 
     the foundry market's capacity factor."""
     if good == FOUNDRY_GOOD:
         index = goods.index_now(state, FOUNDRY_GOOD, data) if data.components else 1.0
+        # money-exact: rate
         return index * balance.world.foundry_wafer_cents / CENTS
     assert data.commodities is not None
     g = data.commodities.good(good)
