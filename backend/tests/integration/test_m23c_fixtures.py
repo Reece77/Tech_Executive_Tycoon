@@ -37,6 +37,7 @@ V3 = [
     *[("e2e_m22_save", m, "/world", True) for m in ("chips", "gallium", "influence")],
     ("e2e_m28_save", "world", "/world-news", True),  # M28: the practice save pt-world
     ("e2e_m31_save", "platform", "/platforms", True),  # M31: the practice save pt-platform
+    ("e2e_m34_save", "regulated", "/regulation", True),  # M34: the practice save pt-regulated
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

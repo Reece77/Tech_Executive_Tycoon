@@ -1,0 +1,87 @@
+# Regulation event templates (docs/formulas.md 48.3-48.4, M34): queued by the engine by template id
+# (trigger regulation) when a regulator opens an investigation of the company, issues a statement
+# of objections (a complaint in the US), rules against it, or orders a structural remedy. The
+# answer is applied by the engine (regulation_step). The odds and fines shown are ranges; the
+# chances themselves are drawn when decided and never known. Tone: grounded realism (ADR-0011).
+# The first choice of the major inquiry event is what happens when it is left unanswered.
+templates:
+  - id: regulation_inquiry
+    category: regulation
+    trigger: regulation
+    severities: [major]
+    weight: 1.0
+    title: "{regulator} opens an investigation"
+    body: >-
+      {regulator} has opened a formal inquiry into {company} over {case} in {market}. Investigators
+      have asked for documents and interviews; an inquiry of this kind takes six to twelve months
+      before the regulator decides whether to bring charges.
+    choices:
+      - key: A
+        label: "Cooperate and defend the company's position"
+        effects: [{ type: regulation_step, target: company, stat: cooperate }]
+      - key: B
+        label: "Offer commitments now and close it without a fine"
+        effects: [{ type: regulation_step, target: company, stat: settle }]
+      - key: C
+        label: "Lobby the government ($5M; the next step waits)"
+        effects: [{ type: regulation_step, target: company, stat: lobby }]
+
+  - id: regulation_objections
+    category: regulation
+    trigger: regulation
+    severities: [critical]
+    weight: 1.0
+    title: "{regulator} charges {company}"
+    body: >-
+      {regulator} has issued a statement of objections: it believes {company} broke the rules by
+      {case} in {market}. A ruling follows in six to twelve months. Counsel puts the odds of losing
+      a contested case at about {odds}, and fines in cases like this at {fine}.
+    choices:
+      - key: A
+        label: "Settle: accept a binding commitment and a reduced fine"
+        effects: [{ type: regulation_step, target: company, stat: settle }]
+      - key: B
+        label: "Contest the charges (odds against about {odds})"
+        effects: [{ type: regulation_step, target: company, stat: contest }]
+      - key: C
+        label: "Contest and lobby ($5M; the ruling waits 3 months)"
+        effects: [{ type: regulation_step, target: company, stat: lobby }]
+
+  - id: regulation_ruling
+    category: regulation
+    trigger: regulation
+    severities: [critical]
+    weight: 1.0
+    title: "{regulator} rules against {company}"
+    body: >-
+      {regulator} has found that {company} broke the rules by {case} in {market}. The fine of {fine}
+      has been paid, and a remedy now binds the company there. Counsel says an appeal would take
+      one to three years and succeed about {odds} of the time.
+    choices:
+      - key: A
+        label: "Comply with the ruling"
+        effects: [{ type: regulation_step, target: company, stat: comply }]
+      - key: B
+        label: "Appeal (1-3 years, odds about {odds})"
+        effects: [{ type: regulation_step, target: company, stat: appeal }]
+
+  - id: regulation_order
+    category: regulation
+    trigger: regulation
+    severities: [critical]
+    weight: 1.0
+    title: "{regulator} orders {company} to separate {unit}"
+    body: >-
+      After years of warnings, {regulator} has ordered {company} to separate {unit} within 24
+      months. Doing neither by the deadline brings penalties every month. An appeal would take one
+      to three years and succeed about {odds} of the time.
+    choices:
+      - key: A
+        label: "Sell it to the largest rival in its market"
+        effects: [{ type: regulation_step, target: company, stat: sell }]
+      - key: B
+        label: "Spin it off to the shareholders (a subsidiary of a listed holding company)"
+        effects: [{ type: regulation_step, target: company, stat: spin_off }]
+      - key: C
+        label: "Appeal the order (odds about {odds})"
+        effects: [{ type: regulation_step, target: company, stat: appeal }]

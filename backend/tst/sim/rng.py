@@ -104,6 +104,7 @@ STREAM_IDS: Final = MappingProxyType(
         # development; (founder_id, 2) a health step-back; (founder_id, 3, n) an action's draw
         "family": 59,
         "platforms": 58,  # M31 (formulas.md 44): developers, gatekeepers, rivals, standards
+        "regulation": 62,  # M34 (formulas.md 48): investigations and their outcomes
         "misc": 99,
     }
 )

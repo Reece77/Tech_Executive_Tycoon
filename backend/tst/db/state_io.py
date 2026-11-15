@@ -175,6 +175,7 @@ from tst.db.models import (
 from tst.db.modes_io import load_modes, sync_modes
 from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.refining_io import load_refining, sync_refining
+from tst.db.regulation_io import load_regulation, sync_regulation
 from tst.db.world_io import load_world, sync_world
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
@@ -588,6 +589,7 @@ def load_state(session: Session) -> GameState:
     state = load_geopolitics(session, state, has_table)  # M22 (0047)
     state = load_world(session, state, has_table)  # M28 (0050)
     state = load_platforms(session, state, has_table)  # M31 (0051)
+    state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
@@ -2152,6 +2154,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_geopolitics(session, old, new, has_table)  # M22 (0047)
     sync_world(session, old, new, has_table)  # M28 (0050)
     sync_platforms(session, old, new, has_table)  # M31 (0051)
+    sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)

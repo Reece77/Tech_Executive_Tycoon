@@ -124,6 +124,14 @@ from tst.sim.press.models import (
 )
 from tst.sim.products.models import MarketSegment, Product, ProductSegment
 from tst.sim.refining.models import OwnSupply, Refinery, RefiningDeal
+from tst.sim.regulation.models import (
+    Case,
+    Designation,
+    DesignationWarning,
+    Duty,
+    Order,
+    Watch,
+)
 from tst.sim.research.models import (
     EraArrival,
     EraWindow,
@@ -448,6 +456,16 @@ class GameState:
     product_standards: tuple[ProductStandard, ...] = ()
     steering_products: tuple[int, ...] = ()  # the player's apps that link to pay outside (44.5)
     rival_stores: tuple[RivalStore, ...] = ()  # alternative stores where the law allows (44.8)
+    # M34 (48): designations from the model (history's are regulation.yaml's), year-ahead
+    # warnings, duties, investigations, structural warning signs and orders. Ids are max + 1.
+    designations: tuple[Designation, ...] = ()
+    designation_warnings: tuple[DesignationWarning, ...] = ()
+    duties: tuple[Duty, ...] = ()
+    reg_cases: tuple[Case, ...] = ()
+    reg_watches: tuple[Watch, ...] = ()
+    reg_orders: tuple[Order, ...] = ()
+    # (company id, its booked revenue in each of the last 12 months, oldest first), from 2026
+    reg_turnover: tuple[tuple[int, tuple[int, ...]], ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

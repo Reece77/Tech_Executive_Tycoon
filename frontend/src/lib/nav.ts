@@ -179,6 +179,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'competitors',
   }, // M31
   {
+    path: 'competitors/regulation',
+    label: 'Regulation',
+    group: 'world',
+    unlock: 'regulation',
+    side: true,
+    parent: 'competitors',
+  }, // M34
+  {
     path: 'competitors/world',
     label: 'World',
     group: 'world',

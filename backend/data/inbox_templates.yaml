@@ -3,6 +3,39 @@
 # "{role:a}" adds the indefinite article: "a Designer", "an Account executive".
 # Tone: grounded business realism (ADR-0011). Every key the engine uses must exist here.
 templates:
+  regulation_designation_warning: # M34 (48.1)
+    title: "{regulator}: a designation under the {regime} is likely next year"
+    body: "The company is at {pct} of the {regime}'s thresholds. If it still meets them next December it will be designated a gatekeeper, with duties a few months later."
+  regulation_designated: # M34 (48.1)
+    title: "Designated a gatekeeper under the {regime}"
+    body: "{regulator} has designated the company. Its duties apply in {months} months; the Regulation screen lists them."
+  regulation_duty: # M34 (48.2)
+    title: "A new duty: {duty}"
+    body: "{regulator}'s duty binds the company's platforms there from this month. Keeping a forbidden setting raises the risk of an investigation and its fine."
+  regulation_case_closed: # M34 (48.3)
+    title: "{regulator}'s case is closed: {outcome}"
+    body: "The investigation into the company's conduct in {market} has ended ({outcome}). The record stays on the Regulation screen."
+  regulation_warning_press: # M34 (48.4)
+    title: "Press: calls grow to break up the company's {market} business"
+    body: "Commentators and rivals are asking {regulator} to separate the business. Breaking a ruling's remedy keeps the story alive."
+  regulation_warning_report: # M34 (48.4)
+    title: "{regulator} publishes a report naming a break-up"
+    body: "The report on the company's conduct in {market} lists separation among the possible remedies if it keeps breaking the rules."
+  regulation_warning_political: # M34 (48.4)
+    title: "Lawmakers press {regulator} on the company"
+    body: "A hearing on the company's {market} business ended with calls for structural action. Complying with every duty takes the pressure off."
+  regulation_warning_board: # M34 (48.4)
+    title: "The board is worried about a break-up"
+    body: "Directors ask how the company will answer {regulator} on {market}: a structural order may follow the next ruling."
+  regulation_order_done: # M34 (48.4)
+    title: "{unit} {how}"
+    body: "The structural order is met: {unit} went to {buyer} for {price_cents}."
+  regulation_order_overturned: # M34 (48.4)
+    title: "The order to separate {unit} is overturned"
+    body: "The appeal succeeded: the company keeps it."
+  regulation_spin_off_unavailable: # M34 (48.4)
+    title: "{unit} cannot be spun off as it is"
+    body: "A spin-off needs the unit in a subsidiary of a listed holding company. Sell it from the Regulation screen, or restructure before the deadline."
   platform_rejected: # M31 (44.5)
     title: "{platform} rejected an update to {product}"
     body: "{owner}'s review held back this month's release: a month of new features is lost while the team reworks it."

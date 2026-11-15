@@ -65,6 +65,7 @@ from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.platforms.config import PlatformsFile
+from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -105,6 +106,7 @@ CONTROLS_FILE = "export_controls.yaml"  # M22 (39.2)
 TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
+REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -126,6 +128,7 @@ DATA_FILES = (
     INCUMBENTS_FILE,
     INVESTORS_FILE,
     PLATFORMS_FILE,
+    REGULATION_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
@@ -583,6 +586,42 @@ def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     return problems
 
 
+def regulation_problems(balance: Balance, data: GameData) -> list[str]:
+    """M34 (48): regulation.yaml names known regions, parts, companies, platforms and
+    currencies; its history ends with platforms.yaml's; `regulation.start` is the month after."""
+    rf = data.regulation
+    if rf is None:
+        return []
+    problems: list[str] = []
+    regions = set(data.region_keys)
+    owners = {c.name for c in data.incumbents}
+    parts = data.platforms.region_parts if data.platforms is not None else {}
+    keys = {p.key for p in data.platforms.platforms} if data.platforms is not None else set()
+    for r in rf.regulators:
+        if r.region not in regions:
+            problems.append(f"regulator {r.key}: unknown region {r.region!r}")
+        elif r.part is not None and r.part not in parts.get(r.region, {}):
+            problems.append(f"regulator {r.key}: unknown part {r.part!r} of {r.region}")
+    for g in rf.regimes:
+        if g.currency not in balance.regulation.fx:
+            problems.append(f"regime {g.key}: currency {g.currency} has no regulation.fx rate")
+    for d in rf.designations:
+        if d.company is not None and d.company not in owners:
+            problems.append(f"designation of {d.label}: {d.company!r} is not in incumbents.yaml")
+        if d.platform is not None and d.platform not in keys:
+            problems.append(f"designation of {d.label}: unknown platform {d.platform!r}")
+    for c in rf.cases:
+        if c.company is not None and c.company not in owners:
+            problems.append(f"case {c.key}: {c.company!r} is not in incumbents.yaml")
+        if c.currency not in balance.regulation.fx:
+            problems.append(f"case {c.key}: currency {c.currency} has no regulation.fx rate")
+    if data.platforms is not None and rf.history_end_turn != data.platforms.history_end_turn:
+        problems.append("history_end must be platforms.yaml's")
+    if balance.regulation.start_turn != rf.history_end_turn + 1:
+        problems.append("regulation.start must be the month after regulation.yaml's history_end")
+    return problems
+
+
 def world_problems(balance: Balance, data: GameData) -> list[str]:
     """M28 (41.1): every chain company is a supplier selling a commodity in December 2025 or a
     foundry, sits in a known country, and no good's named shares exceed 1 in any month."""
@@ -905,6 +944,7 @@ def load_all(
     tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)
     chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
     platforms = _validate(PlatformsFile, parsed[PLATFORMS_FILE], PLATFORMS_FILE)
+    regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
     game_data = _validate(
         GameData,
         {
@@ -956,6 +996,7 @@ def load_all(
             "tariffs": tariffs,
             "chain_companies": chain,
             "platforms": platforms,
+            "regulation": regulation,
         },
         "seed data cross-check",
     )
@@ -975,6 +1016,8 @@ def load_all(
         raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
     if problems := platforms_problems(balance, game_data):
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
+    if problems := regulation_problems(balance, game_data):
+        raise DataLoadError(f"{REGULATION_FILE}, {BALANCE_FILE} regulation: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

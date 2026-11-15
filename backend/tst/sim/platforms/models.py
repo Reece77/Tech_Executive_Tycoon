@@ -41,6 +41,10 @@ class Platform:
     anti_steering: bool = True  # forbids links to pay outside, where the law lets it
     tools: float = 1.0  # T_p (44.2)
     open_turn: int | None = None  # its base was open-sourced (44.6)
+    # M34 (48.2, ADR-0021 3): rule and fee rows regulators' duties add, as (region, part or "",
+    # kind, from turn, rate): kind alt_payments adds a regulated path at `rate`; side_loading and
+    # anti_steering_banned count as dated rules (`rule_active`). Data rows for the same part win.
+    regulated: tuple[tuple[str, str, str, int, float], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

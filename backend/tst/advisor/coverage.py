@@ -35,7 +35,34 @@ _RULE = exempt("a world rule's figure (a tariff, a share, an allocation) from it
 _PLATFORM = exempt(
     "a platform's public figure (users, a fee rate, a share) from the data or its month"
 )
+_REGULATION = exempt("a regulator's public figure (a threshold, a cap, a window) from its data")
 SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
+    # v4 (M34): the Regulation screen
+    "regulation.RegimeOut": {
+        "users_share": _REGULATION,
+        "turnover_cents": _REGULATION,
+        "market_value_cents": _REGULATION,
+        "turnover_game_cents": _REGULATION,
+        "market_value_game_cents": _REGULATION,
+        "comply_months": _REGULATION,
+        "max_fine_share": _REGULATION,
+        "repeat_fine_share": _REGULATION,
+    },
+    "regulation.TestOut": {
+        "users": "designation_thresholds",
+        "users_needed": _REGULATION,
+        "turnover_cents": "designation_thresholds",
+        "turnover_needed_cents": _REGULATION,
+        "turnover_legal_cents": _REGULATION,
+        "market_value_legal_cents": _REGULATION,
+        "market_value_cents": "designation_thresholds",
+        "market_value_needed_cents": _REGULATION,
+        "ratio": "designation_thresholds",
+        "warn_at": _THRESHOLD,
+    },
+    "regulation.CaseOut": {"fine_cents": "regulation_fines", "final_cents": _REGULATION},
+    "regulation.WatchOut": {"months": _COUNT, "needed_months": _THRESHOLD},
+    "regulation.RegulationOut": {"fines_cents": "regulation_fines"},
     # M36 (45.4, 45.6): the Family screen and the founder's Family tab
     "family.ReadinessOut": {
         "points": "heir_readiness",

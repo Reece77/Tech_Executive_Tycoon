@@ -858,6 +858,18 @@ class Builder:
 
         return v4.catalogue_effect(self, m, entity)
 
+    # --- v4 (M34): regulation ----------------------------------------------------------------
+
+    def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_regulation
+
+        return v4_regulation.regulation_fines(self, m, entity)
+
+    def designation_thresholds(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_regulation
+
+        return v4_regulation.designation_thresholds(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(

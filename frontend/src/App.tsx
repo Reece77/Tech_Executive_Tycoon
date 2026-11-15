@@ -35,6 +35,7 @@ import { SavesScreen } from './screens/SavesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WorldNewsScreen } from './screens/WorldNewsScreen';
 import { PlatformsScreen } from './screens/PlatformsScreen';
+import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
 
 export default function App() {
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="competitors/world" element={<WorldScreen />} />
           <Route path="competitors/world-news" element={<WorldNewsScreen />} />
           <Route path="competitors/platforms" element={<PlatformsScreen />} />
+          <Route path="competitors/regulation" element={<RegulationScreen />} />
           <Route path="competitors/:rivalId" element={<RivalScreen />} />
           <Route path="automation" element={<AutomationScreen />} />
           <Route path="settings" element={<SettingsScreen />} />

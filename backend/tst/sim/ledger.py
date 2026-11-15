@@ -61,6 +61,7 @@ TARIFFS: Final = "5100_tariffs"  # tariffs on goods crossing blocs (M22, 39.3)
 LOCAL_PARTNER_SHARE: Final = "5110_local_partner_share"  # a local partner's share (M22, 39.3)
 PLATFORM_FEE_REVENUE: Final = "4150_platform_fees"  # a store owner's fees (M31, 44.4)
 PLATFORM_FEES: Final = "5150_platform_fees"  # store fees and platform licences (M31, 44.4)
+FINES: Final = "6970_fines"  # regulators' fines and periodic penalties (M34, 48.3)
 ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
@@ -108,6 +109,7 @@ ENGINE_ACCOUNTS: Final = (
     LOCAL_PARTNER_SHARE,
     PLATFORM_FEE_REVENUE,
     PLATFORM_FEES,
+    FINES,
 )
 
 

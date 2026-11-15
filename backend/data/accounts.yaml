@@ -55,6 +55,7 @@ accounts:
   - { code: 6750_depletion, name: Depletion, type: expense } # M19 (35.3): mineral properties' units-of-production depletion, and write-offs at closure
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900
+  - { code: 6970_fines, name: Fines and penalties, type: expense } # M34 (48.3, 48.4): regulators' fines and periodic penalties (an annulled fine returns here)
   - { code: 6960_royalties, name: Royalties and state shares, type: expense } # M19 (35.3, 35.4): host governments' royalties on mines' revenue, and a state partner's share of a mine's cash margin
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }
