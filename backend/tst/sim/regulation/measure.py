@@ -23,7 +23,7 @@ OPERATING_END: Final = "4900"  # tunable-exempt: other income and below are not 
 class View:
     home: str | None
     # (category, region) -> owner -> share of the region's customers in the category
-    shares: dict[tuple[str, str], dict[int, float]] = field(default_factory=dict)
+    category_shares: dict[tuple[str, str], dict[int, float]] = field(default_factory=dict)
     # (owner, region) -> the largest share of a region's users on a platform it owns (device
     # platforms: of device users; developer platforms: of their category's)
     users: dict[tuple[int, str], float] = field(default_factory=dict)
@@ -36,7 +36,7 @@ class View:
         """The owner's largest share in the region (a category, or its platforms' users)."""
         best = self.users.get((owner, region), 0.0)
         market = "devices" if best > 0 else None
-        for (category, r), owners in self.shares.items():
+        for (category, r), owners in self.category_shares.items():
             if r == region and owners.get(owner, 0.0) > best:
                 best, market = owners[owner], category
         return best, market
@@ -94,15 +94,17 @@ def view(state: GameState, balance: Balance, data: GameData) -> View:
         if home is not None:
             for s in state.segments_of(product.id):
                 customers[(product.category, home)][owner] += s.customers
+                # money-exact: estimate (a regional split of booked turnover, never posted)
                 revenue[(owner, home)] += s.customers * (s.price_cents or 0)
         for r in state.regional_segments_of(product.id):
             customers[(product.category, r.region)][owner] += r.customers
+            # money-exact: estimate (a regional split of booked turnover, never posted)
             revenue[(owner, r.region)] += r.customers * (r.price_cents or 0)
-    shares = {}
+    by_category = {}
     for key, owners in customers.items():
         total = sum(owners.values())
         if total > 0:
-            shares[key] = {o: n / total for o, n in owners.items()}
+            by_category[key] = {o: n / total for o, n in owners.items()}
     users: dict[tuple[int, str], float] = {}
     by_id = {p.id: p for p in state.platforms}
     for row in state.platform_regions:
@@ -120,7 +122,7 @@ def view(state: GameState, balance: Balance, data: GameData) -> View:
             world[owner_of(state, c.id)] += sum(rows.get(c.id, ()))
     return View(
         home=home,
-        shares=shares,
+        category_shares=by_category,
         users=users,
         region_month={k: round(v) for k, v in revenue.items()},
         world_year=dict(world),

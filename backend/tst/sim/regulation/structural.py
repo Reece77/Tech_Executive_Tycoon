@@ -26,6 +26,7 @@ Property (48.4, tested): no order without the preconditions and `warning_months`
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
@@ -33,6 +34,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import QueuedEvent
 from tst.sim.ledger import CASH, DISPOSAL, FINES, GOODWILL, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.products.models import SELLING
 from tst.sim.regulation import data as rdata
 from tst.sim.regulation import draws
@@ -229,11 +231,13 @@ def _ask(state: GameState, o: Order) -> tuple[GameState, list[LogItem]]:
 
 
 def unit_revenue_cents(state: GameState, o: Order) -> int:
-    """The unit's trailing year of revenue: its products' customers x price, x 12."""
-    month = 0.0
+    """The unit's trailing year of revenue: its products' customers x price, x 12, exact."""
+    month = Fraction(0)
     for pid in o.product_ids:
-        month += sum(s.customers * (s.price_cents or 0) for s in state.segments_of(pid))
-        month += sum(r.customers * (r.price_cents or 0) for r in state.regional_segments_of(pid))
+        for seg in state.segments_of(pid):
+            month += exact(seg.customers) * (seg.price_cents or 0)
+        for reg in state.regional_segments_of(pid):
+            month += exact(reg.customers) * (reg.price_cents or 0)
     return round(month * MONTHS_PER_YEAR)
 
 
@@ -264,7 +268,7 @@ def sell(
     buyer = buyer_of(state, o)
     if buyer is None:
         return state, [], []
-    price = round(unit_revenue_cents(state, o) * balance.regulation.structural.sale_multiple)
+    price = round(unit_revenue_cents(state, o) * exact(balance.regulation.structural.sale_multiple))
     for pid in o.product_ids:
         product = state.product(pid)
         if product is not None:

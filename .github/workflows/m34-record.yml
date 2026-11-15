@@ -1,0 +1,24 @@
+# TEMPORARY (M34): records M30's state hashes on CI's Linux runner (the fixture is recorded and
+# checked on Linux) and uploads them. Removed in the next commit.
+name: m34-record
+on:
+  push:
+    branches: [m34-regulation]
+permissions:
+  contents: read
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --project backend --locked
+      - run: uv run --project backend python tools/m30_state_hashes.py --write --workers 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m30-state-hashes
+          path: backend/tests/fixtures/m30_state_hashes.json

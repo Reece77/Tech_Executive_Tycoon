@@ -165,7 +165,8 @@ def chance(
     """The month's chance a regulator opens a case on the group (module docstring)."""
     ib = balance.regulation.investigation
     found = causes(state, owner, reg, v, balance, data) if found is None else found
-    floor = ib.min_revenue_cents * balance.economy_scale.money  # a real-world floor, scaled
+    # money-exact: ratio (a real-world floor scaled to the game, only compared)
+    floor = ib.min_revenue_cents * balance.economy_scale.money
     if not found or v.region_year(owner, reg.region) < floor:
         return 0.0
     c = ib.base * rdata.strictness(reg, state.turn)

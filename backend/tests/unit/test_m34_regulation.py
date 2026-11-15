@@ -41,7 +41,7 @@ def _view(state: GameState, users: float, region: str = REGION, month: int = BIG
     me = state.player.id
     return View(
         home=region,
-        shares={("devices", region): {me: users}},
+        category_shares={("devices", region): {me: users}},
         users={(me, region): users},
         region_month={(me, region): month},
         world_year={me: month * YEAR},
