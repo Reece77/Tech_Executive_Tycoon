@@ -12,6 +12,7 @@ import math
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LICENSE_REVENUE, RESEARCH, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.products.models import SELLING
 from tst.sim.research import estimates, levels
 from tst.sim.research.formulas import royalty_cents
@@ -125,9 +126,12 @@ def product_revenue(state: GameState, company_id: int, categories: set[str]) -> 
     for p in state.company_products(company_id):
         if p.status not in SELLING or p.category not in categories:
             continue
-        total += sum(round(s.customers * (s.price_cents or 0)) for s in state.segments_of(p.id))
         total += sum(
-            round(s.customers * (s.price_cents or 0)) for s in state.regional_segments_of(p.id)
+            round(exact(s.customers) * (s.price_cents or 0)) for s in state.segments_of(p.id)
+        )
+        total += sum(
+            round(exact(s.customers) * (s.price_cents or 0))
+            for s in state.regional_segments_of(p.id)
         )
     return total
 
