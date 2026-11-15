@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
+from fractions import Fraction
 
 import numpy as np
 
@@ -21,6 +22,7 @@ from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
+from tst.sim.money import exact, times
 from tst.sim.people.models import current_ability
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import SELLING, Product, ProductSegment
@@ -496,7 +498,7 @@ def act(
         seg = next(s for s in state.segments_of(product.id) if s.segment == c.segment)
         factor = rv.price_cut if c.action == "price_cut" else rv.price_rise
         state = with_product_segment(
-            state, replace(seg, price_cents=max(1, round((seg.price_cents or 0) * factor)))
+            state, replace(seg, price_cents=max(1, times(seg.price_cents or 0, factor)))
         )
         pct = round(abs(1 - factor) * PERCENT)
         verb = "cut" if c.action == "price_cut" else "raised"
@@ -508,7 +510,7 @@ def act(
         return state, f"started a {what} push on {product.name}"
     if c.action == "brand_push" and product is not None:
         state = _effect(state, company.id, c.action, product.id, balance)
-        budget = round(product.marketing_budget_cents * (1 + rv.brand_push_marketing))
+        budget = round(product.marketing_budget_cents * (1 + exact(rv.brand_push_marketing)))
         state = with_product(state, replace(product, marketing_budget_cents=budget))
         return state, f"started a brand push on {product.name}"
     if c.action == "enter_segment" and product is not None and c.segment is not None:
@@ -531,7 +533,7 @@ def act(
                 state, replace(pool, headcount=pool.headcount * (1 - rv.cut_costs_pools))
             )
         for p in state.company_products(company.id):
-            budget = round(p.marketing_budget_cents * (1 - rv.cut_costs_marketing))
+            budget = round(p.marketing_budget_cents * (1 - exact(rv.cut_costs_marketing)))
             state = with_product(state, replace(p, marketing_budget_cents=budget))
         state = _effect(state, company.id, "cut_costs", None, balance)
         return state, "cut costs"
@@ -724,7 +726,8 @@ def apply_effects(state: GameState, balance: Balance, data: GameData) -> GameSta
                 product = replace(
                     product,
                     marketing_budget_cents=round(
-                        product.marketing_budget_cents / (1 + rv.brand_push_marketing)
+                        Fraction(product.marketing_budget_cents)
+                        / (1 + exact(rv.brand_push_marketing))
                     ),
                 )
             state = with_product(state, product)

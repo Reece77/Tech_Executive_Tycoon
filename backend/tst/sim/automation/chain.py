@@ -707,6 +707,7 @@ def _propose_mine(run: AutoRun, owner: AreaOwner, project_id: int, data: GameDat
         q = mine_actions.quote(state, p, capacity, b, data)
     except (SimError, AssertionError):
         return
+    # money-exact: display
     npv = (p.npv_mid_cents or 0) / 100
     run.text = (
         f"build a {capacity:,.0f} t a year mine at project #{p.id} (study NPV mid ${npv:,.0f})"
@@ -847,6 +848,7 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
             if starts < 1:
                 continue
             best = (
+                # money-exact: rate
                 fc.slot_price_cents(state, fab, b, data)
                 * fb.max_price
                 / float(ct.premium(state, customer, b))

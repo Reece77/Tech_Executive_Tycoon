@@ -187,11 +187,12 @@ def test_a_one_off_inside_a_subsidiary_reaches_the_player_as_a_proposal() -> Non
     assert any(i.template == "exec_proposal" and i.company_id == PLAYER for i in run.logs)
     # the group's mines are the founder's to act on; anything else runs as the proposer
     assert scope.proposal_actor(run.state, proposal, game.founder_id) == game.founder_id
-    other = replace(
+    other = replace(  # the same proposal for a create_plan (M36r: with no founder-only actor)
         proposal,
         params=tuple(
             (k, json.dumps({**json.loads(str(v)), "kind": "create_plan"}) if k == "action" else v)
             for k, v in proposal.params
+            if k != scope.ACTOR_PARAM
         ),
     )
     assert scope.proposal_actor(run.state, other, game.founder_id) == ceo

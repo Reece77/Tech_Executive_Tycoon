@@ -51,6 +51,7 @@ from tst.sim.founder.wealth import post, share_price_cents
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS, QUARTER_MONTHS
+from tst.sim.money import exact
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -376,7 +377,7 @@ def finding(
 
     pb = balance.personal
     cid = state.player.id
-    due = round(t.gain_cents * (1 + pb.fine_mult))
+    due = round(t.gain_cents * (1 + exact(pb.fine_mult)))
     state = post(
         state,
         t.person_id,

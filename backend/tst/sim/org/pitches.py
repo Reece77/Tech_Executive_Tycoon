@@ -27,6 +27,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final
 
 import numpy as np
@@ -55,7 +56,7 @@ from tst.sim.hardware.formulas import plant_cost_per_good_unit
 from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import CASH, MARKETING, LedgerBalances, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents, exact, format_money
+from tst.sim.money import Cents, exact, format_money, times
 from tst.sim.org.delegates import delegate_draws
 from tst.sim.org.executives import displayed_score
 from tst.sim.org.formulas import (
@@ -182,13 +183,16 @@ def shown_seat_score(
 def product_mrr(state: GameState, product_id: int, region: str | None = None) -> int:
     """A product's monthly revenue at its current customers and prices, at home and abroad (or
     in one region)."""
-    total = 0.0
+    total = Fraction()
     if region is None:
-        total += sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product_id))
+        total += sum(
+            (exact(s.customers) * (s.price_cents or 0) for s in state.segments_of(product_id)),
+            Fraction(),
+        )
         rows = state.regional_segments_of(product_id)
     else:
         rows = state.regional_segments_of(product_id, region)
-    total += sum(s.customers * (s.price_cents or 0) for s in rows)
+    total += sum((exact(s.customers) * (s.price_cents or 0) for s in rows), Fraction())
     return round(total)
 
 
@@ -206,7 +210,7 @@ def _customers(state: GameState, product_id: int) -> float:
 def _salary_month(role: str, b: Balance, data: GameData) -> int:
     mid = data.role(role).salary_band_mid_cents["mid"]
     bp = data.region(b.founder.default_region).salary_multiplier_bp
-    return round(market_mid_cents(mid, bp) / MONTHS_PER_YEAR)
+    return round(Fraction(market_mid_cents(mid, bp), MONTHS_PER_YEAR))
 
 
 def launch_months(cat: CategoryDef, team: int, turn: int, b: Balance) -> int | None:
@@ -283,6 +287,7 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
                 and s.customers > 0
             )
             customers = market.addressable * pb.new_product_share / (1 + rivals)
+            # money-exact: estimate
             revenue = customers * m.reference_price_cents
             if best is None or revenue > best[0]:
                 best = (revenue, m.segment, market.addressable, rivals)
@@ -347,8 +352,11 @@ def _sunsets(state: GameState, company: int, b: Balance, data: GameData) -> list
             continue
         saving = p.marketing_budget_cents + round(
             sum(
-                s.customers * data.category(p.category).market(s.segment).hosting_cents
-                for s in state.segments_of(p.id)
+                (
+                    exact(s.customers) * data.category(p.category).market(s.segment).hosting_cents
+                    for s in state.segments_of(p.id)
+                ),
+                Fraction(),
             )
         )
         out.append(
@@ -535,7 +543,9 @@ def _offices(state: GameState, company: int, b: Balance, data: GameData) -> list
         depth = city.talent_weight
         people = min(unfilled, pb.office_seats)
         rent = round(
-            b.payroll.office_cost_per_head_cents * b.office.lease_discount * city.rent_index
+            b.payroll.office_cost_per_head_cents
+            * exact(b.office.lease_discount)
+            * exact(city.rent_index)
         )
         out.append(
             Candidate(
@@ -576,6 +586,7 @@ def _plants(state: GameState, company: int, b: Balance, data: GameData) -> list[
     if not contracts or not sizes:
         return []
     size = sizes[-1]
+    # money-exact: rate
     fee = sum(c.units * c.price_cents for c in contracts) / units
     home = compute.home_region_of(state, b, data)
     q = lifecycle.quote(state, company, plant, home, size, b, data)
@@ -626,7 +637,7 @@ def _campaigns(state: GameState, company: int, b: Balance, data: GameData) -> li
         customers = _customers(state, p.id)
         if gap < pb.campaign_brand_gap or customers <= 0:
             continue
-        push = max(pb.campaign_min_cents, round(p.marketing_budget_cents * pb.campaign_share))
+        push = max(pb.campaign_min_cents, times(p.marketing_budget_cents, pb.campaign_share))
         year = 2010 + state.turn // MONTHS_PER_YEAR  # tunable-exempt: turn 0 is 2010
         organic = customers * ((1 + data.category(p.category).growth_in(year)) ** 2 - 1)
         lift = organic + customers * pb.campaign_lift * gap / SCORE_MAX

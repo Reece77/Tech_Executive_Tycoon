@@ -8,6 +8,7 @@ stream `people_gen` keyed `(company_id, 0)`: two-part keys never meet a search's
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 
 import numpy as np
 
@@ -16,6 +17,7 @@ from tst.sim.data_models import FUNCTIONS, LEVELS, Balance, GameData
 from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
 from tst.sim.hiring.models import INCUMBENT_PEOPLE_BLOCK, INCUMBENT_PEOPLE_IDS_FROM, PersonState
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
+from tst.sim.money import exact, times
 from tst.sim.people.generator import generate_pool, people_gen_stream
 from tst.sim.people.models import Employment
 from tst.sim.people.reveal import new_reveal_state
@@ -40,20 +42,22 @@ KEY_PEOPLE_STREAM_PART = 0  # tunable-exempt: second key part for incumbent key 
 HALF = 0.5  # tunable-exempt: midpoint of each key person's slot in the level spread
 
 
-def monthly_revenue_cents(state: GameState, company_id: int, data: GameData | None = None) -> float:
+def monthly_revenue_cents(
+    state: GameState, company_id: int, data: GameData | None = None
+) -> Fraction:
     """Customers x price over every selling product of the company, this month; with `data`,
-    a unit-sale market's customers buy at its steady-state rate (M12b, 26.1)."""
-    total = 0.0
+    a unit-sale market's customers buy at its steady-state rate (M12b, 26.1). Exact (M36r)."""
+    total = Fraction()
     for product in state.company_products(company_id):
         if product.status not in SELLING:
             continue
         category = data.category(product.category) if data is not None else None
         for seg in state.segments_of(product.id):
             rate = sale_rate(category, seg.segment) if category else 1.0
-            total += seg.customers * (seg.price_cents or 0) * rate
+            total += exact(seg.customers) * (seg.price_cents or 0) * exact(rate)
         for rseg in state.regional_segments_of(product.id):  # other regions (M9, 19.5)
             rate = sale_rate(category, rseg.segment) if category else 1.0
-            total += rseg.customers * (rseg.price_cents or 0) * rate
+            total += exact(rseg.customers) * (rseg.price_cents or 0) * exact(rate)
     return total
 
 
@@ -61,9 +65,12 @@ def main_category(state: GameState, company_id: int) -> str | None:
     """The category of the company's biggest product by revenue (its function mix)."""
     best: tuple[float, str] | None = None
     for product in state.company_products(company_id):
+        # money-exact: estimate
         revenue = sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product.id))
         revenue += sum(
-            r.customers * (r.price_cents or 0) for r in state.regional_segments_of(product.id)
+            # money-exact: estimate
+            r.customers * (r.price_cents or 0)
+            for r in state.regional_segments_of(product.id)
         )
         if best is None or revenue > best[0]:
             best = (revenue, product.category)
@@ -153,7 +160,7 @@ def hire_key_people(
             gen, data, balance, state.turn, role, [level], first_person_id=person_id
         )
         person = replace(person, salary_expectation_cents=None)
-        salary = round(market_salary_cents(role.key, level, balance, data) * salary_mult)
+        salary = times(market_salary_cents(role.key, level, balance, data), salary_mult)
         state = replace(with_person(state, person), next_ids=ids)
         state = with_employment(
             state,
@@ -193,7 +200,7 @@ def opening_cash_cents(state: GameState, company_id: int, data: GameData) -> int
     spec = next((i for i in data.incumbents if i.name == company.name), None)
     if spec is None or company.is_player or company.is_startup:
         return 0
-    return round(monthly_revenue_cents(state, company_id, data) * spec.cash_months)
+    return round(monthly_revenue_cents(state, company_id, data) * exact(spec.cash_months))
 
 
 def key_people_monthly_cents(state: GameState, company_id: int, balance: Balance) -> int:
@@ -231,11 +238,14 @@ def setup_incumbents(
         for product in state.company_products(company.id):
             cat = data.category(product.category)
             product_revenue = sum(
-                s.customers * (s.price_cents or 0) * sale_rate(cat, s.segment)
-                for s in state.segments_of(product.id)
+                (
+                    exact(s.customers) * (s.price_cents or 0) * exact(sale_rate(cat, s.segment))
+                    for s in state.segments_of(product.id)
+                ),
+                Fraction(),
             )
-            revenue += product_revenue
-            budget = round(product_revenue * rv.start_marketing_share)
+            revenue += float(product_revenue)
+            budget = round(product_revenue * exact(rv.start_marketing_share))
             state = with_product(state, replace(product, marketing_budget_cents=budget))
         hosting = 0.0
         for product in state.company_products(company.id):
@@ -243,6 +253,7 @@ def setup_incumbents(
             ai = data.compute_index.of(turn_to_ym(state.turn)[0])  # game start: history
             for seg in state.segments_of(product.id):  # a unit's cost of goods (M12b)
                 rate = sale_rate(category, seg.segment)
+                # money-exact: estimate
                 hosting += seg.customers * hosting_cents(category, seg.segment, ai) * rate
         marketing = sum(p.marketing_budget_cents for p in state.company_products(company.id))
         mix = function_mix(state, company.id, balance)
@@ -264,6 +275,7 @@ def setup_incumbents(
         pool_budget = f.pool_budget_cents(revenue, spec.target_margin_bp, hosting, marketing)
         pool_budget = max(0.0, pool_budget - key_people_monthly_cents(state, company.id, balance))
         for function in FUNCTIONS:
+            # money-exact: ratio
             heads = pool_budget * mix[function] / loaded_cost_cents(function, balance, data)
             skill = spec.builder_skill if function == "builder" else rv.pool_skill_other
             fn: Function = function  # type: ignore[assignment]

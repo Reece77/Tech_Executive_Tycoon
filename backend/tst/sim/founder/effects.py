@@ -101,6 +101,7 @@ def education_points(state: GameState, company_id: int, balance: Balance) -> flo
     f = _active(state, company_id, "education", balance)
     if f is None:
         return 0.0
+    # money-exact: ratio
     return fb.hiring * min(1.0, f.last_grant_cents / CENTS_A_DOLLAR / fb.hiring_full_dollars)
 
 

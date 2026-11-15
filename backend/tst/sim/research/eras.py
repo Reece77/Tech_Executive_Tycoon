@@ -6,11 +6,12 @@ lines. Arrival is checked in phase 3 after research progress; growth is read in 
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import exact, format_money
 from tst.sim.press.moments import queue_moment
 from tst.sim.products.models import SELLING
 from tst.sim.research import levels
@@ -142,10 +143,15 @@ def _seeded(state: GameState, balance: Balance) -> dict[str, int]:
 
 
 def _mrr(state: GameState, product_id: int) -> int:
-    return round(
-        sum(s.customers * (s.price_cents or 0) for s in state.segments_of(product_id))
-        + sum(s.customers * (s.price_cents or 0) for s in state.regional_segments_of(product_id))
+    home = sum(
+        (exact(s.customers) * (s.price_cents or 0) for s in state.segments_of(product_id)),
+        Fraction(),
     )
+    abroad = sum(
+        (exact(s.customers) * (s.price_cents or 0) for s in state.regional_segments_of(product_id)),
+        Fraction(),
+    )
+    return round(home + abroad)
 
 
 def _customers(state: GameState, product_id: int) -> float:

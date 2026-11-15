@@ -24,6 +24,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.models import Analyst, Listing, PublicCompany, ShareMonth
 from tst.sim.markets_public.value import MONTHS_A_YEAR, Fundamentals, growth_of
+from tst.sim.money import exact, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
@@ -197,7 +198,7 @@ def apply_ipo_step(
     if listing.status == "pricing" and step == "pull":
         bank = data.bank(listing.bank)
         expected = listing.price_cents * listing.new_shares
-        fee = round(pf.fee_cents(expected, bank.fee) * ib.pull_fee_share)
+        fee = times(pf.fee_cents(expected, bank.fee), ib.pull_fee_share)
         if fee > 0:
             entries.append(
                 LedgerEntry.transfer(
@@ -330,9 +331,10 @@ def list_company(
     # a = the final price over the fair price per share, before the dual-class discount
     fair = pf.per_share_cents(f.value_cents, listing.shares_before + listing.new_shares)
     discount = 1 - (ib.dual_class_discount if listing.dual_class else 0.0)
+    # money-exact: ratio
     ambition = listing.price_cents / (fair * discount) if fair > 0 else 1.0
     r = pf.first_day_return(listing.demand or 1.0, ambition, ib.first_day)
-    close = max(1, round(listing.price_cents * (1 + r)))
+    close = max(1, round(listing.price_cents * (1 + exact(r))))
     shares = fd_shares(state, company_id)
     company = state.company(company_id)
     ticker = ticker_for(company.name, ib.ticker_len)

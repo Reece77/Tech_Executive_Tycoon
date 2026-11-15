@@ -45,6 +45,7 @@ def ramp_share(turn: int, ready_turn: int, ramp_months: int) -> float:
 
 def power_cents(mwh: float, cents_per_mwh: float, index: float) -> float:
     """A unit's power: MWh x the price at index 1.0 x the region's index (33.5)."""
+    # money-exact: rate
     return mwh * cents_per_mwh * index
 
 
@@ -61,6 +62,7 @@ def unit_cost_cents(
 ) -> float:
     """The module docstring's unit cost."""
     return (
+        # money-exact: rate
         input_price_cents * input_units
         + power_cents(mwh, cents_per_mwh, power_index)
         + other_cents
@@ -72,6 +74,7 @@ def unit_cost_cents(
 
 def margin(price_cents: float, unit_cost: float) -> float:
     """Operating margin at market price (36.5 target 1)."""
+    # money-exact: ratio
     return (price_cents - unit_cost) / price_cents if price_cents > 0 else 0.0
 
 
@@ -99,7 +102,10 @@ def derived_price_cents(
 ) -> float:
     """A derived good's price (refining.config.DerivedGoodDef), cents a unit."""
     if priced_by == "share":
+        # money-exact: rate
         return value * source_cents * per_source
     if priced_by == "divisor":
+        # money-exact: rate
         return source_cents * per_source / value
+    # money-exact: rate
     return base_cents * ((1 - value) + value * source_index)

@@ -157,4 +157,5 @@ def legacy_wealth(net_worth_cents: int, balance: Balance) -> float:
     below zero."""
     pb = balance.personal
     unit = pb.legacy_unit_dollars * CENTS_A_DOLLAR
+    # money-exact: ratio
     return pb.legacy_points * math.log10(1 + max(0, net_worth_cents) / unit)

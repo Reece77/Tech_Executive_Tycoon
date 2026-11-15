@@ -5,13 +5,15 @@ from __future__ import annotations
 
 from typing import Final
 
+from tst.sim.money import exact
+
 MONTHS: Final = 12
 
 
 def capex_cents(starts: int, capital_cents: float, scale: float, cost_mult: float = 1.0) -> int:
     """capex = wafer starts a month x 12 x capital per wafer-per-year x fab.capex_scale (38.2),
     x the DUV route's cost multiplier at 7 nm."""
-    return round(starts * MONTHS * capital_cents * scale * cost_mult)
+    return round(starts * MONTHS * exact(capital_cents) * exact(scale) * exact(cost_mult))
 
 
 def build_months(age_months: int, mature_age: int, leading: int, mature: int) -> int:
@@ -75,6 +77,7 @@ def node_price_cents(
     then (dearer when it was nearer the edge),
     x the foundry market's capacity factor (38.3)."""
     steps = behind_now - behind_ref
+    # money-exact: rate
     return wafer_cents * (index_now / index_ref) * (1 - decay) ** steps * factor
 
 
@@ -90,6 +93,7 @@ def die_cents(
     wafer x the design's yield x fab yield / mature yield) + packaging. A mature fab's die costs
     what a foundry's would at the same wafer price."""
     good = per_wafer * chip_yield * min(1.0, fab_yield / mature_yield)
+    # money-exact: rate
     return wafer_cost_cents / good + packaging_cents if good > 0 else float("inf")
 
 

@@ -40,6 +40,7 @@ def legacy_parts(
 ) -> tuple[float, float]:
     """(giving, persona) parts; traits in config.TRAITS order."""
     unit = balance.foundation.legacy_unit_dollars * CENTS_A_DOLLAR
+    # money-exact: ratio
     giving = GIVING_POINTS * math.log10(1 + grants_cents / unit)
     visionary, ruthless, beloved, reckless = traits
     return giving, GOOD_WEIGHT * (visionary + beloved) - (ruthless + reckless)

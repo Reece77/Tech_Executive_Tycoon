@@ -389,7 +389,8 @@ def _let_go_others(
         state = with_employment(
             state, replace(e, status="ended", end_turn=state.turn, end_reason="fired")
         )
-        paid += round(e.salary_cents / 12 * ib.severance_months)  # tunable-exempt: months a year
+        months = exact(ib.severance_months)
+        paid += round(Fraction(e.salary_cents, 12) * months)  # tunable-exempt: months a year
     return state, {e.person_id for e in gone}, paid
 
 
