@@ -41,17 +41,3 @@ jobs:
 
       - name: make ${{ matrix.part }}
         run: make ${{ matrix.part }}
-
-      # M30: TEMPORARY profiling step (PM, 2026-11-14); removed before M30 merges.
-      - name: M30 profile of the full_integrator 2039 save
-        if: always() && matrix.part == 'weekly-v6-integrator'
-        run: |
-          uv run --project backend python tools/m30_profile.py /tmp/tst-v6/v6i.tst.sqlite /tmp/m30-profile
-          head -n 70 /tmp/m30-profile/cumulative.txt /tmp/m30-profile/own.txt
-
-      - name: Upload the M30 profile
-        if: always() && matrix.part == 'weekly-v6-integrator'
-        uses: actions/upload-artifact@v4
-        with:
-          name: m30-profile
-          path: /tmp/m30-profile
