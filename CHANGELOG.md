@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M36r Codex review 7 fixes and a money-exactness guard (a fix lane beside M32-M34; no migration; GOLDEN_NOTE):
+  - Never-actions stay the founder's: an area owner's proposal for a grey route or a contract termination (and every founder-only kind) records the founder as its required actor, and approving it inside a subsidiary acts as the founder (finding 1).
+  - Exact commitments: a commodity deal's commitment is its signing quote x take-or-pay in exact rationals, rounded half-even once; commodity quotes, take-or-pay charges, hedges and prepayment draws use `offtake.exact_value` (finding 2).
+  - Exact platform fees: exact per region and platform, summed per seller-owner pair and rounded once; owners earn what their sellers pay (finding 3). Own-OS licences between two group companies post 5900 / 4300, which consolidation removes (finding 4).
+  - The estate pays its whole tax: settlement realises personal cash, the family office, public holdings, angel stakes (new stake status `sold`) and then company shares, and records only what it paid; the estate quote's shares to sell count the other assets first and no longer double-count shares bought in the listed company (finding 5).
+  - The float-money audit: every money formula in `tst/sim/` multiplied or divided by a float (M36r brief, Decisions made) is exact (`money.exact`, `times`, `pct_of`, `Fraction`) or tagged `# money-exact:` as a rate, ratio, estimate or display; seven lines in files M32 and M33 are editing are handed to them. `tests/unit/test_money_guard.py` (an AST scan, `tests/money_guard.py`) fails CI on a new occurrence.
+  - Regression tests: `tests/unit/test_m36r_review7.py`, each written first and seen failing.
+
 - M30 performance at scale (v3.5, lane B; migration `0054_m30`; golden snapshots unchanged; results identical):
   - Measure first: `tools/bench.py` (three January 2039 saves; turns, Holiday, size, load, cold start, the ten largest screens; tables in `docs/perf/baseline.md` and `docs/perf/after.md`) and the long state-cache check (`tst.balance.m30`; nine runs of 360 months hashed month by month, `tests/fixtures/m30_state_hashes.json` recorded on main before any change; nightly).
   - The turn: per-state and per-input memos for derived values (checked by `MEMO_CHECK`), binary-search knowledge lookups, batched candidate, knowledge and market updates, bulk writes for new people, records and candidates, driver bulk updates, positional collection diffs, world records written as a diff, and the collector frozen after each month. 2039 integrator: 768 → about 400 ms median; Holiday 9.9 → 5.5 s; software save 1,713 → about 680 ms (a reported miss: its hiring volume).
