@@ -34096,7 +34096,9 @@
               "project",
               "mine",
               "fab",
-              "refinery"
+              "refinery",
+              "region",
+              "plant"
             ],
             "title": "Scope"
           },

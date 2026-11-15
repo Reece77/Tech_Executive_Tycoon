@@ -9516,7 +9516,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant";
             /** Entity */
             entity?: string | null;
             /**

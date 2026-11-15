@@ -35,7 +35,17 @@ class ExplainOut(BaseModel):
     label: str
     unit: ExplainUnit
     scope: Literal[
-        "company", "product", "person", "account", "market", "project", "mine", "fab", "refinery"
+        "company",
+        "product",
+        "person",
+        "account",
+        "market",
+        "project",
+        "mine",
+        "fab",
+        "refinery",
+        "region",
+        "plant",  # M32
     ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")
