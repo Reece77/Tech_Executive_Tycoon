@@ -54,7 +54,10 @@ def places_measure(
         return None
     morale = [m for e in staff if (m := state.person_state(e.person_id).morale) is not None]
     pay = [
-        e.salary_cents / mid for e in staff if (mid := market_mid_for(state, e, balance, data)) > 0
+        # money-exact: ratio
+        e.salary_cents / mid
+        for e in staff
+        if (mid := market_mid_for(state, e, balance, data)) > 0
     ]
     tenure = [state.turn - e.start_turn for e in staff]
     m = sum(morale) / len(morale) / MORALE_SCALE if morale else 0.0
