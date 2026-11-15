@@ -232,6 +232,7 @@ def _loan_text(state: GameState, effect: Effect, balance: Balance) -> str:
         now = loan.rate_bp / PCT
         return f"the rate rises {points:g} points, to {now + points:.2f}%"
     share = br.repay_bp if effect.type == "loan_repay" else br.waiver_fee_bp
+    # money-exact: display
     cents = effect.value * loan.balance_cents * share / BP
     if effect.type == "loan_repay":
         return f"repays {dollars(cents)} of the balance from cash now"
