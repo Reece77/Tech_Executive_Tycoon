@@ -2382,7 +2382,7 @@ regulation: # 48: regulation with teeth (M34, v4 lane C). Designations, duties, 
   alt_discount: 0.04 # an alternative-payment duty's path is the standard rate less this (Korea's 30% -> 26%, platforms.yaml)
   energy: { set_compliance: 2, comply_order: 5 } # founder energy for the Regulation screen's actions (6)
   investigation: # 48.3: the chance a regulator opens a case on a company in a month (engine-side only; A throughout)
-    base: 0.002 # with at least one cause below; none = no chance
+    base: 0.004 # with at least one cause below; none = no chance (M34 tuning for 48.5 target 5: 0.002 -> 0.003 -> 0.004)
     min_revenue_cents: 100000000000 # a company with under $1B a year of revenue in the region draws no case (A)
     dominance: 3.0 # x at a share above dominance_share in any market the regulator covers
     designated: 1.5 # x when designated there
@@ -2396,7 +2396,7 @@ regulation: # 48: regulation with teeth (M34, v4 lane C). Designations, duties, 
     ruthless: 1.3 # x when the founder is Ruthless (32.4)
     complaint: 3.0 # x after a rival's complaint (M31's "go to regulators") in the last complaint_months
     complaint_months: 12
-    influence_cut: 0.5 # x (1 - this x influence / 100) (32.5)
+    influence_cut: 0.35 # x (1 - this x influence / 100) (32.5; M34 tuning for 48.5 target 4: 0.5 -> 0.35)
     compliant: 0.7 # x when designated and complying with every duty
     max_chance: 0.15
     cooldown_months: 24 # a regulator opens no new case on a company until this long after the last closed
@@ -2412,11 +2412,11 @@ regulation: # 48: regulation with teeth (M34, v4 lane C). Designations, duties, 
     ruling_against: [0.5, 0.8] # a contested case's ruling goes against the company
     appeal_win: [0.2, 0.4]
     lobby_cut: 0.4 # ruling odds x (1 - this x influence / 100) (32.5)
-    complied_cut: 0.5 # ... x (1 - this) when the company has complied with every duty there
+    complied_cut: 0.3 # ... x (1 - this) when the company has complied with every duty there (M34 tuning for 48.5 target 5: 0.5 -> 0.3)
   fine: # 48.3
     share: [0.005, 0.04] # of global trailing-year turnover, by gravity (history: Apple music about 0.5%, Google Android about 4%)
     noncompliance_mult: 2.0 # x while non-compliant (48.2)
-    settle_share: 0.3 # settling after a statement of objections pays this share of the fine
+    settle_share: 0.4 # settling after a statement of objections pays this share of the fine (M34 tuning for 48.5 target 4: 0.3 -> 0.5 -> 0.4; contesting costs about 0.46 of a fine in expectation)
     default_max_share: 0.10 # cap where no regime sets one (Regulation 1/2003 Art. 23, like the DMA's)
   structural: # 48.4: rare, warned break-ups
     ruling_years: 5 # a ruling against in the same market within this, not complied with

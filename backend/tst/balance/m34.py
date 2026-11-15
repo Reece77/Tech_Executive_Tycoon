@@ -13,8 +13,9 @@ M31's target 3), and answer the player's regulation events by strategy:
    charges, appeals rulings) gets a structural order by December 2039 on at most 2 of 10 seeds,
    never with under 3 years of warning; `compliant` (self-preferencing off; settles at the
    inquiry) on none.
-4. Compliance and influence help: `careful` (self-preferencing strong; settles at the charges;
-   $500k a month of lobbying in Europe) pays 30-60% less in EU fines over 2026-2039 than
+4. Compliance and influence help: `careful` (self-preferencing strong until it settles with an
+   EU commitment, which it then keeps; settles at the charges; $500k a month of lobbying in
+   Europe) pays 30-60% less in EU fines over 2026-2039 than
    `defiant`, on the mean over seeds.
 5. Rivals are regulated too: a rival platform owner (Apple, Microsoft) faces a duty or fine the
    model made (a designation, a remedy, a commitment or a fine) from 2026 on at least 8 of 10
@@ -166,6 +167,8 @@ class Run:
     order_lead: int | None  # months of warning before the first order
     rival_model: bool  # a rival platform owner met a model-made duty or fine from 2026
     rival_any: bool  # ... or a duty dated from 2026 at all (history's designations included)
+    cases: tuple[str, ...] = ()  # the player's cases: regulator/last step/outcome
+    rival_cases: int = 0  # cases the model opened on rival platform owners
 
 
 def play(seed: int, strategy: str, until: int) -> Run:
@@ -179,7 +182,11 @@ def play(seed: int, strategy: str, until: int) -> Run:
     kept: list[LedgerEntry] = []
     while game.state.turn <= until:
         _answer(game, strategy)
-        if pref != "off":  # keep the setting on whatever a duty forced
+        committed = strategy == "careful" and any(
+            x.company_id == me and x.source == "commitment" and x.regulator == "eu_commission"
+            for x in game.state.duties
+        )  # a careful player keeps the commitments it settled with (rule 2: a sensible player)
+        if pref != "off" and not committed:  # keep the setting on whatever a duty forced
             game.state = replace(
                 game.state,
                 platforms=tuple(
@@ -193,11 +200,13 @@ def play(seed: int, strategy: str, until: int) -> Run:
         game.state = _hold(game.state, d.balance, d.game_data)
     s = game.state
     fines = [(e, line.amount) for e in kept for line in e.lines if line.account == FINES]
-    eu_cases = {c.id for c in s.reg_cases if c.regulator == "eu_commission"}
+    # A settlement posts when the player answers (an action, outside the turn's entries): read
+    # the cases' own fines (an annulled fine came back) and the 6970 balance.
     fines_eu = sum(
-        a for e, a in fines
-        if e.company_id == me and any(e.memo.endswith(f"case {i}") for i in eu_cases)
-    )  # fmt: skip
+        c.fine_cents
+        for c in s.reg_cases
+        if c.company_id == me and c.regulator == "eu_commission" and c.outcome != "annulled"
+    )
     orders = [o for o in s.reg_orders if o.company_id == me]
     lead = min((o.ordered_turn - o.warned_from for o in orders), default=None)
     made = any(x.company_id in rivals and x.source != "designation" for x in s.duties)
@@ -212,11 +221,15 @@ def play(seed: int, strategy: str, until: int) -> Run:
     return Run(
         duties=sum(1 for x in s.duties if x.company_id == me and x.from_turn <= s.turn),
         fines_eu=fines_eu,
-        fines=sum(a for e, a in fines if e.company_id == me),
+        fines=game.balances.get((me, FINES), 0),
         orders=len(orders),
         order_lead=lead,
         rival_model=rival_model,
         rival_any=rival_any,
+        cases=tuple(
+            f"{c.regulator}/{c.steps[-1][0]}/{c.outcome}" for c in s.reg_cases if c.company_id == me
+        ),
+        rival_cases=sum(1 for c in s.reg_cases if c.company_id in rivals),
     )
 
 
