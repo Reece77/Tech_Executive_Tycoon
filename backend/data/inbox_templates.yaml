@@ -710,3 +710,28 @@ templates:
   adviser_retired:
     title: "{name} retires from the board"
     body: "Your adviser has stepped down after years of opinions, wanted and unwanted."
+  # --- M32 (formulas.md 46): power and owned plants ---------------------------------------------
+  plants_unlocked:
+    title: "You can now own power plants"
+    body: "At this size you can build gas, solar-with-storage, wind and nuclear plants for your fabs and data centres, behind their meter or on the grid. The Power screen shows your energy, contracts and the cheapest plant in each region."
+  plant_ordered:
+    title: "Plant ordered: {plant}"
+    body: "{capex} over {months} months, quoted ready by {ready}. {grid}"
+  plant_live:
+    title: "Plant generating: {plant}"
+    body: "{plant} is generating. Its energy goes to your facilities first; any surplus is sold to the grid if it is connected."
+  plant_outage:
+    title: "Plant outage: {plant}"
+    body: "{plant} is offline after a forced outage until {until}. Your facilities draw from the grid meanwhile."
+  grid_connected:
+    title: "Connected to the grid: {facility}"
+    body: "{facility} has its grid connection and can draw from and sell to the grid."
+  grid_queued:
+    title: "In the grid queue: {facility}"
+    body: "{facility} needs a {mw} MW connection in {region}. The typical wait there is {wait}. A plant behind its meter that covers its whole load skips the queue."
+  grid_outage:
+    title: "Grid outage in {region}"
+    body: "The {region} grid went down this month. Fabs on the grid lost wafers in process, and data centres went offline, except where plants behind the meter held the load."
+  ppa_signed:
+    title: "Power contract signed: {producer}"
+    body: "{mwh} MWh a month in {region} at {price} a MWh, {start} to {end}. Unused energy still pays {take_or_pay} of the price."

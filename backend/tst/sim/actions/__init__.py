@@ -321,6 +321,8 @@ from tst.sim.platforms.actions import (
     SetSteering,
     apply_platforms,
 )
+from tst.sim.power.actions import ACTION_TYPES as POWER_ACTION_TYPES
+from tst.sim.power.actions import BuildPlant, PowerAction, SignPpa, apply_power
 from tst.sim.refining.actions import ACTION_TYPES as REFINING_ACTION_TYPES
 from tst.sim.refining.actions import (
     BuildRefinery,
@@ -368,6 +370,7 @@ type Action = (
     | AutomationAction  # M27a
     | FamilyAction  # M36
     | PlatformAction  # M31
+    | PowerAction  # M32
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -383,6 +386,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     **PLATFORM_ACTION_TYPES,  # M31 (44)
+    **POWER_ACTION_TYPES,  # M32 (46)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -498,6 +502,7 @@ __all__ = [
     "BackStartup",
     "BuildFab",
     "BuildFacility",
+    "BuildPlant",
     "BuildRefinery",
     "BuyOutMinorities",
     "BuyStake",
@@ -583,6 +588,7 @@ __all__ = [
     "SignContract",
     "SignManufacturingContract",
     "SignOfftake",
+    "SignPpa",
     "SignRefiningDeal",
     "SignWaferContract",
     "SpinOff",
@@ -899,6 +905,8 @@ def apply_action(
             | AdoptStandard()
         ):  # M31 (44)
             out = apply_platforms(state, action, balance, data)
+        case BuildPlant() | SignPpa():  # M32 (46.2)
+            out = apply_power(state, action, ledger_balances, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

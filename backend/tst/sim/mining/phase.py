@@ -19,7 +19,6 @@ from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.sim.commodities import costs as commodity_costs
-from tst.sim.commodities import power
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import QueuedEvent
 from tst.sim.exploration.geology import cell_deviations
@@ -46,6 +45,7 @@ from tst.sim.mining.actions import LINK, close_entries, closed, group_ids, mine_
 from tst.sim.mining.draws import ACCIDENT, GRADE, PROTEST, mining_draws
 from tst.sim.mining.models import HISTORY_MONTHS, Mine, MineMonth
 from tst.sim.money import format_money, times
+from tst.sim.power import grid
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_facility, with_mine, with_mine_deal, with_queued
 
@@ -345,12 +345,16 @@ def _operate(
         ore_mt = min(mine.ore_capacity_mt / 12 * ramp * team.reliability, mine.hidden_ore_left_mt)
         grade = grade_now(state, mine, rng, balance, data)
         product = ore_mt * MT * grade * mine.hidden_recovery
+    p_mult = grid.multiplier(state, mine.region, balance, data)  # M32 (46.2): the grid's multiple
     variable = mf.variable_usd(
         ore_mt * MT,
         ore_cost(mine, balance, data, kind),
         sub.fixed_share,
         mb.energy_share,
-        power.index(state, mine.region, data),
+        p_mult,
+    )
+    energy_usd = mf.energy_usd(
+        ore_mt * MT, ore_cost(mine, balance, data, kind), sub.fixed_share, mb.energy_share
     )
     sustaining = mb.sustaining_share * mine.capex_paid_cents / CENTS / 12 if running else 0.0
     cash_cost = round((fixed + variable + sustaining) * CENTS)
@@ -523,6 +527,8 @@ def _operate(
         cost_usd_t=cost_t,
         revenue_cents=revenue,
         margin_cents=margin,
+        energy_mwh=energy_usd * CENTS / balance.refining.power_cents_per_mwh,
+        power_cents=round(energy_usd * p_mult * CENTS),
     )
     mine = replace(
         mine,
@@ -708,7 +714,11 @@ def would_be_cost_usd_t(state: GameState, mine: Mine, balance: Balance, data: Ga
     fixed = fixed_usd(state, mine, balance, data) * 12
     ore_t = mine.ore_capacity_mt * MT
     var = mf.variable_usd(
-        ore_t, oc, sub.fixed_share, mb.energy_share, power.index(state, mine.region, data)
+        ore_t,
+        oc,
+        sub.fixed_share,
+        mb.energy_share,
+        grid.multiplier(state, mine.region, balance, data),
     )
     sustaining = mb.sustaining_share * mine.capex_cents / CENTS
     spot = prices.spot_usd_t(state, mine.commodity, data, balance)

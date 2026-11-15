@@ -367,3 +367,9 @@ class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 
     code = "platform_rule"
+
+
+class PowerRuleError(SimError):
+    """A power action the rules do not allow (M32, formulas.md 46)."""
+
+    code = "power_rule"

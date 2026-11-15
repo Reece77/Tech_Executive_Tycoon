@@ -95,6 +95,11 @@ def fixed_month_usd(annual_usd: float, fixed_share: float, safety_cost: float) -
     return annual_usd * fixed_share / MONTHS * safety_cost
 
 
+def energy_usd(ore_t: float, ore_cost: float, fixed_share: float, energy_share: float) -> float:
+    """The month's energy part of variable cost at the reference price (M32 46.1's draw)."""
+    return ore_t * ore_cost * (1 - fixed_share) * energy_share
+
+
 def variable_usd(
     ore_t: float, ore_cost: float, fixed_share: float, energy_share: float, power: float
 ) -> float:

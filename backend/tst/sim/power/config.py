@@ -260,6 +260,8 @@ class PlantBalance(_Frozen):
     outage_months: dict[str, Span]  # type -> months a forced outage lasts (whole)
     firm_share: dict[str, float]  # type -> share of its rating it holds through a grid outage
     smr_start: str  # the month the SMR era's draw is made (the last history month's next)
+    capex_premium: float = Field(ge=1)  # an owner's site works and connection over the quote
+    gas_adder: float = Field(ge=0)  # $/MMBtu (2010 dollars) a site pays over the regional price
 
 
 class PpaBalance(_Frozen):

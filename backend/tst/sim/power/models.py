@@ -60,6 +60,10 @@ class Plant:
     def live(self, turn: int) -> bool:
         return self.live_turn is not None and self.live_turn <= turn
 
+    def offline(self, turn: int) -> bool:
+        """In a forced outage this month (46.5)."""
+        return self.outage_until is not None and turn <= self.outage_until
+
 
 @dataclass(frozen=True, slots=True)
 class Ppa:

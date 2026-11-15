@@ -985,6 +985,20 @@ facility:
       sizes: [10000, 25000, 50000, 100000] # wafer starts a month a build may choose (38.2: 10,000-100,000)
       outages: false
       module: fabs # skipped by the generic capex, depreciation, operating cost and sale (tst.sim.fabs owns them)
+    plant: # M32 (46.2): an owned power plant on the shared facility record; its type, capex, build and costs are in power.yaml (module power)
+      label: Power plant
+      unit: MW
+      input_good: equipment # nominal: a plant's capex is its type's $/kW (power.yaml)
+      output_good: power # nominal: energy for the company's own facilities and the grid
+      capex_per_unit_cents: 100000000 # nominal $1,000/kW; a build uses its type's
+      build_months: 36 # nominal: the type's build months
+      opex_per_unit_cents: 0 # costs are the plant's own (46.2)
+      life_months: 360 # nominal: the type's life_years
+      staff_per: 1000000 # A: run under an operations contract (in its fixed O&M); no staff needed
+      staff_roles: [process_engineer]
+      staff_skill: manufacturing
+      outages: false # forced outages are the plant's own (46.5)
+      module: power
   sizes: [100, 500, 2000, 10000] # CU a build may choose (22.2)
   build_energy: 12 # founder energy to order a build (22.2)
   close_energy: 12 # founder energy to close or sell one (22.2)
@@ -1677,6 +1691,8 @@ power:
       nuclear: 1.0
       smr: 1.0
     smr_start: 2026-01 # the SMR era's first orderable year is drawn in this month (power.yaml era)
+    capex_premium: 1.0 # an owner's capex x this over the published overnight cost (site works, switchgear, connection; A; tuning key for 46.8 target 3)
+    gas_adder: 0.0 # $/MMBtu (2010 dollars) delivered over the regional hub price (A: industrial gas pays transport; tuning key for 46.8 target 3)
   ppa: # 46.2: power-purchase agreements
     energy: 3 # founder energy to sign one (A: as a commodity contract)
     years: [5, 20] # whole years a PPA runs (46.2)

@@ -31,6 +31,7 @@ class PlantMonth:
     input_cents: int = 0
     power_cents: int = 0
     power_index: float = 1.0
+    energy_mwh: float = 0.0  # M32 (46.1): output x the recipe's MWh a unit
     other_cents: int = 0
     fixed_cents: int = 0
     depreciation_cents: int = 0

@@ -28,6 +28,8 @@ class FabMonth:
     fixed_cents: int = 0
     materials_cents: int = 0
     power_cents: int = 0
+    energy_mwh: float = 0.0  # M32 (46.1): starts run x the node's MWh a start
+    outage_starts: float = 0.0  # M32 (46.5): starts lost to a grid outage this month
     staff_cents: int = 0
     revenue_cents: int = 0  # foundry slots
     slot_price_cents: float = 0.0  # a slot's price this month (the node's market price x 0.9)

@@ -44,8 +44,12 @@ def has_outages(facility: Facility, balance: Balance) -> bool:
     return kind.outages and compute.is_compute(facility, balance)
 
 
-def roll(state: GameState, rng: RngFactory, balance: Balance) -> list[int]:
-    """Ids of the live facilities that have an outage this month, by id (22.5)."""
+def roll(
+    state: GameState, rng: RngFactory, balance: Balance, data: GameData | None = None
+) -> list[int]:
+    """Ids of the live facilities that have an outage this month, by id (22.5). M32 (46.5): in a
+    grid outage a data centre also fails with chance its exposure, on the same draw (from its
+    top end, so a month with no grid outage draws exactly as before)."""
     hit: list[int] = []
     for facility in state.facilities:
         if facility.live_capacity(state.turn) <= 0:
@@ -55,9 +59,20 @@ def roll(state: GameState, rng: RngFactory, balance: Balance) -> list[int]:
         rel = staffing(state, facility, balance).reliability
         chance = ff.outage_chance(rel, balance.facility.outage.base)
         u = float(rng.stream(state.turn, "facility", facility.id).random())
-        if u < chance:
+        exposed = _grid_exposure(state, facility, balance, data)
+        if u < chance or (exposed > 0 and u >= 1 - exposed):
             hit.append(facility.id)
     return hit
+
+
+def _grid_exposure(
+    state: GameState, facility: Facility, balance: Balance, data: GameData | None
+) -> float:
+    if data is None or not state.grid_outages:
+        return 0.0
+    from tst.sim.power import outages as grid_outages
+
+    return grid_outages.exposure(state, facility, balance, data)
 
 
 def _lose(state: GameState, product_id: int, share: float) -> tuple[GameState, float, str | None]:
@@ -88,7 +103,7 @@ def outages_month(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LogItem, ...]]:
     """Phase 6: roll outages and apply them (22.5)."""
-    return apply_outages(state, roll(state, rng, balance), balance, data)
+    return apply_outages(state, roll(state, rng, balance, data), balance, data)
 
 
 def apply_outages(

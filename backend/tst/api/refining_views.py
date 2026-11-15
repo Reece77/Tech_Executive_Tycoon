@@ -334,7 +334,7 @@ def refineries_out(state: GameState, data: LoadedData) -> RefineriesOut:
         supply=supply,
         chain=_chain(state, data),
         power=[
-            RefiningPowerOut(region=r, label=d.region(r).label, index=power_index(state, r, d))
+            RefiningPowerOut(region=r, label=d.region(r).label, index=power_index(state, r, b, d))
             for r in d.region_keys
         ],
         process_level=process_level(state, state.player.id, b, d),
