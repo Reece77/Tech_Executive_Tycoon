@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from tst.sim.money import exact
 from tst.sim.platforms.config import PlatformsBalance
 
 
@@ -119,4 +120,4 @@ def effective_fee(
 
 def fee_cents(revenue_cents: int, paid_share: float, users: float, fee: float) -> int:
     """The fee on one platform's part of a seller's regional revenue (44.4)."""
-    return round(revenue_cents * paid_share * users * fee)
+    return round(revenue_cents * exact(paid_share) * exact(users) * exact(fee))

@@ -244,7 +244,8 @@ def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[Ledg
         for product in books_products:
             drag = fee_drag(product.category, balance, data)
             rate = exact(drag)
-            uplift = round(store_revenue_cents(state, product, balance, data) * rate / (1 - rate))
+            store = Fraction(store_revenue_cents(state, product, balance, data))
+            uplift = round(store * rate / (1 - rate))
             if uplift > 0:
                 entries.append(
                     LedgerEntry(
