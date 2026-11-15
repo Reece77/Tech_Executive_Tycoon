@@ -38,8 +38,8 @@ from tst.sim.state import GameState
 THIN, DEEP = 0.75, 1.25  # tunable-exempt: book labels (open orders / next year's capacity)
 NOTE: Final = (
     "ASML is the only maker of EUV tools. Orders join its queue; each quarter's tools go to "
-    "open orders in proportion to how long they have waited, the buyer's history of deliveries "
-    "and any prepayment. Your place shows as a range of months to your last tool."
+    "open orders in queue order, a long-standing customer's orders and prepaid ones moving up. "
+    "Your place shows as a range of months to your last tool."
 )
 
 
@@ -115,7 +115,7 @@ def orders_out(state: GameState, data: LoadedData) -> list[ToolOrderOut]:
     ef = ed.equipment_file(data.game_data)
     out = []
     for o in state.tool_orders:
-        if o.buyer != eq.PLAYER or o.company_id not in group:
+        if o.buyer != eq.PLAYER or o.company_id not in group or o.status == "cancelled":
             continue
         low = high = None
         if o.status == "open":
