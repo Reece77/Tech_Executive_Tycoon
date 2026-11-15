@@ -43,7 +43,7 @@ test('(a) order high-NA tools and see the queue range', async ({ page }) => {
   await expect(page.getByTestId('equipment-generations')).toContainText('High-NA EUV');
   await page.getByTestId('equipment-generation-select').click();
   await page.getByRole('option', { name: 'High-NA EUV (EXE)' }).click();
-  await page.getByTestId('equipment-tools').locator('input').fill('10');
+  await page.getByTestId('equipment-tools').fill('10');
   await page.getByTestId('equipment-order').click();
   const row = page.getByTestId('equipment-order-row');
   await expect(row).toHaveCount(1);
