@@ -20,6 +20,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.finance.captable import share_price
 from tst.sim.hiring.models import Candidate, Search
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.people.models import Employment
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import PoachApproach, RivalEffect, stream_key
@@ -62,6 +63,7 @@ def unvested_ratio(state: GameState, person_id: int) -> float:
     price = share_price(state, employment.company_id)
     if grant is None or price is None:
         return 0.0
+    # money-exact: ratio
     return float(grant.unvested * price) / employment.salary_cents
 
 
@@ -82,6 +84,7 @@ def approach_probability(
     morale = state.person_state(person.id).morale
     loyalty = person.personality["loyalty"] if known_loyalty is None else known_loyalty
     score = f.poach_score(
+        # money-exact: ratio
         approach.offer_cents / employment.salary_cents,
         balance.morale.new_hire if morale is None else morale,
         loyalty,
@@ -211,7 +214,7 @@ def poach_batch(
     )
     for e in picks:
         person = state.person(e.person_id)
-        ask = round(e.salary_cents * pb.ask_mult)
+        ask = times(e.salary_cents, pb.ask_mult)
         state = with_person(state, replace(person, salary_expectation_cents=ask))
         state = with_candidate(
             state,
