@@ -166,7 +166,7 @@ function AngelPanel({ saveId, inv }: { saveId: string; inv: Investments }) {
           cell: ({ row }) => (
             <span className="tst-num">
               {formatMoneyWhole(
-                row.original.status === 'acquired'
+                row.original.status === 'acquired' || row.original.status === 'sold'
                   ? row.original.proceeds_cents
                   : row.original.worth_cents,
               )}
