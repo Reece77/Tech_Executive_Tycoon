@@ -59,6 +59,7 @@ def spot_unit_cents(state: GameState, good: str, balance: Balance, data: GameDat
     """One unit of a compute good a month on spot: $1,000, x the AI index for GPU (22.1)."""
     spec = balance.compute.goods[good]
     index = macro.ai_index(state, data) if spec.spot_index == "ai" else 1.0
+    # money-exact: rate
     return spec.spot_cents * index
 
 
@@ -113,7 +114,9 @@ def needs(state: GameState, company_id: int, balance: Balance, data: GameData) -
         rows = sorted(_rows(state, product, home), key=lambda r: (r[0] != home, order.get(r[0], 0)))
         for region, segments in rows:
             units = sum(
-                s.customers * category.market(s.segment).hosting_cents / spot for s in segments
+                # money-exact: ratio
+                s.customers * category.market(s.segment).hosting_cents / spot
+                for s in segments
             )
             if units > EPS:
                 out.append(Need(product.id, region, good, units))
@@ -226,6 +229,7 @@ def allocate(
 def equivalent(state: GameState, facility: Facility, balance: Balance, data: GameData) -> float:
     """General CU one unit of this facility's output is worth on spot (GPU at the AI index)."""
     good = balance.facility.kinds[facility.kind].output_good
+    # money-exact: ratio
     return spot_unit_cents(state, good, balance, data) / spot_unit_cents(
         state, balance.compute.plain_good, balance, data
     )

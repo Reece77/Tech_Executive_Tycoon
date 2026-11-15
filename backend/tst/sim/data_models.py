@@ -79,6 +79,7 @@ from tst.sim.press.config import (
     RecruitBalance,
 )
 from tst.sim.refining.config import RefiningBalance
+from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1289,6 +1290,14 @@ class GeoBalance(_Frozen):
     region_entry: RegionEntryBalance
 
 
+class EconomyScaleBalance(_Frozen):
+    """The game's economy against the real one (M34, PM ruling 2026-11-15): real-world money and
+    user thresholds (a regulator's) are multiplied by these before the game compares them."""
+
+    money: float = Field(gt=0, le=1)
+    users: float = Field(gt=0, le=1)
+
+
 class Balance(_Frozen):
     company: CompanyBalance
     costs: CostsBalance  # M4c (formulas.md 8)
@@ -1371,6 +1380,8 @@ class Balance(_Frozen):
     family: FamilyBalance  # M36 (formulas.md 45.1-45.7)
     estate_tax: dict[str, EstateRegion]  # M36 (formulas.md 45.6): by home region
     platforms: PlatformsBalance  # M31 (formulas.md 44): platforms and ecosystems
+    regulation: RegulationBalance  # M34 (formulas.md 48): regulation with teeth
+    economy_scale: EconomyScaleBalance  # M34: real thresholds read in the game's economy
     equipment: EquipmentBalance  # M33 (formulas.md 47): semiconductor equipment
 
     @model_validator(mode="after")
@@ -2086,6 +2097,7 @@ class GameData(_Frozen):
     tariffs: TariffsFile | None = None
     chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
     platforms: PlatformsFile | None = None  # M31 (44); None = no platforms
+    regulation: RegulationFile | None = None  # M34 (48); None = no regulation
     equipment: EquipmentFile | None = None  # M33 (47); None = M21's EUV tools good
 
     def bank(self, key: str) -> Bank:

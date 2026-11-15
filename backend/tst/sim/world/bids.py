@@ -23,7 +23,7 @@ from tst.sim.finance.captable import fd_shares
 from tst.sim.ledger import CASH, AccountCode, account_balance
 from tst.sim.markets_public import ipo
 from tst.sim.markets_public.public import TAKEOVER
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, listed_id, public_of
 from tst.sim.world import draws
@@ -48,6 +48,7 @@ def rival_view_cents(
     """A rival's hidden view of the player's group's value this month (41.4, 41.9)."""
     bb = balance.world.bids
     tilt = bb.tilt.get(state.company(rival_id).personality or "", 0.0)
+    # money-exact: estimate
     return value_cents * (1 + tilt + bb.view_sd * z)
 
 
@@ -73,7 +74,7 @@ def bids_month(
         return state, []
     shares = fd_shares(state, lid)  # V_f is a fully diluted value (25.3), as the sale's price
     cap = public.price_cents * shares
-    per_share = round(public.price_cents * (1 + wb.bids.premium))
+    per_share = round(public.price_cents * (1 + exact(wb.bids.premium)))
     price = per_share * shares
     recent = {b.rival_id for b in state.world_bids if turn - b.turn < MONTHS}
     for rival in sorted(state.rivals(), key=lambda c: c.id):

@@ -24785,6 +24785,233 @@
         }
       }
     },
+    "/api/saves/{save_id}/regulation": {
+      "get": {
+        "tags": [
+          "regulation"
+        ],
+        "summary": "Get Regulation",
+        "description": "Regulators by region, designations and thresholds, duties, investigations with their\nstages, fines, warning signs and orders (48.6).",
+        "operationId": "getRegulation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegulationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/regulation/comply": {
+      "post": {
+        "tags": [
+          "regulation"
+        ],
+        "summary": "Comply Duties",
+        "operationId": "complyDuties",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegulationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/regulation/orders/answer": {
+      "post": {
+        "tags": [
+          "regulation"
+        ],
+        "summary": "Answer Order",
+        "operationId": "answerOrder",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerOrderIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegulationActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/equipment": {
       "get": {
         "tags": [
@@ -26098,7 +26325,8 @@
               "open",
               "acquired",
               "listed",
-              "failed"
+              "failed",
+              "sold"
             ],
             "title": "Status"
           },
@@ -26221,6 +26449,28 @@
           "conflict"
         ],
         "title": "AngelStakeOut"
+      },
+      "AnswerOrderIn": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          },
+          "how": {
+            "type": "string",
+            "enum": [
+              "sell",
+              "spin_off"
+            ],
+            "title": "How"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "how"
+        ],
+        "title": "AnswerOrderIn"
       },
       "AppFeeOut": {
         "properties": {
@@ -28596,6 +28846,182 @@
         },
         "type": "object",
         "title": "CareIn"
+      },
+      "CaseOut": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id",
+            "description": "None for a case from history (regulation.yaml)"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "player": {
+            "type": "boolean",
+            "title": "Player"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "conduct": {
+            "type": "string",
+            "title": "Conduct"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "opened": {
+            "type": "string",
+            "title": "Opened"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "stage_since": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Since"
+          },
+          "stage_window": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Window",
+            "description": "How long the stage lasts, as a range"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "fine_cents": {
+            "type": "integer",
+            "title": "Fine Cents"
+          },
+          "final_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final Cents",
+            "description": "History: the fine after appeals"
+          },
+          "remedy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remedy"
+          },
+          "odds": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Odds",
+            "description": "Counsel's odds for the next step, as a range"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__regulation__StepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "key",
+          "regulator",
+          "regulator_name",
+          "company",
+          "company_id",
+          "player",
+          "title",
+          "conduct",
+          "market",
+          "opened",
+          "stage",
+          "stage_since",
+          "stage_window",
+          "outcome",
+          "fine_cents",
+          "final_cents",
+          "remedy",
+          "odds",
+          "steps",
+          "historical"
+        ],
+        "title": "CaseOut"
       },
       "CashFlowOut": {
         "properties": {
@@ -31810,6 +32236,86 @@
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
       },
+      "DesignationOut": {
+        "properties": {
+          "regime": {
+            "type": "string",
+            "title": "Regime"
+          },
+          "regime_name": {
+            "type": "string",
+            "title": "Regime Name"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "player": {
+            "type": "boolean",
+            "title": "Player"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "duties_from": {
+            "type": "string",
+            "title": "Duties From"
+          },
+          "services": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regime",
+          "regime_name",
+          "regulator",
+          "company",
+          "company_id",
+          "player",
+          "since",
+          "duties_from",
+          "services",
+          "historical",
+          "source"
+        ],
+        "title": "DesignationOut"
+      },
       "DeskStudyIn": {
         "properties": {
           "region": {
@@ -32783,6 +33289,75 @@
           "detail"
         ],
         "title": "DriverOut"
+      },
+      "DutyOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "player": {
+            "type": "boolean",
+            "title": "Player"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "designation",
+              "remedy",
+              "commitment"
+            ],
+            "title": "Source"
+          },
+          "breached": {
+            "type": "boolean",
+            "title": "Breached",
+            "description": "The player keeps a setting this duty forbids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "regulator",
+          "regulator_name",
+          "company",
+          "company_id",
+          "player",
+          "kind",
+          "label",
+          "since",
+          "source",
+          "breached"
+        ],
+        "title": "DutyOut"
       },
       "DynastyOut": {
         "properties": {
@@ -38416,7 +38991,7 @@
           },
           "steps": {
             "items": {
-              "$ref": "#/components/schemas/StepOut"
+              "$ref": "#/components/schemas/tst__api__schemas__onboarding__StepOut"
             },
             "type": "array",
             "title": "Steps"
@@ -46269,6 +46844,84 @@
         "title": "OptionsOut",
         "description": "An employee's option grant for the contract panel (M4b, formulas.md 14.2)."
       },
+      "OrderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "player": {
+            "type": "boolean",
+            "title": "Player"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "unit_kind": {
+            "type": "string",
+            "enum": [
+              "platform",
+              "company",
+              "products"
+            ],
+            "title": "Unit Kind"
+          },
+          "ordered": {
+            "type": "string",
+            "title": "Ordered"
+          },
+          "deadline": {
+            "type": "string",
+            "title": "Deadline"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "warned_from": {
+            "type": "string",
+            "title": "Warned From"
+          },
+          "can_sell": {
+            "type": "boolean",
+            "title": "Can Sell"
+          },
+          "can_spin_off": {
+            "type": "boolean",
+            "title": "Can Spin Off"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "regulator",
+          "regulator_name",
+          "company",
+          "player",
+          "unit",
+          "unit_kind",
+          "ordered",
+          "deadline",
+          "status",
+          "warned_from",
+          "can_sell",
+          "can_spin_off"
+        ],
+        "title": "OrderOut"
+      },
       "OrderToolsIn": {
         "properties": {
           "generation": {
@@ -49443,6 +50096,34 @@
           "history"
         ],
         "title": "PowerOut"
+      },
+      "PrecedentOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "month",
+          "note",
+          "source"
+        ],
+        "title": "PrecedentOut"
       },
       "PrepayIn": {
         "properties": {
@@ -52707,6 +53388,127 @@
         ],
         "title": "RefiningPowerOut"
       },
+      "RegimeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "in_force": {
+            "type": "string",
+            "title": "In Force",
+            "description": "The month it took effect"
+          },
+          "users_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Users Share",
+            "description": "Users test: share of the part's users"
+          },
+          "turnover_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Cents",
+            "description": "Turnover test, US cents a year"
+          },
+          "turnover_scope": {
+            "type": "string",
+            "enum": [
+              "region",
+              "world"
+            ],
+            "title": "Turnover Scope"
+          },
+          "market_value_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Cents",
+            "description": "Market value test, US cents"
+          },
+          "turnover_game_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Game Cents",
+            "description": "The turnover test in the game's economy"
+          },
+          "market_value_game_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Game Cents",
+            "description": "The value test in the game's economy"
+          },
+          "comply_months": {
+            "type": "integer",
+            "title": "Comply Months"
+          },
+          "duties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Duties"
+          },
+          "max_fine_share": {
+            "type": "number",
+            "title": "Max Fine Share"
+          },
+          "repeat_fine_share": {
+            "type": "number",
+            "title": "Repeat Fine Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "in_force",
+          "users_share",
+          "turnover_cents",
+          "turnover_scope",
+          "market_value_cents",
+          "turnover_game_cents",
+          "market_value_game_cents",
+          "comply_months",
+          "duties",
+          "max_fine_share",
+          "repeat_fine_share"
+        ],
+        "title": "RegimeOut"
+      },
       "RegionAccessOut": {
         "properties": {
           "region": {
@@ -52983,6 +53785,208 @@
           "rate"
         ],
         "title": "RegulatedPathOut"
+      },
+      "RegulationActionOut": {
+        "properties": {
+          "regulation": {
+            "$ref": "#/components/schemas/RegulationOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulation",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "RegulationActionOut"
+      },
+      "RegulationExplainOut": {
+        "properties": {
+          "fine": {
+            "type": "string",
+            "title": "Fine"
+          },
+          "thresholds": {
+            "type": "string",
+            "title": "Thresholds"
+          },
+          "structural": {
+            "type": "string",
+            "title": "Structural"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fine",
+          "thresholds",
+          "structural"
+        ],
+        "title": "RegulationExplainOut"
+      },
+      "RegulationOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running",
+            "description": "The model acts from January 2026; history before"
+          },
+          "regulators": {
+            "items": {
+              "$ref": "#/components/schemas/RegulatorOut"
+            },
+            "type": "array",
+            "title": "Regulators"
+          },
+          "tests": {
+            "items": {
+              "$ref": "#/components/schemas/TestOut"
+            },
+            "type": "array",
+            "title": "Tests"
+          },
+          "designations": {
+            "items": {
+              "$ref": "#/components/schemas/DesignationOut"
+            },
+            "type": "array",
+            "title": "Designations"
+          },
+          "duties": {
+            "items": {
+              "$ref": "#/components/schemas/DutyOut"
+            },
+            "type": "array",
+            "title": "Duties"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/CaseOut"
+            },
+            "type": "array",
+            "title": "Cases"
+          },
+          "watches": {
+            "items": {
+              "$ref": "#/components/schemas/WatchOut"
+            },
+            "type": "array",
+            "title": "Watches"
+          },
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderOut"
+            },
+            "type": "array",
+            "title": "Orders"
+          },
+          "precedents": {
+            "items": {
+              "$ref": "#/components/schemas/PrecedentOut"
+            },
+            "type": "array",
+            "title": "Precedents"
+          },
+          "fines_cents": {
+            "type": "integer",
+            "title": "Fines Cents",
+            "description": "The player's group's fines and penalties to date"
+          },
+          "breaches": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Breaches"
+          },
+          "explain": {
+            "$ref": "#/components/schemas/RegulationExplainOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "running",
+          "regulators",
+          "tests",
+          "designations",
+          "duties",
+          "cases",
+          "watches",
+          "orders",
+          "precedents",
+          "fines_cents",
+          "breaches",
+          "explain"
+        ],
+        "title": "RegulationOut"
+      },
+      "RegulatorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "part": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          },
+          "structural": {
+            "type": "boolean",
+            "title": "Structural",
+            "description": "Its law allows a break-up or unbundling"
+          },
+          "regime": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RegimeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region",
+          "region_label",
+          "part",
+          "structural",
+          "regime"
+        ],
+        "title": "RegulatorOut"
       },
       "RelationshipOut": {
         "properties": {
@@ -56681,41 +57685,6 @@
         ],
         "title": "SteeringIn"
       },
-      "StepOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "note": {
-            "type": "string",
-            "title": "Note",
-            "description": "The chief of staff's one line on why it matters"
-          },
-          "screen": {
-            "type": "string",
-            "title": "Screen",
-            "description": "A systems key the step links to"
-          },
-          "done": {
-            "type": "boolean",
-            "title": "Done"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label",
-          "note",
-          "screen",
-          "done"
-        ],
-        "title": "StepOut"
-      },
       "StockOut": {
         "properties": {
           "ticker": {
@@ -58431,6 +59400,140 @@
         ],
         "title": "TerminationQuoteOut"
       },
+      "TestOut": {
+        "properties": {
+          "regime": {
+            "type": "string",
+            "title": "Regime"
+          },
+          "regime_name": {
+            "type": "string",
+            "title": "Regime Name"
+          },
+          "users": {
+            "type": "number",
+            "title": "Users",
+            "description": "The largest share of users on a platform of the group"
+          },
+          "users_needed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Users Needed"
+          },
+          "turnover_cents": {
+            "type": "integer",
+            "title": "Turnover Cents"
+          },
+          "turnover_needed_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Needed Cents",
+            "description": "In the game's economy"
+          },
+          "turnover_legal_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnover Legal Cents",
+            "description": "The law's figure, real-world scale"
+          },
+          "market_value_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Cents"
+          },
+          "market_value_needed_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Needed Cents",
+            "description": "In the game's economy"
+          },
+          "market_value_legal_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Value Legal Cents"
+          },
+          "ratio": {
+            "type": "number",
+            "title": "Ratio",
+            "description": "The test's ratio: 1 or more meets every threshold"
+          },
+          "warn_at": {
+            "type": "number",
+            "title": "Warn At"
+          },
+          "designated": {
+            "type": "boolean",
+            "title": "Designated"
+          },
+          "warned": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warned",
+            "description": "The month of the latest warning, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regime",
+          "regime_name",
+          "users",
+          "users_needed",
+          "turnover_cents",
+          "turnover_needed_cents",
+          "turnover_legal_cents",
+          "market_value_cents",
+          "market_value_needed_cents",
+          "market_value_legal_cents",
+          "ratio",
+          "warn_at",
+          "designated",
+          "warned"
+        ],
+        "title": "TestOut",
+        "description": "The player's own position against a regime's thresholds (Explain on thresholds)."
+      },
       "TimelineItemOut": {
         "properties": {
           "turn": {
@@ -59697,6 +60800,83 @@
         ],
         "title": "WaferContractIn"
       },
+      "WarningSignOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "press",
+              "report",
+              "political",
+              "board"
+            ],
+            "title": "Kind"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "month",
+          "label"
+        ],
+        "title": "WarningSignOut"
+      },
+      "WatchOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months since the first sign"
+          },
+          "needed_months": {
+            "type": "integer",
+            "title": "Needed Months",
+            "description": "A structural order needs at least this many"
+          },
+          "signs": {
+            "items": {
+              "$ref": "#/components/schemas/WarningSignOut"
+            },
+            "type": "array",
+            "title": "Signs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "regulator_name",
+          "market",
+          "since",
+          "months",
+          "needed_months",
+          "signs"
+        ],
+        "title": "WatchOut"
+      },
       "WhatNextItemOut": {
         "properties": {
           "key": {
@@ -60605,6 +61785,41 @@
         ],
         "title": "SubsidiaryOut"
       },
+      "tst__api__schemas__onboarding__StepOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "The chief of staff's one line on why it matters"
+          },
+          "screen": {
+            "type": "string",
+            "title": "Screen",
+            "description": "A systems key the step links to"
+          },
+          "done": {
+            "type": "boolean",
+            "title": "Done"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "note",
+          "screen",
+          "done"
+        ],
+        "title": "StepOut"
+      },
       "tst__api__schemas__people__EventLinkOut": {
         "properties": {
           "event_id": {
@@ -60774,6 +61989,35 @@
           "home"
         ],
         "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__regulation__StepOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "month"
+        ],
+        "title": "StepOut"
       },
       "tst__api__schemas__research__UnitChoiceOut": {
         "properties": {

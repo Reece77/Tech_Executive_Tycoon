@@ -4322,3 +4322,49 @@ def platforms_cmd(
             f"  app {a.name}: store fees {format_money(a.fees_total_cents)} a month"
             + (f"; {listing}" if listing else "")
         )
+
+
+@app.command("regulation")
+def regulation_cmd(
+    save: SaveOpt,
+    history: Annotated[bool, typer.Option(help="Also list history's cases to 2025")] = False,
+) -> None:
+    """Regulation (M34, 48): your position against each designation test, designations,
+    duties, investigations with their stages, warning signs and structural orders."""
+    from tst.api import regulation_views
+    from tst.db import repository
+
+    path, data, state = _game(save)
+    with repository.read_session(path) as session:
+        balances = repository.ledger_balances(session)
+    r = regulation_views.regulation_out(state, data, balances)
+    typer.echo(
+        f"{r.month}: regulation {'running' if r.running else 'from the record'};"
+        f" your fines to date {format_money(r.fines_cents)}"
+    )
+    for t in r.tests:
+        status = "designated" if t.designated else f"warned {t.warned}" if t.warned else "-"
+        typer.echo(f"  test {t.regime_name}: {t.ratio:.0%} of the thresholds ({status})")
+    for b in r.breaches:
+        typer.echo(f"  BREACH {b}")
+    for d in r.designations:
+        if d.player or not d.historical or history:
+            typer.echo(f"  designation {d.company} under {d.regime_name} since {d.since}")
+    for x in r.duties:
+        if x.player:
+            flag = " (breached)" if x.breached else ""
+            typer.echo(f"  duty {x.regulator_name}: {x.label} since {x.since}{flag}")
+    for c in r.cases:
+        if c.historical and not history:
+            continue
+        fine = f", fine {format_money(c.fine_cents)}" if c.fine_cents else ""
+        window = f" ({c.stage_window})" if c.stage_window else ""
+        typer.echo(
+            f"  case {c.company} / {c.regulator_name}: {c.title}; {c.stage}{window}, "
+            f"{c.outcome}{fine}" + (f"; odds {c.odds}" if c.odds else "")
+        )
+    for w in r.watches:
+        signs = ", ".join(f"{s.kind} {s.month}" for s in w.signs)
+        typer.echo(f"  warning signs {w.regulator_name} {w.market}: {signs}")
+    for o in r.orders:
+        typer.echo(f"  order {o.company}: separate {o.unit} by {o.deadline} ({o.status})")

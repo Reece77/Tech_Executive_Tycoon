@@ -8,7 +8,7 @@ import math
 from fractions import Fraction
 
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance, TenderBalance
-from tst.sim.money import BP_DENOMINATOR, exact
+from tst.sim.money import BP_DENOMINATOR, exact, pct_of
 
 CENTRE = 0.5  # tunable-exempt: a uniform's midpoint, as 21.7's lead ranges
 
@@ -21,8 +21,8 @@ def acquihire_value_cents(cash_cents: int, builders: float, mb: MnaBalance) -> i
 def value_range_cents(value_cents: int, u: float, half_share: float) -> tuple[int, int]:
     """V_f x (1 +- half) off-centre by (u - 0.5) x half (28.1, as 21.7): the range always
     contains the true value and its midpoint is not the truth."""
-    half = abs(value_cents) * half_share
-    offset = (u - CENTRE) * half
+    half = abs(value_cents) * exact(half_share)
+    offset = (exact(u) - exact(CENTRE)) * half
     low = math.floor(value_cents + offset - half)
     high = math.ceil(value_cents + offset + half)
     return max(0, low), max(max(0, low) + 1, high)
@@ -70,6 +70,7 @@ def reservation_cents(value_cents: int, premium: float, distressed: bool, mb: Mn
 
 def distressed(cash_cents: int, monthly_costs_cents: int, mb: MnaBalance) -> bool:
     """Cash covers fewer than mna.distress_months of costs (28.3)."""
+    # money-exact: ratio
     return monthly_costs_cents > 0 and cash_cents < mb.distress_months * monthly_costs_cents
 
 
@@ -105,6 +106,7 @@ def board_bar(z: float, mb: MnaBalance) -> float:
 
 
 def premium_over(price_cents: int, market_cap_cents: int) -> float:
+    # money-exact: ratio
     return price_cents / market_cap_cents - 1 if market_cap_cents > 0 else math.inf
 
 
@@ -116,7 +118,7 @@ def tender_chance(premium: float, aggressive: bool, tb: TenderBalance) -> float:
 
 
 def tender_fee_cents(price_cents: int, tb: TenderBalance) -> int:
-    return round(price_cents * tb.fee_bp / 10_000)  # tunable-exempt: basis points
+    return pct_of(price_cents, tb.fee_bp)
 
 
 def block_probability(combined_share: float, year: int, ab: AntitrustBalance) -> float:

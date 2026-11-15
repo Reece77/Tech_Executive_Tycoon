@@ -338,6 +338,13 @@ from tst.sim.refining.actions import (
     SignRefiningDeal,
     apply_refining,
 )
+from tst.sim.regulation.actions import ACTION_TYPES as REGULATION_ACTION_TYPES
+from tst.sim.regulation.actions import (
+    AnswerOrder,
+    ComplyDuties,
+    RegulationAction,
+    apply_regulation,
+)
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -378,6 +385,7 @@ type Action = (
     | AutomationAction  # M27a
     | FamilyAction  # M36
     | PlatformAction  # M31
+    | RegulationAction  # M34
     | EquipmentAction  # M33
 )
 
@@ -394,6 +402,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     **PLATFORM_ACTION_TYPES,  # M31 (44)
+    **REGULATION_ACTION_TYPES,  # M34 (48)
     **EQUIPMENT_ACTION_TYPES,  # M33 (47)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -502,6 +511,7 @@ __all__ = [
     "AddSegment",
     "AdoptStandard",
     "AnswerGroupPitch",
+    "AnswerOrder",
     "AnswerPitch",
     "AnswerProposal",
     "AppointCeo",
@@ -520,6 +530,7 @@ __all__ = [
     "CloseOffice",
     "ClosePlan",
     "CloseSearch",
+    "ComplyDuties",
     "ComplyListing",
     "CreateDeveloperPlatform",
     "CreateFoundation",
@@ -916,6 +927,8 @@ def apply_action(
             | AdoptStandard()
         ):  # M31 (44)
             out = apply_platforms(state, action, balance, data)
+        case ComplyDuties() | AnswerOrder():  # M34 (48)
+            out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():
             out = apply_equipment(state, action, rng, ledger_balances, balance, data)  # M33 (47)
         case ReplaceLeaver():  # M14b (29.5)

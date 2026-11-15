@@ -387,8 +387,8 @@ def settle_fabs(
         revenue = round(contract_revenue + exact(spot) * exact(slot))
         run = own + sold
         fixed = fixed_cents(fab, facility, balance)
-        materials = round(run * materials_cents(state, fab, balance, data))
-        power_ = round(run * _power_cents(state, fab, facility, balance, data))
+        materials = round(exact(run) * exact(materials_cents(state, fab, balance, data)))
+        power_ = round(exact(run) * exact(_power_cents(state, fab, facility, balance, data)))
         staff = sum(e.salary_cents for e in lifecycle.staff_of(state, facility, balance)) // MONTHS
         cash = fixed + materials + power_
         if cash:

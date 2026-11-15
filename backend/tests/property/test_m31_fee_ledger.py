@@ -72,9 +72,10 @@ def test_fee_postings_balance(fee: float, scale: float, users: float) -> None:
     for e in entries:
         assert sum(line.amount for line in e.lines) == 0
     apple = next(c.id for c in state.companies if c.name == "Apple")
+    # M36r (Codex review 7 finding 3): each seller-owner pair's exact month, rounded once
     paid_to_apple = sum(
         c
-        for (_pid, plat, owner, _r), c in fees.fees_due(
+        for (_pid, owner, _inter), c in fees.pair_fees(
             state, loaded.balance, loaded.game_data
         ).items()
         if owner == apple
@@ -100,11 +101,11 @@ def test_group_fees_are_intercompany_and_eliminate(monkeypatch: pytest.MonkeyPat
     sold = -_sum(entries, INTERCOMPANY_SALES, player)
     assert bought > 0
     assert bought == sold
-    outside = sum(
+    outside = sum(  # M36r: each seller-owner pair's exact month, rounded once
         c
-        for (pid, _plat, owner, _r), c in fees.fees_due(
+        for (_pid, owner, inter), c in fees.pair_fees(
             state, loaded.balance, loaded.game_data
         ).items()
-        if owner == player and state.product(pid).company_id != facebook.id  # type: ignore[union-attr]
+        if owner == player and not inter
     )
     assert -_sum(entries, PLATFORM_FEE_REVENUE, player) == outside  # apps outside the group

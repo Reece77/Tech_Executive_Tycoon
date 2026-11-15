@@ -245,13 +245,15 @@ def settled_supply(state: GameState) -> dict[tuple[int, int, str], tuple[int, in
     supply the plants settled this month between two companies: refineries' and wafer plants'
     lots taken after production (materials), and fabs' starts run for a sister company's chips
     (chips)."""
-    out: dict[tuple[int, int, str], list[float]] = {}
+    out: dict[tuple[int, int, str], list[Fraction]] = {}  # exact until rounded once
     for lot in state.own_supply:
         if lot.turn != state.turn or lot.seller_id == lot.buyer_id or lot.taken <= 0:
             continue
-        acc = out.setdefault((lot.seller_id, lot.buyer_id, FLOW_MATERIALS), [0.0, 0.0])
-        acc[0] += lot.taken * lot.unit_cents
-        acc[1] += lot.taken * lot.market_cents
+        acc = out.setdefault(
+            (lot.seller_id, lot.buyer_id, FLOW_MATERIALS), [Fraction(), Fraction()]
+        )
+        acc[0] += exact(lot.taken) * exact(lot.unit_cents)
+        acc[1] += exact(lot.taken) * exact(lot.market_cents)
     for fab in state.fabs:
         m = fab.month
         if m is None or m.turn != state.turn:
@@ -259,9 +261,9 @@ def settled_supply(state: GameState) -> dict[tuple[int, int, str], tuple[int, in
         for buyer, _starts, price, market in m.group:
             if buyer == fab.company_id:
                 continue
-            acc = out.setdefault((fab.company_id, buyer, FLOW_CHIPS), [0.0, 0.0])
-            acc[0] += price
-            acc[1] += market
+            acc = out.setdefault((fab.company_id, buyer, FLOW_CHIPS), [Fraction(), Fraction()])
+            acc[0] += exact(price)
+            acc[1] += exact(market)
     return {k: (round(v[0]), round(v[1])) for k, v in out.items()}
 
 

@@ -168,6 +168,8 @@ class AutoRun(DelegateRun):
         )
         if self.central is not None:  # M27b: e.g. a mine's study NPV (the founder reads it)
             params = tuple(sorted((*params, ("central_cents", self.central))))
+        if scope.founder_only(action.kind):  # M36r: never carried out by a delegate
+            params = tuple(sorted((*params, (scope.ACTOR_PARAM, scope.FOUNDER))))
         player = state.player.id
         if o.company_id != player:  # M27b: filed with the player, acting for the subsidiary
             params = tuple(sorted((*params, (scope.COMPANY_PARAM, o.company_id))))

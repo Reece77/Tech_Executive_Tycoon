@@ -21,6 +21,7 @@ from tst.sim.equipment import stock
 from tst.sim.equipment.models import Delivery, OwnTools
 from tst.sim.equipment.queue import DECEMBER, PLAYER
 from tst.sim.ledger import CASH, TOOL_COST, TOOL_SALES, LedgerEntry, LedgerLine
+from tst.sim.money import exact, times
 from tst.sim.state import GameState
 
 RIVALS = "rivals"  # tunable-exempt: a sale's buyer in the deliveries history
@@ -58,7 +59,7 @@ def december(
         if n <= 0:
             lines.append(x)
             continue
-        price = round(ed.price_cents(state, g, balance) * (1 - sb.discount))
+        price = times(ed.price_cents(state, g, balance), 1 - exact(sb.discount))
         state, n, value = stock.take(state, x.company_id, g.key, n, "own")
         revenue = price * n
         entries.append(

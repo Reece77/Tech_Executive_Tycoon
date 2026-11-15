@@ -68,7 +68,8 @@ SYSTEMS: tuple[System, ...] = (
     System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
     System(23, "platforms", "Platforms", "markets"),  # tunable-exempt: stable id (M31)
     System(24, "family", "Family", "people"),  # tunable-exempt: stable id (M36)
-    System(25, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33)
+    System(25, "regulation", "Regulation", "world"),  # tunable-exempt: stable id (M34)
+    System(26, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33; 25 is M34's)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -245,6 +246,17 @@ def _platforms(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str
     return None
 
 
+def _regulation(state: GameState, ids: set[int], _b: Balance, _d: GameData) -> str | None:
+    """M34 (48): the first designation warning, investigation or duty of the group."""
+    if any(w.company_id in ids for w in state.designation_warnings):
+        return "a regulator has warned of a designation"
+    if any(c.company_id in ids for c in state.reg_cases):
+        return "a regulator has opened an investigation"
+    if any(d.company_id in ids for d in state.duties):
+        return "a regulator has given the company duties"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -261,6 +273,7 @@ CHECKS: dict[str, Check] = {
     "family": _family,  # M36
     "equipment": _equipment,  # M33
     "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
+    "regulation": _regulation,  # M34
 }
 
 

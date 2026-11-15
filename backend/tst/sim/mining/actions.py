@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final, Literal
 
 from tst.sim.actions.hiring import Outcome, spend_energy
@@ -47,7 +48,7 @@ from tst.sim.mining import prices
 from tst.sim.mining.config import SAFETY, SUBTYPES
 from tst.sim.mining.draws import BUILD, OVERRUN, mining_draws
 from tst.sim.mining.models import Mine, MineDeal
-from tst.sim.money import format_money
+from tst.sim.money import exact, format_money
 from tst.sim.rivals.models import SUBSIDIARY_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -550,7 +551,7 @@ def build_mine(
     sub = mb.subtypes[q.subtype]
     company = project.company_id
     span = sub.construction_months
-    first = q.estimate_cents / max(1.0, span.lo)
+    first = Fraction(q.estimate_cents) / exact(max(1.0, span.lo))
     if company_cash(balances, company) < first:
         raise InsufficientCashError(f"the first capex payment needs {format_money(round(first))}")
     state = spend_energy(state, action.actor_id, action.kind, balance, cost=mb.build_energy)
@@ -758,7 +759,7 @@ def care_maintenance(
     if action.restart:
         if mine.status != "care":
             raise MiningRuleError("only a mine on care and maintenance restarts")
-        cost = round(mine.capacity_t / 1000 * cb.restart_cents_per_kt)  # tunable-exempt: t to kt
+        cost = round(exact(mine.capacity_t) / 1000 * cb.restart_cents_per_kt)  # tunable-exempt: kt
         if company_cash(balances, mine.company_id) < cost:
             raise InsufficientCashError(f"a restart needs {format_money(cost)}")
         if cost:

@@ -49,6 +49,7 @@ from tst.sim.ledger import (
     LedgerLine,
 )
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.refining import formulas as rf
 from tst.sim.refining import goods as rg
 from tst.sim.refining.config import RecipeDef
@@ -244,12 +245,14 @@ def _take_contracts(
         share = 1.0 if alloc >= 1 or protected(deal, start) else alloc
         deliverable = deal.monthly_volume * share
         take = min(max(0.0, need - taken_total), deliverable)
-        charge = round((deliverable - take) * deal.price_cents * rb.deal.take_or_pay)
+        unused = exact(deliverable - take)
+        charge = round(unused * exact(deal.price_cents) * exact(rb.deal.take_or_pay))
         if charge > 0:
             entries.append(
                 _pay(state.turn, company, f"Take-or-pay: {name} contract", GENERAL_ADMIN, charge)
             )
         taken_total += take
+        # money-exact: rate
         cents += take * deal.price_cents
         state = with_refining_deal(
             state,
@@ -350,8 +353,9 @@ def _run_plant(
         got = group_in + contract_in + spot_in
         output = min(cap, got / per_in) if per_in > 0 else cap
     live = facility.live_capacity(turn)
-    power = round(output * rf.power_cents(r.mwh_per_unit, rb.power_cents_per_mwh, p_index))
-    other = round(output * r.other_cents)
+    unit_power = rf.power_cents(r.mwh_per_unit, rb.power_cents_per_mwh, p_index)
+    power = round(exact(output) * exact(unit_power))
+    other = round(exact(output) * exact(r.other_cents))
     fixed = round(Fraction(live * r.fixed_cents, MONTHS)) if live > 0 else 0
     bought = round(contract_cents + spot_cents)
     for memo, amount in (
@@ -507,6 +511,7 @@ def _sell(
                     continue
                 left -= take
                 delivered[deal.id] = delivered.get(deal.id, 0.0) + take
+                # money-exact: rate
                 revenue += take * deal.price_cents
                 m.pm = replace(m.pm, to_contract=m.pm.to_contract + take)
             if left > EPS:
@@ -635,7 +640,7 @@ def settle_supply(
                 )
             taken = min(lot.volume, wafer_left[lot.product_id])
             wafer_left[lot.product_id] -= taken
-            amount = round(taken * lot.unit_cents)
+            amount = round(exact(taken) * exact(lot.unit_cents))
             if amount > 0:
                 memo = "Own wafers in chips"
                 if lot.seller_id == lot.buyer_id:  # its cost is already in the plant's month
@@ -676,7 +681,7 @@ def settle_supply(
                 )
             taken = min(lot.volume, fab_left[lot.fab_id])
             fab_left[lot.fab_id] -= taken
-            at_market = round(taken * lot.market_cents)
+            at_market = round(exact(taken) * exact(lot.market_cents))
             if at_market > 0:  # the fab paid the market price for its substrate in its month
                 entries.append(
                     LedgerEntry(
@@ -687,7 +692,11 @@ def settle_supply(
                     )
                 )
             entries += intercompany(
-                turn, lot.seller_id, lot.buyer_id, "Own-group wafers", round(taken * lot.unit_cents)
+                turn,
+                lot.seller_id,
+                lot.buyer_id,
+                "Own-group wafers",
+                round(exact(taken) * exact(lot.unit_cents)),
             )
         else:
             if lot.buyer_id not in uses:
@@ -695,7 +704,7 @@ def settle_supply(
             use = uses[lot.buyer_id]
             taken = min(lot.volume, use.get(lot.good, 0.0))
             use[lot.good] = use.get(lot.good, 0.0) - taken
-            at_market = round(taken * lot.market_cents)
+            at_market = round(exact(taken) * exact(lot.market_cents))
             if at_market > 0:  # the buyer paid the market price at sale; it came from the group
                 entries.append(
                     LedgerEntry(
@@ -710,10 +719,11 @@ def settle_supply(
                 lot.seller_id,
                 lot.buyer_id,
                 "Own-group materials",
-                round(taken * lot.unit_cents),
+                round(exact(taken) * exact(lot.unit_cents)),
             )
         rest = lot.volume - taken
         if rest > EPS:
+            # money-exact: rate
             spot[lot.facility_id] = spot.get(lot.facility_id, 0.0) + rest * lot.market_cents
         settled.append(replace(lot, taken=taken))
     others = tuple(s for s in state.own_supply if s.turn != turn)

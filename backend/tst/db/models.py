@@ -23,8 +23,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 55  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 56  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
+# M34: 0055; M33: 0056
 
 
 class Base(DeclarativeBase):
@@ -2275,6 +2276,18 @@ class PlatformRecordRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+class RegulationRecordRow(Base):
+    """One regulation record (48; 0055): `kind` names its GameState collection (designations,
+    designation_warnings, duties, reg_cases, reg_watches, reg_orders, reg_turnover) and `data`
+    its fields; rows keep each collection's order."""
+
+    __tablename__ = "regulation_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 # --- M30: old history summarised (migration 0054_m30, tst.db.history) ------------------------
 
 
@@ -2307,7 +2320,7 @@ class WorldNewsArchiveRow(Base):
 
 
 class EquipmentRecordRow(Base):
-    """One equipment record (47; 0055_m33): `kind` names its GameState collection (tool_orders,
+    """One equipment record (47; 0056_m33): `kind` names its GameState collection (tool_orders,
     tool_deliveries, supplier_years, tool_stock, programmes, own_tools, fab_tools) and `data` its
     fields; rows keep each collection's order. Hidden fields (an order's jitter, a programme's
     work, overrun and success draw) are stored here and never leave the engine."""

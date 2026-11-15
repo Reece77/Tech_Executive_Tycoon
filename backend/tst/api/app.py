@@ -46,6 +46,7 @@ from tst.api.routers import (
     profile,
     public,
     refining,
+    regulation,
     research,
     rivals,
     saves,
@@ -135,6 +136,7 @@ def create_app() -> FastAPI:
     app.include_router(living.router)  # M28
     app.include_router(family.router)  # M36
     app.include_router(platforms.router)  # M31
+    app.include_router(regulation.router)  # M34
     app.include_router(equipment.router)  # M33
     app.include_router(events.settings_router)
     app.include_router(onboarding.settings_router)  # M29

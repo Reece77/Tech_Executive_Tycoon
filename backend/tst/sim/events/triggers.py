@@ -92,6 +92,7 @@ def triggers(
 
     for e in staff:  # underpaid
         mid = market_mid_for(state, e, balance, data)
+        # money-exact: ratio
         s = below_strength(e.salary_cents / mid, t["underpaid"]) if mid else None
         if s is not None:
             hits.append(TriggerHit("underpaid", s, (e.person_id,), view.unit_of[e.person_id]))

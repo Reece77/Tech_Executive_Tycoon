@@ -105,6 +105,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "world": 57,  # M28 (41)
         "family": 59,  # M36 (45)
         "platforms": 58,  # M31 (44)
+        "regulation": 62,  # M34 (48)
         "equipment": 61,  # M33 (47)
         "misc": 99,
     }

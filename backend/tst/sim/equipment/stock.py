@@ -75,6 +75,7 @@ def take(
     if cur is None or tools <= 0:
         return state, 0, 0
     n = min(cur.tools, tools)
+    # money-exact: integer cents pro rata (floor)
     value = cur.value_cents if n == cur.tools else cur.value_cents * n // cur.tools
     return (
         _put(state, replace(cur, tools=cur.tools - n, value_cents=cur.value_cents - value)),

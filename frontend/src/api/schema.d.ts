@@ -5536,6 +5536,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/regulation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Regulation
+         * @description Regulators by region, designations and thresholds, duties, investigations with their
+         *     stages, fines, warning signs and orders (48.6).
+         */
+        get: operations["getRegulation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/regulation/comply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Comply Duties */
+        post: operations["complyDuties"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/regulation/orders/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer Order */
+        post: operations["answerOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/equipment": {
         parameters: {
             query?: never;
@@ -6073,7 +6128,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "open" | "acquired" | "listed" | "failed";
+            status: "open" | "acquired" | "listed" | "failed" | "sold";
             /** Stake Pct */
             stake_pct: number;
             /** Cost Cents */
@@ -6118,6 +6173,16 @@ export interface components {
              * @description disclosed | concealed | found, once raised
              */
             conflict: string | null;
+        };
+        /** AnswerOrderIn */
+        AnswerOrderIn: {
+            /** Order Id */
+            order_id: number;
+            /**
+             * How
+             * @enum {string}
+             */
+            how: "sell" | "spin_off";
         };
         /** AppFeeOut */
         AppFeeOut: {
@@ -7114,6 +7179,63 @@ export interface components {
              * @default false
              */
             restart?: boolean;
+        };
+        /** CaseOut */
+        CaseOut: {
+            /**
+             * Id
+             * @description None for a case from history (regulation.yaml)
+             */
+            id: number | null;
+            /** Key */
+            key: string | null;
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Company */
+            company: string;
+            /** Company Id */
+            company_id: number | null;
+            /** Player */
+            player: boolean;
+            /** Title */
+            title: string;
+            /** Conduct */
+            conduct: string;
+            /** Market */
+            market: string;
+            /** Opened */
+            opened: string;
+            /** Stage */
+            stage: string;
+            /** Stage Since */
+            stage_since: string | null;
+            /**
+             * Stage Window
+             * @description How long the stage lasts, as a range
+             */
+            stage_window: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Fine Cents */
+            fine_cents: number;
+            /**
+             * Final Cents
+             * @description History: the fine after appeals
+             */
+            final_cents: number | null;
+            /** Remedy */
+            remedy: string | null;
+            /**
+             * Odds
+             * @description Counsel's odds for the next step, as a range
+             */
+            odds: string | null;
+            /** Steps */
+            steps: components["schemas"]["tst__api__schemas__regulation__StepOut"][];
+            /** Historical */
+            historical: boolean;
         };
         /** CashFlowOut */
         CashFlowOut: {
@@ -8566,6 +8688,31 @@ export interface components {
              */
             mistake: boolean;
         };
+        /** DesignationOut */
+        DesignationOut: {
+            /** Regime */
+            regime: string;
+            /** Regime Name */
+            regime_name: string;
+            /** Regulator */
+            regulator: string;
+            /** Company */
+            company: string;
+            /** Company Id */
+            company_id: number | null;
+            /** Player */
+            player: boolean;
+            /** Since */
+            since: string;
+            /** Duties From */
+            duties_from: string;
+            /** Services */
+            services: string[];
+            /** Historical */
+            historical: boolean;
+            /** Source */
+            source: string | null;
+        };
         /** DeskStudyIn */
         DeskStudyIn: {
             /** Region */
@@ -8985,6 +9132,37 @@ export interface components {
             effect: string;
             /** Detail */
             detail: string;
+        };
+        /** DutyOut */
+        DutyOut: {
+            /** Id */
+            id: number;
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Company */
+            company: string;
+            /** Company Id */
+            company_id: number;
+            /** Player */
+            player: boolean;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Since */
+            since: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "designation" | "remedy" | "commitment";
+            /**
+             * Breached
+             * @description The player keeps a setting this duty forbids
+             */
+            breached: boolean;
         };
         /** DynastyOut */
         DynastyOut: {
@@ -11187,7 +11365,7 @@ export interface components {
              */
             speaker: string;
             /** Steps */
-            steps: components["schemas"]["StepOut"][];
+            steps: components["schemas"]["tst__api__schemas__onboarding__StepOut"][];
         };
         /**
          * GlossaryOut
@@ -14410,6 +14588,38 @@ export interface components {
             /** Next Vest Is Cliff */
             next_vest_is_cliff: boolean;
         };
+        /** OrderOut */
+        OrderOut: {
+            /** Id */
+            id: number;
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Company */
+            company: string;
+            /** Player */
+            player: boolean;
+            /** Unit */
+            unit: string;
+            /**
+             * Unit Kind
+             * @enum {string}
+             */
+            unit_kind: "platform" | "company" | "products";
+            /** Ordered */
+            ordered: string;
+            /** Deadline */
+            deadline: string;
+            /** Status */
+            status: string;
+            /** Warned From */
+            warned_from: string;
+            /** Can Sell */
+            can_sell: boolean;
+            /** Can Spin Off */
+            can_spin_off: boolean;
+        };
         /** OrderToolsIn */
         OrderToolsIn: {
             /** Generation */
@@ -15789,6 +15999,17 @@ export interface components {
             index: number;
             /** History */
             history: components["schemas"]["PricePointOut"][];
+        };
+        /** PrecedentOut */
+        PrecedentOut: {
+            /** Label */
+            label: string;
+            /** Month */
+            month: string;
+            /** Note */
+            note: string;
+            /** Source */
+            source: string;
         };
         /** PrepayIn */
         PrepayIn: {
@@ -17201,6 +17422,56 @@ export interface components {
             /** Index */
             index: number;
         };
+        /** RegimeOut */
+        RegimeOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * In Force
+             * @description The month it took effect
+             */
+            in_force: string;
+            /**
+             * Users Share
+             * @description Users test: share of the part's users
+             */
+            users_share: number | null;
+            /**
+             * Turnover Cents
+             * @description Turnover test, US cents a year
+             */
+            turnover_cents: number | null;
+            /**
+             * Turnover Scope
+             * @enum {string}
+             */
+            turnover_scope: "region" | "world";
+            /**
+             * Market Value Cents
+             * @description Market value test, US cents
+             */
+            market_value_cents: number | null;
+            /**
+             * Turnover Game Cents
+             * @description The turnover test in the game's economy
+             */
+            turnover_game_cents: number | null;
+            /**
+             * Market Value Game Cents
+             * @description The value test in the game's economy
+             */
+            market_value_game_cents: number | null;
+            /** Comply Months */
+            comply_months: number;
+            /** Duties */
+            duties: string[];
+            /** Max Fine Share */
+            max_fine_share: number;
+            /** Repeat Fine Share */
+            repeat_fine_share: number;
+        };
         /** RegionAccessOut */
         RegionAccessOut: {
             /** Region */
@@ -17319,6 +17590,75 @@ export interface components {
             share: number;
             /** Rate */
             rate: number;
+        };
+        /** RegulationActionOut */
+        RegulationActionOut: {
+            regulation: components["schemas"]["RegulationOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** RegulationExplainOut */
+        RegulationExplainOut: {
+            /** Fine */
+            fine: string;
+            /** Thresholds */
+            thresholds: string;
+            /** Structural */
+            structural: string;
+        };
+        /** RegulationOut */
+        RegulationOut: {
+            /** Month */
+            month: string;
+            /**
+             * Running
+             * @description The model acts from January 2026; history before
+             */
+            running: boolean;
+            /** Regulators */
+            regulators: components["schemas"]["RegulatorOut"][];
+            /** Tests */
+            tests: components["schemas"]["TestOut"][];
+            /** Designations */
+            designations: components["schemas"]["DesignationOut"][];
+            /** Duties */
+            duties: components["schemas"]["DutyOut"][];
+            /** Cases */
+            cases: components["schemas"]["CaseOut"][];
+            /** Watches */
+            watches: components["schemas"]["WatchOut"][];
+            /** Orders */
+            orders: components["schemas"]["OrderOut"][];
+            /** Precedents */
+            precedents: components["schemas"]["PrecedentOut"][];
+            /**
+             * Fines Cents
+             * @description The player's group's fines and penalties to date
+             */
+            fines_cents: number;
+            /** Breaches */
+            breaches: string[];
+            explain: components["schemas"]["RegulationExplainOut"];
+        };
+        /** RegulatorOut */
+        RegulatorOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Part */
+            part: string | null;
+            /**
+             * Structural
+             * @description Its law allows a break-up or unbundling
+             */
+            structural: boolean;
+            regime: components["schemas"]["RegimeOut"] | null;
         };
         /** RelationshipOut */
         RelationshipOut: {
@@ -18845,25 +19185,6 @@ export interface components {
              */
             on?: boolean;
         };
-        /** StepOut */
-        StepOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /**
-             * Note
-             * @description The chief of staff's one line on why it matters
-             */
-            note: string;
-            /**
-             * Screen
-             * @description A systems key the step links to
-             */
-            screen: string;
-            /** Done */
-            done: boolean;
-        };
         /** StockOut */
         StockOut: {
             /** Ticker */
@@ -19632,6 +19953,58 @@ export interface components {
             /** Energy */
             energy: number;
         };
+        /**
+         * TestOut
+         * @description The player's own position against a regime's thresholds (Explain on thresholds).
+         */
+        TestOut: {
+            /** Regime */
+            regime: string;
+            /** Regime Name */
+            regime_name: string;
+            /**
+             * Users
+             * @description The largest share of users on a platform of the group
+             */
+            users: number;
+            /** Users Needed */
+            users_needed: number | null;
+            /** Turnover Cents */
+            turnover_cents: number;
+            /**
+             * Turnover Needed Cents
+             * @description In the game's economy
+             */
+            turnover_needed_cents: number | null;
+            /**
+             * Turnover Legal Cents
+             * @description The law's figure, real-world scale
+             */
+            turnover_legal_cents: number | null;
+            /** Market Value Cents */
+            market_value_cents: number | null;
+            /**
+             * Market Value Needed Cents
+             * @description In the game's economy
+             */
+            market_value_needed_cents: number | null;
+            /** Market Value Legal Cents */
+            market_value_legal_cents: number | null;
+            /**
+             * Ratio
+             * @description The test's ratio: 1 or more meets every threshold
+             */
+            ratio: number;
+            /** Warn At */
+            warn_at: number;
+            /** Designated */
+            designated: boolean;
+            /**
+             * Warned
+             * @description The month of the latest warning, if any
+             */
+            warned: string | null;
+        };
         /** TimelineItemOut */
         TimelineItemOut: {
             /** Turn */
@@ -20153,6 +20526,41 @@ export interface components {
              */
             node?: string | null;
         };
+        /** WarningSignOut */
+        WarningSignOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "press" | "report" | "political" | "board";
+            /** Month */
+            month: string;
+            /** Label */
+            label: string;
+        };
+        /** WatchOut */
+        WatchOut: {
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Market */
+            market: string;
+            /** Since */
+            since: string;
+            /**
+             * Months
+             * @description Months since the first sign
+             */
+            months: number;
+            /**
+             * Needed Months
+             * @description A structural order needs at least this many
+             */
+            needed_months: number;
+            /** Signs */
+            signs: components["schemas"]["WarningSignOut"][];
+        };
         /** WhatNextItemOut */
         WhatNextItemOut: {
             /** Key */
@@ -20486,6 +20894,25 @@ export interface components {
             /** Staff */
             staff: number;
         };
+        /** StepOut */
+        tst__api__schemas__onboarding__StepOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Note
+             * @description The chief of staff's one line on why it matters
+             */
+            note: string;
+            /**
+             * Screen
+             * @description A systems key the step links to
+             */
+            screen: string;
+            /** Done */
+            done: boolean;
+        };
         /** EventLinkOut */
         tst__api__schemas__people__EventLinkOut: {
             /** Event Id */
@@ -20552,6 +20979,15 @@ export interface components {
              * @description The HQ's region, whose markets are v1's (19.5)
              */
             home: boolean;
+        };
+        /** StepOut */
+        tst__api__schemas__regulation__StepOut: {
+            /** Stage */
+            stage: string;
+            /** Month */
+            month: string;
+            /** Note */
+            note?: string | null;
         };
         /** UnitChoiceOut */
         tst__api__schemas__research__UnitChoiceOut: {
@@ -38484,6 +38920,184 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRegulation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    complyDuties: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerOrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegulationActionOut"];
                 };
             };
             /** @description Bad Request */

@@ -62,6 +62,7 @@ def _deliver(
     entries: list[LedgerEntry] = []
     assert order.company_id is not None
     if order.facility_id is None:
+        # money-exact: integer cents pro rata (floor)
         value = n * order.price_cents + order.prepaid_cents * n // order.tools
         state = stock.add(state, order.company_id, order.generation, n, "asml", value)
         entries.append(
@@ -181,6 +182,7 @@ def equipment_month(
         for o, why in lost:
             if o.buyer != queue.PLAYER or o.company_id is None:
                 continue
+            # money-exact: integer cents pro rata (floor)
             forfeit = o.prepaid_cents * o.remaining // o.tools
             if forfeit:
                 entries.append(

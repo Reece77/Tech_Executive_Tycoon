@@ -5,8 +5,8 @@ in stock, the lithography programme's stages, own tool lines and fabs' tools), o
 have none: the next month rebuilds rivals' order book and their recent deliveries from
 equipment.yaml (tst.sim.equipment.phase.catch_up).
 
-Revision ID: 0055_m33
-Revises: 0054_m30
+Revision ID: 0056_m33
+Revises: 0055_m34
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0055_m33"
-down_revision: str | None = "0054_m30"
+revision: str = "0056_m33"
+down_revision: str | None = "0055_m34"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -29,9 +29,9 @@ def upgrade() -> None:
         sa.Column("kind", sa.String(), nullable=False),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 55")
+    op.execute("UPDATE save_meta SET schema_version = 56")
 
 
 def downgrade() -> None:
     op.drop_table("equipment_record")
-    op.execute("UPDATE save_meta SET schema_version = 54")
+    op.execute("UPDATE save_meta SET schema_version = 55")

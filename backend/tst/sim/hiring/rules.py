@@ -88,6 +88,7 @@ def offer_preview(
     person = state.person(candidate.person_id)
     company = state.company(candidate.company_id)
     expectation = person.salary_expectation_cents or 0
+    # money-exact: ratio
     ratio = salary_cents / expectation if expectation else 0.0
     reveal = state.reveal(company.id, person.id)
     if reveal is None:  # every candidate gets a knowledge record when generated

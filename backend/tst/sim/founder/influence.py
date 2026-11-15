@@ -94,6 +94,7 @@ def set_lobbying(
 
 def _gain(spend_cents: int, balance: Balance) -> float:
     ib = balance.influence
+    # money-exact: ratio
     return ib.rate * math.sqrt(spend_cents / CENTS_A_DOLLAR / ib.unit_dollars)
 
 

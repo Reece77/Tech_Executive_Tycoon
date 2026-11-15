@@ -111,6 +111,12 @@ def schedule(
                 regulated[rule.part] = (share, rule.rate)
     if platform.fee is not None and not in_history(turn, data):
         standard = platform.fee
+    for r_region, part, kind, from_turn, rate in platform.regulated:  # M34 (48.2)
+        if r_region == region and kind == "fee_cap" and from_turn <= turn:
+            standard = min(standard, rate)
+        elif r_region == region and kind == "alt_payments" and from_turn <= turn:
+            share = (file(data).part_share(region, part) if part else 1.0) * pb.alternative_share
+            regulated.setdefault(part or region, (share, rate))
     for store in stores:  # alternative stores (44.8): a path on the side-loading share
         if (
             store.platform_id == platform.id
@@ -165,10 +171,16 @@ def fee_for(
 
 
 def rule_active(data: GameData, platform: Platform, region: str, kind: str, turn: int) -> float:
-    """The share of the region a dated rule of this kind covers for the platform (0 = none)."""
-    if not platform.historical:
-        return 0.0
+    """The share of the region a dated rule of this kind covers for the platform (0 = none):
+    platforms.yaml's for a historical platform, and regulators' duties (M34, 48.2) on any."""
     share = 0.0
+    seen: set[str] = set()
+    for r_region, part, r_kind, from_turn, _rate in platform.regulated:
+        if r_region == region and r_kind == kind and from_turn <= turn and part not in seen:
+            seen.add(part)
+            share += file(data).part_share(region, part) if part else 1.0
+    if not platform.historical:
+        return min(1.0, share)
     for r in file(data).rules:
         if (
             r.kind == kind

@@ -1,4 +1,4 @@
-"""Loading and syncing M33's records (formulas.md 47; migration 0055_m33). Every collection lives
+"""Loading and syncing M33's records (formulas.md 47; migration 0056_m33). Every collection lives
 in `equipment_record`, one row a record (`kind` = the GameState field), its fields in `data`
 (tst.db.mna_io's encoding); a changed collection is rewritten whole."""
 
@@ -39,7 +39,7 @@ STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + p
 def load_equipment(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every equipment record (0055_m33); a save from before M33 has none."""
+    """Every equipment record (0056_m33); a save from before M33 has none."""
     if not has_table(session, EquipmentRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

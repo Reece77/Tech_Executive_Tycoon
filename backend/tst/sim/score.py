@@ -86,6 +86,7 @@ def cagr(state: GameState, company_id: int) -> float:
         return math.inf if now > 0 else 0.0
     if now <= 0:
         return -1.0
+    # money-exact: ratio
     return float((now / then.revenue_cents) ** (1 / years) - 1)
 
 
@@ -116,11 +117,13 @@ def market_revenue(
             continue
         for s in state.segments_of(product.id):
             by = out.setdefault((product.category, s.segment, home), {})
+            # money-exact: ratio
             by[product.company_id] = by.get(product.company_id, 0.0) + s.customers * (
                 s.price_cents or 0
             )
         for r in state.regional_segments_of(product.id):
             by = out.setdefault((product.category, r.segment, r.region), {})
+            # money-exact: ratio
             by[product.company_id] = by.get(product.company_id, 0.0) + r.customers * (
                 r.price_cents or 0
             )

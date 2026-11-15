@@ -61,6 +61,7 @@ TARIFFS: Final = "5100_tariffs"  # tariffs on goods crossing blocs (M22, 39.3)
 LOCAL_PARTNER_SHARE: Final = "5110_local_partner_share"  # a local partner's share (M22, 39.3)
 PLATFORM_FEE_REVENUE: Final = "4150_platform_fees"  # a store owner's fees (M31, 44.4)
 PLATFORM_FEES: Final = "5150_platform_fees"  # store fees and platform licences (M31, 44.4)
+FINES: Final = "6970_fines"  # regulators' fines and periodic penalties (M34, 48.3)
 TOOL_INVENTORY: Final = "1530_tool_inventory"  # tools held, not yet in a fab (M33, 47.2, 47.4)
 TOOL_SALES: Final = "4430_tool_sales"  # own lithography tools sold to rivals (M33, 47.4)
 TOOL_COST: Final = "5200_tool_cost"  # their made cost (M33, 47.4)
@@ -111,6 +112,7 @@ ENGINE_ACCOUNTS: Final = (
     LOCAL_PARTNER_SHARE,
     PLATFORM_FEE_REVENUE,
     PLATFORM_FEES,
+    FINES,
     TOOL_INVENTORY,
     TOOL_SALES,
     TOOL_COST,

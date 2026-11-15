@@ -38,6 +38,7 @@ from tst.sim.equipment.config import EPS
 from tst.sim.equipment.models import FabTools, ToolOrder
 from tst.sim.fabs.models import Fab
 from tst.sim.ledger import PPE, LedgerEntry
+from tst.sim.money import times
 from tst.sim.state import GameState
 
 POINTS: Final = 100.0  # tunable-exempt: yield points per unit of yield
@@ -166,11 +167,11 @@ def capex_change(p: ToolPlan, capex_cents: int, balance: Balance, state: GameSta
     """The fab's capex change from its tools (module docstring): stock saves, scarcity and a
     prepayment cost."""
     eb = balance.equipment
-    cut = min(p.capex_cut_cents, round(capex_cents * eb.programme.tool_capex_share))
+    cut = min(p.capex_cut_cents, times(capex_cents, eb.programme.tool_capex_share))
     own_cut = 0
     if p.from_own and p.generation is not None:
         own_cut = min(
-            p.from_own * p.list_cents, round(capex_cents * eb.programme.tool_capex_share) - cut
+            p.from_own * p.list_cents, times(capex_cents, eb.programme.tool_capex_share) - cut
         )
     extra = 0
     if p.to_order and state.turn >= eb.start_turn:
@@ -179,7 +180,7 @@ def capex_change(p: ToolPlan, capex_cents: int, balance: Balance, state: GameSta
 
 
 def prepay_cents(p: ToolPlan, balance: Balance) -> int:
-    return round(balance.equipment.queue.prepay_share * p.price_cents * p.to_order)
+    return times(p.price_cents * p.to_order, balance.equipment.queue.prepay_share)
 
 
 def commit(

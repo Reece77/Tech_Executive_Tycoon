@@ -214,6 +214,7 @@ def month(
         prog = replace(prog, progress=prog.progress + step, spent_cents=prog.spent_cents + spend)
         if prog.progress >= prog.work:
             months_run = state.turn - prog.started_turn + 1
+            # money-exact: ratio (funding as a multiple of the reference budget)
             mean_funding = prog.spent_cents / (ref * months_run)
             chance = success_chance(mean_funding, staff.mean_skill or SKILL_NEUTRAL, balance)
             if prog.success_u < chance:

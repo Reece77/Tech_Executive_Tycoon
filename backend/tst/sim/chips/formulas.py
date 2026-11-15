@@ -13,6 +13,7 @@ def chip_yield(base: float, per_lead: float, lead: float, cap: float) -> float:
 def chip_unit_cents(wafer_cents: float, per_wafer: int, yield_rate: float, packaging: int) -> float:
     """wafer price / (chips per wafer x yield) + packaging and test (26.3): $9,000 / 45.6 +
     $8 = $205.37 (26.7)."""
+    # money-exact: rate
     return wafer_cents / (per_wafer * yield_rate) + packaging
 
 

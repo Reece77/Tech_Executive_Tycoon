@@ -97,5 +97,14 @@ METRICS: dict[str, MetricDef] = {
             "product",
             "Feature points from the platform's catalogue",
         ),
+        # v4 (M34): regulators' fines and the designation thresholds
+        _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
+        _m(
+            "designation_thresholds",
+            "Designation test",
+            "percent",
+            "company",
+            "The group against each regime's gatekeeper thresholds",
+        ),
     )
 }

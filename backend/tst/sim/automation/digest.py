@@ -175,6 +175,7 @@ def _area(
     areas.append(line)
     for d in mine:
         if d.kind == "proposal" and d.ref_id in pending:
+            # money-exact: ratio
             share = d.commitment_cents / max(o.limit_cents, 1)
             attention.append(
                 (max(share, 1.0), f"{label}: {owner_name(state, o.person_id, data)} {d.text}")

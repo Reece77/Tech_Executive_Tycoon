@@ -578,6 +578,7 @@ def venture(
     pre = value_cents(state, cid, balances, balance, data)
     old = _stake_of(state, owner, cid)
     bp = round(Fraction(action.cents, pre + action.cents) * FULL_STAKE_BP)
+    # money-exact: exact
     total = bp + (round(Fraction(old.stake_bp) * pre / (pre + action.cents)) if old else 0)
     low, high = (round(exact(x) * FULL_STAKE_BP) for x in gb.venture)
     if not low <= total <= high:

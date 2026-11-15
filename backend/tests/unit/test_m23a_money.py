@@ -108,7 +108,8 @@ def test_an_offtake_prepayment_is_exact(
     game = m21.game_at(1, ym_to_turn(2016, 1))
     assert d.suppliers is not None
     supplier = next(s for s in d.suppliers.suppliers if s.sells("copper", game.state.turn))
-    monkeypatch.setattr(offtake, "value_cents", lambda *_: float(year))
+    # M36r: quotes read the exact year value (offtake.exact_value)
+    monkeypatch.setattr(offtake, "exact_value", lambda *_: Fraction(year))
     q = offtake.offtake_quote(game.state, "copper", supplier.key, 5, 1_000.0, float(prepay), b, d)
     assert q.year_value_cents == year
     assert q.prepaid_cents == _half_even(year * Fraction(prepay))

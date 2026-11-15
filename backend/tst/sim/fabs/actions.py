@@ -397,7 +397,7 @@ def upgrade_quote(
             data,
             plan_tools=False,
         )
-        capex = round(q.capex_cents * fb.upgrade.capex_share)
+        capex = times(q.capex_cents, fb.upgrade.capex_share)
         needed = q.tools
         if q.euv and data.equipment is not None:  # M33 (47.2): ASML's queue
             from tst.sim.geopolitics.world import facility_country

@@ -3,12 +3,16 @@
 A decision's commitment is its cash cost over the next automation.commitment_months plus every
 fixed obligation it creates. Under the owner's limit it goes ahead; at or above it, or if it
 is a one-off, it becomes a proposal. Commitments are computed from what the company can see:
-salary bands, its own budgets, quoted costs.
+salary bands, its own budgets, quoted costs. A commodity deal's commitment is the integer-cent
+quote that signs it, x its take-or-pay share in exact rationals, rounded half to even once
+(ADR-0003; M36r, Codex review 7 finding 2): a cent understated would let an owner act at its
+limit.
 """
 
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 
 from tst.sim.actions import Action
 from tst.sim.automation.config import CONTRACT_ACTIONS, LAYOFF_ACTIONS, ONE_OFF_ACTIONS
@@ -16,6 +20,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import SimError
 from tst.sim.hiring.formulas import market_mid_cents
 from tst.sim.ledger import LedgerBalances
+from tst.sim.money import exact
 from tst.sim.research import levels
 from tst.sim.state import GameState
 
@@ -27,7 +32,7 @@ def salary_month(role: str, b: Balance, data: GameData) -> int:
     """A hire's monthly salary at the role's mid band in the home region (13.10's offers)."""
     mid = data.role(role).salary_band_mid_cents[PLAN_LEVEL]
     bp = data.region(b.founder.default_region).salary_multiplier_bp
-    return round(market_mid_cents(mid, bp) / MONTHS_PER_YEAR)
+    return round(Fraction(market_mid_cents(mid, bp), MONTHS_PER_YEAR))
 
 
 def _field(action: Action, name: str, default: object = None) -> object:
@@ -112,7 +117,8 @@ def chain_commitment(
                     state, maker, manufacturing_fee_cents(b, product.category, maker, city), b
                 )
                 share = b.hardware.contract.take_or_pay
-                return round(_int(action, "units") * fee * share * _int(action, "months"))
+                units = _int(action, "units") * _int(action, "months")
+                return round(units * exact(fee) * exact(share))
             case "sign_wafer_contract":
                 from tst.sim.chips import chips
 
@@ -127,25 +133,24 @@ def chain_commitment(
                 )
                 price = ct.offered(state, foundry, price, b)
                 share = b.chips.contract.take_or_pay
-                return round(_int(action, "wafers") * price * share * _int(action, "months"))
+                wafers = _int(action, "wafers") * _int(action, "months")
+                return round(wafers * exact(price) * exact(share))
             case "sign_commodity_contract" | "sign_offtake":
-                from tst.sim.commodities.offtake import spot_price, value_cents
+                from tst.sim.commodities.offtake import contract_quote, offtake_quote
 
                 good = str(_field(action, "good"))
                 volume = float(_field(action, "volume_year") or 0.0)  # type: ignore[arg-type]
-                if kind == "sign_commodity_contract":
-                    years = _int(action, "months") / MONTHS_PER_YEAR
-                    price = ct.offered(
-                        state, f"traders:{good}", spot_price(state, good, data, b), b
-                    )
-                    share = b.commodity.contract_take_or_pay
-                    return round(value_cents(volume * years, price, good, data) * share)
-                supplier = str(_field(action, "supplier"))
-                price = ct.offered(state, supplier, spot_price(state, good, data, b), b)
+                if kind == "sign_commodity_contract":  # its unused volume's share at the end
+                    months = _int(action, "months")
+                    q = contract_quote(state, good, months, volume, b, data)
+                    rate = exact(b.commodity.contract_take_or_pay)
+                    return round(Fraction(q.year_value_cents * months, MONTHS_PER_YEAR) * rate)
                 prepay = float(_field(action, "prepay") or 0.0)  # type: ignore[arg-type]
-                year = value_cents(volume, price, good, data)
-                share = b.offtake.take_or_pay
-                return round(year * _int(action, "years") * share + year * prepay)
+                years = _int(action, "years")
+                supplier = str(_field(action, "supplier"))
+                q = offtake_quote(state, good, supplier, years, volume, prepay, b, data)
+                fixed = round(q.year_value_cents * years * exact(b.offtake.take_or_pay))
+                return fixed + q.prepaid_cents
             case "start_desk_study":
                 return b.exploration.desk.cost_cents
             case "take_licence":

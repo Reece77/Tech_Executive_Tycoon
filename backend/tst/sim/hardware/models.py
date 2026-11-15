@@ -43,6 +43,7 @@ class ProductionContract:
     @property
     def price_cents(self) -> float:
         """The price in cents (fractional), from its exact stored millicents."""
+        # money-exact: rate
         return self.price_millicents / MILLICENTS_PER_CENT
 
 
