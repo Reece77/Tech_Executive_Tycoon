@@ -41,6 +41,7 @@ from tst.sim.founder.personal import cash_cents
 from tst.sim.founder.wealth import post, shares_outstanding
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact, times
 from tst.sim.people.models import Employment, Person
 from tst.sim.rivals.setup import key_people_split
 from tst.sim.rng import RngFactory
@@ -315,6 +316,7 @@ def seed_stake(cents: int, balance: Balance) -> float:
     angel.seed_stake at the smallest cheque to its top at angel.seed_full_cents."""
     ab = balance.angel
     lo, hi = ab.seed_stake
+    # money-exact: ratio
     f = (cents - ab.min_cheque_cents) / (ab.seed_full_cents - ab.min_cheque_cents)
     return lo + (hi - lo) * min(1.0, max(0.0, f))
 
@@ -369,7 +371,8 @@ def back_startup(
     count = min(len(segments_all), 1 + int(gen.integers(0, 2)))
     picks = sorted(int(i) for i in gen.choice(len(segments_all), size=count, replace=False))
     founder = state.person(founder_id)
-    extra = round(cents * ab.skill_runway * max(0.0, mean_true_skill(founder, data) - SKILL_MID))
+    skill = max(0.0, mean_true_skill(founder, data) - SKILL_MID)
+    extra = round(cents * exact(ab.skill_runway) * exact(skill))
     index = keys.index(category_key)
     state, company, entry = su.found_company(
         state,
@@ -456,8 +459,8 @@ def _employ_founder(
         )
     role = data.role(balance.rivals.function_roles["builder"])
     level = "exec"  # tunable-exempt: 15.4's founder is the startup's top person
-    salary = round(
-        market_salary_cents(role.key, level, balance, data) * balance.rivals.startup.salary_mult
+    salary = times(
+        market_salary_cents(role.key, level, balance, data), balance.rivals.startup.salary_mult
     )
     emp_id, ids = state.next_ids.take("rival_employment")
     state = replace(state, next_ids=ids)

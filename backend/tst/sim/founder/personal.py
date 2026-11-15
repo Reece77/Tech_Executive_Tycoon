@@ -146,7 +146,7 @@ def sell_shares(
         raise InvalidActionError(
             f"one sale sells at most {cb.secondary_max_share:.0%} of the shares"
         )
-    price = round(public.price_cents * (1 - cb.secondary_discount))
+    price = round(public.price_cents * (1 - exact(cb.secondary_discount)))
     gross = shares * price
     net = gross - round(gross * cb.secondary_fee)
     mine = [
