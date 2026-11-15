@@ -31,6 +31,10 @@ pytestmark = [
 ]
 
 MEDIAN_S = 0.4  # the brief's 2039 median
+# The full_integrator save (weekly-v6-integrator) missed it on CI at 439 ms; the PM's ruling
+# (2026-11-15) hands the 400 ms to M35 and guards that save at 500 ms meanwhile, so the
+# Makefile sets TST_M30_MEDIAN_MS=500 for it. Every other save keeps 400 ms.
+MEDIAN_ENV = "TST_M30_MEDIAN_MS"
 HOLIDAY_S = 6.0  # the brief's 12 months of Holiday
 WARM_UP = 2
 MONTHS = 12
@@ -107,6 +111,6 @@ def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> 
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
-    assert median <= MEDIAN_S, report
+    assert median <= float(os.environ.get(MEDIAN_ENV, MEDIAN_S * 1000)) / 1000, report
     assert worst < LIMIT_S, report
     assert spent <= HOLIDAY_S, report

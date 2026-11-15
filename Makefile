@@ -59,7 +59,7 @@ weekly-m27b:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_m27b_balance.py
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: its targets on CI's runner
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=500 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 500 ms guard on this save until M35 (PM, 2026-11-15)
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
