@@ -1628,6 +1628,109 @@ power:
   vol: 0.08 # annual volatility of a region's log power index after 2025 (33.5; M17 decision, about the spread of Europe's 2010-2025 ratio outside 2022)
   base_region: north_america # held at 1.0 in every month: M12a's tuning (33.5)
   paid_by: [data_centre_general, data_centre_gpu] # facility kinds whose operating cost is x their region's index (33.5; fabs and refineries later)
+  # --- M32 (formulas.md 46, ADR-0022): power as an input everywhere, contracts, owned plants ----
+  start: 2026-01 # queues for data centres and fabs, grid outages, the carbon pass-through and power producers begin here (with world.start; ADR-0022 6)
+  grid_charge_share: 0.3 # share of the grid price that is network and system charges, still paid on own-plant energy used off-site (46.2; A: US industrial delivery charges about a third of the bill)
+  export_discount: 0.2 # surplus own energy sells to the grid at the grid price x (1 - this) (46.2; A: wholesale under industrial retail)
+  hours_a_month: 730 # 8,760 hours / 12 (MW x hours = MWh)
+  history_months: 24 # months of a company's power history kept for the Power screen
+  plants: # 46.2: owned plants (power.yaml holds each type's costs and build times)
+    min_stage: 4 # owned plants unlock at stage 4 (Reece, 2026-11-13), a one-off
+    energy: 8 # founder energy to order a plant (A: below a fab's, above a data centre's)
+    sizes_mw: [50, 100, 250, 500, 1000] # MW a plant order may choose (A; nuclear only 1,000)
+    overrun: # hidden capex overrun range (fraction) drawn at the order on stream power (1, facility)
+      gas: [0.0, 0.2] # A: as refining's vendor-quoted plants
+      solar_storage: [0.0, 0.15] # A: modular builds
+      wind: [0.0, 0.2] # A
+      nuclear: [0.0, 1.5] # Vogtle 3 and 4 ran 2.2x their original $14 billion (power.yaml VOG); M32 tuning for 46.8 target 3
+      smr: [0.0, 1.2] # CFPP's estimate rose 75% before cancellation (power.yaml); A beyond
+    overrun_skew: 2.0 # overrun = lo + (hi - lo) x u^skew: most builds near the quote, a long tail (A)
+    overrun_delay: # build months x (1 + overrun x this): overruns come with delays
+      gas: 0.3
+      solar_storage: 0.3
+      wind: 0.3
+      nuclear: 0.6 # Vogtle: about 4.5 years planned, 10-11 built at 2.2x cost (A from VOG)
+      smr: 0.6
+    learning: # yearly real capex decline after 2025, drawn once per game per type (A)
+      gas: [-0.01, 0.01]
+      solar_storage: [0.02, 0.06] # LBLS: PV costs fell about 75% 2010-2020, then flattened
+      wind: [0.0, 0.03]
+      nuclear: [-0.01, 0.02]
+      smr: [0.02, 0.06] # from its era
+    discount_rate: 0.07 # a year: the levelised cost's and a plant IRR's discount rate (A: utility WACC)
+    outages_a_year: # forced outages a year (A: NERC GADS not opened)
+      gas: 0.5
+      solar_storage: 0.3
+      wind: 0.3
+      nuclear: 0.2
+      smr: 0.2
+    outage_months: # whole months a forced outage lasts (46.5: 1-3; nuclear rarer and longer)
+      gas: [1, 2]
+      solar_storage: [1, 1]
+      wind: [1, 2]
+      nuclear: [2, 4]
+      smr: [2, 4]
+    firm_share: # share of a plant's rating it can hold through a grid outage (batteries firm solar)
+      gas: 1.0
+      solar_storage: 0.33 # SL24's 50 MW battery on 150 MW of PV
+      wind: 0.3
+      nuclear: 1.0
+      smr: 1.0
+    smr_start: 2026-01 # the SMR era's first orderable year is drawn in this month (power.yaml era)
+  ppa: # 46.2: power-purchase agreements
+    energy: 3 # founder energy to sign one (A: as a commodity contract)
+    years: [5, 20] # whole years a PPA runs (46.2)
+    discount_per_year: 0.005 # price = the forward x (1 - this x years): longer terms price lower (A)
+    max_discount: 0.08
+    take_or_pay: 0.7 # share of an untaken month's volume still paid (33.3's 70%)
+    max_share: 1.5 # a PPA's volume at most this x the company's regional demand when signed (A)
+  queue: # 46.3: grid interconnection queues
+    min_mw: 20 # a data centre or fab drawing more than this joins its region's queue (A: utilities' large-load thresholds)
+    min_share: 0.5 # no connection before half the median wait; then a monthly hazard sets the median (A)
+    shown: [0.7, 1.5] # the screen shows the wait as this range x the region's median (46.9: ranges)
+    growth: 12.0 # after 2025 the median grows by this x the region's yearly load growth a year (A: QU25's lengthening with load)
+    sd: 0.08 # yearly log-sd of a region's wait after 2025
+    floor_months: 6
+    cap_months: 120
+  carbon: # 46.4: carbon prices after 2025 (stream power (0, region_index), December)
+    drift: # mean yearly log change of an existing price (A)
+      north_america: 0.0
+      europe: 0.06 # EU ETS forecasts near EUR 126 by 2030 (gmk.center infographic, search)
+      east_asia: 0.08 # China's ETS widening to steel and cement (Transition Asia)
+      south_southeast_asia: 0.0
+      latin_america: 0.0
+      africa: 0.0
+      oceania: 0.0
+    sd: 0.15 # yearly log-sd of a carbon price
+    start_rate: # chance a year a region without a price starts one (A)
+      north_america: 0.05
+      europe: 0.0
+      east_asia: 0.0
+      south_southeast_asia: 0.06
+      latin_america: 0.04
+      africa: 0.03
+      oceania: 0.06
+    start_price: [10, 30] # $/t (2010 dollars) a new scheme opens at
+    step_rate: 0.08 # chance a year of a policy step where a price exists
+    step: [0.2, 0.6] # a step raises the price by this share
+    decarbonise: # the grid's yearly fall in intensity after 2025 (D: OWID 2015-2024 trend; A beyond)
+      north_america: 0.029
+      europe: 0.056
+      east_asia: 0.018
+      south_southeast_asia: 0.007
+      latin_america: 0.01
+      africa: 0.01
+      oceania: 0.034
+    decarbonise_sd: 0.01
+    pass_through: 1.0 # share of a carbon price change since December 2025 x the grid intensity the grid price carries
+    green_brand_tonnes: 200 # tCO2 a $1M revenue above which consumer brands react (46.4; A)
+    clean_share: 0.8 # own plants and clean PPAs above this share of energy: brand +1 (46.4)
+    brand_hit: [1, 3] # consumer brands' fall above the threshold (46.4: -1 to -3)
+    beloved_hit: 2 # a Beloved brand's fall (46.4)
+  outage: # 46.5: grid outages (stream power (0, region_index), from power.start)
+    wafer_loss: 0.04 # a fab loses this share of the month's wafer starts in a grid outage (A: an outage scraps the wafers in process; M32 tuning for 46.8 target 5)
+    tight_factor: 2.0 # a region's outage rate x (1 + this x (power factor - 1)) when its market is tight (46.5)
+    max_rate: 24.0 # outages a year at most
 geology: # 34.1: blocks and hidden deposits at game start (M18, v3 lane B); per-region data in geology.yaml
   max_grade: 0.9 # a deposit's true grade at most (a fraction of ore)
   blocks_per_region: 60 # exploration blocks each region is divided into, 34.1

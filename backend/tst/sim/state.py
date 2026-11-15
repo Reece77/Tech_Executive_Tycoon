@@ -114,6 +114,15 @@ from tst.sim.platforms.models import (
     RivalStore,
     Standard,
 )
+from tst.sim.power.models import (
+    GridOutage,
+    Plant,
+    PowerMonth,
+    PowerWorld,
+    Ppa,
+    QueueEntry,
+    RegionPath,
+)
 from tst.sim.press.models import (
     Credibility,
     Departure,
@@ -448,6 +457,17 @@ class GameState:
     product_standards: tuple[ProductStandard, ...] = ()
     steering_products: tuple[int, ...] = ()  # the player's apps that link to pay outside (44.5)
     rival_stores: tuple[RivalStore, ...] = ()  # alternative stores where the law allows (44.8)
+    # M32 (46): owned plants by facility id, PPAs and grid-queue entries by id, companies'
+    # monthly power books by (company, region, turn) for power.history_months, grid outages
+    # that happened (the same window), regions' seeded paths after 2025 (this year's), and the
+    # game-wide draws. Empty until a company signs, builds or meters anything.
+    plants: tuple[Plant, ...] = ()
+    ppas: tuple[Ppa, ...] = ()
+    grid_queue: tuple[QueueEntry, ...] = ()
+    power_months: tuple[PowerMonth, ...] = ()
+    grid_outages: tuple[GridOutage, ...] = ()
+    region_paths: tuple[RegionPath, ...] = ()
+    power_world: PowerWorld = field(default_factory=PowerWorld)
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).
@@ -1608,6 +1628,18 @@ def with_refining_deal(state: GameState, deal: RefiningDeal) -> GameState:
 
 def with_fab(state: GameState, fab: Fab) -> GameState:
     return replace(state, fabs=_upsert(state.fabs, fab, lambda f: f.facility_id))
+
+
+def with_plant(state: GameState, plant: Plant) -> GameState:  # M32 (46.2)
+    return replace(state, plants=_upsert(state.plants, plant, lambda p: p.facility_id))
+
+
+def with_ppa(state: GameState, ppa: Ppa) -> GameState:  # M32 (46.2)
+    return replace(state, ppas=_upsert(state.ppas, ppa, lambda p: p.id))
+
+
+def with_queue_entry(state: GameState, entry: QueueEntry) -> GameState:  # M32 (46.3)
+    return replace(state, grid_queue=_upsert(state.grid_queue, entry, lambda q: q.id))
 
 
 def with_production_contract(state: GameState, contract: ProductionContract) -> GameState:

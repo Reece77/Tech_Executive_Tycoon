@@ -104,6 +104,10 @@ STREAM_IDS: Final = MappingProxyType(
         # development; (founder_id, 2) a health step-back; (founder_id, 3, n) an action's draw
         "family": 59,
         "platforms": 58,  # M31 (formulas.md 44): developers, gatekeepers, rivals, standards
+        # M32 (formulas.md 46): (0, region_index) grid outages and the seeded carbon, intensity
+        # and queue path; (1, facility) a plant's overrun and forced outages; (2, entry) a queued
+        # project's connection; (3, type_index) the game-wide learning and SMR-era draws
+        "power": 60,
         "misc": 99,
     }
 )

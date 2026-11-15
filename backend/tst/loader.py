@@ -65,6 +65,7 @@ from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
 from tst.sim.platforms.config import PlatformsFile
+from tst.sim.power.config import PowerFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -105,6 +106,7 @@ CONTROLS_FILE = "export_controls.yaml"  # M22 (39.2)
 TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
+POWER_FILE = "power.yaml"  # M32 (formulas.md 46)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -126,6 +128,7 @@ DATA_FILES = (
     INCUMBENTS_FILE,
     INVESTORS_FILE,
     PLATFORMS_FILE,
+    POWER_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
@@ -539,6 +542,58 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
 SPECIAL_DESTINATIONS: Final = ("all", "affiliates")  # export_controls.yaml `to` words (39.2)
 
 
+def power_problems(balance: Balance, data: GameData) -> list[str]:
+    """M32 (46): power.yaml covers every region in regions.yaml's order, names known countries
+    and facility kinds, and balance power.* covers every plant type and region."""
+    pf = data.power
+    if pf is None:
+        return []
+    problems: list[str] = []
+    if [r.key for r in pf.regions] != list(data.region_keys):
+        problems.append(f"regions must be {REGIONS_FILE}'s, in the same order")
+    if set(pf.others) != set(data.region_keys):
+        problems.append("others must name every region")
+    if bad := sorted(set(pf.draws) - set(balance.facility.kinds)):
+        problems.append(f"draws name unknown facility kinds {bad}")
+    if bad := sorted(set(balance.power.paid_by) - set(pf.draws)):
+        problems.append(f"power.paid_by kinds {bad} need a draw")
+    countries = {c.key for c in data.countries.countries} if data.countries else None
+    if countries is not None:
+        for p in pf.producers:
+            if p.country not in countries:
+                problems.append(f"producer {p.key}: unknown country {p.country!r}")
+        for key, o in pf.others.items():
+            if o.country not in countries:
+                problems.append(f"others.{key}: unknown country {o.country!r}")
+    if data.chain_companies is not None:
+        taken = {c.key for c in data.chain_companies.companies}
+        if clash := sorted(taken & {p.key for p in pf.producers}):
+            problems.append(f"producer keys clash with {CHAIN_FILE}: {clash}")
+    pb = balance.power
+    types = {t.key for t in pf.plant_types}
+    for name, table in (
+        ("plants.overrun", pb.plants.overrun),
+        ("plants.overrun_delay", pb.plants.overrun_delay),
+        ("plants.learning", pb.plants.learning),
+        ("plants.outages_a_year", pb.plants.outages_a_year),
+        ("plants.outage_months", pb.plants.outage_months),
+        ("plants.firm_share", pb.plants.firm_share),
+    ):
+        if set(table) != types:
+            problems.append(f"power.{name} must cover exactly {sorted(types)}")
+    regions = set(data.region_keys)
+    for name, rtable in (
+        ("carbon.drift", pb.carbon.drift),
+        ("carbon.start_rate", pb.carbon.start_rate),
+        ("carbon.decarbonise", pb.carbon.decarbonise),
+    ):
+        if set(rtable) != regions:
+            problems.append(f"power.{name} must cover exactly the regions")
+    if pb.ppa.years.lo < 1:
+        problems.append("power.ppa.years must be at least 1")
+    return problems
+
+
 def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     """M31 (44): platforms.yaml names known regions, categories and owners; every region has a
     share row for every year of the history; balance's app categories and segments exist."""
@@ -905,6 +960,7 @@ def load_all(
     tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)
     chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
     platforms = _validate(PlatformsFile, parsed[PLATFORMS_FILE], PLATFORMS_FILE)
+    power = _validate(PowerFile, parsed[POWER_FILE], POWER_FILE)
     game_data = _validate(
         GameData,
         {
@@ -956,6 +1012,7 @@ def load_all(
             "tariffs": tariffs,
             "chain_companies": chain,
             "platforms": platforms,
+            "power": power,
         },
         "seed data cross-check",
     )
@@ -975,6 +1032,8 @@ def load_all(
         raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
     if problems := platforms_problems(balance, game_data):
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
+    if problems := power_problems(balance, game_data):
+        raise DataLoadError(f"{POWER_FILE}, {BALANCE_FILE} power: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

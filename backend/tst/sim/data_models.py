@@ -71,6 +71,7 @@ from tst.sim.modes.config import (
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
 from tst.sim.platforms.config import PlatformsBalance, PlatformsFile
+from tst.sim.power.config import PowerFile
 from tst.sim.press.config import (
     FeudBalance,
     PressBalance,
@@ -2084,6 +2085,7 @@ class GameData(_Frozen):
     tariffs: TariffsFile | None = None
     chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
     platforms: PlatformsFile | None = None  # M31 (44); None = no platforms
+    power: PowerFile | None = None  # M32 (46); None = no plants, contracts or producers
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

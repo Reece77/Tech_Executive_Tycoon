@@ -1,0 +1,437 @@
+# Power and owned plants (docs/formulas.md 46, M32, v4 lane A; ADR-0022). Research: M32 sub-task 1
+# (2026-11-14) from docs/v4-research/power-dossier.md. Every value carries a tag and a source:
+#   S  a sourced figure, read from the source itself (the report's table or the page's text),
+#   D  derived from sourced figures (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session
+#      (only where the source could not be opened: World Bank Pink Sheet annual gas prices,
+#      ECB and FX annual rates, BLS CPI-U, Australia's fixed carbon price),
+#   A  an assumption for gameplay where no public series was found.
+# Search results quoted by a search engine but not opened count as S only where the number was
+# quoted with its source; they are marked "(search)" in the comment.
+#
+# Money: plant costs are stored as published (value, dollar year) and the loader converts
+# them to 2010 dollars with `cpi` (the game's money is in 2010 dollars: refining.power_cents_per_mwh
+# is the 2010 US industrial price, and M17's power index is a ratio to North America). Carbon prices
+# are stored in each scheme's currency and converted with `fx` (local units a US dollar) and `cpi`.
+#
+# Sources:
+#   EIA13   EIA, Updated Capital Cost Estimates for Utility Scale Electricity Generating Plants,
+#           April 2013, Table 1 (2012$): https://www.eia.gov/outlooks/capitalcost/pdf/updated_capcost.pdf
+#   AEO23   EIA, Cost and Performance Characteristics of New Generating Technologies, AEO2023,
+#           Table 1 (2022$; lead times): https://www.eia.gov/outlooks/aeo/assumptions/pdf/elec_cost_perf.pdf
+#   SL24    EIA / Sargent & Lundy, Capital Cost and Performance Characteristics for Utility-Scale
+#           Electric Power Generating Technologies, January 2024 (AEO2025), Table 1-2 (2023$):
+#           https://www.eia.gov/analysis/studies/powerplants/capitalcost/pdf/capital_cost_AEO2025.pdf
+#   LAZ25   Lazard, Levelized Cost of Energy+ v18.0, June 2025, key assumptions pp. 34-37 (2025$):
+#           https://www.lazard.com/media/5tlbhyla/lazards-lcoeplus-june-2025-_vf.pdf
+#   LBLS    Berkeley Lab, Utility-Scale Solar (2021, 2022, 2023 editions; news releases):
+#           https://emp.lbl.gov/news/berkeley-lab-s-latest-utility-scale and .../utility-scale-1
+#   LBLW    Berkeley Lab, Land-Based Wind Market Report (2016 and 2021 editions; news releases):
+#           https://emp.lbl.gov/news/annual-wind-power-report-confirms , https://emp.lbl.gov/news/new-report-shows-technology
+#   QU24    Berkeley Lab, Queued Up 2024 Edition (end of 2023): https://emp.lbl.gov/publications/queued-2024-edition-characteristics
+#   QU25    Berkeley Lab, Queued Up 2025 Edition (end of 2024): https://eta-publications.lbl.gov/publications/queued-2025-edition-characteristics
+#   OWID    Our World in Data from Ember, carbon intensity and generation CSVs:
+#           https://ourworldindata.org/grapher/electricity-mix.csv (metric carbon_intensity),
+#           https://ourworldindata.org/grapher/electricity-generation.csv
+#   EIAC    EIA, carbon dioxide emission coefficients (natural gas 52.91 kg CO2 a million Btu):
+#           https://www.eia.gov/environment/emissions/co2_vol_mass.php
+#   HH      EIA Henry Hub spot price, annual (FRED AHHNGSP): https://alfred.stlouisfed.org/series?seid=AHHNGSP ,
+#           2025: https://www.eia.gov/todayinenergy/detail.php?id=66984
+#   PINK    World Bank Commodity Price Data (Pink Sheet), annual natural gas Europe (TTF) and
+#           Japan LNG: https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Pink-Sheet-August-2025.pdf
+#   DEHST   German Emissions Trading Authority, auctioning annual reports (volume-weighted average
+#           EUA auction price): https://www.dehst.de/SharedDocs/downloads/EN/auctioning/2015/Auctioning_2015_annual-report.pdf ,
+#           .../2021/2021_annual-report.pdf , .../2022/2022_annual-report.pdf , .../2024/2024_annual-report.pdf
+#   EEA     ETC CM reports, Trends and projections in the EU ETS 2024 and 2025:
+#           https://www.eionet.europa.eu/etcs/etc-cm/products/etc-cm-report-2024-09 , .../etc-cm-report-2025-06
+#   ESMA    ESMA, Carbon markets report 2026 (2025 average EUR 74):
+#           https://www.esma.europa.eu/sites/default/files/2026-07/ESMA50-481369926-34622_Carbon_markets_report_2026.pdf
+#   CETS    China national ETS: Transition Asia (2023 average CNY 68), MEE progress report 2025
+#           (2024 range 69-106, year-end 97.49), ICAP (2025 average CNY 70.78):
+#           https://transitionasia.org/steel-enters-chinas-national-emissions-trading-scheme/ ,
+#           https://xcoss.henan.gov.cn/typtfile/20251009/1613827be7d04b2aaa0cfc06b84f458e.pdf ,
+#           https://icapcarbonaction.com/en/ets/china-national-ets
+#   DB19    World Bank Doing Business 2020, Getting Electricity (SAIDI hours, SAIFI), via
+#           https://statranker.org/economy/construction-infrastructure/top-100-countries-by-electricity-reliability-and-outage-time/ (search)
+#   VOG     Vogtle 3 and 4: AP's $31 billion capital and financing (2024), 2 x 1,117 MW:
+#           https://www.power-eng.com/nuclear/georgia-nuclear-rebirth-arrives-7-years-late-17-billion-over-cost/ ,
+#           https://www.wrdw.com/2024/04/29/plant-vogtle-unit-4-enters-full-operation-serving-customers/
+#   CFPP    NuScale/UAMPS Carbon Free Power Project, cancelled 8 November 2023: $9.3 billion for
+#           462 MW ($20,139/kW), up from $5.3 billion:
+#           https://www.cooperative.com/programs-services/bts/Documents/Advisories/Advisory-NuScale-and-UAMPS-End-SMR-Project-CFPP-Dec-2023.pdf
+#   DOE24   DOE / Berkeley Lab, data centres 4.4% of US electricity in 2023, 6.7-12% by 2028:
+#           https://www.energy.gov/articles/doe-releases-new-report-evaluating-increase-electricity-demand-data-centers
+#   WIKI    English Wikipedia company articles (read 2026-11-14), for producers' capacity:
+#           https://en.wikipedia.org/wiki/<article> as named on each producer.
+#   CPI     BLS CPI-U, US city average, annual average (1982-84 = 100): https://www.bls.gov/cpi/
+
+cpi: # R (CPI): annual averages; 2025 A (preliminary)
+  2010: 218.056
+  2012: 229.594
+  2015: 237.017
+  2016: 240.007
+  2020: 258.811
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.0
+fx: # local currency units a US dollar, annual average (R: ECB reference rates for EUR, inverted; CNY and AUD R; 2025 A)
+  EUR: { 2010: 0.754, 2011: 0.718, 2012: 0.778, 2013: 0.753, 2014: 0.753, 2015: 0.901, 2016: 0.903, 2017: 0.885, 2018: 0.847, 2019: 0.893, 2020: 0.876, 2021: 0.846, 2022: 0.950, 2023: 0.925, 2024: 0.924, 2025: 0.885 }
+  CNY: { 2021: 6.45, 2022: 6.73, 2023: 7.08, 2024: 7.19, 2025: 7.20 }
+  AUD: { 2012: 0.966, 2013: 1.036, 2014: 1.109 }
+  USD: { 2010: 1.0 }
+
+# --- Plant types (46.2) ------------------------------------------------------------------------
+# capex: $/kW overnight by build year as [value, dollar year, tag]; linear between the year points
+#   (in 2010 dollars), held after the last point until the seeded learning curve (balance
+#   power.learning) takes over from 2026.
+# build_months: months from the order to completion before any overrun delay.
+# capacity_factor: the share of the year it generates at full power (dispatchable gas: its
+#   availability; it runs only when its marginal cost is under the grid price). By region for
+#   solar and wind.
+# fixed_om: $/kW-year [value, dollar year, tag] by year; variable_om: $/MWh; heat_rate: Btu/kWh
+#   (gas: fuel and carbon follow from it and the region's gas price; nuclear's fuel is fuel_mwh).
+# life_years: depreciation and the levelised cost's horizon.
+plant_types:
+  - key: gas
+    label: Gas combined cycle
+    capex:
+      2010: [1019, 2010, "D: EIA13 says its CC overnight cost fell 10% from the 2010 study: 917 / 0.9"]
+      2012: [917, 2012, "S: EIA13 conventional CC, 620 MW"]
+      2022: [1176, 2022, "S: AEO23 combined-cycle multi-shaft, 1,083 MW"]
+      2023: [921, 2023, "S: SL24 CC 1x1x1 single shaft, 627 MW"]
+      2025: [1400, 2025, "S: LAZ25 gas combined cycle $1,200-1,600, midpoint (turbine shortage)"]
+    build_months: [36, "S: AEO23 lead time 3 years (LAZ25 assumes 24 months)"]
+    capacity_factor: { all: [0.90, "S: LAZ25 high end 90% (availability; dispatch decides the rest)"] }
+    fixed_om:
+      2012: [13.17, 2012, "S: EIA13"]
+      2023: [15.51, 2023, "S: SL24"]
+    variable_om:
+      2012: [3.60, 2012, "S: EIA13"]
+      2023: [3.33, 2023, "S: SL24"]
+    heat_rate:
+      2012: [7050, "S: EIA13"]
+      2023: [6226, "S: SL24"]
+    carbon_kg_per_mmbtu: [52.91, "S: EIAC natural gas"]
+    life_years: [30, "S: LAZ25 facility life"]
+  - key: solar_storage
+    label: Solar with storage
+    capex: # 150 MWac of single-axis PV with a 50 MW, 4-hour battery (SL24's AC-coupled case)
+      2010: [7190, 2010, "D: EIA13 PV 150 MW $3,873 (2012$) was 22% below the 2010 study (/0.78), x 1.448, SL24's hybrid / PV ratio ($2,175 / $1,502)"]
+      2012: [5608, 2012, "D: EIA13 PV 150 MW $3,873 x 1.448 (SL24's hybrid / PV ratio)"]
+      2022: [1808, 2022, "S: AEO23 solar PV with storage"]
+      2023: [2175, 2023, "S: SL24 PV with single-axis tracking and AC-coupled battery"]
+      2025: [2175, 2023, "A: held at SL24; LBLS 2025 edition shows 2024 PV costs up 1%"]
+    build_months: [18, "D: between LAZ25's 15 months for utility solar and AEO23's 2-year lead"]
+    capacity_factor: # of the PV rating; the battery moves energy into the evening and firms the share below
+      north_america: [0.24, "S: LBLS sample median 24% (2020-2022)"]
+      europe: [0.13, "A: northern-European sun, below LBLS's least-sunny US regions (17%)"]
+      east_asia: [0.15, "A: no public series found"]
+      south_southeast_asia: [0.19, "A: no public series found"]
+      latin_america: [0.22, "A: no public series found"]
+      africa: [0.22, "A: no public series found"]
+      oceania: [0.21, "A: no public series found"]
+    fixed_om:
+      2022: [32.42, 2022, "S: AEO23"]
+      2023: [38.39, 2023, "S: SL24"]
+    variable_om:
+      2023: [0.0, 2023, "S: SL24"]
+    life_years: [30, "A: LAZ25 uses 35 for utility solar; batteries need replacing"]
+  - key: wind
+    label: Onshore wind
+    capex:
+      2010: [2370, 2015, "D: LBLW 2016: $1,590/kW in 2015, $780 below the 2009-2010 peak"]
+      2012: [2213, 2012, "S: EIA13 onshore wind 100 MW"]
+      2020: [1460, 2020, "S: LBLW 2021 edition"]
+      2023: [1489, 2023, "S: SL24 onshore wind, Great Plains 200 MW"]
+      2025: [2100, 2025, "S: LAZ25 onshore wind $1,900-2,300, midpoint"]
+    build_months: [24, "A: dossier 2 years; LAZ25 18 months"]
+    capacity_factor:
+      north_america: [0.40, "S: LBLW 2022: recently completed projects nearly 40%"]
+      europe: [0.27, "A: no public series found"]
+      east_asia: [0.25, "A: no public series found"]
+      south_southeast_asia: [0.25, "A: no public series found"]
+      latin_america: [0.40, "A: Brazil's north-east trade winds"]
+      africa: [0.33, "A: no public series found"]
+      oceania: [0.35, "A: no public series found"]
+    fixed_om:
+      2012: [39.55, 2012, "S: EIA13"]
+      2023: [33.06, 2023, "S: SL24"]
+    variable_om:
+      2023: [0.0, 2023, "S: SL24"]
+    life_years: [30, "S: LAZ25 onshore wind"]
+  - key: nuclear
+    label: Large nuclear
+    capex: # the published estimate (the quote); the hidden overrun is balance power.overrun.nuclear
+      2010: [5530, 2012, "A: EIA13's 2012 figure held back to 2010"]
+      2012: [5530, 2012, "S: EIA13 dual-unit nuclear 2,234 MW"]
+      2022: [7777, 2022, "S: AEO23 light water reactor, total overnight"]
+      2023: [7861, 2023, "S: SL24 2 x AP1000 brownfield"]
+    build_months: [84, "S: LAZ25 construction 84 months (AEO23 lead 6 years)"]
+    capacity_factor: { all: [0.92, "S: LAZ25 92-89%"] }
+    fixed_om:
+      2012: [93.28, 2012, "S: EIA13"]
+      2023: [156.20, 2023, "S: SL24"]
+    variable_om:
+      2012: [2.14, 2012, "S: EIA13"]
+      2023: [2.52, 2023, "S: SL24"]
+    fuel_mwh: [8.88, 2025, "D: LAZ25 fuel $0.85/MMBtu x heat rate 10,450"]
+    life_years: [60, "A: LAZ25 uses 70"]
+    reference: "S: VOG $31 billion / 2,234 MW = about $13,900/kW (2.2x its $14 billion original); LAZ25 $9,020-14,820"
+  - key: smr
+    label: Small modular reactor
+    capex:
+      2022: [8349, 2022, "S: AEO23 SMR total overnight, with its 1.10 technological optimism factor"]
+      2023: [8936, 2023, "S: SL24 6 x 80 MW SMR"]
+    build_months: [72, "S: AEO23 lead time 6 years"]
+    capacity_factor: { all: [0.92, "A: as large nuclear"] }
+    fixed_om:
+      2022: [106.92, 2022, "S: AEO23"]
+      2023: [121.99, 2023, "S: SL24"]
+    variable_om:
+      2022: [3.38, 2022, "S: AEO23"]
+      2023: [3.19, 2023, "S: SL24"]
+    fuel_mwh: [8.88, 2025, "A: as large nuclear"]
+    life_years: [60, "A: no public series found"]
+    era: [2030, 2036, "A: no Western commercial SMR by 2025; AEO23 first available 2028; CFPP cancelled 2023. The first orderable year is drawn uniformly in this range (stream power)"]
+    reference: "S: CFPP $9.3 billion / 462 MW = $20,139/kW (estimate up from $5.3 billion, +75%)"
+
+# --- Regions (46.2-46.5) -----------------------------------------------------------------------
+# gas: natural gas price $/MMBtu by year (nominal; converted to 2010 dollars with cpi).
+# generation: TWh a year (world supply of the region's power good, 41.2).
+# grid_intensity: tCO2 a MWh of the grid by year (OWID's Ember power-sector intensity / 1,000).
+# carbon: [scheme currency, {year: price a tonne}] from the scheme's start; empty = no price.
+# queue_months: median months from a grid-connection request to operation by year.
+# outages_a_year: grid interruptions a year a site sees (SAIFI), from power.start (2026).
+# demand_growth: the region's yearly load growth after 2025 (41.2's demand_growth).
+regions:
+  - key: north_america
+    gas: # S: HH
+      2010: 4.37
+      2011: 4.00
+      2012: 2.75
+      2013: 3.73
+      2014: 4.37
+      2015: 2.62
+      2016: 2.52
+      2017: 2.99
+      2018: 3.15
+      2019: 2.56
+      2020: 2.03
+      2021: 3.89
+      2022: 6.45
+      2023: 2.53
+      2024: 2.19
+      2025: 3.52
+    gas_tag: "S: HH annual Henry Hub spot"
+    generation: { 2010: 4997, 2015: 5055, 2020: 5025, 2024: 5383 }
+    generation_tag: "D: OWID US + Canada + Mexico (US 4,114 / 4,084 / 4,043 / 4,391; Canada 607 / 661 / 656 / 637; Mexico 276 / 310 / 326 / 355)"
+    grid_intensity: { 2010: 0.571, 2015: 0.505, 2020: 0.412, 2024: 0.384 }
+    grid_intensity_tag: "D: OWID United States (82% of the region's generation)"
+    carbon: [USD, {}]
+    carbon_tag: "A: no national price; California (2013, $10-38, CRS) and RGGI cover under a tenth of the region's generation and are inside the data's grid prices"
+    queue_months: { 2010: 24, 2015: 36, 2023: 60, 2024: 55, 2025: 55 }
+    queue_tag: "S: QU24 under 2 years for projects built 2000-2007 (2010 at 24, D), about 3 years by 2015 (dossier), nearly 5 years for projects built in 2023; QU25 55 months for 2024; 2025 held (A)"
+    outages_a_year: [1.3, "S: DB19 United States SAIFI 1.3 (SAIDI 1.2 hours)"]
+    demand_growth: [0.025, "D: DOE24 data centres from 4.4% of US electricity (2023) to 6.7-12% by 2028, on about 1% other growth"]
+  - key: europe
+    gas: # S: PINK 2022-2024 (TTF); R: PINK 2010-2021; A: 2025
+      2010: 8.29
+      2011: 10.52
+      2012: 11.47
+      2013: 11.79
+      2014: 10.05
+      2015: 6.82
+      2016: 4.56
+      2017: 5.72
+      2018: 7.68
+      2019: 4.80
+      2020: 3.24
+      2021: 16.12
+      2022: 40.34
+      2023: 13.11
+      2024: 10.96
+      2025: 12.0
+    gas_tag: "S: PINK Europe TTF 2022-2024; R: PINK 2010-2021; A: 2025 (TTF about EUR 35/MWh)"
+    generation: { 2010: 3328, 2015: 3209, 2020: 3063, 2024: 3057 }
+    generation_tag: "D: OWID EU27 + UK (2,946 + 382; 2,870 + 339; 2,753 + 310; 2,773 + 284); Russia, Ukraine, Norway and Switzerland excluded"
+    grid_intensity: { 2010: 0.369, 2015: 0.348, 2020: 0.261, 2024: 0.211 }
+    grid_intensity_tag: "S: OWID European Union (27)"
+    carbon:
+      - EUR
+      - 2010: 14.0
+        2011: 11.45
+        2012: 5.82
+        2013: 4.33
+        2014: 5.90
+        2015: 7.60
+        2016: 5.3
+        2017: 5.8
+        2018: 15.0
+        2019: 24.8
+        2020: 24.61
+        2021: 52.50
+        2022: 80.32
+        2023: 83.60
+        2024: 64.8
+        2025: 74.0
+    carbon_tag: "EU ETS from 2005. S: DEHST 2013 4.33, 2014 5.90, 2015 7.60, 2018 almost 15, 2020 24.61, 2021 52.50, 2022 80.32; EEA 2023 83.60, 2024 64.8; ESMA 2025 74; 2011 11.45 and 2012 5.82 (search, secondary); A: 2010 14 (Dec-2010 contract about 15), 2016 5.3, 2017 5.8, 2019 24.8 (April 2019 monthly 25.89, DEHST)"
+    queue_months: { 2010: 18, 2020: 36, 2025: 54 }
+    queue_tag: "A: no Europe-wide series; UK queue reform 2024-2025 and Dutch grid congestion (dossier) put waits near the US's by 2025"
+    outages_a_year: [0.5, "A: DB19 SAIDI 0.2 hours in Germany and France, 1.9-4.8 in Greece and Croatia"]
+    demand_growth: [0.01, "A: no public series found"]
+  - key: east_asia
+    gas: # Japan LNG cif: S PINK 2022 (18.43), 2023, 2024; R PINK 2010-2021; A 2025
+      2010: 10.85
+      2011: 14.73
+      2012: 16.55
+      2013: 16.04
+      2014: 16.04
+      2015: 10.31
+      2016: 6.94
+      2017: 8.10
+      2018: 10.07
+      2019: 10.56
+      2020: 8.31
+      2021: 10.76
+      2022: 18.43
+      2023: 14.39
+      2024: 12.04
+      2025: 12.0
+    gas_tag: "S: PINK Japan LNG 2022-2024; R: 2010-2021; A: 2025"
+    generation: { 2010: 6105, 2015: 7651, 2020: 9647, 2024: 12017 }
+    generation_tag: "D: OWID China + Japan + South Korea + Taiwan (4,207 + 1,156 + 495 + 247 in 2010; 10,087 + 1,016 + 625 + 289 in 2024)"
+    grid_intensity: { 2010: 0.662, 2015: 0.642, 2020: 0.590, 2024: 0.544 }
+    grid_intensity_tag: "D: OWID intensities of China, Japan, South Korea and Taiwan weighted by their generation"
+    carbon: [CNY, { 2021: 48, 2022: 55, 2023: 68, 2024: 90, 2025: 70.78 }]
+    carbon_tag: "China national ETS (power) from July 2021: S: CETS 2021 launch 48, 2023 average 68, 2025 average 70.78; A: 2022 55, 2024 90 (range 69-106). China is 84% of the region's generation; Korea's K-ETS and Japan's GX-ETS are left out (A)"
+    queue_months: { 2010: 12, 2025: 12 }
+    queue_tag: "A: state grid companies connect large loads in about a year"
+    outages_a_year: [0.2, "A: DB19 Japan about 1 minute SAIDI; Korea about 3.5 minutes (search, secondary)"]
+    demand_growth: [0.04, "A: no public series found"]
+  - key: south_southeast_asia
+    gas: # A: Japan LNG x 0.9 (imported LNG)
+      2010: 9.8
+      2015: 9.3
+      2020: 7.5
+      2022: 16.6
+      2024: 10.8
+      2025: 10.8
+    gas_tag: "A: east_asia's LNG x 0.9"
+    generation: { 2010: 1206, 2015: 1716, 2020: 2099, 2024: 2712 }
+    generation_tag: "D: OWID India + Indonesia + Vietnam (the three largest systems)"
+    grid_intensity: { 2010: 0.739, 2015: 0.751, 2020: 0.709, 2024: 0.705 }
+    grid_intensity_tag: "D: OWID India (75% of the region's generation)"
+    carbon: [USD, {}]
+    carbon_tag: "A: no price to 2025 (India's credit market and Indonesia's ETS have no binding price)"
+    queue_months: { 2010: 18, 2025: 24 }
+    queue_tag: "A: no public series found"
+    outages_a_year: [4.0, "A: no public series found"]
+    demand_growth: [0.05, "A: no public series found"]
+  - key: latin_america
+    gas: # A: Henry Hub x 2 (LNG imports and Argentine pipeline gas)
+      2010: 8.7
+      2015: 5.2
+      2020: 4.1
+      2022: 12.9
+      2024: 4.4
+      2025: 7.0
+    gas_tag: "A: north_america's Henry Hub x 2"
+    generation: { 2010: 1032, 2015: 1162, 2020: 1258, 2024: 1491 }
+    generation_tag: "D: OWID Brazil (516 / 581 / 629 / 746) / 0.5, Brazil's share of the region outside Mexico (A)"
+    grid_intensity: { 2010: 0.114, 2015: 0.189, 2020: 0.133, 2024: 0.106 }
+    grid_intensity_tag: "D: OWID Brazil, the region's largest system (mostly hydro)"
+    carbon: [USD, {}]
+    carbon_tag: "A: no ETS to 2025 (Chile's and Colombia's small carbon taxes left out)"
+    queue_months: { 2010: 24, 2025: 30 }
+    queue_tag: "A: no public series found"
+    outages_a_year: [4.0, "A: no public series found"]
+    demand_growth: [0.025, "A: no public series found"]
+  - key: africa
+    gas:
+      2010: 8.7
+      2015: 5.2
+      2020: 4.1
+      2022: 12.9
+      2024: 4.4
+      2025: 7.0
+    gas_tag: "A: north_america's Henry Hub x 2"
+    generation: { 2010: 865, 2015: 834, 2020: 802, 2024: 957 }
+    generation_tag: "D: 2024 Ember Global Electricity Review 2025, Africa 3.1% of 30,856 TWh (search); earlier years OWID South Africa (260 / 250 / 241) / 0.3 (A)"
+    grid_intensity: { 2010: 0.808, 2015: 0.791, 2020: 0.763, 2024: 0.717 }
+    grid_intensity_tag: "D: OWID South Africa"
+    carbon: [USD, {}]
+    carbon_tag: "A: South Africa's carbon tax (2019) is mostly offset by allowances for power; left out"
+    queue_months: { 2010: 24, 2025: 36 }
+    queue_tag: "A: Eskom's grid-capacity limits in the Cape provinces"
+    outages_a_year: [12.0, "A: South Africa's load-shedding stages 2022-2023 and weak grids elsewhere"]
+    demand_growth: [0.03, "A: no public series found"]
+  - key: oceania
+    gas:
+      2010: 8.7
+      2015: 5.2
+      2020: 4.1
+      2022: 12.9
+      2024: 4.4
+      2025: 7.0
+    gas_tag: "A: north_america's Henry Hub x 2 (east-coast Australian gas linked to LNG export prices)"
+    generation: { 2010: 295, 2015: 298, 2020: 309, 2024: 326 }
+    generation_tag: "D: OWID Australia (251 / 254 / 265 / 282) + New Zealand about 44 (A)"
+    grid_intensity: { 2010: 0.776, 2015: 0.730, 2020: 0.642, 2024: 0.554 }
+    grid_intensity_tag: "D: OWID Australia"
+    carbon: [AUD, { 2012: 11.5, 2013: 23.6, 2014: 12.1 }]
+    carbon_tag: "R: Australia's fixed carbon price, A$23.00 (2012-13) and A$24.15 (2013-14), July 2012 to July 2014; calendar years as the months in force"
+    queue_months: { 2010: 18, 2025: 30 }
+    queue_tag: "A: AEMO connection timelines lengthening with renewable build-out"
+    outages_a_year: [1.5, "A: the Australian Energy Regulator's about 200 minutes a customer a year (search)"]
+    demand_growth: [0.01, "A: no public series found"]
+
+# --- Facility draws (46.1) ---------------------------------------------------------------------
+# What each metered kind's energy is (ADR-0022 1). Data centres: MWh a live CU-month, set so that
+# MWh x the reference price (refining.power_cents_per_mwh) is the kind's old operating cost per CU
+# (its whole opex was x the power index before M32, 33.5). Fabs, refineries and mines already carry
+# MWh (fab.power_mwh, refining.recipes' mwh_per_unit, mining's energy_share); they are listed for the
+# screen's draw in MW. Assembly plants and offices are unmetered (their power is in fixed costs).
+draws:
+  data_centre_general: [3.676, "D: opex $250 a CU-month / $68 a MWh"]
+  data_centre_gpu: [2.941, "D: opex $200 a CU-month / $68 a MWh"]
+
+# --- Power producers (46.7, 41.1) --------------------------------------------------------------
+# Utilities and generators by region, with capacity in GW (2023-2025 as the source states) and a
+# mix by technology (shares). Their energy a year is capacity x 8,760 x the technology's fleet
+# capacity factor (fleet_capacity_factor); "other generators" in each region hold the rest of
+# the region's generation. personality and cost as chain_companies.yaml's (A).
+fleet_capacity_factor: # A: typical fleet capacity factors by technology
+  coal: 0.50
+  gas: 0.45
+  nuclear: 0.90
+  hydro: 0.40
+  wind: 0.33
+  solar: 0.22
+  other: 0.40
+producers:
+  - { key: nextera, name: NextEra Energy, country: us, gw: 73, personality: aggressive, cost: 0.35, mix: { gas: 0.28, nuclear: 0.08, wind: 0.40, solar: 0.24 }, tag: "S: WIKI NextEra_Energy 73 GW; about 36% fossil and non-renewable (March 2025); mix within that A" }
+  - { key: duke_energy, name: Duke Energy, country: us, gw: 58.2, personality: cost_leader, cost: 0.5, mix: { coal: 0.25, gas: 0.45, nuclear: 0.15, hydro: 0.05, solar: 0.10 }, tag: "S: WIKI Duke_Energy 58,200 MW; mix A" }
+  - { key: vistra, name: Vistra, country: us, gw: 39, personality: aggressive, cost: 0.45, mix: { gas: 0.65, coal: 0.15, nuclear: 0.17, solar: 0.03 }, tag: "S: WIKI Vistra_Corp. about 39 GW; mix A" }
+  - { key: constellation, name: Constellation Energy, country: us, gw: 34, personality: premium, cost: 0.3, mix: { nuclear: 0.56, gas: 0.36, hydro: 0.05, wind: 0.03 }, tag: "D: WIKI Constellation_Energy nuclear over 19,000 MW, fossil over 12,000, hydro 1,600, wind 1,400" }
+  - { key: edf, name: EDF, country: france, gw: 120, personality: premium, cost: 0.35, mix: { nuclear: 0.55, hydro: 0.2, gas: 0.1, wind: 0.1, solar: 0.05 }, tag: "S: WIKI Électricité_de_France at least 120 GW (France's 56 reactors 60.6 GW, D); mix A" }
+  - { key: enel, name: Enel, country: rest_of_eu, gw: 88, personality: aggressive, cost: 0.4, mix: { hydro: 0.3, wind: 0.2, solar: 0.15, gas: 0.25, coal: 0.1 }, tag: "S: WIKI Enel net installed 88 GW; mix A" }
+  - { key: iberdrola, name: Iberdrola, country: rest_of_eu, gw: 62, personality: aggressive, cost: 0.35, mix: { wind: 0.33, hydro: 0.23, solar: 0.11, gas: 0.28, nuclear: 0.05 }, tag: "S: WIKI Iberdrola 62,045 MW (2023), 41,246 MW renewable, onshore wind 20,202 MW; rest A" }
+  - { key: engie, name: Engie, country: france, gw: 104, personality: cost_leader, cost: 0.45, mix: { gas: 0.55, wind: 0.15, solar: 0.07, hydro: 0.05, coal: 0.07, nuclear: 0.06, other: 0.05 }, tag: "S: WIKI Engie 104.3 GW (2018; gas 55%, renewables 27%, coal 7%, nuclear 6%, other 5%; search summary)" }
+  - { key: chn_energy, name: CHN Energy, country: china, gw: 392, personality: aggressive, cost: 0.3, mix: { coal: 0.58, wind: 0.18, solar: 0.18, hydro: 0.06 }, tag: "S: ceic.com 392 GW at the end of 2025 (thermal 233, wind 74, solar 71.5, hydro 23 of 402 GW in June 2026)" }
+  - { key: jera, name: JERA, country: japan, gw: 67, personality: cost_leader, cost: 0.6, mix: { gas: 0.75, coal: 0.22, solar: 0.03 }, tag: "S: WIKI JERA about 67 GW including under construction; fossil 97% (FY2023); split A" }
+  - { key: kepco, name: KEPCO, country: south_korea, gw: 83.2, personality: cost_leader, cost: 0.5, mix: { nuclear: 0.33, coal: 0.4, gas: 0.25, hydro: 0.02 }, tag: "S: WIKI Korea_Electric_Power_Corporation 83,235 MW (December 2023), KHNP 30,054 MW nuclear and hydro; rest A" }
+  - { key: ntpc, name: NTPC, country: india, gw: 80.2, personality: aggressive, cost: 0.3, mix: { coal: 0.85, gas: 0.05, solar: 0.08, hydro: 0.02 }, tag: "S: WIKI NTPC_Limited 80,154.5 MW (October 2024); 26 coal and 7 gas stations; split A" }
+  - { key: eletrobras, name: Eletrobras, country: brazil, gw: 51, personality: cost_leader, cost: 0.25, mix: { hydro: 0.9, nuclear: 0.04, wind: 0.04, gas: 0.02 }, tag: "S: WIKI Eletrobras (Axia Energia) about 51,000 MW, mostly hydroelectric; split A" }
+  - { key: eskom, name: Eskom, country: south_africa, gw: 53.5, personality: fast_follower, cost: 0.65, mix: { coal: 0.85, nuclear: 0.04, gas: 0.06, hydro: 0.05 }, tag: "D: WIKI Eskom station tables sum to about 53,480 MW (search summary); split A" }
+  - { key: agl_energy, name: AGL Energy, country: australia, gw: 6.9, personality: cost_leader, cost: 0.55, mix: { coal: 0.7, gas: 0.22, hydro: 0.08 }, tag: "D: WIKI AGL_Energy plants (Bayswater 2,640, Loy Yang A 2,225, Torrens Island 1,280, Barker Inlet 210, hydro 571 MW; Liddell closed 2023)" }
+  - { key: origin_energy, name: Origin Energy, country: australia, gw: 6.0, personality: fast_follower, cost: 0.55, mix: { coal: 0.48, gas: 0.47, other: 0.05 }, tag: "S: WIKI Origin_Energy 6,010 MW (Eraring 2,880 MW coal)" }
+others: # the rest of each region's generators: cost position and country (A)
+  north_america: { cost: 0.5, country: us }
+  europe: { cost: 0.55, country: rest_of_eu }
+  east_asia: { cost: 0.45, country: china }
+  south_southeast_asia: { cost: 0.45, country: india }
+  latin_america: { cost: 0.45, country: brazil }
+  africa: { cost: 0.6, country: south_africa }
+  oceania: { cost: 0.5, country: australia }
+build_months: [36, "A: a producer's new capacity from a December decision (a gas plant, AEO23 3 years)"]

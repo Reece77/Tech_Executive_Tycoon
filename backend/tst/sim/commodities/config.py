@@ -28,6 +28,7 @@ from tst.sim.facilities.config import (
     _Frozen,
     month_to_turn,
 )
+from tst.sim.power.config import PowerExtraBalance
 
 LAST_YEAR = 2025  # tunable-exempt: the history runs to December 2025 (33.1)
 MEAN_YEARS = (2010, 2019)  # tunable-exempt: the index's base years, 2010-2019 (33.1)
@@ -320,7 +321,9 @@ class OfftakeBalance(_Frozen):
     breach: OfftakeBreach
 
 
-class PowerBalance(_Frozen):
+class PowerBalance(PowerExtraBalance):
+    """M17's regional power index (33.5) and M32's power.* keys (46; PowerExtraBalance)."""
+
     phi: float = Field(ge=0, lt=1)  # annual persistence of a region's log index after 2025
     vol: float = Field(ge=0)  # annual volatility of a region's log index after 2025
     base_region: str  # regions.yaml key held at 1.0 (North America)

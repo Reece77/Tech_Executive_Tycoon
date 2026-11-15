@@ -2077,3 +2077,17 @@ Past a retention window (`balance.yaml` `retention`) old history rows are summar
 | `other_id` | INTEGER | yes | The other company it links to (no FK). |
 | `region` | VARCHAR(64) | yes | The region it links to. |
 | `good` | VARCHAR(64) | yes | The good it links to. |
+
+## Power and owned plants (migration `0055_m32`, M32)
+
+Power (formulas.md 46, ADR-0022) lives in `power_record`, one row a record (`tst/db/power_io.py`). RNG stream `power` (60). Balance keys `power.*` (M17's `phi`, `vol`, `base_region`, `paid_by`, and M32's `start`, `grid_charge_share`, `export_discount`, `hours_a_month`, `history_months`, `plants.*`, `ppa.*`, `queue.*`, `carbon.*`, `outage.*`). Data: `power.yaml` (plant types' capex, build months, capacity factors, operating costs and heat rates by year; regions' gas prices, generation, grid carbon intensity, carbon prices, queue waits, outage rates and load growth; facility draws; power producers), every value with its source tag, money converted to 2010 dollars at load (`cpi`, `fx`). `save_meta.schema_version` is 55. Existing saves have no records: a company meters its energy from its next month. Never stored: a queued project's connection month (a monthly hazard), outage draws, and any region's path beyond the current year.
+
+### power_record
+
+Every power record, one row each, rewritten by collection when it changes.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position (keeps each collection's order). |
+| `kind` | VARCHAR | no | The collection: `plants` (`facility_id` its facility row, `company_id`, `type` a power.yaml plant type, `mw`, `estimate_cents` the quoted capex, `complete_turn` the true completion (hidden until it happens), `monthly_capex_cents`, `site_id` the facility it sits behind the meter of, `queue_id`, `connected`, `live_turn`, `outage_until` a forced outage's last month, `month` the last month: `turn`, `output_mwh`, `used_mwh`, `exported_mwh`, `curtailed_mwh`, `fuel_cents`, `om_cents`, `carbon_cents`, `grid_charge_cents`, `export_cents`, `displaced_cents`, `tonnes`, `offline`), `ppas` (`id`, `company_id`, `region`, `producer` a power.yaml producer key, `mwh_month`, `price_cents` a MWh, `signed_turn`, `start_turn`, `end_turn`, `status` `active`/`ended`/`terminated`, `used_mwh` and `paid_cents` last month's), `grid_queue` (`id`, `company_id`, `region`, `facility_id`, `kind` `plant`/`load`, `mw`, `joined_turn`, `median_months` the region's median wait when it joined, `connected_turn`), `power_months` (`company_id`, `region`, `turn`, `demand_mwh`, `plant_mwh`, `ppa_mwh`, `grid_mwh`, `exported_mwh`, `grid_price_cents` a MWh, `grid_cents` what facilities paid at the grid price, `net_cents` after settlement, `scope1_tonnes`, `scope2_tonnes`, `peak_mw`, `outage`, `wafers_lost`; `power.history_months` kept), `grid_outages` (`turn`, `region`), `region_paths` (`region`, `year`, `carbon` $/t in 2010 dollars, `intensity` tCO2 a MWh, `queue_months` the median wait; after 2025, the current year's only), `power_world` (one row: `learning` [[type, yearly capex decline], ...], `smr_year` the SMR era's first year, `unlocked` companies whose plant unlock was announced). |
+| `data` | JSON | no | The record's fields, as listed under `kind`. |
