@@ -5535,6 +5535,133 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/power": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Power
+         * @description Energy by region (demand, supply mix, cost, emissions), plants, contracts, queues,
+         *     outages that happened, plant types' published costs and the generators to contract with.
+         */
+        get: operations["getPower"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/plants/{facility_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Plant */
+        get: operations["getPowerPlant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/siting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Siting
+         * @description 46.6: each candidate city's grid price, queue wait, carbon price, outage rate and
+         *     behind-the-meter option for a data centre or fab of `kind` and `capacity`.
+         */
+        get: operations["getSiting"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/quote/plant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Quote Plant */
+        get: operations["quotePowerPlant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/quote/ppa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Quote Ppa */
+        get: operations["quotePpa"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/plants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Plant */
+        post: operations["buildPowerPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/power/ppas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Ppa */
+        post: operations["signPpa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -6722,6 +6849,19 @@ export interface components {
             project_id: number;
             /** Capacity T */
             capacity_t?: number | null;
+        };
+        /** BuildPlantIn */
+        BuildPlantIn: {
+            /** Plant Type */
+            plant_type: string;
+            /** Mw */
+            mw: number;
+            /** Region */
+            region: string;
+            /** City */
+            city?: string | null;
+            /** Site Id */
+            site_id?: number | null;
         };
         /** BuildPreviewOut */
         BuildPreviewOut: {
@@ -11072,6 +11212,15 @@ export interface components {
              */
             on?: boolean;
         };
+        /** GridOutageOut */
+        GridOutageOut: {
+            /** Turn */
+            turn: number;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+        };
         /** GroupActionOut */
         GroupActionOut: {
             group: components["schemas"]["GroupOut"];
@@ -15118,6 +15267,35 @@ export interface components {
             /** Units */
             units: number;
         };
+        /** PlantMonthOut */
+        PlantMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Output Mwh */
+            output_mwh: number;
+            /** Used Mwh */
+            used_mwh: number;
+            /** Exported Mwh */
+            exported_mwh: number;
+            /** Curtailed Mwh */
+            curtailed_mwh: number;
+            /** Fuel Cents */
+            fuel_cents: number;
+            /** Om Cents */
+            om_cents: number;
+            /** Carbon Cents */
+            carbon_cents: number;
+            /** Grid Charge Cents */
+            grid_charge_cents: number;
+            /** Export Cents */
+            export_cents: number;
+            /** Displaced Cents */
+            displaced_cents: number;
+            /** Tonnes */
+            tonnes: number;
+            /** Offline */
+            offline: boolean;
+        };
         /** PlantOut */
         PlantOut: {
             /** Facility Id */
@@ -15198,10 +15376,81 @@ export interface components {
             /** Sale Value Cents */
             sale_value_cents: number;
         };
+        /** PlantQuoteOut */
+        PlantQuoteOut: {
+            /** Type */
+            type: string;
+            /** Label */
+            label: string;
+            /** Mw */
+            mw: number;
+            /** Region */
+            region: string;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Monthly Capex Cents */
+            monthly_capex_cents: number;
+            /** Build Months */
+            build_months: number;
+            /** Ready Turn */
+            ready_turn: number;
+            /** Capacity Factor */
+            capacity_factor: number;
+            /** Mwh Year */
+            mwh_year: number;
+            /** Levelised Usd Mwh */
+            levelised_usd_mwh: number;
+            /** Intensity */
+            intensity: number;
+            /** Behind Meter */
+            behind_meter: boolean;
+            /** Queue Lo Months */
+            queue_lo_months: number | null;
+            /** Queue Hi Months */
+            queue_hi_months: number | null;
+            /** Allowed */
+            allowed: boolean;
+            /** Reason */
+            reason: string | null;
+        };
         /** PlantStaffIn */
         PlantStaffIn: {
             /** Unit Id */
             unit_id: number | null;
+        };
+        /** PlantTypeOut */
+        PlantTypeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Capex Kw Usd
+             * @description This year's published $/kW (2010 dollars)
+             */
+            capex_kw_usd: number;
+            /** Build Months */
+            build_months: number;
+            /**
+             * Available
+             * @description An SMR only from its era
+             */
+            available: boolean;
+            /** Life Years */
+            life_years: number;
+            /** Intensity */
+            intensity: number;
+            /**
+             * Levelised
+             * @description Region -> a new plant's $/MWh
+             */
+            levelised: {
+                [key: string]: number;
+            };
+            /** Capacity Factor */
+            capacity_factor: {
+                [key: string]: number;
+            };
         };
         /** PlatformOut */
         PlatformOut: {
@@ -15427,6 +15676,42 @@ export interface components {
              */
             product_costs_cents: number;
         };
+        /** PowerActionOut */
+        PowerActionOut: {
+            power: components["schemas"]["PowerScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** PowerMonthOut */
+        PowerMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Region */
+            region: string;
+            /** Demand Mwh */
+            demand_mwh: number;
+            /** Plant Mwh */
+            plant_mwh: number;
+            /** Ppa Mwh */
+            ppa_mwh: number;
+            /** Grid Mwh */
+            grid_mwh: number;
+            /** Exported Mwh */
+            exported_mwh: number;
+            /** Grid Cents */
+            grid_cents: number;
+            /** Net Cents */
+            net_cents: number;
+            /** Scope1 Tonnes */
+            scope1_tonnes: number;
+            /** Scope2 Tonnes */
+            scope2_tonnes: number;
+            /** Outage */
+            outage: boolean;
+            /** Wafers Lost */
+            wafers_lost: number;
+        };
         /** PowerOut */
         PowerOut: {
             /** Region */
@@ -15440,6 +15725,264 @@ export interface components {
             index: number;
             /** History */
             history: components["schemas"]["PricePointOut"][];
+        };
+        /** PowerPlantOut */
+        PowerPlantOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Type Label */
+            type_label: string;
+            /** Mw */
+            mw: number;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** City */
+            city: string | null;
+            /**
+             * Site Id
+             * @description Behind the meter of this facility
+             */
+            site_id: number | null;
+            /** Site Name */
+            site_name: string | null;
+            /**
+             * Status
+             * @description building, waiting for the grid, live, or offline
+             */
+            status: string;
+            /**
+             * Estimate Cents
+             * @description The quoted capex
+             */
+            estimate_cents: number;
+            /**
+             * Paid Cents
+             * @description Capex paid so far (an overrun shows as it is paid)
+             */
+            paid_cents: number;
+            /**
+             * Expected Turn
+             * @description The month it is expected to generate (it slips)
+             */
+            expected_turn: number;
+            /** Live Turn */
+            live_turn: number | null;
+            /** Queue Lo Months */
+            queue_lo_months: number | null;
+            /** Queue Hi Months */
+            queue_hi_months: number | null;
+            /**
+             * Queued Months
+             * @description Months in the grid queue so far
+             */
+            queued_months: number | null;
+            /** Capacity Factor */
+            capacity_factor: number;
+            /** Mwh Year */
+            mwh_year: number;
+            /**
+             * Levelised Usd Mwh
+             * @description A new plant of this type here, $/MWh
+             */
+            levelised_usd_mwh: number;
+            /** Intensity */
+            intensity: number;
+            /** Outage Until */
+            outage_until: number | null;
+            month: components["schemas"]["PlantMonthOut"] | null;
+        };
+        /** PowerRegionOut */
+        PowerRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Grid Usd Mwh
+             * @description This month's grid price, $/MWh (2010 dollars)
+             */
+            grid_usd_mwh: number;
+            /**
+             * Carbon Usd T
+             * @description This month's carbon price, $/t
+             */
+            carbon_usd_t: number;
+            /**
+             * Intensity
+             * @description The grid's tCO2 a MWh
+             */
+            intensity: number;
+            /**
+             * Queue Lo Months
+             * @description The grid queue's wait, low end of the range
+             */
+            queue_lo_months: number;
+            /** Queue Hi Months */
+            queue_hi_months: number;
+            /**
+             * Outages A Year
+             * @description Grid outages a year a site sees
+             */
+            outages_a_year: number;
+            /**
+             * Demand Mwh
+             * @description Last month's metered energy
+             */
+            demand_mwh: number;
+            /** Plant Mwh */
+            plant_mwh: number;
+            /** Ppa Mwh */
+            ppa_mwh: number;
+            /** Grid Mwh */
+            grid_mwh: number;
+            /** Exported Mwh */
+            exported_mwh: number;
+            /** Peak Mw */
+            peak_mw: number;
+            /**
+             * Grid Cents
+             * @description Last month's energy at the grid price
+             */
+            grid_cents: number;
+            /**
+             * Net Cents
+             * @description Last month's energy cost after plants, PPAs and exports
+             */
+            net_cents: number;
+            /** Scope1 Tonnes */
+            scope1_tonnes: number;
+            /** Scope2 Tonnes */
+            scope2_tonnes: number;
+            /** Cheapest Plant */
+            cheapest_plant: string;
+            /** Cheapest Usd Mwh */
+            cheapest_usd_mwh: number;
+        };
+        /** PowerScreenOut */
+        PowerScreenOut: {
+            /**
+             * Unlocked
+             * @description Owned plants (stage 4)
+             */
+            unlocked: boolean;
+            /** Min Stage */
+            min_stage: number;
+            /** Sizes Mw */
+            sizes_mw: number[];
+            /** Ppa Years */
+            ppa_years: number[];
+            /** Take Or Pay */
+            take_or_pay: number;
+            /** Regions */
+            regions: components["schemas"]["PowerRegionOut"][];
+            /** History */
+            history: components["schemas"]["PowerMonthOut"][];
+            /** Plants */
+            plants: components["schemas"]["PowerPlantOut"][];
+            /** Ppas */
+            ppas: components["schemas"]["PpaOut"][];
+            /** Queue */
+            queue: components["schemas"]["QueueOut"][];
+            /** Outages */
+            outages: components["schemas"]["GridOutageOut"][];
+            /** Plant Types */
+            plant_types: components["schemas"]["PlantTypeOut"][];
+            /** Sellers */
+            sellers: components["schemas"]["SellerOut"][];
+            /**
+             * Sites
+             * @description The company's data centres and fabs
+             */
+            sites: components["schemas"]["SiteOptionOut"][];
+            /** Scope1 Year */
+            scope1_year: number;
+            /** Scope2 Year */
+            scope2_year: number;
+        };
+        /** PowerSiteOut */
+        PowerSiteOut: {
+            /** City */
+            city: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Price Usd Mwh */
+            price_usd_mwh: number;
+            /** Queue Lo Months */
+            queue_lo_months: number | null;
+            /** Queue Hi Months */
+            queue_hi_months: number | null;
+            /** Carbon Usd T */
+            carbon_usd_t: number;
+            /** Outages A Year */
+            outages_a_year: number;
+            /** Behind Meter */
+            behind_meter: boolean;
+            /** Cheapest Plant */
+            cheapest_plant: string;
+            /** Cheapest Usd Mwh */
+            cheapest_usd_mwh: number;
+        };
+        /** PpaOut */
+        PpaOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /** Producer */
+            producer: string;
+            /** Producer Name */
+            producer_name: string;
+            /** Mwh Month */
+            mwh_month: number;
+            /** Price Usd Mwh */
+            price_usd_mwh: number;
+            /** Start Turn */
+            start_turn: number;
+            /** End Turn */
+            end_turn: number;
+            /** Status */
+            status: string;
+            /** Used Mwh */
+            used_mwh: number;
+            /** Paid Cents */
+            paid_cents: number;
+        };
+        /** PpaQuoteOut */
+        PpaQuoteOut: {
+            /** Region */
+            region: string;
+            /** Producer */
+            producer: string;
+            /** Producer Name */
+            producer_name: string;
+            /** Mwh Month */
+            mwh_month: number;
+            /** Years */
+            years: number;
+            /** Price Usd Mwh */
+            price_usd_mwh: number;
+            /** Forward Usd Mwh */
+            forward_usd_mwh: number;
+            /** Start Turn */
+            start_turn: number;
+            /** End Turn */
+            end_turn: number;
+            /** Monthly Cents */
+            monthly_cents: number;
+            /** Minimum Cents */
+            minimum_cents: number;
         };
         /** PresetOut */
         PresetOut: {
@@ -16330,6 +16873,29 @@ export interface components {
             ipo: components["schemas"]["IpoOut"] | null;
             stock: components["schemas"]["StockOut"] | null;
             ceo: components["schemas"]["CeoOut"];
+        };
+        /** QueueOut */
+        QueueOut: {
+            /** Id */
+            id: number;
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Region */
+            region: string;
+            /** Mw */
+            mw: number;
+            /** Joined Turn */
+            joined_turn: number;
+            /** Lo Months */
+            lo_months: number;
+            /** Hi Months */
+            hi_months: number;
+            /** Connected Turn */
+            connected_turn: number | null;
         };
         /** RaiseIn */
         RaiseIn: {
@@ -18070,6 +18636,17 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** SellerOut */
+        SellerOut: {
+            /** Region */
+            region: string;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Forward Usd Mwh */
+            forward_usd_mwh: number;
+        };
         /**
          * SeriesGuideOut
          * @description The next round and whether it is allowed (14.5).
@@ -18155,6 +18732,32 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** SignPpaIn */
+        SignPpaIn: {
+            /** Region */
+            region: string;
+            /** Producer */
+            producer: string;
+            /** Mwh Month */
+            mwh_month: number;
+            /** Years */
+            years: number;
+        };
+        /** SiteOptionOut */
+        SiteOptionOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Region */
+            region: string;
+            /** City */
+            city: string | null;
+            /** Mw */
+            mw: number;
+        };
         /** SiteOut */
         SiteOut: {
             /** Company Id */
@@ -18171,6 +18774,20 @@ export interface components {
             local_partner: boolean;
             /** Partner Needed */
             partner_needed: boolean;
+        };
+        /** SitingOut */
+        SitingOut: {
+            /** Kind */
+            kind: string;
+            /**
+             * Size
+             * @description The planned facility's capacity in its kind's unit
+             */
+            size: number;
+            /** Mw */
+            mw: number;
+            /** Sites */
+            sites: components["schemas"]["PowerSiteOut"][];
         };
         /** SkillMetaOut */
         SkillMetaOut: {
@@ -19228,7 +19845,7 @@ export interface components {
         TerminateIn: {
             /**
              * Contract
-             * @description commodity, refining, production, mine or foundry
+             * @description commodity, refining, production, mine, foundry or ppa
              */
             contract: string;
             /** Contract Id */
@@ -37958,6 +38575,434 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlatformsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPower: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PowerScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPowerPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PowerPlantOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getSiting: {
+        parameters: {
+            query: {
+                kind: string;
+                capacity: number;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quotePowerPlant: {
+        parameters: {
+            query: {
+                plant_type: string;
+                mw: number;
+                region: string;
+                site_id?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlantQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    quotePpa: {
+        parameters: {
+            query: {
+                region: string;
+                producer: string;
+                mwh_month: number;
+                years: number;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PpaQuoteOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildPowerPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildPlantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PowerActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signPpa: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignPpaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PowerActionOut"];
                 };
             };
             /** @description Bad Request */

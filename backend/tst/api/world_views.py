@@ -83,6 +83,8 @@ def _country(data: GameData, country: str) -> str:
 def unit(data: GameData, good: str) -> str:
     if good == FOUNDRY_GOOD:
         return "wafers"
+    if wd.is_power_good(good):  # M32 (46.7): a region's power
+        return "MWh"
     assert data.commodities is not None
     return data.commodities.good(good).volume_unit
 

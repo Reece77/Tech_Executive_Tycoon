@@ -60,6 +60,7 @@ def chain_file(data: GameData) -> ChainCompaniesFile:
 POWER_PREFIX: Final = "power_"  # tunable-exempt: a region's power good is power_<region>
 TWH: Final = 1_000_000  # tunable-exempt: MWh a TWh
 HOURS: Final = 8760  # tunable-exempt: hours a year
+MW_PER_GW: Final = 1000  # tunable-exempt: units
 
 
 def power_goods(data: GameData) -> tuple[str, ...]:
@@ -82,7 +83,7 @@ def producer_mwh(data: GameData, key: str) -> float:
     assert data.power is not None
     p = next(x for x in data.power.producers if x.key == key)
     cf = data.power.fleet_capacity_factor
-    return p.gw * 1000 * HOURS * sum(share * cf[tech] for tech, share in p.mix.items())
+    return p.gw * MW_PER_GW * HOURS * sum(share * cf[tech] for tech, share in p.mix.items())
 
 
 def producer_region(data: GameData, key: str) -> str:

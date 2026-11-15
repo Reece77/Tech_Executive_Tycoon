@@ -20,6 +20,8 @@ BASE_YEAR: Final = 2010  # tunable-exempt: the game's money is in 2010 dollars
 ALL: Final = "all"  # tunable-exempt: a capacity factor for every region
 FUELLED: Final = ("gas",)  # tunable-exempt: types whose fuel is the region's gas
 TECHS: Final = ("coal", "gas", "nuclear", "hydro", "wind", "solar", "other")
+KILO: Final = 1000  # tunable-exempt: Btu/kWh = MMBtu/MWh x 1,000; kg a tonne
+MIX_TOLERANCE: Final = 1e-6  # tunable-exempt: a producer's mix shares add to 1
 
 
 class _Frozen(BaseModel):
@@ -80,7 +82,7 @@ class PlantTypeDef(_Frozen):
 
     def intensity_at(self, year: float) -> float:
         """Direct tCO2 a MWh: heat rate (Btu/kWh = MMBtu/MWh x 1,000) x kg CO2 a MMBtu."""
-        return self.heat_rate_at(year) / 1000 * self.carbon_kg_per_mmbtu / 1000
+        return self.heat_rate_at(year) / KILO * self.carbon_kg_per_mmbtu / KILO
 
 
 class RegionPowerDef(_Frozen):
@@ -205,7 +207,7 @@ class PowerFile(_Frozen):
         if len(set(keys)) != len(keys):
             raise ValueError("power.yaml: duplicate producer keys")
         for p in self.producers:
-            if abs(sum(p.mix.values()) - 1) > 1e-6 or set(p.mix) - set(TECHS):
+            if abs(sum(p.mix.values()) - 1) > MIX_TOLERANCE or set(p.mix) - set(TECHS):
                 raise ValueError(f"power.yaml: producer {p.key}'s mix must be shares of {TECHS}")
         for r in self.regions:
             if not r.gas or not r.generation_twh or not r.grid_intensity or not r.queue_months:

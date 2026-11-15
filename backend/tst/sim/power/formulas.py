@@ -17,6 +17,7 @@ from typing import Final
 HOURS_A_YEAR: Final = 8760  # tunable-exempt: calendar
 KW_PER_MW: Final = 1000  # tunable-exempt: units
 CENTS: Final = 100  # tunable-exempt: cents a dollar
+HALF: Final = 0.5  # tunable-exempt: a median is where half have connected
 
 
 def crf(rate: float, years: int) -> float:
@@ -45,7 +46,7 @@ def levelised_usd_mwh(
 
 def gas_fuel_usd_mwh(heat_rate_btu_kwh: float, gas_usd_mmbtu: float) -> float:
     """Btu/kWh = MMBtu a MWh / 1,000 x 1,000: heat rate / 1,000 MMBtu a MWh x the gas price."""
-    return heat_rate_btu_kwh / 1000 * gas_usd_mmbtu
+    return heat_rate_btu_kwh / KW_PER_MW * gas_usd_mmbtu  # Btu/kWh / 1,000 = MMBtu a MWh
 
 
 def ppa_price(forward_cents: float, years: int, per_year: float, cap: float) -> float:
@@ -58,7 +59,12 @@ def learnt(capex: float, rate: float, years: float) -> float:
     return float(capex * (1 - rate) ** max(0.0, years))
 
 
-def irr(flows: Sequence[float], lo: float = -0.99, hi: float = 1.0, tol: float = 1e-7) -> float:
+def irr(
+    flows: Sequence[float],
+    lo: float = -0.99,  # tunable-exempt: the bisection's lowest rate
+    hi: float = 1.0,
+    tol: float = 1e-7,  # tunable-exempt: the bisection's tolerance
+) -> float:
     """The rate at which the flows' present value is zero (bisection; flows[0] the outlay).
     Returns `lo` if even `lo` leaves the value negative, `hi` if `hi` leaves it positive."""
 
@@ -84,7 +90,7 @@ def hazard(median_months: float, min_share: float) -> float:
     the median wait is the region's: after the minimum the remaining wait is geometric with a
     median of median x (1 - min_share)."""
     rest = max(1.0, median_months * (1 - min_share))
-    return float(1 - 0.5 ** (1 / rest))
+    return float(1 - HALF ** (1 / rest))
 
 
 def overrun(lo: float, hi: float, u: float, skew: float) -> float:

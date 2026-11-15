@@ -21,7 +21,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.models import Facility
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.power import demand, grid, plants
+from tst.sim.power import demand, draws, grid, plants
 from tst.sim.power import formulas as pf
 from tst.sim.power.config import interp
 from tst.sim.power.models import QueueEntry
@@ -113,7 +113,7 @@ def queue_month(
         if q.kind == "load" and btm_covers(state, f, balance, data):
             connected = True
         elif turn - q.joined_turn >= qb.min_share * q.median_months:
-            u = float(rng.stream(turn, "power", plants.QUEUE_FAMILY, q.id).random())
+            u = float(draws.gen(rng, turn, plants.QUEUE_FAMILY, q.id).random())
             connected = u < pf.hazard(q.median_months, qb.min_share)
         if connected:
             state = with_queue_entry(state, replace(q, connected_turn=turn))

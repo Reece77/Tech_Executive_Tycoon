@@ -20,7 +20,7 @@ from typing import Final
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
-from tst.sim.power import grid
+from tst.sim.power import draws, grid
 from tst.sim.power.config import interp
 from tst.sim.power.models import RegionPath
 from tst.sim.rng import RngFactory
@@ -86,8 +86,8 @@ def paths_month(state: GameState, rng: RngFactory, balance: Balance, data: GameD
         return state
     out = []
     for i, r in enumerate(data.power.regions):
-        gen = rng.stream(state.turn, "power", REGION_FAMILY, i, PATH_TAG)
-        z_c, z_i, z_q = (float(x) for x in gen.standard_normal(3))
+        gen = draws.gen(rng, state.turn, REGION_FAMILY, i, PATH_TAG)
+        z_c, z_i, z_q = (float(x) for x in gen.standard_normal(3))  # tunable-exempt: draws
         u, v = (float(x) for x in gen.random(2))
         prev = _previous(state, r.key, year, data)
         out.append(step_region(prev, year, (z_c, z_i, u, v, z_q), r.demand_growth, r.key, balance))

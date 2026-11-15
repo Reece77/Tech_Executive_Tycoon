@@ -95,5 +95,14 @@ METRICS: dict[str, MetricDef] = {
             "product",
             "Feature points from the platform's catalogue",
         ),
+        # v4 (M32): a region's energy cost and a plant's levelised cost
+        _m("energy_cost", "Energy cost", "cents", "region", "Last month's energy in the region"),
+        _m(
+            "plant_levelised",
+            "Levelised cost",
+            "cents",
+            "plant",
+            "A new plant of this type here, a MWh, at the published capex",
+        ),
     )
 }

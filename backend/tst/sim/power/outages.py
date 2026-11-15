@@ -20,7 +20,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.models import Facility
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.power import demand
+from tst.sim.power import demand, draws
 from tst.sim.power.models import GridOutage
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -57,7 +57,7 @@ def outages_month(
         return state, []
     hit: list[GridOutage] = []
     for i, r in enumerate(data.power.regions):
-        u = float(rng.stream(state.turn, "power", REGION_FAMILY, i, OUTAGE_TAG).random())
+        u = float(draws.gen(rng, state.turn, REGION_FAMILY, i, OUTAGE_TAG).random())
         if u < rate(state, r.key, balance, data) / MONTHS:
             hit.append(GridOutage(state.turn, r.key))
     keep = state.turn - balance.power.history_months

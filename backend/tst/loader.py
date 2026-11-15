@@ -1028,12 +1028,12 @@ def load_all(
         )
     if problems := fab_problems(balance, game_data):
         raise DataLoadError(f"{NODES_FILE}, {BALANCE_FILE} fab: " + "; ".join(problems))
+    if problems := power_problems(balance, game_data):
+        raise DataLoadError(f"{POWER_FILE}, {BALANCE_FILE} power: " + "; ".join(problems))
     if problems := world_problems(balance, game_data):
         raise DataLoadError(f"{CHAIN_FILE}, {BALANCE_FILE} world: " + "; ".join(problems))
     if problems := platforms_problems(balance, game_data):
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
-    if problems := power_problems(balance, game_data):
-        raise DataLoadError(f"{POWER_FILE}, {BALANCE_FILE} power: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

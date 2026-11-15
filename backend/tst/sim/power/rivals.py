@@ -26,6 +26,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.ledger import CASH, PPE, AccountCode, LedgerEntry, LedgerLine, account_balance
 from tst.sim.money import Cents
+from tst.sim.power import draws
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 from tst.sim.world import data as wd
@@ -117,7 +118,7 @@ def rivals_month(
                     good=good,
                 )
             )
-        u = float(rng.stream(turn, "power", RIVAL_FAMILY, rec.index).random())
+        u = float(draws.gen(rng, turn, RIVAL_FAMILY, rec.index).random())
         if u >= rb.plant_rate.get(personality, 0.0):
             continue
         size = rb.plant_share * load

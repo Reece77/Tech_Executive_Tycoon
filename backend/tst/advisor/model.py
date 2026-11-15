@@ -8,7 +8,17 @@ from typing import Literal
 
 type Unit = Literal["cents", "count", "points", "percent", "months"]
 type Scope = Literal[
-    "company", "product", "person", "account", "market", "project", "mine", "fab", "refinery"
+    "company",
+    "product",
+    "person",
+    "account",
+    "market",
+    "project",
+    "mine",
+    "fab",
+    "refinery",
+    "region",  # M32: a region's power
+    "plant",  # M32: a power plant
 ]
 
 

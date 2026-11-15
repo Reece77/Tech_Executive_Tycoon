@@ -23,8 +23,8 @@ from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.models import Facility
 from tst.sim.ledger import ACCUMULATED_DEPRECIATION, CASH, DEPRECIATION, PPE, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.power import draws, grid
 from tst.sim.power import formulas as pf
-from tst.sim.power import grid
 from tst.sim.power.config import FUELLED, PlantTypeDef, interp
 from tst.sim.power.models import Plant
 from tst.sim.rng import RngFactory
@@ -79,7 +79,7 @@ def marginal_usd_mwh(
 ) -> float:
     """A MWh's fuel, variable O&M and carbon this month (2010 dollars)."""
     t = type_def(data, key)
-    year = min(grid.year_of(state.turn), HISTORY_YEAR + 50)
+    year = grid.year_of(state.turn)
     out = t.variable_om_at(year)
     if key in FUELLED:
         out += pf.gas_fuel_usd_mwh(t.heat_rate_at(year), gas_usd(state, region, balance, data))
@@ -174,7 +174,7 @@ def quote(
 def draw_overrun(rng: RngFactory, turn: int, facility_id: int, key: str, balance: Balance) -> float:
     """The hidden overrun (stream power (1, facility) in the order month)."""
     span = balance.power.plants.overrun[key]
-    u = float(rng.stream(turn, "power", OVERRUN_FAMILY, facility_id).random())
+    u = float(draws.gen(rng, turn, OVERRUN_FAMILY, facility_id).random())
     return pf.overrun(span.lo, span.hi, u, balance.power.plants.overrun_skew)
 
 
@@ -267,7 +267,7 @@ def plants_month(
                 )
                 f = replace(f, depreciated_cents=total)
             if not plant.offline(turn) and plant.live_turn is not None and plant.live_turn < turn:
-                gen = rng.stream(turn, "power", OVERRUN_FAMILY, plant.facility_id)
+                gen = draws.gen(rng, turn, OVERRUN_FAMILY, plant.facility_id)
                 u, v = (float(x) for x in gen.random(2))
                 if u < pb.outages_a_year[plant.type] / MONTHS:
                     span = pb.outage_months[plant.type]
@@ -297,7 +297,7 @@ def draw_world(state: GameState, rng: RngFactory, balance: Balance, data: GameDa
     learning_: list[tuple[str, float]] = []
     smr_year = None
     for i, t in enumerate(data.power.plant_types):
-        gen = rng.stream(state.turn, "power", WORLD_FAMILY, i)
+        gen = draws.gen(rng, state.turn, WORLD_FAMILY, i)
         u, v = (float(x) for x in gen.random(2))
         span = balance.power.plants.learning[t.key]
         learning_.append((t.key, span.lo + (span.hi - span.lo) * u))

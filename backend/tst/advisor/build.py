@@ -858,6 +858,18 @@ class Builder:
 
         return v4.catalogue_effect(self, m, entity)
 
+    # --- v4 (M32): power ---------------------------------------------------------------------
+
+    def energy_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_power
+
+        return v4_power.energy_cost(self, m, entity)
+
+    def plant_levelised(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v4_power
+
+        return v4_power.plant_levelised(self, m, entity)
+
     # --- assembly -----------------------------------------------------------------------------
 
     def _out(

@@ -37,10 +37,9 @@ def _run(loaded: LoadedData, months: int, seed: int = 2) -> list[dict[tuple[int,
 
 def test_end_is_the_month_before_the_first_decisions_land(loaded: LoadedData) -> None:
     d = loaded.game_data
-    build = wd.chain_file(d).build_months
     assert pipeline.first_december(WORLD_START) == DECEMBER_2026
-    for g in wd.all_goods(d):
-        assert pipeline.end_turn(WORLD_START, g, d) == DECEMBER_2026 + build[g] - 1
+    for g in wd.all_goods(d):  # M32: power goods take power.yaml's build_months
+        assert pipeline.end_turn(WORLD_START, g, d) == DECEMBER_2026 + wd.build_months(d, g) - 1
 
 
 def test_foundries_follow_38_3_s_seeded_path_then_hold(loaded: LoadedData) -> None:

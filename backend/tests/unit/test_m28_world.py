@@ -33,7 +33,7 @@ def test_capacity_sums_match_world_supply_each_year(loaded: LoadedData) -> None:
                 caps = wd.capacities(d, good, turn)
                 assert sum(caps.values()) == pytest.approx(wd.world_capacity(d, good, turn))
                 assert all(v >= -1e-6 for v in caps.values()), (good, turn)
-                if good != FOUNDRY_GOOD:
+                if good != FOUNDRY_GOOD and not wd.is_power_good(good):  # M32: power.yaml's
                     world = d.chain_companies.supply_at(good, turn)  # type: ignore[union-attr]
                     for key, share in wd.named_shares(d, good, turn).items():
                         assert caps[key] == pytest.approx(share * world)
@@ -93,7 +93,7 @@ def test_a_december_s_decisions_are_seeded(loaded: LoadedData) -> None:
     capex = sum(e.lines[0].amount for e in first[1] if "capex" in e.memo)
     assert capex == sum(f.capex_cents for f in new)
     for f in new:
-        assert f.ready_turn == DECEMBER_2026 + d.chain_companies.build_months[f.good]  # type: ignore[union-attr]
+        assert f.ready_turn == DECEMBER_2026 + wd.build_months(d, f.good)  # M32: power goods too
     other = decide.decide(state, RngFactory(4), b, d, balances)
     sizes = sorted(f.capacity for f in new)
     assert sizes != sorted(f.capacity for f in other[0].world_facilities if f.status == "building")
