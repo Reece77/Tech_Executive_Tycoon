@@ -26,6 +26,7 @@ from tst.sim.markets_public.value import (
     fundamentals,
     growth_of,
 )
+from tst.sim.money import exact
 from tst.sim.press.moments import credibility, queue_moment
 from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
@@ -260,7 +261,7 @@ def _report(
     # M14b (29.3): the market expects the player's guidance at weight credibility / 100, and
     # the trend consensus for the rest.
     w = credibility(state, cid, balance) / pf.PCT if g.by_player else 1.0
-    expected = round(w * g.revenue_cents + (1 - w) * g.consensus_revenue_cents)
+    expected = round(exact(w) * g.revenue_cents + (1 - exact(w)) * g.consensus_revenue_cents)
     expected_margin = round(w * g.margin_bp + (1 - w) * g.consensus_margin_bp)
     s = pf.surprise(actual, expected)
     sm = pf.margin_surprise_points(margin, expected_margin)
