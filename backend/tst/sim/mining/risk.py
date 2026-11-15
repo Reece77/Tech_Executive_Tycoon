@@ -570,7 +570,7 @@ def rival_bids_month(
         if float(mining_draws(rng, turn, p.id, BID, PROJECT_BID).random()) >= rb.buy_monthly:
             continue
         buyer = xp.buyer_for(p, data, turn)
-        price = round(xp.sale_price_cents(state, p, balance, data) * rb.buy_share)
+        price = times(xp.sale_price_cents(state, p, balance, data), rb.buy_share)
         if buyer is None or price <= 0:
             continue
         bid = RivalBid(next_id, p.company_id, buyer[0], p.id, None, price, turn, turn + BID_MONTHS)
