@@ -36,7 +36,7 @@ from tst.sim.exploration.models import (
 )
 from tst.sim.ledger import CASH, DISPOSAL, EXPLORATION, LedgerBalances, LedgerEntry
 from tst.sim.log import inbox_item
-from tst.sim.money import format_money
+from tst.sim.money import exact, format_money, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
@@ -313,8 +313,8 @@ def _region_cost(data: GameData, region: str) -> float:
 
 def hole_cost_cents(project: Project, block: GeoBlock, balance: Balance, data: GameData) -> int:
     db = balance.exploration.drill
-    base = db.hole_base_cents + db.hole_per_m_cents * block.depth_m
-    return round(base * _region_cost(data, project.region))
+    base = db.hole_base_cents + db.hole_per_m_cents * exact(block.depth_m)
+    return round(base * exact(_region_cost(data, project.region)))
 
 
 def hole_cost_range_cents(region: str, balance: Balance, data: GameData) -> tuple[int, int]:
@@ -323,8 +323,8 @@ def hole_cost_range_cents(region: str, balance: Balance, data: GameData) -> tupl
     lo, hi = balance.geology.depth_m
     index = _region_cost(data, region)
     return (
-        round((db.hole_base_cents + db.hole_per_m_cents * lo) * index),
-        round((db.hole_base_cents + db.hole_per_m_cents * hi) * index),
+        round((db.hole_base_cents + db.hole_per_m_cents * exact(lo)) * exact(index)),
+        round((db.hole_base_cents + db.hole_per_m_cents * exact(hi)) * exact(index)),
     )
 
 
@@ -334,7 +334,7 @@ def stage_cost_cents(
     """A stage's cost and months (34.2)."""
     eb = balance.exploration
     if stage == "survey":
-        cost = round(eb.survey.cost_cents * _region_cost(data, project.region))
+        cost = times(eb.survey.cost_cents, _region_cost(data, project.region))
         return cost, eb.survey.months
     if stage == "sampling":
         return eb.sampling.cost_cents, eb.sampling.months
