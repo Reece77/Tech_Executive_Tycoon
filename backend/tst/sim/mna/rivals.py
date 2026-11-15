@@ -37,6 +37,7 @@ def rival_deals(
         if buyer.rival_key[:1] != (INCUMBENT_KEY,) or buyer.parent_id is not None:
             continue
         cash = account_balance(balances, buyer.id, CASH)
+        # money-exact: ratio
         if cash <= mb.rival_cash_months * deals.monthly_costs_cents(state, buyer.id, balance, data):
             continue
         gen = rng.stream(state.turn, "rival_mna", *stream_key(buyer.id, buyer.rival_key))
