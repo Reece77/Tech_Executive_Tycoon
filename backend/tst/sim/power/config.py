@@ -313,6 +313,17 @@ class OutageBalance(_Frozen):
     max_rate: float = Field(gt=0)  # a region's grid outages a year at most
 
 
+class RivalPowerBalance(_Frozen):
+    """Rivals' power (46.7): rival foundries' PPAs and plants each December from power.start."""
+
+    mwh_per_wafer: float = Field(gt=0)  # a rival foundry's energy a wafer start
+    ppa_share: dict[str, float]  # personality -> share of its load it keeps under PPAs
+    ppa_years: int = Field(ge=1)
+    plant_rate: dict[str, float]  # personality -> chance a December it builds a plant
+    plant_share: float = Field(ge=0, le=1)  # a rival plant's energy x its load
+    plant_cost: float = Field(ge=0, le=1)  # a rival plant's position on the cost curve
+
+
 class PowerExtraBalance(_Frozen):
     """M32's power.* keys (formulas.md 46)."""
 
@@ -325,4 +336,5 @@ class PowerExtraBalance(_Frozen):
     queue: QueueBalance
     carbon: CarbonBalance
     outage: OutageBalance
+    rivals: RivalPowerBalance
     history_months: int = Field(ge=1)  # months of a company's power history kept

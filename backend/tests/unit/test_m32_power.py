@@ -292,3 +292,66 @@ def test_settlement_posts_one_balanced_entry() -> None:
     entries = [e for e in res.ledger_entries if e.memo.startswith("Power settlement")]
     assert len(entries) == 1
     assert {line.account for line in entries[0].lines} <= {ENERGY, ENERGY_SALES, "1000_cash"}
+
+
+# --- 46.6: siting; 46.4: disclosure; 46.7: rivals ---------------------------------------------
+
+
+def test_siting_shows_each_city_with_a_queue_range_from_2026() -> None:
+    from tst.sim.power import siting
+
+    lg = m32.loaded()
+    b, d = lg.balance, lg.game_data
+    game = m32.game_at(1, ym_to_turn(2028, 1))
+    rows = siting.sites(game.state, PLAYER, "data_centre_gpu", 10_000, b, d)
+    assert {r.city for r in rows} == {c.key for c in d.cities}
+    na = next(r for r in rows if r.region == NA)
+    assert na.queue_lo is not None and na.queue_hi is not None and na.queue_lo < na.queue_hi
+    assert na.behind_meter and na.price_usd_mwh == pytest.approx(68.0, rel=0.3)
+    small = siting.sites(game.state, PLAYER, "data_centre_gpu", 100, b, d)
+    assert all(r.queue_lo is None for r in small)  # under the threshold: no queue
+    early = siting.sites(
+        m32.game_at(1, ym_to_turn(2020, 1), stage=3).state, PLAYER, "fab", 50_000, b, d
+    )
+    assert all(r.queue_lo is None and not r.behind_meter for r in early)
+
+
+def test_disclosure_hits_brands_above_the_threshold() -> None:
+    from tst.sim.power import disclosure
+    from tst.sim.power.models import PowerMonth
+
+    lg = m32.loaded()
+    b, d = lg.balance, lg.game_data
+    game = m32.game_at(1, ym_to_turn(2030, 12))
+    t = game.state.turn
+    months = tuple(
+        PowerMonth(PLAYER, NA, t - k, demand_mwh=1e5, grid_mwh=1e5, scope2_tonnes=40_000)
+        for k in range(12)
+    )
+    state = replace(game.state, power_months=months)
+    revenue = {(PLAYER, "4000_revenue_subscriptions"): -100 * 100_000_000}  # $100M this year
+    new, logs = disclosure.disclose(state, b, d, revenue)
+    assert any(item.kind == "emissions_report" for item in logs)
+    points = disclosure.brand_points(new, PLAYER)
+    assert points <= -b.power.carbon.brand_hit.lo  # 4,800 t a $1M against 200
+    clean = tuple(replace(m, plant_mwh=1e5, grid_mwh=0, scope2_tonnes=0) for m in months)
+    new, _ = disclosure.disclose(replace(game.state, power_months=clean), b, d, revenue)
+    assert disclosure.brand_points(new, PLAYER) == 1.0
+
+
+def test_power_producers_follow_every_earlier_chain_key() -> None:
+    from tst.sim.world import data as wd
+
+    lg = m32.loaded()
+    d = lg.game_data
+    with_power = wd.specs(d)
+    without = wd.specs(d.model_copy(update={"power": None}))
+    assert [s.key for s in with_power[: len(without)]] == [s.key for s in without]
+    rest = with_power[len(without) :]
+    assert all(all(wd.is_power_good(g) for g in s.goods) for s in rest)
+    assert {s.key for s in rest} >= {p.key for p in d.power.producers}  # type: ignore[union-attr]
+    # named producers and other generators sum to the region's generation
+    for good in wd.power_goods(d):
+        caps = wd.capacities(d, good, ym_to_turn(2025, 12))
+        assert sum(caps.values()) == pytest.approx(wd.world_capacity(d, good, ym_to_turn(2025, 12)))
+        assert all(v > 0 for v in caps.values())

@@ -153,3 +153,7 @@ class PowerWorld:
     learning: tuple[tuple[str, float], ...] = ()
     smr_year: int | None = None
     unlocked: tuple[int, ...] = ()  # companies whose plant one-off is done (stage 4 reached)
+    # 46.4: each company's revenue-account balance at the last December (the year's revenue for
+    # its emissions intensity), and its brand points from the last disclosure, until a month
+    revenue_marks: tuple[tuple[int, int], ...] = ()
+    brand: tuple[tuple[int, float, int], ...] = ()  # (company, consumer brand points, until)

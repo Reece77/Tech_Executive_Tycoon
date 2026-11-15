@@ -75,7 +75,7 @@ def decide(
         )
         for g in goods
     }
-    builds = wd.chain_file(data).build_months
+    builds = {g: wd.build_months(data, g) for g in goods}
     future = {g: wo.baseline(state, g, turn + builds[g], balance, data) * mean for g in goods}
     mandates = {m.company_id: m.kind for m in state.rival_mandates}
     facilities = list(state.world_facilities)
@@ -152,7 +152,7 @@ def decide(
             )
             cash -= capex
             site = next(f for f in mine if f.good == g)
-            ready = turn + wd.chain_file(data).build_months[g]
+            ready = turn + wd.build_months(data, g)
             facilities.append(
                 WorldFacility(
                     id=next_id,
@@ -186,6 +186,8 @@ def decide(
 
 
 def _unit(data: GameData, good: str) -> str:
+    if wd.is_power_good(good):
+        return "MWh"
     if data.commodities is None or good not in {g.key for g in data.commodities.goods}:
         return "wafers"
     return data.commodities.good(good).volume_unit

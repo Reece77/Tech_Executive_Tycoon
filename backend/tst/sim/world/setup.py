@@ -195,6 +195,8 @@ def _history_prices(
     """The last 12 months' prices (dollars a unit) for the first outlook."""
     if good == FOUNDRY_GOOD:
         return (wq.long_run_usd(state, good, balance, data),) * MONTHS
+    if wd.is_power_good(good):  # M32: this month's grid price (the index's months are M17's)
+        return (wq.price_usd(state, good, balance, data),) * MONTHS
     from tst.sim.commodities import commodity
 
     unit = wq.price_unit(good, balance, data)

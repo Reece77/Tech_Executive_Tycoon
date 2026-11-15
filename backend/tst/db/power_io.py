@@ -44,6 +44,8 @@ def _encode(record: Any) -> dict[str, Any]:
         data["month"] = to_data(record.month) if record.month is not None else None
     if isinstance(record, PowerWorld):
         data["learning"] = [list(x) for x in record.learning]
+        data["revenue_marks"] = [list(x) for x in record.revenue_marks]
+        data["brand"] = [list(x) for x in record.brand]
     return data
 
 
@@ -53,6 +55,8 @@ def _decode(kind: str, data: dict[str, Any]) -> Any:
             learning=tuple((str(k), float(v)) for k, v in data.get("learning", [])),
             smr_year=data.get("smr_year"),
             unlocked=tuple(int(x) for x in data.get("unlocked", [])),
+            revenue_marks=tuple((int(c), int(v)) for c, v in data.get("revenue_marks", [])),
+            brand=tuple((int(c), float(p), int(u)) for c, p, u in data.get("brand", [])),
         )
     cls = COLLECTIONS[kind]
     if cls is Plant:

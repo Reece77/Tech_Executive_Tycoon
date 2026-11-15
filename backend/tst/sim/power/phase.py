@@ -13,12 +13,14 @@ Without power.yaml loaded both return their input unchanged.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.ledger import LedgerEntry
+from tst.sim.ledger import AccountCode, LedgerEntry, apply_entries
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.power import outages, paths, plants, ppa, queues, settle
+from tst.sim.money import Cents
+from tst.sim.power import disclosure, outages, paths, plants, ppa, queues, settle
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -61,8 +63,14 @@ def power_start(
 
 
 def power_end(
-    state: GameState, balance: Balance, data: GameData
-) -> tuple[GameState, list[LedgerEntry]]:
+    state: GameState,
+    balance: Balance,
+    data: GameData,
+    balances: Mapping[tuple[int, AccountCode], Cents],
+) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
+    """The settlement, then (in December, from power.start) the year's disclosure (46.4)."""
     if data.power is None:
-        return state, []
-    return settle.settle(state, balance, data)
+        return state, [], []
+    state, entries = settle.settle(state, balance, data)
+    state, logs = disclosure.disclose(state, balance, data, apply_entries(balances, entries))
+    return state, entries, logs

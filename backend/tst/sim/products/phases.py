@@ -894,8 +894,12 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
         if bonus := brand_bonus(state, product.company_id, balance):  # Most innovative (30.4)
             target = min(float(SCORE_MAX), target + bonus)
         climate = consumer_brand(state, product.company_id, balance)  # M24 (32.3)
+        if state.power_world.brand:  # M32 (46.4): the last emissions disclosure
+            from tst.sim.power.disclosure import brand_points
+
+            climate += brand_points(state, product.company_id)
         if climate and any(s.segment == CONSUMER for s in state.segments_of(product.id)):
-            target = min(float(SCORE_MAX), target + climate)
+            target = max(0.0, min(float(SCORE_MAX), target + climate))
         state = with_product(state, replace(product, brand=f.next_brand(product.brand, target, pb)))
     year = turn_to_ym(state.turn)[0]
     # M28 (41.6): from 2026 a region's demand also moves with its cycle (none before)

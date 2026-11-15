@@ -14,6 +14,13 @@ from tst.sim.world.config import FOUNDRY_GOOD
 from tst.sim.world.models import ChainCompany, WorldFacility, WorldGood
 
 CENTS: Final = 100  # tunable-exempt: cents a dollar
+
+
+def wd_is_power(good: str) -> bool:
+    """M32 (46.7): a region's power good (tst.sim.world.data.POWER_PREFIX)."""
+    return good.startswith("power_")
+
+
 BANDS: Final = 3  # tunable-exempt: the cost curve's published thirds (41.9)
 
 
@@ -55,7 +62,11 @@ def foundry_wafer_usd(state: GameState, balance: Balance, data: GameData) -> flo
 
 
 def price_usd(state: GameState, good: str, balance: Balance, data: GameData) -> float:
-    """This month's price of a good in dollars a volume unit."""
+    """This month's price of a good in dollars a volume unit (M32: power in dollars a MWh)."""
+    if wd_is_power(good):
+        from tst.sim.power import grid
+
+        return grid.price_cents(state, good.removeprefix("power_"), balance, data) / CENTS
     if good == FOUNDRY_GOOD:
         return foundry_wafer_usd(state, balance, data)
     return commodity.deck(state, good, data, balance).current_usd
@@ -64,7 +75,13 @@ def price_usd(state: GameState, good: str, balance: Balance, data: GameData) -> 
 def long_run_usd(state: GameState, good: str, balance: Balance, data: GameData) -> float:
     """The long-run level in dollars a volume unit: M17's 2015-2025 median; a foundry wafer at
     this month's foundry wafer index (wafers get cheaper as nodes age: M12a's index), before
-    the foundry market's capacity factor."""
+    the foundry market's capacity factor. M32: a region's power at its 2010-2019 mean index."""
+    if wd_is_power(good):
+        region = good.removeprefix("power_")
+        ref = balance.refining.power_cents_per_mwh / CENTS
+        if data.power_history is None:
+            return ref
+        return ref * data.power_history.region(region).mean_2010_2019
     if good == FOUNDRY_GOOD:
         index = goods.index_now(state, FOUNDRY_GOOD, data) if data.components else 1.0
         return index * balance.world.foundry_wafer_cents / CENTS
@@ -76,7 +93,7 @@ def long_run_usd(state: GameState, good: str, balance: Balance, data: GameData) 
 
 def price_unit(good: str, balance: Balance, data: GameData) -> float:
     """Dollars a volume unit for one price unit (a foundry wafer's price is in dollars)."""
-    if good == FOUNDRY_GOOD:
+    if good == FOUNDRY_GOOD or wd_is_power(good):
         return 1.0
     assert data.commodities is not None
     return data.commodities.good(good).usd_per_unit

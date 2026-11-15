@@ -267,9 +267,12 @@ def power_month(
     prev = _start_from(state.good_month(key), last, turn)
     pb = balance.power
     if history.key == pb.base_region:
-        return replace(prev, turn=turn, index=1.0, base=1.0, allocation=1.0)
-    z = float(generator(rng, turn, POWER_KEY, i).standard_normal())
-    return step_power(prev, turn, z, history.mean_2010_2019, pb.phi, pb.vol)
+        month = replace(prev, turn=turn, index=1.0, base=1.0, allocation=1.0)
+    else:
+        z = float(generator(rng, turn, POWER_KEY, i).standard_normal())
+        month = step_power(prev, turn, z, history.mean_2010_2019, pb.phi, pb.vol)
+    # M32 (46.2): from 2026 x M28's balance factor for the region's power good (its producers)
+    return world_month(state, month)
 
 
 def months(

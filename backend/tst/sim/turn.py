@@ -337,8 +337,10 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     state, outage_logs = outages_month(ctx.state, ctx.rng, ctx.balance, ctx.data)  # M12a (22.5)
     ctx = replace(ctx, state=state).log(*outage_logs)
     # M32 (46.2, ADR-0022 3): the power settlement, after every facility posted its energy
-    state, power_entries = power.power_end(ctx.state, ctx.balance, ctx.data)
-    return replace(ctx, state=state).post(*power_entries)
+    state, power_entries, power_logs = power.power_end(
+        ctx.state, ctx.balance, ctx.data, ctx.balances
+    )
+    return replace(ctx, state=state).post(*power_entries).log(*power_logs)
 
 
 def financing(ctx: TurnContext) -> TurnContext:

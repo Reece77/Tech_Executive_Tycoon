@@ -735,3 +735,6 @@ templates:
   ppa_signed:
     title: "Power contract signed: {producer}"
     body: "{mwh} MWh a month in {region} at {price} a MWh, {start} to {end}. Unused energy still pays {take_or_pay} of the price."
+  emissions_report:
+    title: "Emissions report"
+    body: "This year: scope 1 (your plants) {scope1} t CO2, scope 2 (bought energy) {scope2} t, {intensity} t per $1M of revenue; {clean} of your energy from your own plants and contracts. {effect}"

@@ -77,10 +77,9 @@ def cycle_mean(state: GameState) -> float:
 def baseline(state: GameState, good: str, turn: int, balance: Balance, data: GameData) -> float:
     """The rest of the world's demand a year in `turn`: December 2025's output grown at the
     data's rate."""
-    chain = wd.chain_file(data)
     start = wd.world_capacity(data, good, nd.HISTORY_END) * balance.world.base_utilisation
     years = max(0, turn - nd.HISTORY_END) / MONTHS
-    return float(start * (1 + chain.demand_growth[good]) ** years)
+    return float(start * (1 + wd.demand_growth(data, good)) ** years)
 
 
 def player_flows(
@@ -111,6 +110,16 @@ def player_flows(
     slots = market.player_slots(state) * THOUSAND
     if slots:
         supply[FOUNDRY_GOOD] = supply.get(FOUNDRY_GOOD, 0.0) + slots
+    if state.power_months:  # M32 (46.7): the group's exports, and its grid and PPA energy
+        from tst.sim.group.assets import group_ids
+
+        group = group_ids(state)
+        for pm in state.power_months:
+            good = wd.POWER_PREFIX + pm.region
+            if pm.turn < last or pm.company_id not in group or good not in goods:
+                continue
+            supply[good] = supply.get(good, 0.0) + pm.exported_mwh
+            demand[good] = demand.get(good, 0.0) + pm.grid_mwh + pm.ppa_mwh
     out = {g: (supply.get(g, 0.0) * MONTHS, demand.get(g, 0.0) * MONTHS) for g in goods}
     for deal in state.commodity_deals:
         if deal.good in goods and deal.running(state.turn):

@@ -1747,6 +1747,21 @@ power:
     wafer_loss: 0.04 # a fab loses this share of the month's wafer starts in a grid outage (A: an outage scraps the wafers in process; M32 tuning for 46.8 target 5)
     tight_factor: 2.0 # a region's outage rate x (1 + this x (power factor - 1)) when its market is tight (46.5)
     max_rate: 24.0 # outages a year at most
+  rivals: # 46.7: rival foundries' power each December from power.start (A throughout)
+    mwh_per_wafer: 1.0 # a rival foundry's MWh a wafer start (fab.power_mwh near 28 nm; TSMC averages about 1.5)
+    ppa_share: # share of its load a foundry keeps under PPAs, by personality
+      aggressive: 0.3
+      premium: 0.6 # TSMC's RE100 pledge (dossier)
+      fast_follower: 0.2
+      cost_leader: 0.4
+    ppa_years: 10
+    plant_rate: # chance a December a foundry orders a plant of its own, by personality
+      aggressive: 0.15
+      premium: 0.1
+      fast_follower: 0.03
+      cost_leader: 0.08
+    plant_share: 0.2 # a rival plant's energy a year x the foundry's load
+    plant_cost: 0.3 # a rival's own plant sits low on its region's cost curve
 geology: # 34.1: blocks and hidden deposits at game start (M18, v3 lane B); per-region data in geology.yaml
   max_grade: 0.9 # a deposit's true grade at most (a fraction of ore)
   blocks_per_region: 60 # exploration blocks each region is divided into, 34.1

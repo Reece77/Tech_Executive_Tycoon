@@ -54,6 +54,11 @@ def world_month(
     state, e, n = decide.decide(state, rng, balance, data, running)
     post(e)
     items += n
+    from tst.sim.power import rivals as power_rivals  # M32 (46.7): rival foundries' power
+
+    state, e, n = power_rivals.rivals_month(state, rng, balance, data, running)
+    post(e)
+    items += n
     state, e, n = groups.groups_month(state, rng, balance, data, running)
     post(e)
     items += n
