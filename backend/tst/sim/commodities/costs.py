@@ -75,12 +75,15 @@ def unit_lines(
     own = goods.index_now(state, good, data)
     mix = mix_of(good, balance)
     if mix is None or data.commodity_history is None:
+        # money-exact: rate
         return own * base_cents, []
     lead = own if mix.mode == "scale" else 1.0
     lines = []
     for g, w in mix.weights.items():
         idx = commodity.index_now(state, g, data)
+        # money-exact: rate
         lines.append(CostLine(g, w, idx, base_cents * lead * mix.share * w * idx))
+    # money-exact: rate
     return own * base_cents * (1 - mix.share), lines
 
 
@@ -90,6 +93,7 @@ def use_per_unit(base_cents: float, mix: CommodityMix, data: GameData) -> dict[s
     out: dict[str, float] = {}
     for g, w in mix.weights.items():
         usd_mean = commodity.mean_of(data, g) * data.commodities.good(g).usd_per_unit
+        # money-exact: ratio
         out[g] = base_cents * mix.share * w / (usd_mean * CENTS)
     return out
 
