@@ -25789,7 +25789,8 @@
               "open",
               "acquired",
               "listed",
-              "failed"
+              "failed",
+              "sold"
             ],
             "title": "Status"
           },

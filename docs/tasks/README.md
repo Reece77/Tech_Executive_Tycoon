@@ -63,6 +63,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M32-power-and-owned-plants.md](M32-power-and-owned-plants.md) | Power and owned plants (v4, lane A, merges last): power demand for every facility, the grid, PPAs and owned gas, solar-storage, wind and nuclear plants from stage 4, grid queues, carbon prices, outages and siting (formulas §46, ADR-0022) | M28r, M30 |
 | [M33-semiconductor-equipment.md](M33-semiconductor-equipment.md) | Semiconductor equipment (v4, lane B, merges second): ASML as a company with DUV, low-NA and high-NA generations, an order queue with prepayment, controls on tools, and the player's own lithography programme (formulas §47) | M28r, M30 |
 | [M34-regulation-with-teeth.md](M34-regulation-with-teeth.md) | Regulation with teeth (v4, lane C, merges first): regulators, gatekeeper designations, duties, investigations with visible stages, fines and rare warned break-ups, for the player and rivals (formulas §48) | M31 |
+| [M36r-review-7-fixes.md](M36r-review-7-fixes.md) | Codex review 7 fixes, and a money-exactness guard (beside M32–M34, before M32): never-actions stay the founder's after approval, exact commitments and platform fees, a float-money audit and AST guard, group OS licences eliminate, the estate pays every taxable asset | M36, M30 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

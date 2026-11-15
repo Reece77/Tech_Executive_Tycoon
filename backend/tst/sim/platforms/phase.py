@@ -248,6 +248,7 @@ def _computed_users(state: GameState, balance: Balance, data: GameData) -> GameS
             licence = 1.0
             if not p.historical and p.licence_cents is not None:
                 lo, hi = pb.licence_factor
+                # money-exact: ratio
                 licence = pf.clamp((pb.android_licence_cents + 1) / (p.licence_cents + 1), lo, hi)
             weights[pid] = base * tilt * licence
         rest = pf.replace_users(rest, stay, weights, replacement)

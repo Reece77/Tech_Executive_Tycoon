@@ -24,6 +24,7 @@ from tst.sim.facilities.lifecycle import BuildQuote
 from tst.sim.group.assets import check_country, place
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
 from tst.sim.log import inbox_item
+from tst.sim.money import exact
 from tst.sim.refining import goods as rg
 from tst.sim.refining.draws import OVERRUN, refining_draws
 from tst.sim.refining.models import Refinery, RefiningDeal
@@ -157,7 +158,7 @@ def build_refinery(
         state, action.actor_id, "build_refinery", balance, cost=balance.refining.build_energy
     )
     facility_id = state.next_ids.facility
-    true_capex = round(q.capex_cents * (1 + overrun_share(state, facility_id, balance)))
+    true_capex = round(q.capex_cents * (1 + exact(overrun_share(state, facility_id, balance))))
     state, facility = lifecycle.order_build(state, company, replace(q, capex_cents=true_capex))
     if action.city is not None:
         facility = replace(facility, city=action.city)

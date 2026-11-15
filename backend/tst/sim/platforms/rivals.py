@@ -116,8 +116,10 @@ def _oems(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -
 
     best = max(
         own,
+        # money-exact: ratio
         key=lambda p: index(p.id) * (pb.android_licence_cents + 1) / ((p.licence_cents or 0) + 1),
     )
+    # money-exact: ratio
     score = index(best.id) * (pb.android_licence_cents + 1) / ((best.licence_cents or 0) + 1)
     runs = list(state.device_runs)
     for i, run in enumerate(runs):

@@ -6021,7 +6021,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "open" | "acquired" | "listed" | "failed";
+            status: "open" | "acquired" | "listed" | "failed" | "sold";
             /** Stake Pct */
             stake_pct: number;
             /** Cost Cents */

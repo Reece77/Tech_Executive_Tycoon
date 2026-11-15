@@ -23,6 +23,7 @@ prices (costs.py). A deal changes what the company pays for the volume it covers
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.calendar import format_turn
@@ -32,7 +33,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import CommodityRuleError
 from tst.sim.ledger import CASH, COGS, GENERAL_ADMIN, PREPAID, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents, times
+from tst.sim.money import Cents, exact, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_commodity_deal
 
@@ -48,8 +49,15 @@ def usd_per_unit(good: str, data: GameData) -> float:
 
 
 def value_cents(volume: float, price: float, good: str, data: GameData) -> float:
-    """Volume units at a price in the good's unit, in cents."""
+    """Volume units at a price in the good's unit, in cents (a display or a physical ratio;
+    money uses `exact_value`)."""
     return volume * price * usd_per_unit(good, data) * CENTS
+
+
+def exact_value(volume: float, price: float, good: str, data: GameData) -> Fraction:
+    """`value_cents` as an exact rational of the decimals it is made of, for money: rounded
+    half to even once where it is posted or quoted (ADR-0003; M36r, Codex review 7 finding 2)."""
+    return exact(volume) * exact(price) * exact(usd_per_unit(good, data)) * CENTS
 
 
 def spot_price(state: GameState, good: str, data: GameData, balance: Balance) -> float:
@@ -101,7 +109,7 @@ def contract_quote(
         price=price,
         floor=price,
         ceiling=price,
-        year_value_cents=round(value_cents(volume_year, price, good, data)),
+        year_value_cents=round(exact_value(volume_year, price, good, data)),
         prepaid_cents=0,
     )
 
@@ -138,7 +146,7 @@ def offtake_quote(
 
     ct.check_willing(state, supplier, s.name, balance)  # M23a: a broken contract is remembered
     price = ct.offered(state, supplier, spot_price(state, good, data, balance), balance)
-    year = round(value_cents(volume_year, price, good, data))
+    year = round(exact_value(volume_year, price, good, data))
     return DealQuote(
         good=good,
         supplier=supplier,
@@ -199,7 +207,7 @@ def name_of(deal: CommodityDeal, data: GameData) -> str:
 
 
 def _draw(
-    state: GameState, deal: CommodityDeal, cents: float
+    state: GameState, deal: CommodityDeal, cents: Fraction
 ) -> tuple[CommodityDeal, list[LedgerEntry]]:
     """Purchases funded from the prepayment: cash back against 1200 up to what is left."""
     amount = min(deal.prepaid_left_cents, round(cents))
@@ -221,8 +229,8 @@ def _close(
         months = deal.end_turn - deal.signed_turn + 1
         unused = max(0.0, deal.monthly_volume * months - deal.taken)
         charge = round(
-            value_cents(unused, deal.signing_price, deal.good, data)
-            * balance.commodity.contract_take_or_pay
+            exact_value(unused, deal.signing_price, deal.good, data)
+            * exact(balance.commodity.contract_take_or_pay)
         )
         if charge > 0:
             memo = f"Take-or-pay: unused {name_of(deal, data)}"
@@ -311,14 +319,16 @@ def settle_month(
         use[deal.good] = use.get(deal.good, 0.0) - taken
         spot = spot_price(state, deal.good, data, balance)
         price = deal.price_for(spot)
-        hedge = round(value_cents(taken, price - spot, deal.good, data))
+        hedge = round(
+            exact_value(taken, price, deal.good, data) - exact_value(taken, spot, deal.good, data)
+        )
         if hedge:
             memo = f"Cost of goods: {name_of(deal, data)} against spot"
             entries.append(_entry(state.turn, deal.company_id, memo, hedge, COGS, CASH))
         charge = 0
         if deal.kind == "offtake":
             short = max(0.0, top * deliverable - taken)
-            charge = round(value_cents(short, price, deal.good, data))
+            charge = round(exact_value(short, price, deal.good, data))
             if charge > 0:
                 memo = f"Take-or-pay: {name_of(deal, data)}"
                 entries.append(
@@ -333,7 +343,7 @@ def settle_month(
             charged_cents=deal.charged_cents + charge,
         )
         if deal.prepaid_left_cents > 0:
-            deal, more = _draw(state, deal, value_cents(taken, price, deal.good, data) + charge)
+            deal, more = _draw(state, deal, exact_value(taken, price, deal.good, data) + charge)
             entries += more
         state = with_commodity_deal(state, deal)
     return state, entries

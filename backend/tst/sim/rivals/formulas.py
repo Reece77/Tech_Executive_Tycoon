@@ -65,7 +65,9 @@ def pool_budget_cents(
 ) -> float:
     """Monthly cost budget = revenue x (1 - margin) - hosting - marketing, never below 0."""
     return max(
-        0.0, revenue_cents * (1 - margin_bp / BP_DENOMINATOR) - hosting_cents - marketing_cents
+        0.0,
+        # money-exact: estimate (a pool budget that sizes headcount; never posted)
+        revenue_cents * (1 - margin_bp / BP_DENOMINATOR) - hosting_cents - marketing_cents,
     )
 
 

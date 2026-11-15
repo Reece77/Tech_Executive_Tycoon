@@ -17,6 +17,7 @@ from tst.sim.founder.models import Foundation
 from tst.sim.founder.persona import raise_trait
 from tst.sim.geo.cities import hq_city
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.state import GameState, foundation_of, life_of, with_foundation, with_life
 
 FIRST_GRANTS_TEMPLATE: Final = "founder_first_grants"
@@ -97,6 +98,7 @@ def give(state: GameState, person_id: int, cents: int) -> tuple[GameState, LogIt
 def beloved_from(grant_cents: int, balance: Balance) -> float:
     """min(cap, k x log10(g / unit)), never negative (32.3)."""
     fb = balance.foundation
+    # money-exact: ratio
     dollars = grant_cents / CENTS_A_DOLLAR
     if dollars <= fb.beloved_unit_dollars:
         return 0.0
@@ -110,7 +112,7 @@ def grants_month(state: GameState, balance: Balance) -> tuple[GameState, list[Lo
     logs: list[LogItem] = []
     for foundation in state.foundations:
         pid = foundation.person_id
-        cents = round(personal.endowment_cents(state, pid) * balance.foundation.payout)
+        cents = times(personal.endowment_cents(state, pid), balance.foundation.payout)
         if cents <= 0:
             continue
         state = personal.grant(state, pid, cents)

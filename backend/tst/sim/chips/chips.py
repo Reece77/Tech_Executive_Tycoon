@@ -96,8 +96,10 @@ def index_wafer_cents(
     ch = balance.chips
     mult = ch.contract.foundries[foundry].price_mult
     if node is not None:
+        # money-exact: rate
         return fm.node_price_cents(state, node, balance, data) * mult
     index = costs.cost_index(state, ch.good, data, balance)  # M17: x the chip mix (33.2)
+    # money-exact: rate
     return ch.types[chip_type].wafer_cents * index * mult * fm.price_factor(state, balance, data)
 
 
@@ -121,6 +123,7 @@ def own_wafers(state: GameState, product_id: int) -> tuple[float, float, float]:
     volume = sum(s.volume for s in lots)
     if volume <= 0:
         return 0.0, 0.0, 0.0
+    # money-exact: rate
     price = sum(s.volume * s.unit_cents for s in lots) / volume
     return volume, price, lots[0].market_cents
 
@@ -142,6 +145,7 @@ def wafer_cents(state: GameState, product: Product, balance: Balance, data: Game
     contracts = wafer_contracts(state, product.id)
     wafers = sum(c.units for c in contracts)
     if wafers:
+        # money-exact: rate
         price = sum(c.units * c.price_cents for c in contracts) / wafers
         share = own_wafer_share(state, product.id)
         if share > 0:
@@ -178,6 +182,7 @@ def fab_unit_cents(
         return None
     starts = sum(s.starts for s in shares)
     chips_ = sum(s.starts * s.chips_per_start for s in shares)
+    # money-exact: rate
     cost = sum(s.starts * s.cost_per_start_cents for s in shares)
     if chips_ <= 0 or cost <= 0:
         return None
@@ -217,6 +222,7 @@ def posted_unit_cents(
     if not state.fabs:
         return contract
     share = fab_share_of_capacity(state, product, balance, data)
+    # money-exact: rate
     return share * balance.chips.packaging_cents + (1 - share) * contract
 
 

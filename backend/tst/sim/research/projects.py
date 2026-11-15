@@ -49,6 +49,7 @@ class Lab:
 
     @property
     def funded(self) -> float:
+        # money-exact: ratio
         return 1.0 if self.needed_cents <= 0 else min(1.0, self.budget_cents / self.needed_cents)
 
     @property
