@@ -52,7 +52,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.modes.rankings import hiring_bonus
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.executives import exec_energy_holders
 from tst.sim.org.morale import morale_terms
@@ -168,6 +168,7 @@ def resolve_offers(
         person = state.person(offer.candidate_id)
         company = state.company(offer.company_id)
         expectation = person.salary_expectation_cents or offer.salary_cents
+        # money-exact: ratio
         ratio = offer.salary_cents / expectation
         gen = rng.stream(state.turn, "hiring", offer.id)
         draw = float(gen.random())
@@ -338,8 +339,8 @@ def monthly_cost_lines(
             market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
         )
         salaries[None] += round(pool.headcount * pay)
-        benefits[None] += round(pool.headcount * benefits_cents(pay, balance.payroll))
-        office[None] += round(pool.headcount * balance.payroll.office_cost_per_head_cents)
+        benefits[None] += round(exact(pool.headcount) * benefits_cents(pay, balance.payroll))
+        office[None] += round(exact(pool.headcount) * balance.payroll.office_cost_per_head_cents)
         employees[None] += pool.headcount
     hosting, marketing = product_costs_by_division(state, company_id, data, balance)
     tools = balance.costs.tools_per_head_cents
