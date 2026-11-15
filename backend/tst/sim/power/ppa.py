@@ -105,10 +105,22 @@ def quote(
     )
 
 
-def regional_demand(state: GameState, company_id: int, region: str) -> float:
-    """The company's metered energy in `region` last month, MWh (its latest power month)."""
+def regional_demand(
+    state: GameState, company_id: int, region: str, balance: Balance, data: GameData
+) -> float:
+    """The company's energy in `region` a month, MWh: its latest power month, or its live data
+    centres' and fabs' draw at full capacity if that is more (a save before its first metered
+    month)."""
+    from tst.sim.power import demand
+
     months = [m for m in state.power_months if m.company_id == company_id and m.region == region]
-    return max(months, key=lambda m: m.turn).demand_mwh if months else 0.0
+    metered = max(months, key=lambda m: m.turn).demand_mwh if months else 0.0
+    draw = sum(
+        demand.facility_mw(state, f, balance, data)
+        for f in state.facilities
+        if f.company_id == company_id and f.region == region and f.status == "live"
+    )
+    return max(metered, draw * balance.power.hours_a_month)
 
 
 def next_id(state: GameState) -> int:

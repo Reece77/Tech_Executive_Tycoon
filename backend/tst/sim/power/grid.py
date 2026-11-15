@@ -37,9 +37,11 @@ def started(state: GameState, balance: Balance) -> bool:
 
 
 def path(state: GameState, region: str) -> RegionPath | None:
-    """The region's seeded path for this year (after 2025), if it has been drawn."""
+    """The region's seeded path for this year (after 2025): this year's once drawn, else the
+    latest earlier year's (a save between a year's turn and its first month's draw)."""
     year = year_of(state.turn)
-    return next((p for p in state.region_paths if p.region == region and p.year == year), None)
+    paths = [p for p in state.region_paths if p.region == region and p.year <= year]
+    return max(paths, key=lambda p: p.year) if paths else None
 
 
 def carbon_price(state: GameState, region: str, data: GameData) -> float:

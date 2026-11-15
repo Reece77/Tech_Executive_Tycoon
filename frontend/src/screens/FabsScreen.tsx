@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { Explain } from '../components/Explain';
 import { NodeTimeline } from '../components/NodeTimeline';
+import { SitingPanel } from '../components/SitingPanel';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { useOrg } from '../hooks/api';
 import {
@@ -374,6 +375,7 @@ function BuildPanel({
           {q.how && <Fact label="How to unlock" value={q.how} testId="fab-quote-how" />}
         </dl>
       )}
+      <SitingPanel saveId={saveId} kind="fab" size={size} region={region} />
     </Panel>
   );
 }

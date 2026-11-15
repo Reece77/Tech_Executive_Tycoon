@@ -35,6 +35,7 @@ import { SavesScreen } from './screens/SavesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WorldNewsScreen } from './screens/WorldNewsScreen';
 import { PlatformsScreen } from './screens/PlatformsScreen';
+import { PowerPlantScreen, PowerScreen } from './screens/PowerScreen';
 import { WorldScreen } from './screens/WorldScreen';
 
 export default function App() {
@@ -67,6 +68,8 @@ export default function App() {
           <Route path="products/exploration" element={<ExplorationScreen />} />
           <Route path="products/refineries" element={<RefineriesScreen />} />
           <Route path="products/fabs" element={<FabsScreen />} />
+          <Route path="products/power" element={<PowerScreen />} />
+          <Route path="products/power/plants/:facilityId" element={<PowerPlantScreen />} />
           <Route path="products/mines" element={<MinesScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />

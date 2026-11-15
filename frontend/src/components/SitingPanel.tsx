@@ -34,7 +34,9 @@ export function SitingPanel({
       <table className="tst-table" style={{ width: '100%' }}>
         <thead>
           <tr>
-            <th>Region</th>
+            <th>
+              <Term term="power.region">Region</Term>
+            </th>
             <th>
               <Term term="power.grid_price">$/MWh</Term>
             </th>

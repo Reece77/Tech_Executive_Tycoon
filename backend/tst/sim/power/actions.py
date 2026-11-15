@@ -191,7 +191,7 @@ def check_ppa(
         raise PowerRuleError("a power contract needs a volume")
     cap = max(
         balance.power.hours_a_month,
-        pb.max_share * ppa.regional_demand(state, company, action.region),
+        pb.max_share * ppa.regional_demand(state, company, action.region, balance, data),
     )
     if action.mwh_month > cap:
         raise PowerRuleError(f"at most {cap:,.0f} MWh a month: your demand there sets the size")

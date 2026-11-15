@@ -364,7 +364,7 @@ regions:
     carbon_tag: "A: South Africa's carbon tax (2019) is mostly offset by allowances for power; left out"
     queue_months: { 2010: 24, 2025: 36 }
     queue_tag: "A: Eskom's grid-capacity limits in the Cape provinces"
-    outages_a_year: [12.0, "A: South Africa's load-shedding stages 2022-2023 and weak grids elsewhere"]
+    outages_a_year: [6.0, "A: South Africa's load-shedding stages 2022-2023 and weak grids elsewhere (half a month: 12 a year would be every month)"]
     demand_growth: [0.03, "A: no public series found"]
   - key: oceania
     gas:
