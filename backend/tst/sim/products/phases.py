@@ -47,11 +47,10 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
     reach_stage,
+    with_all_markets,
     with_company,
-    with_market,
     with_product,
     with_product_segment,
-    with_regional_market,
     with_regional_segment,
     with_segments,
     with_unit,
@@ -902,21 +901,23 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     # M28 (41.6): from 2026 a region's demand also moves with its cycle (none before)
     cycling = bool(state.region_cycles)
     home = home_region_of(state, balance, data) if cycling else ""
+    grown = []
     for market in state.markets:  # base growth plus era boosts (M11, 21.4)
         g = eras.annual_growth(state, data, market.category, market.segment)
         growth = float((1 + g) ** (1 / MONTHS_PER_YEAR))
         if cycling:
             growth *= cycle_ratio(state, home, state.turn)
-        state = with_market(state, replace(market, addressable=market.addressable * growth))
+        grown.append(replace(market, addressable=market.addressable * growth))
+    grown_regional = []
     for rmarket in state.regional_markets:  # the category's growth x the region's (M9, 19.5)
         g = eras.annual_growth(state, data, rmarket.category, rmarket.segment)
         growth = regional_monthly_growth(data, rmarket.category, rmarket.region, year, g)
         if cycling:
             growth *= cycle_ratio(state, rmarket.region, state.turn)
-        state = with_regional_market(
-            state, replace(rmarket, addressable=rmarket.addressable * growth)
-        )
-    return state
+        grown_regional.append(replace(rmarket, addressable=rmarket.addressable * growth))
+    # M30: growth reads neither collection, so each is rebuilt once (an upsert a market
+    # copied the whole tuple); the upserts' result when keys are sorted and unique
+    return with_all_markets(state, grown, grown_regional)
 
 
 def regions_going_live(state: GameState, data: GameData) -> tuple[LogItem, ...]:

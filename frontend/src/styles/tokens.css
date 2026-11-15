@@ -117,6 +117,19 @@ a {
   overflow-x: auto;
 }
 
+/* M30: a long table scrolls inside its panel and renders only the rows near the view */
+.tst-table-wrap--windowed {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.tst-table-wrap--windowed thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--tst-panel);
+}
+
 .tst-table {
   width: 100%;
   border-collapse: collapse;

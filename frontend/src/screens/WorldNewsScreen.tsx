@@ -1,11 +1,18 @@
 // World news (M28, formulas.md 41.7): rivals' deals, capacity moves, mothballings, executive
 // moves and regional cycles, filterable by company, region, good and kind, each linked to its
 // companies. Filters live in the URL so a company page can link to its own news.
-import { Select } from '@mantine/core';
+import { Button, Select } from '@mantine/core';
+import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { CompanyLink } from '../components/CompanyLink';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
-import { useWorldNews, type CompanyRef, type NewsFilters, type WorldNews } from '../hooks/world';
+import {
+  NEWS_PAGE,
+  useWorldNews,
+  type CompanyRef,
+  type NewsFilters,
+  type WorldNews,
+} from '../hooks/world';
 
 const FILTERS = ['company', 'region', 'good', 'kind'] as const;
 
@@ -19,16 +26,26 @@ export function WorldNewsScreen() {
     good: params.get('good') ?? undefined,
     kind: params.get('kind') ?? undefined,
   };
-  const news = useWorldNews(saveId, filters);
+  const [limit, setLimit] = useState(NEWS_PAGE);
+  const news = useWorldNews(saveId, filters, limit);
   const set = (key: (typeof FILTERS)[number], value: string | null) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
     setParams(next, { replace: true });
+    setLimit(NEWS_PAGE);
   };
   if (news.error) return <LoadError title="Could not load World news" error={news.error} />;
   if (!news.data) return <Loading />;
-  return <WorldNewsBody saveId={saveId} n={news.data} params={params} onSet={set} />;
+  return (
+    <WorldNewsBody
+      saveId={saveId}
+      n={news.data}
+      params={params}
+      onSet={set}
+      onMore={() => setLimit(limit + NEWS_PAGE)}
+    />
+  );
 }
 
 export function WorldNewsBody({
@@ -36,11 +53,13 @@ export function WorldNewsBody({
   n,
   params,
   onSet,
+  onMore,
 }: {
   saveId: string;
   n: WorldNews;
   params: URLSearchParams;
   onSet: (key: (typeof FILTERS)[number], value: string | null) => void;
+  onMore?: () => void;
 }) {
   const options = {
     company: n.companies.map((c) => ({ value: String(c.company_id), label: c.name })),
@@ -84,7 +103,7 @@ export function WorldNewsBody({
           />
         ))}
       </div>
-      <Panel title={`${n.items.length} items`} testId="world-news">
+      <Panel title={`${n.total} items`} testId="world-news">
         {n.items.length === 0 ? (
           <p className="tst-muted" style={{ fontSize: 12 }}>
             Nothing yet.
@@ -111,6 +130,11 @@ export function WorldNewsBody({
               )}
             </div>
           ))
+        )}
+        {n.items.length < n.total && onMore && (
+          <Button size="xs" variant="subtle" mt={6} onClick={onMore} data-testid="news-more">
+            Show more ({n.total - n.items.length} older)
+          </Button>
         )}
       </Panel>
     </>

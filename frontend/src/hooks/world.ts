@@ -19,13 +19,15 @@ export type NewsFilters = {
   kind?: string;
 };
 
-export function useWorldNews(saveId: string, filters: NewsFilters) {
+export const NEWS_PAGE = 200; // items a page (M30: the server pages the feed)
+
+export function useWorldNews(saveId: string, filters: NewsFilters, limit = NEWS_PAGE) {
   return useQuery({
-    queryKey: ['saves', saveId, 'world-news', filters],
+    queryKey: ['saves', saveId, 'world-news', filters, limit],
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/world-news', {
-          params: { path: { save_id: saveId }, query: filters },
+          params: { path: { save_id: saveId }, query: { ...filters, limit } },
         }),
       ),
     placeholderData: keepPreviousData,

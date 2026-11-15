@@ -12,9 +12,11 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _path
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.world import ChainOut, WorldNewsOut
-from tst.db import repository
+from tst.db import history, repository
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["world"])
+NEWS_PAGE = 200  # tunable-exempt: World news items a page (M30)
+NEWS_PAGE_MAX = 1000  # tunable-exempt: the largest page a request may ask for
 
 
 @router.get(
@@ -28,12 +30,20 @@ def world_news(
     region: Annotated[str | None, Query(max_length=64)] = None,
     good: Annotated[str | None, Query(max_length=64)] = None,
     kind: Annotated[str | None, Query(max_length=32)] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=NEWS_PAGE_MAX)] = NEWS_PAGE,
 ) -> WorldNewsOut:
     """Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest
-    first, filtered by company, region, good and kind (41.7)."""
+    first, filtered by company, region, good and kind (41.7); older major items from the
+    archive after them (M30). One page: `offset`, `limit`."""
     with repository.read_session(_path(settings, save_id)) as session:
         state = repository.read_state(session)
-    return world_views.world_news(state, data, company, region, good, kind)
+        archived = repository.read_memo(
+            session, "world_news_archive", lambda: tuple(history.archived_news(session))
+        )
+    return world_views.world_news(
+        state, data, company, region, good, kind, archived=archived, offset=offset, limit=limit
+    )
 
 
 @router.get("/chain", response_model=ChainOut, responses=ERRORS, operation_id="getChain")

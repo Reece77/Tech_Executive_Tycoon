@@ -22,6 +22,7 @@ const ALB = { company_id: 47, name: 'Albemarle' };
 
 const NEWS: WorldNews = {
   started: true,
+  total: 1,
   items: [
     {
       news_id: 3,
@@ -109,5 +110,25 @@ describe('A chain company page', () => {
     expect(html).toContain('Middle');
     expect(html).toContain('estimated: private');
     expect(html).toContain('/game/s/competitors/world-news?company=47');
+  });
+});
+
+describe('World news paging (M30)', () => {
+  it('offers the older items the server holds', () => {
+    const html = renderToStaticMarkup(
+      <MantineProvider>
+        <MemoryRouter>
+          <WorldNewsBody
+            saveId="s"
+            n={{ ...NEWS, total: NEWS.items.length + 150 }}
+            params={new URLSearchParams()}
+            onSet={() => {}}
+            onMore={() => {}}
+          />
+        </MemoryRouter>
+      </MantineProvider>,
+    );
+    expect(html).toContain(`${NEWS.items.length + 150} items`);
+    expect(html).toContain('Show more (150 older)');
   });
 });

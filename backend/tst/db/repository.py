@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import gc
 import json
 import logging
 import os
 import re
 import threading
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
@@ -18,9 +19,9 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from tst.db import inbox, migrate
+from tst.db import history, inbox, migrate
 from tst.db import unlocks as unlocks_db
-from tst.db.backup import SAVE_SUFFIX, periodic_backup, slug_of
+from tst.db.backup import SAVE_SUFFIX, periodic_backup_in_background, slug_of
 from tst.db.events import has_pending, write_pending
 from tst.db.inbox import inbox_rows
 from tst.db.mappers import (
@@ -46,6 +47,7 @@ from tst.db.models import (
     PersonRow,
     ProductMonthRow,
     SaveMetaRow,
+    TurnLogSummaryRow,
     TurnSnapshotRow,
 )
 from tst.db.session import make_sessionmaker, shared_engine
@@ -312,6 +314,9 @@ def current_balances(session: Session, turn: int) -> Balances:
 
 _READ_LOCKS: dict[Path, threading.Lock] = {}
 LOADED_STATE = "tst_loaded_state"
+READ_MEMO = "tst_read_memo"
+# M30: per save, the file's stamp and what reads computed from it (read_memo)
+_READ_MEMOS: dict[str, tuple[tuple[int, int, int, int], dict[object, Any]]] = {}
 
 
 @contextmanager
@@ -326,12 +331,34 @@ def read_session(path: Path) -> Iterator[Session]:
     with lock:
         before = _stamp(path)
         cached = _recall(path)
+        key = str(path.resolve())
+        kept = _READ_MEMOS.get(key)
+        memo: dict[object, Any] = dict(kept[1]) if kept is not None and kept[0] == before else {}
         with open_session(path) as session:
             _cache(session, cached)
+            session.info[READ_MEMO] = memo
             yield session
             loaded = session.info.get(LOADED_STATE)
-        if cached is None and loaded is not None and _stamp(path) == before:
-            _LAST[str(path.resolve())] = (before, loaded, None)  # no commit landed meanwhile
+        if _stamp(path) == before:  # no commit landed meanwhile
+            _READ_MEMOS[key] = (before, memo)
+            if cached is None and loaded is not None:
+                _LAST[key] = (before, loaded, None)
+
+
+def read_memo[T](session: Session, key: object, compute: Callable[[], T]) -> T:
+    """A value read from the save, kept while the save's file is unchanged (M30): in a
+    `read_session` it is computed once until the next commit; elsewhere (a write) every time.
+    Callers must not change it. TST_STATE_CACHE_CHECK=1 recomputes it and compares."""
+    memo = session.info.get(READ_MEMO)
+    if memo is None:
+        return compute()
+    if key in memo:
+        value: T = memo[key]
+        if os.environ.get("TST_STATE_CACHE_CHECK") == "1" and compute() != value:
+            raise RuntimeError(f"the remembered read {key!r} differs from the save")
+        return value
+    value = memo[key] = compute()
+    return value
 
 
 def read_state(session: Session) -> GameState:
@@ -513,7 +540,12 @@ def ledger_balances(
     )
     if through_turn is not None:
         stmt = stmt.where(LedgerEntryRow.turn <= through_turn)
-    return {(cid, acc): int(total) for cid, acc, total in session.execute(stmt)}
+
+    def compute() -> dict[tuple[int, AccountCode], Cents]:
+        return {(cid, acc): int(total) for cid, acc, total in session.execute(stmt)}
+
+    # M30: a screen's reads sum the ledger once per commit, not once per request
+    return dict(read_memo(session, ("ledger_balances", through_turn), compute))
 
 
 def recent_snapshots(
@@ -770,6 +802,10 @@ def apply_turn_result(
             ),
         ],
     )
+    if has_table(session, TurnLogSummaryRow):  # M30: old history summarised, not lost
+        keep = data.balance.retention
+        history.archive_news(session, before.world_news, result.new_state.world_news, keep)
+        history.prune(session, played, keep)
     meta.current_turn = result.new_state.turn
     session.flush()
 
@@ -951,13 +987,24 @@ def _after_commit(
     backup = data.balance.backup
     try:
         if committed % backup.every_n_turns == 0:
-            periodic_backup(save_path, committed, backup.keep_periodic)
+            periodic_backup_in_background(save_path, committed, backup.keep_periodic)
         update_index(save_path, result.new_state)
     except Exception:
         log.exception("Turn %d committed; its backup or index update failed", committed)
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    settle_memory()
+
+
+def settle_memory() -> None:
+    """After a month (M30): collect the young generations, then freeze what is left alive so
+    the collector's full passes skip it. A 2039 save holds about 400,000 objects, and a full
+    pass over them took 150-500 ms at unpredictable moments inside the next turns. Objects
+    freed later still go by reference counting; only cyclic garbage that was alive at a freeze
+    stays (about 300 objects a month, measured). It never changes a result."""
+    gc.collect(1)
+    gc.freeze()
 
 
 # --- Player actions (ADR-0014) --------------------------------------------------------------

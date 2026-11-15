@@ -23,8 +23,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 53  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
-# M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053
+SCHEMA_VERSION = 54  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+# M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 
 
 class Base(DeclarativeBase):
@@ -75,6 +75,11 @@ class SaveMetaRow(Base):
     )
     next_rival_employment_id: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default="1000001"
+    )
+    # M30 (tst.db.history): the last month whose old history rows were thinned; null before
+    # any. Deferred, as display_name: earlier migrations read save_meta through these models.
+    history_pruned_through: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, deferred=True
     )
 
 
@@ -147,7 +152,10 @@ class LedgerLineRow(Base):
 
 class TurnSnapshotRow(Base):
     __tablename__ = "turn_snapshot"
-    __table_args__ = (Index("ux_turn_snapshot_turn_company", "turn", "company_id", unique=True),)
+    __table_args__ = (
+        Index("ux_turn_snapshot_turn_company", "turn", "company_id", unique=True),
+        Index("ix_turn_snapshot_company_turn", "company_id", "turn"),  # M30: a company's history
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     turn: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -186,6 +194,7 @@ class TurnLogRow(Base):
 
 class PersonRow(Base):
     __tablename__ = "person"
+    __table_args__ = (Index("ix_person_is_founder", "is_founder"),)  # M30: two of 20,000+
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     first_name: Mapped[str] = mapped_column(String(40), nullable=False)
@@ -333,7 +342,10 @@ class SearchRow(Base):
 
 class CandidateRow(Base):
     __tablename__ = "candidate"
-    __table_args__ = (Index("ix_candidate_company_status", "company_id", "status"),)
+    __table_args__ = (
+        Index("ix_candidate_company_status", "company_id", "status"),
+        Index("ix_candidate_status", "status"),  # M30: a load reads the open ones of 20,000+
+    )
 
     person_id: Mapped[int] = mapped_column(ForeignKey("person.id"), primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
@@ -2261,3 +2273,34 @@ class PlatformRecordRow(Base):
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- M30: old history summarised (migration 0054_m30, tst.db.history) ------------------------
+
+
+class TurnLogSummaryRow(Base):
+    """Log items past retention.log_months, counted a company, kind and year."""
+
+    __tablename__ = "turn_log_summary"
+    __table_args__ = (Index("ix_turn_log_summary_year", "year"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)  # 0 = 2010
+    company_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    kind: Mapped[str] = mapped_column(String(64), nullable=False)
+    items: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class WorldNewsArchiveRow(Base):
+    """A major World news item (retention.major_news) after it left the state's window."""
+
+    __tablename__ = "world_news_archive"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)  # the item's own id
+    turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    company_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    other_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    region: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    good: Mapped[str | None] = mapped_column(String(64), nullable=True)

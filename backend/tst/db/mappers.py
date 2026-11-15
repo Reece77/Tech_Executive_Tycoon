@@ -284,8 +284,68 @@ def decisions_to_row(turn: int, company_id: int, decisions: Decisions) -> Decisi
 # --- People (M1a) ---------------------------------------------------------------------------
 
 
+def person_values(person: Person) -> list[tuple[type[Base], list[dict[str, Any]]]]:
+    """The person row and its attribute rows as insert parameters, a table at a time, the
+    person first (children reference it). Positions keep data-file order (ADR-0013). M30:
+    plain rows, not an ORM object for each of a person's forty-odd attributes."""
+    pid = person.id
+    hidden = [*person.hidden.items, (PA_KEY, person.potential_ability)]
+    return [
+        (
+            PersonRow,
+            [
+                {
+                    "id": pid,
+                    "first_name": person.first_name,
+                    "last_name": person.last_name,
+                    "region": person.region,
+                    "birth_turn": person.birth_turn,
+                    "role": person.role,
+                    "level": person.level,
+                    "work_style": person.work_style,
+                    "salary_expectation_cents": person.salary_expectation_cents,
+                    "is_founder": person.is_founder,
+                }
+            ],
+        ),
+        (
+            PersonSkillRow,
+            [
+                {"person_id": pid, "skill": k, "position": i, "value": v}
+                for i, (k, v) in enumerate(person.skills.items)
+            ],
+        ),
+        (
+            PersonPersonalityRow,
+            [
+                {"person_id": pid, "trait": k, "position": i, "value": v}
+                for i, (k, v) in enumerate(person.personality.items)
+            ],
+        ),
+        (
+            PersonHiddenRow,
+            [
+                {"person_id": pid, "trait": k, "position": i, "value": v}
+                for i, (k, v) in enumerate(hidden)
+            ],
+        ),
+        (
+            PersonInterestRow,
+            [
+                {"person_id": pid, "interest": k, "position": i}
+                for i, k in enumerate(person.interests)
+            ],
+        ),
+        (
+            PersonTagRow,
+            [{"person_id": pid, "tag": k, "position": i} for i, k in enumerate(person.tags)],
+        ),
+    ]
+
+
 def person_to_rows(person: Person) -> list[Base]:
-    """The person row and its attribute rows. Positions keep data-file order (ADR-0013)."""
+    """The person row and its attribute rows. Positions keep data-file order (ADR-0013).
+    Migrations use it (0009); sync_state writes `person_values`, the same rows (M30)."""
     rows: list[Base] = [
         PersonRow(
             id=person.id,
@@ -389,7 +449,34 @@ def employment_from_row(row: EmploymentRow) -> Employment:
     )
 
 
+def reveal_values(
+    reveal: RevealState,
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None, list[dict[str, Any]]]:
+    """A reveal's rows as insert parameters (M30: plain rows, no ORM object per attribute
+    record): its person_reveal records (positions keep its order), its profile row, its tags."""
+    key = {"person_id": reveal.person_id, "observer_company_id": reveal.observer_company_id}
+    records = [
+        {
+            **key,
+            "attribute": attr,
+            "position": i,
+            "hw": rec.hw,
+            "center_offset": rec.offset,
+            "last_updated_turn": rec.last_updated_turn,
+        }
+        for i, (attr, rec) in enumerate(reveal.attributes)
+    ]
+    profile = (
+        None
+        if reveal.profile_revealed_turn is None
+        else {**key, "revealed_turn": reveal.profile_revealed_turn}
+    )
+    tags = [{**key, "tag": tag, "revealed_turn": turn} for tag, turn in reveal.revealed_tags]
+    return records, profile, tags
+
+
 def reveal_to_rows(reveal: RevealState) -> list[Base]:
+    """A reveal's rows as ORM objects: `reveal_values`, the parameters sync_state writes."""
     key = {"person_id": reveal.person_id, "observer_company_id": reveal.observer_company_id}
     rows: list[Base] = [
         PersonRevealRow(

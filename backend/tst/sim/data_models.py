@@ -114,6 +114,14 @@ class BackupBalance(_Frozen):
     keep_periodic: int = Field(gt=0)
 
 
+class RetentionBalance(_Frozen):
+    """Old history rows summarised, not lost (M30; tst.db.history)."""
+
+    snapshot_months: int = Field(gt=0)
+    log_months: int = Field(gt=0)
+    major_news: tuple[str, ...]
+
+
 class InboxBalance(_Frozen):
     """The inbox (formulas.md 23.1, M10b)."""
 
@@ -1286,6 +1294,7 @@ class Balance(_Frozen):
     scenario: dict[str, ScenarioBalance]
     difficulty: dict[str, DifficultyBalance]
     backup: BackupBalance
+    retention: RetentionBalance
     holiday: HolidayBalance  # M7b (formulas.md 17.1)
     exec_authority: ExecAuthorityBalance  # M10c (formulas.md 24)
     pitch: PitchBalance  # M13b (formulas.md 27.1)

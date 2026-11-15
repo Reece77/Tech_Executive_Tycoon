@@ -5162,7 +5162,8 @@ export interface paths {
         /**
          * World News
          * @description Rivals' deals, capacity moves, mothballings, executive moves and regional cycles, newest
-         *     first, filtered by company, region, good and kind (41.7).
+         *     first, filtered by company, region, good and kind (41.7); older major items from the
+         *     archive after them (M30). One page: `offset`, `limit`.
          */
         get: operations["getWorldNews"];
         put?: never;
@@ -19767,8 +19768,13 @@ export interface components {
              */
             started: boolean;
             /**
+             * Total
+             * @description Items after the filters, on every page (M30)
+             */
+            total: number;
+            /**
              * Items
-             * @description Newest first, after the filters
+             * @description Newest first, after the filters: one page (offset, limit)
              */
             items: components["schemas"]["WorldNewsItemOut"][];
             /**
@@ -36772,6 +36778,8 @@ export interface operations {
                 region?: string | null;
                 good?: string | null;
                 kind?: string | null;
+                offset?: number;
+                limit?: number;
             };
             header?: never;
             path: {

@@ -70,8 +70,10 @@ def build(save_dir: Path, name: str, turns: int, seed: int, strategy: str = STRA
             self._reload()
 
         def _reload(self) -> None:
-            with repository.open_session(self.path) as session:
-                self.state = repository.load_state(session)
+            # M30: the state and balances the last write remembered (repository's state
+            # cache; a full load when it has none), not a full load after every action
+            with repository.read_session(self.path) as session:
+                self.state = repository.read_state(session)
                 self.balances = dict(repository.current_balances(session, self.state.turn))
             self.written = self.state
 

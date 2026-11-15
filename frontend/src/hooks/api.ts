@@ -391,7 +391,6 @@ export function useInvalidateSave(saveId: string) {
 
 export function useAdvance(saveId: string) {
   const client = useQueryClient();
-  const invalidate = useInvalidateSave(saveId);
   return useMutation({
     mutationFn: async () => unwrap(await api.POST('/api/saves/{save_id}/advance', path(saveId))),
     // Not awaited: the new month shows at once and Continue is ready again while the
@@ -399,7 +398,12 @@ export function useAdvance(saveId: string) {
     onSuccess: (overview) => {
       client.setQueryData(keys.overview(saveId), overview);
       void client.invalidateQueries({ queryKey: keys.saves, exact: true });
-      void invalidate();
+      // M30: every other query of the save, not the Overview the response just gave
+      const fresh = keys.overview(saveId);
+      void client.invalidateQueries({
+        queryKey: keys.save(saveId),
+        predicate: (q) => q.queryKey.length !== fresh.length || q.queryKey[2] !== fresh[2],
+      });
     },
   });
 }
