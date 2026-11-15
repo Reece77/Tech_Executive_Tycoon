@@ -184,7 +184,7 @@ def _terms(
             if c.kind == "wafer"
             else balance.hardware.contract.take_or_pay
         )
-        value = Fraction(c.units * c.price_millicents, MILLICENTS_PER_CENT)
+        value = Fraction(c.price_millicents, MILLICENTS_PER_CENT) * exact(c.units)
         return c.company_id, c.supplier, c.end_turn, production_share * value, 0
     if contract == "mine":
         m = next((x for x in state.mine_deals if x.id == contract_id), None)
