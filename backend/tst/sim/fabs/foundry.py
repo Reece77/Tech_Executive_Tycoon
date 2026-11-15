@@ -68,6 +68,7 @@ def running(state: GameState, fab_id: int) -> list[FoundryContract]:
 
 
 def slot_price_cents(state: GameState, fab: Fab, balance: Balance, data: GameData) -> float:
+    # money-exact: rate
     return fm.node_price_cents(state, fab.node, balance, data) * balance.fab.slot.discount
 
 
@@ -93,6 +94,7 @@ def sign(
     if action.monthly_starts <= 0 or action.price_cents <= 0:
         raise FabRuleError("a foundry contract needs starts and a price")
     ct.check_willing(state, action.customer, action.customer, balance)
+    # money-exact: rate
     ceiling = slot_price_cents(state, fab, balance, data) * fb.max_price
     ceiling /= float(ct.premium(state, action.customer, balance))
     if action.price_cents > ceiling * (1 + EPS):
