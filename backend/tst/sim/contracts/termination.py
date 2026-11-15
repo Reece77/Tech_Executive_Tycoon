@@ -165,7 +165,7 @@ def _terms(
             if d.kind == "offtake"
             else balance.commodity.contract_take_or_pay
         )
-        value = exact(offtake.value_cents(d.monthly_volume, d.signing_price, d.good, data))
+        value = offtake.exact_value(d.volume_year, d.signing_price, d.good, data) / MONTHS
         who = d.supplier or f"traders:{d.good}"
         return d.company_id, who, d.end_turn, commodity_share * value, d.prepaid_left_cents
     if contract == "refining":
