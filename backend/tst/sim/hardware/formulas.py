@@ -12,6 +12,7 @@ SKILL_MAX = 20.0  # tunable-exempt: the attribute scale
 
 def bom_cents(base_cents: int, index: float) -> float:
     """bom = bom_base x the good's index (26.2)."""
+    # money-exact: rate
     return base_cents * index
 
 
@@ -52,6 +53,7 @@ def plant_cost_per_good_unit(
         return None
     depreciation = ff.monthly_depreciation_cents(capex_cents, life_months)
     del capacity  # the capacity sets capex; kept for the signature's readability
+    # money-exact: rate
     return (fixed_cents + variable_cents * used + depreciation) / good
 
 
