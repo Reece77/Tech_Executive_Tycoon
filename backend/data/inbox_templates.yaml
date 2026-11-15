@@ -522,6 +522,30 @@ templates:
   fab_upgraded:
     title: "Fab converted: {fab}"
     body: "{fab} now runs {node}. Yield restarts at {yield_pct} and learns again."
+  tools_ordered: # M33 (47.2)
+    title: "Tools ordered: {tools} {generation}"
+    body: "{tools} {generation} tools join {supplier}'s queue at {price_cents} each{prepaid}. The last should arrive in {lead}; the place you hold depends on your history with {supplier} and on what rivals order."
+  tools_delivered: # M33 (47.2)
+    title: "Tools delivered: {tools} {generation}"
+    body: "{supplier} delivered {tools} {generation} tools{target}. {left}"
+  tools_order_lost: # M33 (47.3)
+    title: "Tool order lost: {generation}"
+    body: "{rule}: {supplier} cannot ship the {left} {generation} tools still on order{target}. The place in the queue is gone."
+  tools_prepaid: # M33 (47.2)
+    title: "Tool order prepaid: {generation}"
+    body: "You prepaid {cents} on {tools} {generation} tools: {supplier} moves the order up its queue. The prepayment is not refunded."
+  litho_started: # M33 (47.4)
+    title: "Lithography programme started: {stage}"
+    body: "The {stage} programme starts at {funding} of its reference budget ({cents} a month). Its estimate is {estimate_cents} over {months}; programmes like it often run over, and some never work."
+  litho_succeeded: # M33 (47.4)
+    title: "Lithography programme works: {stage}"
+    body: "Our first {stage} tools run at {throughput} of ASML's throughput and cost {yield_cut} yield points at first; both improve as more are installed. The line makes {per_year} a year."
+  litho_failed: # M33 (47.4)
+    title: "Lithography programme failed: {stage}"
+    body: "After {months} and {spent_cents}, the {stage} prototype does not work. The money is spent; a new attempt would start again."
+  tools_sold: # M33 (47.4)
+    title: "Own tools sold: {tools} {generation}"
+    body: "Rival foundries bought {tools} of our {generation} tools for {cents}: ASML's queue is long and our price is lower. Expect ASML to respond."
   refinery_ordered:
     title: "Plant ordered: {plant}"
     body: "{units} in {region}. Estimated capex {capex_cents}, built over {months} months (ready {ready}). It needs {staff} process engineers."

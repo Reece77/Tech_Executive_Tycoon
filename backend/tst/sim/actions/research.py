@@ -93,6 +93,14 @@ def start_project(
     one project, never both (21.3, 11.3)."""
     company = acting_company(state, action.actor_id)
     known_domain(data, action.domain)
+    if action.domain == balance.equipment.programme.domain:  # M33 (47.4)
+        from tst.sim.equipment.programme import has_chip_and_fab
+
+        pb = balance.equipment.programme
+        if state.company(company).stage < pb.min_stage or not has_chip_and_fab(state, company):
+            raise ResearchRuleError(
+                f"lithography research opens at stage {pb.min_stage} with a chip product and a fab"
+            )
     unit = active_unit(state, company, action.unit_id)
     if unit.product_id is not None:
         product = state.product(unit.product_id)

@@ -16,6 +16,15 @@ from typing import Any, Final
 from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
+from tst.sim.equipment.models import (
+    Delivery,
+    FabTools,
+    OwnTools,
+    Programme,
+    SupplierYear,
+    ToolOrder,
+    ToolStock,
+)
 from tst.sim.errors import GroupDataError
 from tst.sim.events.models import GameEvent, Modifier, QueuedEvent, Storyline
 from tst.sim.exploration.models import DeskStudy, GeoBlock, Hole, Project, SupplierLicence
@@ -448,6 +457,17 @@ class GameState:
     product_standards: tuple[ProductStandard, ...] = ()
     steering_products: tuple[int, ...] = ()  # the player's apps that link to pay outside (44.5)
     rival_stores: tuple[RivalStore, ...] = ()  # alternative stores where the law allows (44.8)
+    # M33 (47): ASML's queue (orders by id, open and recent), deliveries (the last
+    # equipment.queue.history_years), each generation's capacity a year from equipment.start,
+    # companies' tools not yet in a fab, the lithography programme's stages, the player's own
+    # tool lines and which tools each fab runs on. Rivals' orders run from turn 0.
+    tool_orders: tuple[ToolOrder, ...] = ()
+    tool_deliveries: tuple[Delivery, ...] = ()
+    supplier_years: tuple[SupplierYear, ...] = ()
+    tool_stock: tuple[ToolStock, ...] = ()
+    programmes: tuple[Programme, ...] = ()
+    own_tools: tuple[OwnTools, ...] = ()
+    fab_tools: tuple[FabTools, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

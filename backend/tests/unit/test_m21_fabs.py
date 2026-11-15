@@ -74,9 +74,10 @@ def test_a_leading_edge_fab_takes_three_years_and_waits_for_euv_tools() -> None:
     lg = m21.loaded()
     b, d = lg.balance, lg.game_data
     game = m21.game_at(1, ym_to_turn(2021, 1))  # the EUV backlog: a 24-month lead
-    q = quote(game.state, 1, "n5", "east_asia", 100_000, b, d)
+    # M33: in Taiwan (m21.build's site for an EUV fab): EUV tools do not ship to China
+    q = quote(game.state, 1, "n5", "east_asia", 100_000, b, d, country="taiwan")
     assert q.euv and q.tools == 50 and q.build_months == 36  # n5 is 9 months old: leading
-    q3 = quote(game.state, 1, "n3", "east_asia", 100_000, b, d)
+    q3 = quote(game.state, 1, "n3", "east_asia", 100_000, b, d, country="taiwan")
     assert q3.build_months == 36
     assert q.tools_turn is not None and q.tools_turn > game.state.turn + 24
     fid = m21.build(game, "n5", "east_asia", 100_000, ready_now=False)

@@ -24732,6 +24732,489 @@
         }
       }
     },
+    "/api/saves/{save_id}/equipment": {
+      "get": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Get Equipment",
+        "description": "Tool generations, prices, the player's orders and queue place as a range, stock,\ncontrols and the lithography programme (47.6).",
+        "operationId": "getEquipment",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/equipment/orders": {
+      "post": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Order Tools",
+        "operationId": "orderTools",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderToolsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/equipment/prepay": {
+      "post": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Prepay",
+        "operationId": "prepayToolOrder",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepayIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/equipment/litho/start": {
+      "post": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Start Litho",
+        "operationId": "startLitho",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LithoStartIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/equipment/litho/funding": {
+      "post": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Set Funding",
+        "operationId": "setLithoFunding",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LithoStartIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/equipment/litho/stop": {
+      "post": {
+        "tags": [
+          "equipment"
+        ],
+        "summary": "Stop Litho",
+        "operationId": "stopLitho",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LithoStageIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/settings/llm": {
       "get": {
         "tags": [
@@ -30469,6 +30952,62 @@
         ],
         "title": "ContractOut"
       },
+      "ControlOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "month_label": {
+            "type": "string",
+            "title": "Month Label"
+          },
+          "generation_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Generation Labels"
+          },
+          "destinations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Destinations"
+          },
+          "in_force": {
+            "type": "boolean",
+            "title": "In Force"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "month_label",
+          "generation_labels",
+          "destinations",
+          "in_force",
+          "source"
+        ],
+        "title": "ControlOut"
+      },
       "CooAnswerOut": {
         "properties": {
           "answer_id": {
@@ -32242,7 +32781,7 @@
         "properties": {
           "generations": {
             "items": {
-              "$ref": "#/components/schemas/GenerationOut"
+              "$ref": "#/components/schemas/tst__api__schemas__dynasty__GenerationOut"
             },
             "type": "array",
             "title": "Generations"
@@ -32585,6 +33124,102 @@
           "adjustments"
         ],
         "title": "EnergyOut"
+      },
+      "EquipmentActionOut": {
+        "properties": {
+          "equipment": {
+            "$ref": "#/components/schemas/EquipmentOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "equipment",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "EquipmentActionOut"
+      },
+      "EquipmentOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "supplier": {
+            "type": "string",
+            "title": "Supplier"
+          },
+          "generations": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__equipment__GenerationOut"
+            },
+            "type": "array",
+            "title": "Generations"
+          },
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderOut"
+            },
+            "type": "array",
+            "title": "Orders"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__equipment__StockOut"
+            },
+            "type": "array",
+            "title": "Stock"
+          },
+          "controls": {
+            "items": {
+              "$ref": "#/components/schemas/ControlOut"
+            },
+            "type": "array",
+            "title": "Controls"
+          },
+          "programme": {
+            "$ref": "#/components/schemas/ProgrammeOut"
+          },
+          "prepay_share": {
+            "type": "number",
+            "title": "Prepay Share"
+          },
+          "max_order": {
+            "type": "integer",
+            "title": "Max Order"
+          },
+          "order_energy": {
+            "type": "integer",
+            "title": "Order Energy"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "What the queue is, in words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "supplier",
+          "generations",
+          "orders",
+          "stock",
+          "controls",
+          "programme",
+          "prepay_share",
+          "max_order",
+          "order_energy",
+          "note"
+        ],
+        "title": "EquipmentOut"
       },
       "EraMarkOut": {
         "properties": {
@@ -37358,58 +37993,6 @@
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
       },
-      "GenerationOut": {
-        "properties": {
-          "person_id": {
-            "type": "integer",
-            "title": "Person Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "from_label": {
-            "type": "string",
-            "title": "From Label"
-          },
-          "to_label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Label"
-          },
-          "legacy": {
-            "type": "integer",
-            "title": "Legacy"
-          },
-          "how": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "How"
-          }
-        },
-        "type": "object",
-        "required": [
-          "person_id",
-          "name",
-          "from_label",
-          "to_label",
-          "legacy",
-          "how"
-        ],
-        "title": "GenerationOut"
-      },
       "GeoActionOut": {
         "properties": {
           "geo": {
@@ -41462,6 +42045,37 @@
         ],
         "title": "ListedOut"
       },
+      "LithoStageIn": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage"
+        ],
+        "title": "LithoStageIn"
+      },
+      "LithoStartIn": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "funding": {
+            "type": "number",
+            "title": "Funding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "funding"
+        ],
+        "title": "LithoStartIn"
+      },
       "LoanIn": {
         "properties": {
           "instrument": {
@@ -45259,6 +45873,151 @@
         "title": "OptionsOut",
         "description": "An employee's option grant for the contract panel (M4b, formulas.md 14.2)."
       },
+      "OrderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "generation_label": {
+            "type": "string",
+            "title": "Generation Label"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          },
+          "delivered": {
+            "type": "integer",
+            "title": "Delivered"
+          },
+          "placed_label": {
+            "type": "string",
+            "title": "Placed Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "open | done | lost | cancelled"
+          },
+          "prepaid": {
+            "type": "boolean",
+            "title": "Prepaid"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "fab_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fab Id"
+          },
+          "fab": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fab"
+          },
+          "lead_low": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Low",
+            "description": "Months to the last tool, the fast end"
+          },
+          "lead_high": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead High",
+            "description": "... the slow end (None: beyond the queue's view)"
+          },
+          "lead_label": {
+            "type": "string",
+            "title": "Lead Label"
+          },
+          "prepay_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prepay Cents",
+            "description": "What prepaying would cost (an open order)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "generation",
+          "generation_label",
+          "tools",
+          "delivered",
+          "placed_label",
+          "status",
+          "prepaid",
+          "price_cents",
+          "fab_id",
+          "fab",
+          "lead_low",
+          "lead_high",
+          "lead_label",
+          "prepay_cents"
+        ],
+        "title": "OrderOut"
+      },
+      "OrderToolsIn": {
+        "properties": {
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          },
+          "prepay": {
+            "type": "boolean",
+            "title": "Prepay",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "generation",
+          "tools"
+        ],
+        "title": "OrderToolsIn"
+      },
       "OrgActionOut": {
         "properties": {
           "org": {
@@ -46077,6 +46836,72 @@
           "market_cents"
         ],
         "title": "OwnSupplyOut"
+      },
+      "OwnToolsOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "generation_label": {
+            "type": "string",
+            "title": "Generation Label"
+          },
+          "made": {
+            "type": "integer",
+            "title": "Made"
+          },
+          "in_stock": {
+            "type": "integer",
+            "title": "In Stock"
+          },
+          "installed": {
+            "type": "integer",
+            "title": "Installed"
+          },
+          "sold": {
+            "type": "integer",
+            "title": "Sold"
+          },
+          "sales_cents": {
+            "type": "integer",
+            "title": "Sales Cents"
+          },
+          "maturity": {
+            "type": "number",
+            "title": "Maturity",
+            "description": "0 at first, towards 1 with installed use"
+          },
+          "throughput": {
+            "type": "number",
+            "title": "Throughput",
+            "description": "x ASML's"
+          },
+          "yield_cut": {
+            "type": "number",
+            "title": "Yield Cut",
+            "description": "Yield points lost now"
+          },
+          "per_year": {
+            "type": "integer",
+            "title": "Per Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "generation_label",
+          "made",
+          "in_stock",
+          "installed",
+          "sold",
+          "sales_cents",
+          "maturity",
+          "throughput",
+          "yield_cut",
+          "per_year"
+        ],
+        "title": "OwnToolsOut"
       },
       "OwnershipEventOut": {
         "properties": {
@@ -48345,6 +49170,19 @@
         ],
         "title": "PowerOut"
       },
+      "PrepayIn": {
+        "properties": {
+          "order_id": {
+            "type": "integer",
+            "title": "Order Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id"
+        ],
+        "title": "PrepayIn"
+      },
       "PresetOut": {
         "properties": {
           "key": {
@@ -49860,6 +50698,67 @@
         ],
         "title": "ProfitAndLossOut"
       },
+      "ProgrammeOut": {
+        "properties": {
+          "unlocked": {
+            "type": "boolean",
+            "title": "Unlocked"
+          },
+          "unlock_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unlock Reason"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers"
+          },
+          "funding_low": {
+            "type": "number",
+            "title": "Funding Low"
+          },
+          "funding_high": {
+            "type": "number",
+            "title": "Funding High"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/StageOut"
+            },
+            "type": "array",
+            "title": "Stages"
+          },
+          "own_tools": {
+            "items": {
+              "$ref": "#/components/schemas/OwnToolsOut"
+            },
+            "type": "array",
+            "title": "Own Tools"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unlocked",
+          "unlock_reason",
+          "level",
+          "researchers",
+          "funding_low",
+          "funding_high",
+          "stages",
+          "own_tools"
+        ],
+        "title": "ProgrammeOut"
+      },
       "ProjectBudgetIn": {
         "properties": {
           "budget_cents": {
@@ -50331,7 +51230,7 @@
           "stock": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/StockOut"
+                "$ref": "#/components/schemas/tst__api__schemas__public__StockOut"
               },
               {
                 "type": "null"
@@ -54814,6 +55713,24 @@
         ],
         "title": "SharesIn"
       },
+      "ShipmentOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "tools"
+        ],
+        "title": "ShipmentOut"
+      },
       "SiteOut": {
         "properties": {
           "company_id": {
@@ -55196,6 +56113,178 @@
           "how"
         ],
         "title": "StageOptionOut"
+      },
+      "StageOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "generation_label": {
+            "type": "string",
+            "title": "Generation Label"
+          },
+          "needs": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents",
+            "description": "The estimate (programmes often run over)"
+          },
+          "months_low": {
+            "type": "integer",
+            "title": "Months Low"
+          },
+          "months_high": {
+            "type": "integer",
+            "title": "Months High"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level",
+            "description": "Lithography level needed to start"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff",
+            "description": "Researchers needed on a lithography project"
+          },
+          "reference_cents": {
+            "type": "integer",
+            "title": "Reference Cents",
+            "description": "The reference budget a month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "locked | open | running | succeeded | failed | stopped"
+          },
+          "attempt": {
+            "type": "integer",
+            "title": "Attempt"
+          },
+          "started_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started Label"
+          },
+          "months_running": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months Running"
+          },
+          "funding": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "end_window_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Window Label",
+            "description": "Public estimate of when it ends"
+          },
+          "why_not": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Why Not"
+          },
+          "throughput": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Throughput",
+            "description": "First tools' throughput x ASML's (succeeded)"
+          },
+          "yield_cut": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yield Cut",
+            "description": "First tools' yield points lost (succeeded)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "generation_label",
+          "needs",
+          "cost_cents",
+          "months_low",
+          "months_high",
+          "level",
+          "staff",
+          "reference_cents",
+          "status",
+          "attempt",
+          "started_label",
+          "months_running",
+          "funding",
+          "spent_cents",
+          "end_window_label",
+          "why_not",
+          "throughput",
+          "yield_cut"
+        ],
+        "title": "StageOut"
       },
       "StageReachedOut": {
         "properties": {
@@ -55603,149 +56692,6 @@
           "done"
         ],
         "title": "StepOut"
-      },
-      "StockOut": {
-        "properties": {
-          "ticker": {
-            "type": "string",
-            "title": "Ticker"
-          },
-          "price_cents": {
-            "type": "integer",
-            "title": "Price Cents"
-          },
-          "change_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Change Pct",
-            "description": "Since last month end"
-          },
-          "market_cap_cents": {
-            "type": "integer",
-            "title": "Market Cap Cents"
-          },
-          "shares": {
-            "type": "integer",
-            "title": "Shares"
-          },
-          "listing_price_cents": {
-            "type": "integer",
-            "title": "Listing Price Cents"
-          },
-          "listed": {
-            "type": "string",
-            "title": "Listed"
-          },
-          "dual_class": {
-            "type": "boolean",
-            "title": "Dual Class"
-          },
-          "stake_shares": {
-            "type": "integer",
-            "title": "Stake Shares"
-          },
-          "stake_pct": {
-            "type": "number",
-            "title": "Stake Pct"
-          },
-          "stake_value_cents": {
-            "type": "integer",
-            "title": "Stake Value Cents"
-          },
-          "history": {
-            "items": {
-              "$ref": "#/components/schemas/SharePointOut"
-            },
-            "type": "array",
-            "title": "History"
-          },
-          "analysts": {
-            "items": {
-              "$ref": "#/components/schemas/AnalystOut"
-            },
-            "type": "array",
-            "title": "Analysts"
-          },
-          "buys": {
-            "type": "integer",
-            "title": "Buys"
-          },
-          "holds": {
-            "type": "integer",
-            "title": "Holds"
-          },
-          "sells": {
-            "type": "integer",
-            "title": "Sells"
-          },
-          "average_target_cents": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Average Target Cents"
-          },
-          "guidance": {
-            "items": {
-              "$ref": "#/components/schemas/GuidanceRowOut"
-            },
-            "type": "array",
-            "title": "Guidance"
-          },
-          "next_guidance": {
-            "$ref": "#/components/schemas/NextGuidanceOut"
-          },
-          "capital": {
-            "$ref": "#/components/schemas/CapitalOut"
-          },
-          "board_line": {
-            "type": "string",
-            "title": "Board Line"
-          },
-          "drivers": {
-            "items": {
-              "$ref": "#/components/schemas/DriverOut"
-            },
-            "type": "array",
-            "title": "Drivers"
-          }
-        },
-        "type": "object",
-        "required": [
-          "ticker",
-          "price_cents",
-          "change_pct",
-          "market_cap_cents",
-          "shares",
-          "listing_price_cents",
-          "listed",
-          "dual_class",
-          "stake_shares",
-          "stake_pct",
-          "stake_value_cents",
-          "history",
-          "analysts",
-          "buys",
-          "holds",
-          "sells",
-          "average_target_cents",
-          "guidance",
-          "next_guidance",
-          "capital",
-          "board_line",
-          "drivers"
-        ],
-        "title": "StockOut"
       },
       "StoryStepOut": {
         "properties": {
@@ -58794,6 +59740,209 @@
         ],
         "title": "UnitChoiceOut"
       },
+      "tst__api__schemas__dynasty__GenerationOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Label"
+          },
+          "legacy": {
+            "type": "integer",
+            "title": "Legacy"
+          },
+          "how": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "How"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "from_label",
+          "to_label",
+          "legacy",
+          "how"
+        ],
+        "title": "GenerationOut"
+      },
+      "tst__api__schemas__equipment__GenerationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "maker": {
+            "type": "string",
+            "title": "Maker"
+          },
+          "queued": {
+            "type": "boolean",
+            "title": "Queued",
+            "description": "Ordered through ASML's queue (else inside a fab's capex)"
+          },
+          "nodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "node_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Node Labels"
+          },
+          "first_shipment_label": {
+            "type": "string",
+            "title": "First Shipment Label"
+          },
+          "first_volume_label": {
+            "type": "string",
+            "title": "First Volume Label"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "The current model"
+          },
+          "wph": {
+            "type": "number",
+            "title": "Wph",
+            "description": "Rated wafers an hour"
+          },
+          "uptime": {
+            "type": "number",
+            "title": "Uptime"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "Today's price, with scarcity"
+          },
+          "list_cents": {
+            "type": "integer",
+            "title": "List Cents",
+            "description": "The list price before scarcity"
+          },
+          "shipments": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOut"
+            },
+            "type": "array",
+            "title": "Shipments",
+            "description": "Tools a year to the last full year"
+          },
+          "capacity_next": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Next",
+            "description": "Next year's capacity, once announced"
+          },
+          "book": {
+            "type": "string",
+            "title": "Book",
+            "description": "ASML's order book: thin, a year deep, or long"
+          },
+          "shipping": {
+            "type": "boolean",
+            "title": "Shipping"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "maker",
+          "queued",
+          "nodes",
+          "node_labels",
+          "first_shipment_label",
+          "first_volume_label",
+          "model",
+          "wph",
+          "uptime",
+          "price_cents",
+          "list_cents",
+          "shipments",
+          "capacity_next",
+          "book",
+          "shipping"
+        ],
+        "title": "GenerationOut"
+      },
+      "tst__api__schemas__equipment__StockOut": {
+        "properties": {
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "generation_label": {
+            "type": "string",
+            "title": "Generation Label"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "asml | own"
+          },
+          "tools": {
+            "type": "integer",
+            "title": "Tools"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "generation",
+          "generation_label",
+          "source",
+          "tools",
+          "value_cents"
+        ],
+        "title": "StockOut"
+      },
       "tst__api__schemas__events__EventLinkOut": {
         "properties": {
           "path": {
@@ -59297,6 +60446,149 @@
           "home"
         ],
         "title": "RegionOptionOut"
+      },
+      "tst__api__schemas__public__StockOut": {
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "title": "Ticker"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Pct",
+            "description": "Since last month end"
+          },
+          "market_cap_cents": {
+            "type": "integer",
+            "title": "Market Cap Cents"
+          },
+          "shares": {
+            "type": "integer",
+            "title": "Shares"
+          },
+          "listing_price_cents": {
+            "type": "integer",
+            "title": "Listing Price Cents"
+          },
+          "listed": {
+            "type": "string",
+            "title": "Listed"
+          },
+          "dual_class": {
+            "type": "boolean",
+            "title": "Dual Class"
+          },
+          "stake_shares": {
+            "type": "integer",
+            "title": "Stake Shares"
+          },
+          "stake_pct": {
+            "type": "number",
+            "title": "Stake Pct"
+          },
+          "stake_value_cents": {
+            "type": "integer",
+            "title": "Stake Value Cents"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/SharePointOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "analysts": {
+            "items": {
+              "$ref": "#/components/schemas/AnalystOut"
+            },
+            "type": "array",
+            "title": "Analysts"
+          },
+          "buys": {
+            "type": "integer",
+            "title": "Buys"
+          },
+          "holds": {
+            "type": "integer",
+            "title": "Holds"
+          },
+          "sells": {
+            "type": "integer",
+            "title": "Sells"
+          },
+          "average_target_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Target Cents"
+          },
+          "guidance": {
+            "items": {
+              "$ref": "#/components/schemas/GuidanceRowOut"
+            },
+            "type": "array",
+            "title": "Guidance"
+          },
+          "next_guidance": {
+            "$ref": "#/components/schemas/NextGuidanceOut"
+          },
+          "capital": {
+            "$ref": "#/components/schemas/CapitalOut"
+          },
+          "board_line": {
+            "type": "string",
+            "title": "Board Line"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/DriverOut"
+            },
+            "type": "array",
+            "title": "Drivers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ticker",
+          "price_cents",
+          "change_pct",
+          "market_cap_cents",
+          "shares",
+          "listing_price_cents",
+          "listed",
+          "dual_class",
+          "stake_shares",
+          "stake_pct",
+          "stake_value_cents",
+          "history",
+          "analysts",
+          "buys",
+          "holds",
+          "sells",
+          "average_target_cents",
+          "guidance",
+          "next_guidance",
+          "capital",
+          "board_line",
+          "drivers"
+        ],
+        "title": "StockOut"
       },
       "tst__api__schemas__research__UnitChoiceOut": {
         "properties": {

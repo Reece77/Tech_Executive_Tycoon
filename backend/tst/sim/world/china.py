@@ -6,7 +6,8 @@ node. Each month it grows by the generations the leader gained and shrinks by `c
 to every destination, or to the foundry by name), or by `china_free_pace` / 12 without one (a
 follower buying tools on the open market). When its generation (the leader's less the lag)
 reaches a node it has not, it reaches that node that month, whatever nodes.yaml's EUV gate
-says: under controls by its own state-funded programme, without them with bought tools. While
+says: under controls by its own state-funded programme, without them with bought tools; from
+M33, a node that needs EUV waits for its EUV-class tools (tst.sim.equipment.china). While
 controls bind it spends `china_subsidy` x its plant's capex a year, as research funded by an
 equal state grant (both in its books, neutral to its cash).
 
@@ -21,6 +22,7 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.equipment.china import euv_capable, needs_euv
 from tst.sim.fabs import nodes as nd
 from tst.sim.geopolitics import rules as gr
 from tst.sim.geopolitics.config import EntityTarget
@@ -82,6 +84,8 @@ def china_month(
             node = base.keys[g]
             if base.arrival[node] > turn:  # never ahead of the first to a node
                 break
+            if needs_euv(data, node) and not euv_capable(state, data, lag.foundry, turn):
+                break  # M33 (47.5 target 4): no EUV-class tools yet
             reached[node] = turn
             news.append(
                 Item(

@@ -2372,3 +2372,52 @@ platforms: # 44: platforms and ecosystems (M31, v4 lane C). Shares, fees and rul
     raise_above: 1.2 # ... and raises it above this
     store_chance: 0.25 # a rival store in a region that allows alternative stores, a year (at most one)
     licence_switch: 0.10 # rest-of-market OEMs re-choosing their licence each December
+equipment: # 47: semiconductor equipment (M33, v4 lane B). Shipments, prices and dated controls follow equipment.yaml to 2025 (47.5 target 1); A = an assumption for gameplay, tuned only for 47.5
+  start: "2026-01" # the first month ASML's December rule, rivals' order book after the history and scarcity pricing run (47.1-47.2)
+  queue: # 47.2: each quarter's tools go to open orders in queue order, an order's place its month moved up by the buyer's weight
+    history_months: 12.0 # a buyer at full history moves up this many months: rivals' next December orders overtake a new buyer's (A)
+    history_tools: 20 # tools delivered over history_years for the full move (A: about a fab's worth); linear below it
+    history_years: 5
+    jitter_months: 1.0 # an order's place +/- half this, on stream equipment (A: tie-breaks, never shown)
+    prepay_share: 0.20 # a prepayment: this share of the order's price, a one-off charge (47.2; A)
+    prepay_months: 9.0 # ... moves the order up this many months (A)
+    rival_order_share: 1.1 # rivals' December orders top their open orders up to this x next year's capacity x their share (A: the book stays a year deep and more)
+    china_share: 0.10 # from start, a Chinese foundry no rule blocks orders this share of a year's capacity (A)
+    estimate_months: 3.0 # the lead-time range shown: the order's place -/+ this many months (A)
+    energy: 2 # an order or a prepayment (ADR-0014)
+    max_order: 200 # tools in one order
+  price: # 47.2
+    scarcity: 0.15 # price x (1 + this x max(0, open orders / next year's capacity - 1)) from start (A)
+    growth: 0.04 # a generation's price grows this a year after equipment.yaml's last point (A: 2019-2025's EUV ASP rose about 10% a year, D; slower once mature)
+    max_scarcity: 1.5 # the scarcity multiple's cap (A)
+  capacity: # 47.1: ASML's December rule from start, on its order book
+    expand_backlog_years: 1.0 # follow the plan when open orders exceed this x this year's capacity (A)
+    plan_growth: 0.05 # the plan (equipment.yaml capacity_plan, linear from the last shipments) grows this a year after its last point (A)
+    hold_growth: 0.0 # a thinner book: capacity grows this
+    accelerate: 0.10 # extra growth of ASML's newest generation in a December after the player sold tools (47.4; A)
+  service_ban_uptime_cut: 0.30 # an installed tool's uptime lost while a ban on its generation binds its fab's country (47.3; A)
+  programme: # 47.4: the player's lithography programme
+    min_stage: 5 # the group's stage at least this, with chip design and a fab
+    domain: lithography # tech_frontier.yaml domain
+    funding: [0.5, 1.5] # funding as a multiple of the stage's reference budget a month (cost / middle months)
+    overrun: [0.0, 0.6] # hidden: the work (months at reference funding) and so its cost x (1 + this) (A: as 35's mines)
+    work_scale: 1.0 # a stage's months (equipment.yaml) x this (A; the 47.5 target 3 tuning key)
+    success_base: 0.55 # chance a stage works at reference funding and skill 10 (A)
+    success_funding: 0.25 # + this x (funding - 1)
+    success_skill: 0.15 # + this x (mean research skill - 10) / 10
+    success_range: [0.15, 0.9]
+    start_energy: 8
+    stop_energy: 2
+    throughput: [0.4, 0.7] # a first prototype's throughput x ASML's of the generation (47.4)
+    uptime_start: 0.6 # a first prototype's uptime (A)
+    yield_cut: [5.0, 15.0] # yield points lost at first (47.4)
+    learn_tool_months: 600.0 # installed tool-months that close 63% of the gap to ASML's (A: 50 tools for a year)
+    tool_capex_share: 0.25 # an EUV fab equipped from stock or its own line saves its tools' value from capex, at most this share of it (A: about 25 EUV tools of a $20B 5 nm fab, D)
+    duv_capex_cut: 0.05 # litho_1's own tools cut a non-EUV fab's capex this share (A: the scanners' share, discounted)
+  sales: # 47.4: the player's tools to rival foundries, from litho_2
+    min_backlog_years: 1.0 # rivals buy when ASML's open orders exceed this x a year's capacity (A)
+    discount: 0.15 # the player's price below ASML's (A)
+    share: 0.30 # of rivals' unmet orders at full maturity (A)
+    min_quality: 0.6 # a buyer wants tools at least this mature (A)
+    asml_cut: 0.05 # ASML cuts its price this a year after the player sells (47.4; A)
+    asml_cut_max: 0.25
