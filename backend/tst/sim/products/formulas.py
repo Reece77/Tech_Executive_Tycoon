@@ -163,6 +163,7 @@ def held_feature_points(score: float, category: CategoryDef, turn: int) -> float
 
 def marketing_points(budget_cents: int, mu: float, pb: ProductsBalance) -> float:
     """mk = budget in $1,000s + 5 mu."""
+    # money-exact: ratio
     return budget_cents / pb.budget_mk_unit_cents + pb.marketer_mk * mu
 
 
@@ -181,6 +182,7 @@ def next_brand(brand: float, target: float, pb: ProductsBalance) -> float:
 
 def price_score(reference_cents: int, price_cents: int) -> float:
     """clamp(50 x p_ref / price, 0, 100): 50 at the reference price, 100 at half of it."""
+    # money-exact: ratio
     return clamp_score(PRICE_SCORE_AT_REFERENCE * reference_cents / price_cents)
 
 
