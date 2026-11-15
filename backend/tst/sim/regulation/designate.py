@@ -36,6 +36,7 @@ from tst.sim.state import GameState, owner_of
 
 DECEMBER: Final = MONTHS_PER_YEAR - 1  # tunable-exempt: calendar
 LINK: Final = "regulation"
+SHOWN_MAX: Final = 9.99  # tunable-exempt: a warning shows at most 999%
 NO_TEST: Final = 10.0  # tunable-exempt: a test a regime does not set counts as passed
 
 
@@ -138,7 +139,7 @@ def december(
                 logs.append(
                     inbox_item(
                         state.turn, owner, "regulation_designation_warning", link_kind=LINK,
-                        regime=regime.name, regulator=reg.name, pct=f"{min(r, 9.99):.0%}",
+                        regime=regime.name, regulator=reg.name, pct=f"{min(r, SHOWN_MAX):.0%}",
                     )
                 )  # fmt: skip
     return state, [x for x in logs if x.company_id == state.player.id]

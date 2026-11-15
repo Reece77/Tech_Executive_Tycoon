@@ -171,6 +171,15 @@ export const GUIDES: Record<string, Guide> = {
       "Apps sold through stores pay the stores' fees; from 2026 a store can remove an app, and you answer it as a critical event.",
     ],
   },
+  regulation: {
+    title: 'Regulation',
+    path: 'competitors/regulation',
+    what: 'Regulators by region: who is a designated gatekeeper, the duties that brings, investigations and their stages, fines, and the warning signs of a break-up. Your own position against each designation test is here too.',
+    start: [
+      'A warning comes a year before a designation; duties follow a few months after it.',
+      'Each stage of an investigation comes to Needs you: settling early is cheaper than losing, and breaking a duty makes everything worse.',
+    ],
+  },
 };
 
 /** Where a What next item links (the same kinds as the COO's briefing, 17.3, plus guides). */

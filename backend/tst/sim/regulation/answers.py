@@ -50,15 +50,28 @@ def _paired[T: (Case, Order)](items: list[T], state: GameState, event: GameEvent
     return ordered[min(index, len(ordered) - 1)]
 
 
+def _latest[T: (Case, Order)](items: list[T]) -> list[T]:
+    """The records asked most recently (an engine-queued event is shown the month it was asked
+    for, or the month after)."""
+    if not items:
+        return []
+    last = max(x.asked_turn or 0 for x in items)
+    return [x for x in items if (x.asked_turn or 0) == last]
+
+
 def case_for(state: GameState, event: GameEvent) -> Case | None:
     return _paired(
-        [
-            c
-            for c in state.reg_cases
-            if c.company_id == event.company_id
-            and c.asked_turn == event.turn
-            and c.asked_template == event.template_id
-        ],
+        _latest(
+            [
+                c
+                for c in state.reg_cases
+                if c.company_id == event.company_id
+                and c.asked_template == event.template_id
+                and c.asked_turn is not None
+                and c.asked_turn <= event.turn
+                and c.stage != "closed"
+            ]
+        ),
         state,
         event,
     )
@@ -66,13 +79,17 @@ def case_for(state: GameState, event: GameEvent) -> Case | None:
 
 def order_for(state: GameState, event: GameEvent) -> Order | None:
     return _paired(
-        [
-            o
-            for o in state.reg_orders
-            if o.company_id == event.company_id
-            and o.asked_turn == event.turn
-            and o.asked_template == event.template_id
-        ],
+        _latest(
+            [
+                o
+                for o in state.reg_orders
+                if o.company_id == event.company_id
+                and o.asked_template == event.template_id
+                and o.asked_turn is not None
+                and o.asked_turn <= event.turn
+                and o.status in ("open", "appealing")
+            ]
+        ),
         state,
         event,
     )

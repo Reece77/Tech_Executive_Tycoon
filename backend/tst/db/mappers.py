@@ -964,6 +964,8 @@ ENGINE_STEPS = (
     "refining_step",
     "mining_step",
     "geopolitics_step",
+    "platform_step",  # M34 found M31's removal answers lost their stat on save
+    "regulation_step",  # M34
 )
 
 

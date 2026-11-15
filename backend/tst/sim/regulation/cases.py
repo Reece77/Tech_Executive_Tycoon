@@ -61,6 +61,7 @@ OBJECTIONS: Final = "regulation_objections"
 RULING: Final = "regulation_ruling"
 LINK: Final = "regulation"
 PCT: Final = 100  # tunable-exempt: influence is 0-100
+MIDDLE: Final = 0.5  # tunable-exempt: the middle of a range (a settlement's typical fine)
 REMEDY: Final[dict[str, DutyKind]] = {  # a ruling's behavioural remedy by conduct (48.3)
     "self_preferencing": "no_self_preferencing",
     "anti_steering": "anti_steering",
@@ -343,7 +344,7 @@ def _waiting(state: GameState, case: Case) -> bool:
         return True
     return any(
         e.company_id == case.company_id
-        and e.turn == case.asked_turn
+        and e.turn >= case.asked_turn
         and e.template_id == case.asked_template
         and e.is_open
         for e in state.events
@@ -422,7 +423,7 @@ def fine_cents(
         share *= fb.noncompliance_mult
     regime = rdata.regime_of(data, reg.key)
     cap = regime.max_fine_share if regime is not None else fb.default_max_share
-    if repeat(state, case, data):
+    if repeat(state, case, balance, data):
         cap = regime.repeat_fine_share if regime is not None else fb.default_max_share
     turnover = sum(
         sum(c.mrr_history[-MONTHS_PER_YEAR:])
@@ -443,8 +444,9 @@ def rulings_against(state: GameState, data: GameData, company_id: int, regulator
     return sorted(own + rdata.history_rulings(state, data, company_id, regulator, state.turn))
 
 
-def repeat(state: GameState, case: Case, data: GameData) -> bool:
-    ten_years = state.turn - 10 * MONTHS_PER_YEAR
+def repeat(state: GameState, case: Case, balance: Balance, data: GameData) -> bool:
+    """Another ruling against within `structural.two_rulings_years` (the DMA's repeat window)."""
+    ten_years = state.turn - balance.regulation.structural.two_rulings_years * MONTHS_PER_YEAR
     return any(t > ten_years for t in rulings_against(state, data, case.company_id, case.regulator))
 
 
@@ -535,7 +537,7 @@ def settle(
     entries = []
     if case.stage == "objections":
         lo, hi = balance.regulation.fine.share
-        full = fine_cents(state, case, reg, 0.5, balance, data) if hi > lo else 0
+        full = fine_cents(state, case, reg, MIDDLE, balance, data) if hi > lo else 0
         cents = round(full * balance.regulation.fine.settle_share)
         if cents > 0:
             entries.append(_fine(state, case, cents, "Settlement"))

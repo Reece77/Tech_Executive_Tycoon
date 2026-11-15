@@ -21138,7 +21138,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/tst__api__schemas__explain__ExplainOut"
+                  "$ref": "#/components/schemas/ExplainOut"
                 }
               }
             }
@@ -33968,6 +33968,153 @@
           "label"
         ],
         "title": "ExplainDriverOut"
+      },
+      "ExplainOut": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/ExplainUnit"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "company",
+              "product",
+              "person",
+              "account",
+              "market",
+              "project",
+              "mine",
+              "fab",
+              "refinery"
+            ],
+            "title": "Scope"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject",
+            "description": "What the number belongs to, by name"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BreakdownItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "The number's driver breakdown"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointOut"
+            },
+            "type": "array",
+            "title": "Trend",
+            "description": "The last advisor.explain.history_months"
+          },
+          "trend_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trend Note"
+          },
+          "drivers": {
+            "items": {
+              "$ref": "#/components/schemas/ExplainDriverOut"
+            },
+            "type": "array",
+            "title": "Drivers",
+            "description": "What moved it last month, largest first"
+          },
+          "related": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related",
+            "description": "Related events in the last months, as the inbox"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "description": "The template explanation (offline, always shown)"
+          },
+          "speaker": {
+            "type": "string",
+            "title": "Speaker",
+            "description": "Who answers Ask why: the chief of staff, by name"
+          },
+          "max_question_chars": {
+            "type": "integer",
+            "title": "Max Question Chars"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "True when Ask why can only give the template answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "label",
+          "unit",
+          "scope",
+          "subject",
+          "items",
+          "trend",
+          "drivers",
+          "related",
+          "explanation",
+          "speaker",
+          "max_question_chars",
+          "offline"
+        ],
+        "title": "ExplainOut"
       },
       "ExplainUnit": {
         "type": "string",
@@ -52175,7 +52322,7 @@
             ],
             "title": "Turnover Scope"
           },
-          "value_cents": {
+          "market_value_cents": {
             "anyOf": [
               {
                 "type": "integer"
@@ -52184,7 +52331,7 @@
                 "type": "null"
               }
             ],
-            "title": "Value Cents",
+            "title": "Market Value Cents",
             "description": "Market value test, US cents"
           },
           "comply_months": {
@@ -52215,7 +52362,7 @@
           "users_share",
           "turnover_cents",
           "turnover_scope",
-          "value_cents",
+          "market_value_cents",
           "comply_months",
           "duties",
           "max_fine_share",
@@ -52521,6 +52668,29 @@
         ],
         "title": "RegulationActionOut"
       },
+      "RegulationExplainOut": {
+        "properties": {
+          "fine": {
+            "type": "string",
+            "title": "Fine"
+          },
+          "thresholds": {
+            "type": "string",
+            "title": "Thresholds"
+          },
+          "structural": {
+            "type": "string",
+            "title": "Structural"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fine",
+          "thresholds",
+          "structural"
+        ],
+        "title": "RegulationExplainOut"
+      },
       "RegulationOut": {
         "properties": {
           "month": {
@@ -52601,7 +52771,7 @@
             "title": "Breaches"
           },
           "explain": {
-            "$ref": "#/components/schemas/tst__api__schemas__regulation__ExplainOut"
+            "$ref": "#/components/schemas/RegulationExplainOut"
           }
         },
         "type": "object",
@@ -58132,7 +58302,7 @@
             ],
             "title": "Turnover Needed Cents"
           },
-          "value_cents": {
+          "market_value_cents": {
             "anyOf": [
               {
                 "type": "integer"
@@ -58141,9 +58311,9 @@
                 "type": "null"
               }
             ],
-            "title": "Value Cents"
+            "title": "Market Value Cents"
           },
-          "value_needed_cents": {
+          "market_value_needed_cents": {
             "anyOf": [
               {
                 "type": "integer"
@@ -58152,7 +58322,7 @@
                 "type": "null"
               }
             ],
-            "title": "Value Needed Cents"
+            "title": "Market Value Needed Cents"
           },
           "ratio": {
             "type": "number",
@@ -58188,8 +58358,8 @@
           "users_needed",
           "turnover_cents",
           "turnover_needed_cents",
-          "value_cents",
-          "value_needed_cents",
+          "market_value_cents",
+          "market_value_needed_cents",
           "ratio",
           "warn_at",
           "designated",
@@ -59770,153 +59940,6 @@
         "title": "EventLinkOut",
         "description": "A screen the event is about (M23c): look before answering."
       },
-      "tst__api__schemas__explain__ExplainOut": {
-        "properties": {
-          "metric": {
-            "type": "string",
-            "title": "Metric"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "unit": {
-            "$ref": "#/components/schemas/ExplainUnit"
-          },
-          "scope": {
-            "type": "string",
-            "enum": [
-              "company",
-              "product",
-              "person",
-              "account",
-              "market",
-              "project",
-              "mine",
-              "fab",
-              "refinery"
-            ],
-            "title": "Scope"
-          },
-          "entity": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Entity"
-          },
-          "subject": {
-            "type": "string",
-            "title": "Subject",
-            "description": "What the number belongs to, by name"
-          },
-          "value": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/BreakdownItemOut"
-            },
-            "type": "array",
-            "title": "Items",
-            "description": "The number's driver breakdown"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          },
-          "trend": {
-            "items": {
-              "$ref": "#/components/schemas/TrendPointOut"
-            },
-            "type": "array",
-            "title": "Trend",
-            "description": "The last advisor.explain.history_months"
-          },
-          "trend_note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trend Note"
-          },
-          "drivers": {
-            "items": {
-              "$ref": "#/components/schemas/ExplainDriverOut"
-            },
-            "type": "array",
-            "title": "Drivers",
-            "description": "What moved it last month, largest first"
-          },
-          "related": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Related",
-            "description": "Related events in the last months, as the inbox"
-          },
-          "explanation": {
-            "type": "string",
-            "title": "Explanation",
-            "description": "The template explanation (offline, always shown)"
-          },
-          "speaker": {
-            "type": "string",
-            "title": "Speaker",
-            "description": "Who answers Ask why: the chief of staff, by name"
-          },
-          "max_question_chars": {
-            "type": "integer",
-            "title": "Max Question Chars"
-          },
-          "offline": {
-            "type": "boolean",
-            "title": "Offline",
-            "description": "True when Ask why can only give the template answer"
-          }
-        },
-        "type": "object",
-        "required": [
-          "metric",
-          "label",
-          "unit",
-          "scope",
-          "subject",
-          "items",
-          "trend",
-          "drivers",
-          "related",
-          "explanation",
-          "speaker",
-          "max_question_chars",
-          "offline"
-        ],
-        "title": "ExplainOut"
-      },
       "tst__api__schemas__exploration__LicenceIn": {
         "properties": {
           "region": {
@@ -60435,29 +60458,6 @@
           "home"
         ],
         "title": "RegionOptionOut"
-      },
-      "tst__api__schemas__regulation__ExplainOut": {
-        "properties": {
-          "fine": {
-            "type": "string",
-            "title": "Fine"
-          },
-          "thresholds": {
-            "type": "string",
-            "title": "Thresholds"
-          },
-          "structural": {
-            "type": "string",
-            "title": "Structural"
-          }
-        },
-        "type": "object",
-        "required": [
-          "fine",
-          "thresholds",
-          "structural"
-        ],
-        "title": "ExplainOut"
       },
       "tst__api__schemas__regulation__StepOut": {
         "properties": {

@@ -15,10 +15,10 @@ from tst.api.schemas.regulation import (
     CaseOut,
     DesignationOut,
     DutyOut,
-    ExplainOut,
     OrderOut,
     PrecedentOut,
     RegimeOut,
+    RegulationExplainOut,
     RegulationOut,
     RegulatorOut,
     StepOut,
@@ -77,7 +77,7 @@ def _regulators(data: LoadedData) -> list[RegulatorOut]:
                 users_share=g.users_share,
                 turnover_cents=rdata.threshold_cents(g.turnover_b, g.currency, b),
                 turnover_scope=g.turnover_scope,
-                value_cents=rdata.threshold_cents(g.value_b, g.currency, b),
+                market_value_cents=rdata.threshold_cents(g.value_b, g.currency, b),
                 comply_months=g.comply_months,
                 duties=[DUTY_WORDS[x] for x in g.duties],
                 max_fine_share=g.max_fine_share,
@@ -127,8 +127,8 @@ def _tests(state: GameState, balances: LedgerBalances | None, data: LoadedData) 
                 else g.users_share,
                 turnover_cents=turnover,
                 turnover_needed_cents=rdata.threshold_cents(g.turnover_b, g.currency, b),
-                value_cents=cap,
-                value_needed_cents=rdata.threshold_cents(g.value_b, g.currency, b),
+                market_value_cents=cap,
+                market_value_needed_cents=rdata.threshold_cents(g.value_b, g.currency, b),
                 ratio=min(ratio(state, g, me, v, balances, b, d), 10.0),
                 warn_at=b.regulation.warn_ratio,
                 designated=is_designated(state, d, me, g.key),
@@ -300,11 +300,11 @@ def _orders(state: GameState, data: LoadedData) -> list[OrderOut]:
     ]
 
 
-def _explain(data: LoadedData) -> ExplainOut:
+def _explain(data: LoadedData) -> RegulationExplainOut:
     rb = data.balance.regulation
     lo, hi = rb.fine.share
     sb = rb.structural
-    return ExplainOut(
+    return RegulationExplainOut(
         fine=(
             f"A fine is {lo:.1%}-{hi:.0%} of the group's turnover over the last year, by the "
             f"case's gravity, x{rb.fine.noncompliance_mult:g} while the company breaks a duty, "

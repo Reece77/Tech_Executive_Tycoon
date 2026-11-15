@@ -2077,3 +2077,19 @@ Past a retention window (`balance.yaml` `retention`) old history rows are summar
 | `other_id` | INTEGER | yes | The other company it links to (no FK). |
 | `region` | VARCHAR(64) | yes | The region it links to. |
 | `good` | VARCHAR(64) | yes | The good it links to. |
+
+## Regulation with teeth (migration `0055_m34`, M34)
+
+Regulation (formulas.md 48) lives in `regulation_record`, one row a record (`tst/db/regulation_io.py`). History's designations, cases, fines and rulings to 2025 are `regulation.yaml`'s (regulators with their region, part and strictness by year; regimes with their users and money thresholds, duties, fine caps and periodic penalties; designations; cases with dated stages, fines in their currency and outcomes; precedents; each value with its source), read by `tst.sim.regulation.data`, never rows: a game posts and logs nothing for them. The model starts at `regulation.start` (January 2026). Account `6970_fines` (expense): regulators' fines, settlements and periodic penalties (an annulled fine returns there). Compliance work posts to `6900_general_admin`. Platforms gain `regulated` rows (below). RNG stream `regulation` (62). Balance keys `regulation.*`. Event templates in `events/regulation.yaml` (trigger `regulation`; effect `regulation_step`). `save_meta.schema_version` is 55. Existing saves have no records. Never stored: an opening's chance or draw, an outcome's chance (drawn in its range when decided).
+
+### regulation_record
+
+Every regulation record, one row each, rewritten by collection when it changes.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `n` | INTEGER | no | Primary key: the collection's index x 1,000,000 + the record's position. |
+| `kind` | VARCHAR | no | The collection: `designations` (`regime`, `company_id`, `from_turn`, `duties_from`; the model's, history's are data), `designation_warnings` (`regime`, `company_id`, `turn`), `duties` (`id`, `company_id`, `regulator`, `kind` `side_loading`/`alt_payments`/`anti_steering`/`interoperability`/`no_self_preferencing`/`data_portability`/`fee_cap`, `from_turn`, `source` `designation`/`remedy`/`commitment`, `regime`, `case_id`), `reg_cases` (`id`, `regulator`, `company_id` the group's ultimate owner, `conduct`, `market` a category, `opened_turn`, `stage` `inquiry`/`objections`/`ruling`/`appeal`/`closed`, `stage_turn`, `due_turn` the stage's drawn end (never shown), `outcome` `open`/`settled`/`dismissed`/`fined`/`remedied`/`structural`/`annulled`, `fine_cents`, `remedy` a duty kind, `contested`, `lobbied`, `asked_turn` and `asked_template` the player's event on the stage, `ruled_turn`, `closed_turn`, `noncompliant`, `steps` [[stage or outcome, turn], ...]), `reg_watches` (`company_id`, `regulator`, `market`, `first_turn`, `signs` [[`press`/`report`/`political`/`board`, turn], ...]), `reg_orders` (`id`, `company_id`, `regulator`, `case_id`, `unit_kind` `platform`/`company`/`products`, `unit_id`, `product_ids`, `unit_label`, `ordered_turn`, `deadline_turn`, `status` `open`/`appealing`/`spun_off`/`sold`/`overturned`/`lapsed`, `appeal_until` (drawn; never shown), `asked_turn`, `asked_template`, `closed_turn`, `warned_from`). |
+| `data` | JSON | no | The record's fields, as listed under `kind`. |
+
+`platform_record`'s `platforms` records gain `regulated` [[region, part or "", kind, from turn, rate], ...]: rows regulators' duties add (kind `alt_payments` a regulated payment path at `rate`, `fee_cap` a capped standard rate, `side_loading` and `anti_steering_banned` dated rules), read with platforms.yaml's.

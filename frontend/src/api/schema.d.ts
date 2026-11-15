@@ -9543,6 +9543,69 @@ export interface components {
              */
             kind?: "change" | "level";
         };
+        /** ExplainOut */
+        ExplainOut: {
+            /** Metric */
+            metric: string;
+            /** Label */
+            label: string;
+            unit: components["schemas"]["ExplainUnit"];
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery";
+            /** Entity */
+            entity?: string | null;
+            /**
+             * Subject
+             * @description What the number belongs to, by name
+             */
+            subject: string;
+            /** Value */
+            value?: number | null;
+            /**
+             * Items
+             * @description The number's driver breakdown
+             */
+            items: components["schemas"]["BreakdownItemOut"][];
+            /** Note */
+            note?: string | null;
+            /**
+             * Trend
+             * @description The last advisor.explain.history_months
+             */
+            trend: components["schemas"]["TrendPointOut"][];
+            /** Trend Note */
+            trend_note?: string | null;
+            /**
+             * Drivers
+             * @description What moved it last month, largest first
+             */
+            drivers: components["schemas"]["ExplainDriverOut"][];
+            /**
+             * Related
+             * @description Related events in the last months, as the inbox
+             */
+            related: string[];
+            /**
+             * Explanation
+             * @description The template explanation (offline, always shown)
+             */
+            explanation: string;
+            /**
+             * Speaker
+             * @description Who answers Ask why: the chief of staff, by name
+             */
+            speaker: string;
+            /** Max Question Chars */
+            max_question_chars: number;
+            /**
+             * Offline
+             * @description True when Ask why can only give the template answer
+             */
+            offline: boolean;
+        };
         /** @enum {string} */
         ExplainUnit: "cents" | "count" | "points" | "percent" | "months";
         /** ExplorationActionOut */
@@ -17032,10 +17095,10 @@ export interface components {
              */
             turnover_scope: "region" | "world";
             /**
-             * Value Cents
+             * Market Value Cents
              * @description Market value test, US cents
              */
-            value_cents: number | null;
+            market_value_cents: number | null;
             /** Comply Months */
             comply_months: number;
             /** Duties */
@@ -17171,6 +17234,15 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** RegulationExplainOut */
+        RegulationExplainOut: {
+            /** Fine */
+            fine: string;
+            /** Thresholds */
+            thresholds: string;
+            /** Structural */
+            structural: string;
+        };
         /** RegulationOut */
         RegulationOut: {
             /** Month */
@@ -17203,7 +17275,7 @@ export interface components {
             fines_cents: number;
             /** Breaches */
             breaches: string[];
-            explain: components["schemas"]["tst__api__schemas__regulation__ExplainOut"];
+            explain: components["schemas"]["RegulationExplainOut"];
         };
         /** RegulatorOut */
         RegulatorOut: {
@@ -19537,10 +19609,10 @@ export interface components {
             turnover_cents: number;
             /** Turnover Needed Cents */
             turnover_needed_cents: number | null;
-            /** Value Cents */
-            value_cents: number | null;
-            /** Value Needed Cents */
-            value_needed_cents: number | null;
+            /** Market Value Cents */
+            market_value_cents: number | null;
+            /** Market Value Needed Cents */
+            market_value_needed_cents: number | null;
             /**
              * Ratio
              * @description The test's ratio: 1 or more meets every threshold
@@ -20157,69 +20229,6 @@ export interface components {
             /** Label */
             label: string;
         };
-        /** ExplainOut */
-        tst__api__schemas__explain__ExplainOut: {
-            /** Metric */
-            metric: string;
-            /** Label */
-            label: string;
-            unit: components["schemas"]["ExplainUnit"];
-            /**
-             * Scope
-             * @enum {string}
-             */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery";
-            /** Entity */
-            entity?: string | null;
-            /**
-             * Subject
-             * @description What the number belongs to, by name
-             */
-            subject: string;
-            /** Value */
-            value?: number | null;
-            /**
-             * Items
-             * @description The number's driver breakdown
-             */
-            items: components["schemas"]["BreakdownItemOut"][];
-            /** Note */
-            note?: string | null;
-            /**
-             * Trend
-             * @description The last advisor.explain.history_months
-             */
-            trend: components["schemas"]["TrendPointOut"][];
-            /** Trend Note */
-            trend_note?: string | null;
-            /**
-             * Drivers
-             * @description What moved it last month, largest first
-             */
-            drivers: components["schemas"]["ExplainDriverOut"][];
-            /**
-             * Related
-             * @description Related events in the last months, as the inbox
-             */
-            related: string[];
-            /**
-             * Explanation
-             * @description The template explanation (offline, always shown)
-             */
-            explanation: string;
-            /**
-             * Speaker
-             * @description Who answers Ask why: the chief of staff, by name
-             */
-            speaker: string;
-            /** Max Question Chars */
-            max_question_chars: number;
-            /**
-             * Offline
-             * @description True when Ask why can only give the template answer
-             */
-            offline: boolean;
-        };
         /** LicenceIn */
         tst__api__schemas__exploration__LicenceIn: {
             /** Region */
@@ -20428,15 +20437,6 @@ export interface components {
              * @description The HQ's region, whose markets are v1's (19.5)
              */
             home: boolean;
-        };
-        /** ExplainOut */
-        tst__api__schemas__regulation__ExplainOut: {
-            /** Fine */
-            fine: string;
-            /** Thresholds */
-            thresholds: string;
-            /** Structural */
-            structural: string;
         };
         /** StepOut */
         tst__api__schemas__regulation__StepOut: {
@@ -35779,7 +35779,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["tst__api__schemas__explain__ExplainOut"];
+                    "application/json": components["schemas"]["ExplainOut"];
                 };
             };
             /** @description Bad Request */

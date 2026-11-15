@@ -96,7 +96,7 @@ class RegimeDef(_Frozen):
     turnover_b: float | None = Field(default=None, gt=0)
     turnover_scope: TurnoverScope = "region"
     value_b: float | None = Field(default=None, gt=0)
-    currency: str = Field(min_length=3, max_length=3)
+    currency: str = Field(min_length=3, max_length=3)  # tunable-exempt: an ISO 4217 code
     comply_months: int = Field(ge=0)
     duties: tuple[DutyKind, ...] = Field(min_length=1)
     max_fine_share: float = Field(gt=0, le=1)
@@ -155,7 +155,7 @@ class CaseDef(_Frozen):
     stages: tuple[StageDef, ...] = Field(min_length=1)
     fine: int = Field(ge=0)  # in `currency`, as decided
     final: int = Field(ge=0)  # after appeals to the history's end (0 = annulled)
-    currency: str = Field(min_length=3, max_length=3)
+    currency: str = Field(min_length=3, max_length=3)  # tunable-exempt: an ISO 4217 code
     remedy: DutyKind | None = None
     outcome: HistoryOutcome
 

@@ -19,7 +19,7 @@ class RegimeOut(BaseModel):
     users_share: float | None = Field(description="Users test: share of the part's users")
     turnover_cents: int | None = Field(description="Turnover test, US cents a year")
     turnover_scope: Literal["region", "world"]
-    value_cents: int | None = Field(description="Market value test, US cents")
+    market_value_cents: int | None = Field(description="Market value test, US cents")
     comply_months: int
     duties: list[str]
     max_fine_share: float
@@ -45,8 +45,8 @@ class TestOut(BaseModel):
     users_needed: float | None
     turnover_cents: int
     turnover_needed_cents: int | None
-    value_cents: int | None
-    value_needed_cents: int | None
+    market_value_cents: int | None
+    market_value_needed_cents: int | None
     ratio: float = Field(description="The test's ratio: 1 or more meets every threshold")
     warn_at: float
     designated: bool
@@ -150,7 +150,7 @@ class PrecedentOut(BaseModel):
     source: str
 
 
-class ExplainOut(BaseModel):
+class RegulationExplainOut(BaseModel):
     fine: str
     thresholds: str
     structural: str
@@ -169,7 +169,7 @@ class RegulationOut(BaseModel):
     precedents: list[PrecedentOut]
     fines_cents: int = Field(description="The player's group's fines and penalties to date")
     breaches: list[str]
-    explain: ExplainOut
+    explain: RegulationExplainOut
 
 
 class AnswerOrderIn(BaseModel):
