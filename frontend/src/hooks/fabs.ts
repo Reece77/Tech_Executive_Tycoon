@@ -36,21 +36,42 @@ export function useFabQuote(
   region: string,
   size: number | null,
   duv: boolean,
+  country: string | null = null,
+  ownTools = false,
 ) {
   return useQuery({
-    queryKey: ['saves', saveId, 'fabs', 'quote', node, region, size, duv],
+    queryKey: ['saves', saveId, 'fabs', 'quote', node, region, size, duv, country, ownTools],
     enabled: Boolean(node && region && size),
     queryFn: async () =>
       unwrap(
         await api.GET('/api/saves/{save_id}/fabs/quote', {
-          params: { path: { save_id: saveId }, query: { node, region, size: size ?? 0, duv } },
+          params: {
+            path: { save_id: saveId },
+            query: {
+              node,
+              region,
+              size: size ?? 0,
+              duv,
+              ...(country ? { country } : {}),
+              own_tools: ownTools,
+            },
+          },
         }),
       ),
   });
 }
 
 export type FabAction =
-  | { kind: 'build'; node: string; region: string; size: number; duv: boolean }
+  | {
+      kind: 'build';
+      node: string;
+      region: string;
+      size: number;
+      duv: boolean;
+      country?: string | null; // M33: an EUV fab's tools follow the controls there
+      ownTools?: boolean;
+      prepay?: boolean;
+    }
   | { kind: 'upgrade'; facilityId: number }
   | { kind: 'staff'; facilityId: number; unitId: number | null }
   | { kind: 'sell'; facilityId: number };
@@ -61,7 +82,15 @@ async function apply(saveId: string, a: FabAction) {
       return unwrap(
         await api.POST('/api/saves/{save_id}/fabs/build', {
           ...path(saveId),
-          body: { node: a.node, region: a.region, size: a.size, duv: a.duv },
+          body: {
+            node: a.node,
+            region: a.region,
+            size: a.size,
+            duv: a.duv,
+            country: a.country ?? null,
+            own_tools: a.ownTools ?? false,
+            prepay: a.prepay ?? false,
+          },
         }),
       );
     case 'upgrade':

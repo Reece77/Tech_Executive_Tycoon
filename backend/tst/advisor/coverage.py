@@ -35,6 +35,9 @@ _RULE = exempt("a world rule's figure (a tariff, a share, an allocation) from it
 _PLATFORM = exempt(
     "a platform's public figure (users, a fee rate, a share) from the data or its month"
 )
+_TOOL = exempt(
+    "a tool's published figure (price, throughput, uptime, capacity) from equipment.yaml"
+)
 SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
     # M36 (45.4, 45.6): the Family screen and the founder's Family tab
     "family.ReadinessOut": {
@@ -90,6 +93,60 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
     "platforms.AppFeeOut": {"cents": "platform_fees"},
     "platforms.AppProductOut": {"fees_total_cents": "platform_fees"},
     "platforms.StandardOut": {"adoption": _PLATFORM},
+    # v4 (M33): the Equipment screen (47.6)
+    "equipment.ToolGenerationOut": {
+        "wph": _TOOL,
+        "uptime": _TOOL,
+        "price_cents": _TOOL,
+        "list_cents": _TOOL,
+        "capacity_next": _TOOL,
+    },
+    "equipment.ToolShipmentOut": {"tools": _TOOL},
+    "equipment.ToolOrderOut": {
+        "tools": _INPUT,
+        "delivered": _COUNT,
+        "price_cents": _QUOTE,
+        "lead_low": "tool_wait",
+        "lead_high": "tool_wait",
+        "prepay_cents": _QUOTE,
+    },
+    "equipment.ToolStockOut": {"tools": _COUNT, "book_cents": _BOOK},
+    "equipment.LithoStageOut": {
+        "cost_cents": _QUOTE,
+        "months_low": _QUOTE,
+        "months_high": _QUOTE,
+        "level": _THRESHOLD,
+        "staff": _THRESHOLD,
+        "reference_cents": _QUOTE,
+        "attempt": _COUNT,
+        "months_running": _COUNT,
+        "funding": _INPUT,
+        "spent_cents": _TOTAL,
+        "throughput": _TOOL,
+        "yield_cut": _TOOL,
+    },
+    "equipment.OwnToolsOut": {
+        "made": _COUNT,
+        "in_stock": _COUNT,
+        "installed": _COUNT,
+        "sold": _COUNT,
+        "sales_cents": _TOTAL,
+        "maturity": _TOOL,
+        "throughput": _TOOL,
+        "yield_cut": _TOOL,
+        "per_year": _TOOL,
+    },
+    "equipment.LithoProgrammeOut": {
+        "level": _RESEARCH,
+        "researchers": _COUNT,
+        "funding_low": _THRESHOLD,
+        "funding_high": _THRESHOLD,
+    },
+    "equipment.EquipmentOut": {
+        "prepay_share": _THRESHOLD,
+        "max_order": _THRESHOLD,
+        "order_energy": _THRESHOLD,
+    },
     # Overview and the top bar
     "saves.OverviewOut": {
         "deals_due": _COUNT,

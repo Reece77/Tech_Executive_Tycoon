@@ -75,6 +75,8 @@ class FabOut(BaseModel):
     book_value_cents: int
     tools: int
     tools_label: str | None
+    tool_order_id: int | None = Field(None, description="M33: its open order in ASML's queue")
+    tools_wait_label: str | None = Field(None, description="M33: the order's wait, as a range")
     staff: int
     staff_needed: int
     coverage: float
@@ -148,12 +150,22 @@ class NodesOut(BaseModel):
     euv_short: bool
 
 
+class FabCountryOut(BaseModel):
+    """M33: a country a fab may sit in (an EUV fab's tools follow the controls there)."""
+
+    key: str
+    label: str
+    region: str
+    default: bool
+
+
 class FabsOut(BaseModel):
     fabs: list[FabOut]
     timeline: NodesOut
     process_level: float
     sizes: list[int]
     regions: list[str]
+    countries: list[FabCountryOut] = Field(default_factory=list)
     build_energy: int
     upgrade_energy: int
 
@@ -177,6 +189,11 @@ class FabQuoteOut(BaseModel):
     allowed: bool
     reason: str | None
     how: str = Field(description="How to unlock it when not allowed (M23c)")
+    tools_from_stock: int = Field(description="M33: tools taken from your stock")
+    tools_own: int = Field(description="M33: your own lithography tools it would take")
+    tools_to_order: int = Field(description="M33: tools ordered in ASML's queue")
+    tool_price_cents: int | None = Field(None, description="M33: a tool's price today")
+    tools_wait_label: str | None = Field(None, description="M33: the queue's wait, as a range")
     market_cents: float | None
     cost_per_start_cents: float = Field(
         description="A start's cost at full use: depreciation, fixed, materials and power"
@@ -191,6 +208,15 @@ class BuildFabIn(BaseModel):
     city: str | None = None
     country: str | None = None  # M23a: a countries.yaml key in the region
     company_id: int | None = None  # M23a: a group company to build it for
+    own_tools: bool = False  # M33 (47.4): equip it from your own lithography tools
+    prepay: bool = False  # M33 (47.2): prepay its tool order
+
+
+class UpgradeFabIn(BaseModel):
+    """M33: a conversion's tools (optional body)."""
+
+    own_tools: bool = False
+    prepay: bool = False
 
 
 class FoundryContractIn(BaseModel):

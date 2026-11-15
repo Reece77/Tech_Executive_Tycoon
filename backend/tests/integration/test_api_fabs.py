@@ -74,9 +74,16 @@ def test_build_a_fab_shows_the_estimate_not_the_overrun(
 ) -> None:
     _tools().euv(saves, "e", loaded)
     base = BASE.format("e")
-    q = api.get(f"{base}/fabs/quote?node=n5&region=east_asia&size=100000")
+    # M33: in Taiwan: from July 2019 EUV tools do not ship to China, East Asia's default
+    china = api.get(f"{base}/fabs/quote?node=n5&region=east_asia&size=100000")
+    assert not china["allowed"] and "China" in (china["reason"] or "")
+    q = api.get(f"{base}/fabs/quote?node=n5&region=east_asia&size=100000&country=taiwan")
     assert q["allowed"] and q["euv"] and q["tools"] == 50 and q["tools_label"]
-    out = api.post(f"{base}/fabs/build", json={"node": "n5", "region": "east_asia", "size": 100000})
+    assert q["tools_to_order"] == 50 and q["tools_wait_label"]  # M33: the queue's range
+    out = api.post(
+        f"{base}/fabs/build",
+        json={"node": "n5", "region": "east_asia", "size": 100000, "country": "taiwan"},
+    )
     assert find_forbidden_keys(out) == []
     fab = out["fabs"]["fabs"][0]
     assert fab["status"] == "building" and fab["estimate_cents"] == q["capex_cents"]

@@ -561,6 +561,10 @@ def equipment_problems(balance: Balance, data: GameData) -> list[str]:
         named |= {c for rule in ef.controls for c in rule.to}
         if bad := sorted(named - countries):
             problems.append(f"unknown countries {bad}")
+    if data.chain_companies is not None:
+        makers = {s.key for s in ef.suppliers}
+        if bad := sorted({m.key for m in data.chain_companies.equipment_makers} - makers):
+            problems.append(f"chain_companies.yaml equipment_makers: not suppliers {bad}")
     if data.tech is not None and balance.equipment.programme.domain not in {
         d.key for d in data.tech.domains
     }:

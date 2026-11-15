@@ -44,6 +44,7 @@ CHINA: Final = "china"  # tunable-exempt: countries.yaml key
 DECEMBER: Final = 11  # tunable-exempt: calendar (turn % 12)
 HORIZON_YEARS: Final = 12  # tunable-exempt: how far a lead-time estimate looks
 NEVER: Final = 10**6  # tunable-exempt: a turn no game reaches
+MID: Final = 0.5  # tunable-exempt: a uniform's middle (no jitter)
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,7 +83,7 @@ def buyer_months(state: GameState, buyer: str, company_id: int | None, balance: 
 def place(order: ToolOrder, history: float, balance: Balance, shift: float = 0.0) -> float:
     """An order's place in the queue (module docstring); lower is served first."""
     qb = balance.equipment.queue
-    p = order.placed_turn - history - shift + qb.jitter_months * (order.jitter - 0.5)
+    p = order.placed_turn - history - shift + qb.jitter_months * (order.jitter - MID)
     if order.prepaid:
         p -= qb.prepay_months
     return p
@@ -272,7 +273,7 @@ def estimate_turn(
         if o.generation == g.key and o.status == "open" and o.id != order.id
     ]
     orders.append(order)
-    orders = [replace(o, jitter=0.5) for o in orders if ec.order_blocked(state, data, o) is None]
+    orders = [replace(o, jitter=MID) for o in orders if ec.order_blocked(state, data, o) is None]
     end = state.turn + HORIZON_YEARS * MONTHS
     sim = replace(state, tool_orders=tuple(orders))
     months = {buyer_key(o): buyer_months(state, o.buyer, o.company_id, balance) for o in orders}
@@ -320,7 +321,7 @@ def _rival_topup(state: GameState, g: GenerationDef, balance: Balance, data: Gam
                     g.key,
                     target - have,
                     state.turn,
-                    jitter=0.5,
+                    jitter=MID,
                     country=ed.equipment_file(data).buyer_countries[buyer],
                 )
             )

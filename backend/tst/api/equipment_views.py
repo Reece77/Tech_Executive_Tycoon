@@ -9,15 +9,15 @@ from __future__ import annotations
 from typing import Final
 
 from tst.api.schemas.equipment import (
-    ControlOut,
     EquipmentOut,
-    GenerationOut,
-    OrderOut,
+    LithoProgrammeOut,
+    LithoStageOut,
     OwnToolsOut,
-    ProgrammeOut,
-    ShipmentOut,
-    StageOut,
-    StockOut,
+    ToolControlOut,
+    ToolGenerationOut,
+    ToolOrderOut,
+    ToolShipmentOut,
+    ToolStockOut,
 )
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
@@ -68,7 +68,7 @@ def _book(state: GameState, g: GenerationDef) -> str:
     return "a year deep" if depth <= DEEP else "long"
 
 
-def generations_out(state: GameState, data: LoadedData) -> list[GenerationOut]:
+def generations_out(state: GameState, data: LoadedData) -> list[ToolGenerationOut]:
     ef = ed.equipment_file(data.game_data)
     b = data.balance
     year = ed.year_of(state.turn)
@@ -81,7 +81,7 @@ def generations_out(state: GameState, data: LoadedData) -> list[GenerationOut]:
         if nxt > g.last_year and ed.supplier_year(state, g.key, nxt) is None:
             cap_next = None  # not announced before its December
         out.append(
-            GenerationOut(
+            ToolGenerationOut(
                 key=g.key,
                 label=g.label,
                 maker=ef.supplier(g.maker).name,
@@ -96,7 +96,7 @@ def generations_out(state: GameState, data: LoadedData) -> list[GenerationOut]:
                 price_cents=ed.price_cents(state, g, b),
                 list_cents=round(ed.base_price_cents(g, state.turn, b.equipment.price.growth)),
                 shipments=[
-                    ShipmentOut(year=y, tools=ed.capacity(state, g, y))
+                    ToolShipmentOut(year=y, tools=ed.capacity(state, g, y))
                     for y in range(max(2010, year - 9), year)
                     if y >= ed.year_of(g.first_shipment_turn)
                 ],
@@ -108,7 +108,7 @@ def generations_out(state: GameState, data: LoadedData) -> list[GenerationOut]:
     return out
 
 
-def orders_out(state: GameState, data: LoadedData) -> list[OrderOut]:
+def orders_out(state: GameState, data: LoadedData) -> list[ToolOrderOut]:
     from tst.sim.fabs.plants import fab_name
 
     group = _group(state, data)
@@ -136,7 +136,7 @@ def orders_out(state: GameState, data: LoadedData) -> list[OrderOut]:
             None,
         )
         out.append(
-            OrderOut(
+            ToolOrderOut(
                 id=o.id,
                 generation=o.generation,
                 generation_label=ef.generation(o.generation).label,
@@ -161,23 +161,23 @@ def orders_out(state: GameState, data: LoadedData) -> list[OrderOut]:
     return out
 
 
-def stock_out(state: GameState, data: LoadedData) -> list[StockOut]:
+def stock_out(state: GameState, data: LoadedData) -> list[ToolStockOut]:
     group = _group(state, data)
     ef = ed.equipment_file(data.game_data)
     return [
-        StockOut(
+        ToolStockOut(
             generation=s.generation,
             generation_label=ef.generation(s.generation).label,
             source=s.source,
             tools=s.tools,
-            value_cents=s.value_cents,
+            book_cents=s.value_cents,
         )
         for s in state.tool_stock
         if s.company_id in group and s.tools > 0
     ]
 
 
-def controls_out(state: GameState, data: LoadedData) -> list[ControlOut]:
+def controls_out(state: GameState, data: LoadedData) -> list[ToolControlOut]:
     gd = data.game_data
     ef = ed.equipment_file(gd)
     out = []
@@ -185,7 +185,7 @@ def controls_out(state: GameState, data: LoadedData) -> list[ControlOut]:
         if c.turn > state.turn:
             continue
         out.append(
-            ControlOut(
+            ToolControlOut(
                 key=c.key,
                 title=c.title,
                 month_label=format_turn(c.turn),
@@ -201,7 +201,7 @@ def controls_out(state: GameState, data: LoadedData) -> list[ControlOut]:
             if EUV not in a.rule.goods:
                 continue
             out.append(
-                ControlOut(
+                ToolControlOut(
                     key=a.key,
                     title=a.rule.title,
                     month_label=format_turn(a.start_turn),
@@ -223,7 +223,7 @@ def _end_window(prog: Programme, p: ProgrammeDef, data: LoadedData) -> str:
     return f"{format_turn(lo)} to {format_turn(hi)}, if fully staffed"
 
 
-def programme_out(state: GameState, data: LoadedData) -> ProgrammeOut:
+def programme_out(state: GameState, data: LoadedData) -> LithoProgrammeOut:
     b, gd = data.balance, data.game_data
     ef = ed.equipment_file(gd)
     pb = b.equipment.programme
@@ -246,11 +246,11 @@ def programme_out(state: GameState, data: LoadedData) -> ProgrammeOut:
                 status = "open"
         done = run is not None and run.status == "succeeded"
         stages.append(
-            StageOut(
+            LithoStageOut(
                 key=p.key,
                 label=p.label,
                 generation_label=ef.generation(p.generation).label,
-                needs=ef.stage(p.needs).label if p.needs else None,
+                after_stage=ef.stage(p.needs).label if p.needs else None,
                 cost_cents=p.cost,
                 months_low=p.months[0],
                 months_high=p.months[1],
@@ -300,7 +300,7 @@ def programme_out(state: GameState, data: LoadedData) -> ProgrammeOut:
                 per_year=ef.stage(x.stage).tools_per_year,
             )
         )
-    return ProgrammeOut(
+    return LithoProgrammeOut(
         unlocked=unlock is None,
         unlock_reason=unlock,
         level=round(ep.level(state, cid, b, gd), 1),

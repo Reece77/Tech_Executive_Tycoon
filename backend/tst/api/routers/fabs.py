@@ -20,6 +20,7 @@ from tst.api.schemas.fabs import (
     FoundryContractIn,
     NodesOut,
     StaffFabIn,
+    UpgradeFabIn,
 )
 from tst.db import inbox, repository
 from tst.loader import LoadedData
@@ -69,10 +70,16 @@ def quote_fab(
     settings: SettingsDep,
     data: DataDep,
     duv: bool = False,
+    country: str | None = None,
+    own_tools: bool = False,
+    prepay: bool = False,
 ) -> FabQuoteOut:
-    """What a fab would cost, when it could run and what a start would cost (38.2)."""
+    """What a fab would cost, when it could run and what a start would cost (38.2); M33: where
+    its tools come from and their wait in ASML's queue, as a range (47.2)."""
     state = _state(_path(settings, save_id))
-    return fab_views.quote_out(state, node, region, size, duv, data)
+    return fab_views.quote_out(
+        state, node, region, size, duv, data, country=country, own_tools=own_tools, prepay=prepay
+    )
 
 
 @router.post("/fabs/build", response_model=FabsActionOut, responses=ERRORS, operation_id="buildFab")
@@ -90,6 +97,8 @@ def build_fab(
         body.city,
         company_id=body.company_id,
         country=body.country,
+        own_tools=body.own_tools,
+        prepay=body.prepay,
     )
     return _act(path, data, action)
 
@@ -101,10 +110,16 @@ def build_fab(
     operation_id="upgradeFab",
 )
 def upgrade_fab(
-    save_id: str, facility_id: int, settings: SettingsDep, data: DataDep
+    save_id: str,
+    facility_id: int,
+    settings: SettingsDep,
+    data: DataDep,
+    body: UpgradeFabIn | None = None,
 ) -> FabsActionOut:
     path = _path(settings, save_id)
-    return _act(path, data, UpgradeFab(_founder_id(_state(path)), facility_id))
+    own, prepay = (body.own_tools, body.prepay) if body is not None else (False, False)
+    action = UpgradeFab(_founder_id(_state(path)), facility_id, own_tools=own, prepay=prepay)
+    return _act(path, data, action)
 
 
 @router.post(

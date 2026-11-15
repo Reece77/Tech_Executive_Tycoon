@@ -68,6 +68,7 @@ SYSTEMS: tuple[System, ...] = (
     System(22, "automation", "Automation", "automation"),  # tunable-exempt: stable id (M27a)
     System(23, "platforms", "Platforms", "markets"),  # tunable-exempt: stable id (M31)
     System(24, "family", "Family", "people"),  # tunable-exempt: stable id (M36)
+    System(25, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -192,6 +193,13 @@ def _fabs(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str |
     return None
 
 
+def _equipment(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
+    """M33 (47): the group owns a fab (its tools come from ASML's queue)."""
+    if data.equipment is None:
+        return None
+    return "the group owns a fab" if any(f.company_id in ids for f in state.fabs) else None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -251,6 +259,7 @@ CHECKS: dict[str, Check] = {
     "world": _world,
     "automation": _any(_by_stage(STAGE_GROWTH, "stage 3"), _automation),
     "family": _family,  # M36
+    "equipment": _equipment,  # M33
     "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
 }
 

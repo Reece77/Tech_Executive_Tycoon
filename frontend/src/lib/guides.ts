@@ -162,6 +162,15 @@ export const GUIDES: Record<string, Guide> = {
       'Give an area to someone with a strong fit and enough energy; a weak owner makes visibly worse calls.',
     ],
   },
+  equipment: {
+    title: 'Equipment',
+    path: 'products/equipment',
+    what: "Lithography tools: ASML's generations, prices and order queue, your orders and their place as a range of months, the controls on who may receive them, and your own lithography programme.",
+    start: [
+      "A new buyer waits behind a year or more of rivals' orders; prepaying moves an order up, and a history of deliveries moves you up for good.",
+      "Your own scanners are a decade-long bet: expensive, uncertain, and worse than ASML's at first.",
+    ],
+  },
   platforms: {
     title: 'Platforms',
     path: 'competitors/platforms',

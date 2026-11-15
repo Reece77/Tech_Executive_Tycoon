@@ -31,7 +31,7 @@ from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.equipment import data as ed
-from tst.sim.equipment.config import MONTHS, ProgrammeDef
+from tst.sim.equipment.config import EPS, MONTHS, ProgrammeDef
 from tst.sim.equipment.draws import PROGRAMME, gen
 from tst.sim.equipment.models import OwnTools, Programme
 from tst.sim.ledger import CASH, RESEARCH, LedgerEntry
@@ -44,6 +44,7 @@ from tst.sim.state import GameState
 SKILL_NEUTRAL: Final = 10.0  # tunable-exempt: skills are 1-20, 10 the neutral point (11.3)
 SKILL_FACTOR: Final = (0.5, 1.5)  # tunable-exempt: as 21.3's quality clamp
 CHIPS_PREFIX: Final = "chips_"  # tunable-exempt: categories.yaml chip categories
+START_DRAWS: Final = 3  # tunable-exempt: work, overrun and success, in that order (ADR-0013)
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,7 +153,7 @@ def start(
     prev = latest(state, company_id, stage)
     attempt = 1 if prev is None else prev.attempt + 1
     g = gen(rng, state.turn, PROGRAMME, company_id, stage_index(data, stage), attempt)
-    u_work, u_over, u_success = (float(x) for x in g.random(3))
+    u_work, u_over, u_success = (float(x) for x in g.random(START_DRAWS))
     overrun = pb.overrun.lo + (pb.overrun.hi - pb.overrun.lo) * u_over
     months = p.months[0] + (p.months[1] - p.months[0]) * u_work
     return Programme(
@@ -224,7 +225,7 @@ def month(
                     stage_index(data, p.key),
                     prog.attempt,
                 )
-                g.random(3)  # the start's three draws, then success's two
+                g.random(START_DRAWS)  # the start's draws, then success's two
                 u_t, u_y = (float(x) for x in g.random(2))
                 prog = replace(
                     prog,
@@ -293,7 +294,7 @@ def produce(
     for x in state.own_tools:
         p = ef.stage(x.stage)
         carry = x.carry + p.tools_per_year / MONTHS
-        made = math.floor(carry + 1e-9)
+        made = math.floor(carry + EPS)
         if made:
             state = stock.add(state, x.company_id, x.generation, made, "own", made * p.tool_cents)
             entries.append(

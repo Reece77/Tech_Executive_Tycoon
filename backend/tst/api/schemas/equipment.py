@@ -10,12 +10,12 @@ from pydantic import BaseModel, Field
 from tst.api.schemas.people import EnergyOut
 
 
-class ShipmentOut(BaseModel):
+class ToolShipmentOut(BaseModel):
     year: int
     tools: int
 
 
-class GenerationOut(BaseModel):
+class ToolGenerationOut(BaseModel):
     key: str
     label: str
     maker: str
@@ -29,13 +29,13 @@ class GenerationOut(BaseModel):
     uptime: float
     price_cents: int = Field(description="Today's price, with scarcity")
     list_cents: int = Field(description="The list price before scarcity")
-    shipments: list[ShipmentOut] = Field(description="Tools a year to the last full year")
+    shipments: list[ToolShipmentOut] = Field(description="Tools a year to the last full year")
     capacity_next: int | None = Field(description="Next year's capacity, once announced")
     book: str = Field(description="ASML's order book: thin, a year deep, or long")
     shipping: bool
 
 
-class OrderOut(BaseModel):
+class ToolOrderOut(BaseModel):
     id: int
     generation: str
     generation_label: str
@@ -53,15 +53,15 @@ class OrderOut(BaseModel):
     prepay_cents: int | None = Field(description="What prepaying would cost (an open order)")
 
 
-class StockOut(BaseModel):
+class ToolStockOut(BaseModel):
     generation: str
     generation_label: str
     source: str = Field(description="asml | own")
     tools: int
-    value_cents: int
+    book_cents: int = Field(description="What they cost (tool inventory)")
 
 
-class ControlOut(BaseModel):
+class ToolControlOut(BaseModel):
     key: str
     title: str
     month_label: str
@@ -71,11 +71,11 @@ class ControlOut(BaseModel):
     source: str | None
 
 
-class StageOut(BaseModel):
+class LithoStageOut(BaseModel):
     key: str
     label: str
     generation_label: str
-    needs: str | None
+    after_stage: str | None = Field(description="The stage that must work first")
     cost_cents: int = Field(description="The estimate (programmes often run over)")
     months_low: int
     months_high: int
@@ -108,25 +108,25 @@ class OwnToolsOut(BaseModel):
     per_year: int
 
 
-class ProgrammeOut(BaseModel):
+class LithoProgrammeOut(BaseModel):
     unlocked: bool
     unlock_reason: str | None
     level: float
     researchers: int
     funding_low: float
     funding_high: float
-    stages: list[StageOut]
+    stages: list[LithoStageOut]
     own_tools: list[OwnToolsOut]
 
 
 class EquipmentOut(BaseModel):
     turn: int
     supplier: str
-    generations: list[GenerationOut]
-    orders: list[OrderOut]
-    stock: list[StockOut]
-    controls: list[ControlOut]
-    programme: ProgrammeOut
+    generations: list[ToolGenerationOut]
+    orders: list[ToolOrderOut]
+    stock: list[ToolStockOut]
+    controls: list[ToolControlOut]
+    programme: LithoProgrammeOut
     prepay_share: float
     max_order: int
     order_energy: int

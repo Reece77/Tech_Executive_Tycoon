@@ -15,6 +15,9 @@ from tst.sim.facilities.config import Range, month_to_turn
 
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0 is January 2010 (CLAUDE.md 7)
 MONTHS: Final = 12  # tunable-exempt: calendar
+MIN_YEAR: Final = 2000  # tunable-exempt: a model year is at least this (data sanity)
+SHARE_TOLERANCE: Final = 1e-6  # tunable-exempt: buyers' shares sum to 1 within this
+EPS: Final = 1e-9  # tunable-exempt: float tolerance on a whole tool
 
 
 class _Frozen(BaseModel):
@@ -49,7 +52,7 @@ class SupplierDef(_Frozen):
 
 class ModelDef(_Frozen):
     model: str = Field(min_length=1)
-    year: int = Field(ge=2000)
+    year: int = Field(ge=MIN_YEAR)
     wph: float = Field(gt=0)  # rated wafers an hour
     tag: str
 
@@ -107,7 +110,7 @@ class GenerationDef(_Frozen):
 
     @model_validator(mode="after")
     def _check(self) -> GenerationDef:
-        if abs(sum(self.buyers.values()) - 1.0) > 1e-6:
+        if abs(sum(self.buyers.values()) - 1.0) > SHARE_TOLERANCE:
             raise ValueError(f"generation {self.key}: buyers' shares must sum to 1")
         if any(not 0 < u <= 1 for u in self.uptime.values()):
             raise ValueError(f"generation {self.key}: uptime must be in (0, 1]")

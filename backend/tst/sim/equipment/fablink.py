@@ -34,6 +34,7 @@ from tst.sim.equipment import data as ed
 from tst.sim.equipment import programme as ep
 from tst.sim.equipment import queue as eq
 from tst.sim.equipment import stock
+from tst.sim.equipment.config import EPS
 from tst.sim.equipment.models import FabTools, ToolOrder
 from tst.sim.fabs.models import Fab
 from tst.sim.ledger import PPE, LedgerEntry
@@ -93,9 +94,9 @@ def plan(
         lt = ep.line(state, company_id, g.key)
         if lt is not None:
             t = ep.own_throughput(state, lt, balance)
-            want = math.ceil(left / max(t, 1e-9))
+            want = math.ceil(left / max(t, EPS))
             from_own = min(stock.held(state, company_id, g.key, "own"), want)
-            left = max(0, left - math.floor(from_own * t + 1e-9))
+            left = max(0, left - math.floor(from_own * t + EPS))
     price = ed.price_cents(state, g, balance)
     lst = round(ed.base_price_cents(g, state.turn, balance.equipment.price.growth))
     low = high = None
@@ -294,7 +295,7 @@ def tools_factor(state: GameState, fab: Fab, balance: Balance, data: GameData) -
             asml_up = ed.uptime(g, state.turn)
             up = ep.own_uptime(state, line, asml_up, balance) / asml_up
             cut = ep.own_yield_cut(state, line, balance) / POINTS
-            y = max(fab.yield_, 1e-9)
+            y = max(fab.yield_, EPS)
             out += x.tools * up * max(0.0, 1 - cut / y)
         else:
             f = 1.0 if country is None else ec.uptime_factor(state, data, country, balance)

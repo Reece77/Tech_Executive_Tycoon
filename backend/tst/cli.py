@@ -4216,6 +4216,61 @@ if __name__ == "__main__":
     app()
 
 
+@app.command("equipment")
+def equipment_cmd(save: SaveOpt) -> None:
+    """Semiconductor equipment (M33, 47): ASML's tool generations, prices and order book; your
+    tool orders with their queue place as a range; stock, controls and the lithography
+    programme."""
+    from tst.api import equipment_views
+
+    _, data, state = _game(save)
+    if data.game_data.equipment is None:
+        typer.echo("No equipment data.")
+        return
+    e = equipment_views.equipment_out(state, data)
+    typer.echo(f"{format_turn(state.turn)}: {e.supplier}'s tools")
+    for g in e.generations:
+        last = g.shipments[-1] if g.shipments else None
+        typer.echo(
+            f"  {g.label} ({g.model}): {g.wph:.0f} wph, uptime {g.uptime:.0%},"
+            f" {format_money(g.price_cents)}"
+            + (f" (list {format_money(g.list_cents)})" if g.price_cents != g.list_cents else "")
+            + (f", {last.tools} in {last.year}" if last else "")
+            + (f", book {g.book}" if g.queued else "")
+            + ("" if g.shipping else f", first shipment {g.first_shipment_label}")
+        )
+    for o in e.orders:
+        typer.echo(
+            f"  order {o.id}: {o.delivered}/{o.tools} {o.generation_label} for {o.fab or 'stock'},"
+            f" placed {o.placed_label}, {o.status}"
+            + (f", last tool in {o.lead_label}" if o.status == "open" else "")
+            + (" (prepaid)" if o.prepaid else "")
+        )
+    for st in e.stock:
+        typer.echo(f"  stock: {st.tools} {st.generation_label} ({st.source})")
+    for c in e.controls:
+        typer.echo(f"  control {c.month_label}: {c.title}{'' if c.in_force else ' (lapsed)'}")
+    p = e.programme
+    typer.echo(
+        "  lithography programme: "
+        + (
+            f"level {p.level:.0f}, {p.researchers} researchers"
+            if p.unlocked
+            else (p.unlock_reason or "")
+        )
+    )
+    for stg in p.stages:
+        typer.echo(
+            f"    {stg.label}: {stg.status}"
+            + (
+                f", since {stg.started_label}, {format_money(stg.spent_cents)} spent"
+                if stg.started_label
+                else ""
+            )
+            + (f", ends {stg.end_window_label}" if stg.end_window_label else "")
+        )
+
+
 @app.command("platforms")
 def platforms_cmd(
     save: SaveOpt,
