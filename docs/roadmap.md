@@ -52,9 +52,9 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 | Milestone | Lane | Starts |
 | --- | --- | --- |
 | M31, platforms and ecosystems | C | after `m27a-done` (about 2026-11-17) |
-| M32, power and owned plants | A or B | after `m28-done` (about 2026-11-20) |
-| M33, semiconductor equipment (EUV) | A or B | after `m28-done`, beside M32 |
-| M34, regulation with teeth | C | after `m31-done` |
+| M32, power and owned plants | A, merges last | now (brief `docs/tasks/M32-power-and-owned-plants.md`, formulas §46) |
+| M33, semiconductor equipment (EUV) | B, merges second | now (brief `docs/tasks/M33-semiconductor-equipment.md`, formulas §47) |
+| M34, regulation with teeth | C, merges first | now (brief `docs/tasks/M34-regulation-with-teeth.md`, formulas §48) |
 | M35, v4 balance and polish | single | after M32–M34; closes v4 |
 
 ## Phase 4: v5, the dynasty and new industries

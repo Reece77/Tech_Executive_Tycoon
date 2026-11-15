@@ -3582,3 +3582,131 @@ Reece (2026-11-14): **the player plays the heir**, and the old founder becomes a
 ### 45.9 What the API may show
 
 Family members' public facts (names, ages, relationships, education, roles), their ratings as revealed ranges, readiness bands, closeness and relationship scores, the adviser's opinions, estate-tax rules and quotes, and the dynasty score with its parts. Never a family member's potential or hidden traits, or the draws behind life events.
+
+## 46. Power and owned plants (M32; v4)
+
+Reece (2026-11-13): the player can **buy power contracts by region** and **build and own plants** (gas, solar with storage, wind and nuclear, small modular reactors later) for its fabs and data centres; owned plants unlock at **stage 4**. M17 already gives each region a power price (a market good, §33). This section makes power an input to every facility, adds contracts, plants, grid queues and carbon prices, and lets power decide where data centres and fabs can be built. **History holds to 2025:** regional power prices, carbon prices and dated rules follow the data (`power.yaml`, research `docs/v4-research/power-dossier.md`).
+
+### 46.1 Demand
+
+- Every facility kind and data centre has a **power draw** in MW (`power.draw.<kind>`, scaled by capacity and use): data centres by compute capacity, fabs by wafer starts and node (EUV nodes draw more), mines and refineries by output, assembly plants and offices small.
+- A company's monthly demand per region is the sum of its facilities' draws × hours. It replaces the region index cost in each facility's books (§35, §36, §38, §26) with the energy actually bought, at the same total to 2025 (§46.8 target 1).
+
+### 46.2 Supply: grid, contracts and owned plants
+
+- **The grid** (default): energy at the region's monthly price (M17's path; from 2026 also × M28's balance factor for power).
+- **Power-purchase agreements** (PPAs): a fixed price for a fixed volume for 5–20 years from a named generator (M28's chain companies gain power producers by region from the data), at the forward price minus a term discount. Take-or-pay as §33.3. Termination as M23a's contracts.
+- **Owned plants** (stage 4 or later, a one-off): a facility of kind `plant` with a type: `gas` (combined cycle), `solar_storage`, `wind`, `nuclear` (large, from the data's dates) and `smr` (small modular, from its seeded era, §26.4). Each type has, by build year (data to 2025, then a seeded learning curve): capex per kW, build months, capacity factor, fuel cost (gas from M17's path), fixed and variable operating cost, carbon intensity, and a hidden overrun (nuclear's large: `power.overrun.<type>`, as §35's mines).
+- **Dispatch each month:** own plants first (their energy at marginal cost), then PPAs, then the grid; surplus own energy sells to the grid at the regional price minus `power.export_discount`.
+- **Behind the meter:** a plant on the same site as a fab or data centre skips grid charges (`power.grid_charge_share` of the price) and is not exposed to grid outages.
+
+### 46.3 Grid queues
+
+- A new plant, and a new data centre or fab above `power.queue_min_mw`, must join its region's **interconnection queue** before it can draw from or sell to the grid. The wait is `power.queue_months.<region>` by year (data to 2025: US queues lengthening to about five years; then seeded with load growth), shown as a range at ordering. Behind-the-meter supply sized to the whole load skips the queue.
+- A queued project's build can finish before its connection; it then waits (holding cost: its fixed costs).
+
+### 46.4 Carbon
+
+- **Carbon price** per tonne by region from its start date (EU ETS from 2005, others from their dates; data to 2025, then a seeded path with policy steps). Each plant's and the grid's carbon intensity × price adds to the energy cost; the grid's intensity falls by the region's data and then a seeded decarbonisation.
+- **Disclosure:** the company's emissions (scope 1 from owned plants, scope 2 from purchased energy) appear in the annual report; persona and brand react above `power.green_brand_tonnes` per $1M revenue (consumer brands −1 to −3, Beloved −2) and below a clean share (+1 brand).
+
+### 46.5 Outages and reliability
+
+- Grid outages by region (stream `power`, rate from the data's reliability index, rising when reserve margin is thin under M28's balance factor): a fab loses `power.outage_wafer_loss` of the month's starts in progress, a data centre its SLA credit (§10). Own behind-the-meter plants and batteries cut the loss by their share of the load.
+- Plant outages (forced outage rates by type) take the plant offline for 1–3 months; nuclear's rarer and longer.
+
+### 46.6 Siting
+
+- When ordering a data centre or fab, the screen shows each candidate city's expected power price, queue wait, carbon price, outage rate and whether behind-the-meter supply is possible. **By the late 2020s power is the binding constraint**: in congested regions the queue dominates the build time.
+
+### 46.7 Rivals
+
+- M28's chain companies gain **power producers** (utilities and independent generators by region, from the data) with plants, capacity decisions (§41.2's rule on the power price) and books. Rival hyperscalers and foundries sign PPAs and, from 2026, build plants by personality.
+
+### 46.8 Balance targets (printed)
+
+1. **History holds:** to December 2025, every power and carbon price and dated rule follows the data, and every facility's power cost is within 1% of `main` before M32 (median, 10 seeds); every earlier guard unchanged.
+2. **Power binds later:** for a data centre ordered in 2028 in the US's most congested region, the median time to power is at least 3 years without behind-the-meter supply and at most 2 with it.
+3. **Owning plants pays at a price:** a fab with an owned gas or solar-storage plant sized to its load pays a median energy cost at least 15% below grid over 2030–2039, at a capital cost with IRR 6–12%; nuclear's IRR range is wider (−5 to 12%) with at least one overrun above 50% on 3 of 10 seeds.
+4. **Carbon moves the cheapest plant:** in the EU, the cheapest new plant type by levelised cost changes from gas to solar-storage or wind between 2020 and 2035 on at least 7 of 10 seeds.
+5. **Outages matter:** a fab on the grid in the least reliable region loses at least 1% of a year's starts to outages; behind-the-meter supply halves it.
+6. **Turn time:** within M30's budget and the 500 ms guard on the `full_integrator` save (re-measured in M35).
+
+### 46.9 What the API may show
+
+Prices, carbon prices, queue waits as ranges, plant types' published costs, the player's plants and contracts, emissions, outages that happened. Never a plant's hidden overrun, the outage draws or seeded future prices and policy steps before they happen.
+
+## 47. Semiconductor equipment (M33; v4)
+
+Reece (2026-11-13): first the **chokepoint**, one supplier (ASML), allocation queues, prices and export controls, with rivals competing for slots; building the player's own lithography tools is a **late, very expensive research path** (a decade or more, tens of billions, with failure risk). M21 made EUV tools a market good with a two-year lead in shortages, and M22 controls them. This section makes the supplier real and adds the race and the long bet. **History holds to 2025** (`equipment.yaml`, research `docs/v4-research/equipment-dossier.md`).
+
+### 47.1 The supplier and its tools
+
+- **ASML** becomes a chain company (§41.1) making tools by **generation**: DUV immersion (ArF-i, the 28 nm to 7 nm workhorse), low-NA EUV (NXE, from the data's first volume, about 2018–2019 for 7 nm-class), and high-NA EUV (EXE, first shipments in the data, about 2024–2025), with price, throughput (wafers an hour), uptime and the nodes each serves. Rival DUV makers (Nikon, Canon) supply older generations; no one else supplies EUV to 2025.
+- **Capacity:** tools shipped a year by generation follow the data to 2025, then ASML's December capex rule (§41.2) on its order book.
+
+### 47.2 The queue
+
+- Each December every buyer (the player, rival foundries, IDMs) places orders by generation for delivery from the next year. Orders join a queue; deliveries are allocated each quarter by `queue order × buyer weight`, where the weight rises with the buyer's order history and prepayment (`equipment.prepay_weight`) and falls when a rule blocks the destination (§39). Lead time is shown as a range at ordering.
+- A fab's EUV node completes only with its tools (as §38). A conversion to an EUV node waits for its tools.
+- **Prices** rise by generation and with the queue's length (`equipment.price_scarcity`); a prepayment (`equipment.prepay_share` of the price, a one-off) moves the buyer up.
+
+### 47.3 Export controls on tools
+
+- M22's rules on `euv_tools` and advanced DUV keep biting as dated (Netherlands and Japan rules from 2023, with the US's); from 2026 seeded tightening and loosening by bloc relations. A blocked buyer's queue place is lost; servicing of installed tools may be restricted (`equipment.service_ban_uptime_cut`).
+
+### 47.4 The player's own lithography programme
+
+- A **lithography** research domain (the R&D tree, §21) unlocks at stage 5 with the player's chip design and fabs: generations `litho_1` (a DUV-class tool), `litho_2` (low-NA EUV-class) and `litho_3` (high-NA-class), each needing the previous and a minimum research spend and staff (optics, precision mechanics, light source: existing skills `chip_design`, `manufacturing`, `research` weights).
+- Each generation's programme has a hidden success draw and overrun (stream `equipment`, as §35's mines): a cost range in the tens of billions, 4–8 years per generation, with a chance of failure that falls with research spend and staff skill. Results arrive as **prototype tools** with lower throughput (×0.4–0.7), lower uptime and lower yield (−5 to −15 points at first) that improve with installed use.
+- The player's tools can equip its own fabs (skipping the queue and controls on ASML's tools) and, from `litho_2`, be **sold** to rival foundries, which buy when the queue for ASML's is long and the price is lower. ASML responds by cutting price and accelerating its next generation.
+
+### 47.5 Balance targets (printed)
+
+1. **History holds:** tool shipments, prices, generations and dated controls to 2025 follow the data; every earlier guard unchanged.
+2. **The queue is real:** in 2027–2032 a new EUV buyer's median wait is at least 18 months and a long-standing buyer's at most 12; a buyer under a tool ban gets none.
+3. **The long bet rarely pays early:** a programme started in 2028 with funding at the 60th percentile reaches `litho_2` by 2039 on 2–5 of 10 seeds; when it does, the fab's cost per good die on its tools comes within 15% of ASML-equipped within 5 years.
+4. **China under controls:** a Chinese foundry's EUV-class capability arrives later than the leading foundries by at least 8 years (median) while the bans hold.
+5. **Turn time** within the guards.
+
+### 47.6 What the API may show
+
+Tool generations, published prices and throughput, the player's queue place as a range, deliveries, controls. Never the allocation weights, a programme's hidden success draw or overrun, or ASML's capex intentions before announced.
+
+## 48. Regulation with teeth (M34; v4)
+
+Reece (2026-11-13): regulators **can force a break-up or unbundling** (for example separating the app store from the devices business), as a **rare and visible threat with warning signs years ahead**; most outcomes are lesser remedies. This section adds designations, duties, investigations, fines and structural remedies, by region, for the player and rivals alike, using M31's platforms and the existing antitrust review (§28.7), influence (§32.5) and persona (§32.4). **History holds to 2025** (`regulation.yaml`, research `docs/v4-research/regulation-dossier.md`).
+
+### 48.1 Regulators and designations
+
+- Each region has a **regulator** record (EU Commission, US DOJ and FTC, UK CMA, Japan JFTC, Korea KFTC, China SAMR) with a strictness path (data to 2025; seeded after, moved by politics and §32.5 influence).
+- **Gatekeeper designation** (EU from 2023, others from their dates): a company is designated in a region when it runs a platform (§44) or a core service with users and revenue above that region's thresholds (data: the DMA's 45M monthly users and €7.5B turnover or €75B value). Designation brings duties (§48.2). The test runs each December; a warning arrives a year before a likely designation (when within 80% of thresholds).
+
+### 48.2 Duties
+
+- Duties by region and date: side-loading and alternative stores, alternative payments and anti-steering, interoperability, no self-preferencing (§44.5's setting forced off), data portability, fee caps. They change the designated platform's rules and fee schedule (`platform_fee_rule`, ADR-0021) and cost compliance (`regulation.compliance_cents` per duty a year).
+- **Non-compliance** (the player may keep a forbidden setting) raises an investigation's chance and size.
+
+### 48.3 Investigations
+
+- Each month a regulator may open an **investigation** of a company (stream `regulation`) with a chance rising with: market share in a category above `regulation.dominance_share` (40%), self-preferencing, removals of rivals' apps, fee level, acquisitions of nascent rivals (§28), non-compliance, the persona's Ruthless trait, and complaints (M31's "go to regulators"); falling with influence (§32.5) and compliance.
+- **Visible stages:** inquiry (6–12 months), statement of objections (or a US complaint), ruling, appeal (12–36 months). Each stage is an inbox item; the player can **settle** (commitments: a duty or a fee change, ending it), **contest** (odds shown as a range), or **lobby** (§32.5).
+- **Outcomes:** dismissal; **fines** up to `regulation.max_fine_share` (10% of global turnover, 20% for repeat) posted to `6970_fines` (new); behavioural remedies (duties as §48.2); and, rarely, **structural remedies** (§48.4).
+
+### 48.4 Break-ups and unbundling
+
+- A structural remedy is possible only after a **ruling against the company in the same market within the previous 5 years that it failed to comply with**, or after two rulings in 10 years, and only where the region's strictness allows it. **Warning signs** start at least 3 years before: press coverage (§29), a regulator's report naming the remedy, a political event, board concern (§14).
+- The order names the unit to separate (the platform from the devices, the store from the OS, an acquired company): the player has 24 months to **spin it off** (§31's spin-off, the player keeping shares pro rata, distributed to shareholders) or **sell it** (§28); doing neither brings daily fines. Appeals can delay it by 12–36 months with odds shown as a range.
+- Rivals face the same rules: Google, Apple, Meta, Amazon and Microsoft follow their 2010–2025 histories (fines, duties, rulings) and from 2026 the same model.
+
+### 48.5 Balance targets (printed)
+
+1. **History holds:** every dated rule, designation, fine and ruling to 2025 follows the data; every earlier guard unchanged.
+2. **Most big platforms meet a remedy:** a player platform with 40%+ of users in the EU and US by 2028 faces at least one duty or fine by 2034 on at least 7 of 10 seeds.
+3. **Break-ups are rare and warned:** a dominant player who ignores warnings and keeps self-preferencing receives a structural order by 2039 on at most 2 of 10 seeds, never with less than 3 years of warning; a compliant one on none.
+4. **Compliance and influence help:** settling early and $500k a month of influence in a region cut the expected fines there by 30–60%.
+5. **Rivals are regulated too:** at least one rival platform owner faces a new duty or fine after 2026 on 8 of 10 seeds.
+
+### 48.6 What the API may show
+
+Regulators, rules and their dates, designations and the thresholds, duties, investigations and their stages, rulings, fines, warnings, odds as ranges. Never the investigation draws or chances, regulators' hidden strictness path or future rules before announced.
