@@ -45,7 +45,7 @@ from tst.sim.finance.statements import projected_net_burn
 from tst.sim.geo.offices import office_members
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact, times
 from tst.sim.org.delegates import DelegateAction, DelegateRun, delegate_draws
 from tst.sim.org.divisions import support_pools
 from tst.sim.org.executives import acting_seats, true_score
@@ -233,7 +233,7 @@ def _cro(seat: _Seat, data: GameData) -> None:
             if anchor is None or seg.price_cents is None or not seat.right:
                 continue  # a mistake leaves the price where it is (24.2)
             ceiling = round(anchor * (1 + band))
-            price = min(ceiling, round(seg.price_cents * (1 + step)))
+            price = min(ceiling, round(seg.price_cents * (1 + exact(step))))
             if price > seg.price_cents:
                 seat.act(
                     SetPrice(seat.holder, p.id, seg.segment, price),
@@ -337,7 +337,7 @@ def _cfo(seat: _Seat, data: GameData) -> None:
         for kind in ("bank_loan", "venture_debt"):
             terms = debt.terms(state, company, kind, b, data)
             if terms.problem is None and terms.max_cents >= b.debt.min_cents:
-                amount = max(b.debt.min_cents, round(terms.max_cents * b.exec_authority.loan_share))
+                amount = max(b.debt.min_cents, times(terms.max_cents, b.exec_authority.loan_share))
                 _propose(
                     seat,
                     "loan",
