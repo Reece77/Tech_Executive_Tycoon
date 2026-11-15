@@ -18,6 +18,7 @@ from tst.sim.automation.run import automation_month
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.equipment.phase import equipment_month
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
 from tst.sim.events.describe import month_choices
 from tst.sim.events.director import direct
@@ -295,6 +296,9 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     # M19 (35.2, 35.4-35.5): mines' construction, resource nationalism, rivals' bids.
     state, entries, logs = mining.build_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M33 (47): ASML's capacity and queue, deliveries, the lithography programme.
+    state, eq_entries, eq_logs = equipment_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*eq_entries).log(*eq_logs)
     # M21 (38.2): fabs' capex, completion, conversion and yield; their starts on offer.
     if not ctx.state.fabs:
         return ctx

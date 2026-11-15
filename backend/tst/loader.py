@@ -48,8 +48,10 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
+from tst.sim.equipment.config import EquipmentFile
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.exploration.config import GeologyFile
+from tst.sim.fabs import nodes as nd
 from tst.sim.fabs.config import NodesFile
 from tst.sim.facilities.config import ComponentsHistoryFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
@@ -107,6 +109,7 @@ TARIFFS_FILE = "tariffs.yaml"  # M22 (39.3)
 CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
 REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
+EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -121,6 +124,7 @@ DATA_FILES = (
     COMPONENTS_FILE,
     COMPUTE_INDEX_FILE,
     ENTRANTS_FILE,
+    EQUIPMENT_FILE,
     ERAS_FILE,
     VOICES_FILE,
     GEOLOGY_FILE,
@@ -542,6 +546,37 @@ def geology_problems(balance: Balance, data: GameData) -> list[str]:
 SPECIAL_DESTINATIONS: Final = ("all", "affiliates")  # export_controls.yaml `to` words (39.2)
 
 
+def equipment_problems(balance: Balance, data: GameData) -> list[str]:
+    """M33 (47): equipment.yaml's nodes, countries and suppliers are known; the programme's
+    domain is a tech_frontier.yaml domain; `equipment.start` is the month after the history."""
+    ef = data.equipment
+    if ef is None:
+        return []
+    problems: list[str] = []
+    if data.nodes is not None:
+        known = set(data.nodes.node_keys())
+        for g in ef.generations:
+            if bad := sorted(set(g.nodes) - known):
+                problems.append(f"generation {g.key}: unknown nodes {bad}")
+    if data.countries is not None:
+        countries = {c.key for c in data.countries.countries}
+        named = {*ef.buyer_countries.values(), *(s.country for s in ef.suppliers)}
+        named |= {c for rule in ef.controls for c in rule.to}
+        if bad := sorted(named - countries):
+            problems.append(f"unknown countries {bad}")
+    if data.chain_companies is not None:
+        makers = {s.key for s in ef.suppliers}
+        if bad := sorted({m.key for m in data.chain_companies.equipment_makers} - makers):
+            problems.append(f"chain_companies.yaml equipment_makers: not suppliers {bad}")
+    if data.tech is not None and balance.equipment.programme.domain not in {
+        d.key for d in data.tech.domains
+    }:
+        problems.append(f"programme domain {balance.equipment.programme.domain!r} is not a domain")
+    if balance.equipment.start_turn != nd.HISTORY_END + 1:
+        problems.append("equipment.start must be the month after the history (2026-01)")
+    return problems
+
+
 def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     """M31 (44): platforms.yaml names known regions, categories and owners; every region has a
     share row for every year of the history; balance's app categories and segments exist."""
@@ -945,6 +980,7 @@ def load_all(
     chain = _validate(ChainCompaniesFile, parsed[CHAIN_FILE], CHAIN_FILE)
     platforms = _validate(PlatformsFile, parsed[PLATFORMS_FILE], PLATFORMS_FILE)
     regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
+    equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
     game_data = _validate(
         GameData,
         {
@@ -997,6 +1033,7 @@ def load_all(
             "chain_companies": chain,
             "platforms": platforms,
             "regulation": regulation,
+            "equipment": equipment,
         },
         "seed data cross-check",
     )
@@ -1018,6 +1055,8 @@ def load_all(
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
     if problems := regulation_problems(balance, game_data):
         raise DataLoadError(f"{REGULATION_FILE}, {BALANCE_FILE} regulation: " + "; ".join(problems))
+    if problems := equipment_problems(balance, game_data):
+        raise DataLoadError(f"{EQUIPMENT_FILE}, {BALANCE_FILE} equipment: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "

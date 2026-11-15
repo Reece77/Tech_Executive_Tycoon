@@ -65,6 +65,11 @@ def test_facts_open_screens_before_their_stage(loaded: LoadedData) -> None:
     chip = with_product(state, category="chips_mobile_soc", status="in_development", root=False)
     assert "fabs" in unlocks.conditions(chip, b, d)
     assert "is a chip product" in unlocks.conditions(chip, b, d)["fabs"]
+    assert "equipment" not in unlocks.conditions(chip, b, d)  # M33: a fab opens Equipment
+    from tst.sim.fabs.models import Fab
+
+    fab = replace(state, fabs=(Fab(99, state.player.id, "n5", 1, 36),))
+    assert unlocks.conditions(fab, b, d)["equipment"] == "the group owns a fab"
     device = with_product(state, category="devices", status="in_development", root=False)
     assert "hardware" in unlocks.conditions(device, b, d)
     assert "platforms" in unlocks.conditions(device, b, d)  # M31 (44)

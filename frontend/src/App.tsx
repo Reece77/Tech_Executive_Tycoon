@@ -34,6 +34,7 @@ import { RivalScreen } from './screens/RivalScreen';
 import { SavesScreen } from './screens/SavesScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WorldNewsScreen } from './screens/WorldNewsScreen';
+import { EquipmentScreen } from './screens/EquipmentScreen';
 import { PlatformsScreen } from './screens/PlatformsScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="products/exploration" element={<ExplorationScreen />} />
           <Route path="products/refineries" element={<RefineriesScreen />} />
           <Route path="products/fabs" element={<FabsScreen />} />
+          <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/mines" element={<MinesScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />

@@ -105,6 +105,10 @@ STREAM_IDS: Final = MappingProxyType(
         "family": 59,
         "platforms": 58,  # M31 (formulas.md 44): developers, gatekeepers, rivals, standards
         "regulation": 62,  # M34 (formulas.md 48): investigations and their outcomes
+        # M33 (formulas.md 47): (0, generation index) the quarter's allocation jitter;
+        # (1, company id, stage index, attempt) a programme's draws and overrun; (2, foundry
+        # index) a Chinese foundry's own EUV-class tools' month
+        "equipment": 61,
         "misc": 99,
     }
 )

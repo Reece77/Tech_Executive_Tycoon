@@ -42,6 +42,11 @@ domains:
     baseline: { start: 25, per_year: { 2010: 1.0 } } # 40 (refining.semi_min_level) by 2025 without research (M20 decision)
     research_skill: { manufacturing: 0.6, data: 0.25, operations: 0.15 }
     budget_cents: 800000 # $8,000 a researcher a month
+  - key: lithography # M33 (47.4): the player's own lithography programme (optics, precision mechanics, light source)
+    label: Lithography
+    baseline: { start: 0, per_year: { 2010: 0.0 } } # A: none diffused: only ASML (outside the game's companies) holds it
+    research_skill: { hardware_design: 0.4, manufacturing: 0.35, chip_design: 0.25 } # A: optics and precision mechanics (hardware design), the light source and assembly (manufacturing), and what the chip needs (chip design); the brief's "research" weight is not a skill (skills.yaml)
+    budget_cents: 2500000 # A: $25,000 a researcher a month (optics, vacuum and laser labs; the programme's own budget is on top)
 
 # Which domains count for a category, and how much (21.1): a company's lead for a category is
 # sum of weight x its lead in each domain. Weights sum to 1. A category not listed has no lead.

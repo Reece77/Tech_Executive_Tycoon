@@ -142,6 +142,14 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'products',
   },
+  {
+    path: 'products/equipment',
+    label: 'Equipment',
+    group: 'chain',
+    unlock: 'equipment',
+    side: true,
+    parent: 'products',
+  }, // M33
   { path: 'finance', label: 'Finance', group: 'finance', unlock: null, side: true },
   ...(
     [

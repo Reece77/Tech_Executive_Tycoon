@@ -46,6 +46,8 @@ RICH = 10**15  # cents: cash is never the constraint in these runs
 SKILL = 12.0  # the fab engineers' manufacturing skill (38.5 target 4)
 SALARY = 9_500_000  # a mid fab engineer's salary, cents a year (roles.yaml)
 LEAD = 30.0  # a process lead as if researched: every node's need is met
+EAST_ASIA = "east_asia"
+TAIWAN = "taiwan"  # M33: where an East Asian EUV fab sits (build)
 
 
 @cache
@@ -130,13 +132,17 @@ def build(
     skill: float = SKILL,
     duv: bool = False,
 ) -> int:
-    """Order and staff (full coverage) a fab and, by default, finish it now. Its facility id."""
+    """Order and staff (full coverage) a fab and, by default, finish it now. Its facility id.
+
+    M33: an EUV fab in East Asia sits in Taiwan, as a sensible player's would: from July 2019
+    EUV tools do not ship to China (equipment.yaml nl_euv_2019; CLAUDE.md 9 rule 2)."""
     b = loaded().balance
     kind = b.facility.kinds["fab"]
     ps = game.state.person_state(game.founder_id)
     game.state = with_person_state(game.state, replace(ps, energy=100))
     fid = game.state.next_ids.facility
-    ok = game.act(BuildFab(game.founder_id, node, region, capacity, duv=duv))
+    country = euv_country(node, region, duv)
+    ok = game.act(BuildFab(game.founder_id, node, region, capacity, duv=duv, country=country))
     if not ok:
         raise RuntimeError(f"build_fab refused: {dict(game.refused)}")
     need = -(-capacity // int(kind.staff_per))
@@ -149,8 +155,16 @@ def build(
     return fid
 
 
+def euv_country(node: str, region: str, duv: bool = False) -> str | None:
+    """Taiwan for an EUV fab in East Asia (build's docstring); None: the region's default."""
+    if region != EAST_ASIA or loaded().game_data.equipment is None:
+        return None
+    return TAIWAN if fm.uses_euv(loaded().game_data, node, duv) else None
+
+
 def make_ready(game: Game, fid: int) -> None:
-    """Built and paid for now: capex to PPE, live from this month (tools waived)."""
+    """Built and paid for now: capex to PPE, live from this month (tools waived: M33, its order
+    in ASML's queue is cancelled)."""
     f = game.state.facility(fid)
     fab = fm.fab_of(game.state, fid)
     assert f is not None and fab is not None
@@ -160,6 +174,15 @@ def make_ready(game: Game, fid: int) -> None:
         replace(f, ordered_turn=turn - fab.build_months, capex_paid_cents=f.capex_cents),
     )
     game.state = with_fab(game.state, replace(fab, live_turn=turn, tools_turn=None))
+    game.state = replace(
+        game.state,
+        tool_orders=tuple(
+            replace(o, status="cancelled", done_turn=turn)
+            if o.facility_id == fid and o.status == "open"
+            else o
+            for o in game.state.tool_orders
+        ),
+    )
     game.balances[(PLAYER, CASH)] = game.balances.get((PLAYER, CASH), 0) - f.capex_cents
     game.balances[(PLAYER, PPE)] = game.balances.get((PLAYER, PPE), 0) + f.capex_cents
 

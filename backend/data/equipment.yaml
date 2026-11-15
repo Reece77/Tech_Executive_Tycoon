@@ -1,0 +1,237 @@
+# Semiconductor equipment (docs/formulas.md 47, M33, v4 lane B). Research:
+# docs/v4-research/equipment-dossier.md, verified 2026-11-14 against the sources named here.
+#
+# Tags (the repository's): V verified against the cited source (a primary filing where one is
+# named); D derived from verified or reported figures (the arithmetic is in the comment); R
+# widely reported (a secondary source named, not a primary filing); A an assumption for gameplay
+# (no public figure). Every number carries one.
+#
+# Sources (cited by short name below):
+#   20-F 2012  ASML Form 20-F for 2012 (SEC, accession 0001193125-13-053249): KPI table, Item 4.B,
+#              Item 5.A, Item 10.C (the Customer Co-Investment Program).
+#   20-F 2015  ASML Form 20-F for 2015 (SEC, 0000937966-16-000017): Item 3.A, Item 4.B.
+#   20-F 2016  ASML Form 20-F for 2016 (SEC, 0000937966-17-000007): Item 3.A, business overview.
+#   20-F 2018  ASML integrated report / 20-F for 2018 (SEC, 0000937966-19-000007): KPI table p.43.
+#   20-F 2019-2024  ASML 20-F financial statement tables (SEC Financial_Report.xlsx for each
+#              year): "net system sales in units and EUR by technology".
+#   ASML Q4 2023 / Q4 2024 / Q4 2025  ASML's full-year results releases (asml.com press releases,
+#              24 Jan 2024, 29 Jan 2025, 28 Jan 2026).
+#   SA 2025    stockanalysis.com's ASML metrics page (2025 units and sales by technology from the
+#              2025 annual report; an aggregator, so R).
+#   ASML NXE   asml.com product pages for the NXE:3400C, NXE:3600D and NXE:3800E.
+#   SPIE 2022  "NXE:3600D ... 160 wafers per hour at 30 mJ/cm2" (SPIE Advanced Lithography 2022,
+#              via semiwiki.com/314387).
+#   B&C 2025   Bits&Chips, "ASML ships first High-NA EUV production scanner" (2025): EXE:5200B
+#              over 175 wafers an hour, about 60% more than the EXE:5000.
+#   TH roadmap Tom's Hardware, "ASML's roadmap for chipmaking lithography tools examined" (2025).
+#   TH 2026    Tom's Hardware on ASML's 2025 results (48 EUV and 131 immersion systems shipped).
+#   DCK 2024   Data Center Knowledge, "ASML shows off $380M, 165-ton machine" (2024).
+#   TF 2025    TrendForce citing Reuters: a High-NA tool at about USD 400 million (2025).
+#   AT 2023    AnandTech / EE Times Japan, 21-22 Dec 2023: the first EXE:5000 shipped to Intel.
+#   36Kr 2025  36Kr on Morgan Stanley's lithography unit data (2023-2024 by maker and type).
+#   B&C Nikon  Bits&Chips, "Nikon aims to challenge ASML's dominance in ArF immersion" (2025).
+#   Canon 2023/2024  Canon releases: FPA-1200NZ2C launched 13 Oct 2023; delivered to the Texas
+#              Institute for Electronics, 26 Sep 2024 (usa.canon.com/newsroom/2024/20241001-tie).
+#   TH SMEE    Tom's Hardware on SMEE's SSA/800-10W 28 nm claim (2023): never shown or deployed.
+#   Reuters 2020  Reuters, 6 Jan 2020: the Dutch licence for an EUV tool to China expired unused
+#              on 30 Jun 2019 and was not renewed.
+#   Reuters 2024  Reuters / ASML statement, 1 Jan 2024: the Netherlands partly revoked licences
+#              for NXT:2050i and NXT:2100i shipments to China.
+#   Reuters 2025  Reuters, 17 Dec 2025: a prototype EUV tool in Shenzhen (Huawei's network,
+#              former ASML engineers), working since early 2025, chips targeted for 2028, 2030
+#              more likely.
+#   ECB        ECB euro reference rates, annual averages (USD per EUR): 2011 1.392, 2018 1.181,
+#              2019 1.1195, 2020 1.1422, 2021 1.1827, 2022 1.0530, 2023 1.0813, 2024 1.0824,
+#              2025 1.13 (R: recalled annual averages, not re-fetched).
+#
+# Units: prices are US dollar cents (the game's money, ADR-0003); a euro price is converted at
+# the year's ECB average. Shipments are systems ASML recognised as sales in the year (its 20-F
+# "units" basis; shipped and recognised differ in a year: 2023, 42 EUV shipped and 53
+# recognised, ASML Q4 2023), so one consistent series runs 2010-2025. Throughput is rated wafers
+# an hour (EUV at 30 mJ/cm2 where the source gives a dose); uptime is the share of time a tool
+# runs (availability); effective output = rated x uptime.
+#
+# generations (47.1): the tool families, in order. `queued: true` generations are ordered
+#   through the queue (47.2); the others are shown (shipments, prices, controls) and their cost
+#   stays inside a fab's capex as before M33 (M33 decision: DUV supply was never the binding
+#   constraint for the game's fabs).
+#   nodes: the nodes.yaml nodes (and future nodes) whose fabs use the generation's tools.
+#   first_shipment / first_volume: "YYYY-MM".
+#   models: each model's first year, rated throughput and the tag. The latest model at or before
+#     a year is the generation's tool that year.
+#   uptime / price_cents / shipments: by year, linear between points and held after the last
+#     point until ASML's rules take over (2026 on: 47.1-47.2).
+#   buyers: each buyer's share of the generation's deliveries to 2025, and the history's order
+#     share after it (rival foundries' December orders, 47.2). Keys: nodes.yaml foundries, or
+#     `memory` (SK hynix and Micron, outside the game's foundries) and `other`.
+
+suppliers:
+  - { key: asml, name: ASML, country: netherlands, makes: [duv_immersion, euv_low, euv_high], tag: V, source: "20-F 2019-2024: the only EUV supplier; ArFi, ArF dry, KrF and i-line too" }
+  - { key: nikon, name: Nikon, country: japan, makes: [duv_immersion], tag: R, source: "36Kr 2025: 9 ArFi in 2023, 4 in 2024; B&C Nikon: 11 in its year to March 2024" }
+  - { key: canon, name: Canon, country: japan, makes: [], tag: R, source: "36Kr 2025: KrF 56 (2023), 51 (2024) and i-line 131 (2023); no immersion. Nanoimprint (FPA-1200NZ2C, Canon 2023/2024): one research tool to 2025" }
+note_other_tools: >-
+  Deposition, etch, metrology and inspection tools (Applied Materials, Lam Research, Tokyo
+  Electron, KLA) are inside a fab's capex and not modelled as goods (M33 out of scope). ASML's
+  own metrology and inspection systems (151 in 2023, 165 in 2024: 20-F 2023-2024) are not
+  lithography tools here.
+
+generations:
+  - key: duv_immersion
+    label: DUV immersion (ArF-i)
+    maker: asml
+    queued: false
+    nodes: [n65, n40, n28, n20, n16, n10, n7] # 7 nm by its DUV route (nodes.yaml duv_route)
+    first_shipment: "2006-01" # R: XT:1700i, ASML's first volume immersion scanner, 2006 (TH roadmap)
+    first_volume: "2007-01" # R: 45 nm-class immersion volume from 2007 (TH roadmap)
+    models:
+      - { model: NXT:1950i, year: 2010, wph: 175, tag: A } # A: recalled about 175-190 wph; no source re-fetched
+      - { model: NXT:1960Bi, year: 2012, wph: 230, tag: R } # R: TH roadmap
+      - { model: NXT:1970Ci, year: 2013, wph: 250, tag: D } # D: 20-F 2015: the NXT:1980Di "improves throughput by 10% to 275" (V), so 250
+      - { model: NXT:1980Di, year: 2015, wph: 275, tag: V } # V: 20-F 2015, Item 4.B
+      - { model: NXT:2000i, year: 2018, wph: 275, tag: R } # R: TH roadmap
+      - { model: NXT:2050i, year: 2020, wph: 295, tag: R } # R: TH roadmap
+      - { model: NXT:2100i, year: 2022, wph: 295, tag: R } # R: TH roadmap
+    uptime: { 2010: 0.95 } # A: a mature tool's availability (no public figure)
+    price_cents: # ArFi ASP = ArFi sales / ArFi units (20-F) x ECB
+      2010: 4500000000 # A: $45M (ASML's new-system ASP across all types was EUR 24.1M in 2010, 20-F 2012, V; immersion above it)
+      2019: 6430000000 # D: EUR 4,707.7M / 82 = EUR 57.4M x 1.1195 (20-F 2019, ECB)
+      2020: 6580000000 # D: EUR 3,917.0M / 68 = EUR 57.6M x 1.1422 (20-F 2020)
+      2021: 7240000000 # D: EUR 4,959.6M / 81 = EUR 61.2M x 1.1827 (20-F 2021)
+      2022: 6810000000 # D: EUR 5,236.5M / 81 = EUR 64.6M x 1.0530 (20-F 2022)
+      2025: 8540000000 # D: about EUR 10,050M / 133 = EUR 75.6M x 1.13 (SA 2025, R)
+    shipments: # ASML ArFi units recognised (20-F; "immersion systems recognized" before 2019)
+      2010: 95 # V: 20-F 2012 KPI table
+      2011: 101 # V: 20-F 2012
+      2012: 72 # V: 20-F 2012
+      2013: 77 # R: 20-F 2015 KPI table (read as a summary, not verbatim)
+      2014: 76 # R: 20-F 2015 / 2016 KPI table (summary)
+      2015: 67 # R: 20-F 2016 KPI table (summary)
+      2016: 70 # R: 20-F 2016 KPI table (summary)
+      2017: 76 # V: 20-F 2018 KPI table
+      2018: 86 # V: 20-F 2018 KPI table
+      2019: 82 # V: 20-F 2019 tables
+      2020: 68 # V: 20-F 2020 tables
+      2021: 81 # V: 20-F 2021 tables
+      2022: 81 # V: 20-F 2022 tables
+      2023: 125 # V: 20-F 2023 tables
+      2024: 129 # V: 20-F 2024 tables; ASML Q4 2024
+      2025: 133 # R: SA 2025 (TH 2026 says 131 shipped)
+    rival_shipments: # Nikon's ArFi
+      nikon: { 2010: 12, 2022: 12, 2023: 9, 2024: 4, 2025: 4 } # R 2023-2024: 36Kr 2025; A before (a dozen a year, no series found); A 2025
+    buyers: { china: 0.30, other: 0.70 } # R: China was 26-49% of ASML's system sales in 2023-2024 (ASML Q4 2023 / Q4 2024 regional splits); A for the split's use
+  - key: euv_low
+    label: Low-NA EUV (NXE)
+    maker: asml
+    queued: true
+    nodes: [n7, n5, n3, n2, a16, a14] # 7 nm by its EUV route; A14 by low-NA multi-patterning (TSMC's announced route, R)
+    first_shipment: "2010-10" # V: 20-F 2012: "In 2010, we shipped the first second-generation EUV system called NXE:3100"
+    first_volume: "2019-01" # V: nodes.yaml euv.first_month (EUV in high-volume manufacturing from 2019)
+    models:
+      - { model: NXE:3100, year: 2010, wph: 6, tag: A } # A: a pre-production tool (30,000 wafers exposed at customers by 2012 across six tools, 20-F 2012, V)
+      - { model: NXE:3300B, year: 2013, wph: 60, tag: D } # D: "more than 1,000 wafers per day early in 2015" at "more than 70 percent" availability (20-F 2015, V): 1,000 / 24 / 0.70
+      - { model: NXE:3350B, year: 2015, wph: 75, tag: D } # D: 1,500 wafers a day in 2016 (20-F 2016, V) / 24 / 0.83
+      - { model: NXE:3400B, year: 2017, wph: 125, tag: R } # R: SPIE papers (125 wph); 20-F 2016: first shipment planned Q1 2017 (V)
+      - { model: NXE:3400C, year: 2019, wph: 135, tag: V } # V: ASML NXE: 135 wph at 30 mJ/cm2 (170 at 20)
+      - { model: NXE:3600D, year: 2021, wph: 160, tag: V } # V: SPIE 2022 / ASML NXE: 160 wph at 30 mJ/cm2
+      - { model: NXE:3800E, year: 2024, wph: 195, tag: R } # R: ASML NXE / TH roadmap: over 195 wph at first
+      - { model: NXE:3800E, year: 2025, wph: 220, tag: R } # R: ASML NXE: 220 wph with the full upgrade, shipped 2025
+    uptime:
+      2010: 0.40 # A: a pre-production tool
+      2014: 0.55 # A
+      2015: 0.70 # V: 20-F 2015: "the majority of systems achieving a four-week availability of more than 70 percent"
+      2016: 0.80 # V: 20-F 2016: "more than 80 percent regularly across the installed base"
+      2018: 0.85 # A: towards ASML's 90%+ target (20-F 2018 summary, R)
+      2020: 0.90 # A
+      2023: 0.93 # A: a mature tool, below DUV's
+    price_cents: # EUV ASP = EUV sales / EUV units (20-F) x ECB
+      2011: 5540000000 # D: "three NXE:3100 systems recognized with an ASP of EUR 39.8 million" (20-F 2012, V) x 1.392
+      2018: 12470000000 # D: about EUR 1.9B of EUV sales on 18 systems (Q4 2018 call, R) = EUR 105.6M x 1.181
+      2019: 12050000000 # D: EUR 2,799.7M / 26 = EUR 107.7M x 1.1195 (20-F 2019); nodes.yaml's $120M c.2020 (V)
+      2020: 16450000000 # D: EUR 4,463.8M / 31 = EUR 144.0M x 1.1422 (20-F 2020)
+      2021: 17700000000 # D: EUR 6,284.0M / 42 = EUR 149.6M x 1.1827 (20-F 2021)
+      2022: 18550000000 # D: EUR 7,045.3M / 40 = EUR 176.1M x 1.0530 (20-F 2022)
+      2023: 18570000000 # D: EUR 9.1B / 53 = EUR 171.7M x 1.0813 (ASML Q4 2023)
+      2024: 19590000000 # D: (EUR 8.3B - 2 EXE x EUR 350M) / 42 NXE = EUR 181.0M x 1.0824 (ASML Q4 2024; the EXE price R)
+      2025: 23680000000 # D: (about EUR 10.9B - 3 x EUR 350M) / 47 = EUR 209.6M x 1.13 (SA 2025, R)
+    shipments: # EUV systems recognised (NXE)
+      2010: 0 # V: 20-F 2012 (one NXE:3100 shipped, none recognised)
+      2011: 3 # V: 20-F 2012 ("Three of these systems were recognized in net system sales in 2011")
+      2012: 1 # V: 20-F 2012
+      2013: 1 # R: 20-F 2015 KPI table (summary)
+      2014: 5 # R: 20-F 2016 KPI table (summary)
+      2015: 1 # R: 20-F 2016 KPI table (summary)
+      2016: 4 # R: 20-F 2016 KPI table (summary)
+      2017: 11 # V: 20-F 2018 KPI table
+      2018: 18 # V: 20-F 2018 KPI table
+      2019: 26 # V: 20-F 2019 tables
+      2020: 31 # V: 20-F 2020 tables
+      2021: 42 # V: 20-F 2021 tables
+      2022: 40 # V: 20-F 2022 tables
+      2023: 53 # V: 20-F 2023 tables; ASML Q4 2023
+      2024: 42 # V: 20-F 2024 tables (42 NXE + 2 EXE = 44, ASML Q4 2024)
+      2025: 47 # R: SA 2025 (47 NXE + 3 EXE = 50; TH 2026 reports 48 EUV shipped)
+    capacity_plan: { 2027: 90 } # R: ASML's capacity plan of 90 low-NA tools a year by 2027-2028 (ASML Investor Day 2022, reported by TH roadmap); the ceiling of its December rule
+    buyers: { tsmc: 0.55, samsung: 0.20, intel: 0.10, memory: 0.15, smic: 0.0 } # smic: none, never licensed (controls below); R: TSMC about half or more of the installed base (widely reported 2023-2024); A for the rest
+  - key: euv_high
+    label: High-NA EUV (EXE)
+    maker: asml
+    queued: true
+    nodes: [a10, a7, a5, a3] # A: nodes after A14 need high-NA (Intel 14A is its first user, R; the game's A14 runs on low-NA)
+    first_shipment: "2023-12" # V: AT 2023 (shipped to Intel, announced 21 Dec 2023)
+    first_volume: "2027-01" # A: Intel 14A's risk production in 2027 (R: Intel's roadmap); none in volume to 2025
+    models:
+      - { model: EXE:5000, year: 2023, wph: 110, tag: D } # D: B&C 2025: the EXE:5200B's 175 wph is about 60% more than the EXE:5000 (175 / 1.6)
+      - { model: EXE:5200B, year: 2025, wph: 175, tag: R } # R: B&C 2025 ("more than 175 wafers per hour")
+    uptime:
+      2023: 0.60 # A: a first tool
+      2025: 0.80 # A
+      2027: 0.90 # A
+    price_cents:
+      2024: 38000000000 # R: DCK 2024 ($380M; about EUR 350M x 1.0824, D)
+      2025: 40000000000 # R: TF 2025 (about USD 400M)
+    shipments: # EXE systems recognised
+      2023: 0 # V: shipped in December 2023 (AT 2023), recognised later
+      2024: 2 # V: 20-F 2024 tables (2 EXE)
+      2025: 3 # R: SA 2025
+    capacity_plan: { 2028: 20 } # R: ASML's plan of 20 High-NA tools a year by 2027-2028 (ASML Investor Day 2022, TH roadmap)
+    buyers: { intel: 0.60, tsmc: 0.20, samsung: 0.20, smic: 0.0 } # R: Intel first (AT 2023) and the first EXE:5200B (B&C 2025); TSMC and Samsung bought R&D tools (R); A for the split
+
+# Where each buyer takes its tools (the controls read it): a foundry's headquarters country
+# (nodes.yaml region; R), `memory` SK hynix's (R: Icheon), `other` the US (A).
+buyer_countries: { tsmc: taiwan, samsung: south_korea, intel: us, smic: china, memory: south_korea, other: us }
+
+# Controls on tools that the queue applies on top of M22's export_controls.yaml (47.3). M22's rules
+# on `euv_tools` (SMIC's listing, the US's October 2022 and December 2024 rules, the Netherlands'
+# 2023 rules, and seeded tightening after 2025) bite through tst.sim.geopolitics unchanged; these
+# dated rules bind only the queue and the Equipment screen (they never touch M22's goods, so no
+# earlier guard moves). generation: which tools; to: countries.
+controls:
+  - { key: nl_euv_2019, title: "The Netherlands withholds EUV export licences to China", month: "2019-07", generation: euv_low, to: [china], tag: R, source: "Reuters 2020: the licence for an EUV tool (reported for SMIC) expired unused on 30 Jun 2019 and was not renewed" }
+  - { key: nl_euv_high, title: "High-NA EUV never licensed to China", month: "2023-12", generation: euv_high, to: [china], tag: R, source: "AT 2023 and TF 2025: none shipped to China; the 2019 practice covers every EUV tool" }
+  - { key: nl_duv_2024, title: "Dutch licences for NXT:2050i and NXT:2100i to China revoked", month: "2024-01", generation: duv_immersion, to: [china], tag: R, source: "Reuters 2024 (ASML statement, 1 Jan 2024)" }
+
+# China's own EUV-class tools (47.5 target 4): while the bans hold, a Chinese foundry reaches a
+# node that needs EUV only once its domestic EUV-class tools arrive, in this seeded window
+# (stream equipment, key (2, foundry position)). Before it, SMEE's DUV tools are 90 nm-class (TH
+# SMEE) and the 2025 prototype makes no chips (Reuters 2025).
+china_tools:
+  window: ["2028-01", "2031-12"] # R: Reuters 2025 (chips targeted for 2028, 2030 more likely), widened a year (A)
+  tag: R
+
+# The 2012 co-investment (47.4's scale): Intel, TSMC and Samsung funded EUR 1.38B of ASML's R&D
+# for 2013-2017 (Intel 829M, TSMC 277M, Samsung 276M) and bought 23% of its shares for EUR 3.85B
+# (20-F 2012, Item 10.C, V). EUV took ASML from its first alpha tools (2006, R) to volume in 2019.
+history_note: >-
+  EUV's development: alpha demo tools 2006 (R), NXE:3100 pre-production 2010 (V), NXE:3300B 2013
+  (V), volume manufacturing 2019 (V); EUR 1.38B of customer R&D funding and EUR 3.85B of equity
+  in 2012 (20-F 2012, V).
+
+# The player's own lithography programme (47.4): three generations, each needing the previous.
+# cost: the estimate (US dollar cents, before the hidden overrun); months: the range a programme
+# at its reference funding takes (the hidden draw); level: the lithography domain lead needed to
+# start it; staff: researchers needed on the project; tool_cents: the unit cost of the
+# programme's own tools once it succeeds; tools_per_year: what a programme's line makes.
+programme:
+  - { key: litho_1, label: DUV-class scanner, generation: duv_immersion, needs: null, cost: 800000000000, months: [48, 72], level: 10, staff: 40, tool_cents: 6000000000, tools_per_year: 12, tag: A } # A: $8B, 4-6 years: a DUV immersion programme (SMEE's 28 nm effort since 2002 had not shipped by 2025, TH SMEE)
+  - { key: litho_2, label: Low-NA EUV-class scanner, generation: euv_low, needs: litho_1, cost: 2500000000000, months: [60, 96], level: 25, staff: 120, tool_cents: 15000000000, tools_per_year: 10, tag: A } # A: $25B, 5-8 years: "tens of billions" (47.4); EUV took ASML and partners about two decades (history_note)
+  - { key: litho_3, label: High-NA EUV-class scanner, generation: euv_high, needs: litho_2, cost: 4000000000000, months: [60, 96], level: 40, staff: 160, tool_cents: 30000000000, tools_per_year: 4, tag: A } # A: $40B, 5-8 years

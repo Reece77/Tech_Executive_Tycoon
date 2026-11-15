@@ -8,7 +8,16 @@ from typing import Literal
 
 type Unit = Literal["cents", "count", "points", "percent", "months"]
 type Scope = Literal[
-    "company", "product", "person", "account", "market", "project", "mine", "fab", "refinery"
+    "company",
+    "product",
+    "person",
+    "account",
+    "market",
+    "project",
+    "mine",
+    "fab",
+    "refinery",
+    "order",  # M33: a tool order in ASML's queue
 ]
 
 

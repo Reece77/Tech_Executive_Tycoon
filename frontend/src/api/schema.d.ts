@@ -4201,7 +4201,8 @@ export interface paths {
         };
         /**
          * Quote Fab
-         * @description What a fab would cost, when it could run and what a start would cost (38.2).
+         * @description What a fab would cost, when it could run and what a start would cost (38.2); M33: where
+         *     its tools come from and their wait in ASML's queue, as a range (47.2).
          */
         get: operations["quoteFab"];
         put?: never;
@@ -5590,6 +5591,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/equipment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Equipment
+         * @description Tool generations, prices, the player's orders and queue place as a range, stock,
+         *     controls and the lithography programme (47.6).
+         */
+        get: operations["getEquipment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/equipment/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Order Tools */
+        post: operations["orderTools"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/equipment/prepay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Prepay */
+        post: operations["prepayToolOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/equipment/litho/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Litho */
+        post: operations["startLitho"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/equipment/litho/funding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Funding */
+        post: operations["setLithoFunding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/equipment/litho/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop Litho */
+        post: operations["stopLitho"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/settings/llm": {
         parameters: {
             query?: never;
@@ -6769,6 +6876,16 @@ export interface components {
             country?: string | null;
             /** Company Id */
             company_id?: number | null;
+            /**
+             * Own Tools
+             * @default false
+             */
+            own_tools?: boolean;
+            /**
+             * Prepay
+             * @default false
+             */
+            prepay?: boolean;
         };
         /** BuildIn */
         BuildIn: {
@@ -9201,6 +9318,40 @@ export interface components {
              */
             adjustments: components["schemas"]["EnergyAdjustmentOut"][];
         };
+        /** EquipmentActionOut */
+        EquipmentActionOut: {
+            equipment: components["schemas"]["EquipmentOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** EquipmentOut */
+        EquipmentOut: {
+            /** Turn */
+            turn: number;
+            /** Supplier */
+            supplier: string;
+            /** Generations */
+            generations: components["schemas"]["ToolGenerationOut"][];
+            /** Orders */
+            orders: components["schemas"]["ToolOrderOut"][];
+            /** Stock */
+            stock: components["schemas"]["ToolStockOut"][];
+            /** Controls */
+            controls: components["schemas"]["ToolControlOut"][];
+            programme: components["schemas"]["LithoProgrammeOut"];
+            /** Prepay Share */
+            prepay_share: number;
+            /** Max Order */
+            max_order: number;
+            /** Order Energy */
+            order_energy: number;
+            /**
+             * Note
+             * @description What the queue is, in words
+             */
+            note: string;
+        };
         /**
          * EraMarkOut
          * @description An era's arrival, marked on a chart (27.3, M13b).
@@ -9554,7 +9705,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "order";
             /** Entity */
             entity?: string | null;
             /**
@@ -9818,6 +9969,20 @@ export interface components {
              */
             gate: string[];
         };
+        /**
+         * FabCountryOut
+         * @description M33: a country a fab may sit in (an EUV fab's tools follow the controls there).
+         */
+        FabCountryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Default */
+            default: boolean;
+        };
         /** FabCustomerOut */
         FabCustomerOut: {
             /** Name */
@@ -9941,6 +10106,16 @@ export interface components {
             tools: number;
             /** Tools Label */
             tools_label: string | null;
+            /**
+             * Tool Order Id
+             * @description M33: its open order in ASML's queue
+             */
+            tool_order_id?: number | null;
+            /**
+             * Tools Wait Label
+             * @description M33: the order's wait, as a range
+             */
+            tools_wait_label?: string | null;
             /** Staff */
             staff: number;
             /** Staff Needed */
@@ -10027,6 +10202,31 @@ export interface components {
              * @description How to unlock it when not allowed (M23c)
              */
             how: string;
+            /**
+             * Tools From Stock
+             * @description M33: tools taken from your stock
+             */
+            tools_from_stock: number;
+            /**
+             * Tools Own
+             * @description M33: your own lithography tools it would take
+             */
+            tools_own: number;
+            /**
+             * Tools To Order
+             * @description M33: tools ordered in ASML's queue
+             */
+            tools_to_order: number;
+            /**
+             * Tool Price Cents
+             * @description M33: a tool's price today
+             */
+            tool_price_cents?: number | null;
+            /**
+             * Tools Wait Label
+             * @description M33: the queue's wait, as a range
+             */
+            tools_wait_label?: string | null;
             /** Market Cents */
             market_cents: number | null;
             /**
@@ -10053,6 +10253,8 @@ export interface components {
             sizes: number[];
             /** Regions */
             regions: string[];
+            /** Countries */
+            countries?: components["schemas"]["FabCountryOut"][];
             /** Build Energy */
             build_energy: number;
             /** Upgrade Energy */
@@ -12674,6 +12876,107 @@ export interface components {
              */
             sensitive: boolean;
         };
+        /** LithoProgrammeOut */
+        LithoProgrammeOut: {
+            /** Unlocked */
+            unlocked: boolean;
+            /** Unlock Reason */
+            unlock_reason: string | null;
+            /** Level */
+            level: number;
+            /** Researchers */
+            researchers: number;
+            /** Funding Low */
+            funding_low: number;
+            /** Funding High */
+            funding_high: number;
+            /** Stages */
+            stages: components["schemas"]["LithoStageOut"][];
+            /** Own Tools */
+            own_tools: components["schemas"]["OwnToolsOut"][];
+        };
+        /** LithoStageIn */
+        LithoStageIn: {
+            /** Stage */
+            stage: string;
+        };
+        /** LithoStageOut */
+        LithoStageOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Generation Label */
+            generation_label: string;
+            /**
+             * After Stage
+             * @description The stage that must work first
+             */
+            after_stage: string | null;
+            /**
+             * Cost Cents
+             * @description The estimate (programmes often run over)
+             */
+            cost_cents: number;
+            /** Months Low */
+            months_low: number;
+            /** Months High */
+            months_high: number;
+            /**
+             * Level
+             * @description Lithography level needed to start
+             */
+            level: number;
+            /**
+             * Staff
+             * @description Researchers needed on a lithography project
+             */
+            staff: number;
+            /**
+             * Reference Cents
+             * @description The reference budget a month
+             */
+            reference_cents: number;
+            /**
+             * Status
+             * @description locked | open | running | succeeded | failed | stopped
+             */
+            status: string;
+            /** Attempt */
+            attempt: number;
+            /** Started Label */
+            started_label: string | null;
+            /** Months Running */
+            months_running: number | null;
+            /** Funding */
+            funding: number | null;
+            /** Spent Cents */
+            spent_cents: number;
+            /**
+             * End Window Label
+             * @description Public estimate of when it ends
+             */
+            end_window_label: string | null;
+            /** Why Not */
+            why_not: string | null;
+            /**
+             * Throughput
+             * @description First tools' throughput x ASML's (succeeded)
+             */
+            throughput: number | null;
+            /**
+             * Yield Cut
+             * @description First tools' yield points lost (succeeded)
+             */
+            yield_cut: number | null;
+        };
+        /** LithoStartIn */
+        LithoStartIn: {
+            /** Stage */
+            stage: string;
+            /** Funding */
+            funding: number;
+        };
         /** LoanIn */
         LoanIn: {
             /** Instrument */
@@ -14317,6 +14620,18 @@ export interface components {
             /** Can Spin Off */
             can_spin_off: boolean;
         };
+        /** OrderToolsIn */
+        OrderToolsIn: {
+            /** Generation */
+            generation: string;
+            /** Tools */
+            tools: number;
+            /**
+             * Prepay
+             * @default false
+             */
+            prepay?: boolean;
+        };
         /** OrgActionOut */
         OrgActionOut: {
             org: components["schemas"]["OrgOut"];
@@ -14676,6 +14991,40 @@ export interface components {
             unit_cents: number;
             /** Market Cents */
             market_cents: number;
+        };
+        /** OwnToolsOut */
+        OwnToolsOut: {
+            /** Stage */
+            stage: string;
+            /** Generation Label */
+            generation_label: string;
+            /** Made */
+            made: number;
+            /** In Stock */
+            in_stock: number;
+            /** Installed */
+            installed: number;
+            /** Sold */
+            sold: number;
+            /** Sales Cents */
+            sales_cents: number;
+            /**
+             * Maturity
+             * @description 0 at first, towards 1 with installed use
+             */
+            maturity: number;
+            /**
+             * Throughput
+             * @description x ASML's
+             */
+            throughput: number;
+            /**
+             * Yield Cut
+             * @description Yield points lost now
+             */
+            yield_cut: number;
+            /** Per Year */
+            per_year: number;
         };
         /**
          * OwnershipEventOut
@@ -15661,6 +16010,11 @@ export interface components {
             note: string;
             /** Source */
             source: string;
+        };
+        /** PrepayIn */
+        PrepayIn: {
+            /** Order Id */
+            order_id: number;
         };
         /** PresetOut */
         PresetOut: {
@@ -19694,10 +20048,159 @@ export interface components {
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
         };
+        /** ToolControlOut */
+        ToolControlOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Month Label */
+            month_label: string;
+            /** Generation Labels */
+            generation_labels: string[];
+            /** Destinations */
+            destinations: string[];
+            /** In Force */
+            in_force: boolean;
+            /** Source */
+            source: string | null;
+        };
+        /** ToolGenerationOut */
+        ToolGenerationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Maker */
+            maker: string;
+            /**
+             * Queued
+             * @description Ordered through ASML's queue (else inside a fab's capex)
+             */
+            queued: boolean;
+            /** Nodes */
+            nodes: string[];
+            /** Node Labels */
+            node_labels: string[];
+            /** First Shipment Label */
+            first_shipment_label: string;
+            /** First Volume Label */
+            first_volume_label: string;
+            /**
+             * Model
+             * @description The current model
+             */
+            model: string;
+            /**
+             * Wph
+             * @description Rated wafers an hour
+             */
+            wph: number;
+            /** Uptime */
+            uptime: number;
+            /**
+             * Price Cents
+             * @description Today's price, with scarcity
+             */
+            price_cents: number;
+            /**
+             * List Cents
+             * @description The list price before scarcity
+             */
+            list_cents: number;
+            /**
+             * Shipments
+             * @description Tools a year to the last full year
+             */
+            shipments: components["schemas"]["ToolShipmentOut"][];
+            /**
+             * Capacity Next
+             * @description Next year's capacity, once announced
+             */
+            capacity_next: number | null;
+            /**
+             * Book
+             * @description ASML's order book: thin, a year deep, or long
+             */
+            book: string;
+            /** Shipping */
+            shipping: boolean;
+        };
         /** ToolLicenceIn */
         ToolLicenceIn: {
             /** Country */
             country: string;
+        };
+        /** ToolOrderOut */
+        ToolOrderOut: {
+            /** Id */
+            id: number;
+            /** Generation */
+            generation: string;
+            /** Generation Label */
+            generation_label: string;
+            /** Tools */
+            tools: number;
+            /** Delivered */
+            delivered: number;
+            /** Placed Label */
+            placed_label: string;
+            /**
+             * Status
+             * @description open | done | lost | cancelled
+             */
+            status: string;
+            /** Prepaid */
+            prepaid: boolean;
+            /** Price Cents */
+            price_cents: number;
+            /** Fab Id */
+            fab_id: number | null;
+            /** Fab */
+            fab: string | null;
+            /**
+             * Lead Low
+             * @description Months to the last tool, the fast end
+             */
+            lead_low: number | null;
+            /**
+             * Lead High
+             * @description ... the slow end (None: beyond the queue's view)
+             */
+            lead_high: number | null;
+            /** Lead Label */
+            lead_label: string;
+            /**
+             * Prepay Cents
+             * @description What prepaying would cost (an open order)
+             */
+            prepay_cents: number | null;
+        };
+        /** ToolShipmentOut */
+        ToolShipmentOut: {
+            /** Year */
+            year: number;
+            /** Tools */
+            tools: number;
+        };
+        /** ToolStockOut */
+        ToolStockOut: {
+            /** Generation */
+            generation: string;
+            /** Generation Label */
+            generation_label: string;
+            /**
+             * Source
+             * @description asml | own
+             */
+            source: string;
+            /** Tools */
+            tools: number;
+            /**
+             * Book Cents
+             * @description What they cost (tool inventory)
+             */
+            book_cents: number;
         };
         /** TradeIn */
         TradeIn: {
@@ -19924,6 +20427,22 @@ export interface components {
              * @description Systems announced this month (for the toast)
              */
             fresh: string[];
+        };
+        /**
+         * UpgradeFabIn
+         * @description M33: a conversion's tools (optional body).
+         */
+        UpgradeFabIn: {
+            /**
+             * Own Tools
+             * @default false
+             */
+            own_tools?: boolean;
+            /**
+             * Prepay
+             * @default false
+             */
+            prepay?: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -34250,6 +34769,9 @@ export interface operations {
                 region: string;
                 size: number;
                 duv?: boolean;
+                country?: string | null;
+                own_tools?: boolean;
+                prepay?: boolean;
             };
             header?: never;
             path: {
@@ -34378,7 +34900,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpgradeFabIn"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -38572,6 +39098,374 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegulationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getEquipment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    orderTools: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderToolsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    prepayToolOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrepayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startLitho: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LithoStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setLithoFunding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LithoStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    stopLitho: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LithoStageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EquipmentActionOut"];
                 };
             };
             /** @description Bad Request */

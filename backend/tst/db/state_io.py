@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from tst.db.automation_io import load_automation, sync_automation
 from tst.db.commodity_io import load_commodities, sync_commodities
+from tst.db.equipment_io import load_equipment, sync_equipment
 from tst.db.exploration_io import load_exploration, sync_exploration
 from tst.db.fab_io import load_fabs, sync_fabs
 from tst.db.family_io import family_people, live_family, load_family, sync_family
@@ -590,6 +591,7 @@ def load_state(session: Session) -> GameState:
     state = load_world(session, state, has_table)  # M28 (0050)
     state = load_platforms(session, state, has_table)  # M31 (0051)
     state = load_regulation(session, state, has_table)  # M34 (0055)
+    state = load_equipment(session, state, has_table)  # M33 (0056_m33)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
     state = _load_hardware(session, state)
@@ -2155,6 +2157,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_world(session, old, new, has_table)  # M28 (0050)
     sync_platforms(session, old, new, has_table)  # M31 (0051)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
+    sync_equipment(session, old, new, has_table)  # M33 (0056_m33)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
     _sync_hardware(session, old, new)

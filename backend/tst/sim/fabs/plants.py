@@ -270,12 +270,23 @@ def fab_month(
             staff = lifecycle.staffing(state, facility, balance)
             month = replace(
                 month,
-                available=facility.capacity * staff.coverage,
+                available=facility.capacity
+                * staff.coverage
+                * _tools_factor(state, fab, balance, data),
                 yield_=fab.yield_,
                 reliability=staff.reliability,
             )
         state = with_fab(state, replace(fab, month=month))
     return state, entries, logs
+
+
+def _tools_factor(state: GameState, fab: Fab, balance: Balance, data: GameData) -> float:
+    """M33 (47.3-47.4): a service ban, or own prototype tools, cut the starts on offer."""
+    if data.equipment is None or not state.fab_tools:
+        return 1.0
+    from tst.sim.equipment.fablink import tools_factor
+
+    return tools_factor(state, fab, balance, data)
 
 
 # --- Phase 5 ---------------------------------------------------------------------------------

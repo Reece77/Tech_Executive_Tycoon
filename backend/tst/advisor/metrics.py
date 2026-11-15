@@ -88,6 +88,8 @@ METRICS: dict[str, MetricDef] = {
         _m(
             "platform_fees", "Platform fees", "cents", "product", "Store fees on the app this month"
         ),
+        # v4 (M33): a tool order's wait in ASML's queue
+        _m("tool_wait", "Tool wait", "months", "order", "Months to the order's last tool"),
         _m(
             "catalogue_effect",
             "Catalogue effect",

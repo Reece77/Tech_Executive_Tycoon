@@ -373,3 +373,10 @@ class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 
     code = "platform_rule"
+
+
+class EquipmentRuleError(SimError):
+    """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
+    formulas.md 47). The message never names an allocation weight or a programme's draws."""
+
+    code = "equipment_rule"

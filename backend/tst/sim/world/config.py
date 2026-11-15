@@ -50,6 +50,9 @@ class ChainCompaniesFile(_Frozen):
     build_months: dict[str, int]
     companies: tuple[ChainCompanyDef, ...] = Field(min_length=1)
     others: dict[str, OtherProducersDef]
+    # M33 (47.1): the lithography makers, equipment.yaml suppliers run by tst.sim.equipment's
+    # rules (capacity, queue, December rule); never the world's goods, groups or bids
+    equipment_makers: tuple[ChainCompanyDef, ...] = ()
 
     @model_validator(mode="after")
     def _check(self) -> ChainCompaniesFile:

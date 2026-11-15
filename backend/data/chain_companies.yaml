@@ -113,6 +113,15 @@ companies:
   - { key: globalfoundries, personality: cost_leader, cost: 0.5, country: us }
   - { key: umc, personality: cost_leader, cost: 0.45, country: taiwan }
   - { key: smic, personality: aggressive, cost: 0.55, country: china }
+# M33 (47.1): the lithography makers (equipment.yaml suppliers, by key). Their capacity, order
+# book, prices and December rule are tst.sim.equipment's, not the world's goods loop; they are
+# not takeover targets or bidders (M33 decision: ASML's scale and the Dutch state's interest
+# put it beyond 41.3's deals; a follow-up may give them books). Personality and cost position
+# as the companies above (A).
+equipment_makers:
+  - { key: asml, personality: premium, cost: 0.3, country: netherlands } # A: the sole EUV supplier, value-based pricing
+  - { key: nikon, personality: cost_leader, cost: 0.6, country: japan } # A: a distant second in ArF immersion
+  - { key: canon, personality: fast_follower, cost: 0.5, country: japan } # A: KrF, i-line and nanoimprint
 others: # the rest of each good's producers: cost position and country (commodities.yaml's top country, A)
   quartz_hp: { cost: 0.7, country: china }
   silicon_metal: { cost: 0.4, country: china }

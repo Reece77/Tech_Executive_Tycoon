@@ -23,9 +23,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 55  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 56  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
-# M34: 0055
+# M34: 0055; M33: 0056
 
 
 class Base(DeclarativeBase):
@@ -2317,3 +2317,16 @@ class WorldNewsArchiveRow(Base):
     other_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     region: Mapped[str | None] = mapped_column(String(64), nullable=True)
     good: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+
+class EquipmentRecordRow(Base):
+    """One equipment record (47; 0056_m33): `kind` names its GameState collection (tool_orders,
+    tool_deliveries, supplier_years, tool_stock, programmes, own_tools, fab_tools) and `data` its
+    fields; rows keep each collection's order. Hidden fields (an order's jitter, a programme's
+    work, overrun and success draw) are stored here and never leave the engine."""
+
+    __tablename__ = "equipment_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

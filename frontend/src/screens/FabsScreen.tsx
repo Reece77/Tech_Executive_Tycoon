@@ -214,7 +214,7 @@ function FabPanel({
         {f.tools > 0 && (
           <Fact
             label="EUV tools"
-            value={`${f.tools} tools, arriving ${f.tools_label ?? 'not yet known'}`}
+            value={`${f.tools} tools, arriving ${f.tools_label ?? 'not yet known'}${f.tools_wait_label ? ` (ASML's queue: ${f.tools_wait_label})` : ''}`}
             testId="fab-tools"
           />
         )}
@@ -294,9 +294,14 @@ function BuildPanel({
   const [region, setRegion] = useState(x.regions[0] ?? '');
   const [size, setSize] = useState<number>(x.sizes[0] ?? 0);
   const [duv, setDuv] = useState(false);
+  const [country, setCountry] = useState<string | null>(null);
+  const [ownTools, setOwnTools] = useState(false);
+  const [prepay, setPrepay] = useState(false);
   const row = x.timeline.nodes.find((n) => n.key === node);
   const useDuv = duv && Boolean(row?.duv_route);
-  const quote = useFabQuote(saveId, node, region, size, useDuv);
+  const countries = (x.countries ?? []).filter((c) => c.region === region);
+  const where = countries.some((c) => c.key === country) ? country : null;
+  const quote = useFabQuote(saveId, node, region, size, useDuv, where, ownTools);
   const q = quote.data;
   return (
     <Panel
@@ -308,7 +313,18 @@ function BuildPanel({
           data-testid="build-fab"
           disabled={busy || !q?.allowed}
           title={q && !q.allowed ? `${q.reason ?? ''}. How: ${q.how}` : undefined}
-          onClick={() => onAct({ kind: 'build', node, region, size, duv: useDuv })}
+          onClick={() =>
+            onAct({
+              kind: 'build',
+              node,
+              region,
+              size,
+              duv: useDuv,
+              country: where,
+              ownTools,
+              prepay,
+            })
+          }
         >
           Build · energy {x.build_energy}
         </Button>
@@ -333,6 +349,17 @@ function BuildPanel({
           onChange={(v) => v && setRegion(v)}
           allowDeselect={false}
         />
+        {countries.length > 1 && (
+          <Select
+            aria-label="Country"
+            data-testid="fab-country"
+            size="xs"
+            data={countries.map((c) => ({ value: c.key, label: c.label }))}
+            value={where ?? countries.find((c) => c.default)?.key ?? null}
+            onChange={(v) => setCountry(v)}
+            allowDeselect={false}
+          />
+        )}
         <Select
           aria-label="Size"
           data-testid="fab-size"
@@ -350,6 +377,24 @@ function BuildPanel({
             onChange={(e) => setDuv(e.currentTarget.checked)}
           />
         )}
+        {q?.euv && (
+          <>
+            <Checkbox
+              size="xs"
+              label="Prepay the tools (moves up the queue)"
+              data-testid="fab-prepay"
+              checked={prepay}
+              onChange={(e) => setPrepay(e.currentTarget.checked)}
+            />
+            <Checkbox
+              size="xs"
+              label="Use our own tools"
+              data-testid="fab-own-tools"
+              checked={ownTools}
+              onChange={(e) => setOwnTools(e.currentTarget.checked)}
+            />
+          </>
+        )}
       </div>
       {q && (
         <dl className="tst-facts" style={{ fontSize: 13, marginTop: 8 }} data-testid="fab-quote">
@@ -362,6 +407,21 @@ function BuildPanel({
             value={`${q.ready_label}${q.euv ? `; ${q.tools} EUV tools arrive ${q.tools_label ?? 'not yet known'}` : ''}`}
             testId="fab-quote-ready"
           />
+          {q.euv && (q.tools_to_order > 0 || q.tools_from_stock > 0 || q.tools_own > 0) && (
+            <Fact
+              label="Tools"
+              value={[
+                q.tools_from_stock > 0 ? `${q.tools_from_stock} from stock` : null,
+                q.tools_own > 0 ? `${q.tools_own} of our own` : null,
+                q.tools_to_order > 0
+                  ? `${q.tools_to_order} ordered from ASML at ${formatMoneyWhole(q.tool_price_cents ?? 0)} each, the last in ${q.tools_wait_label ?? 'a time the queue cannot see'}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join('; ')}
+              testId="fab-quote-tools"
+            />
+          )}
           <Fact
             label="A start at full use"
             value={`${formatMoney(Math.round(q.cost_per_start_cents))} before staff and power${q.market_cents ? `, against ${formatMoney(Math.round(q.market_cents))} at market` : ''}`}

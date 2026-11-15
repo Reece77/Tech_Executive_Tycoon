@@ -16,7 +16,6 @@ from tests.money_guard import Hit, scan
 # line's code, so a line moving does not break the guard; a deferred line that is fixed
 # drops out (see the last test).
 DEFERRED: dict[tuple[str, str], str] = {
-    ("fabs/actions.py", "capex = round(q.capex_cents * fb.upgrade.capex_share)"): "M33",
     (
         "fabs/plants.py",
         "return mwh * balance.refining.power_cents_per_mwh * power.index(state, facility.region,"
