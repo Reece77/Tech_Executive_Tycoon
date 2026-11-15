@@ -368,6 +368,22 @@ def apply_choice(
             state, posted, logged = platform_step(state, event, effect.stat, rng, balance, data)
             entries += posted
             logs += logged
+        elif t == "regulation_step" and effect.stat:  # M34 (48.3-48.4)
+            from tst.sim.regulation.answers import regulation_step
+            from tst.sim.rng import RngFactory
+
+            rng = RngFactory(state.save_meta.master_seed)
+            state, posted, logged = regulation_step(
+                state,
+                event,
+                effect.stat,
+                rng,
+                None if balances is None else apply_entries(balances, entries),
+                balance,
+                data,
+            )
+            entries += posted
+            logs += logged
         elif t == "mining_step" and effect.stat:  # M19 (35.4): a mine event's answer
             from tst.sim.mining.risk import mining_step
 

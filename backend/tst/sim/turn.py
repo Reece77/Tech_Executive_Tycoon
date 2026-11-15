@@ -76,6 +76,7 @@ from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
 from tst.sim.refining.phase import refining_month
+from tst.sim.regulation.month import regulation_month
 from tst.sim.research.eras import arrive_eras
 from tst.sim.research.licensing import leaks, royalties
 from tst.sim.research.projects import decay_leads, run_projects
@@ -647,6 +648,11 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     # M22 (39): licences, listings, next month's tension and the rules it announces.
     state, geo_logs = geopolitics.month_end(state, ctx.rng, ctx.balance, ctx.data)
     ctx = ctx.log(*geo_logs)
+    # M34 (48): duties, compliance, designations, investigations and structural orders.
+    state, reg_entries, reg_logs = regulation_month(
+        state, ctx.rng, ctx.balances, ctx.balance, ctx.data
+    )
+    ctx = ctx.post(*reg_entries).log(*reg_logs)
     player = state.player.id
     state, requests = direct(
         state,

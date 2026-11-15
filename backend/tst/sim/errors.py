@@ -363,6 +363,12 @@ class GeopoliticsRuleError(SimError):
     code = "geopolitics_rule"
 
 
+class RegulationRuleError(SimError):
+    """A regulation action the rules do not allow (M34, formulas.md 48)."""
+
+    code = "regulation_rule"
+
+
 class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 
