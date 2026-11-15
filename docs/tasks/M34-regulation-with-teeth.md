@@ -85,7 +85,7 @@ Load `pt-regulated`. Read the investigation's stages, then either settle or cont
     | 5 | Rivals regulated after 2026 | 8/10 model-made | at least 8 |
 
     No scripted order arrived, so target 3's warning lead is guarded by the property test (`tests/property/test_m34_structural.py`) and its companion that does reach orders.
-14. **The M30 state-cache fixture is re-recorded,** because M34 adds state (as M27b and M31 did).
+14. **The M30 state-cache fixture is re-recorded** on CI's Linux runner (the fixture's platform, by a temporary workflow as M36r did), because M34 adds state.
 
 ## Follow-ups
 
