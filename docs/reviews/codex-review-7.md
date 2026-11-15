@@ -1,0 +1,60 @@
+# Codex QA review 7 — m30-done
+
+Reviewed main at m30-done, commit ec53dc30d8f7bab8ad039d1dac5ac2c0fadfd9bb, against supplied object 34e0240 (m23r-done, an annotated tag which peels to commit e7ec7aae3d61e75ad49816c3e037c99e1bca9a19).
+
+This was a read-only review. The repository was not edited, committed or pushed. Findings from reviews 1–6, their recorded fixes, the M28 target-2 and 439 ms hand-offs, balance tuning, and briefs not yet built are excluded.
+## P1 findings
+None.
+## P2 findings
+1. Approved subsidiary proposals put the two “never delegate” actions back in a delegate’s name
+   Locations: automation/run.py:85, automation/scope.py:82, and contracts/termination.py:256.
+   What is wrong: AutoRun.attempt checks is_one_off first and files a proposal, so its later NEVER_ACTIONS refusal is unreachable for set_grey_route and terminate_contract. When the proposal acts for a subsidiary, proposal_actor returns its proposing owner or CEO unless the kind is in FOUNDER_ACTIONS; neither never-action is in that set. An approved grey-route proposal can therefore execute as the delegate. An approved termination is also assigned to the delegate, then fails at terminate()’s founder-only check, so the player’s valid approval cannot complete.
+   Breaks: Formulas §40.2 and §40.7 target (c): one-offs require approval, but no delegate ever carries out a grey route or termination and the runner must refuse both even past the one-off test. It also breaks the promised approval flow for subsidiary one-offs.
+   Reproducible scenario: Use the M27b group fixture with subsidiary 41 and its CEO, make that CEO owner of subsidiary Supply, and call run.attempt(41, TerminateContract(ceo, "commodity", 1)) or SetGreyRoute(ceo, 1, "china"). Each creates an auto proposal for company 41. scope.proposal_actor(..., founder_id) returns the CEO, not the founder. With a valid subsidiary commodity deal, approving the termination reaches InvalidActionError("only the founder breaks the group's contracts"); a valid restricted subsidiary product’s grey-route action has no corresponding founder check and runs in the CEO’s name.
+   Fix and test: Treat NEVER_ACTIONS as founder-only when an approved proposal is reconstructed, or encode the required actor in the proposal and enforce it centrally. Keep the automation runner’s direct refusal. Add end-to-end approval tests for both actions inside a subsidiary: the proposal reaches the player, approval uses the founder, the affected subsidiary’s record/books change once, decline changes nothing, and a cold reload preserves the result. Assert the persisted decision/action log never attributes either kind to a delegate.
+2. Float-rounded offtake commitments let a delegate act at the exact money limit
+   Locations: automation/limits.py:131 and the boundary check at automation/run.py:101.
+   What is wrong: chain_commitment multiplies a float-valued annual amount by the float offtake.take_or_pay and rounds at the end. The signed quote first rounds its annual value to integer cents, and exact application of the 70% obligation can differ. A one-cent understatement is enough because the runner acts below the limit but must propose at or above it.
+   Breaks: CLAUDE.md §2.3; ADR-0003; formulas §40.2 and §40.12’s commitment formula; M27a/M27b’s acceptance invariant that an owner never commits at or above its limit.
+   Reproducible scenario: At January 2026’s copper price, choose volume_year = 1_000_000_000_015 / (spot_price × usd_per_unit × 100), supplier freeport, three years, and no prepayment. The public quote’s annual value is 1,000,000,000,015 cents. The exact fixed obligation is round(1,000,000,000,015 × 3 × 7/10) = 2,100,000,000,032 cents, while chain_commitment returns 2,100,000,000,031. With limit_cents = 2,100,000,000,032, the delegate executes instead of proposing.
+   Fix and test: Derive automation commitment from the same integer-cent quote used to create the deal, applying rates with Fraction/`money.times` and half-even rounding once. Add a rational-reference property over commodity contracts and offtakes, plus this exact boundary regression asserting commitment == quote obligation and that cost == limit always creates a proposal. The existing property compares decisions only with the engine’s own understated commitment_cents, so it cannot detect this case.
+3. Platform-fee money can be one cent wrong at a half-cent boundary
+   Location: platforms/fees.py:120.
+   What is wrong: fees_due multiplies integer-cent revenue by three binary floats (paid_share, platform users, and effective fee) and then rounds. The per-entity entries balance, but both entities can agree on the wrong cent.
+   Breaks: CLAUDE.md §2.3; ADR-0003; ADR-0021 decision 4; formulas §44.4’s fee × paid_share × revenue × user share money formula.
+   Reproducible scenario: Give a consumer app exactly 1 customer at 1,750 cents in North America, paid_share = 0.4, an otherwise-zero device platform with users = 0.7, and a post-2025 fee of 0.15. Production returns round(1750 * .4 * .7 * .15) = 73 because the binary product is 73.49999999999999. The exact value is 73.5 cents and half-even rounding is 74.
+   Fix and test: Represent configured rates/shares as scaled integers or exact decimal fractions at the money boundary, aggregate exactly, and round half-even once. Add an independent rational-reference property and the 1750 × 0.4 × 0.7 × 0.15 regression through fees_due and fee_entries, checking both sides and a cold reload. The current property verifies balance and compares entries to fees_due; it does not independently verify the formula.
+4. Own-OS licence fees inside the group do not eliminate on consolidation
+   Locations: platforms/fees.py:279 and finance/consolidation.py:162.
+   What is wrong: App-store fees detect a seller/owner pair inside the player’s group and post 5900_intercompany_purchases / 4300_intercompany_sales. own_licence_entries always posts the device maker to 5150_platform_fees and the OS owner to 4150_platform_fees, even when they are sister, parent, or subsidiary entities. Consolidation removes only the intercompany accounts, so both the expense and revenue remain in consolidated profit and revenue lines.
+   Breaks: ADR-0020 decisions 1 and 4; ADR-0021 decision 4; formulas §31’s elimination and §44.1/§44.4’s per-company platform money. Entity books balance, but the group statements are not faithful.
+   Reproducible scenario: Make Samsung (company 34) a wholly owned subsidiary of the player, make a non-historical licensed OS owned by the player, attach Galaxy (product 900320) to it, set the licence to 100 cents and units sold to 1. world.group(state) contains companies 1 and 34. own_licence_entries nevertheless emits company 34 5150 +100 / cash -100 and company 1 cash +100 / 4150 -100; neither P&L line is eliminated.
+   Fix and test: Reuse the same group-pair classification as fee_entries; post intercompany purchases/sales for an in-group licensee and owner, external platform accounts otherwise. Add a property/integration test for direct subsidiary, parent, and sister-company OS licences, asserting every entity balances, cash moves between the correct entities, consolidated 4150/5150 and 4300/5900 net to zero as appropriate, and reload is identical. The current fee-ledger property covers app-store fees only.
+5. Estate settlement records the full tax as paid while passing untaxed investment assets to the heir
+   Locations: family/estate.py:109, family/estate.py:171, and family/estate.py:227.
+   What is wrong: quote taxes family-office value, public holdings, and open angel stakes as other_cents. settle can fund the tax only from personal cash and the founder’s shares in the listed/operating company. If those are insufficient, it pays only what they produce, then pass_estate transfers all other taxable investments intact. It still increments family.estate_tax_cents and tells the player the estate paid the full quoted tax.
+   Breaks: Formulas §45.6: the estate pays the regional tax and the rest passes to the heir; ADR-0003’s faithful double-entry money; M36’s estate-tax/control acceptance target. This also makes the displayed estate-tax history disagree with actual book outflow.
+   Reproducible scenario: In the M36 family fixture, hire the adult heir, give the founder $10 billion, move all of it to the family-office account, and settle a health succession. The quote is 349,864,200,000 cents of tax. The only company-share sale raises and pays 112,000,000 cents. The heir nevertheless receives the full 1,000,000,000,000-cent family office, while family.estate_tax_cents records 349,864,200,000 and the log says that amount was paid. The existing property explicitly accepts paid = min(tax, cash + share proceeds), encoding the gap.
+   Fix and test: Define liquidation/order for every taxable asset included in other_cents—or carry a real estate-tax payable that reduces what passes—and record only actual payment until the liability is resolved. Add table-driven/property cases where the estate is predominantly family office, public holdings, or angel stakes; independently assert actual tax-book outflow equals the quote, gross estate equals tax plus net inheritance, no shares/value disappear, the displayed cumulative tax equals postings, and cold reload agrees.
+## P3 findings
+None.
+## Verification and limits
+- Reproduced all five findings with production functions and repository fixtures at the reviewed commit. The automation actor, platform-fee rounding, group OS accounts, and estate figures above are observed outputs, not hypothetical arithmetic alone.
+- 39 focused tests passed: M27b automation, M31 fee-ledger properties, M36 personal-book properties, M30 memo/history checks, and M28 chain-ledger properties. Their passing results identify the coverage gaps described above.
+- Inspected the M28 history fixture/pipeline/group and bid paths, M29 unlocks and launcher, M30 state/read memos and retention, M31 gatekeeping/API boundary, M36 family views/prompts, and the new RNG stream/key call sites. No additional confirmed history-to-2025 change, unbalanced chain entry, stale-cache result, critical-event auto-answer, launcher secret/second-port issue, gatekeeper-chance leak, child-potential truth leak, or partial-turn transaction defect is asserted.
+- No full make check, frontend/browser suite, 360-turn state-cache run, or statistical balance suite is claimed. The supplied M28 target-2 and 439 ms performance hand-offs were not re-reported.
+- Final repository checkout remained clean at ec53dc30d8f7bab8ad039d1dac5ac2c0fadfd9bb.
+Count by severity: P1: 0 · P2: 5 · P3: 0 · Total: 5.
+## Resolution (product manager, 2026-11-14)
+
+No P1. All five findings go to **M36r** (`docs/tasks/M36r-review-7-fixes.md`), a fix lane beside M32, M33 and M34, merging before M32.
+
+| # | Severity | Finding | Goes to |
+| --- | --- | --- | --- |
+| 1 | P2 | Approved subsidiary proposals for a grey route or a termination act in the delegate's name | M36r sub-task 1 |
+| 2 | P2 | Float-rounded offtake commitments let a delegate act at the exact limit | M36r sub-task 2 |
+| 3 | P2 | Platform fees one cent wrong at a half-cent boundary | M36r sub-task 2 |
+| 4 | P2 | Own-OS licence fees inside the group don't eliminate on consolidation | M36r sub-task 3 |
+| 5 | P2 | Estate settlement records the full tax as paid while passing untaxed assets | M36r sub-task 4 |
+
+**A pattern, third review running:** float arithmetic in money paths (review 5 finding 10, review 6 finding 5, review 7 findings 2 and 3). M36r sub-task 2 also audits every money formula in `tst/sim/` and adds a guard so new ones can't use floats.
