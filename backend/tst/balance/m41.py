@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+import re
 import statistics
 from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
@@ -366,10 +367,36 @@ def medical_rivals(state: GameState, data: LoadedData) -> frozenset[int]:
     return frozenset(out)
 
 
+def _normalise(line: str, series: str, names: tuple[str, ...], shift: int, first: int) -> str:
+    """A fingerprint line as main would write it: later companies' ids moved back by the medical
+    incumbents' count, and their moves taken out of the shared market-news line."""
+
+    def cid(x: str) -> str:
+        n = int(x)
+        return str(n - shift if n >= first else n)
+
+    parts = line.split("|")
+    if series == "books":
+        return "|".join([cid(parts[0]), *parts[1:]])
+    parts[1] = cid(parts[1])
+    if parts[2] == "market_news":
+        kept_lines = ""
+        for i, p in enumerate(parts):
+            if "lines=" in p:
+                head, _, rest = p.partition("lines=")
+                items = [x for x in rest.split("; ") if not x.startswith(names)]
+                kept_lines = "; ".join(items)
+                parts[i] = head + "lines=" + kept_lines
+        count = len(kept_lines.split("; ")) if kept_lines else 0
+        parts = [re.sub(r"count=\d+", f"count={count}", p) for p in parts]
+    return "|".join(parts)
+
+
 def history_without_medical(seed: int) -> dict[str, dict[str, str]]:
-    """M28's history fingerprint (41.8 target 1) with M41's own rivals' lines left out: equal
-    to main's recorded fingerprint when every earlier company's books, events, prices and
-    capacities to December 2025 are unchanged (tools/m41_history_diff.py)."""
+    """M28's history fingerprint (41.8 target 1) with M41's own rivals' lines left out and
+    later companies' ids as main numbers them: equal to main's recorded fingerprint when every
+    earlier company's books, events, prices and capacities to December 2025 are unchanged
+    (tools/m41_history_diff.py)."""
     import hashlib
 
     from tst.balance import m28
@@ -379,6 +406,8 @@ def history_without_medical(seed: int) -> dict[str, dict[str, str]]:
     data = loaded()
     game = start_game(data, seed)
     mine = medical_rivals(game.state, data)
+    names = tuple(c.name for c in game.state.companies if c.id in mine)
+    first = max(mine) + 1
     hashes: dict[str, dict[int, hashlib._Hash]] = {s: {} for s in m28.SERIES}
     while game.state.turn <= m28.LAST_HISTORY_TURN:
         turn = game.state.turn
@@ -395,6 +424,8 @@ def history_without_medical(seed: int) -> dict[str, dict[str, str]]:
         for series, lines in m28._month_lines(game, kept, turn).items():
             h = hashes[series].setdefault(year, hashlib.sha256())
             for line in lines:
+                if series in ("books", "events") and "|" in line and line.split("|")[0].isdigit():
+                    line = _normalise(line, series, names, len(mine), first)
                 h.update(line.encode())
                 h.update(b"\n")
     return {s: {str(y): h.hexdigest() for y, h in sorted(ys.items())} for s, ys in hashes.items()}
