@@ -14,9 +14,10 @@ company doing nothing (so history holds); the targets then branch from that mont
    gross margin in 2034: its revenue less its cars' cost by line (the pack at the plant's cost a
    kWh, depreciation included, for its own cells), from its VehicleMonths; the plants' sales of
    surplus cells and lithium are a business of their own and left out.
-4. **Software matters:** the first maker with its own OS and L2+ (an autonomy lead topped up to
-   20 each January, as a player funding the research would hold): software's share of the line's
-   revenue from 2026 to 2035.
+4. **Software matters** (re-banded by the product manager, 2026-11-16): the first maker with its
+   own OS and L2+ (an autonomy lead topped up to 20 each January, as a player funding the
+   research would hold): software's share of the lifetime revenue of a car sold in December 2035,
+   4-15% (`lifetime_share`; its share of the line's 2026-2035 revenue is printed beside it).
 5. **Tariffs bite:** the same maker assembling in Shenzhen and selling in North America, priced
    at its landed cost (with the tariff) over 0.82: its share of North America's EV buyers in
    2025-2030 while the 100% tariff holds (it does on every seed: no seeded rule lifts it).
@@ -76,6 +77,7 @@ LI_TONNES: Final = 10_000
 LEAD: Final = 20.0
 LANDED_MARGIN: Final = 0.82  # a sensible price: cost / 0.82 (cars' 18% gross margin)
 SOFTWARE_MEMO: Final = "Car software"
+SOFTWARE_BAND: Final = (0.04, 0.15)  # target 4 (product manager, 2026-11-16)
 ROLE: Final = "process_engineer"  # who staffs the converter and the cell plant
 
 
@@ -306,7 +308,8 @@ class SeedRun:
     share_slow: float  # at its bottom
     margin_bought: float
     margin_own: float
-    software_share: float
+    software_share: float  # software's share of the line's revenue 2026-2035 (the first reading)
+    lifetime_share: float  # 4 (re-banded): software's share of a 2035 car's lifetime revenue
     china_share_us: float
     turn_seconds: float
 
@@ -351,6 +354,7 @@ def run_seed(seed: int) -> SeedRun:
         )
         software += row.software_cents if row is not None else 0
     revenue = -_delta(sw, start, ("4000_revenue_subscriptions",))
+    lifetime = lifetime_share(sw, pid)
     # 5: tariffs bite
     cn = world(seed)
     pid_cn = car_maker(cn, city="shenzhen")
@@ -367,9 +371,32 @@ def run_seed(seed: int) -> SeedRun:
         margin_bought=_car_margin(bought, ym_to_turn(2034, 1)),
         margin_own=_car_margin(own, ym_to_turn(2034, 1)),
         software_share=software / revenue if revenue > 0 else 0.0,
+        lifetime_share=lifetime,
         china_share_us=max(shares) if shares else 0.0,
         turn_seconds=seconds,
     )
+
+
+def lifetime_share(g: Game, pid: int) -> float:
+    """Target 4 (product manager, 2026-11-16): software's share of the lifetime revenue of a car
+    sold in December 2035 (own platform, L2+). Its software is the month's subscriptions a car on
+    the road, for the consumer segment's replacement months lengthened by over-the-air updates;
+    its price is the line's consumer price."""
+    from tst.sim.vehicles.autonomy import cars_on_road
+
+    b, d = g.loaded.balance, g.loaded.game_data
+    month = g.state.turn - 1
+    row = next((m for m in g.state.vehicle_months if m.product_id == pid and m.turn == month), None)
+    cars = sum(cars_on_road(g.state, pid, r, b, d) for r in d.region_keys)
+    price = next((s.price_cents for s in g.state.segments_of(pid) if s.segment == "consumer"), None)
+    if row is None or cars <= 0 or not price:
+        return 0.0
+    cat = d.category(b.vehicles.category)
+    replacement = cat.market("consumer").replacement_months
+    assert replacement is not None  # vehicles are a units market (categories.yaml)
+    months = replacement / (1 - b.vehicles.software.ota_churn_cut)
+    life = row.software_cents / cars * months
+    return life / (price + life)
 
 
 def _price_landed(g: Game, pid: int) -> None:
@@ -418,6 +445,14 @@ class Results:
         return median(r.software_share for r in self.runs)
 
     @property
+    def lifetime_median(self) -> float:
+        return median(r.lifetime_share for r in self.runs)
+
+    @property
+    def software_met(self) -> bool:
+        return SOFTWARE_BAND[0] <= self.lifetime_median <= SOFTWARE_BAND[1]
+
+    @property
     def china_max(self) -> float:
         return max(r.china_share_us for r in self.runs)
 
@@ -441,7 +476,8 @@ def report(r: Results) -> str:
         lines.append(
             f"  seed {x.seed}: EV share 2035 {x.share_2035:.1%} (fast {x.share_fast:.1%}, slow"
             f" {x.share_slow:.1%}); gross margin 2034 own cells {x.margin_own:.1%} vs bought"
-            f" {x.margin_bought:.1%}; software {x.software_share:.1%}; China-made share of US EV"
+            f" {x.margin_bought:.1%}; software {x.software_share:.1%} of the line,"
+            f" {x.lifetime_share:.1%} of a car's lifetime; China-made share of US EV"
             f" buyers at most {x.china_share_us:.2%}; {x.turn_seconds * 1000:.0f} ms a turn"
         )
     ok2 = 0.35 <= r.share_median <= 0.65
@@ -451,8 +487,9 @@ def report(r: Results) -> str:
         f" {len(r.runs)} seeds",
         f"3. Integration pays: median gross-margin gap {r.margin_gap_median * 100:.1f} points"
         f" (>= 4): {'met' if r.margin_gap_median >= 0.04 else 'MISSED'}",
-        f"4. Software matters: median software share {r.software_median:.1%} (>= 10%):"
-        f" {'met' if r.software_median >= 0.10 else 'MISSED'}",
+        f"4. Software matters: median software share of a 2035 car's lifetime revenue"
+        f" {r.lifetime_median:.1%} (4-15%, re-banded 2026-11-16; of the line's 2026-2035 revenue"
+        f" {r.software_median:.1%}): {'met' if r.software_met else 'MISSED'}",
         f"5. Tariffs bite: China-made car's US share at most {r.china_max:.2%} (< 2%):"
         f" {'met' if r.china_max < 0.02 else 'MISSED'}",
         f"6. Turn time: median {median(x.turn_seconds for x in r.runs) * 1000:.0f} ms a turn"

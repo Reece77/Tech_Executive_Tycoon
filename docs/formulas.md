@@ -3378,7 +3378,7 @@ Measured by `tst/balance/v3.py` (printed by `tools/v3_targets.py`, checked weekl
 - **S1. Chains feel the lithium spike.** An unhedged phone's peak unit cost in 2021–2022 is at least 3% above 2020's (M17's reference phone).
 - **S2. The gallium ban limits output.** An unhedged chip maker's output allocation falls at least 5% after December 2024 (median of 10 seeds), not only its price.
 - **F1. Foundry demand.** The foundry script's first 28 nm fab, with foundry contracts, reaches 70%+ use within 36 months of going live on at least 7 of 10 seeds.
-- **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039.
+- **L1–L3 (30 years).** By December 2039: an era arrives in 2026–2039 in each of chip_design, devices, infrastructure and ai; a rival is alive in every chain category (miners, refiners, foundries; a derived good's spot market counts as its seller); no commodity index stays outside [1/3, 3] of its base for more than 36 months in 2026–2039. A learning-curve good (`learning_curve: true` in commodities.yaml: battery_cells, M38) is read against its December 2025 price instead of its 2010–2019 mean (product manager, 2026-11-16), since its price falls on the curve rather than reverting to a mean.
 - **L4 (printed).** full_integrator has ordered its whole chain (mine, refinery, wafer plant, fab, devices) by December 2024 (year 15).
 
 ## 44. Platforms and ecosystems (M31; v4)

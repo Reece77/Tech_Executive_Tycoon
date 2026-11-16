@@ -54,6 +54,7 @@ from tst.sim.geopolitics.config import (
     CountriesFile,
     ExportControlsFile,
     GeopoliticsBalance,
+    PlacesFile,
     TariffsFile,
 )
 from tst.sim.group.config import GroupBalance
@@ -2099,6 +2100,8 @@ class GameData(_Frozen):
     nodes: NodesFile | None = None  # M21 (38.1, 38.3): process nodes and rival foundries
     # M22 (39): countries and blocs, export controls and tariffs; None = no geopolitics
     countries: CountriesFile | None = None
+    # M38: countries.yaml's plain data (no blocs), kept when geopolitics is off (geopolitics/config)
+    places: PlacesFile | None = None
     controls: ExportControlsFile | None = None
     tariffs: TariffsFile | None = None
     chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world

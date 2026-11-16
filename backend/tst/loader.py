@@ -1098,6 +1098,7 @@ def load_all(
             "nationalization": nationalization,
             "nodes": nodes,
             "countries": countries,
+            "places": countries.plain(),
             "controls": controls,
             "tariffs": tariffs,
             "chain_companies": chain,

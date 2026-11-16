@@ -168,7 +168,11 @@ def _indices(game: Game, bands: dict[str, list[float]]) -> None:
         return
     state = replace(game.state, turn=game.state.turn - 1)  # the month just played
     for good in d.commodities.goods:
-        bands.setdefault(good.key, []).append(commodity.index_now(state, good.key, d))
+        index = commodity.index_now(state, good.key, d)
+        if good.learning_curve:  # L3 reads a learning-curve good against December 2025
+            history = commodity.history_of(d, good.key)
+            index *= commodity.mean_of(d, good.key) / history.value_at(history.last_turn)
+        bands.setdefault(good.key, []).append(index)
 
 
 def _longest_outside(xs: Sequence[float]) -> int:

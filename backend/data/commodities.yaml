@@ -7,6 +7,8 @@
 # of production or refining, whichever is higher (dossier 2: D from USGS tonnages, V quoted, A
 # an assumption where the dossier gives no share). A share over commodity.ban_concentration
 # (0.60) makes an export ban more likely after 2025 (33.1).
+# learning_curve: true for a good whose price falls on a learning curve (battery_cells, M38);
+# the v3 balance's L3 band reads it against December 2025, not its 2010-2019 mean.
 goods:
   - { key: quartz_hp, label: High-purity quartz, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: United States, top_share: 0.75, share_basis: A } # Spruce Pine "dominant" for crucible grade (dossier 2), share A
   - { key: silicon_metal, label: Silicon metal, unit: ¢/lb, volume_unit: t, usd_per_unit: 22.046, top_country: China, top_share: 0.85, share_basis: D } # 3.9 of 4.6 Mt (2024)
@@ -29,4 +31,4 @@ goods:
   - { key: nickel, label: Nickel, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: Indonesia, top_share: 0.59, share_basis: R }
   - { key: manganese, label: Manganese (contained), unit: $/dmtu, volume_unit: t, usd_per_unit: 100.0, top_country: China, top_share: 0.90, share_basis: R }
   - { key: graphite, label: Graphite (natural flake), unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: China, top_share: 0.79, share_basis: R }
-  - { key: battery_cells, label: Battery cells (EV), unit: $/kWh, volume_unit: kWh, usd_per_unit: 1.0, top_country: China, top_share: 0.83, share_basis: R }
+  - { key: battery_cells, label: Battery cells (EV), unit: $/kWh, volume_unit: kWh, usd_per_unit: 1.0, top_country: China, top_share: 0.83, share_basis: R, learning_curve: true }

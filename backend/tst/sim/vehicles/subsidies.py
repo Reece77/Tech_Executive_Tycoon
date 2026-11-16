@@ -29,9 +29,8 @@ MARKET_ORIGIN: Final = "china"  # tunable-exempt: where market cells come from w
 
 
 def country_share(country: str, data: GameData) -> float:
-    if data.countries is None:
-        return 0.0
-    return next((c.demand_share for c in data.countries.countries if c.key == country), 0.0)
+    place = data.places.place(country) if data.places is not None else None
+    return place.demand_share if place is not None else 0.0
 
 
 def _matches(country: str, names: tuple[str, ...], data: GameData) -> bool:
