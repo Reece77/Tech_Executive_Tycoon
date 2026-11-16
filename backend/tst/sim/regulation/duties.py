@@ -38,7 +38,7 @@ from tst.sim.platforms.models import Platform
 from tst.sim.regulation import data as rdata
 from tst.sim.regulation.config import DutyKind, RegulatorDef
 from tst.sim.regulation.models import Duty, DutySource
-from tst.sim.state import GameState, owner_of
+from tst.sim.state import GameState, ultimate_owner
 
 RULE_KIND: Final[dict[str, str]] = {  # a duty's row kind in platforms' `regulated`
     "side_loading": "side_loading",
@@ -66,12 +66,12 @@ def binding(state: GameState, company_id: int, regulator: str, kind: str) -> boo
 
 def platforms_in(state: GameState, company_id: int, region: str) -> list[Platform]:
     """Device platforms the company's group owns that serve the region."""
-    owner = owner_of(state, company_id)
+    owner = ultimate_owner(state, company_id)
     return [
         p
         for p in state.platforms
         if p.owner_id is not None
-        and owner_of(state, p.owner_id) == owner
+        and ultimate_owner(state, p.owner_id) == owner
         and region in p.regions
         and (p.ended_turn is None or p.ended_turn > state.turn)
     ]

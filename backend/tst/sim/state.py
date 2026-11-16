@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import dataclasses
 import threading
 from bisect import bisect_left
 from collections import OrderedDict
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from fractions import Fraction
 from itertools import pairwise
 from operator import attrgetter
@@ -999,6 +1000,37 @@ def _staff_by_person(employments: tuple[Employment, ...]) -> dict[int, Employmen
     return out
 
 
+def _state_copier() -> Callable[[GameState, dict[str, Any]], GameState]:
+    """`dataclasses.replace` for a GameState, ~3x faster (M36p: ~700 state replaces a month in
+    2039): the same new object (every init field copied, `changes` set, a fresh `_memo`), by
+    straight-line code generated once from the fields, as dataclasses generates __init__."""
+    names = [f.name for f in dataclasses.fields(GameState) if f.init]
+    body = "".join(f"    set_(new, {n!r}, s.{n})\n" for n in names)
+    source = (
+        "def copy(s, changes):\n    new = new_(GameState)\n" + body
+        + "    for k, v in changes.items():\n        set_(new, k, v)\n"
+        + "    set_(new, '_memo', {})\n    return new\n"
+    )  # fmt: skip
+    scope: dict[str, Any] = {"new_": object.__new__, "set_": object.__setattr__}
+    scope["GameState"] = GameState
+    exec(source, scope)  # generated from the dataclass's own field names
+    copy: Callable[[GameState, dict[str, Any]], GameState] = scope["copy"]
+    return copy
+
+
+_COPY_STATE: Final = _state_copier()
+_STATE_FIELDS: Final = frozenset(f.name for f in dataclasses.fields(GameState) if f.init)
+
+
+def replace[D](obj: D, /, **changes: Any) -> D:
+    """`dataclasses.replace`, with a fast path for GameState (`_state_copier`); any other
+    object, or a change that is not a GameState init field, goes to dataclasses (which
+    raises as it always did)."""
+    if type(obj) is GameState and changes.keys() <= _STATE_FIELDS:
+        return _COPY_STATE(obj, changes)  # type: ignore[arg-type,return-value]
+    return dataclasses.replace(obj, **changes)  # type: ignore[type-var]
+
+
 def derived[T](state: GameState, key: object, compute: Callable[[], T]) -> T:
     """A value derived from `state` alone, computed once per state (M30). The value must be
     immutable, or treated as read-only by every caller: it is shared. With MEMO_CHECK on, a
@@ -1071,6 +1103,20 @@ def owner_of(state: GameState, company_id: int, turn: int | None = None) -> int:
             raise GroupDataError(f"ownership cycle: {' -> '.join(map(str, [*seen, current]))}")
         seen.append(current)
     return current
+
+
+def owners_now(state: GameState) -> dict[int, int]:
+    """`owner_of(state, id)` now for every company, computed once per state (M36p: M34's
+    regulation asked it of every company for every regulator and group). Read-only."""
+    return derived(
+        state, "owners_now", lambda: {c.id: owner_of(state, c.id) for c in state.companies}
+    )
+
+
+def ultimate_owner(state: GameState, company_id: int) -> int:
+    """`owner_of(state, company_id)` now, from `owners_now` when the company is in the state."""
+    found = owners_now(state).get(company_id)
+    return owner_of(state, company_id) if found is None else found
 
 
 def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:

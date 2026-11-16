@@ -11,6 +11,11 @@ on:
   schedule:
     - cron: "41 4 * * 0" # 04:41 UTC on Sundays
   workflow_dispatch:
+    inputs:
+      parts:
+        description: 'JSON list of make targets to run (M36p: e.g. ["weekly-v6", "weekly-v6-integrator"]); empty runs all'
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -23,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [weekly-v1to4, weekly-v1, weekly-v5, weekly-v6, weekly-v3-shocks, weekly-v3-integration, weekly-v3-long, weekly-v6-integrator, weekly-m27b]
+        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m27b"]') }}
     steps:
       - uses: actions/checkout@v4
 

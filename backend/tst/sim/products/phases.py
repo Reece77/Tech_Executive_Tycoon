@@ -32,7 +32,7 @@ from tst.sim.hardware import cm_market, production
 from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.modes.rankings import brand_bonus
-from tst.sim.money import Cents, exact
+from tst.sim.money import Cents, exact, times
 from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.pitch_execution import execution_factor
 from tst.sim.org.rules import OrgView, org_view
@@ -120,7 +120,7 @@ def reference_price(
     finding 5)."""
     reference = data.category(product.category).market(segment).reference_price_cents
     if price_index != 1:
-        reference = max(1, round(exact(reference) * exact(price_index)))
+        reference = max(1, times(reference, price_index))
     if pricing_power != 1 and data.segment(segment).reach == "sales":
         reference = round(reference * pricing_power)
     return reference
@@ -709,18 +709,18 @@ def _revenue(
                 if category.sells_units:
                     sold = flows.get(key, Flow()).units
                     units_sold += sold
-                    amount = round(exact(sold) * (seg.price_cents or 0))
+                    amount = times(seg.price_cents or 0, sold)
                 else:
-                    amount = round(exact(seg.customers) * (seg.price_cents or 0) * exact(paid))
+                    amount = times(seg.price_cents or 0, seg.customers, paid)
                 booked += amount
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
                 if category.sells_units:
                     sold = regional_units.get((product.id, rseg.region, rseg.segment), 0.0)
                     units_sold += sold
-                    booked += round(exact(sold) * (rseg.price_cents or 0))
+                    booked += times(rseg.price_cents or 0, sold)
                 else:
-                    booked += round(exact(rseg.customers) * (rseg.price_cents or 0) * exact(paid))
+                    booked += times(rseg.price_cents or 0, rseg.customers, paid)
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
                 cogs = round(
                     sum(
@@ -816,9 +816,7 @@ def projected_revenue(state: GameState, company_id: int) -> Cents:
             *state.segments_of(product.id),
             *state.regional_segments_of(product.id),
         ]
-        total += sum(
-            round(exact(s.customers) * s.price_cents) for s in rows if s.price_cents is not None
-        )
+        total += sum(times(s.price_cents, s.customers) for s in rows if s.price_cents is not None)
     return total
 
 

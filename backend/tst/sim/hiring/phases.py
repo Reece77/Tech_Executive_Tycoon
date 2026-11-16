@@ -52,7 +52,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.modes.rankings import hiring_bonus
-from tst.sim.money import Cents, exact
+from tst.sim.money import Cents, times
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.executives import exec_energy_holders
 from tst.sim.org.morale import morale_terms
@@ -339,8 +339,8 @@ def monthly_cost_lines(
             market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
         )
         salaries[None] += round(pool.headcount * pay)
-        benefits[None] += round(exact(pool.headcount) * benefits_cents(pay, balance.payroll))
-        office[None] += round(exact(pool.headcount) * balance.payroll.office_cost_per_head_cents)
+        benefits[None] += times(benefits_cents(pay, balance.payroll), pool.headcount)
+        office[None] += times(balance.payroll.office_cost_per_head_cents, pool.headcount)
         employees[None] += pool.headcount
     hosting, marketing = product_costs_by_division(state, company_id, data, balance)
     tools = balance.costs.tools_per_head_cents
@@ -497,9 +497,11 @@ def morale_and_departures(
         if roll_succeeds(int(resign_gen.integers(0, ROLL_RANGE)), chance):
             reason = "resigned"
         else:
-            retire_gen = rng.stream(state.turn, "retire", person.id)
             chance = retirement_bp(person.age(state.turn), balance.people)
-            if chance and roll_succeeds(int(retire_gen.integers(0, ROLL_RANGE)), chance):
+            # the stream only when it is drawn from (M36p: an unused stream changes nothing)
+            if chance and roll_succeeds(
+                int(rng.stream(state.turn, "retire", person.id).integers(0, ROLL_RANGE)), chance
+            ):
                 reason = "retired"
         if reason is None:
             continue
