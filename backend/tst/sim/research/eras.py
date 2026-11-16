@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import replace
 from fractions import Fraction
 
+from tst.sim import dmath
 from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
@@ -174,7 +175,7 @@ def _window(state: GameState, data: GameData, era: EraDef, company_id: int) -> E
     history = state.company(company_id).mrr_history
     trend = 0.0
     if len(history) > TREND_MONTHS and history[-1 - TREND_MONTHS] > 0 and history[-1] > 0:
-        trend = (history[-1] / history[-1 - TREND_MONTHS]) ** (1 / TREND_MONTHS) - 1
+        trend = dmath.pow(history[-1] / history[-1 - TREND_MONTHS], 1 / TREND_MONTHS) - 1
     demand = tuple(
         (c, sum(m.addressable for m in state.markets if m.category == c)) for c in era.categories
     )
@@ -209,7 +210,7 @@ def era_reports(
             product = state.product(pid)
             if product is None:
                 continue
-            growth = (1 + w.trend) ** months
+            growth = dmath.pow(1 + w.trend, months)
             expected = round(mrr * growth)
             now = _mrr(state, pid)
             added += now - expected
@@ -221,7 +222,9 @@ def era_reports(
         for category, then in w.demand:
             path = then
             for t in range(w.start_turn, state.turn):
-                path *= (1 + base_growth(data, category, turn_to_ym(t)[0])) ** (1 / TREND_MONTHS)
+                path *= dmath.pow(
+                    1 + base_growth(data, category, turn_to_ym(t)[0]), 1 / TREND_MONTHS
+                )
             now_d = sum(m.addressable for m in state.markets if m.category == category)
             lines.append(
                 f"{data.category(category).label} demand {now_d:,.0f} against "

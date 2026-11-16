@@ -32,6 +32,7 @@ from dataclasses import dataclass, replace
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.commodities.config import AnnualHistory, CommodityBalance
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import CommodityRuleError
@@ -133,7 +134,7 @@ def draws(rng: RngFactory, turn: int, good_index: int) -> Draws:
 
 
 def monthly_phi(phi: float) -> float:
-    return float(phi ** (1 / MONTHS_PER_YEAR))
+    return float(dmath.pow(phi, 1 / MONTHS_PER_YEAR))
 
 
 def monthly_sd(vol: float) -> float:
@@ -143,7 +144,9 @@ def monthly_sd(vol: float) -> float:
 def ar1_step(base: float, level: float, phi: float, vol: float, z: float) -> float:
     """One month of the log AR(1) toward `level` (annual persistence and volatility)."""
     pm = monthly_phi(phi)
-    return math.exp(math.log(level) + pm * (math.log(base) - math.log(level)) + monthly_sd(vol) * z)
+    return dmath.exp(
+        dmath.log(level) + pm * (dmath.log(base) - dmath.log(level)) + monthly_sd(vol) * z
+    )
 
 
 def shock_chances(cb: CommodityBalance, top_share: float) -> list[tuple[str, float]]:

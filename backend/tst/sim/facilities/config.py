@@ -18,6 +18,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim import dmath
+
 MONTH_RE: Final = re.compile(r"^(\d{4})-(\d{2})$")
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0 is January 2010 (calendar definition)
 MONTHS: Final = 12  # tunable-exempt: calendar
@@ -226,7 +228,7 @@ class GoodHistory(_Frozen):
             raise ValueError(f"turn {turn} is outside {self.key!r}'s history")
         for (t0, v0), (t1, v1) in itertools.pairwise(anchors):
             if t0 <= turn <= t1:
-                return float(v0 * (v1 / v0) ** ((turn - t0) / (t1 - t0)))
+                return float(v0 * dmath.pow(v1 / v0, (turn - t0) / (t1 - t0)))
         return anchors[-1][1]
 
     def allocation_at(self, turn: int, *, advanced: bool = False) -> float:

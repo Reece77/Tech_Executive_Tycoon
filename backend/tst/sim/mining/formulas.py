@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from tst.sim import dmath
 from tst.sim.mining.config import AccidentBalance, MiningBalance, SubtypeBalance
 from tst.sim.money import times
 
@@ -14,7 +15,7 @@ MONTHS = 12  # tunable-exempt: calendar
 def capex_for(estimate_design_cents: int, capacity: float, design: float, scale: float) -> int:
     """35.2: the study's capex for its design capacity, scaled to the chosen capacity by
     (capacity / design) ** scale."""
-    return times(estimate_design_cents, (capacity / design) ** scale)
+    return times(estimate_design_cents, dmath.pow(capacity / design, scale))
 
 
 def overrun(u: float, lo: float, hi: float) -> float:
@@ -125,7 +126,7 @@ def project_irr(flows: list[float], lo: float = IRR_LO, hi: float = 1.0) -> floa
         return None
 
     def npv(r: float) -> float:
-        return sum(f / (1 + r) ** t for t, f in enumerate(flows))
+        return sum(f / dmath.pow(1 + r, t) for t, f in enumerate(flows))
 
     a, b = lo, hi
     if npv(a) * npv(b) > 0:

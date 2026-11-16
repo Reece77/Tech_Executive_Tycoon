@@ -11,6 +11,7 @@ from dataclasses import replace
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.finance import macro
@@ -79,7 +80,7 @@ def consensus(state: GameState, company_id: int) -> tuple[int, int]:
         g = growth_of(replace(company, mrr_history=history[:-1]), history[-1])
     else:
         g = 0.0
-    quarterly = (1 + max(g, -0.99)) ** (QUARTER / MONTHS_A_YEAR) - 1  # tunable-exempt: guard
+    quarterly = dmath.pow(1 + max(g, -0.99), QUARTER / MONTHS_A_YEAR) - 1  # tunable-exempt: guard
     revenue = round(last_quarter * (1 + quarterly))
     ops = company.op_history[-MONTHS_A_YEAR:]
     revs = history[-len(ops) :] if ops else ()

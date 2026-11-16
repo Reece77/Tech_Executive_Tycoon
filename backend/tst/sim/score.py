@@ -11,6 +11,7 @@ import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import LedgerBalances
 from tst.sim.modes.models import CompanyScore
@@ -36,7 +37,7 @@ def score_points(
     """30.1: 400 x (log10(max(V, $1M)) - 6) / 6 (clamped 0-400) + 200 G + 150 P + 150 L
     + 100 R, the weights and the value scale from balance.score."""
     sb = balance.score
-    decades = math.log10(max(value_dollars, sb.value_floor_dollars)) - math.log10(
+    decades = dmath.log10(max(value_dollars, sb.value_floor_dollars)) - dmath.log10(
         sb.value_floor_dollars
     )
     value_part = sb.weight_value * min(max(decades / sb.value_span_decades, 0.0), 1.0)
@@ -87,7 +88,7 @@ def cagr(state: GameState, company_id: int) -> float:
     if now <= 0:
         return -1.0
     # money-exact: ratio
-    return float((now / then.revenue_cents) ** (1 / years) - 1)
+    return float(dmath.pow(now / then.revenue_cents, 1 / years) - 1)
 
 
 def trailing_margin(state: GameState, company_id: int) -> float | None:
