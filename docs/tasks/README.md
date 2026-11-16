@@ -65,6 +65,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M34-regulation-with-teeth.md](M34-regulation-with-teeth.md) | Regulation with teeth (v4, lane C, merges first): regulators, gatekeeper designations, duties, investigations with visible stages, fines and rare warned break-ups, for the player and rivals (formulas §48) | M31 |
 | [M36r-review-7-fixes.md](M36r-review-7-fixes.md) | Codex review 7 fixes, and a money-exactness guard (beside M32–M34, before M32): never-actions stay the founder's after approval, exact commitments and platform fees, a float-money audit and AST guard, group OS licences eliminate, the estate pays every taxable asset | M36, M30 |
 | [M36p-exact-money-performance.md](M36p-exact-money-performance.md) | Exact money, fast: integer money helpers, regulation and state-copy costs, both V6 medians back under M30's guards on CI (a fix session's record, after M36r) | M36r, M34 |
+| [M38-electric-vehicles.md](M38-electric-vehicles.md) | Electric vehicles (v5, lane C, merges after M35b): vehicles as a category family, cells and own cell plants on the player's lithium, the car as a platform with software revenue, autonomy with approvals, charging, subsidies and tariffs, Tesla, BYD and incumbents from history (formulas §49) | M31, M32, M34 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

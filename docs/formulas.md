@@ -3746,3 +3746,49 @@ Regulators, rules and their dates, designations and the thresholds, duties, inve
 - **Duties** (§48.2) add `regulated` rows to the group's platforms in the region (ADR-0021 3): side-loading and anti-steering as dated rules, alternative payments as a path at the standard rate less `alt_discount`, a fee cap on the standard rate; no self-preferencing and anti-steering set those rules off. Only the player can breach a duty (by turning a forbidden setting back on); rivals comply.
 - **Investigations** (§48.3): a case needs a cause and `min_revenue_cents` of revenue in the region; one regulator has at most one open case on a group and waits `cooldown_months` after one closes. Settling at the inquiry costs no fine; at the charges `settle_share` of the fine at the middle of its range. A ruling's fine posts at once; a won appeal returns it. Lobbying a case costs `lobby_cents` and counts as `lobby_influence` on its odds.
 - **Structural orders** (§48.4) are a ruling's outcome (stream `regulation`, (1, case, 3)); the order names the player's own platform (its OS and store) for a devices case, a single subsidiary selling in the market, or the group's products there. A sale goes to the rival with the most customers in the market at `sale_multiple` x the unit's year of revenue (4930 for the seller, 1800 for the buyer). A spin-off is §31.5's and needs the unit in a subsidiary of a listed holding company; otherwise the order stays open and periodic penalties follow its deadline.
+
+## 49. Electric vehicles (M38; v5)
+
+Reece (2026-11-14): **electric vehicles first** among v5's new industries, on the chain v3 and v4 built: lithium from the player's mines and refineries, chips from its fabs, the car's software as a platform (§44), power for charging (§46). **History holds to 2025:** EV sales and shares by region, battery prices, subsidies, tariffs and rivals' line-ups follow `vehicles.yaml` (research `docs/v5-research/ev-dossier.md`); seeded after. Money and market sizes follow the `devices` category's convention (the game's economy scale, M35a's audit), not raw real figures.
+
+### 49.1 The category family
+
+- **`vehicles`** joins the unit-sale categories (§26.1) with segments: `consumer` (passenger cars), `fleet` (rental, ride-hailing, corporate) and `commercial` (vans and light trucks). Each segment has an addressable market of *new car buyers* in a region, of which an **EV share** buys electric: the share follows the data by region to 2025, then a seeded S-curve moved by battery cost, charging coverage, subsidies and fuel prices (§49.5).
+- **A vehicle product** has the unit model's features and quality, plus **range** (from pack size and efficiency), **charging speed**, **autonomy level** (§49.4) and **software** (its platform, §49.3). Development weights add `automotive_engineering`'s skills as an existing-skill mix (`hardware_design`, `manufacturing`, `design`, `software_engineering`, `chip_design`); no new skills.
+- **Cost of a unit** (§26.2's bill of materials): battery pack (kWh × the cell price + pack integration), motors and power electronics, chips (count and type by autonomy level: SoCs and AI accelerators from §26.3's categories, the player's own or bought), body and interior, assembly. Assembly is in an owned **vehicle plant** (a facility kind: capex, build months, capacity in units a year, staff, power from §46) or a contract manufacturer (as §26.2).
+- **Rivals** from the data with their line-ups and shares to 2025: Tesla, BYD, Volkswagen Group, Toyota, Hyundai-Kia, GM, Ford, Stellantis, Geely, SAIC, NIO, Xiaomi (from 2024), Rivian; from 2026 they launch and price by §26's rival rules and personality.
+
+### 49.2 Batteries
+
+- **Cells** are a market good (§33): price per kWh by year to 2025 from the data (BloombergNEF pack-price survey: about $1,100/kWh in 2010 falling to about $115 in 2024 *(verify)*), then a seeded learning curve tied to cumulative production and M17's lithium, nickel and cobalt prices. Suppliers are chain companies (CATL, BYD, LG Energy Solution, Panasonic, SK On, Samsung SDI) with capacity and countries.
+- **Own cell plants** (gigafactories; a facility kind, stage 4, a one-off): convert lithium hydroxide (M20's refined good), nickel, cobalt, manganese and graphite (M17 commodities; graphite added if missing) into cells by chemistry (`nmc` or `lfp`, with different inputs, energy density and cost), with yield learning like §38's fabs. Group supply follows M23a's rules.
+- Battery chemistry choice is a product setting: LFP cheaper and heavier (less range), NMC denser and dearer.
+
+### 49.3 The car as a platform
+
+- A vehicle product runs a **car platform** (§44's device platform kind, `car`): the player's own OS, a licensed one (Android Automotive), or a closed in-house system with no apps. Catalogue and developer rules apply as §44, with car-specific apps (navigation, media, charging, autonomy subscriptions).
+- **Software revenue:** subscriptions per car (`vehicles.software_attach` by year) for connectivity and driver assistance, booked monthly over the car's life (§10's subscription revenue), and over-the-air updates that raise a model's features after sale (`vehicles.ota_features`).
+
+### 49.4 Autonomy
+
+- An **autonomy** research domain (§21) with levels L2 (driver assistance), L2+ (hands-off on highways), L3 (conditional), L4 (driverless in a zone). Each level needs the domain's lead, AI model quality (§26's ai_models), chips (TOPS per car), and **regulatory approval** by region (§48's regulators, with an `automotive` kind: approval stages and dates from the data, seeded after).
+- Higher levels raise feature scores and software attach; incidents (stream `vehicles`) at L3+ can trigger recalls and investigations. Robotaxi services are out of scope here (a follow-up for M39).
+
+### 49.5 Charging, subsidies and tariffs
+
+- **Charging coverage** by region (public chargers per EV, data to 2025, then growing with EV stock and investment) raises the EV share and the feature score of cars with fast charging. The player can build a **charging network** (a facility kind: sites, chargers, power from §46, revenue per kWh sold) open to all EVs or exclusive to its own (an exclusivity boosts its cars' features but draws §48 scrutiny once its share is large).
+- **Subsidies** by region and date (China's purchase subsidies to 2022 and tax exemption, the US federal credit including the 2023 IRA rules and its 2025 end, EU countries' schemes; data to 2025, seeded after) lower the buyer's effective price for eligible cars (price caps, local content, battery sourcing rules: an IRA-style rule checks the cars' cell and mineral origins against §39's blocs).
+- **Tariffs** on imported cars by origin (US 100% on Chinese EVs from 2024, EU countervailing duties from October 2024, others) through §39's tariff model.
+
+### 49.6 Balance targets (printed)
+
+1. **History holds:** EV shares, battery prices, subsidies, tariffs and rivals' shares to 2025 follow the data; every earlier guard unchanged (a software or chip company's game unchanged except through shared commodity and chip demand).
+2. **The S-curve:** global EV share of new cars reaches 35–65% by 2035 (median, 10 seeds), faster with cheaper batteries.
+3. **Integration pays in cars:** a car maker with its own cell plant and lithium supply has a median gross margin at least 4 points above the same maker buying cells, by 2034.
+4. **Software matters:** a car with an own platform and L2+ earns at least 10% of its lifetime revenue from software by 2035.
+5. **Tariffs and rules bite:** a Chinese-made car's share in the US stays under 2% while the 2024 tariff holds.
+6. **Turn time** within the guards.
+
+### 49.7 What the API may show
+
+Vehicle products and their specs, EV shares, battery prices, subsidies and tariffs, charging coverage, rivals' public line-ups and shares, approvals and recalls. Never incident draws, seeded future rules or prices before they happen, or rivals' plans.
