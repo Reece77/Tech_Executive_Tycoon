@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 
+from tst.sim import dmath
 from tst.sim.world.config import WorldBalance
 
 
@@ -16,7 +17,7 @@ def balance_factor(demand: float, supply: float, wb: WorldBalance) -> float:
     demand is the top of the clamp, nothing on either side is 1."""
     if supply <= 0:
         return wb.factor_max if demand > 0 else 1.0
-    return clamp((demand / supply) ** wb.elasticity, wb.factor_min, wb.factor_max)
+    return clamp(dmath.pow(demand / supply, wb.elasticity), wb.factor_min, wb.factor_max)
 
 
 def producers_output(demand: float, others: float, capacity: float, wb: WorldBalance) -> float:
@@ -57,7 +58,7 @@ def phase_effect(depth: float, months: int, k: int) -> float:
     `depth` mid-phase (41.6: in and out over its months)."""
     if months <= 0 or not 0 <= k < months:
         return 0.0
-    return depth * math.sin(math.pi * (k + 1) / (months + 1))
+    return depth * dmath.sin(math.pi * (k + 1) / (months + 1))
 
 
 def ar1_level(level: float, phi: float, sd: float, z: float) -> float:

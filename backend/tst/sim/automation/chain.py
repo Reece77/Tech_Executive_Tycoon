@@ -17,6 +17,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.actions import Action
 from tst.sim.automation import owners
 from tst.sim.automation.models import AreaOwner
@@ -687,7 +688,7 @@ def _below_grade(state: GameState, p: object, owner: AreaOwner, b: Balance, data
     geo = next((c for c in data.geology.commodities if c.key == commodity), None)
     if geo is None:
         return False
-    return math.exp(center + hw) < _rail(owner, b, "min_grade") * geo.grade_median
+    return dmath.exp(center + hw) < _rail(owner, b, "min_grade") * geo.grade_median
 
 
 def _propose_mine(run: AutoRun, owner: AreaOwner, project_id: int, data: GameData) -> None:

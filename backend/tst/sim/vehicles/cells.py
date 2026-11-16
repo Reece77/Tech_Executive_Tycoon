@@ -29,11 +29,11 @@ spot.
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from fractions import Fraction
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.commodities import commodity
 from tst.sim.commodities.offtake import usd_per_unit
 from tst.sim.data_models import Balance, GameData
@@ -122,8 +122,10 @@ def learning_level(state: GameState, balance: Balance, data: GameData) -> float 
     last = vb.start_turn - 1
     base = history_cell_cents(last, data)
     cum = max(world.cumulative_gwh, world.base_cumulative_gwh)
-    exp = math.log2(1 - world.learning_rate)
-    learned = (cum / world.base_cumulative_gwh) ** exp if world.base_cumulative_gwh > 0 else 1.0
+    exp = dmath.log2(1 - world.learning_rate)
+    learned = (
+        dmath.pow(cum / world.base_cumulative_gwh, exp) if world.base_cumulative_gwh > 0 else 1.0
+    )
     m = vb.learning.metals_share
     then = metals_cents(state, balance, data, last)
     now = metals_cents(state, balance, data)
@@ -149,7 +151,7 @@ def plant_yield(
     cb = balance.vehicles.cell_plant
     skill = staffing(state, facility, balance).mean_skill
     rate = min(MAX_RATE, cb.learn * max(skill, 1.0) / cb.skill_ref)
-    y = cb.yield_mature - (cb.yield_mature - cb.yield_start) * (1 - rate) ** cp.months_run
+    y = cb.yield_mature - (cb.yield_mature - cb.yield_start) * dmath.pow(1 - rate, cp.months_run)
     return max(MIN_YIELD, min(cb.yield_mature, y * (1 + cb.noise_sd * z)))
 
 

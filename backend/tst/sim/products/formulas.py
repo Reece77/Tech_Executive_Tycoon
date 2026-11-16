@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Literal
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import (
     SCORE_MAX,
@@ -222,9 +223,9 @@ def choice_shares(
     appeals: Sequence[float], outside: float, mb: MarketBalance
 ) -> tuple[list[float], float]:
     """share*_i = appeal_i^g / (a0^g + sum_j appeal_j^g); also the no-purchase share."""
-    powers = [max(a, 0.0) ** mb.gamma for a in appeals]
-    total = outside**mb.gamma + sum(powers)
-    return [p / total for p in powers], outside**mb.gamma / total
+    powers = [dmath.pow(max(a, 0.0), mb.gamma) for a in appeals]
+    total = dmath.pow(outside, mb.gamma) + sum(powers)
+    return [p / total for p in powers], dmath.pow(outside, mb.gamma) / total
 
 
 def awareness(brand: float, mb: MarketBalance) -> float:
@@ -235,7 +236,7 @@ def awareness(brand: float, mb: MarketBalance) -> float:
 def monthly_growth(category: CategoryDef, year: int) -> float:
     """(1 + g)^(1/12): one month of addressable-demand growth (11.1); g is the year's
     growth_by_year entry for a category that has one (18.6)."""
-    return float((1 + category.growth_in(year)) ** (1 / MONTHS_PER_YEAR))
+    return float(dmath.pow(1 + category.growth_in(year), 1 / MONTHS_PER_YEAR))
 
 
 def hosting_cents(category: CategoryDef, segment: str, ai_index: float) -> float:

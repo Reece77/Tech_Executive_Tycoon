@@ -13,10 +13,10 @@ nothing ahead is stored).
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
@@ -61,7 +61,7 @@ def step_region(
     cb, qb = balance.power.carbon, balance.power.queue
     z_c, z_i, u, v, z_q = draws
     if prev.carbon > 0:
-        carbon = prev.carbon * math.exp(cb.drift[region] + cb.sd * z_c)
+        carbon = prev.carbon * dmath.exp(cb.drift[region] + cb.sd * z_c)
         if u < cb.step_rate:
             carbon *= 1 + cb.step.lo + (cb.step.hi - cb.step.lo) * v
     elif u < cb.start_rate[region]:
@@ -69,7 +69,7 @@ def step_region(
     else:
         carbon = 0.0
     intensity = max(0.0, prev.intensity * (1 - cb.decarbonise[region] + cb.decarbonise_sd * z_i))
-    queue = prev.queue_months * (1 + qb.growth * growth) * math.exp(qb.sd * z_q)
+    queue = prev.queue_months * (1 + qb.growth * growth) * dmath.exp(qb.sd * z_q)
     queue = min(qb.cap_months, max(qb.floor_months, queue))
     return RegionPath(
         region=region, year=year, carbon=carbon, intensity=intensity, queue_months=queue

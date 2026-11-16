@@ -6,9 +6,9 @@ number comes from `Balance` or from the scale definitions in `tst.sim.scale`.
 
 from __future__ import annotations
 
-import math
 from typing import Literal
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import (
     Balance,
@@ -65,7 +65,7 @@ def offer_score(
 
 def acceptance_probability(score: float, offer: OfferBalance) -> float:
     """p = 1 / (1 + exp(-k (score - threshold)))."""
-    return 1 / (1 + math.exp(-offer.k * (score - offer.threshold)))
+    return 1 / (1 + dmath.exp(-offer.k * (score - offer.threshold)))
 
 
 def is_lowball(ratio: float, hiring: HiringBalance) -> bool:

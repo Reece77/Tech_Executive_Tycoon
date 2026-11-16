@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import math
 from fractions import Fraction
 
+from tst.sim import dmath
 from tst.sim.markets_public.config import (
     AnalystsBalance,
     DemandBalance,
@@ -94,7 +94,7 @@ def analyst_count(cap_cents: int, ab: AnalystsBalance) -> int:
     if cap_cents <= ab.base_cap_cents:
         return ab.min
     # money-exact: ratio
-    return min(ab.max, ab.min + int(math.log2(cap_cents / ab.base_cap_cents)))
+    return min(ab.max, ab.min + int(dmath.log2(cap_cents / ab.base_cap_cents)))
 
 
 def rating(target_cents: int, price_cents: int, ab: AnalystsBalance) -> Rating:

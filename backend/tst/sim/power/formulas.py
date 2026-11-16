@@ -14,6 +14,8 @@ import math
 from collections.abc import Sequence
 from typing import Final
 
+from tst.sim import dmath
+
 HOURS_A_YEAR: Final = 8760  # tunable-exempt: calendar
 KW_PER_MW: Final = 1000  # tunable-exempt: units
 CENTS: Final = 100  # tunable-exempt: cents a dollar
@@ -24,7 +26,7 @@ def crf(rate: float, years: int) -> float:
     """The capital recovery factor: a payment a year that repays 1 over `years` at `rate`."""
     if rate <= 0:
         return 1 / years
-    g = (1 + rate) ** years
+    g = dmath.pow(1 + rate, years)
     return rate * g / (g - 1)
 
 
@@ -57,7 +59,7 @@ def ppa_price(forward_cents: float, years: int, per_year: float, cap: float) -> 
 
 def learnt(capex: float, rate: float, years: float) -> float:
     """A type's capex after `years` of its seeded yearly decline (46.2, after 2025)."""
-    return float(capex * (1 - rate) ** max(0.0, years))
+    return float(capex * dmath.pow(1 - rate, max(0.0, years)))
 
 
 def irr(
@@ -70,7 +72,7 @@ def irr(
     Returns `lo` if even `lo` leaves the value negative, `hi` if `hi` leaves it positive."""
 
     def npv(r: float) -> float:
-        return sum(f / (1 + r) ** t for t, f in enumerate(flows))
+        return sum(f / dmath.pow(1 + r, t) for t, f in enumerate(flows))
 
     if npv(lo) < 0:
         return lo
@@ -91,9 +93,9 @@ def hazard(median_months: float, min_share: float) -> float:
     the median wait is the region's: after the minimum the remaining wait is geometric with a
     median of median x (1 - min_share)."""
     rest = max(1.0, median_months * (1 - min_share))
-    return float(1 - HALF ** (1 / rest))
+    return float(1 - dmath.pow(HALF, 1 / rest))
 
 
 def overrun(lo: float, hi: float, u: float, skew: float) -> float:
     """A plant's hidden capex overrun: lo + (hi - lo) x u ^ skew (most near the quote)."""
-    return float(lo + (hi - lo) * u**skew)
+    return float(lo + (hi - lo) * dmath.pow(u, skew))

@@ -7,6 +7,7 @@ from dataclasses import dataclass, replace
 from itertools import pairwise
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
 from tst.sim.platforms import formulas as pf
@@ -64,7 +65,7 @@ def developers(data: GameData, balance: Balance, turn: int) -> float:
         if y0 <= t <= y1:
             return v0 + (v1 - v0) * (t - y0) / (y1 - y0)
     last_year, last = points[-1]
-    return float(last * (1 + balance.platforms.developer_growth) ** (t - last_year))
+    return float(last * dmath.pow(1 + balance.platforms.developer_growth, t - last_year))
 
 
 # --- Fee schedules (44.4) ------------------------------------------------------------------------

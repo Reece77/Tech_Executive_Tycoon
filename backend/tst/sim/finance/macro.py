@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Final
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.data_models import Ar1Balance, Balance, GameData, MacroBalance, MacroHistory
 from tst.sim.rng import RngFactory
@@ -184,7 +185,7 @@ def current(macro: MacroMonth | None, turn: int, data: GameData) -> MacroMonth:
 
 def confidence_factor(confidence: float, exponent: float) -> float:
     """(cc / 100)^exponent: 81 gives 0.90 at exponent 0.5 (20.6)."""
-    return float((confidence / CONFIDENCE_SCALE) ** exponent)
+    return float(dmath.pow(confidence / CONFIDENCE_SCALE, exponent))
 
 
 def now(state: GameState, data: GameData) -> MacroMonth:

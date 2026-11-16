@@ -70,6 +70,7 @@ Backend (from `backend/`):
 uv sync                                       # install
 uv run pytest -q -n auto                      # all tests, in parallel (pytest-xdist, added in M5 sub-task 0)
 uv run pytest tests/golden -q                 # determinism and golden seeds
+uv run pytest tests/balance/test_m30_state_cache.py --update-state-cache   # re-record M30's state cache (see §6)
 uv run ruff check . && uv run ruff format --check .
 uv run mypy tst
 uv run tst new-game --seed 42 --name dev      # create a save (runs migrations on the new file)
@@ -87,6 +88,8 @@ pnpm gen:api                                  # regenerate src/api from backend 
 pnpm lint && pnpm typecheck && pnpm test
 ```
 
+Each session works in its **own clone or worktree** (`git worktree add ../tst-<branch> <branch>`) and never shares a folder with another session: two sessions in one folder overwrite each other's files and commits (M34 and M32 collided on 2026-11-15).
+
 Root:
 
 ```bash
@@ -101,6 +104,7 @@ make dev       # run API and front end together
 - [ ] `make check` passes.
 - [ ] New engine logic has unit tests; randomness has a seeded test; invariants (ledger balances, attributes in 1–20) have Hypothesis property tests.
 - [ ] Golden snapshots unchanged, or intentionally regenerated with `uv run pytest tests/golden --update-golden` and the reason recorded in `CHANGELOG.md`.
+- [ ] M30's state cache (`tests/fixtures/m30_state_hashes.json`) unchanged, or intentionally re-recorded with `uv run pytest tests/balance/test_m30_state_cache.py --update-state-cache` and the reason recorded in `CHANGELOG.md` (the same rule as golden snapshots; the digest's own repeat and memo checks run either way).
 - [ ] Schema changes have an Alembic migration, and `docs/data-dictionary.md` is updated.
 - [ ] New tunable numbers live in `backend/data/balance.yaml` with a comment (unit + intent), not in code.
 - [ ] Any design decision the spec and ADRs did not cover is written down (a new ADR, or the brief's "Decisions made" section).
@@ -145,6 +149,7 @@ Data
 - Never commit secrets. `ANTHROPIC_API_KEY` comes from `.env` (git-ignored).
 - Never commit under Reece's identity: before your first commit, set `git config user.name "Claude"` and `git config user.email noreply@anthropic.com` in the repository (GitHub refuses pushes that expose his private email).
 - Never edit an applied migration or delete golden snapshots to make tests pass.
+- Never work in a folder another session uses: each session has its own clone or worktree (§5).
 - Never weaken a test to make it pass. If a test is wrong, say so and explain why.
 - Never use floats for money, wall-clock time in the sim, or unseeded randomness.
 

@@ -30,6 +30,7 @@ from dataclasses import replace
 from fractions import Fraction
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.fabs import market
 from tst.sim.fabs import nodes as nd
@@ -80,7 +81,7 @@ def baseline(state: GameState, good: str, turn: int, balance: Balance, data: Gam
     data's rate."""
     start = wd.world_capacity(data, good, nd.HISTORY_END) * balance.world.base_utilisation
     years = max(0, turn - nd.HISTORY_END) / MONTHS
-    return float(start * (1 + wd.demand_growth(data, good)) ** years)
+    return float(start * dmath.pow(1 + wd.demand_growth(data, good), years))
 
 
 def player_flows(

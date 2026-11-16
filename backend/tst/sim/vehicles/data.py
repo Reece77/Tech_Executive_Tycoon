@@ -3,9 +3,9 @@ the fractional year a month reads its annual points at, and the history's lookup
 
 from __future__ import annotations
 
-import math
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.products.models import Product
@@ -61,8 +61,8 @@ def rival_def(state: GameState, product: Product, data: GameData) -> RivalCarsDe
 
 def logit(share: float) -> float:
     s = min(max(share, SHARE_EPS), 1 - SHARE_EPS)
-    return math.log(s / (1 - s))
+    return dmath.log(s / (1 - s))
 
 
 def sigmoid(x: float) -> float:
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + dmath.exp(-x))

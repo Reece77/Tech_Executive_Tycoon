@@ -7,6 +7,7 @@ from __future__ import annotations
 import math
 from fractions import Fraction
 
+from tst.sim import dmath
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance, TenderBalance
 from tst.sim.money import BP_DENOMINATOR, exact, pct_of
 
@@ -35,7 +36,7 @@ def displayed_range(value_range: tuple[int, int]) -> tuple[int, int]:
     low, high = value_range
     if high <= 0:
         return 0, 1
-    step = 10 ** max(0, math.floor(math.log10(high)) - 1)  # tunable-exempt: 2 significant figures
+    step = 10 ** max(0, math.floor(dmath.log10(high)) - 1)  # tunable-exempt: 2 significant figures
     return (low // step) * step, -(-high // step) * step
 
 

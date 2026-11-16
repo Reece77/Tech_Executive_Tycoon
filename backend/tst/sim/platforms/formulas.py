@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from tst.sim import dmath
 from tst.sim.money import exact
 from tst.sim.platforms.config import PlatformsBalance
 
@@ -18,7 +19,9 @@ def attractiveness(
     """A_p = U_p^alpha x (1 - f_p)^beta x T_p x G_p (44.2)."""
     if users <= 0:
         return 0.0
-    return float(users**pb.reach_exp * max(0.0, 1 - fee) ** pb.fee_exp * tools * goodwill)
+    return float(
+        dmath.pow(users, pb.reach_exp) * dmath.pow(max(0.0, 1 - fee), pb.fee_exp) * tools * goodwill
+    )
 
 
 def next_dev_shares(

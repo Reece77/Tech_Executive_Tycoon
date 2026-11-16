@@ -18,6 +18,7 @@ from dataclasses import dataclass, field, replace
 from fractions import Fraction
 from typing import TYPE_CHECKING
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
 from tst.sim.commodities import offtake
 from tst.sim.data_models import SCORE_MAX, Balance, GameData, ProductsBalance
@@ -933,7 +934,7 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     grown = []
     for market in state.markets:  # base growth plus era boosts (M11, 21.4)
         g = eras.annual_growth(state, data, market.category, market.segment)
-        growth = float((1 + g) ** (1 / MONTHS_PER_YEAR))
+        growth = float(dmath.pow(1 + g, 1 / MONTHS_PER_YEAR))
         if cycling:
             growth *= cycle_ratio(state, home, state.turn)
         grown.append(replace(market, addressable=market.addressable * growth))

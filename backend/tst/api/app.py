@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
+from tst.api.error_log import ErrorLogMiddleware
 from tst.api.routers import (
     automation,
     commodities,
@@ -180,6 +181,9 @@ def create_app() -> FastAPI:
         )
         return _error(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_request", details)
 
+    error_log = get_settings().error_log
+    if error_log is not None:
+        app.add_middleware(ErrorLogMiddleware, path=error_log)
     frontend = get_settings().frontend_dir
     if frontend is not None and (frontend / "index.html").is_file():
         serve_frontend(app, frontend)
