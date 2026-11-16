@@ -1,97 +1,97 @@
 {
  "full_integrator/1": {
   "2010": {
-   "books": "4b2a35cdac7df8096d80c05ece84b43d815de11f9fa488bef0ee67c59ce4acb5",
+   "books": "d117663e50b95900875f12f35034b0f8f543d8df27fdffa502f4c06bf8780a78",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ac0666493ee7d3f2be406eabe2f444ee71e32e965adac2a167d08ec74a07e056",
+   "books": "c950e6f299f1b37038f2e642b17da68208e0b26f8dd7ac75f38ddd4f258914ab",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "4d2942b1929c19092a3220ec9588738a386871079dee946a20410a2bd24e2087",
+   "books": "dc6a6f0a42e248479a38d9258dcb8f15fc2498b79c80012d85e7e1148e2a3e94",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "8fb5b118ec9e571723bc7319524cd92c7dafaead134d9fa437e354ae9038b0d9",
+   "books": "c15e597ecc42c0b4b9dd11e70dd07a1c404487c46aa9403af8e07aa8505fa534",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "f5b29929b8c3bacaff7d4fe8be6f15a6beb28cc80e17ab28a8e49ea13fe795ef",
+   "books": "dfd082a59f99b40aff0e3d1f762de2a470a3093248d03dd6443c783241afc3bd",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "3048a370ed913196a23ce154c3e17b8ad7849bcb099c15f76da30f0be2dfe480",
+   "books": "40017bc913f70c11fb2e8fc2648e30230629a49b64134fa116954f54dc166983",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "65e7991717e518e135716b7a3dc6d41b043c2454711c4fd2370c833b15e3cdd3",
+   "books": "caad4775a3bf0f8f6c47473e3973436b1ef4e57074459cabe821afba6b5f6a8c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "f5261431e2dd45d0f5ccf28a27c3a6239c7733aaf96baaa1ce8736c28f297fe9",
+   "books": "86a063994c15fd8b505c5b115d6f42ddc15aa56a18e7572ce052953bd947838f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "c6f696c7a3c7d09069df972370dac5eac4ae5fbdfeeb3da466c5fece9f305368",
+   "books": "e8d8375435717ca5317ded72edec40723e45c2b8c7e91c2afeaa1cb220c5e115",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "2f743e437d3eb9872c883fcecc953826e3c750207b6e14a35ffb67550222ec6a",
+   "books": "963f78f6f4ca588430c65b3d900c4d3e142009012c59d7b0c35fcd6ebe409ac6",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "a2f3dfe3f2750e4f56292c33d417bcbca900631aaa60ed38fedd1859c7dcc88b",
+   "books": "481d842ccd60966badfdcc5246c8e9e3f94cbb59d6745d87d6636593d9f22e5d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "fcc0168240adb7807cfabba2387d5d41f802f2eeb666995bafbd9e1758ffd077",
+   "books": "f6a93ad0d908aff0995e7406b004367f27217051e84a44332b9a1883a614855d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "277690916d399b60f61f331e007cb39e15e40e467d238d26591afacfd8c968ca",
+   "books": "059768bedfa2828b8f10cedad43da8e34b2e742c29a8825efd13bf64c3f165d9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 16421134
   },
   "2023": {
-   "books": "d900e398d55c56b71cbb5bc76d7ff7439208828fb410281777871456660615ab",
+   "books": "ff1414ebba0596153c4b653bd9a4401fe4dc6dec4d1bfd34265257df937c7246",
    "data_centre": 0,
    "fab": 0,
    "refinery": 155059884
   },
   "2024": {
-   "books": "633fcb73d1348853a347d035fad8a4225eb2c5091651a61204ffbe1bfb9cff04",
+   "books": "314f6b5c1e76f5d4a5a306724101574d34433d451293e04c93dcbdfe97c71737",
    "data_centre": 0,
    "fab": 0,
    "refinery": 148541908
   },
   "2025": {
-   "books": "c1f91212677ee4f7899ebe9cdbd593d8c0748bfe2c57b01e789103991670ba6e",
+   "books": "a45d52185c379cc62fb98f4181f0dfe1300d020fffce5dbe228b8b309a767d87",
    "data_centre": 0,
    "fab": 703757760,
    "refinery": 73660020
@@ -99,97 +99,97 @@
  },
  "full_integrator/10": {
   "2010": {
-   "books": "fc3998bab313cb76d8bf2bb262b9c7870dc78b91c10d1f4fb46971d5ce3307dc",
+   "books": "be84b4649cca95e02aecb922c97c6eb59f8b9017379845183bf0f4d681724005",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "47cd63222aac33c59b2aceeef6ecb111a632b39f905b4f1bfe5ef58e514de101",
+   "books": "71baf18f9a9bbec42dcff79f40005e2a1b9f6253e5b152dd557fb53bba8f9d68",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "ac556f4e1c90a2e5f76811d44473e5e1f7285834caee1d8a66958165e476bfd8",
+   "books": "1031a775cc8f006869d971d0f99fd92e05a71ace19c3e2e81e38c6c553d3cbe2",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "5f040076cef10d3f34326cc4e2bc711cfdf507f93c0394615e0d70cc30944cb3",
+   "books": "0b911febbcc690040a136900dc3aa53aa09dcca8fb808324113e17490a349f4c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "e2f4e14ff3bef744f843df28f5ad6de116a6194250679556cb493505435f00d3",
+   "books": "937a9c0877c8ab74039baef5d25d8e70520ec0d258c2b843c63db0623bee56f8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "c6bc83602b8bef424b9ad16a5a047fc4f059f8643b2e5e7372c8a32d82124bc6",
+   "books": "b932c29def92c5ef7878addd1885ad83be5a0e92dcb1cc1ecfed369946a2f2c2",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "9fe8d4bfef35abc8693cdb336ac32fa6879838f10697cfc5948498b79fef6e73",
+   "books": "894693e348488d0f39bc9d9f711d417d5e8406fbd3e457023177c45ec73c7c6b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "ccbb438b655b8b96e4db9ba6e8d077d65739361739bfd85d5708d955a45a984e",
+   "books": "ce213889a6f51bd6022c83bfbcb6c5d1f7c535d71193b3654458a0368fccedcf",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "a353a4447ab58e0d364cdc3fe580a7994a167e15a143cefb7a45fb7f21d36596",
+   "books": "ff5143beba77406497a7b440598b0ea8948cfbd16a83585cf8e1e02e65b9b352",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "0d165eba587f620e2bc175c6c5055292eb62963a22329d1e8e1778bdf9b559c6",
+   "books": "3ec7c7d3771aa23058e8f5968ed3e1cab109d38894929445489033e7ec7acf88",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "d99f007f618ba2b59f80f62ebdb99c1277fd31b68614664e9793ec7c2868f1a1",
+   "books": "9a7fb17fe59101be73920d9008616a65de15fe79a7a26bb7ec236c72e1c7da56",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "37a5f2282b8a45807ba65a792fccaff1ad8dbe365a6f625993901868d003010a",
+   "books": "f80779e6d66c4d71c9c4c9d1036aa567f91762282cd64a2464c2f78807e275ff",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "f8a3949417f667c3d044a2067fb0bcd82eda22b6f7d05ae8059761ddd28a9f70",
+   "books": "d18693da71a9ad68bb836b429faa399b1073e9570ce5be42cedd34c631db7a5b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 1089129
   },
   "2023": {
-   "books": "db4400c53e4d8b144899db9f3d8e1af7fd81cb01267897780650ac0abffcd670",
+   "books": "0eb2bbad94fd35f85047f0942205641fa82876cf9a3c19c633f6935a4f740d74",
    "data_centre": 0,
    "fab": 0,
    "refinery": 90942136
   },
   "2024": {
-   "books": "c95d5a48e6158f278a196df49c7363182750b922b9f965be5eb43032ade2d993",
+   "books": "44f33e93bc605f33e0ec8cf95446b365e87101695ea5362669ef312152b9c870",
    "data_centre": 0,
    "fab": 0,
    "refinery": 223459141
   },
   "2025": {
-   "books": "3017fbca7bc9f05b05f1af2c7aff32691252cceaf82ed51dfaef2adb0b489618",
+   "books": "87daf52a79f53f372a1b3c8d0306b3d70a9a34796fcc2644677cdcd673c1518a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 228889713
@@ -197,97 +197,97 @@
  },
  "full_integrator/2": {
   "2010": {
-   "books": "16d693306d50c0e1fdc707fcba12d13043140c6e213c00fa50f81b7df950596e",
+   "books": "0c8ca6816283d34c9f7aa154767be6a226a79f88a21fc51c559448bd4b038ce7",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "9fe1e2d3e2f4e4e15dcd674174ab49a3778677f567e0080b60150998e0553f17",
+   "books": "0d7605fdf90ec5a5550e6cf40b58ceba5cc31e0d09dc7dec472f2e8dfba8f601",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "3750ba4bac9fe6536638b9e9f90be4562315e961f344b0a5a1df782fe61c6aa9",
+   "books": "53a272d057a75db3f2bd11177a6fc54c0ab4bf3b9c0353018a24b0377afa5d49",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "bb289c3f40b97eee9496a4a191a46f53d916f49b5dab4fea2e6dd23e4a00f556",
+   "books": "70d869606cd0ef367dc919bcb4b8d86ccd2826a2067fb9e8003656c8e0e25199",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "00d73185d255edc8b54b429bfea3058d40d8e3092f16f2bb277f9e3d11ab6135",
+   "books": "f05e5ee3f78953bd63e82d415f313b7596a64b250867fa549f9aaf641154005f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "be14500dd59d15046f323cc46feac49e0721cdff855f12430cd483967e22a9e4",
+   "books": "974f2d8060176a0c40681c3f595fde4cc7dcacf763ec5bffd6d4f6eccb122897",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "c7527f8c4577290dbb999b6902869d98903bd7b1affc39eba0e582c9d766ae79",
+   "books": "c8df5f4ca90c6fa227bb139fa6de9a09ff47a963496a65e5b80cb9155606220e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "d7abc19f04f9dfd6976c9cb8f685e452f26798511a751a14676b5c830da69f7c",
+   "books": "7be335c664a842fac06a7104bd0a59067045bc66c8a7470976414a17adb10a43",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "db694bf039784bd93aa6723a334aa952c91edddbb581753dffeb5bd420885cac",
+   "books": "ec0975b7197b2a4c6778f9c660793f31cc6bebf4199e431ca975c23d8fab0c31",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "5d86e8fcd6c2eda8961d028dfaf65e547dde0a5a27a4cbf0f08ca0d2634d3265",
+   "books": "a1e51179195aeaddf7ae7d6e94ea4902d55dc4caff71792ec66e6b290a9a7c5e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "9f1c78654cb8f39f1af63af90006d398fac7fdce1df3d36f05815543aa03a459",
+   "books": "2e071b23f7effeb1e6b52bf9d1bbf5ba150b5928fa20b6fc2c60ac04a5c4f598",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "5906c504ae4b30f9d1258d8c1ceb9bfb1fadf92171fa0d5f1948aed03931ab23",
+   "books": "afcf24ff0db25cd8e40f1274fbb1305496962912416fb74364c316684c5ad137",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "92c8cbeb3e5614988c50c1c2d74b387f051eff1dc8d65b09679fc630554b7f1e",
+   "books": "63a25a3166bc843c167923b1c3f7dc2176da2fc80e509b96d3aa0d84483da90f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "94e97207de679b802bdd01f6ed147df225d6f0ad2af857db52f84df2f789047e",
+   "books": "09861d0ae6b7d1b3f4152fe19007dcc2e9eed7979eac64b0a27f8ca8a72f3a58",
    "data_centre": 0,
    "fab": 0,
    "refinery": 74510815
   },
   "2024": {
-   "books": "76d0d3768d81feada3abaeafa3f944cc96523ce1a76d8a2bb73a7f018c056fac",
+   "books": "04def034537736f48285278c77a7e9c49ca74a4e8a547545413159c4de0f2a41",
    "data_centre": 0,
    "fab": 0,
    "refinery": 218498281
   },
   "2025": {
-   "books": "c117996358097f776d716bc15a5675873947b32a021433ca1e07d57643e4a81a",
+   "books": "d67498c63ff2ee98b03d2d132e02a1981d3d9d8a747be39cccc9eda71d13103f",
    "data_centre": 0,
    "fab": 799857493,
    "refinery": 249512203
@@ -295,97 +295,97 @@
  },
  "full_integrator/3": {
   "2010": {
-   "books": "ef079829a945d37254b7c9260837ae40e823dcdec34ef92ffa13715afa0e2403",
+   "books": "4e34cc99d1b84476f6626d0eeeb3182c8089fccea4e3c0f49e675607187e62dc",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ad055e4a15f31bfc462a5838db478ce6aa58e683fcd8b222a05288d292d5b8bd",
+   "books": "34663028d2cf1f51a2e22ebac58f56b75dc1f785ef939ed6c7db189abe090b98",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "cf4fbeeab9a2ffb6aed1bde050d3c59de421333f7967bcf330e38049a4483eb1",
+   "books": "4886980220c733b0015ba0f1e527e085b93db76047e7740c97471159d39098a0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "1330ebcf9f234b696823d6786334f5f473a0523246d14f5a2ebddac7b2a42fa2",
+   "books": "5abe2f1ff4f38f8b3ff24bb62ecc2425d92969bf9a3389eb780c013dcf8f8723",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "194925c02b6e9244621434e21f363cc2c595c7d8189ab107e92e2beec1a65111",
+   "books": "e97002f05786de333fc1d284a1e3f674ef65a2374630084618bc9eb0c8ed6813",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "7ecbfbd0c3ba25993848edf633a29ceab7d08fb1b84ee7ade109a1497fe95d01",
+   "books": "cb0171f99c69d155b890d7fa41189d743dad017470909e121262ed5ef54cf64d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "c05c69508a5cda03c9c050d4ed78065fed53115dc28caccc02d9842afe3dfdaa",
+   "books": "b86add994ee5bb6db7f331b0e6bf9ce02bb973fd720a49739610370dbf044ce0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "1f7a89cd75dd51f7b57780b87009bf93f51b52a3479ae113c4edd2b4c4c8362e",
+   "books": "7783a5dc81c14bdc2461e127f47c908ddf175528cacbfcaf875ac35b8b01eb6d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "294d63174b7254f228150999f4ccacf5c0e05dcd08686dd501364a792e7f2d06",
+   "books": "6d0883e0fd3149b50b168ca40a9b22868a718e35ebbcc8637bb5c954a2986bb7",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "1ea962e0e12eccca7da280339448245c47990a27fbe6e338aba898759192999e",
+   "books": "21e81de9dce4f0553ce74e6df9061e1650c13ffadab1d35e166fa4ea76708772",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "75b9cdbe3570c5cf076bbb01adf51ffc01a0ad385f3f1f0f53bebda07cfeb443",
+   "books": "09d390ac6ab902aa4eb4d33aa899570452df79ea7d4f57c2d33b126ae1b1ec5b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "e9be51b0e7b4423e21de53395abd11d7443ecdde38691e97c242a9a99d91cc23",
+   "books": "18e7a5a97ee8ba3605389adb4a9988a0de224aba1e8faa504c6664871e9d7dc9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "d3f1c16b0018b8996a4759775a6260a5b456833290c8fac07ac962d1392d7e1a",
+   "books": "66af458a9d763bfcb2ab58616f1f83d70479d23c71d70b5afef040701ac0f965",
    "data_centre": 0,
    "fab": 0,
    "refinery": 22856262
   },
   "2023": {
-   "books": "44e9ef071cfde46df15765ca632f9352a405857d83cabe5c9002609ef50ddf1d",
+   "books": "eb41c4a4bb65a0b678c14ba0bea1c6589f7b6376c26b9ad432d25f820eba6011",
    "data_centre": 0,
    "fab": 0,
    "refinery": 167263157
   },
   "2024": {
-   "books": "e2a387d9c6fec1cd078194fd9d7bf6fb4f3a47d30d4e2e49a31f3d2a08efa39c",
+   "books": "68538a2b3a6c664263592fe322afccbacc9c9755a1251fb434850bdb2d49e147",
    "data_centre": 0,
    "fab": 0,
    "refinery": 241636432
   },
   "2025": {
-   "books": "d496e9cb2fc3cf7977abc77b775f546a2e94387dbe32863a098a359f53361b38",
+   "books": "f947d763a32754423cbb853e85e85c267bb71345226bbcfe42eae85d960f4095",
    "data_centre": 0,
    "fab": 349464793,
    "refinery": 249162481
@@ -393,97 +393,97 @@
  },
  "full_integrator/4": {
   "2010": {
-   "books": "08e094204c79e41de7d74ebdf1c43e28e021382116e84ef54763e654b5b9b7e4",
+   "books": "7a2bd44e44a30e403aeb53613b890cfddc7df4fe177449d7113b03ae62874dca",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "b872468414bdb5ad01338426028a51328880ac3aaac47263491b176203518101",
+   "books": "2cd951b05796a8e4b020b00b6cf22cf1a5d4f6ff88511406490db48c1ad632d1",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "7b133ef5a03a016e1733e845c0a67f2344830c6cffc2e2148c1b586fb9a90ec5",
+   "books": "07af211082d630ea26eb23c7376d6be2b824c05722db33653594dd14735c036a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "678196c865d18ce4ad42bfe82a6ad291a159ac50f6923ffd5d46e2b07d9734ee",
+   "books": "970f1018f58f46f093de66cfb883297a337f248ec2bd05780d4998ac518669fc",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "94ea816b11b5b2764565c73ed27be9518b89604dc5fd1fba1218443b658b7a1f",
+   "books": "225342d48cfb0719bb9506ac766881c97c042edb02ee8bc685b0939aeb1a976b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "2c46f498055e525ddf9251d7a51b5abe29ed7d339df4e4b8dd5a523c28829067",
+   "books": "fca5c55fdcac76fb94fafc911084caf1c202a2e27ddcb817b896fb904665816c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "c3a1b4ec57e89c883730616f20d5a46222497eb6943bf1143c50419f7e688dee",
+   "books": "5693c70b354bb03d0df091fda573a07576e457b564e5b5450f8f35f340b5af9d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "16a5e44a434f07202d69f5940fe03142faa3490f32b059df4296441dfd0b2b1a",
+   "books": "75a2bdbd235a4e54cf1edc7c82e9fac69f50d7eb9d0fdb227a73eb2cf6582a7e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "b5ae0c6183965ed52e2e3bc5d4fb2bff4b43aa07e51304fb48d0fc724da77ca2",
+   "books": "091803c2e9be5db91b6e1c80fa18412ec59b46bb80578ce8753f0ace7fe0d1f9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "b01c97da96c913e8f623e3c58e8d2ecfccd53488e70fed0330366ff057459f77",
+   "books": "20701a01c720eb145db879a8e6d92d8e866e62697eaa6e14fbde98b7b3980447",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "d60b959a2845e14c46fb23655ce79dd31ec35e347258de269db6f75b9264e06a",
+   "books": "d5799819b4d91494edde8f5511b87d99f7d231a273a42be0fdafb6bc52b24b6d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "9370899ef8a57871577553f196c2da5fe1ddc40b9efdd00da8f38d42cc78f835",
+   "books": "dbd794a729e9ea9e384ed92d14ce76d4918aa0c8887b337f8f8a761bfb93dfc9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "e2a9c9673a27c7d4be44d691c18943624a98dbb2fe0347fbcecb7f12a2d1357e",
+   "books": "676659f1bce642d9e5bee679d16602c6f87d49ffa5b54fbec0772d2d94d707f8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 16128680
   },
   "2023": {
-   "books": "b4017de433da33a7f36d1862496f00d1d62ac1e15601fddfeb3f98481e6cfb9d",
+   "books": "e05c722e23d3ba1326aa2df23ee6ff71202a2602ff56bf45a2254e93013fcb27",
    "data_centre": 0,
    "fab": 0,
    "refinery": 139484826
   },
   "2024": {
-   "books": "f43458763a0d4b04093def89111f98e5d4045bb6d28831130ccb76f7f29c886d",
+   "books": "35fff2c5702c6e6d414ef34ec5029eb0c3e5d63d55bf0325c105e8b3bf65df85",
    "data_centre": 0,
    "fab": 0,
    "refinery": 238188767
   },
   "2025": {
-   "books": "84b44daf90975366d62b1ef827e8b9d7785bf9a26ba8478972e8dc88e20546e7",
+   "books": "7c24fb94e0616a010055984d7bcf174950c6e40570d59935ed0b25930e41181c",
    "data_centre": 0,
    "fab": 596445292,
    "refinery": 245262099
@@ -491,97 +491,97 @@
  },
  "full_integrator/5": {
   "2010": {
-   "books": "74c94e5be45ad9822128b72d8ebdc2dea16b0ed9f2b999fd5e561a7a78fd564f",
+   "books": "f66c5e432f65ee9be45b0f7ce067d21bda488e916cbbfe241675cda78de7ea8f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ff4e01f19c0bcf3698d89cbdfa8267613d5e8fd3de25dc8d24e012233bb08dbf",
+   "books": "670c334ad7f1ad6353917719b8f9a938939309e160b2e380a1c0614b9f4f6844",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "a4a3b17f2dac8e04ed4c35b6932ccbded31c69d2c1429f8aa03d715481bca37c",
+   "books": "2512097cf25184d1021e7fe1d89cfb46747f5c92b42bd1a9bafb9fa7ac55526f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "dc04291bb8c0cbf73529eaf24a58d42742d360dffdb29bfcb78e0dcc1f383ea5",
+   "books": "59ed37d4e1a73718fc70b39763575422c3114c1aeaf8bf0b9d61b68108b4d79f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "1450c675c6583ffed992e8e27470449e7bbb580dd6de64c6a8bb43ce3e15077f",
+   "books": "0653e94f420e5b49d39dabd296268f089c4ed8e98c2feb401bf9a546fd566d33",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "05e83e8547fe18b90aa207a4805765e0844fcf6205390bee64f664952465169d",
+   "books": "be0db04b301976e61a4eea06ff02ef3071e02535201f62c1bfd53d487a5a6c42",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "954d630a77e026ee7847e90051b98a54e642562c18f3f5f2290e8b24fddbd6ad",
+   "books": "495482407524894bd1a884f93d8e80d0635b45f4003cef5894aebbd730c143ba",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "24b99d7d69130572bcc9218578905396be9fc386ccd8e9d8ea566984df94b463",
+   "books": "e5708ba454a7b0ef51a7340bcec0a70a2bd4434c03235e6cd26f3df1dd0bdae1",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "7aed4c8a6cdbdac65dcf422bbf811e0d34b19693a0dab0a8948d0e87920ddc45",
+   "books": "d6a1e4854ec45569c6a095131ab98827f02c192b631af2c1de17a0e085467289",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "9b59a819354a62e5e26ccce9b62fe047dd194ec72d513c68be62bd2ecf2be4e6",
+   "books": "f5db593fc35d5ca10e3acc3cd689e76e2d5b12370010253d133241d0d848691e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "cc227eb9f395b5d961c8a6d5d9e4aeedddb770e65bb7f3fb382173a1007d5b0a",
+   "books": "5b3f863c690536e79b0813c20a9009c4431b81189c4bb23e6abde528ebb8ecd0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "be9b37fb343078ff5fe979a387f52e209dc8e118a0f8d3a390737f791a9c177a",
+   "books": "b3d529aa26c5b73ae23a93451bb80471c668cfd8806bb7539f9df37f57fee27b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "bb4fe5c932b6559bb39168fc21cbb6e08b11cb97d27f8f20f837056cdb71d6db",
+   "books": "e30b4b76467ab028acefdf1ae2a3d9d1469c135fa6512e859f286cab8d6019f5",
    "data_centre": 0,
    "fab": 0,
    "refinery": 3283643
   },
   "2023": {
-   "books": "5faf4559833a2b1940a465fb48a1b2ca05f866ebda6ff4cf6be5f5ab6f11ffdc",
+   "books": "3bcd69ef1b44187d1857d34b779b04b44509da71c1197f081beb49bcbb7fc36e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 106756030
   },
   "2024": {
-   "books": "09ed22d18b3e9f8ce3b8f146b7e0018ed28536ff555d98aed3000e7c8600d6f6",
+   "books": "3dfea7e29d6f14b58abece21aec6eead204722fff5cdc532174564a800c94259",
    "data_centre": 0,
    "fab": 0,
    "refinery": 234368872
   },
   "2025": {
-   "books": "095da85f14745186db506aa21ca5306d43f887a26aee921a13183be3e08289f6",
+   "books": "2ce90b9cc8ab1aaf347aed0457b9bb79c29040b2d3ca8d080edb0f7d5c4fb2c6",
    "data_centre": 0,
    "fab": 571246772,
    "refinery": 247287041
@@ -589,97 +589,97 @@
  },
  "full_integrator/6": {
   "2010": {
-   "books": "ef8cae63ab23e5739061512d4f354f33ceb10a0595c6bbba9858a99c2eb39ae2",
+   "books": "e3f71226103fb886d6246a7b6f7fc906519d03088e6313c40426dac15852705b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "86c1b3d22e1b4f978b494c76cae6c8b099ee5c7b8ec630402640dc4b3f116a5f",
+   "books": "7ca5ea81b362505c4d2237d83efd6a487edaf2ef4ff75da5c7d22ef029310520",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "e1c76d7979de3601e7ccb6de4583f12446dbbcefd3eacae136ac2d6e212e3fce",
+   "books": "c43323c54c5b11138d7afe6d7eb5d19264a44f9796ae5a9d3a19f9982942e303",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "66355604b64f91eade3d808d685b148e17e16c407f36904adcbf8cdef557298e",
+   "books": "16684a54e8a04db43b57a4028e2d0528f13632d1edf993a40ee2a08a71be2a54",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "b5ae28b79ebd4761ec121222cea426539d1014d2a53dd51baccb5ed1e35a7743",
+   "books": "73dc0f98aac4663f8f49303f0d977b7d65f20b9b89954c9e1bb73b7f9ab2b753",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "1a2d6ea05b2d842424bb7dccc4a0f069e7ddb10b1779c701b0eb7d3db2770ec0",
+   "books": "5a859569d21e802bf1c825df9e4ebe531662cf69d113b63572e52ee411b6a52e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "6ad5027692264fb2470e9d5565939e96a2c2ed218404964d80f512da1e043b54",
+   "books": "92a591bbdf1be189cab393f9d234a502032c8fcff66d3357fc5839ed72cb88ea",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "650730cc23cd0ebbd67da2e674a7b96bcd177f2612aff926233fc249d55decfa",
+   "books": "97b6b10e5a5581e0a4fc53b49aa8deccdd06eeda2c3039c19fe4abb160447317",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "79551437eee84168c42ef58283df30ce39ed292202ed2fabd8a98c952aa3b34b",
+   "books": "fbdfc2cb413cfe38aa90a6cdbc8de25f7c70b2a70309bee73dc3295721fb54d3",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "fe03671ae2d61c098098cd1a128085fa5c6ad6f795b683565e79ea7cba1ad97c",
+   "books": "6d2ad41d512f10f708d36cb9e2e1d0737a38214221fbfe465f31cf826b5af282",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "21c4769662e103f276a1d226854427c8b528108f5df7b549f9d04b66406f1486",
+   "books": "6e7c3fe7677d81dbf87889162405f96db74b068d71c6473aa4cf11652f81dce3",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "6eff510901f126ca25367e35aa478c6fc91b254792570cd192ae97d9c1ab392e",
+   "books": "e50960eb28aa4354ff73ea5d4836658b3737c29697aae2a04f2e7d305c53db22",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "ca16ba9557aa6a464b8571ae39e9cfc612a4c81defac36cdaf6fcb19dba72a30",
+   "books": "66e1048891f80170d94c0f9278878be98fb1b37d9338ff4dbd9007d209e60ac9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 6485754
   },
   "2023": {
-   "books": "0d7d4f512c4302ba0be05c322caf62ac10d77fc3488dd2118f6811f2dfbb7470",
+   "books": "77a087f616f2f1d0cef9821e6f69d164fd3d5ba6dfdd76ea7a110731e16b029e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 124227221
   },
   "2024": {
-   "books": "ca375de029186ed9ddd996126def6ffd7cbe422afef43b1e6b2110629f222722",
+   "books": "a78612ccdbdddbf9ba9ce2c6af77777e582fc4be636d6c2427a63de08d6a6af0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 228893041
   },
   "2025": {
-   "books": "ed7aa050072f51a433dd305afd45b57391af25b65d02fe7b8d99634b660e9aec",
+   "books": "66e20866b7e6f8e1fe6fcd3af963c0dfa4b2a2c3a60f5a44747e18ae4a0ae902",
    "data_centre": 0,
    "fab": 707824148,
    "refinery": 246208826
@@ -687,97 +687,97 @@
  },
  "full_integrator/7": {
   "2010": {
-   "books": "f7f169032d1d4a27c756ff93885c97538bdd5d64eb446c6e8c3ac580697f4e36",
+   "books": "50aa0e1286b4ed6f75b6ef3ee8a23b8bc3a97d3c0269105424aad612ebee1d97",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "9178c63d779a9f164780284a2c7f3f428b0c53eb011b0d61b9d679939a569db9",
+   "books": "6de38d1a45462ddc24e0af2a3d57057826ca4fe2d829b52d59db2da865e91eb9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "7720a3ff59488ed32cf20527a01a03369ddca655967f7d4667376295ce33857a",
+   "books": "d512063e678577ecf415549b14b609ef7225e55b5d440e539f1e9486714180df",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "696280d50a5bdf263f2d46077905a55dded7305f255675b7c59b289e3336ac5f",
+   "books": "52c6e4832aca3d99db63635204629261ecb2758ec2a63ceaca7ce100666d3984",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "3d53a1cdbe2f7bb09be911250c522231ae918fa5ec0ce97c58ce789728d24d84",
+   "books": "9f1d2572d23d35c713c42e528552fbc3fe528967268138df3dce9d59b7497a88",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "dee61a9052f2bdafb942d5fa2905fcf269d060243e7617818fac5aa2ac307a47",
+   "books": "78acb99aea2d2409fe718748466fce4095f4f22afe962fd279f65d5f6b9f90d8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "c2469c5ecf644e5199415a61be1cd7e85976d32672156798dc3b8ed52e0eb925",
+   "books": "f751659e8eba94fea2abfaac7c84ba183a5ad8ff4613c03e0dacd7786b03681a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "21b861db06cba5cead22d54046bc1b13cc0af85fd83bb3038a6a00e26f9f7c58",
+   "books": "88f270eabd76e482d3fc115bf233f85f2e8664791e0e6070d5952af19d29083c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "94bcecc93b4b25aadfc8d89567a48b564a104ad6f2d4bee516b8411d6809f905",
+   "books": "110dcd0161319e3799ab36f3419d2c0baae42ee0f5818bf754c53aed734dcefd",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "3f654a2783c171f2b8bc3f47f56cde4b19f940410d505e7d758586be5fa6ec0a",
+   "books": "d8d0fcaa5c0a90913faef554b694171355ca79e028c6d0676220f7bfba57c734",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "5615b159125522539aed119973eab16d5bf148643f83a1f380ff4c10a12a1906",
+   "books": "c6c0a3164d1ba16573b4cf1fddfd7766f36c51c6a9d44fa9263efe703c22454c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "8f50cbfa956598d658812fce5f246394091192945ca54eda3d03d9acf08bc414",
+   "books": "eeb0211c865661551efc1a53f7783706bcfee37a540d4d695d8c15ab530ffcec",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "57f2382797d63fbe98b3361675e365b869bd14a9b40eb4b9522edf937a1b1aa6",
+   "books": "78f527bdebcebe1d5e3af808826c905ce9669f351e10ef3ba881384ad26f2747",
    "data_centre": 0,
    "fab": 0,
    "refinery": 16491388
   },
   "2023": {
-   "books": "c0069f6dd7c55216f9d5d8e60b828c1770ff4d68e275a2da2a62da0bc850078b",
+   "books": "a61860063d79f2de3986e2c103ada1581a48319cb5b2f4dfd41d8c90b26f5f90",
    "data_centre": 0,
    "fab": 0,
    "refinery": 155311473
   },
   "2024": {
-   "books": "d01c5588ef108875bab7bd41fa78b273801f1671a38392042f071bb192f43a85",
+   "books": "4aaf404d7a1c978e53105c99f1d72f57ce80547a47e8026c3f22dba3c07fc6d5",
    "data_centre": 0,
    "fab": 0,
    "refinery": 244431014
   },
   "2025": {
-   "books": "4ff71201a4849fa4a2a43abe305c6ee5c9c75819cf3b87f960c121a596e758e0",
+   "books": "46d9e9e0516b7e80b49c02bc9fbb71cdeb9498421400a5ba2be422b9e00738e9",
    "data_centre": 0,
    "fab": 573508656,
    "refinery": 249998659
@@ -785,97 +785,97 @@
  },
  "full_integrator/8": {
   "2010": {
-   "books": "90d6a7fc07f25a38893bf8df269e3cee4fc2af2eebaeeb180886c9529e2f6a16",
+   "books": "10adc082503ca5158f230612fe7b91decdfe7dbfd28649ad7eed21da0c8820e8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "8b28391df3200ca0fdc534425498e6e07ecadec5994dede9eff03bebf221d6c0",
+   "books": "203a1d3bb82644e14c602861814a9ae39e1a00951a9a525c666dac43778c5035",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "5756f6fcba7929613c55f82002d0f162ca98bf4827faa061c0bed00518553973",
+   "books": "42bd0d7b5379eb977288f4e606e854337d77b065d5915a2a7efaf0ead2a197a0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "57e692ec7f09748c32add0db2acdbb10d892bfdef7521f25a511b89151a45fa3",
+   "books": "3d860bc0ae03cb380cd6035faf17a4b6da3181967daa4c7c246dcaba3996b2fa",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "258f25b809cf0d722eed3ae0af1afd462dac9921e2da3b2d2f06f2993aecf32c",
+   "books": "fb15109687efbf1567448a6eb66b1e21e232aac072247a62f32dda97ef14bb40",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "985856a4ad11af1b466bec2ade69587ebdd77871cf1ed61e9ddcb52a0a52ba4e",
+   "books": "f971542e0721880bf7509408ba597e4eafaeb7d4209f51bf09d162615e4aa099",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "8308e8059e7f9df0ef7a9a796bee05b0791439596a46a276ec7abd5e1bb3fa9e",
+   "books": "ad25447758f75db0da1f5d5fa0da9b0f0ff533af9b129a911df4d4d190d61275",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "a5644ace70cc5f63e2d960c1ec3949455260273aa01658250b6ec5469c24d91d",
+   "books": "140cc9eab374d3c71e7ba243123c505d0d0e070b6e3524ac3e083ed034284a0d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "6781e4763d8385d647ca43934bc71a12ce74b2208f49eded7c120c9e0b9f75f0",
+   "books": "51bb35e0662e7dc767c6030664e5fc0adc089135ce52b5ca61e1990fd7c8f15e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "ddd0c9974c7df2278147a04bf17bbd103a5da969aff986e50f46781d3d785d9f",
+   "books": "e1ec0657a8a3cda4b5dda1326637b048e303d367e43ece1ef3c80407d41019c3",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "ad0084895b13fff0e49c43d551f5b024d80dfff0a6c7aff4b2de134896ecf71b",
+   "books": "f68ea3619cead56eabfcfcc42171d6b40353e1776fca0be327572141bfe84d3b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "ec46a989864d5b4d3fb8046278734ce76fcfb37d0f5966dd336d993afeb35b91",
+   "books": "79437b8cc153b4edbfd9732cfe21c7fd1e4eecd3ae4bac66a7e9f4409faebc4d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "cc7e12ca10f1bfb8254c8147c44d621358ca6ebb432490246a6debccb0bab097",
+   "books": "aec3466e6e53af38de28b3bffb93deeea1366500181527508a8deeb362532c90",
    "data_centre": 0,
    "fab": 0,
    "refinery": 44535
   },
   "2023": {
-   "books": "ba5d4501d093794fa3dcac77dd2257c13b3ce24bf36b1b2254c3fc777f5977f8",
+   "books": "6f4aaba146f81384ffa6548158e1c8a0a0bd9fa119bde8aa89020f515b992b74",
    "data_centre": 0,
    "fab": 0,
    "refinery": 8704373
   },
   "2024": {
-   "books": "68ada8422117dfa5c7cf50fdf3dd134d38a87c208436ae3ca095fc6efe07d2b6",
+   "books": "113b50d9a8192b22123d2a53f8df5ea65a517bbca409f2f520a9a72e51d38e2a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 98790353
   },
   "2025": {
-   "books": "a4c50365e828b6c54c5825e05ae3dc73eb25511a615b205a45976ea279dfa935",
+   "books": "57c8ec0462cd46a0f1d60e3f483c18bedebef99dfc279242a71a6b119ab0b739",
    "data_centre": 0,
    "fab": 210324777,
    "refinery": 185784426
@@ -883,97 +883,97 @@
  },
  "full_integrator/9": {
   "2010": {
-   "books": "bf588b960a8f477185a280a431dbdc774e8703dbf9f4dedae37c783245e0ce3e",
+   "books": "0d87acbc9012e1bf01a3e320dcdc27a039439c721519aeb0b133070d4679d57c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "50ccf8fa50fa1c8c17cf6ca87467f8d032dc4780b68a8996c546430e7f4321a0",
+   "books": "e473bf25b9f68f0bef0641f697c18fa6ba2a11e18d2fc00bc71f33f26ae82853",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "00023b494649e82ff216b9d19c3150afed6638564607d313fa983292fa468840",
+   "books": "30de58087f85143ead8fbf8423f698119e7b58dc8fc3ea729488e8985bb2d248",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "a38c8c614161a45255f51bdb07bcc0c216d6a7e3840d88217b61f10c009476a8",
+   "books": "76849e3c0fb744d4d9e7ec7c9bc94c1ccd636f508c491ec44aca91b0c7d84811",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "18c09b03e05f75c62f407142a6a161352fa7ce0276a6f667c4a61cbc69853dda",
+   "books": "7e956c05e8762a0e8b562d13f88c5062157533ce89fb7291d03963c314ebeb03",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "ca19f02cdf375e2dca2df0184485a9a4750582933b98b6641ba89d91ede7203d",
+   "books": "e37208d7166648e34cf7bfb6d2a21e7cb3554b77e446df6354fb0f60a445de45",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "ba20967b2b4c633222c8123fba45509c77d1048a7fd151caaf04324235675f94",
+   "books": "ed1e4134f73c2f4fba7dbccc8c2548df17e219a3ecd1cef62f8674c2c80cbc0b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "198b6a48c6ed52550154fb17da8ef3ff52182f8e8ec671e6e205ef16b77c40b5",
+   "books": "09d6892da2fd6b9d33526449fff47ba151f06ee9d5720304af33592a6fc97822",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "4efbe37390b9aaba86f31bcb1ae6747739b3ff9c66e9bab7ab374b8f691e42a5",
+   "books": "16f769031ea60e06f1f882722c9757ff1fccbf19edefd123b20d0c2fd2548ef3",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "75e2f80a00b7738424727151e919e6ddd7ad3df0fc8e718e06df372b0c8f3f05",
+   "books": "75b4be02fdbe559d4300e49162073a71e42299ec4e63ff5034cc5a2d681cf464",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "f5a97379e3fc7bb33f1c4cf5a14ca5c8b530d7a4150e33f9adb3fee0f88d1c3d",
+   "books": "508a7dd847273c3032319129fb8c9c93ecc87238b900bc9836b94ef1c174dd93",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "41b7085fce497465191f4aea8c59671f592a4bed81ab502d270c4166fe91e140",
+   "books": "3c7c320d09d7994b351de5a559d31f05126fb1ca9504c19bb800b552868a85af",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "35f23b024714e1b696ba75aec15f3bc9344433d55e2d9ebaaff4168a342fef09",
+   "books": "1a9392bfaca6dda2429d21048f484c329a5289734b543d1bbb06ec11fe389823",
    "data_centre": 0,
    "fab": 0,
    "refinery": 16359741
   },
   "2023": {
-   "books": "38076861516e98759426c9a512232d06ca33142d4fa6ab9968ceddb87fca9cf7",
+   "books": "c554f8f99994d147b2d3c9eed97672fcfdb543373e7c9e80da3cc3b4fc59a9dc",
    "data_centre": 0,
    "fab": 0,
    "refinery": 154121228
   },
   "2024": {
-   "books": "a7f7d1ceddcf6cc9df9c87de121463dd2cf8696b1d7ef5eac4b493deaf4fb8c9",
+   "books": "00722610804d4544b896abc09e0b41a80cc595f52dc72546ec63fb77c4743c20",
    "data_centre": 0,
    "fab": 0,
    "refinery": 225739939
   },
   "2025": {
-   "books": "b0cd01ac518d20ae257ae015e862e7d6579e91366f7fc8d25820d2bd5790cffc",
+   "books": "030482b9a64f3a0354f350ef5b29ae23e172398123693a3fae031dbc3a0d32c3",
    "data_centre": 0,
    "fab": 516219074,
    "refinery": 241679232
@@ -981,97 +981,97 @@
  },
  "integrator/1": {
   "2010": {
-   "books": "4b2a35cdac7df8096d80c05ece84b43d815de11f9fa488bef0ee67c59ce4acb5",
+   "books": "d117663e50b95900875f12f35034b0f8f543d8df27fdffa502f4c06bf8780a78",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ac0666493ee7d3f2be406eabe2f444ee71e32e965adac2a167d08ec74a07e056",
+   "books": "c950e6f299f1b37038f2e642b17da68208e0b26f8dd7ac75f38ddd4f258914ab",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "4d2942b1929c19092a3220ec9588738a386871079dee946a20410a2bd24e2087",
+   "books": "dc6a6f0a42e248479a38d9258dcb8f15fc2498b79c80012d85e7e1148e2a3e94",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "8fb5b118ec9e571723bc7319524cd92c7dafaead134d9fa437e354ae9038b0d9",
+   "books": "c15e597ecc42c0b4b9dd11e70dd07a1c404487c46aa9403af8e07aa8505fa534",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "f5b29929b8c3bacaff7d4fe8be6f15a6beb28cc80e17ab28a8e49ea13fe795ef",
+   "books": "dfd082a59f99b40aff0e3d1f762de2a470a3093248d03dd6443c783241afc3bd",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "3048a370ed913196a23ce154c3e17b8ad7849bcb099c15f76da30f0be2dfe480",
+   "books": "40017bc913f70c11fb2e8fc2648e30230629a49b64134fa116954f54dc166983",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "3ebf55c578bd88e18ee0aae3d0c5af91b22e888c109d8d68da0e826c27b7d03b",
+   "books": "956915bb3e23ecf744baf78cb82210fd37e3d20cb397b7ed07d4a84d0c0262c5",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "0dd2c5ac508c11ef5c117e6da7ae09d8e70004b2dafc3b541826cc00e4662735",
+   "books": "e70db3dd401c590bfcfc514f0db9eedca90ff331c9ed7546feeec1974ce2c3cd",
    "data_centre": 50000000,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "df20f67846e3a53e1e972680d2aa2646f64e0780c8db6623d10941ec687bfa79",
+   "books": "67872049783a0737006ad35d24cdec448877b929f6772a37f71ca03b3f92667f",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "84673f6029634100831890ec8349ab55f3222a445d2cb63953a89db5ea141f57",
+   "books": "6a7678ec4cc2f5da212601346fb40ad3040fff6e69abb78e8a830d1cd79d2549",
    "data_centre": 212500000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "35acde75b963b76edb113c18b2129aafc62a669c844bfa8ddc18a4f0e0f50cc4",
+   "books": "a4c3e80d97251c9e153616d7b284ffbde625cec9208959a4cbff4febb72cf858",
    "data_centre": 362500000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "41207f83f95753ab46f711c8acdfa912d5ae435caa51d077fe3b0d857503ef95",
+   "books": "342323723095d5b20a9c90a829b67c6b5a8b897872828529851f306a840e5f92",
    "data_centre": 537500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "a153ee454bb0ef475915168a2914b94d88b007b808160ae30a0dc041bcbbbc69",
+   "books": "6543b0892a25fd676f6d07ff0cd8103a2e1dbe47a58b51574ece54d2a137f8eb",
    "data_centre": 713750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "32aef1cc63a7bea3582ac745714bc2027251f36febb4e9be7729b16f49d3dc59",
+   "books": "70d1d281a2a69dfcde43851084924539de666b229c7332eca09177f696113773",
    "data_centre": 965000000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "e1af5db16b76846672966880b6f9729a9fd3f8a1569c73eaafe7c8e6d347b24b",
+   "books": "e60fb93e2d201554fe26ab7bbe5294070549caec4acb397bbe5a6a402e4b0adc",
    "data_centre": 1450000000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "470217145907a9f596dbfe0a9947dafbc8bc3f039dc37790aa36e56a39f39e1d",
+   "books": "82840d7092ec0a181dbc95fc62a09f2fb405d6c77a850142ef30b43d19f0935c",
    "data_centre": 2125000000,
    "fab": 0,
    "refinery": 0
@@ -1079,97 +1079,97 @@
  },
  "integrator/10": {
   "2010": {
-   "books": "fc3998bab313cb76d8bf2bb262b9c7870dc78b91c10d1f4fb46971d5ce3307dc",
+   "books": "be84b4649cca95e02aecb922c97c6eb59f8b9017379845183bf0f4d681724005",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "47cd63222aac33c59b2aceeef6ecb111a632b39f905b4f1bfe5ef58e514de101",
+   "books": "71baf18f9a9bbec42dcff79f40005e2a1b9f6253e5b152dd557fb53bba8f9d68",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "ac556f4e1c90a2e5f76811d44473e5e1f7285834caee1d8a66958165e476bfd8",
+   "books": "1031a775cc8f006869d971d0f99fd92e05a71ace19c3e2e81e38c6c553d3cbe2",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "5f040076cef10d3f34326cc4e2bc711cfdf507f93c0394615e0d70cc30944cb3",
+   "books": "0b911febbcc690040a136900dc3aa53aa09dcca8fb808324113e17490a349f4c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "e2f4e14ff3bef744f843df28f5ad6de116a6194250679556cb493505435f00d3",
+   "books": "937a9c0877c8ab74039baef5d25d8e70520ec0d258c2b843c63db0623bee56f8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "c6bc83602b8bef424b9ad16a5a047fc4f059f8643b2e5e7372c8a32d82124bc6",
+   "books": "b932c29def92c5ef7878addd1885ad83be5a0e92dcb1cc1ecfed369946a2f2c2",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "9fe8d4bfef35abc8693cdb336ac32fa6879838f10697cfc5948498b79fef6e73",
+   "books": "894693e348488d0f39bc9d9f711d417d5e8406fbd3e457023177c45ec73c7c6b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "61440275ab3a7105910ec115744e76228abb62dde273d96700358d5f9e22c5d5",
+   "books": "1ebdc0ac0ed4d3bae42b1adb143c5c92674be75e1322f9f071df1332edb7f4f0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "f8ad33a6610a7d8de91e0c7bb9a7386a16a8b4cb881e8fc4fa6ed1cbd35cf7a7",
+   "books": "9a78ed0d5fa7c21d742471de6c5b0d7fe770573fbc3a9591b24555db2dfaaa22",
    "data_centre": 137500000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "f89bd96bd7a26b5334090a9ef42f8453fc11258f1fa6305bcd33cc0bfd33e027",
+   "books": "e0ed82124a0859787a7363ed5d571ca2989cc57bf62c54d6b55e032235ee5323",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "21142429e4b513c88508d940a4c8bd625109c714a3f516516b3f99d527fa1d82",
+   "books": "f685ea0d6585323c5632f9ac07784b4e485e85e370c7ca64357daab94c045945",
    "data_centre": 225000000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "aebf7e2f889a5dc07f222a9913efce253490dc44b9dd51ef43517c12fa4b10a9",
+   "books": "8bc1d36e636e23d78a442bcfd0d1dfbbcdc679e1394b060968eeab858f40c776",
    "data_centre": 350000000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "b6c8b8f2b23f06cf10ceaa9b0d0d88f045af29204d7cf891567ab822fcc19fc5",
+   "books": "58a7c874b08725a6d147f540592be9f6ea7e6ded54a929cc36c9f70243445cd3",
    "data_centre": 513750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "5bbba0424c5a7cc1ec6646931acc67b74055442f62f4cdb7a455aab6ecbcdda9",
+   "books": "32e67fb48dc3af761443a0e90840ebeec450e6ef5951aa0fc5a68307367a4b39",
    "data_centre": 722500000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "ae526f3c6f1f1891893bc9e1f25fd90cf2e0074d6d0020927024b9940df4f1b0",
+   "books": "f54a2b4a86e08029070f98de921abee38e33369df4aa24308a01ea0c9b752b6c",
    "data_centre": 1017500000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "dc4b545b17c0f2a8c231d5c168489247ffcc885217801ba45634627af7198529",
+   "books": "225092a0774517cbc611bbbf4e2181675fb46804292b14ee4014ec37c0bb3490",
    "data_centre": 1425000000,
    "fab": 0,
    "refinery": 0
@@ -1177,97 +1177,97 @@
  },
  "integrator/2": {
   "2010": {
-   "books": "16d693306d50c0e1fdc707fcba12d13043140c6e213c00fa50f81b7df950596e",
+   "books": "0c8ca6816283d34c9f7aa154767be6a226a79f88a21fc51c559448bd4b038ce7",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "9fe1e2d3e2f4e4e15dcd674174ab49a3778677f567e0080b60150998e0553f17",
+   "books": "0d7605fdf90ec5a5550e6cf40b58ceba5cc31e0d09dc7dec472f2e8dfba8f601",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "3750ba4bac9fe6536638b9e9f90be4562315e961f344b0a5a1df782fe61c6aa9",
+   "books": "53a272d057a75db3f2bd11177a6fc54c0ab4bf3b9c0353018a24b0377afa5d49",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "bb289c3f40b97eee9496a4a191a46f53d916f49b5dab4fea2e6dd23e4a00f556",
+   "books": "70d869606cd0ef367dc919bcb4b8d86ccd2826a2067fb9e8003656c8e0e25199",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "00d73185d255edc8b54b429bfea3058d40d8e3092f16f2bb277f9e3d11ab6135",
+   "books": "f05e5ee3f78953bd63e82d415f313b7596a64b250867fa549f9aaf641154005f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "be14500dd59d15046f323cc46feac49e0721cdff855f12430cd483967e22a9e4",
+   "books": "974f2d8060176a0c40681c3f595fde4cc7dcacf763ec5bffd6d4f6eccb122897",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "c7527f8c4577290dbb999b6902869d98903bd7b1affc39eba0e582c9d766ae79",
+   "books": "c8df5f4ca90c6fa227bb139fa6de9a09ff47a963496a65e5b80cb9155606220e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "71d62d50c35192aabb9d0b80149644ff334230aa928deb37f7f5987f33a49bb5",
+   "books": "b0f050de2a9fc9291e6b085171c6c1b59b2534acc09c570143a274871f829e4c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "6439de8013d727c44d0e4d4ea2c79e33264565791f2f7f41a846fa46041fa755",
+   "books": "c350ef2ec3bf38423ec720c43838afb28e6d1c14457c7c10145f5ac0950e3283",
    "data_centre": 125000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "4044a398bdaac382564844e2236fa5c0a4dd71a09608240bd620d0a9ddc4593e",
+   "books": "fd80a0d78693c35ab13ac920a9c06916e81fcd96007a6675ca5b719c8639a041",
    "data_centre": 200000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "0a8830b9e915f92d44f81320fe1d830172f6ee624a9578cfb3dc21503715b595",
+   "books": "5c7921ccab95da4e07c05b5ef548e25abc8714a07e06da4376bf0e930633b7ac",
    "data_centre": 362500000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "ff843de6ab5cda9c5100fbfca292116f6260b8136d5ee3751d4fa05d93a92809",
+   "books": "ba80876eba787f3123dc23a1879b72fa7b6fc792a7f47c4ef4ef23d769eb26ba",
    "data_centre": 550000000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "d9a8e8198292d0ab3168e298d8bce09a68d42e995e45542bbfce61aad1ade593",
+   "books": "28366a28431aa2c7abf9e942851570569b67313cf95ed8a8a95400b6187a4fb5",
    "data_centre": 713750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "30818001335a5e4976edda324d9d858eb7dd451d215e5388efffd0c351fb2325",
+   "books": "eae3d2b9b806c4e9d0ed8e9e4d8a248414728504a481352be620cbc49b875408",
    "data_centre": 750000000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "858256d572010caf5171b34860a0d7bae7253135f42f38b50ef2fccc6f24a087",
+   "books": "0cbf6b72d2d991f9f51614eb3a0c23a9a899dc8174856a04f3b3e6755ed06ca9",
    "data_centre": 950000000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "833202708f1b1a0d63e8133f4aec7bf0c06c03cbfbb0166747a3a0889e155029",
+   "books": "ef089263407bf00ff61deb602f0754a89edbc06b4e7859f067dce54814060507",
    "data_centre": 1337500000,
    "fab": 0,
    "refinery": 0
@@ -1275,97 +1275,97 @@
  },
  "integrator/3": {
   "2010": {
-   "books": "ef079829a945d37254b7c9260837ae40e823dcdec34ef92ffa13715afa0e2403",
+   "books": "4e34cc99d1b84476f6626d0eeeb3182c8089fccea4e3c0f49e675607187e62dc",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ad055e4a15f31bfc462a5838db478ce6aa58e683fcd8b222a05288d292d5b8bd",
+   "books": "34663028d2cf1f51a2e22ebac58f56b75dc1f785ef939ed6c7db189abe090b98",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "cf4fbeeab9a2ffb6aed1bde050d3c59de421333f7967bcf330e38049a4483eb1",
+   "books": "4886980220c733b0015ba0f1e527e085b93db76047e7740c97471159d39098a0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "1330ebcf9f234b696823d6786334f5f473a0523246d14f5a2ebddac7b2a42fa2",
+   "books": "5abe2f1ff4f38f8b3ff24bb62ecc2425d92969bf9a3389eb780c013dcf8f8723",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "194925c02b6e9244621434e21f363cc2c595c7d8189ab107e92e2beec1a65111",
+   "books": "e97002f05786de333fc1d284a1e3f674ef65a2374630084618bc9eb0c8ed6813",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "7ecbfbd0c3ba25993848edf633a29ceab7d08fb1b84ee7ade109a1497fe95d01",
+   "books": "cb0171f99c69d155b890d7fa41189d743dad017470909e121262ed5ef54cf64d",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "6ac961364999fb68364448c3e0d2798bb5173e006a75f617d6696b4f1d2207ee",
+   "books": "15fd51e977a17d981cfd9ccda910453e73fcb537911c505b246b16c6a6cf3cdb",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "315b175fce39232d53172a485769ffdeb5844a974bb83bbdea1154f4350ec4c3",
+   "books": "3c52738c5f1f038dfb7b96ae8ef5e1ef6997db69b8bff089d435619c55e27405",
    "data_centre": 50000000,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "b387c2835bdcc7808f53412ed6bcc0658419085a32b091cd97c046bff750a197",
+   "books": "985810bbb9377771116388abebae82f2372d04e7808b15d444e094a6b338137f",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "76f9591959ce0e30512a9dcf6684127f8330d6bbd9927c003caebf413b6c58a0",
+   "books": "2059fda27cb58f7c4c41d06bd6aa11d34654beefeab81367186a1aee784dfca5",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "df7c46247d300826bb770be9d0e5fcc9138d966d2a4577b05248117220fa92cb",
+   "books": "2e8218999557c2f7d898082339c42fc168eb4c8e2a302f6c74cbc9d637b954ff",
    "data_centre": 300000000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "d3ca34d596de5e9d1d4015740ee664d8ac14151ba064d95d8853078e12b1e15b",
+   "books": "e9071d31cd055e5adeae36eb7f47bd39c23a5f06b801061be52ce790d83632e9",
    "data_centre": 475000000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "37e56c9c81bc06d7ffab321a6d6627626e00e38a504d203bbb933d71af68425a",
+   "books": "1a64dbd8f8508ef7632b8cfa399c2d5b903f49740939575baf96eb43202bbcd4",
    "data_centre": 651250000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "a3428e9d254641a02a5f132935f6f17dfaef4431ac0b6884e9e5cfdb1ce11fac",
+   "books": "c266071534a3c702675dc9243744271ea3ee08b9c8c9822b08dd3721addfea50",
    "data_centre": 822500000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "9f6668e133491ac1785ac8054caa223e6cc9788aa34724534ce1087ed96d5339",
+   "books": "d020d3ab62ae0f6765294ece0e4052c968f3205b296efdfa0deb8b2bd061acd8",
    "data_centre": 1217500000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "e73be39a90b2d845c60806ef673ed26322fd440bbeecd16fb05492526c0fba6e",
+   "books": "b17ba0e7023e59f57ea1031579f7083b4a39d0805556b7f42b50635219c804b4",
    "data_centre": 1950000000,
    "fab": 0,
    "refinery": 0
@@ -1373,97 +1373,97 @@
  },
  "integrator/4": {
   "2010": {
-   "books": "08e094204c79e41de7d74ebdf1c43e28e021382116e84ef54763e654b5b9b7e4",
+   "books": "7a2bd44e44a30e403aeb53613b890cfddc7df4fe177449d7113b03ae62874dca",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "b872468414bdb5ad01338426028a51328880ac3aaac47263491b176203518101",
+   "books": "2cd951b05796a8e4b020b00b6cf22cf1a5d4f6ff88511406490db48c1ad632d1",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "7b133ef5a03a016e1733e845c0a67f2344830c6cffc2e2148c1b586fb9a90ec5",
+   "books": "07af211082d630ea26eb23c7376d6be2b824c05722db33653594dd14735c036a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "678196c865d18ce4ad42bfe82a6ad291a159ac50f6923ffd5d46e2b07d9734ee",
+   "books": "970f1018f58f46f093de66cfb883297a337f248ec2bd05780d4998ac518669fc",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "94ea816b11b5b2764565c73ed27be9518b89604dc5fd1fba1218443b658b7a1f",
+   "books": "225342d48cfb0719bb9506ac766881c97c042edb02ee8bc685b0939aeb1a976b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "2c46f498055e525ddf9251d7a51b5abe29ed7d339df4e4b8dd5a523c28829067",
+   "books": "fca5c55fdcac76fb94fafc911084caf1c202a2e27ddcb817b896fb904665816c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "cf1884a568599d2b1730cbd99d833d4d8d75aeeb93495f0aff4bba9467224b3f",
+   "books": "e81849b371a6fd3ea85b339771ab5fcb7b45dab1c37c30527331769efdc1a09a",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "df9ba4e4eee6ab1fd3c54dbc417fab512ce8faaa55651f3dd20d83fe414d3ab9",
+   "books": "8c8f0173a13602ce167c1d5434ee9e3ead4c70a6b8f6308ffb8cdd6c3273f2bf",
    "data_centre": 37500000,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "d09479d96b75773a248fca5a8597f028abcea118bcdd5c56f6e2461dc61b2dbf",
+   "books": "67505c1d7b1a8e65fb4a4db8653d3d30b3a6da5c1f4bde09b8d641ce9fb161cb",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "2de76986cdd81174d323acedf3335c0c34d7bc24d26c184cd18da44f43e60fb5",
+   "books": "bead71be8d0c51b1f3b881e8e3f4773d345db4d265e25c9d98fb4f1c368aa2b3",
    "data_centre": 212500000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "34463e5064cfbb5da85000762e153f8f6be1798ca3afbba1d42b29fc45749d27",
+   "books": "a71b992c9b10ccc6e83bc3ac3e4f0ce734acd2b2d0a113830b5a4ed5afb2d0bc",
    "data_centre": 387500000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "3e1dadd19b90b293fa0d3f6f4f496d397bb3d1b94a07c6d96af1affe3ae39a2f",
+   "books": "896c42a5ba70f7e8a15daa39e839ca2a4ac4d8401ada61086da9cee341487c8c",
    "data_centre": 637500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "0ad3426f7d6ef10c0c1e77caaa5f8798994439c12d11bfb8cf44ec365036f9b5",
+   "books": "73bf45c0490e3f546c399709204feb8bf354972c187c5f85d1d7e3b256526773",
    "data_centre": 856250000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "5de99f97ee225c08067530ab9b7915c31ee762b41d2b4382ed5b48b9441157c1",
+   "books": "1b89d38cc33bf54b4fddd4cd226d228b92d590c16431f16b717040c74c59de84",
    "data_centre": 1161250000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "0520fab2a02afa67f772bfafd48ffa337e5d1ebc92b1494418d5872ff9120221",
+   "books": "e03a04d649d6781c5de1b079d2fcfa2c10cc432c14cd1eab88c4fc0a17db94a5",
    "data_centre": 1512500000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "caf032825b973508b34eddfa0e5879bd47e0bb2c1a2a1cbda70008d1a6cc7625",
+   "books": "897ddb53a4d656b1ed34b0549d25a23eae483d5e906df8b7b7a0f69fdc977761",
    "data_centre": 1837500000,
    "fab": 0,
    "refinery": 0
@@ -1471,97 +1471,97 @@
  },
  "integrator/5": {
   "2010": {
-   "books": "74c94e5be45ad9822128b72d8ebdc2dea16b0ed9f2b999fd5e561a7a78fd564f",
+   "books": "f66c5e432f65ee9be45b0f7ce067d21bda488e916cbbfe241675cda78de7ea8f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "ff4e01f19c0bcf3698d89cbdfa8267613d5e8fd3de25dc8d24e012233bb08dbf",
+   "books": "670c334ad7f1ad6353917719b8f9a938939309e160b2e380a1c0614b9f4f6844",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "a4a3b17f2dac8e04ed4c35b6932ccbded31c69d2c1429f8aa03d715481bca37c",
+   "books": "2512097cf25184d1021e7fe1d89cfb46747f5c92b42bd1a9bafb9fa7ac55526f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "dc04291bb8c0cbf73529eaf24a58d42742d360dffdb29bfcb78e0dcc1f383ea5",
+   "books": "59ed37d4e1a73718fc70b39763575422c3114c1aeaf8bf0b9d61b68108b4d79f",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "1450c675c6583ffed992e8e27470449e7bbb580dd6de64c6a8bb43ce3e15077f",
+   "books": "0653e94f420e5b49d39dabd296268f089c4ed8e98c2feb401bf9a546fd566d33",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "05e83e8547fe18b90aa207a4805765e0844fcf6205390bee64f664952465169d",
+   "books": "be0db04b301976e61a4eea06ff02ef3071e02535201f62c1bfd53d487a5a6c42",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "954d630a77e026ee7847e90051b98a54e642562c18f3f5f2290e8b24fddbd6ad",
+   "books": "495482407524894bd1a884f93d8e80d0635b45f4003cef5894aebbd730c143ba",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "4ae7a082bfa5a9f59fb0260a120ef693219ff9ead41b66bab1f812e497ba8cef",
+   "books": "04d7047a8fbe7ef3a7cc1799f2370884d6893b3373f3d658f9c21c7dd90b413b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "0d10857a195136209f1fccb1441b9a12e28698f538c1ff0e7d4012d32e80340d",
+   "books": "771b5340f7cdb7e789628a7a7fc7431ed348537ad35b730b88cc89ea6d85925c",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "313ff30530312328a3586953b4d08ab6cfeb34939267b4240b1f9eed3ada397a",
+   "books": "e6ba580323feb06059c2843a31d6fe017667f0b2e60fa4e4017fbd9339f150ac",
    "data_centre": 237500000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "5ed0ad7e8bc0124e6a427fa7592402355d47366e2206be32f109d0d4a17205a5",
+   "books": "a19e38ed853743017bd4826c160bc4fbb96424579a55564e233185cc86c6c814",
    "data_centre": 400000000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "b82baa350944732cfe92627a2f153b8fdc718c64e745199871b4d253f2ed4aa0",
+   "books": "ca04e8a9df6513d167b49971f6a29d64ed3995a02b289fa4e4453850701ca088",
    "data_centre": 637500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "d2cb7a2923362b9751a9f74eb14872aa4f671a2fedb40c41bed42178a9a5cd16",
+   "books": "0d7c2edaf8761a47ff0ba192def877617be61c51a3f89930ed64820621ffa403",
    "data_centre": 788750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "5c6dbc1ee044ff0874e4434d0a03fbb8cbc1a3135fdd0c36987fcde43e7536f7",
+   "books": "ac5e24a434265bcc8b99b52dd55d3e771b2732483cca16bf8d7fb8b818336028",
    "data_centre": 988750000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "28df7e138c5529ec709a67538d852477b0e40a14be806e9bc454562b3a775b22",
+   "books": "a299e395d05cc5e768c0508f3ed79fe7a07bfb6f88b209fc4dcb3e26c5f3576f",
    "data_centre": 1262500000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "7770ef1f103662a4ebdb69100406c8e4fc3abe4cda0bcf36efe6755e8c845ad6",
+   "books": "ee3e8080c7ffc6d38daba6a2f5eda06ac2a976a8e94255b7725e6543f93176c1",
    "data_centre": 1587500000,
    "fab": 0,
    "refinery": 0
@@ -1569,97 +1569,97 @@
  },
  "integrator/6": {
   "2010": {
-   "books": "ef8cae63ab23e5739061512d4f354f33ceb10a0595c6bbba9858a99c2eb39ae2",
+   "books": "e3f71226103fb886d6246a7b6f7fc906519d03088e6313c40426dac15852705b",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "86c1b3d22e1b4f978b494c76cae6c8b099ee5c7b8ec630402640dc4b3f116a5f",
+   "books": "7ca5ea81b362505c4d2237d83efd6a487edaf2ef4ff75da5c7d22ef029310520",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "e1c76d7979de3601e7ccb6de4583f12446dbbcefd3eacae136ac2d6e212e3fce",
+   "books": "c43323c54c5b11138d7afe6d7eb5d19264a44f9796ae5a9d3a19f9982942e303",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "66355604b64f91eade3d808d685b148e17e16c407f36904adcbf8cdef557298e",
+   "books": "16684a54e8a04db43b57a4028e2d0528f13632d1edf993a40ee2a08a71be2a54",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "b5ae28b79ebd4761ec121222cea426539d1014d2a53dd51baccb5ed1e35a7743",
+   "books": "73dc0f98aac4663f8f49303f0d977b7d65f20b9b89954c9e1bb73b7f9ab2b753",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "1a2d6ea05b2d842424bb7dccc4a0f069e7ddb10b1779c701b0eb7d3db2770ec0",
+   "books": "5a859569d21e802bf1c825df9e4ebe531662cf69d113b63572e52ee411b6a52e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "6ad5027692264fb2470e9d5565939e96a2c2ed218404964d80f512da1e043b54",
+   "books": "92a591bbdf1be189cab393f9d234a502032c8fcff66d3357fc5839ed72cb88ea",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "25f107a2efe85ca9d0c9db720ed6ae961a752a432d8b3762ba8fb6d8e90b861b",
+   "books": "e5dc85ba397ddcfecc57ed45b089573a7d3dbb8ba5780babbeb7f30e363140c8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "8242a2a945523ceea9c704baf4907d07384df1cff1e3808320efd8a2fe913e00",
+   "books": "6bc3b507ae84038bddeb95a6d0c690a0cccd673622a5f6e8f17153ffcaebcc59",
    "data_centre": 137500000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "5aff399452b3e7e8097f47616ad16ea6149d4182e49a961342a6bc601a29856e",
+   "books": "a194db5cdfbcbc75f743a8dede35fb48395dada4f243ecb0af8e818a1402abbe",
    "data_centre": 175000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "dc46112a01c96cc6a53d71601f77e136e094c60808c3f9fcf29dd84b2bc1517a",
+   "books": "88bc0f48db65296e06c1bae25d824610ecfb3e9685c5b5d3438de2d62a3e23c9",
    "data_centre": 350000000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "3ef78630f2922289bfd3300f1af1b07a557bdce7c3d5ac52e09fd389749c0f68",
+   "books": "2853fda3bc5c461814dcba7f4dcd4355904876dedf97cfe8dc5fbc18550a7b39",
    "data_centre": 512500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "292905d93aadaea6d9d82c0cee8dd4f6215276a36a0ada2e9de226fca0551ba2",
+   "books": "c317139d5a564f7fae7ec861c091f62119616d08c4eb067dd3fce2edf98da18c",
    "data_centre": 718750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "4b7b2b865b59417d685f9f4f13f3253651643a9ff4297b0a4cd122a01925d7ff",
+   "books": "4eac286f603056ab2c1e91170503a41e783d73f0493e84567957c4e09b2f6771",
    "data_centre": 960000000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "5495ada88310483f695df25a307e11cdac7c1616af63e984746763a213a7bcdd",
+   "books": "aee50c60a42b96a47df84ba5d8fe81b3cb396041f54a7b5eb80a6f69a38d4911",
    "data_centre": 1350000000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "29c5367e31dddfc02118af84d5ec3db3ea5dde8c9492a1e1a4a7be6997f9d6c7",
+   "books": "901b3a2ab969ef61fe42c68c0bba281e93c342875340942b42b5bc3ea0fab339",
    "data_centre": 1700000000,
    "fab": 0,
    "refinery": 0
@@ -1667,97 +1667,97 @@
  },
  "integrator/7": {
   "2010": {
-   "books": "f7f169032d1d4a27c756ff93885c97538bdd5d64eb446c6e8c3ac580697f4e36",
+   "books": "50aa0e1286b4ed6f75b6ef3ee8a23b8bc3a97d3c0269105424aad612ebee1d97",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "9178c63d779a9f164780284a2c7f3f428b0c53eb011b0d61b9d679939a569db9",
+   "books": "6de38d1a45462ddc24e0af2a3d57057826ca4fe2d829b52d59db2da865e91eb9",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "7720a3ff59488ed32cf20527a01a03369ddca655967f7d4667376295ce33857a",
+   "books": "d512063e678577ecf415549b14b609ef7225e55b5d440e539f1e9486714180df",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "696280d50a5bdf263f2d46077905a55dded7305f255675b7c59b289e3336ac5f",
+   "books": "52c6e4832aca3d99db63635204629261ecb2758ec2a63ceaca7ce100666d3984",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "3d53a1cdbe2f7bb09be911250c522231ae918fa5ec0ce97c58ce789728d24d84",
+   "books": "9f1d2572d23d35c713c42e528552fbc3fe528967268138df3dce9d59b7497a88",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "dee61a9052f2bdafb942d5fa2905fcf269d060243e7617818fac5aa2ac307a47",
+   "books": "78acb99aea2d2409fe718748466fce4095f4f22afe962fd279f65d5f6b9f90d8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "34c89821d901c680a755fd61751e2c9eb3555d404b6f05b3486cb6a133a8287c",
+   "books": "5100ad48ab54a16da5f5a7ddec73608a725801a7d17589b1b48d49047474960e",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "a56dd5f9947a0d31928fd6e54bb8eeecc487ae1fbf10392d1847d1a78d50f2d3",
+   "books": "df6411d8ed8e67e943e37cb18890191eb6ea819299afcf00bcc0e21d3f985ffa",
    "data_centre": 37500000,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "ed67c1c42465508c9d34c78782a773456cdf55dceca2271a8f0acfda21360029",
+   "books": "50d35865898d01b11be13758756d350bf22d0045237c1dca24c95d83c4b6f974",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "bfab72dd4f730a8a68e2f442f5fd79d2fa640bb2e13d18fb3e9d784255a74436",
+   "books": "bf3cd059ce8dd3bf6fc8acfae82491b60dc6d2711dda397a73ef3a55eb1bbce6",
    "data_centre": 187500000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "f3309f15b7eae3f952d61c0b3f3116d6489cf06ef1c626b8713d6966d9a12a84",
+   "books": "b99c06b62cf2f5ebdd5397cd26befabfc460488557db78482870a786e1646092",
    "data_centre": 337500000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "7b953f8ce58227d33a693409396744b66b0b75bd92c9362ae775c01ef26a5bba",
+   "books": "69353207a06b57f9fe2f0eeaea64657810abd099694c20cbd08f9e82cf0c4ce9",
    "data_centre": 512500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "b8c2323c8c0c5031be70ff429a3c47ca0143675a3beda4795a0a56424be3bc34",
+   "books": "628b4ed437dc1766a3f6a3bdb1693bc64110b5fea4e7e6128beac1f9d67011d1",
    "data_centre": 688750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "9764e157b97763c573b49675f901bc0972ad548ef6c57bc4e4e6ae26397fde6a",
+   "books": "12a345dd99e8ae8490dd4a1aa9c3eb7443ab3c9a37e87231b0b9bfbd451a2516",
    "data_centre": 767500000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "d441de14e75437487d1b7fc269fc4db9cd722cb1c013fc4cb1fdaf12c563a20b",
+   "books": "5e89a0db37f56957a019907f57c0c771e68a0f7b658588619dbc19dd5943561c",
    "data_centre": 1008750000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "1f4c4ab01c33edfc5b6d019900023f2f6a1a8e01fdc4b270e36666ff00e66ff4",
+   "books": "614a1c8fbc561fde1b29c43159b0ec1441422d5b46db1d92ae5221f80d43a398",
    "data_centre": 1500000000,
    "fab": 0,
    "refinery": 0
@@ -1765,97 +1765,97 @@
  },
  "integrator/8": {
   "2010": {
-   "books": "90d6a7fc07f25a38893bf8df269e3cee4fc2af2eebaeeb180886c9529e2f6a16",
+   "books": "10adc082503ca5158f230612fe7b91decdfe7dbfd28649ad7eed21da0c8820e8",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "8b28391df3200ca0fdc534425498e6e07ecadec5994dede9eff03bebf221d6c0",
+   "books": "203a1d3bb82644e14c602861814a9ae39e1a00951a9a525c666dac43778c5035",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "5756f6fcba7929613c55f82002d0f162ca98bf4827faa061c0bed00518553973",
+   "books": "42bd0d7b5379eb977288f4e606e854337d77b065d5915a2a7efaf0ead2a197a0",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "57e692ec7f09748c32add0db2acdbb10d892bfdef7521f25a511b89151a45fa3",
+   "books": "3d860bc0ae03cb380cd6035faf17a4b6da3181967daa4c7c246dcaba3996b2fa",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "258f25b809cf0d722eed3ae0af1afd462dac9921e2da3b2d2f06f2993aecf32c",
+   "books": "fb15109687efbf1567448a6eb66b1e21e232aac072247a62f32dda97ef14bb40",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "985856a4ad11af1b466bec2ade69587ebdd77871cf1ed61e9ddcb52a0a52ba4e",
+   "books": "f971542e0721880bf7509408ba597e4eafaeb7d4209f51bf09d162615e4aa099",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "8308e8059e7f9df0ef7a9a796bee05b0791439596a46a276ec7abd5e1bb3fa9e",
+   "books": "ad25447758f75db0da1f5d5fa0da9b0f0ff533af9b129a911df4d4d190d61275",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "b8eb3392c0b0adf7aff186ab4e86409da81dff89744578a06c10a4294c09f427",
+   "books": "5713a51f9f35e3c80eff0771e7bd368179bffeb11b993ccb399a16e3d044a606",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "a8efc3efc1b82f36f8def76134b643c7fd1692bbb18bdd14113db2fa9b914702",
+   "books": "46d63a3ad44c28ada75bc078a12f904a98d282786c2efef2a2ff390e6d47711d",
    "data_centre": 137500000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "d608134a85ae1c61569436289f0708e0555b12f48ea83ca54984ab60a5d2a10a",
+   "books": "c1ed6931e957405f4bed33dcae0e7a556bddc414ff80ae60bf5ed04b21edcaba",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "38c7328b3bc8c58ec76d60b604b21234b9d99e55cd48471da8a2df3ee252cf3e",
+   "books": "a9384544f2645b092293af20787215cb9d19a80a004dc6ba932afe5458cd28c8",
    "data_centre": 275000000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "ca9e136fb253a878eec9f9f547e858f9dcd230b53c36a7e2ab1375b4888f40ef",
+   "books": "4e72551c577836279f720161f4b6f02d6a324af0a9d487857ac4820c2a28281e",
    "data_centre": 462500000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "754c0a6b14663a2b6d2b5e75fb818abd82067271a4734803a2b1c139e69dfb0e",
+   "books": "11d6f49e7b8ad7004e4fb3d740d33ecdeb81008e474ffa650c5b52f5f4795031",
    "data_centre": 651250000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "07dc9f8ff2537985553167074235adf1ea54fbae70f4d8277e976a64ea6173c3",
+   "books": "670b06b2b0eda31c751bf77a147cf7074986361640c41f2f6a3f3c823e63f72c",
    "data_centre": 851250000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "e0ace6ee14e5e40cdeea5f849151cfe77fd0fce84fdb654e0643d57afada9db1",
+   "books": "3f39c47ae2fad44b248b02650a11b509695895cbf81dddc88a50663c50d41098",
    "data_centre": 1087500000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "0acb9235313db9a92f97f5f4c70e703cb941d77b1a848c57153cac410cd40ab5",
+   "books": "83110891d9002e4c5bd844fe05d3421c8073ba3bb4db629ff73ab2422d76627a",
    "data_centre": 1650000000,
    "fab": 0,
    "refinery": 0
@@ -1863,97 +1863,97 @@
  },
  "integrator/9": {
   "2010": {
-   "books": "bf588b960a8f477185a280a431dbdc774e8703dbf9f4dedae37c783245e0ce3e",
+   "books": "0d87acbc9012e1bf01a3e320dcdc27a039439c721519aeb0b133070d4679d57c",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2011": {
-   "books": "50ccf8fa50fa1c8c17cf6ca87467f8d032dc4780b68a8996c546430e7f4321a0",
+   "books": "e473bf25b9f68f0bef0641f697c18fa6ba2a11e18d2fc00bc71f33f26ae82853",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2012": {
-   "books": "00023b494649e82ff216b9d19c3150afed6638564607d313fa983292fa468840",
+   "books": "30de58087f85143ead8fbf8423f698119e7b58dc8fc3ea729488e8985bb2d248",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2013": {
-   "books": "a38c8c614161a45255f51bdb07bcc0c216d6a7e3840d88217b61f10c009476a8",
+   "books": "76849e3c0fb744d4d9e7ec7c9bc94c1ccd636f508c491ec44aca91b0c7d84811",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2014": {
-   "books": "18c09b03e05f75c62f407142a6a161352fa7ce0276a6f667c4a61cbc69853dda",
+   "books": "7e956c05e8762a0e8b562d13f88c5062157533ce89fb7291d03963c314ebeb03",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2015": {
-   "books": "ca19f02cdf375e2dca2df0184485a9a4750582933b98b6641ba89d91ede7203d",
+   "books": "e37208d7166648e34cf7bfb6d2a21e7cb3554b77e446df6354fb0f60a445de45",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2016": {
-   "books": "fa92ff142afd8c7a9c40941a2fd7ac53b28604617005c1a5cfbbd086b4e35e79",
+   "books": "a5653ca0162b0063d859840f24326824e5d3b7702cc362645513d5ada0224fbb",
    "data_centre": 0,
    "fab": 0,
    "refinery": 0
   },
   "2017": {
-   "books": "92fb017003da5dc904f0ac8220ebef020acb3ca072cc9a384da093fde1e25106",
+   "books": "51ec043143cdba4e1109a599e6c5c3f65a9a65206cd4a6f25b21cb17cbf8f1e4",
    "data_centre": 37500000,
    "fab": 0,
    "refinery": 0
   },
   "2018": {
-   "books": "32f02c9f201674e19adac16eb08c2d910e330f3ff9ae1445223933423432f61f",
+   "books": "176901c7bdecdd4f60d831053a835cb8c75894fceb2a3104b75803394401d136",
    "data_centre": 150000000,
    "fab": 0,
    "refinery": 0
   },
   "2019": {
-   "books": "6054b0fdac9c5c86f0a2482d352f28d7b150724260be20d9f4a82cffa5997968",
+   "books": "0e7c8629232e3d45afb39118c8cae2088df897361de1c461ec385d835592a6e8",
    "data_centre": 175000000,
    "fab": 0,
    "refinery": 0
   },
   "2020": {
-   "books": "fde3bbc44fa21ee84abfe5f0b1729857382792547c1e9f8ba91ff3e401fb471f",
+   "books": "dbaaa4a4992b0c296c57477b475788f9f41f022417758bbbbf8cb7a601f9c0b9",
    "data_centre": 312500000,
    "fab": 0,
    "refinery": 0
   },
   "2021": {
-   "books": "7325ad9e1e8000e7f383bf6ad2952eb153de6cabdd751ec1d6339a559219e9bb",
+   "books": "903a05055ee2285fb86d68b239e1fe29fae6a2ca40f6a54607013bf923d3b488",
    "data_centre": 525000000,
    "fab": 0,
    "refinery": 0
   },
   "2022": {
-   "books": "6a1454ba116235cebd794bb05c3d3f21ff2c204d4dfaed5dd74a3a5a982dcff4",
+   "books": "c6e979f564258c461c05ab957fc08d9fb84498ff2874b6be4726f1efa8543ef8",
    "data_centre": 743750000,
    "fab": 0,
    "refinery": 0
   },
   "2023": {
-   "books": "b589c5d5030a0824e651bdeac16b112e8bf0d0aebab07e8f3ab59e36a59b1381",
+   "books": "2adfdfb1b71d0ee92c5c9041b53901b2eda3dd9615bdd4baf13a8dfbfc2499de",
    "data_centre": 1048750000,
    "fab": 0,
    "refinery": 0
   },
   "2024": {
-   "books": "84445097b290eabe7e392eec9df9538015fd2942718a0ab0be381f91d124181e",
+   "books": "f1a0ad07e6ea0d46334f083c35fa9401fbbaae1db86620c2833bc33f5dc65fe2",
    "data_centre": 1475000000,
    "fab": 0,
    "refinery": 0
   },
   "2025": {
-   "books": "303a3480407b705179ee28683e248ea0c040d029d7ea682899459bb8e75c212b",
+   "books": "790060d5f079e02a8896e56ccc4b5f6b405bdb9c5b32e97a5f1420bdd3073e7b",
    "data_centre": 1975000000,
    "fab": 0,
    "refinery": 0
