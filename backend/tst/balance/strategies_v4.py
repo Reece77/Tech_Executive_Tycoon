@@ -19,7 +19,7 @@ numbers describe the scripts, not the game, so they live here rather than in bal
   new data centre is sited by power (the build screen's rows, 46.6: the shortest queue among
   the cities that serve its home market, then the cheapest grid) and, when it would queue
   (above power.queue.min_mw), comes with a plant behind its meter sized to its whole load
-  (46.3: such a load skips the queue): the cheapest new plant the screen shows there.
+  (46.3: such a load skips the queue): the type whose whole-load size costs least a year.
 - **litho_bet** (47): M23b's full_integrator, which from its fab's first month funds a
   lithography research unit (47.4's domain; 120 researchers, litho_2's staff) once it has formed
   its holding company (31.2: stage 5, where the domain opens; from 2027), and from January 2028
@@ -282,6 +282,21 @@ def _plant_size(game: Game, kind: str, region: str, load_mw: float) -> float:
     return b.power.plants.sizes_mw[-1]
 
 
+def _plant_for(game: Game, region: str, load_mw: float) -> tuple[str, float]:
+    """The plant a player picks to carry a whole load (M35b, rule 2): of the screen's types, the
+    one whose smallest whole-load size costs least a year (size x capacity factor x levelised
+    $/MWh). The screen's cheapest $/MWh alone picked 250 MW of wind behind a 50 MW load."""
+    b, g = game.loaded.balance, game.loaded.game_data
+
+    def cost(kind: str) -> tuple[float, str]:
+        mw = _plant_size(game, kind, region, load_mw)
+        cf = plants.capacity_factor(plants.type_def(g, kind), region)
+        return mw * cf * plants.levelised(game.state, kind, region, b, g), kind
+
+    kind = min(cost(k) for k in PLANT_TYPES)[1]
+    return kind, _plant_size(game, kind, region, load_mw)
+
+
 def _hyperscale_compute(game: Game) -> None:
     """_own_compute's trigger and size (uncovered spend past $200k a month, built only below
     spot), but sited by power and, when the load would queue, with a plant behind its meter."""
@@ -323,9 +338,9 @@ def _hyperscale_compute(game: Game) -> None:
         return
     (fid,) = {f.id for f in game.state.facilities} - before
     load = siting.draw_mw(DC_KIND, size, b, g)
-    mw = _plant_size(game, site.cheapest_plant, site.region, load)
+    plant, mw = _plant_for(game, site.region, load)
     refill_energy(game)
-    if game.act(BuildPlant(game.founder_id, site.cheapest_plant, mw, site.region, site.city, fid)):
+    if game.act(BuildPlant(game.founder_id, plant, mw, site.region, site.city, fid)):
         _mark(game, "plant")
 
 
