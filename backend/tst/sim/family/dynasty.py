@@ -6,10 +6,10 @@ each loss of family control."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from fractions import Fraction
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.family import rules
 from tst.sim.founder.legacy import CENTS_A_DOLLAR, founder_companies, legacy_parts
@@ -107,7 +107,7 @@ def dynasty(
         )
     value = family_value_cents(state, balances, balance, data)
     unit = fb.dynasty_unit_dollars * CENTS_A_DOLLAR
-    value_points = fb.dynasty_points * math.log10(1 + max(0, value) / unit)
+    value_points = fb.dynasty_points * dmath.log10(1 + max(0, value) / unit)
     loss = fb.control_loss_points * family.control_losses
     legacies = sum(g.legacy for g in gens)
     return Dynasty(

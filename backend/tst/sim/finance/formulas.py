@@ -6,11 +6,11 @@ stored, so a round closes to the share (14.10). Money stays integer cents.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from fractions import Fraction
 from typing import Literal
 
+from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import BoardBalance, FinanceBalance, SafeBalance
 from tst.sim.money import BP_DENOMINATOR, Cents, exact, times
@@ -58,7 +58,7 @@ def growth_6(mrr_now: Cents, mrr_then: Cents, fb: FinanceBalance) -> float:
     if mrr_then <= 0:
         return fb.new_revenue_growth
     exponent = MONTHS_PER_YEAR / fb.growth_window_months
-    return float((mrr_now / mrr_then) ** exponent - 1)
+    return float(dmath.pow(mrr_now / mrr_then, exponent) - 1)
 
 
 def arr_multiple(g6: float, climate: float, fb: FinanceBalance) -> float:
@@ -96,7 +96,7 @@ def safe_ratio(base_cents: Cents, cap_cents: Cents, sb: SafeBalance) -> float:
 def safe_probability(base_cents: Cents, cap_cents: Cents, sb: SafeBalance) -> float:
     """p = 1 / (1 + exp(-steepness x (optimism x V_base / cap - 1))). Never shown (14.9)."""
     x = sb.steepness * (safe_ratio(base_cents, cap_cents, sb) - 1)
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + dmath.exp(-x))
 
 
 def safe_hint(base_cents: Cents, cap_cents: Cents, sb: SafeBalance) -> Hint:
@@ -119,7 +119,7 @@ def safe_fraction(safes: list[tuple[Cents, Cents]]) -> Fraction:
 
 def quoted_pre_money_cents(base_cents: Cents, bias: float, z: float, sd: float) -> Cents:
     """V_pre = V_base x bias x exp(N(0, sd)), with z a standard normal draw."""
-    return round(base_cents * exact(bias) * exact(math.exp(sd * z)))
+    return round(base_cents * exact(bias) * exact(dmath.exp(sd * z)))
 
 
 def offered_amount_cents(

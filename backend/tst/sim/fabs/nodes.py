@@ -17,6 +17,7 @@ import math
 from dataclasses import dataclass
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.fabs.config import FabBalance, FoundryDef, NodesFile
 from tst.sim.fabs.draws import FUTURE, GROWTH, LAG, fab_draws, node_window_draw
 from tst.sim.facilities.config import month_to_turn
@@ -179,7 +180,7 @@ def expected_capacity(f: FoundryDef, turn: int, fb: FabBalance) -> float:
     if turn <= HISTORY_END:
         return history_capacity(f, turn)
     mean = (fb.capacity.growth.lo + fb.capacity.growth.hi) / 2
-    growth = float((1 + mean) ** ((turn - HISTORY_END) / MONTHS))
+    growth = float(dmath.pow(1 + mean, (turn - HISTORY_END) / MONTHS))
     return history_capacity(f, HISTORY_END) * growth
 
 
@@ -191,7 +192,7 @@ def _grown(tl: Timeline, foundry: str, turn: int, rate: float | None) -> float:
     for y in range(years):
         out *= 1 + tl.growth[(foundry, first + y)]
     if part:
-        out *= (1 + tl.growth[(foundry, first + years)]) ** (part / MONTHS)
+        out *= dmath.pow(1 + tl.growth[(foundry, first + years)], part / MONTHS)
     return out
 
 
@@ -229,7 +230,7 @@ def price_factor(
     expected = market_expected(nodes, turn, fb)
     if actual <= 0:
         return fb.capacity.bounds.hi
-    value = float((expected / actual) ** fb.capacity.elasticity)
+    value = float(dmath.pow(expected / actual, fb.capacity.elasticity))
     return min(fb.capacity.bounds.hi, max(fb.capacity.bounds.lo, value))
 
 
@@ -250,7 +251,7 @@ def allocation_factor(
         return 1.0
     open_rivals = market_capacity(tl, nodes, turn, fb) if rivals is None else rivals
     actual = open_rivals + player_slots
-    value = float((actual / expected) ** fb.capacity.elasticity)
+    value = float(dmath.pow(actual / expected, fb.capacity.elasticity))
     return min(fb.capacity.bounds.hi, max(fb.capacity.bounds.lo, value))
 
 
@@ -265,4 +266,4 @@ def euv_shipments(nodes: NodesFile, year: int) -> float:
     if year in s:
         return float(s[year])
     last = max(s)
-    return s[last] * (1 + nodes.euv.shipments_growth) ** (year - last)
+    return s[last] * dmath.pow(1 + nodes.euv.shipments_growth, year - last)

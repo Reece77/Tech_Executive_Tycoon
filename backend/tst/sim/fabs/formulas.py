@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.money import exact
 
 MONTHS: Final = 12
@@ -78,7 +79,7 @@ def node_price_cents(
     x the foundry market's capacity factor (38.3)."""
     steps = behind_now - behind_ref
     # money-exact: rate
-    return wafer_cents * (index_now / index_ref) * (1 - decay) ** steps * factor
+    return wafer_cents * (index_now / index_ref) * dmath.pow(1 - decay, steps) * factor
 
 
 def die_cents(
@@ -115,8 +116,8 @@ def irr(cash_flows: list[float]) -> float | None:
         return None
 
     def npv(rate: float) -> float:
-        m = (1 + rate) ** (1 / MONTHS)
-        return float(sum(c / m**i for i, c in enumerate(cash_flows)))
+        m = dmath.pow(1 + rate, 1 / MONTHS)
+        return float(sum(c / dmath.pow(m, i) for i, c in enumerate(cash_flows)))
 
     lo, hi = -0.99, 2.0  # tunable-exempt: the bisection's bounds on the annual rate
     if npv(lo) * npv(hi) > 0:

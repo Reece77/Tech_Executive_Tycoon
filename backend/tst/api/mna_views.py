@@ -190,12 +190,14 @@ def mna_out(state: GameState, balances: LedgerBalances, data: LoadedData) -> Mna
     for c in state.companies:
         if c.parent_id != player or not c.alive:
             continue
-        acq = next(a for a in reversed(state.acquisitions) if a.target_id == c.id)
+        # A subsidiary the player founded (or formed by a holding) was never acquired: it
+        # runs on "grow", as tst.sim.mna.style gives it (M35a: e2e's StopIteration).
+        acq = next((a for a in reversed(state.acquisitions) if a.target_id == c.id), None)
         subsidiaries.append(
             SubsidiaryOut(
                 company_id=c.id,
                 name=c.name,
-                directive=acq.directive,
+                directive=acq.directive if acq is not None else "grow",
                 mrr_cents=c.mrr_history[-1] if c.mrr_history else 0,
                 cash_cents=account_balance(balances, c.id, CASH),
                 staff=len(state.staff(c.id)),

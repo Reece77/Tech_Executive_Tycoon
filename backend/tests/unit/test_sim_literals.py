@@ -1,6 +1,6 @@
 """ADR-0008 guard: tunable numbers live in balance.yaml, not as literals in tst/sim.
 
-Numeric literals other than 0, 1, -1, 2, 12 and 100 fail, except in rng.py and calendar.py
+Numeric literals other than 0, 1, -1, 2, 12 and 100 fail, except in rng.py, calendar.py and dmath.py
 or on a line carrying `# tunable-exempt: <reason>` (for definitions such as the attribute
 scale, which are not tunables). The scanner is also run against throwaway fixture modules.
 """
@@ -15,7 +15,8 @@ import pytest
 
 SIM_DIR = Path(__file__).resolve().parents[2] / "tst" / "sim"
 ALLOWED = frozenset({0, 1, -1, 2, 12, 100})
-EXEMPT_FILES = frozenset({"rng.py", "calendar.py"})
+# dmath.py (M35a): AS241's coefficients and series terms are mathematics, not tunables
+EXEMPT_FILES = frozenset({"rng.py", "calendar.py", "dmath.py"})
 EXEMPT_RE = re.compile(r"#\s*tunable-exempt:\s*\S")
 
 

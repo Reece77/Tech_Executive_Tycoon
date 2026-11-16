@@ -13,6 +13,7 @@ from __future__ import annotations
 import math
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.equipment.config import (
     FIRST_YEAR,
@@ -91,7 +92,7 @@ def plan(g: GenerationDef, year: int, plan_growth: float) -> float:
     end = max(points)
     if year <= end:
         return year_series(points, year)
-    return points[end] * (1 + plan_growth) ** (year - end)
+    return points[end] * dmath.pow(1 + plan_growth, year - end)
 
 
 def base_price_cents(g: GenerationDef, turn: int, growth: float) -> float:
@@ -101,7 +102,7 @@ def base_price_cents(g: GenerationDef, turn: int, growth: float) -> float:
     last = max(g.price_cents)
     if year <= last:
         return g.price_in(year)
-    return float(g.price_in(last) * (1 + growth) ** (year - last))
+    return float(g.price_in(last) * dmath.pow(1 + growth, year - last))
 
 
 def open_tools(state: GameState, generation: str) -> int:

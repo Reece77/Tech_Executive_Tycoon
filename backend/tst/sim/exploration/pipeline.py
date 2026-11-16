@@ -13,6 +13,7 @@ import math
 from dataclasses import dataclass, replace
 from typing import Final, Literal
 
+from tst.sim import dmath
 from tst.sim.actions.hiring import Outcome, spend_energy
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import (
@@ -576,12 +577,12 @@ def indicative_npv_cents(
     est = running_estimate(state, project, balance, data)
     if project.est_grade_center is not None and project.est_tonnage_center is not None:
         assert project.est_grade_hw is not None and project.est_tonnage_hw is not None
-        grade = math.exp(project.est_grade_center - project.est_grade_hw)
-        tonnage = math.exp(project.est_tonnage_center - project.est_tonnage_hw)
+        grade = dmath.exp(project.est_grade_center - project.est_grade_hw)
+        tonnage = dmath.exp(project.est_tonnage_center - project.est_tonnage_hw)
     elif est is not None:
-        grade, tonnage = math.exp(est[0] - est[1]), c.tonnage_median_mt
+        grade, tonnage = dmath.exp(est[0] - est[1]), c.tonnage_median_mt
     elif project.sample_center is not None and project.sample_hw is not None:
-        grade, tonnage = math.exp(project.sample_center - project.sample_hw), c.tonnage_median_mt
+        grade, tonnage = dmath.exp(project.sample_center - project.sample_hw), c.tonnage_median_mt
     else:
         return None
     depth = sum(balance.geology.depth_m) / 2  # typical: never the block's own (34.5)
@@ -802,7 +803,7 @@ def survey_result(
     value = sb.noise_sd * field * z
     if block.true_commodity is not None:
         c = data.geology.commodity(block.true_commodity)
-        size = (block.true_tonnage_mt / c.tonnage_median_mt) ** sb.size_weight
+        size = dmath.pow(block.true_tonnage_mt / c.tonnage_median_mt, sb.size_weight)
         value += sb.signal * size
     reading = "strong" if value >= sb.strong_at else "weak" if value >= sb.weak_at else "none"
     commodity, kind = project.commodity, None
@@ -840,10 +841,10 @@ def sample_result(
     block, hit = _truth(state, project, data)
     c = data.geology.commodity(project.commodity)
     field, _ = factors(state, project.company_id, balance)
-    hw = math.asinh(eb.sampling.range) * field
+    hw = dmath.asinh(eb.sampling.range) * field
     sd = hw / xf.z_of(eb.confidence)
     z = float(exploration_draws(rng, state.turn, SAMPLE, project.id).standard_normal())
-    center = math.log(_grade_truth(block, hit, c)) + sd * z
+    center = dmath.log(_grade_truth(block, hit, c)) + sd * z
     kind = project.kind or (
         block.true_kind if hit else next(iter(data.geology.kinds_of(project.region, c.key)))
     )
@@ -873,7 +874,7 @@ def drill_hole(
         dev = devs[int(perm[(n - 1) % cells])]
     else:
         dev = float(exploration_draws(rng, state.turn, HOLE, r, project.block, n).standard_normal())
-    assay = math.exp(math.log(_grade_truth(block, hit, c)) + field * c.hole_sd * dev)
+    assay = dmath.exp(dmath.log(_grade_truth(block, hit, c)) + field * c.hole_sd * dev)
     return Hole(
         project_id=project.id,
         n=n,
@@ -929,7 +930,7 @@ def estimate_result(
         est_holes=len(holes),
         est_grade_center=grade[0],
         est_grade_hw=grade[1],
-        est_tonnage_center=math.log(_tonnage_truth(block, hit, c)) + sd * z,
+        est_tonnage_center=dmath.log(_tonnage_truth(block, hit, c)) + sd * z,
         est_tonnage_hw=xf.z_of(eb.confidence) * sd,
         est_turn=state.turn,
     )
@@ -962,7 +963,7 @@ def study_result(
     true_capex = _capex(c, tonnage, kind, block.true_infra_km, block.depth_m, fb)
     ref = c.grade_median * sum(c.recovery) / 2
     true_opex = c.opex_per_t_usd * fb.kind_opex[kind] * ref / (grade * rec_true)
-    capex_c, opex_c = math.log(true_capex) + a * z_cap, math.log(true_opex) + a * z_op
+    capex_c, opex_c = dmath.log(true_capex) + a * z_cap, dmath.log(true_opex) + a * z_op
     lo, hi = fb.recovery_bounds
     rec_c = min(hi, max(lo, rec_true + r_sd * z_rec))
     rec_hw = z90 * r_sd
@@ -973,11 +974,11 @@ def study_result(
     cap_hw = op_hw = z90 * a
 
     def npv(sign: int) -> int:
-        t = math.exp(t_c + sign * t_hw)
-        g = math.exp(g_c + sign * g_hw)
+        t = dmath.exp(t_c + sign * t_hw)
+        g = dmath.exp(g_c + sign * g_hw)
         rec = min(hi, max(lo, rec_c + sign * rec_hw))
-        capex = math.exp(capex_c - sign * cap_hw) * t / math.exp(t_c)  # capex scales with ore
-        opex_t = math.exp(opex_c - sign * op_hw) * (math.exp(g_c) * rec_c) / (g * rec)
+        capex = dmath.exp(capex_c - sign * cap_hw) * t / dmath.exp(t_c)  # capex scales with ore
+        opex_t = dmath.exp(opex_c - sign * op_hw) * (dmath.exp(g_c) * rec_c) / (g * rec)
         return round(_npv_with(state, c, t, g, rec, capex, opex_t, kind, balance, data) * 100)
 
     return replace(

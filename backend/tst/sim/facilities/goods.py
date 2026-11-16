@@ -20,6 +20,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, replace
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import ComponentsHistoryFile, GoodHistory, SupplyBalance
 from tst.sim.facilities.models import GoodMonth
@@ -96,7 +97,7 @@ def step_month(prev: GoodMonth, turn: int, d: Draws, sb: SupplyBalance) -> GoodM
         a = sb.change
         stepped = a.mean + a.phi * (prev.change - a.mean) + a.shock_sd * d.z
         change = min(a.bounds.hi, max(a.bounds.lo, stepped))
-    base = prev.base * (1 + change) ** (1 / MONTHS_PER_YEAR)
+    base = prev.base * dmath.pow(1 + change, 1 / MONTHS_PER_YEAR)
     month = replace(prev, turn=turn, base=base, change=change)
     if not prev.in_shock(turn) and shock_starts(prev, turn, d.start, sb):
         s = sb.shock

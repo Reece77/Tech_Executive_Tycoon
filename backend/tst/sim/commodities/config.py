@@ -19,6 +19,7 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
+from tst.sim import dmath
 from tst.sim.facilities.config import (
     FIRST_YEAR,
     MONTHS,
@@ -69,7 +70,7 @@ class HistoryShock(_Frozen):
             return None
         for (t0, v0), (t1, v1) in itertools.pairwise(anchors):
             if t0 <= turn <= t1:
-                return float(v0 * (v1 / v0) ** ((turn - t0) / (t1 - t0)))
+                return float(v0 * dmath.pow(v1 / v0, (turn - t0) / (t1 - t0)))
         return anchors[-1][1]
 
 

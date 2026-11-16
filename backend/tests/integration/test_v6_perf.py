@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.calibration import runner_note
 from tests.helpers import play_turn
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst.db.repository import load_state, open_session
@@ -55,7 +56,7 @@ def test_a_2039_stage_4_company_keeps_the_turn_budget(tmp_path: Path, loaded: Lo
     report = (
         f"V6: a stage-{state.player.stage} company after December 2039 with "
         f"{len(state.staff(1))} staff: median {per_turn * 1000:.0f} ms per turn of blocks "
-        f"{[round(b * 1000) for b in blocks]} ms"
+        f"{[round(b * 1000) for b in blocks]} ms; {runner_note(per_turn)}"
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)

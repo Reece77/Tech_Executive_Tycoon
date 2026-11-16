@@ -7,11 +7,11 @@ data never changes another block (ADR-0013)."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.exploration.config import GeologyFile
 from tst.sim.exploration.draws import GEOLOGY_TURN, geology_draws
@@ -48,8 +48,8 @@ def draw_block(
     lo, hi = gb.depth_m
     depth = lo + (hi - lo) * u_depth
     ilo, ihi = gb.infra_km
-    infra = math.exp(math.log(ilo) + (math.log(ihi) - math.log(ilo)) * u_infra)
-    difficulty = math.exp(gb.difficulty_sd * z_diff)
+    infra = dmath.exp(dmath.log(ilo) + (dmath.log(ihi) - dmath.log(ilo)) * u_infra)
+    difficulty = dmath.exp(gb.difficulty_sd * z_diff)
     sensitivity = min(1.0, max(0.0, ground.sensitivity + gb.sensitivity_sd * z_sens))
     block = GeoBlock(
         region=region,
@@ -70,10 +70,10 @@ def draw_block(
                 block,
                 true_commodity=c.key,
                 true_kind=_pick(geo.kinds_of(region, c.key), u_kind),
-                true_tonnage_mt=c.tonnage_median_mt * lift * math.exp(c.tonnage_sd * z_t),
+                true_tonnage_mt=c.tonnage_median_mt * lift * dmath.exp(c.tonnage_sd * z_t),
                 true_grade=min(
                     gb.max_grade,
-                    c.grade_median * gb.grade_scale * lift * math.exp(c.grade_sd * z_g),
+                    c.grade_median * gb.grade_scale * lift * dmath.exp(c.grade_sd * z_g),
                 ),
                 true_recovery=rlo + (rhi - rlo) * u_rec,
             )

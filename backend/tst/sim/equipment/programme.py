@@ -29,6 +29,7 @@ import math
 from dataclasses import dataclass, replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.equipment import data as ed
 from tst.sim.equipment.config import EPS, MONTHS, ProgrammeDef
@@ -255,7 +256,7 @@ def line(state: GameState, company_id: int, generation: str) -> OwnTools | None:
 
 
 def maturity(tools: OwnTools, balance: Balance) -> float:
-    return 1.0 - math.exp(-tools.tool_months / balance.equipment.programme.learn_tool_months)
+    return 1.0 - dmath.exp(-tools.tool_months / balance.equipment.programme.learn_tool_months)
 
 
 def stage_of(state: GameState, tools: OwnTools) -> Programme | None:

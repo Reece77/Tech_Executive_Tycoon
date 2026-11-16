@@ -27,6 +27,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region
 from tst.sim.platforms import data as pdata
@@ -244,7 +245,7 @@ def _computed_users(state: GameState, balance: Balance, data: GameData) -> GameS
             if not p.historical and p.licence_cents is None:
                 continue  # an own OS reaches the rest of the market only through licensees
             base = rest.get(pid, 0.0) if p.historical else max(rest.get(pid, 0.0), here[pid].users)
-            tilt = (here[pid].catalogue / leader) ** pb.rest_tilt if leader > 0 else 1.0
+            tilt = dmath.pow(here[pid].catalogue / leader, pb.rest_tilt) if leader > 0 else 1.0
             licence = 1.0
             if not p.historical and p.licence_cents is not None:
                 lo, hi = pb.licence_factor
