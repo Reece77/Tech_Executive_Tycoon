@@ -55,6 +55,24 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         reason="-0.0 pts at year 30 (M23b): cost of goods is 0.2-0.3% of a 2039 group's revenue; "
         "M28's supply-driven prices from 2026 change the fab's economics",
     ),
+    KnownMiss(
+        target="V4.T1.2",  # formulas 51 T1: power_hyperscaler ARR / cloud_steady, 0.90-1.40x
+        owner="M43",  # M35b (docs/tasks/M35b-v4-balance.md, Decisions): v5's balance pass
+        # score: |ratio - 1.15|; known down to 0.80x (score 0.35): the three shards on the
+        # final scripts read 0.93x, 0.89x and 0.82x (weekly 43852709862, 43893475146)
+        worse_than=0.35,
+        reason="0.82-0.93x by seed shard (M35b): the hyperscaler's ARR is its consumer app's, "
+        "cloud earns little in every run, so power's edge shows mostly in capacity",
+    ),
+    KnownMiss(
+        target="V4.T4",  # formulas 51 T4: the 2032 capacity live >= 12 months earlier
+        owner="M43",  # M35b (docs/tasks/M35b-v4-balance.md, Decisions)
+        # score: minus the median paired gap; known while the hyperscaler is never later
+        # (gap >= 0): +36, +24 and +0 months by shard, +12 pooled over seeds 1-30
+        worse_than=0.0,
+        reason="+0 months on seeds 21-30 (M35b): in 6 of 10 runs grid power never binds "
+        "before 2032, so both scripts' capacity goes live together; +12 over seeds 1-30",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

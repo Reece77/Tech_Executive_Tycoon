@@ -81,21 +81,22 @@
 16. **`litho_bet`'s founder value read 0** once it formed its holding company: the founder holds the holding's shares. `Game.record_value` reads the founder's stake at the top of the group (balance harness only; no game rule). Before the fix T2 could never count a litho_bet win.
 17. **The ten-year API run** (nightly) failed since M32 on `/power/siting`, `/power/quote/plant` and `/power/quote/ppa`, new required-query routes with no sample (main's last nightly ran before M32 merged). Samples added (rule 8: M32's lane has merged); passed locally (97 s) and in nightly 43871838922.
 18. **Fixtures re-recorded for Google Play's US row (October 2025):** M30's state cache (all nine runs first differed at turn 189; `--update-state-cache`, 12 min) and M32's history fixture for `books` 2025 only (full_integrator and integrator on 10 seeds; every power cost unchanged, asserted by the rewrite).
+19. **T1.2 and T4 carried as known misses to M43** (rule 1, my own targets; the brief's "met or carried with a recorded decision"). Rule 1 was tried as script fixes (decision 15: plant sizing, the next site, home first among equal waits, and reliability first, reverted); no key of mine moves a hyperscaler's ARR, which is its consumer app's. Readings on the final scripts: T1.2 0.93x, 0.89x and 0.82x by shard (seeds 1-10 in band); T4 +36, +24 and +0 months by shard, +12 over seeds 1-30 pooled (gaps 0 on 15 of 30 seeds: grid power does not bind before 2032 there, so both scripts' capacity is live together). `tst/balance/known_misses.py`: `V4.T1.2` known while |ratio - 1.15| <= 0.35 (down to 0.80x) and `V4.T4` known while the gap is >= 0 (never later than cloud_steady), owner M43; the v4 rows are named `V4.T1.1`..`V4.T4` so they never match another milestone's T-rows (M28's world rows are also `T4`).
 
 ## Results (the combined code: main 6d706d1 with M35a, branch 6cd7833 / 031b0de)
 
-### T1-T4 (weekly shards on GitHub on 6cd7833: run 43852709862 for seeds 1-10 and 11-20)
+### T1-T4 (weekly shards on GitHub, the same scripts: 6cd7833 run 43852709862 for seeds 1-10 and 11-20, 031b0de run 43893475146 for 21-30)
 
 | Target | Seeds 1-10 | 11-20 | 21-30 | Band |
 | --- | --- | --- | --- | --- |
-| T1.1 platform_owner / devices_regions | 0.96x | 0.98x | TBD | 0.9-1.4x |
-| T1.2 power_hyperscaler / cloud_steady | 0.93x | 0.89x | TBD | 0.9-1.4x |
-| T1.3 litho_bet / full_integrator | 1.08x | 0.99x | TBD | 0.9-1.4x |
-| T1.4 compliant_platform / devices_regions (printed) | 0.94x | 0.94x | TBD | printed |
-| T2 most wins by a v4 strategy | 1 of 10 (litho_bet) | 3 of 10 (litho_bet) | TBD | <= 4 |
-| T3.1 platform_owner duty or fine by 2034 | 10 of 10 | 10 of 10 | TBD | >= 7 |
-| T3.2 compliant_platform's fines below | 100% ($0 vs $1,647M) | 100% ($0 vs $1,098M) | TBD | >= 30% |
-| T4 2032 capacity all live earlier | +36 months | +24 months | TBD | >= 12 |
+| T1.1 platform_owner / devices_regions | 0.96x | 0.98x | 0.98x | 0.9-1.4x |
+| T1.2 power_hyperscaler / cloud_steady | 0.93x | 0.89x | 0.82x | 0.9-1.4x (KNOWN MISS, M43: decision 19) |
+| T1.3 litho_bet / full_integrator | 1.08x | 0.99x | 0.99x | 0.9-1.4x |
+| T1.4 compliant_platform / devices_regions (printed) | 0.94x | 0.94x | 0.97x | printed |
+| T2 most wins by a v4 strategy | 1 of 10 (litho_bet) | 3 of 10 (litho_bet) | 4 of 10 (litho_bet) | <= 4 |
+| T3.1 platform_owner duty or fine by 2034 | 10 of 10 | 10 of 10 | 10 of 10 | >= 7 |
+| T3.2 compliant_platform's fines below | 100% ($0 vs $1,647M) | 100% ($0 vs $1,098M) | 100% ($0 vs $993M) | >= 30% |
+| T4 2032 capacity all live earlier | +36 months | +24 months | +0 months (+12 over seeds 1-30) | >= 12 (KNOWN MISS, M43: decision 19) |
 
 ### T5: each system's targets on the combined code (weekly 43830576778, 38447e4c)
 
@@ -116,7 +117,7 @@
 
 ## Follow-ups
 
-- **T1.2's spread across seeds.** power_hyperscaler's ARR against cloud_steady is in band on seeds 1-10 and just under on 11-20 (see Results). Its ARR is the consumer app's: the cloud product earns little in every run, so a hyperscaler is mostly a software company with data centres. A cloud-first strategy (hosting as the main product) would measure power's effect more directly; a balance or design question for M43.
+- **T1.2 and T4 (known misses, M43; decision 19).** power_hyperscaler's ARR against cloud_steady is in band on seeds 1-10 and under on 11-20 and 21-30; T4 is +0 months on 21-30 where grid power does not bind before 2032. Its ARR is the consumer app's: the cloud product earns little in every run, so a hyperscaler is mostly a software company with data centres. A cloud-first strategy (hosting as the main product) would measure power's effect more directly; a balance or design question for M43.
 - **The economy-scale audit's recommendation (M35a)** is Reece's decision after his campaign; nothing here assumes it.
 - **Regulators' strictness path** is hidden by design (48.6); a Regulation-screen line on the political climate (an election coming, a tougher regulator) would make it legible without showing the number.
 - **Rival foundries' EUV gate** reads ASML's deliveries to each buyer; rivals' own lithography (China's EUV-class window, M33) still grows on its seeded path.

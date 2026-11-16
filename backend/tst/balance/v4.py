@@ -224,7 +224,7 @@ def t1_rows(runs: Sequence[V4Run]) -> list[Row]:
         present = bool(_of(runs, top) and _of(runs, base))
         rows.append(
             Row(
-                f"T1.{i + 1}",
+                f"V4.T1.{i + 1}",
                 f"{top} ARR / {base}, December 2039 (median; trailing year)",
                 "-" if r is None else f"{r:.2f}x ({'-' if y is None else f'{y:.2f}x'})",
                 "printed" if printed else "0.90-1.40x",
@@ -251,7 +251,7 @@ def t2_row(runs: Sequence[V4Run]) -> Row:
     n = len({r.seed for r in runs})
     complete = all(_of(runs, s) for s in FIELD)
     return Row(
-        "T2",
+        "V4.T2",
         f"most wins by a v4 strategy of {n} (December 2039 founder value)",
         f"{top} ({', '.join(f'{k} {v}' for k, v in sorted(w.items()))})",
         f"<= {MAX_WINS}",
@@ -269,7 +269,7 @@ def t3_rows(runs: Sequence[V4Run]) -> list[Row]:
     cut = 1 - f_comp / f_owner if f_owner and f_comp is not None else None
     return [
         Row(
-            "T3.1",
+            "V4.T3.1",
             "platform_owner with a duty or fine by December 2034",
             f"{hit} of {len(owner)}",
             f">= {DUTY_SEEDS} of 10",
@@ -277,7 +277,7 @@ def t3_rows(runs: Sequence[V4Run]) -> list[Row]:
             score=float(len(owner) - hit),
         ),
         Row(
-            "T3.2",
+            "V4.T3.2",
             "compliant_platform's fines below platform_owner's, to 2039 (median)",
             "-"
             if cut is None
@@ -305,7 +305,7 @@ def t4_row(runs: Sequence[V4Run]) -> Row:
     congested = sum(1 for r in hyper.values() for c in r.centres if c.congested)
     steady_congested = sum(1 for r in steady.values() for c in r.centres if c.congested)
     return Row(
-        "T4",
+        "V4.T4",
         "months earlier power_hyperscaler's 2032 capacity is all live (median paired gap)",
         "-"
         if gap is None
