@@ -38,6 +38,7 @@ QUERY_SAMPLES: dict[str, dict[str, str | int]] = {
         "size": 10_000,
     },
     "/api/saves/{save_id}/fabs/quote": {"node": "n28", "region": "north_america", "size": 10_000},
+    "/api/saves/{save_id}/power/siting": {"capacity": 2000, "kind": "data_centre_general"},
 }
 
 

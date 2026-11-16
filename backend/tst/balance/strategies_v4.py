@@ -256,10 +256,10 @@ def cloud_steady(game: Game) -> None:
 PLANT_TYPES: Final = ("gas", "solar_storage", "wind")  # what the build screen ranks (46.6)
 
 
-def _sited(game: Game, size: int) -> siting.Site | None:
-    """The build screen's best city for a data centre of `size` (46.6): among the cities whose
-    region serves the home market (19.5), the shortest queue (none when it would not queue),
-    then the cheapest grid."""
+def _sited(game: Game, size: int) -> list[siting.Site]:
+    """The build screen's cities for a data centre of `size` (46.6), best first: among the
+    cities whose region serves the home market (19.5), the shortest queue (none when it would
+    not queue), then the cheapest grid."""
     b, g = game.loaded.balance, game.loaded.game_data
     home = compute.home_region_of(game.state, b, g)
     rows = [
@@ -267,9 +267,7 @@ def _sited(game: Game, size: int) -> siting.Site | None:
         for s in siting.sites(game.state, PLAYER, DC_KIND, size, b, g)
         if compute.serves(home, s.region, g)
     ]
-    if not rows:
-        return None
-    return min(rows, key=lambda s: (s.queue_hi or 0.0, s.price_usd_mwh, s.city))
+    return sorted(rows, key=lambda s: (s.queue_hi or 0.0, s.price_usd_mwh, s.city))
 
 
 def _plant_size(game: Game, kind: str, region: str, load_mw: float) -> float:
@@ -322,12 +320,21 @@ def _hyperscale_compute(game: Game) -> None:
         return
     sizes = sorted(kind.sizes or b.facility.sizes)
     size = next((s for s in sizes if s >= need - built), sizes[-1])
-    site = _sited(game, size)
+    # the best-sited city whose own CU, fully used, costs less than spot (22.2): a player tries
+    # the next site rather than build nothing (M35b, rule 2: the first site only built 38-46
+    # data centres to cloud_steady's 56-72 on seeds 1-10)
+    site = next(
+        (
+            s
+            for s in _sited(game, size)
+            if lifecycle.quote(state, PLAYER, DC_KIND, s.region, size, b, g).capex_cents
+            / (size * kind.life_months)
+            + kind.opex_per_unit_cents
+            < spot
+        ),
+        None,
+    )
     if site is None:
-        return
-    q = lifecycle.quote(state, PLAYER, DC_KIND, site.region, size, b, g)
-    per_cu = q.capex_cents / (size * kind.life_months) + kind.opex_per_unit_cents
-    if per_cu >= spot:
         return
     refill_energy(game)
     before = {f.id for f in game.state.facilities}
