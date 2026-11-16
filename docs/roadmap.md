@@ -55,7 +55,8 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 | M32, power and owned plants | A, merges last | now (brief `docs/tasks/M32-power-and-owned-plants.md`, formulas §46) |
 | M33, semiconductor equipment (EUV) | B, merges second | now (brief `docs/tasks/M33-semiconductor-equipment.md`, formulas §47) |
 | M34, regulation with teeth | C, merges first | now (brief `docs/tasks/M34-regulation-with-teeth.md`, formulas §48) |
-| M35, v4 balance and polish | single | after M32–M34; closes v4 |
+| M35a, v4 polish and engineering | A, merges first | now (brief `docs/tasks/M35a-v4-polish-and-engineering.md`) |
+| M35b, v4 balance | B, closes v4 | now; tunes after `m35a-done` (brief `docs/tasks/M35b-v4-balance.md`) |
 
 ## Phase 4: v5, the dynasty and new industries
 
