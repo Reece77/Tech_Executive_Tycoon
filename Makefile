@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -60,6 +60,22 @@ weekly-m27b:
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
 	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=500 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 500 ms guard on this save until M35 (PM, 2026-11-15)
+
+# M35b's v4 targets (tst.balance.v4; CI: weekly.yml): the four v4 scripts and every comparison
+# played to December 2039, in three seed shards (each saves its runs: tools/v4_targets.py --load
+# combines them), and T5's own targets of M31-M34 on the combined code.
+V4_OUT ?= /tmp/tst-v4
+weekly-v4-a:
+	mkdir -p $(V4_OUT) && cd backend && TST_V4_SEEDS=1-10 TST_V4_SAVE=$(V4_OUT)/v4-1-10.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v4_balance.py
+weekly-v4-b:
+	mkdir -p $(V4_OUT) && cd backend && TST_V4_SEEDS=11-20 TST_V4_SAVE=$(V4_OUT)/v4-11-20.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v4_balance.py
+weekly-v4-c:
+	mkdir -p $(V4_OUT) && cd backend && TST_V4_SEEDS=21-30 TST_V4_SAVE=$(V4_OUT)/v4-21-30.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v4_balance.py
+weekly-v4-systems:
+	uv run --project backend python tools/m31_targets.py
+	uv run --project backend python tools/m32_targets.py
+	uv run --project backend python tools/m33_targets.py
+	uv run --project backend python tools/m34_targets.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20

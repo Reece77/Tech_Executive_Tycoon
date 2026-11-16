@@ -16,9 +16,14 @@ def _ai(gap: float) -> Row:
 
 
 def test_the_list_after_m23b() -> None:
-    assert [m.target for m in KNOWN_MISSES] == ["V3.ai", "V5.cells", "V5.cats", "I1"]
+    assert [m.target for m in KNOWN_MISSES][:4] == ["V3.ai", "V5.cells", "V5.cats", "I1"]
     owners = {m.target: m.owner for m in KNOWN_MISSES}
-    assert owners == {"V3.ai": "M28", "V5.cells": "M28", "V5.cats": "M28", "I1": "M28"}
+    assert {k: owners[k] for k in ("V3.ai", "V5.cells", "V5.cats", "I1")} == {
+        "V3.ai": "M28",
+        "V5.cells": "M28",
+        "V5.cats": "M28",
+        "I1": "M28",
+    }
     assert known_miss("T2") is None and known_miss("M10.T3") is None
 
 
@@ -47,3 +52,24 @@ def test_closed_and_unlisted_misses_fail_and_the_table_says_known() -> None:
     assert verdict(Row("V3.ai", "gap", "x", "y", False)) == "fail"  # no score: no pass
     text = table([_ai(0.009), t2])
     assert text.splitlines()[0].endswith("KNOWN MISS (M28)") and "FAIL T2" in text
+
+
+def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
+    """M35b's v4 misses (docs/tasks/M35b-v4-balance.md): T1.2 known down to 0.80x, T4 known
+    while power_hyperscaler's capacity is never later than cloud_steady's."""
+    assert [m.target for m in KNOWN_MISSES][4:] == ["V4.T1.2", "V4.T4"]
+    assert {known_miss(t).owner for t in ("V4.T1.2", "V4.T4")} == {"M43"}  # type: ignore[union-attr]
+
+    def t12(r: float) -> Row:
+        return Row(
+            "V4.T1.2", "ratio", f"{r:.2f}x", "0.90-1.40x", 0.9 <= r <= 1.4, score=abs(r - 1.15)
+        )
+
+    def t4(gap: float) -> Row:
+        return Row("V4.T4", "gap", f"{gap:+.0f}", ">= 12", gap >= 12, score=-gap)
+
+    assert verdict(t12(1.0)) == "ok" and verdict(t4(24)) == "ok"
+    assert [verdict(t12(r)) for r in (0.89, 0.82, 0.80)] == ["known"] * 3
+    assert verdict(t12(0.79)) == "fail" and verdict(t12(1.51)) == "fail"
+    assert [verdict(t4(g)) for g in (11, 0)] == ["known"] * 2
+    assert verdict(t4(-1)) == "fail"

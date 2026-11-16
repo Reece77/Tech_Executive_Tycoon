@@ -38,6 +38,7 @@ from tst.sim.money import exact
 from tst.sim.products.models import SELLING
 from tst.sim.regulation import data as rdata
 from tst.sim.regulation import draws
+from tst.sim.regulation import strictness as strict
 from tst.sim.regulation.config import RegulatorDef
 from tst.sim.regulation.duties import breaches, platforms_in
 from tst.sim.regulation.measure import turnover_year
@@ -61,7 +62,7 @@ def conditions(
 ) -> bool:
     """The preconditions (module docstring), before any new ruling."""
     sb = balance.regulation.structural
-    if not reg.structural or rdata.strictness(reg, state.turn) < sb.min_strictness:
+    if not reg.structural or strict.strictness(state, reg, balance, data) < sb.min_strictness:
         return False
     breached = set(breaches(state, company_id, reg))
     recent = state.turn - sb.ruling_years * MONTHS_PER_YEAR

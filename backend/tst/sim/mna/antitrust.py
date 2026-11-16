@@ -225,6 +225,10 @@ def review_month(
 
             region = deal.market.rsplit("/", 1)[-1]
             p = min(1.0, p * antitrust_factor(state, deal.acquirer_id, region, balance))
+            if data.regulation is not None:  # M35b: the region's regulators (48)
+                from tst.sim.regulation.strictness import merger_factor
+
+                p = min(1.0, p * merger_factor(state, deal.acquirer_id, region, balance, data))
         name = state.company(deal.target_id).name
         if deal.blocked_draw is not None and deal.blocked_draw < p:
             deal = replace(deal, status="refused", resolved_turn=state.turn)
