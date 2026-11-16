@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from fractions import Fraction
 from typing import Final
 
@@ -12,6 +13,7 @@ type Cents = int
 
 CENTS_PER_DOLLAR: Final = 100
 BP_DENOMINATOR: Final = 10_000  # tunable-exempt: definition of a basis point
+DECIMAL_BASE: Final = 10  # tunable-exempt: the base of a decimal (M36p: n / DECIMAL_BASE**k)
 
 _DOLLARS_RE: Final = re.compile(r"^(-)?\$?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$")
 
@@ -54,13 +56,94 @@ def exact(x: float | int | Fraction) -> Fraction:
     (ADR-0003; M8r, Codex review 1 finding 6)."""
     if isinstance(x, Fraction | int):
         return Fraction(x)
-    return Fraction(repr(x))
+    numerator, places = scaled(x)
+    return Fraction(numerator, DECIMAL_BASE**places)
 
 
-def times(amount: int, rate: float | int | Fraction) -> int:
-    """Integer cents x a rate (a share, a prepayment, a fine's multiplier), in exact rational
-    arithmetic, rounded half to even once (ADR-0003; M23a, Codex review 5 finding 10)."""
-    return round(Fraction(amount) * exact(rate))
+def scaled(x: float) -> tuple[int, int]:
+    """(n, k) with x == n / 10**k exactly as `exact` reads x (its shortest repr), k >= 0: the
+    integer numerator money arithmetic multiplies without building a Fraction (M36p)."""
+    text = float.__repr__(x)
+    mantissa, _, power = text.partition("e")
+    whole, _, frac = mantissa.partition(".")
+    numerator = int(whole + frac)  # int() refuses inf and nan, as Fraction does
+    places = len(frac) - (int(power) if power else 0)
+    if places < 0:
+        return numerator * DECIMAL_BASE**-places, 0
+    return numerator, places
+
+
+def round_half_even(numerator: int, denominator: int) -> int:
+    """numerator / denominator (denominator > 0) rounded half to even, as round(Fraction)."""
+    quotient, remainder = divmod(numerator, denominator)
+    twice = 2 * remainder
+    if twice > denominator or (twice == denominator and quotient % 2 == 1):
+        quotient += 1
+    return quotient
+
+
+def times(amount: int | float | Fraction, rate: float | int | Fraction, *more: float | int) -> int:
+    """Integer cents x a rate (a share, a prepayment, a fine's multiplier), and x any further
+    rates, in exact rational arithmetic, rounded half to even once (ADR-0003; M23a, Codex
+    review 5 finding 10). Rates are read as `exact` reads them (a non-int amount as
+    `Fraction(amount)`). With int cents and int or float rates the product is one integer
+    numerator over a power of ten, rounded once, with no Fraction built (M36p)."""
+    if type(amount) is not int:
+        return round(Fraction(amount) * exact(rate) * _product(more))
+    numerator, places = amount, 0
+    for factor in (rate, *more):
+        if type(factor) is float:
+            n, k = scaled(factor)
+            numerator *= n
+            places += k
+        elif type(factor) is int:
+            numerator *= factor
+        else:
+            return round(Fraction(amount) * exact(rate) * _product(more))
+    return round_half_even(numerator, DECIMAL_BASE**places) if places else numerator
+
+
+def exact_product(amount: int, *rates: float | int) -> Fraction:
+    """amount x rates as the exact rational `times` rounds: one Fraction, built once from an
+    integer numerator over a power of ten (M36p; a sum of these rounds once where posted)."""
+    numerator, places = amount, 0
+    for factor in rates:
+        if type(factor) is float:
+            n, k = scaled(factor)
+            numerator *= n
+            places += k
+        elif type(factor) is int:
+            numerator *= factor
+        else:
+            return Fraction(amount) * _product(rates)
+    return Fraction(numerator, DECIMAL_BASE**places)
+
+
+def sum_times(rows: Iterable[tuple[int, float | int]]) -> int:
+    """sum(amount x rate) over (int cents, rate) rows, exactly, rounded half to even once:
+    round(sum(Fraction(amount) * exact(rate))), with no Fraction built for int cents and
+    int or float rates (M36p)."""
+    rows = list(rows)
+    if not all(type(a) is int and type(r) in (int, float) for a, r in rows):
+        return round(sum((Fraction(a) * exact(r) for a, r in rows), Fraction()))
+    total, places = 0, 0
+    for amount, rate in rows:
+        n, k = scaled(rate) if type(rate) is float else (int(rate), 0)
+        term = amount * n
+        if k > places:
+            total *= DECIMAL_BASE ** (k - places)
+            places = k
+        elif k < places:
+            term *= DECIMAL_BASE ** (places - k)
+        total += term
+    return round_half_even(total, DECIMAL_BASE**places) if places else total
+
+
+def _product(rates: tuple[float | int, ...]) -> Fraction:
+    out = Fraction(1)
+    for r in rates:
+        out *= exact(r)
+    return out
 
 
 MILLICENTS_PER_CENT: Final = 1000  # tunable-exempt: thousandths of a cent in a cent

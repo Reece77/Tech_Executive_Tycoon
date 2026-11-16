@@ -37,7 +37,7 @@ from tst.sim.ledger import (
     LedgerEntry,
     LedgerLine,
 )
-from tst.sim.money import exact, times
+from tst.sim.money import exact, exact_product, sum_times, times
 from tst.sim.platforms import data as pdata
 from tst.sim.platforms.models import PlatformListing
 from tst.sim.platforms.phase import by_region, home_of, live_in
@@ -84,7 +84,7 @@ def app_revenue_cents(
             for s in state.segments_of(product.id)
             if s.segment in segments
         ]
-    return round(sum((exact(n) * (p or 0) for n, p in rows), Fraction()))
+    return sum_times((p or 0, n) for n, p in rows)
 
 
 def seller_year_cents(state: GameState, company_id: int) -> int:
@@ -128,7 +128,7 @@ def fees_due_exact(
             continue
         app = pb.app_categories[product.category]
         year = seller_year_cents(state, product.company_id)
-        paid = exact(app.paid_share)
+        paid = app.paid_share
         for region in data.region_keys:
             revenue = app_revenue_cents(state, product, region, home, balance)
             if revenue <= 0:
@@ -146,7 +146,7 @@ def fees_due_exact(
                     continue
                 sched = pdata.schedule(p, region, state.turn, balance, data, state.rival_stores)
                 fee = pdata.fee_for(sched, product.category, year, product.id in steering, balance)
-                cents = revenue * paid * exact(row.users) * exact(fee)
+                cents = exact_product(revenue, paid, row.users, fee)
                 if cents > 0:
                     out[(product.id, pid, p.owner_id if p.owner_id is not None else -1, region)] = (
                         cents

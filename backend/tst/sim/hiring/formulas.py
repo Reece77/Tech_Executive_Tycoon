@@ -7,7 +7,6 @@ number comes from `Balance` or from the scale definitions in `tst.sim.scale`.
 from __future__ import annotations
 
 import math
-from fractions import Fraction
 from typing import Literal
 
 from tst.sim.calendar import MONTHS_PER_YEAR
@@ -20,7 +19,7 @@ from tst.sim.data_models import (
     PeopleBalance,
     ResignBalance,
 )
-from tst.sim.money import BP_DENOMINATOR, Cents, pct_of
+from tst.sim.money import BP_DENOMINATOR, Cents, pct_of, round_half_even
 from tst.sim.scale import ATTR_MAX, ATTR_NEUTRAL, clamp_morale
 
 type HintBand = Literal["likely", "uncertain", "unlikely"]
@@ -90,8 +89,8 @@ def recruiter_fee_cents(annual_salary_cents: Cents, hiring: HiringBalance) -> Ce
 
 
 def monthly_salary_cents(annual_salary_cents: Cents) -> Cents:
-    """round(salary / 12), half to even, exact integer arithmetic."""
-    return round(Fraction(annual_salary_cents, MONTHS_PER_YEAR))
+    """round(salary / 12), half to even, exact integer arithmetic (no Fraction, M36p)."""
+    return round_half_even(annual_salary_cents, MONTHS_PER_YEAR)
 
 
 def benefits_cents(monthly_salary: Cents, payroll: PayrollBalance) -> Cents:

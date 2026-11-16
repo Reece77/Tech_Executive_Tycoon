@@ -64,6 +64,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M33-semiconductor-equipment.md](M33-semiconductor-equipment.md) | Semiconductor equipment (v4, lane B, merges second): ASML as a company with DUV, low-NA and high-NA generations, an order queue with prepayment, controls on tools, and the player's own lithography programme (formulas §47) | M28r, M30 |
 | [M34-regulation-with-teeth.md](M34-regulation-with-teeth.md) | Regulation with teeth (v4, lane C, merges first): regulators, gatekeeper designations, duties, investigations with visible stages, fines and rare warned break-ups, for the player and rivals (formulas §48) | M31 |
 | [M36r-review-7-fixes.md](M36r-review-7-fixes.md) | Codex review 7 fixes, and a money-exactness guard (beside M32–M34, before M32): never-actions stay the founder's after approval, exact commitments and platform fees, a float-money audit and AST guard, group OS licences eliminate, the estate pays every taxable asset | M36, M30 |
+| [M36p-exact-money-performance.md](M36p-exact-money-performance.md) | Exact money, fast: integer money helpers, regulation and state-copy costs, both V6 medians back under M30's guards on CI (a fix session's record, after M36r) | M36r, M34 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

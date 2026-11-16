@@ -52,7 +52,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.modes.rankings import hiring_bonus
-from tst.sim.money import Cents, exact
+from tst.sim.money import Cents, times
 from tst.sim.org.divisions import division_of_unit, is_scaleup
 from tst.sim.org.executives import exec_energy_holders
 from tst.sim.org.morale import morale_terms
@@ -68,6 +68,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
     ceo_of,
+    derived,
     reach_stage,
     with_candidate,
     with_candidates,
@@ -299,9 +300,27 @@ def _relocate(
     return state, [entry]
 
 
+CostLines = tuple[tuple[str, AccountCode, Cents, int | None], ...]
+
+
 def monthly_cost_lines(
     state: GameState, company_id: int, balance: Balance, data: GameData
-) -> tuple[tuple[str, AccountCode, Cents, int | None], ...]:
+) -> CostLines:
+    """`_monthly_cost_lines`, kept once per state, company, balance and data (M36p: payroll
+    and its burn projection asked twice for each company's lines of the same state)."""
+    kept: tuple[Balance, GameData, CostLines] = derived(
+        state,
+        ("monthly_cost_lines", company_id, id(balance), id(data)),
+        lambda: (balance, data, _monthly_cost_lines(state, company_id, balance, data)),
+    )
+    if kept[0] is balance and kept[1] is data:
+        return kept[2]
+    return _monthly_cost_lines(state, company_id, balance, data)
+
+
+def _monthly_cost_lines(
+    state: GameState, company_id: int, balance: Balance, data: GameData
+) -> CostLines:
     """(memo label, account, amount, division id) of one company's phase-6 costs.
 
     Phase 6 posts exactly these; the Overview shows them as this month's projection (hosting
@@ -339,8 +358,8 @@ def monthly_cost_lines(
             market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
         )
         salaries[None] += round(pool.headcount * pay)
-        benefits[None] += round(exact(pool.headcount) * benefits_cents(pay, balance.payroll))
-        office[None] += round(exact(pool.headcount) * balance.payroll.office_cost_per_head_cents)
+        benefits[None] += times(benefits_cents(pay, balance.payroll), pool.headcount)
+        office[None] += times(balance.payroll.office_cost_per_head_cents, pool.headcount)
         employees[None] += pool.headcount
     hosting, marketing = product_costs_by_division(state, company_id, data, balance)
     tools = balance.costs.tools_per_head_cents
@@ -497,9 +516,11 @@ def morale_and_departures(
         if roll_succeeds(int(resign_gen.integers(0, ROLL_RANGE)), chance):
             reason = "resigned"
         else:
-            retire_gen = rng.stream(state.turn, "retire", person.id)
             chance = retirement_bp(person.age(state.turn), balance.people)
-            if chance and roll_succeeds(int(retire_gen.integers(0, ROLL_RANGE)), chance):
+            # the stream only when it is drawn from (M36p: an unused stream changes nothing)
+            if chance and roll_succeeds(
+                int(rng.stream(state.turn, "retire", person.id).integers(0, ROLL_RANGE)), chance
+            ):
                 reason = "retired"
         if reason is None:
             continue
