@@ -3792,3 +3792,57 @@ Reece (2026-11-14): **electric vehicles first** among v5's new industries, on th
 ### 49.7 What the API may show
 
 Vehicle products and their specs, EV shares, battery prices, subsidies and tariffs, charging coverage, rivals' public line-ups and shares, approvals and recalls. Never incident draws, seeded future rules or prices before they happen, or rivals' plans.
+
+## 50. Medical devices (M41; v5)
+
+Reece (2026-11-14): **medical devices with realistic approval stages** (FDA-style 510(k) and PMA, studies, recalls). This section adds medical devices as a category family with their own regulators, clinical evidence, reimbursement and hospital buyers, reusing M34's regulator machinery (§48) with health kinds, and M21–M26's hardware and chips. **History holds to 2025:** market sizes, approval timelines and rates, dated rules (EU MDR) and rivals follow `medical.yaml` (research `docs/v5-research/medical-devices-dossier.md`); seeded after. Money and market sizes follow the game's scale (M35a's audit).
+
+### 50.1 The category family
+
+- **`medical_devices`** with sub-categories (each a category with its own market, rivals and risk class):
+  - `wearables_diagnostics`: consumer and clinical wearables, glucose monitors, home diagnostics; ties to the player's `devices`;
+  - `imaging`: ultrasound, CT, MRI and imaging software;
+  - `surgical_robotics`: robotic surgery systems, instruments and service;
+  - `implantables`: cardiac devices, neuromodulation;
+  - `samd`: software as a medical device, including AI diagnostics, built on the player's `ai_models`.
+- **Customers:** hospitals and health systems (the `enterprise` segment, buying through value-analysis committees and group purchasing: a long sales cycle and a price set per contract), clinicians (who adopt through training and evidence), and consumers for wearables. Revenue models per sub-category: units, units plus consumables (robotic instruments and sensors per procedure), and subscriptions (software and service).
+- **Rivals** from the data with shares to 2025: Medtronic, Johnson & Johnson MedTech, Abbott, Stryker, Boston Scientific, Siemens Healthineers, GE HealthCare, Philips, Intuitive Surgical, Dexcom, Edwards Lifesciences, BD; Apple in consumer health features from 2018.
+
+### 50.2 Risk classes and routes to market
+
+- Each device design has a **risk class** (US class I, II or III; EU class I, IIa, IIb or III) from its sub-category and intended use, and a **route** by region:
+  - **US:** exempt (most class I); **510(k)** (substantial equivalence to a predicate device, needs a predicate in the market); **De Novo** (novel, low-to-moderate risk, no predicate); **PMA** (class III, needs pivotal clinical evidence).
+  - **EU:** CE marking through a notified body under the **MDD** to May 2021 and the **MDR** from 26 May 2021 (more clinical evidence, longer reviews, notified-body capacity limits); legacy devices' transition dates from the data.
+  - **Other regions:** Japan (PMDA), China (NMPA), others by data, with a simplified route of the nearest kind.
+- **Review time** by route and region from the data (FDA's performance goals and observed totals, MDR's notified-body backlogs), shown as a range; **outcomes** by route with historical rates (a request for more information, approval, or refusal).
+- **AI and software:** SaMD and AI-enabled devices follow the same routes (most by 510(k) or De Novo); a model update that changes intended use needs a new submission unless a **predetermined change control plan** was approved (FDA guidance, from its dates).
+
+### 50.3 Clinical evidence
+
+- **Studies** are research projects of a new kind: feasibility, pivotal and post-market. Each has enrolment (patients, sites), duration, cost per patient by sub-category, and an endpoint. The result is drawn (stream `medical`) with a success chance from the device's quality and the design's evidence strength, shown as a range; failures can be redesigned.
+- PMA needs a successful pivotal study; MDR class III and implantables need clinical evidence too; 510(k) usually needs only bench and sometimes clinical data.
+- **Evidence strength** also drives clinician adoption and reimbursement (§50.4).
+
+### 50.4 Reimbursement and adoption
+
+- **Reimbursement** by region: in the US, coverage (national or local decisions), a payment code, and payment levels; elsewhere national health technology assessment with a price. A device without coverage sells only to early adopters at `medical.no_coverage_share` of its market. Coverage decisions take months to years and read evidence strength.
+- **Clinician adoption** follows an S-curve driven by evidence, training (the player's clinical education spending) and peer use; switching costs are high for robotic systems (training and installed base), like §44's lock-in.
+
+### 50.5 Manufacturing quality, recalls and surveillance
+
+- Medical devices are made in plants with a **quality system** (a facility setting: investment in quality raises audit outcomes and lowers defect rates). Regulators inspect (§48's investigation machinery with a `health` kind): findings range from observations to warning letters, import bans and consent decrees.
+- **Recalls** (stream `medical`), classes I (serious harm) to III, from defect rates and post-market signals: cost (field actions, replacements), brand and clinician-trust damage, and possible investigations and lawsuits. A class I recall is a critical event.
+- **Post-market surveillance** (adverse-event reporting, registries) is a monthly cost that lowers recall severity when signals are caught early.
+
+### 50.6 Balance targets (printed)
+
+1. **History holds:** market sizes, approval timelines and rates, the MDR's dates and rivals' shares to 2025 follow the data; every earlier guard unchanged (a company without medical devices plays exactly as before).
+2. **Routes differ:** median time from submission to US clearance is 4–12 months for 510(k), 8–18 for De Novo and 12–36 for PMA including the review (not the study); EU class III under the MDR takes longer than under the MDD on 8 of 10 seeds.
+3. **Evidence pays:** a device with a successful pivotal study reaches coverage and 30% clinician adoption at least 2 years earlier than one without.
+4. **Quality pays:** a plant at high quality investment has at least 60% fewer class I recalls than at low over 10 years.
+5. **A real business:** a `surgical_robotics` entrant from 2026 with competitive quality earns at least 40% of its revenue from instruments and service by year 8 (the razor-and-blade model).
+6. **Turn time** within the guards.
+
+### 50.7 What the API may show
+
+Devices, their classes and routes, submissions and their stages, review ranges, studies' designs and results once read out, coverage decisions, adoption, inspections and recalls that happened, rivals' public products and shares. Never study draws before readout, recall or inspection draws, or seeded future rules before they happen.
