@@ -3785,7 +3785,7 @@ Reece (2026-11-14): **electric vehicles first** among v5's new industries, on th
 1. **History holds:** EV shares, battery prices, subsidies, tariffs and rivals' shares to 2025 follow the data; every earlier guard unchanged (a software or chip company's game unchanged except through shared commodity and chip demand).
 2. **The S-curve:** global EV share of new cars reaches 35–65% by 2035 (median, 10 seeds), faster with cheaper batteries.
 3. **Integration pays in cars:** a car maker with its own cell plant and lithium supply has a median gross margin at least 4 points above the same maker buying cells, by 2034.
-4. **Software matters:** a car with an own platform and L2+ earns at least 10% of its lifetime revenue from software by 2035.
+4. **Software matters:** a car with an own platform and L2+ earns 4–15% of its lifetime revenue from software by 2035 (re-banded from at least 10% by the product manager, 2026-11-16; read on a December 2035 car: its month's subscriptions per car on the road over its segment's replacement months, lengthened by over-the-air updates, against its price).
 5. **Tariffs and rules bite:** a Chinese-made car's share in the US stays under 2% while the 2024 tariff holds.
 6. **Turn time** within the guards.
 
