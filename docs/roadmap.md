@@ -67,11 +67,12 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 | M36, family and succession | now, as a fourth lane (brief `docs/tasks/M36-family-and-succession.md`, formulas §45) |
 | M37, dynasty mode (the second 30 years) | after v4 |
 | M38, electric vehicles | now, lane C beside M35; merges after `m35b-done` (brief `docs/tasks/M38-electric-vehicles.md`, formulas §49) |
-| M39, robotics | after M32 |
+| M39, robotics and robotaxis | after M38 |
 | M40, space and satellites | after M32 |
-| M41, medical devices | after M34 |
+| M41, medical devices | now, lane D; merges after `m35b-done` and M38 (brief `docs/tasks/M41-medical-devices.md`, formulas §50) |
 | M42, pharmaceuticals | after M41 |
-| M43, v5 balance and polish | last; closes v5 |
+| M44, defence and government contracts | after M40 |
+| M43, v5 balance and polish, with the conglomerate view | last; closes v5 |
 
 ## Process
 
