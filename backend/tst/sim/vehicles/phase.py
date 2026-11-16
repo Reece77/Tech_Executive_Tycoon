@@ -23,9 +23,9 @@ from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_facility
 from tst.sim.vehicles import autonomy, cells, charging, demand, draws, rivals, sales
+from tst.sim.vehicles.data import enabled
 
 ATTRIBUTE_MAX = 20  # tunable-exempt: the attribute scale
-from tst.sim.vehicles.data import enabled
 
 
 def new_game(
