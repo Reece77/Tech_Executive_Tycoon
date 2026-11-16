@@ -29,7 +29,7 @@ from tst.sim.products.models import ProductMonth
 from tst.sim.rng import RngFactory
 from tst.sim.setup import DEFAULT_FOUNDER, new_game
 from tst.sim.snapshot import CompanySnapshot
-from tst.sim.state import GameState, group_companies
+from tst.sim.state import GameState, group_companies, ultimate_owner
 from tst.sim.turn import TurnResult, advance_turn
 
 log = logging.getLogger(__name__)
@@ -207,7 +207,10 @@ class Game:
             return
         balance, data = self.loaded.balance, self.loaded.game_data
         value = base_value(self.state, PLAYER, balance, data)
-        self.founder_value[turn] = value * founder_bp(self.state, PLAYER) // 10_000
+        # M35b: under a holding company (31.2) the founder holds the holding's shares, which own
+        # the operating company outright: their stake is read at the top of the group
+        top = ultimate_owner(self.state, PLAYER)
+        self.founder_value[turn] = value * founder_bp(self.state, top) // 10_000
         multiple = ff.arr_multiple(
             company_growth(self.state, PLAYER, balance), climate(self.state, data), balance.finance
         )

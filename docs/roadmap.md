@@ -58,6 +58,10 @@ M27a, M28 and M29 start together once `m23b-done` exists; Codex review 6 (all of
 | M35a, v4 polish and engineering | A, merges first | now (brief `docs/tasks/M35a-v4-polish-and-engineering.md`) |
 | M35b, v4 balance | B, closes v4 | now; tunes after `m35a-done` (brief `docs/tasks/M35b-v4-balance.md`) |
 
+### v4 status (M35b, 2026-11-16): closed
+
+All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), regulation (M34), the polish and engineering pass (M35a) and the balance pass (M35b, `m35b-done`). On the combined code the four v4 strategies are viable and none dominates (formulas §51: T1-T4 printed weekly on seeds 1-30), and M31-M34's own targets and the v3 targets hold, apart from the known misses recorded in `docs/tasks/M35b-v4-balance.md` (T6). What M35b found and changed is in its "Decisions made"; what is left is in its "Follow-ups".
+
 ## Phase 4: v5, the dynasty and new industries
 
 **Reece's decisions (2026-11-14, "defaults", plus pharmaceuticals):** play the heir, with the old founder as board adviser; an optional dynasty mode to 2069; electric vehicles and robotics first, then space, medical devices and pharmaceuticals; realistic approval stages. Outline: `docs/v5-outline.md`.

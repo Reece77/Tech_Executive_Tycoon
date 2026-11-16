@@ -301,6 +301,30 @@ class StructuralBalance(_Frozen):
     appeal_win: tuple[float, float]
 
 
+class StrictnessBalance(_Frozen):
+    """48.1 (M35b): a regulator's seeded strictness path after the history."""
+
+    sd: float = Field(ge=0)  # sd of a year's drift
+    election_years: int = Field(gt=0)  # years between the political swings
+    swing: tuple[float, float]  # an election year's swing, uniform in this
+    bounds: tuple[float, float]  # the path and the influenced value stay inside
+    influence_cut: float = Field(ge=0, le=1)  # x (1 - this x the region's top influence / 100)
+
+    @model_validator(mode="after")
+    def _check(self) -> StrictnessBalance:
+        if not 0 <= self.bounds[0] <= self.bounds[1]:
+            raise ValueError("regulation.strictness.bounds must be 0 <= lo <= hi")
+        if self.swing[0] > self.swing[1]:
+            raise ValueError("regulation.strictness.swing must be lo <= hi")
+        return self
+
+
+class MergerReviewBalance(_Frozen):
+    """28.4 linked to 48 (M35b): an antitrust review reads the region's regulators."""
+
+    open_case: float = Field(ge=1)  # block probability x this while a regulator there investigates
+
+
 class RivalRegulationBalance(_Frozen):
     contest: tuple[str, ...]  # personalities that contest at the statement of objections
 
@@ -320,6 +344,8 @@ class RegulationBalance(_Frozen):
     fine: FineBalance
     structural: StructuralBalance
     rivals: RivalRegulationBalance
+    strictness: StrictnessBalance
+    merger_review: MergerReviewBalance
 
     @property
     def start_turn(self) -> int:

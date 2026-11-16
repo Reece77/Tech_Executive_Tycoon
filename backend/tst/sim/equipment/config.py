@@ -296,6 +296,12 @@ class SalesBalance(_Frozen):
     asml_cut_max: float = Field(ge=0, lt=1)
 
 
+class RivalGrowthBalance(_Frozen):
+    """M35b (47.2): rival foundries' new EUV capacity arrives with their queue deliveries."""
+
+    euv_share: float = Field(ge=0, le=1)  # share of an EUV foundry's yearly growth on EUV nodes
+
+
 class EquipmentBalance(_Frozen):
     start: str  # the first month ASML's December rule and rivals' living orders run (47.1)
     queue: QueueBalance
@@ -304,6 +310,7 @@ class EquipmentBalance(_Frozen):
     service_ban_uptime_cut: float = Field(ge=0, le=1)
     programme: ProgrammeBalance
     sales: SalesBalance
+    rival_growth: RivalGrowthBalance
 
     @property
     def start_turn(self) -> int:
