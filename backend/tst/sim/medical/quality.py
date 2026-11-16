@@ -19,10 +19,10 @@
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import QueuedEvent
 from tst.sim.geo.models import RegionalSegment
@@ -275,7 +275,7 @@ def recall_chance(state: GameState, product: Product, balance: Balance, data: Ga
     mf = md.file(data)
     level = product_level(state, product, balance, data)
     units = installed(state, product, data)
-    weight = 1 + balance.medical.recall.install_weight * math.log10(1 + units)
+    weight = 1 + balance.medical.recall.install_weight * dmath.log10(1 + units)
     return mf.recalls.chance_year / MONTHS * mf.quality.levels[level].defect * weight
 
 
