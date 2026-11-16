@@ -795,3 +795,51 @@ templates:
   emissions_report:
     title: "Emissions report"
     body: "This year: scope 1 (your plants) {scope1} t CO2, scope 2 (bought energy) {scope2} t, {intensity} t per $1M of revenue; {clean} of your energy from your own plants and contracts. {effect}"
+  medical_filed: # M41 (50.2)
+    title: "{product} filed: {route} with the {regulator}"
+    body: "Reviews by this route take {months} months from filing, including a request for more information if one comes. The Medical screen shows the submission's stage."
+  medical_more_info: # M41 (50.2)
+    title: "The {regulator} asks for more information on {product}"
+    body: "The review clock stops while the team answers; the decision comes later than the shortest reviews."
+  medical_cleared: # M41 (50.2)
+    title: "{product} cleared: {route} ({regulator})"
+    body: "The device may now be sold where the {regulator} decides, {months} months after filing. Regions that rely on this clearance start their registrations."
+  medical_refused: # M41 (50.2)
+    title: "{route} refused for {product}"
+    body: "The {regulator} turned the submission down after {months} months. Better evidence or a better device makes a new filing likelier to succeed."
+  medical_study_started: # M41 (50.3)
+    title: "A {kind} study of {product} starts"
+    body: "{patients} patients over {months} months, costing {cost_cents} in all, spent month by month to the readout."
+  medical_study_met: # M41 (50.3)
+    title: "{product}'s {kind} study met its endpoint"
+    body: "The results of {patients} patients support the device: its evidence is stronger for reviews, payers and clinicians."
+  medical_study_missed: # M41 (50.3)
+    title: "{product}'s {kind} study missed its endpoint"
+    body: "The {patients}-patient study did not show what it set out to. The device goes back for a redesign before another study can start."
+  medical_coverage_asked: # M41 (50.4)
+    title: "{product}: coverage requested ({payer})"
+    body: "Payers decide in {months} months; stronger evidence shortens the wait and makes coverage likelier."
+  medical_covered: # M41 (50.4)
+    title: "{product} is covered: {payer}"
+    body: "Hospitals there can now be paid for using the device, so it sells beyond the early adopters."
+  medical_coverage_denied: # M41 (50.4)
+    title: "{payer} declines to cover {product}"
+    body: "Without coverage the device sells only to early adopters. A new request may follow stronger evidence."
+  medical_inspection_none: # M41 (50.5)
+    title: "The {regulator} inspected the company's quality system"
+    body: "The inspectors left without findings."
+  medical_inspection_observations: # M41 (50.5)
+    title: "The {regulator}'s inspection ends with observations"
+    body: "Inspectors listed observations (a Form 483 in the US) for the quality team to put right. No action follows if they are corrected."
+  medical_inspection_warning_letter: # M41 (50.5)
+    title: "A warning letter from the {regulator}"
+    body: "The regulator found significant quality-system failures. New decisions there are held for {months} months while they are corrected, and the brand suffers."
+  medical_inspection_import_ban: # M41 (50.5)
+    title: "The {regulator} stops the company's devices at the border"
+    body: "An import ban stops new sales in the regulator's market for {months} months."
+  medical_inspection_consent_decree: # M41 (50.5)
+    title: "Consent decree: the {regulator} halts the company's device sales"
+    body: "The company must rebuild its quality system under supervision: new sales there stop for {months} months, and it pays {fine_cents}."
+  medical_recall: # M41 (50.5)
+    title: "Class {klass} recall of {product}"
+    body: "{units} installed units are affected ({early}). The field action costs {cost_cents}, and new sales stop while it runs."

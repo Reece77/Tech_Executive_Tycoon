@@ -71,6 +71,7 @@ SYSTEMS: tuple[System, ...] = (
     System(25, "regulation", "Regulation", "world"),  # tunable-exempt: stable id (M34)
     System(26, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33; 25 is M34's)
     System(27, "power", "Power", "chain"),  # tunable-exempt: stable id (M32)
+    System(28, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -267,6 +268,22 @@ def _regulation(state: GameState, ids: set[int], _b: Balance, _d: GameData) -> s
     return None
 
 
+def _medical(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
+    """M41 (50): a medical device of the group's, or a device, chip or AI product at stage 3."""
+    for p in state.products:
+        if p.company_id in ids and p.status != "retired" and data.category(p.category).medical:
+            return f"{p.name} is a medical device"
+    if _stage(state) < STAGE_GROWTH:
+        return None
+    for p in state.products:
+        if p.company_id not in ids or p.status == "retired":
+            continue
+        cat = data.category(p.category)
+        if p.category in ("devices", "ai_models") or cat.chip_type is not None:
+            return f"{p.name} can become a medical device, and the company reached stage 3"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -285,6 +302,7 @@ CHECKS: dict[str, Check] = {
     "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
     "power": _any(_by_stage(STAGE_LISTED, "stage 4"), _power),  # M32 (46)
     "regulation": _regulation,  # M34
+    "medical": _medical,  # M41 (50)
 }
 
 

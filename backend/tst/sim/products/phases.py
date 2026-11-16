@@ -31,6 +31,7 @@ from tst.sim.geopolitics import sales as geo_sales
 from tst.sim.hardware import cm_market, production
 from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
+from tst.sim.medical import gate as medical_gate
 from tst.sim.modes.rankings import brand_bonus
 from tst.sim.money import Cents, exact, times
 from tst.sim.org.executives import CRO, side_factor
@@ -276,6 +277,7 @@ def run_markets(
     geo = reach_context(state, balance, data)
     home = geo.home if geo is not None else None
     access = geo_sales.access_map(state, balance, data)  # M22 (39.3): export controls
+    access = medical_gate.merge(access, state, balance, data)  # M41 (50): clearances
     for cat in data.categories:
         for market_def in cat.markets:
             entries = by_market.get((cat.key, market_def.segment), [])

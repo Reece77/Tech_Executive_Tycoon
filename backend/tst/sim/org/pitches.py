@@ -269,6 +269,8 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
     for cat in data.categories:
         if cat.key in mine or cat.capacity_market or cat.assembly_market or cat.sells_units:
             continue
+        if cat.medical:  # M41 (50.1): a medical device needs a deliberate entry
+            continue
         if allowed and cat.key not in allowed:
             continue
         best: tuple[float, str, float, int] | None = None

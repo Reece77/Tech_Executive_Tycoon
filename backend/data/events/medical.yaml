@@ -1,0 +1,29 @@
+# Medical event templates (docs/formulas.md 50.5, M41): queued by the engine by template id
+# (trigger medical) when a device's recall is class I (serious harm). The recall's cost, brand
+# and adoption loss are already applied; the answer is applied by the engine (medical_step):
+# a full recall wins back half the brand loss; a field correction gets 40% of the cost back and
+# costs 3 more brand points; disputing the class gets 60% back but brings the FDA's warning
+# letter. Tone: grounded realism (ADR-0011). The first choice is what happens when it is left
+# unanswered at Continue.
+templates:
+  - id: medical_class_i_recall
+    category: medical
+    trigger: medical
+    severities: [critical]
+    weight: 1.0
+    title: "Class I recall: {product}"
+    body: >-
+      Reports of injuries linked to {product} have reached the regulators, and the recall has
+      been classed as class I: a reasonable chance of serious harm or death. {units} installed
+      units are affected and the field action is costed at {cost}. Hospitals want to know what
+      the company will do, and so do the plaintiffs' lawyers.
+    choices:
+      - key: A
+        label: "Recall every affected unit now"
+        effects: [{ type: medical_step, target: product, stat: full }]
+      - key: B
+        label: "Correct the units in the field"
+        effects: [{ type: medical_step, target: product, stat: correct }]
+      - key: C
+        label: "Dispute the classification"
+        effects: [{ type: medical_step, target: product, stat: dispute }]
