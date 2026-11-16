@@ -316,7 +316,7 @@ def report(results: Sequence[SeedResult]) -> str:
     cut = 1 - high / low if low else 0.0
     share = med(r.recurring_share for r in results)
     rows = [
-        Row("1", "history holds", "unit tests; golden; M28 fingerprint", "identical", True),
+        Row("1", "history holds", "unit tests; golden; tools/m41_history_diff.py", "identical", True),
         Row("2", "510(k) median months", f"{k510:.1f}", "4-12", 4 <= k510 <= 12),
         Row("2", "De Novo median months", f"{dn:.1f}", "8-18", 8 <= dn <= 18),
         Row("2", "PMA median months (review)", f"{pma:.1f}", "12-36", 12 <= pma <= 36),
