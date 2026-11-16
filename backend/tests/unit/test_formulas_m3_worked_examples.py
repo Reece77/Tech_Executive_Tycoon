@@ -34,7 +34,14 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
     for cat in data.categories:
         assert sum(cat.dev_weights.values()) == pytest.approx(1)
     sales = [s.key for s in data.segments if s.reach == "sales"]
-    assert sales == ["mid_market", "enterprise", "hyperscalers", "device_oems"]  # M12a, M12b
+    assert sales == [  # M12a, M12b, M38
+        "mid_market",
+        "enterprise",
+        "hyperscalers",
+        "device_oems",
+        "fleet",
+        "commercial",
+    ]
     assert data.segment("smb").weights.price == 0.35
 
 
