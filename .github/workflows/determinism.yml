@@ -1,0 +1,82 @@
+# The same game on Linux and Windows (M35a sub-task 1): M30's three strategies on seeds 1-3 for
+# 120 months in memory on both runners, every month's full-state digest compared
+# (tools/platform_digests.py). Fails if any month differs, naming the first month and the
+# top-level state fields that differ. On demand, `dump` (JOB@TURN, space-separated) also lists
+# the differing leaves of that job's state after that turn.
+name: determinism
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dump:
+        description: "JOB@TURN ... (e.g. full_integrator/1@57): list differing leaves there"
+        required: false
+        default: ""
+
+concurrency:
+  group: determinism-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  digests:
+    name: digests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: Play and digest 120 months
+        shell: bash
+        env:
+          DUMP: ${{ github.event.inputs.dump }}
+        run: |
+          args=()
+          for d in $DUMP; do args+=(--dump "$d"); done
+          uv run --project backend python tools/platform_digests.py run "digests-${{ runner.os }}.json" "${args[@]}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ runner.os }}
+          path: digests-${{ runner.os }}.json
+          retention-days: 7
+
+  compare:
+    name: compare
+    needs: digests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Linux and Windows give the same game
+        run: python tools/platform_digests.py compare digests-Linux.json digests-Windows.json
