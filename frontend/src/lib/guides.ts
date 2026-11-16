@@ -189,6 +189,15 @@ export const GUIDES: Record<string, Guide> = {
       'A PPA fixes the price of a volume for 5-20 years; energy you do not use still pays 70%.',
     ],
   },
+  medical: {
+    title: 'Medical',
+    path: 'products/medical',
+    what: "Medical devices: wearables and diagnostics, imaging, surgical robots, implants and diagnostic software. Each needs clearance by region before it sells (510(k), De Novo or PMA in the US, CE marking in the EU), and payers' coverage and clinicians' trust before it sells widely.",
+    start: [
+      "Choose the device's intended use: its class and route follow. A 510(k) needs a predicate on the market and takes months; a PMA needs a pivotal study first and takes years.",
+      'Evidence from studies shortens coverage decisions and speeds adoption; a better quality system means fewer recalls.',
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',

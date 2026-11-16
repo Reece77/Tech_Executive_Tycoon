@@ -18,7 +18,7 @@ from tst.api.schemas.medical import (
     HealthRegulatorOut,
     InspectionOut,
     MedicalOut,
-    PlantOut,
+    QualityPlantOut,
     RecallOut,
     RegionOut,
     RivalProductOut,
@@ -110,6 +110,7 @@ def _routes(
                 route=route.key,
                 label=route.label,
                 review=review,
+                review_months=routes.shown_range(state, use, route, pccp, balance, data)[1],
                 explain=explain,
                 fee_cents=route.fee_cents,
                 status=status,
@@ -274,7 +275,7 @@ def medical_out(state: GameState, data: LoadedData) -> MedicalOut:
         for s in mf.subcategories
     ]
     plants = [
-        PlantOut(
+        QualityPlantOut(
             facility_id=f,
             region=state.facility(f).region,  # type: ignore[union-attr]
             level=quality.plant_level(state, f),

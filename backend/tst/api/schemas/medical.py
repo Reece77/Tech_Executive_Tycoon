@@ -27,6 +27,7 @@ class RouteOut(BaseModel):
     route: str
     label: str
     review: str = Field(description="The months a decision takes, as a range")
+    review_months: int = Field(description="The range's top, for Explain")
     explain: str = Field(description="How the range is made (data, not a draw)")
     fee_cents: int
     status: Literal["not_filed", "review", "information_requested", "cleared", "refused"]
@@ -114,7 +115,7 @@ class StudyKindOut(BaseModel):
     months: list[int]
 
 
-class PlantOut(BaseModel):
+class QualityPlantOut(BaseModel):
     facility_id: int
     region: str
     level: str
@@ -150,7 +151,7 @@ class MedicalOut(BaseModel):
     subcategories: list[SubcategoryOut]
     devices: list[DeviceOut]
     study_kinds: list[StudyKindOut]
-    plants: list[PlantOut]
+    plants: list[QualityPlantOut]
     quality_levels: dict[str, int] = Field(description="A plant's monthly cost by level")
     inspections: list[InspectionOut]
     rivals: list[RivalProductOut]

@@ -882,6 +882,18 @@ class Builder:
 
         return v4_regulation.designation_thresholds(self, m, entity)
 
+    # --- v5 (M41): medical devices -------------------------------------------------------------
+
+    def medical_review(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_medical
+
+        return v5_medical.medical_review(self, m, entity)
+
+    def study_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_medical
+
+        return v5_medical.study_cost(self, m, entity)
+
     # --- v4 (M33): equipment ----------------------------------------------------------------
 
     def tool_wait(self, m: MetricDef, entity: str | None) -> Explanation:

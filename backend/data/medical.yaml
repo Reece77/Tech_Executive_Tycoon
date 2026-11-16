@@ -122,10 +122,15 @@ subcategories:
         eu_class: { mdd: I, mdr: IIa } # MDR rule 11 up-classifies most diagnostic software
         predicate_from: "2018-02" # Viz.ai ContaCT, De Novo DEN170073, 13 Feb 2018: https://510k.innolitics.com/device/DEN170073
       - key: autonomous_diagnosis
-        label: Autonomous diagnosis
+        label: Autonomous screening (retina)
         us_class: { "2010-01": II } # IDx-DR, class II (DEN180001, above)
         eu_class: { mdd: I, mdr: IIb } # A: rule 11, decisions that may cause serious deterioration
         predicate_from: "2018-04" # IDx-DR, De Novo DEN180001, 11 Apr 2018, class II: https://public4.pagefreezer.com:443/content/FDA/01-03-2022T00:42/https://www.accessdata.fda.gov/cdrh_docs/pdf18/DEN180001.pdf
+      - key: autonomous_radiology
+        label: Autonomous radiology reporting
+        us_class: { "2010-01": II } # A: a novel diagnostic software function, class II by De Novo
+        eu_class: { mdd: I, mdr: IIb } # Oxipit ChestLink, the first autonomous chest X-ray AI, CE class IIb in March 2022 (A: from the company's announcement)
+        # no predicate: no autonomous radiology reporting authorised by the FDA by 2025 (A), so De Novo
 
 # --- Routes (50.2) ----------------------------------------------------------------------------
 # By regulator (regulation.yaml health_regulators). review: months from submission to a decision

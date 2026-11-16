@@ -115,5 +115,14 @@ METRICS: dict[str, MetricDef] = {
             "company",
             "The group against each regime's gatekeeper thresholds",
         ),
+        # v5 (M41): a medical filing's review range and a clinical study's cost
+        _m("medical_review", "Review range", "months", "product", "A filing's review, as a range"),
+        _m(
+            "study_cost",
+            "Study cost",
+            "cents",
+            "project",
+            "A clinical study's cost from its design",
+        ),
     )
 }
