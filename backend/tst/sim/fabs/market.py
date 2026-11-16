@@ -48,7 +48,12 @@ def nodes_file(data: GameData) -> NodesFile:
 
 def timeline(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
     """The seed's node timeline; from 2026 a Chinese foundry's reach after 2025 is the living
-    world's (41.5, M28: tst.sim.world.china) instead of its seeded lag."""
+    world's (41.5, M28: tst.sim.world.china) instead of its seeded lag, and (M35b) a rival
+    foundry's growth waits on its EUV deliveries (`euv_gated`)."""
+    return euv_gated(_china(state, balance, data), state, balance, data)
+
+
+def _china(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
     base = nd.timeline(state.save_meta.master_seed, nodes_file(data), balance.fab)
     if not state.china_lags:
         return base
@@ -71,6 +76,88 @@ def timeline(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
 
 _OVERLAY: dict[tuple[object, ...], nd.Timeline] = {}
 _OVERLAY_SIZE: Final = 256  # tunable-exempt: memo entries kept
+_GATED: dict[tuple[object, ...], nd.Timeline] = {}
+_RATIOS: dict[tuple[object, ...], dict[tuple[str, int], float]] = {}
+
+
+def euv_ratios(
+    state: GameState, tl: nd.Timeline, balance: Balance, data: GameData
+) -> dict[tuple[str, int], float]:
+    """(foundry, year) -> the share of its expected EUV tools ASML delivered in `year` (to this
+    month in the current year), for each rival foundry at an EUV-only node (one in a queued
+    generation's nodes and not in an unqueued one's) from equipment.start (M35b): expected is
+    its buyer share x the generation's capacity that year, pro rata to the months played."""
+    from tst.sim.equipment import data as ed
+
+    if not ed.enabled(data) or state.turn < balance.equipment.start_turn:
+        return {}
+    memo = (
+        id(tl),
+        state.turn,
+        len(state.tool_deliveries),
+        state.tool_deliveries[-1] if state.tool_deliveries else None,
+        state.supplier_years,
+    )
+    hit = _RATIOS.get(memo)
+    if hit is not None:
+        return hit
+    if len(_RATIOS) > _OVERLAY_SIZE:
+        _RATIOS.clear()
+    _RATIOS[memo] = out = _ratios(state, tl, balance, data)
+    return out
+
+
+def _ratios(
+    state: GameState, tl: nd.Timeline, balance: Balance, data: GameData
+) -> dict[tuple[str, int], float]:
+    from tst.sim.equipment import data as ed
+
+    ef = ed.equipment_file(data)
+    queued = ef.queued()
+    duv = {n for g in ef.generations if not g.queued for n in g.nodes}
+    euv_only = {n for g in queued for n in g.nodes} - duv
+    first = ed.year_of(balance.equipment.start_turn)
+    now = ed.year_of(state.turn)
+    got: dict[tuple[str, int], int] = {}
+    for d in state.tool_deliveries:
+        y = ed.year_of(d.turn)
+        if d.company_id is None and y >= first and d.turn <= state.turn:
+            got[(d.buyer, y)] = got.get((d.buyer, y), 0) + d.tools
+    out: dict[tuple[str, int], float] = {}
+    for f in nodes_file(data).foundries:
+        for y in range(first, now + 1):
+            if not any(tl.foundry_has(f.key, n, ed.year_turn(y)) for n in euv_only):
+                continue
+            months = MONTHS if y < now else state.turn - ed.year_turn(y) + 1
+            expected = (
+                sum(g.buyers.get(f.key, 0.0) * ed.capacity(state, g, y) for g in queued)
+                * months
+                / MONTHS
+            )
+            if expected <= 0:
+                continue
+            out[(f.key, y)] = min(1.0, got.get((f.key, y), 0) / expected)
+    return out
+
+
+def euv_gated(tl: nd.Timeline, state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
+    """`tl` with each gated (foundry, year)'s growth x (1 - s + s x ratio), s
+    `equipment.rival_growth.euv_share` (M35b; module docstring of euv_ratios)."""
+    ratios = euv_ratios(state, tl, balance, data)
+    if not ratios:
+        return tl
+    key = (id(tl), tuple(sorted(ratios.items())))
+    out = _GATED.get(key)
+    if out is None:
+        if len(_GATED) > _OVERLAY_SIZE:
+            _GATED.clear()
+        s = balance.equipment.rival_growth.euv_share
+        growth = dict(tl.growth)
+        for k, r in ratios.items():
+            if k in growth:
+                growth[k] = growth[k] * (1 - s + s * r)
+        out = _GATED[key] = replace(tl, growth=growth)
+    return out
 
 
 def player_slots(state: GameState) -> float:
