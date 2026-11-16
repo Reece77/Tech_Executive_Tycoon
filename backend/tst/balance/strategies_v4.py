@@ -17,8 +17,8 @@ numbers describe the scripts, not the game, so they live here rather than in bal
   sold as cloud hosting (22.3, SellCapacity) at 0.9x the reference price.
 - **power_hyperscaler** (46): cloud_steady, but from stage 4 (owned plants unlock, 46.2) each
   new data centre is sited by power (the build screen's rows, 46.6: the most reliable grid
-  among the cities that serve its home market, then home, then the cheapest) and, when it would
-  queue (above power.queue.min_mw), comes with a plant behind its meter sized to its whole load
+  among the cities that serve its home market, then home, then the cheapest) and, when it would queue
+  (above power.queue.min_mw), comes with a plant behind its meter sized to its whole load
   (46.3: such a load skips the queue): the type whose whole-load size costs least a year.
 - **litho_bet** (47): M23b's full_integrator, which from its fab's first month funds a
   lithography research unit (47.4's domain; 120 researchers, litho_2's staff) once it has formed
