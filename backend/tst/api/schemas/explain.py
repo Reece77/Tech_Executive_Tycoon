@@ -44,6 +44,8 @@ class ExplainOut(BaseModel):
         "mine",
         "fab",
         "refinery",
+        "region",
+        "plant",  # M32
         "order",  # M33: a tool order in ASML's queue
     ]
     entity: str | None = None

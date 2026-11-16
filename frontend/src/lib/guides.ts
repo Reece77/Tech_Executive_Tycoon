@@ -180,6 +180,15 @@ export const GUIDES: Record<string, Guide> = {
       "Apps sold through stores pay the stores' fees; from 2026 a store can remove an app, and you answer it as a critical event.",
     ],
   },
+  power: {
+    title: 'Power',
+    path: 'products/power',
+    what: 'Electricity for your data centres, fabs, mines and refineries: grid prices, carbon and outages by region, power contracts (PPAs) with generators, and from stage 4 plants of your own.',
+    start: [
+      'From 2026 a large data centre or fab waits in its grid queue for years in congested regions; a plant behind its meter that covers the whole load skips the queue.',
+      'A PPA fixes the price of a volume for 5-20 years; energy you do not use still pays 70%.',
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',

@@ -24,7 +24,7 @@ class TerminationQuoteOut(BaseModel):
 
 
 class TerminateIn(BaseModel):
-    contract: str = Field(description="commodity, refining, production, mine or foundry")
+    contract: str = Field(description="commodity, refining, production, mine, foundry or ppa")
     contract_id: int
 
 

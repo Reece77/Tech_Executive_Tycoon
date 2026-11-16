@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { DataTable } from '../components/DataTable';
 import { KpiTile } from '../components/KpiTile';
+import { SitingPanel } from '../components/SitingPanel';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useBuildPreview,
@@ -545,6 +546,7 @@ function BuildDialog({
             )}
           </div>
         )}
+        <SitingPanel saveId={saveId} kind={kind} size={units} region={region} />
         <p className="tst-muted" style={{ margin: 0 }}>
           Energy {infra.build_energy}
         </p>

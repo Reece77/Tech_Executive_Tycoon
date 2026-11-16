@@ -24785,6 +24785,638 @@
         }
       }
     },
+    "/api/saves/{save_id}/power": {
+      "get": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Get Power",
+        "description": "Energy by region (demand, supply mix, cost, emissions), plants, contracts, queues,\noutages that happened, plant types' published costs and the generators to contract with.",
+        "operationId": "getPower",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/plants/{facility_id}": {
+      "get": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Get Plant",
+        "operationId": "getPowerPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerPlantOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/siting": {
+      "get": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Get Siting",
+        "description": "46.6: each candidate city's grid price, queue wait, carbon price, outage rate and\nbehind-the-meter option for a data centre or fab of `kind` and `capacity`.",
+        "operationId": "getSiting",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "capacity",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Capacity"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/quote/plant": {
+      "get": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Quote Plant",
+        "operationId": "quotePowerPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "plant_type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plant Type"
+            }
+          },
+          {
+            "name": "mw",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Mw"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "site_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlantQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/quote/ppa": {
+      "get": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Quote Ppa",
+        "operationId": "quotePpa",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          },
+          {
+            "name": "producer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Producer"
+            }
+          },
+          {
+            "name": "mwh_month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "title": "Mwh Month"
+            }
+          },
+          {
+            "name": "years",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Years"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PpaQuoteOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/plants": {
+      "post": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Build Plant",
+        "operationId": "buildPowerPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildPlantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/power/ppas": {
+      "post": {
+        "tags": [
+          "power"
+        ],
+        "summary": "Sign Ppa",
+        "operationId": "signPpa",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignPpaIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -28218,6 +28850,51 @@
           "project_id"
         ],
         "title": "BuildMineIn"
+      },
+      "BuildPlantIn": {
+        "properties": {
+          "plant_type": {
+            "type": "string",
+            "title": "Plant Type"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "site_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_type",
+          "mw",
+          "region"
+        ],
+        "title": "BuildPlantIn"
       },
       "BuildPreviewOut": {
         "properties": {
@@ -34637,6 +35314,8 @@
               "mine",
               "fab",
               "refinery",
+              "region",
+              "plant",
               "order"
             ],
             "title": "Scope"
@@ -39182,6 +39861,29 @@
           "country"
         ],
         "title": "GreyRouteIn"
+      },
+      "GridOutageOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "region",
+          "region_label"
+        ],
+        "title": "GridOutageOut"
       },
       "GroupActionOut": {
         "properties": {
@@ -49277,6 +49979,79 @@
         ],
         "title": "PlantIn"
       },
+      "PlantMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "output_mwh": {
+            "type": "number",
+            "title": "Output Mwh"
+          },
+          "used_mwh": {
+            "type": "number",
+            "title": "Used Mwh"
+          },
+          "exported_mwh": {
+            "type": "number",
+            "title": "Exported Mwh"
+          },
+          "curtailed_mwh": {
+            "type": "number",
+            "title": "Curtailed Mwh"
+          },
+          "fuel_cents": {
+            "type": "integer",
+            "title": "Fuel Cents"
+          },
+          "om_cents": {
+            "type": "integer",
+            "title": "Om Cents"
+          },
+          "carbon_cents": {
+            "type": "integer",
+            "title": "Carbon Cents"
+          },
+          "grid_charge_cents": {
+            "type": "integer",
+            "title": "Grid Charge Cents"
+          },
+          "export_cents": {
+            "type": "integer",
+            "title": "Export Cents"
+          },
+          "displaced_cents": {
+            "type": "integer",
+            "title": "Displaced Cents"
+          },
+          "tonnes": {
+            "type": "number",
+            "title": "Tonnes"
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "output_mwh",
+          "used_mwh",
+          "exported_mwh",
+          "curtailed_mwh",
+          "fuel_cents",
+          "om_cents",
+          "carbon_cents",
+          "grid_charge_cents",
+          "export_cents",
+          "displaced_cents",
+          "tonnes",
+          "offline"
+        ],
+        "title": "PlantMonthOut"
+      },
       "PlantOut": {
         "properties": {
           "facility_id": {
@@ -49468,6 +50243,120 @@
         ],
         "title": "PlantOut"
       },
+      "PlantQuoteOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "monthly_capex_cents": {
+            "type": "integer",
+            "title": "Monthly Capex Cents"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "ready_turn": {
+            "type": "integer",
+            "title": "Ready Turn"
+          },
+          "capacity_factor": {
+            "type": "number",
+            "title": "Capacity Factor"
+          },
+          "mwh_year": {
+            "type": "number",
+            "title": "Mwh Year"
+          },
+          "levelised_usd_mwh": {
+            "type": "number",
+            "title": "Levelised Usd Mwh"
+          },
+          "intensity": {
+            "type": "number",
+            "title": "Intensity"
+          },
+          "behind_meter": {
+            "type": "boolean",
+            "title": "Behind Meter"
+          },
+          "queue_lo_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Lo Months"
+          },
+          "queue_hi_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Hi Months"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "label",
+          "mw",
+          "region",
+          "capex_cents",
+          "monthly_capex_cents",
+          "build_months",
+          "ready_turn",
+          "capacity_factor",
+          "mwh_year",
+          "levelised_usd_mwh",
+          "intensity",
+          "behind_meter",
+          "queue_lo_months",
+          "queue_hi_months",
+          "allowed",
+          "reason"
+        ],
+        "title": "PlantQuoteOut"
+      },
       "PlantStaffIn": {
         "properties": {
           "unit_id": {
@@ -49487,6 +50376,68 @@
           "unit_id"
         ],
         "title": "PlantStaffIn"
+      },
+      "PlantTypeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "capex_kw_usd": {
+            "type": "number",
+            "title": "Capex Kw Usd",
+            "description": "This year's published $/kW (2010 dollars)"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available",
+            "description": "An SMR only from its era"
+          },
+          "life_years": {
+            "type": "integer",
+            "title": "Life Years"
+          },
+          "intensity": {
+            "type": "number",
+            "title": "Intensity"
+          },
+          "levelised": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Levelised",
+            "description": "Region -> a new plant's $/MWh"
+          },
+          "capacity_factor": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Capacity Factor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "capex_kw_usd",
+          "build_months",
+          "available",
+          "life_years",
+          "intensity",
+          "levelised",
+          "capacity_factor"
+        ],
+        "title": "PlantTypeOut"
       },
       "PlatformOut": {
         "properties": {
@@ -50065,6 +51016,100 @@
         "title": "PortfolioOut",
         "description": "The Products screen's tiles: the company's revenue and product costs."
       },
+      "PowerActionOut": {
+        "properties": {
+          "power": {
+            "$ref": "#/components/schemas/PowerScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "power",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PowerActionOut"
+      },
+      "PowerMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "demand_mwh": {
+            "type": "number",
+            "title": "Demand Mwh"
+          },
+          "plant_mwh": {
+            "type": "number",
+            "title": "Plant Mwh"
+          },
+          "ppa_mwh": {
+            "type": "number",
+            "title": "Ppa Mwh"
+          },
+          "grid_mwh": {
+            "type": "number",
+            "title": "Grid Mwh"
+          },
+          "exported_mwh": {
+            "type": "number",
+            "title": "Exported Mwh"
+          },
+          "grid_cents": {
+            "type": "integer",
+            "title": "Grid Cents"
+          },
+          "net_cents": {
+            "type": "integer",
+            "title": "Net Cents"
+          },
+          "scope1_tonnes": {
+            "type": "number",
+            "title": "Scope1 Tonnes"
+          },
+          "scope2_tonnes": {
+            "type": "number",
+            "title": "Scope2 Tonnes"
+          },
+          "outage": {
+            "type": "boolean",
+            "title": "Outage"
+          },
+          "wafers_lost": {
+            "type": "number",
+            "title": "Wafers Lost"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "region",
+          "demand_mwh",
+          "plant_mwh",
+          "ppa_mwh",
+          "grid_mwh",
+          "exported_mwh",
+          "grid_cents",
+          "net_cents",
+          "scope1_tonnes",
+          "scope2_tonnes",
+          "outage",
+          "wafers_lost"
+        ],
+        "title": "PowerMonthOut"
+      },
       "PowerOut": {
         "properties": {
           "region": {
@@ -50096,6 +51141,655 @@
           "history"
         ],
         "title": "PowerOut"
+      },
+      "PowerPlantOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "type_label": {
+            "type": "string",
+            "title": "Type Label"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "site_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Id",
+            "description": "Behind the meter of this facility"
+          },
+          "site_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "building, waiting for the grid, live, or offline"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "The quoted capex"
+          },
+          "paid_cents": {
+            "type": "integer",
+            "title": "Paid Cents",
+            "description": "Capex paid so far (an overrun shows as it is paid)"
+          },
+          "expected_turn": {
+            "type": "integer",
+            "title": "Expected Turn",
+            "description": "The month it is expected to generate (it slips)"
+          },
+          "live_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live Turn"
+          },
+          "queue_lo_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Lo Months"
+          },
+          "queue_hi_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Hi Months"
+          },
+          "queued_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued Months",
+            "description": "Months in the grid queue so far"
+          },
+          "capacity_factor": {
+            "type": "number",
+            "title": "Capacity Factor"
+          },
+          "mwh_year": {
+            "type": "number",
+            "title": "Mwh Year"
+          },
+          "levelised_usd_mwh": {
+            "type": "number",
+            "title": "Levelised Usd Mwh",
+            "description": "A new plant of this type here, $/MWh"
+          },
+          "intensity": {
+            "type": "number",
+            "title": "Intensity"
+          },
+          "outage_until": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outage Until"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlantMonthOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "type",
+          "type_label",
+          "mw",
+          "region",
+          "region_label",
+          "city",
+          "site_id",
+          "site_name",
+          "status",
+          "estimate_cents",
+          "paid_cents",
+          "expected_turn",
+          "live_turn",
+          "queue_lo_months",
+          "queue_hi_months",
+          "queued_months",
+          "capacity_factor",
+          "mwh_year",
+          "levelised_usd_mwh",
+          "intensity",
+          "outage_until",
+          "month"
+        ],
+        "title": "PowerPlantOut"
+      },
+      "PowerRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "grid_usd_mwh": {
+            "type": "number",
+            "title": "Grid Usd Mwh",
+            "description": "This month's grid price, $/MWh (2010 dollars)"
+          },
+          "carbon_usd_t": {
+            "type": "number",
+            "title": "Carbon Usd T",
+            "description": "This month's carbon price, $/t"
+          },
+          "intensity": {
+            "type": "number",
+            "title": "Intensity",
+            "description": "The grid's tCO2 a MWh"
+          },
+          "queue_lo_months": {
+            "type": "number",
+            "title": "Queue Lo Months",
+            "description": "The grid queue's wait, low end of the range"
+          },
+          "queue_hi_months": {
+            "type": "number",
+            "title": "Queue Hi Months"
+          },
+          "outages_a_year": {
+            "type": "number",
+            "title": "Outages A Year",
+            "description": "Grid outages a year a site sees"
+          },
+          "demand_mwh": {
+            "type": "number",
+            "title": "Demand Mwh",
+            "description": "Last month's metered energy"
+          },
+          "plant_mwh": {
+            "type": "number",
+            "title": "Plant Mwh"
+          },
+          "ppa_mwh": {
+            "type": "number",
+            "title": "Ppa Mwh"
+          },
+          "grid_mwh": {
+            "type": "number",
+            "title": "Grid Mwh"
+          },
+          "exported_mwh": {
+            "type": "number",
+            "title": "Exported Mwh"
+          },
+          "peak_mw": {
+            "type": "number",
+            "title": "Peak Mw"
+          },
+          "grid_cents": {
+            "type": "integer",
+            "title": "Grid Cents",
+            "description": "Last month's energy at the grid price"
+          },
+          "net_cents": {
+            "type": "integer",
+            "title": "Net Cents",
+            "description": "Last month's energy cost after plants, PPAs and exports"
+          },
+          "scope1_tonnes": {
+            "type": "number",
+            "title": "Scope1 Tonnes"
+          },
+          "scope2_tonnes": {
+            "type": "number",
+            "title": "Scope2 Tonnes"
+          },
+          "cheapest_plant": {
+            "type": "string",
+            "title": "Cheapest Plant"
+          },
+          "cheapest_usd_mwh": {
+            "type": "number",
+            "title": "Cheapest Usd Mwh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "grid_usd_mwh",
+          "carbon_usd_t",
+          "intensity",
+          "queue_lo_months",
+          "queue_hi_months",
+          "outages_a_year",
+          "demand_mwh",
+          "plant_mwh",
+          "ppa_mwh",
+          "grid_mwh",
+          "exported_mwh",
+          "peak_mw",
+          "grid_cents",
+          "net_cents",
+          "scope1_tonnes",
+          "scope2_tonnes",
+          "cheapest_plant",
+          "cheapest_usd_mwh"
+        ],
+        "title": "PowerRegionOut"
+      },
+      "PowerScreenOut": {
+        "properties": {
+          "unlocked": {
+            "type": "boolean",
+            "title": "Unlocked",
+            "description": "Owned plants (stage 4)"
+          },
+          "min_stage": {
+            "type": "integer",
+            "title": "Min Stage"
+          },
+          "sizes_mw": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Sizes Mw"
+          },
+          "ppa_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Ppa Years"
+          },
+          "take_or_pay": {
+            "type": "number",
+            "title": "Take Or Pay"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/PowerRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/PowerMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/PowerPlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "ppas": {
+            "items": {
+              "$ref": "#/components/schemas/PpaOut"
+            },
+            "type": "array",
+            "title": "Ppas"
+          },
+          "queue": {
+            "items": {
+              "$ref": "#/components/schemas/QueueOut"
+            },
+            "type": "array",
+            "title": "Queue"
+          },
+          "outages": {
+            "items": {
+              "$ref": "#/components/schemas/GridOutageOut"
+            },
+            "type": "array",
+            "title": "Outages"
+          },
+          "plant_types": {
+            "items": {
+              "$ref": "#/components/schemas/PlantTypeOut"
+            },
+            "type": "array",
+            "title": "Plant Types"
+          },
+          "sellers": {
+            "items": {
+              "$ref": "#/components/schemas/SellerOut"
+            },
+            "type": "array",
+            "title": "Sellers"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/SiteOptionOut"
+            },
+            "type": "array",
+            "title": "Sites",
+            "description": "The company's data centres and fabs"
+          },
+          "scope1_year": {
+            "type": "number",
+            "title": "Scope1 Year"
+          },
+          "scope2_year": {
+            "type": "number",
+            "title": "Scope2 Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unlocked",
+          "min_stage",
+          "sizes_mw",
+          "ppa_years",
+          "take_or_pay",
+          "regions",
+          "history",
+          "plants",
+          "ppas",
+          "queue",
+          "outages",
+          "plant_types",
+          "sellers",
+          "sites",
+          "scope1_year",
+          "scope2_year"
+        ],
+        "title": "PowerScreenOut"
+      },
+      "PowerSiteOut": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "price_usd_mwh": {
+            "type": "number",
+            "title": "Price Usd Mwh"
+          },
+          "queue_lo_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Lo Months"
+          },
+          "queue_hi_months": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Hi Months"
+          },
+          "carbon_usd_t": {
+            "type": "number",
+            "title": "Carbon Usd T"
+          },
+          "outages_a_year": {
+            "type": "number",
+            "title": "Outages A Year"
+          },
+          "behind_meter": {
+            "type": "boolean",
+            "title": "Behind Meter"
+          },
+          "cheapest_plant": {
+            "type": "string",
+            "title": "Cheapest Plant"
+          },
+          "cheapest_usd_mwh": {
+            "type": "number",
+            "title": "Cheapest Usd Mwh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "label",
+          "region",
+          "region_label",
+          "price_usd_mwh",
+          "queue_lo_months",
+          "queue_hi_months",
+          "carbon_usd_t",
+          "outages_a_year",
+          "behind_meter",
+          "cheapest_plant",
+          "cheapest_usd_mwh"
+        ],
+        "title": "PowerSiteOut"
+      },
+      "PpaOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "producer": {
+            "type": "string",
+            "title": "Producer"
+          },
+          "producer_name": {
+            "type": "string",
+            "title": "Producer Name"
+          },
+          "mwh_month": {
+            "type": "number",
+            "title": "Mwh Month"
+          },
+          "price_usd_mwh": {
+            "type": "number",
+            "title": "Price Usd Mwh"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "end_turn": {
+            "type": "integer",
+            "title": "End Turn"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "used_mwh": {
+            "type": "number",
+            "title": "Used Mwh"
+          },
+          "paid_cents": {
+            "type": "integer",
+            "title": "Paid Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "region_label",
+          "producer",
+          "producer_name",
+          "mwh_month",
+          "price_usd_mwh",
+          "start_turn",
+          "end_turn",
+          "status",
+          "used_mwh",
+          "paid_cents"
+        ],
+        "title": "PpaOut"
+      },
+      "PpaQuoteOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "producer": {
+            "type": "string",
+            "title": "Producer"
+          },
+          "producer_name": {
+            "type": "string",
+            "title": "Producer Name"
+          },
+          "mwh_month": {
+            "type": "number",
+            "title": "Mwh Month"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          },
+          "price_usd_mwh": {
+            "type": "number",
+            "title": "Price Usd Mwh"
+          },
+          "forward_usd_mwh": {
+            "type": "number",
+            "title": "Forward Usd Mwh"
+          },
+          "start_turn": {
+            "type": "integer",
+            "title": "Start Turn"
+          },
+          "end_turn": {
+            "type": "integer",
+            "title": "End Turn"
+          },
+          "monthly_cents": {
+            "type": "integer",
+            "title": "Monthly Cents"
+          },
+          "minimum_cents": {
+            "type": "integer",
+            "title": "Minimum Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "producer",
+          "producer_name",
+          "mwh_month",
+          "years",
+          "price_usd_mwh",
+          "forward_usd_mwh",
+          "start_turn",
+          "end_turn",
+          "monthly_cents",
+          "minimum_cents"
+        ],
+        "title": "PpaQuoteOut"
       },
       "PrecedentOut": {
         "properties": {
@@ -52147,6 +53841,71 @@
           "ceo"
         ],
         "title": "PublicOut"
+      },
+      "QueueOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          },
+          "joined_turn": {
+            "type": "integer",
+            "title": "Joined Turn"
+          },
+          "lo_months": {
+            "type": "number",
+            "title": "Lo Months"
+          },
+          "hi_months": {
+            "type": "number",
+            "title": "Hi Months"
+          },
+          "connected_turn": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connected Turn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "facility_id",
+          "name",
+          "kind",
+          "region",
+          "mw",
+          "joined_turn",
+          "lo_months",
+          "hi_months",
+          "connected_turn"
+        ],
+        "title": "QueueOut"
       },
       "RaiseIn": {
         "properties": {
@@ -56709,6 +58468,34 @@
         ],
         "title": "SellSharesIn"
       },
+      "SellerOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "forward_usd_mwh": {
+            "type": "number",
+            "title": "Forward Usd Mwh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "key",
+          "name",
+          "forward_usd_mwh"
+        ],
+        "title": "SellerOut"
+      },
       "SeriesGuideOut": {
         "properties": {
           "series": {
@@ -56930,6 +58717,79 @@
         ],
         "title": "SharesIn"
       },
+      "SignPpaIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "producer": {
+            "type": "string",
+            "title": "Producer"
+          },
+          "mwh_month": {
+            "type": "number",
+            "title": "Mwh Month"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "producer",
+          "mwh_month",
+          "years"
+        ],
+        "title": "SignPpaIn"
+      },
+      "SiteOptionOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "kind",
+          "region",
+          "city",
+          "mw"
+        ],
+        "title": "SiteOptionOut"
+      },
       "SiteOut": {
         "properties": {
           "company_id": {
@@ -56972,6 +58832,38 @@
           "partner_needed"
         ],
         "title": "SiteOut"
+      },
+      "SitingOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "size": {
+            "type": "number",
+            "title": "Size",
+            "description": "The planned facility's capacity in its kind's unit"
+          },
+          "mw": {
+            "type": "number",
+            "title": "Mw"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/PowerSiteOut"
+            },
+            "type": "array",
+            "title": "Sites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "size",
+          "mw",
+          "sites"
+        ],
+        "title": "SitingOut"
       },
       "SkillMetaOut": {
         "properties": {
@@ -59308,7 +61200,7 @@
           "contract": {
             "type": "string",
             "title": "Contract",
-            "description": "commodity, refining, production, mine or foundry"
+            "description": "commodity, refining, production, mine, foundry or ppa"
           },
           "contract_id": {
             "type": "integer",

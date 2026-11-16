@@ -57,7 +57,7 @@ def estimate(
     input_cents = (
         rg.price_cents(state, r.input_good, balance, data) * per_in if r.input_good else 0.0
     )
-    index = power_index(state, region, data)
+    index = power_index(state, region, balance, data)
     power = rf.power_cents(r.mwh_per_unit, rb.power_cents_per_mwh, index)
     out_year = size * r.per_capacity_unit * eff / r.yield_
     fixed = size * r.fixed_cents / out_year if out_year else 0.0

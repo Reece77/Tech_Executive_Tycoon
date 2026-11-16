@@ -331,6 +331,8 @@ from tst.sim.platforms.actions import (
     SetSteering,
     apply_platforms,
 )
+from tst.sim.power.actions import ACTION_TYPES as POWER_ACTION_TYPES
+from tst.sim.power.actions import BuildPlant, PowerAction, SignPpa, apply_power
 from tst.sim.refining.actions import ACTION_TYPES as REFINING_ACTION_TYPES
 from tst.sim.refining.actions import (
     BuildRefinery,
@@ -385,6 +387,7 @@ type Action = (
     | AutomationAction  # M27a
     | FamilyAction  # M36
     | PlatformAction  # M31
+    | PowerAction  # M32
     | RegulationAction  # M34
     | EquipmentAction  # M33
 )
@@ -402,6 +405,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "request_tool_licence": RequestToolLicence,  # M22 (39.3, the M21 merge)
     **MINING_ACTION_TYPES,  # M19 (35.1-35.3)
     **PLATFORM_ACTION_TYPES,  # M31 (44)
+    **POWER_ACTION_TYPES,  # M32 (46)
     **REGULATION_ACTION_TYPES,  # M34 (48)
     **EQUIPMENT_ACTION_TYPES,  # M33 (47)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
@@ -520,6 +524,7 @@ __all__ = [
     "BackStartup",
     "BuildFab",
     "BuildFacility",
+    "BuildPlant",
     "BuildRefinery",
     "BuyOutMinorities",
     "BuyStake",
@@ -609,6 +614,7 @@ __all__ = [
     "SignContract",
     "SignManufacturingContract",
     "SignOfftake",
+    "SignPpa",
     "SignRefiningDeal",
     "SignWaferContract",
     "SpinOff",
@@ -927,6 +933,8 @@ def apply_action(
             | AdoptStandard()
         ):  # M31 (44)
             out = apply_platforms(state, action, balance, data)
+        case BuildPlant() | SignPpa():  # M32 (46.2)
+            out = apply_power(state, action, ledger_balances, balance, data)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():

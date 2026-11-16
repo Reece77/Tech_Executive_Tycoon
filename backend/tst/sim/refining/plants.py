@@ -151,10 +151,11 @@ def staff_cents(state: GameState, facility: Facility, balance: Balance) -> int:
     return sum(e.salary_cents for e in lifecycle.staff_of(state, facility, balance)) // MONTHS
 
 
-def power_index(state: GameState, region: str, data: GameData) -> float:
-    from tst.sim.commodities import power
+def power_index(state: GameState, region: str, balance: Balance, data: GameData) -> float:
+    """The region's grid multiple on refining.power_cents_per_mwh (46.2, ADR-0022 1)."""
+    from tst.sim.power import grid
 
-    return power.index(state, region, data)
+    return grid.multiplier(state, region, balance, data)
 
 
 # --- Ledger helpers --------------------------------------------------------------------------
@@ -320,7 +321,7 @@ def _run_plant(
     cap = month_capacity(state, facility, ref, balance, data)
     per_in = rf.input_per_output(r.input_per_output, r.yield_, eff)
     market = rg.price_cents(state, r.output_good, balance, data)
-    p_index = power_index(state, facility.region, data)
+    p_index = power_index(state, facility.region, balance, data)
     group_in = contract_in = spot_in = short = 0.0
     group_cents = contract_cents = spot_cents = 0.0
     if r.input_good is None:
@@ -397,6 +398,7 @@ def _run_plant(
             input_cents=input_cents,
             power_cents=power,
             power_index=p_index,
+            energy_mwh=output * r.mwh_per_unit,
             other_cents=other,
             fixed_cents=fixed,
             depreciation_cents=depreciation,

@@ -17,11 +17,6 @@ from tests.money_guard import Hit, scan
 # drops out (see the last test).
 DEFERRED: dict[tuple[str, str], str] = {
     (
-        "fabs/plants.py",
-        "return mwh * balance.refining.power_cents_per_mwh * power.index(state, facility.region,"
-        " data)",
-    ): "M32 (a rate)",
-    (
         "mining/phase.py",
         "sustaining = mb.sustaining_share * mine.capex_paid_cents / CENTS / 12 if running else 0.0",
     ): "M32",

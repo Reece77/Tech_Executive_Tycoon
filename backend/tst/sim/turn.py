@@ -73,6 +73,7 @@ from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
 from tst.sim.platforms import month as platform_month
+from tst.sim.power import phase as power
 from tst.sim.press.phase import press_month
 from tst.sim.products import phases as products
 from tst.sim.products.models import ProductMonth
@@ -285,6 +286,9 @@ def research_progress(ctx: TurnContext) -> TurnContext:
 def production_and_capacity(ctx: TurnContext) -> TurnContext:
     """Phase 4 (M12a, 22): component indexes, contracts, facilities' capex, completion and
     depreciation, and the Cloud hosting product's quality and features."""
+    # M32 (46): draws, paths, queues, grid outages and plants, before facilities run
+    state, power_entries, power_logs = power.power_start(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*power_entries).log(*power_logs)
     state, entries, logs = production_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
     # M18 (34.2-34.3): exploration stages report, holes are drilled, permits run.
@@ -336,7 +340,12 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     months = division_months(ctx.state)  # headcounts for the division statements (M8)
     ctx = replace(ctx, payroll=payroll, division_months=months).post(*entries)
     state, outage_logs = outages_month(ctx.state, ctx.rng, ctx.balance, ctx.data)  # M12a (22.5)
-    return replace(ctx, state=state).log(*outage_logs)
+    ctx = replace(ctx, state=state).log(*outage_logs)
+    # M32 (46.2, ADR-0022 3): the power settlement, after every facility posted its energy
+    state, power_entries, power_logs = power.power_end(
+        ctx.state, ctx.balance, ctx.data, ctx.balances
+    )
+    return replace(ctx, state=state).post(*power_entries).log(*power_logs)
 
 
 def financing(ctx: TurnContext) -> TurnContext:

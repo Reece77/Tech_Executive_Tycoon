@@ -4324,6 +4324,65 @@ def platforms_cmd(
         )
 
 
+@app.command("power")
+def power_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="One region key; default every region")] = None,
+) -> None:
+    """Power (M32, 46): grid prices, carbon, queues and outages by region; your energy, plants,
+    contracts and emissions."""
+    from tst.api import power_views
+
+    _, data, state = _game(save)
+    p = power_views.power_out(state, data)
+    typer.echo(
+        f"{format_turn(state.turn)}: owned plants "
+        + ("unlocked" if p.unlocked else f"unlock at stage {p.min_stage}")
+        + f"; emissions this year: scope 1 {p.scope1_year:,.0f} t, scope 2 {p.scope2_year:,.0f} t"
+    )
+    for r in p.regions:
+        if region and r.region != region:
+            continue
+        typer.echo(
+            f"{r.label}: grid ${r.grid_usd_mwh:,.1f}/MWh, carbon ${r.carbon_usd_t:,.1f}/t, queue"
+            f" {r.queue_lo_months:.0f}-{r.queue_hi_months:.0f} months, outages"
+            f" {r.outages_a_year:.1f} a year; cheapest new plant {r.cheapest_plant}"
+            f" ${r.cheapest_usd_mwh:,.1f}/MWh"
+        )
+        if r.demand_mwh:
+            typer.echo(
+                f"  energy {r.demand_mwh:,.0f} MWh ({r.peak_mw:,.1f} MW): plants"
+                f" {r.plant_mwh:,.0f}, PPAs {r.ppa_mwh:,.0f}, grid {r.grid_mwh:,.0f}, exported"
+                f" {r.exported_mwh:,.0f}; cost {format_money(r.net_cents)} (grid"
+                f" {format_money(r.grid_cents)})"
+            )
+    for pl in p.plants:
+        typer.echo(
+            f"  plant {pl.name}: {pl.status}, quoted {format_money(pl.estimate_cents)}, paid"
+            f" {format_money(pl.paid_cents)}"
+            + (f", behind {pl.site_name}" if pl.site_name else "")
+            + (
+                f", queue {pl.queue_lo_months:.0f}-{pl.queue_hi_months:.0f} months"
+                if pl.queue_lo_months is not None and pl.queue_hi_months is not None
+                else ""
+            )
+        )
+    for c in p.ppas:
+        typer.echo(
+            f"  PPA {c.id} {c.producer_name} ({c.region_label}): {c.mwh_month:,.0f} MWh a month at"
+            f" ${c.price_usd_mwh:,.1f}, {format_turn(c.start_turn)}-{format_turn(c.end_turn)},"
+            f" {c.status}"
+        )
+    for q in p.queue:
+        if q.connected_turn is None:
+            typer.echo(
+                f"  queued: {q.name} ({q.mw:,.0f} MW) since {format_turn(q.joined_turn)}, typical"
+                f" {q.lo_months:.0f}-{q.hi_months:.0f} months"
+            )
+    for o in p.outages[-6:]:
+        typer.echo(f"  grid outage: {o.region_label}, {format_turn(o.turn)}")
+
+
 @app.command("regulation")
 def regulation_cmd(
     save: SaveOpt,

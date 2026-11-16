@@ -187,6 +187,7 @@ from tst.db.models import (
 )
 from tst.db.modes_io import load_modes, sync_modes
 from tst.db.platforms_io import load_platforms, sync_platforms
+from tst.db.power_io import load_power, sync_power
 from tst.db.refining_io import load_refining, sync_refining
 from tst.db.regulation_io import load_regulation, sync_regulation
 from tst.db.world_io import load_world, sync_world
@@ -602,6 +603,7 @@ def load_state(session: Session) -> GameState:
     state = load_geopolitics(session, state, has_table)  # M22 (0047)
     state = load_world(session, state, has_table)  # M28 (0050)
     state = load_platforms(session, state, has_table)  # M31 (0051)
+    state = load_power(session, state, has_table)  # M32 (0057_m32)
     state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_equipment(session, state, has_table)  # M33 (0056_m33)
     state = load_mining(session, state, has_table)  # M19 (0043)
@@ -2185,6 +2187,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_geopolitics(session, old, new, has_table)  # M22 (0047)
     sync_world(session, old, new, has_table)  # M28 (0050)
     sync_platforms(session, old, new, has_table)  # M31 (0051)
+    sync_power(session, old, new, has_table)  # M32 (0057_m32)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_equipment(session, old, new, has_table)  # M33 (0056_m33)
     sync_mining(session, old, new, has_table)  # M19 (0043)

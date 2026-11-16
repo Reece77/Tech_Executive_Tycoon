@@ -43,7 +43,7 @@ def first_december(start: int) -> int:
 def end_turn(start: int, good: str, data: GameData) -> int:
     """The last month the pipeline adds capacity: the month before the first December's
     decisions on the good can land."""
-    return first_december(start) + wd.chain_file(data).build_months[good] - 1
+    return first_december(start) + wd.build_months(data, good) - 1
 
 
 def is_opening(f: WorldFacility) -> bool:
@@ -63,7 +63,7 @@ def _raw(
         then = sum(nd.capacity(tl, f, base, balance.fab) for f in named)
         now = sum(nd.capacity(tl, f, turn, balance.fab) for f in named)
         return now / then if then > 0 else 1.0
-    growth = wd.chain_file(data).demand_growth[good]
+    growth = wd.demand_growth(data, good)
     return float((1 + growth) ** ((turn - base) / MONTHS))
 
 

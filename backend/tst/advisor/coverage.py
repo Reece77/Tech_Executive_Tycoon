@@ -35,6 +35,10 @@ _RULE = exempt("a world rule's figure (a tariff, a share, an allocation) from it
 _PLATFORM = exempt(
     "a platform's public figure (users, a fee rate, a share) from the data or its month"
 )
+# M32 (46): power
+_POWER = exempt("a published power figure (a price, a rate, a factor) from power.yaml or its path")
+_QUEUE = exempt("the grid queue's wait as a range from the region's median, in its glossary")
+_EMISSIONS = exempt("tonnes of CO2: energy x the plant's or the grid's intensity, in the glossary")
 _REGULATION = exempt("a regulator's public figure (a threshold, a cap, a window) from its data")
 _TOOL = exempt(
     "a tool's published figure (price, throughput, uptime, capacity) from equipment.yaml"
@@ -120,6 +124,39 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
     "platforms.AppFeeOut": {"cents": "platform_fees"},
     "platforms.AppProductOut": {"fees_total_cents": "platform_fees"},
     "platforms.StandardOut": {"adoption": _PLATFORM},
+    # v4 (M32): the Power screen's regions and plants
+    "power.PowerRegionOut": {
+        "grid_usd_mwh": "energy_cost",
+        "carbon_usd_t": _POWER,
+        "intensity": _POWER,
+        "queue_lo_months": _QUEUE,
+        "queue_hi_months": _QUEUE,
+        "outages_a_year": _POWER,
+        "demand_mwh": _VOLUME,
+        "plant_mwh": _VOLUME,
+        "ppa_mwh": _VOLUME,
+        "grid_mwh": _VOLUME,
+        "exported_mwh": _VOLUME,
+        "peak_mw": _VOLUME,
+        "grid_cents": "energy_cost",
+        "net_cents": "energy_cost",
+        "scope1_tonnes": _EMISSIONS,
+        "scope2_tonnes": _EMISSIONS,
+        "cheapest_usd_mwh": _POWER,
+    },
+    "power.PowerPlantOut": {
+        "mw": _CAPACITY,
+        "estimate_cents": _CAPEX,
+        "paid_cents": _CAPEX,
+        "queue_lo_months": _QUEUE,
+        "queue_hi_months": _QUEUE,
+        "queued_months": _QUEUE,
+        "capacity_factor": _POWER,
+        "mwh_year": _POWER,
+        "levelised_usd_mwh": "plant_levelised",
+        "intensity": _POWER,
+        "outage_until": exempt("a forced outage's last month, from the plant outage inbox item"),
+    },
     # v4 (M33): the Equipment screen (47.6)
     "equipment.ToolGenerationOut": {
         "wph": _TOOL,

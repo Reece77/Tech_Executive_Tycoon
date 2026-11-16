@@ -375,6 +375,12 @@ class PlatformRuleError(SimError):
     code = "platform_rule"
 
 
+class PowerRuleError(SimError):
+    """A power action the rules do not allow (M32, formulas.md 46)."""
+
+    code = "power_rule"
+
+
 class EquipmentRuleError(SimError):
     """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
     formulas.md 47). The message never names an allocation weight or a programme's draws."""

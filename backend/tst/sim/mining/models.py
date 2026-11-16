@@ -33,6 +33,8 @@ class MineMonth:
     cost_usd_t: float  # cash cost a t (operating + royalty + sustaining): the all-in sustaining
     revenue_cents: int
     margin_cents: int  # revenue - cash costs
+    energy_mwh: float = 0.0  # M32 (46.1): the energy part of variable cost / the reference price
+    power_cents: int = 0  # M32: that energy at the grid price
 
 
 @dataclass(frozen=True, slots=True)

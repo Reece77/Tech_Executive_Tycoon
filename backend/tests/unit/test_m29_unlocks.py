@@ -51,6 +51,7 @@ def test_stages_open_screens(loaded: LoadedData) -> None:
             "fabs",
             "automation",  # M27a: the Automation screen opens at stage 3 (40.8)
             "platforms",  # M31
+            "power",  # M32: the Power screen opens at stage 4 (owned plants, 46.2)
         },
     }
     for stage, keys in expect.items():

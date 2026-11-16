@@ -6,7 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-type ContractKind = Literal["commodity", "refining", "production", "mine", "foundry"]
+type ContractKind = Literal["commodity", "refining", "production", "mine", "foundry", "ppa"]
 
 
 @dataclass(frozen=True, slots=True)

@@ -324,7 +324,10 @@ def build_fab(
         tools=tools,
         staff=q.staff_needed,
     )
-    return Outcome(state, tuple(entries), (log,))
+    from tst.sim.power.actions import after_order  # M32 (46.3): a large fab joins the queue
+
+    state, queued = after_order(state, facility, balance, data)
+    return Outcome(state, tuple(entries), (log, *queued))
 
 
 def _when(turn: int | None) -> str:

@@ -38,5 +38,7 @@ def operating_cents(
     live = facility.live_capacity(state.turn)
     if live <= 0:
         return 0
-    mult = kind_index(state, facility.kind, facility.region, balance, data)
+    from tst.sim.power import grid  # M32 (46.2): the grid multiple, M17's index to 2025
+
+    mult = grid.kind_multiplier(state, facility.kind, facility.region, balance, data)
     return round(opex_cents(live * kind.opex_per_unit_cents, mult)) + kind.fixed_opex_cents

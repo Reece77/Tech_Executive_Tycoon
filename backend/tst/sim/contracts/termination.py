@@ -43,6 +43,7 @@ from tst.sim.state import (
     with_commodity_deal,
     with_foundry_contract,
     with_mine_deal,
+    with_ppa,
     with_production_contract,
     with_refining_deal,
     with_relation,
@@ -50,7 +51,7 @@ from tst.sim.state import (
 
 MONTHS: Final = 12  # tunable-exempt: calendar
 PERCENT: Final = 100  # tunable-exempt: the base rate is a percentage
-KINDS: Final = ("commodity", "refining", "production", "mine", "foundry")
+KINDS: Final = ("commodity", "refining", "production", "mine", "foundry", "ppa")
 
 
 @dataclass(frozen=True, slots=True)
@@ -194,6 +195,13 @@ def _terms(
         value = exact(m.volume_t_year) / MONTHS * exact(m.last_usd_t or m.signing_usd_t) * 100
         share = exact(balance.contracts.mine_take_or_pay)
         return mine.company_id, m.buyer, m.end_turn, share * value, 0
+    if contract == "ppa":  # M32 (46.2): a power-purchase agreement's take-or-pay minimum
+        p = next((x for x in state.ppas if x.id == contract_id), None)
+        if p is None or p.company_id not in group or p.status != "active":
+            raise InvalidActionError(f"no running power contract {contract_id}")
+        ppa_share = exact(balance.power.ppa.take_or_pay)
+        value = exact(p.mwh_month) * exact(p.price_cents)
+        return p.company_id, f"power:{p.producer}", p.end_turn, ppa_share * value, 0
     f = next((x for x in state.foundry_contracts if x.id == contract_id), None)
     if f is None or f.company_id not in group or not f.running(state.turn):
         raise InvalidActionError(f"no running foundry contract {contract_id}")
@@ -249,6 +257,9 @@ def _end(state: GameState, contract: ContractKind, contract_id: int) -> GameStat
     if contract == "mine":
         m = next(x for x in state.mine_deals if x.id == contract_id)
         return with_mine_deal(state, replace(m, end_turn=last))
+    if contract == "ppa":
+        p = next(x for x in state.ppas if x.id == contract_id)
+        return with_ppa(state, replace(p, end_turn=last, status="terminated"))
     f = next(x for x in state.foundry_contracts if x.id == contract_id)
     return with_foundry_contract(state, replace(f, end_turn=last, status="ended"))
 

@@ -268,11 +268,18 @@ def fab_month(
             if fab.months_run > 0 or fab.live_turn < state.turn:
                 fab = _learn(state, fab, facility, rng, balance, data)
             staff = lifecycle.staffing(state, facility, balance)
+            available = (
+                facility.capacity * staff.coverage * _tools_factor(state, fab, balance, data)
+            )
+            # M32 (46.5): a grid outage scraps a share of the month's starts in progress
+            from tst.sim.power import outages as grid_outages
+
+            exposed = grid_outages.exposure(state, facility, balance, data)
+            lost = available * balance.power.outage.wafer_loss * exposed if exposed > 0 else 0.0
             month = replace(
                 month,
-                available=facility.capacity
-                * staff.coverage
-                * _tools_factor(state, fab, balance, data),
+                available=available - lost,
+                outage_starts=lost,
                 yield_=fab.yield_,
                 reliability=staff.reliability,
             )
@@ -308,15 +315,25 @@ def materials_cents(
     return (substrate + chemicals) * cost_mult(fab, balance)
 
 
+def power_mwh(state: GameState, fab: Fab, balance: Balance, data: GameData) -> float:
+    """MWh a wafer start at the fab's node (38.2; M32 46.1's draw)."""
+    tl = fm.timeline(state, balance, data)
+    pm = balance.fab.power_mwh
+    return fx.power_mwh(pm.base, pm.per_generation, tl.generation(fab.node))
+
+
 def _power_cents(
     state: GameState, fab: Fab, facility: Facility, balance: Balance, data: GameData
 ) -> float:
-    from tst.sim.commodities import power
+    """A start's energy at the region's grid price (46.2, ADR-0022 1)."""
+    from tst.sim.power import grid
 
-    tl = fm.timeline(state, balance, data)
-    pm = balance.fab.power_mwh
-    mwh = fx.power_mwh(pm.base, pm.per_generation, tl.generation(fab.node))
-    return mwh * balance.refining.power_cents_per_mwh * power.index(state, facility.region, data)
+    mwh = power_mwh(state, fab, balance, data)
+    return (
+        mwh  # money-exact: rate
+        * balance.refining.power_cents_per_mwh
+        * grid.multiplier(state, facility.region, balance, data)
+    )
 
 
 def _customers(data: GameData, starts: float) -> tuple[tuple[str, float], ...]:
@@ -427,6 +444,7 @@ def settle_fabs(
             fixed_cents=fixed,
             materials_cents=materials,
             power_cents=power_,
+            energy_mwh=run * power_mwh(state, fab, balance, data),
             staff_cents=staff,
             revenue_cents=revenue,
             slot_price_cents=slot,
