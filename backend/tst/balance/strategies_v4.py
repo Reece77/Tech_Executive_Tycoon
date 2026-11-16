@@ -259,7 +259,7 @@ PLANT_TYPES: Final = ("gas", "solar_storage", "wind")  # what the build screen r
 def _sited(game: Game, size: int) -> list[siting.Site]:
     """The build screen's cities for a data centre of `size` (46.6), best first: among the
     cities whose region serves the home market (19.5), the shortest queue (none when it would
-    not queue), then the cheapest grid."""
+    not queue), then the home region, then the cheapest grid."""
     b, g = game.loaded.balance, game.loaded.game_data
     home = compute.home_region_of(game.state, b, g)
     rows = [
@@ -267,7 +267,12 @@ def _sited(game: Game, size: int) -> list[siting.Site]:
         for s in siting.sites(game.state, PLAYER, DC_KIND, size, b, g)
         if compute.serves(home, s.region, g)
     ]
-    return sorted(rows, key=lambda s: (s.queue_hi or 0.0, s.price_usd_mwh, s.city))
+    # the home region first among equal waits (M35b, rule 2): before power binds (no queue)
+    # cheaper power alone moved every data centre to the neighbour region from 2017, where
+    # 22.5's outages and 46.5's least reliable grid cost the products it serves
+    return sorted(
+        rows, key=lambda s: (s.queue_hi or 0.0, s.region != home, s.price_usd_mwh, s.city)
+    )
 
 
 def _plant_size(game: Game, kind: str, region: str, load_mw: float) -> float:
