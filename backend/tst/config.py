@@ -31,6 +31,9 @@ class Settings(BaseSettings):
         default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TST_ANTHROPIC_API_KEY")
     )
 
+    # M35a: append each unhandled exception or 5xx response here as a JSON line (e2e sets it).
+    error_log: Path | None = None
+
     def resolved_save_dir(self) -> Path:
         """Relative TST_SAVE_DIR values are resolved against the repository root."""
         path = self.save_dir

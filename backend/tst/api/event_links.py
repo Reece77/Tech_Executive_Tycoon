@@ -13,6 +13,7 @@ from tst.sim.events.models import GameEvent
 from tst.sim.mining.actions import mine_name
 from tst.sim.state import GameState, group_members, listed_id
 
+GONE = "Someone who has left"  # a person no longer in the state (their Former profile)
 MAX_PEOPLE = 2  # tunable-exempt: a pair event names two people; more would crowd the card
 
 # A category's screen, when the event names nothing more specific.
@@ -89,8 +90,13 @@ def event_links(state: GameState, event: GameEvent, data: LoadedData) -> list[Ev
             if p.protest_turn == event.turn and p.company_id in _group(state):
                 add(f"products/exploration?project={p.id}", "The project")
     for pid in event.person_ids[:MAX_PEOPLE]:
-        person = state.person(pid)
-        add(f"people/{pid}", person_name(person))
+        # Someone who has left since the event (let go, resigned, retired) is no longer in
+        # the state; their link opens the Former employee profile (M35a: e2e's KeyError).
+        try:
+            label = person_name(state.person(pid))
+        except KeyError:
+            label = GONE
+        add(f"people/{pid}", label)
     if event.rival_id is not None:
         add(f"competitors/{event.rival_id}", state.company(event.rival_id).name)
     if event.loan_id is not None:

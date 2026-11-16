@@ -6,10 +6,10 @@ last month-end net worth."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance
 from tst.sim.state import GameState, foundation_of, life_of
 
@@ -41,7 +41,7 @@ def legacy_parts(
     """(giving, persona) parts; traits in config.TRAITS order."""
     unit = balance.foundation.legacy_unit_dollars * CENTS_A_DOLLAR
     # money-exact: ratio
-    giving = GIVING_POINTS * math.log10(1 + grants_cents / unit)
+    giving = GIVING_POINTS * dmath.log10(1 + grants_cents / unit)
     visionary, ruthless, beloved, reckless = traits
     return giving, GOOD_WEIGHT * (visionary + beloved) - (ruthless + reckless)
 

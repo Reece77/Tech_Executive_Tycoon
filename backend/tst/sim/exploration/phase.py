@@ -5,10 +5,10 @@ never explores plays exactly as before (34.6 target 6)."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent, QueuedEvent
 from tst.sim.exploration import pipeline as xp
@@ -170,7 +170,7 @@ def _drill(
         )
         hole = xp.drill_hole(state, project, len(drilled) + i + 1, rng, balance, data)
         new.append(hole)
-        if before is not None and hole.assay >= eb.minor.bonanza_ratio * math.exp(before[0]):
+        if before is not None and hole.assay >= eb.minor.bonanza_ratio * dmath.exp(before[0]):
             logs.append(_item(turn, project, "bonanza_intercept", block=label, hole=hole.n))
     cost = sum(h.cost_cents for h in new)
     if cost:
@@ -192,7 +192,7 @@ def _drill(
     streak = eb.minor.dry_streak
     if est is not None and len(new) and len(every) >= streak + 1:
         recent = every[-streak:]
-        mean = math.exp(est[0])
+        mean = dmath.exp(est[0])
         if all(h.assay < mean / 2 for h in recent) and any(h in new for h in recent[-1:]):
             logs.append(_item(turn, project, "dry_streak", block=label, holes=streak))
     gen = exploration_draws(rng, turn, xp.MINOR, project.id)

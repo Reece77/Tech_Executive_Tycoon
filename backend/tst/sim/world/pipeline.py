@@ -24,6 +24,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.fabs import nodes as nd
 from tst.sim.state import GameState
@@ -64,7 +65,7 @@ def _raw(
         now = sum(nd.capacity(tl, f, turn, balance.fab) for f in named)
         return now / then if then > 0 else 1.0
     growth = wd.demand_growth(data, good)
-    return float((1 + growth) ** ((turn - base) / MONTHS))
+    return float(dmath.pow(1 + growth, (turn - base) / MONTHS))
 
 
 def ratio(

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import GameData, incumbent_regions
 from tst.sim.geo.formulas import regional_d0, regional_growth, regional_price_cents
@@ -41,7 +42,7 @@ def addressable_at(data: GameData, category: str, segment: str, turn: int) -> fl
     cat = data.category(category)
     value = cat.market(segment).addressable
     if not cat.growth_by_year:
-        return value * monthly_growth(cat, 0) ** turn
+        return value * dmath.pow(monthly_growth(cat, 0), turn)
     for t in range(turn):
         value *= monthly_growth(cat, turn_to_ym(t)[0])
     return value
@@ -65,7 +66,7 @@ def regional_monthly_growth(
     """(1 + g x region multiplier)^(1/12) (19.5); `growth` the category's annual growth this
     month with era boosts (M11, 21.4), else categories.yaml's for the year."""
     g = data.category(category).growth_in(year) if growth is None else growth
-    return float((1 + regional_growth(g, region, data)) ** (1 / 12))
+    return float(dmath.pow(1 + regional_growth(g, region, data), 1 / 12))
 
 
 def initial_market(
