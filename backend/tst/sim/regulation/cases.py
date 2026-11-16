@@ -54,7 +54,7 @@ from tst.sim.regulation.measure import View, turnover_year
 from tst.sim.regulation.models import Case, CaseOutcome, CaseStage
 from tst.sim.rivals.models import stream_key
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, owner_of, with_queued
+from tst.sim.state import GameState, owner_of, owners_now, with_queued
 
 INQUIRY: Final = "regulation_inquiry"  # template ids (data/events/regulation.yaml)
 OBJECTIONS: Final = "regulation_objections"
@@ -122,7 +122,7 @@ def causes(
         out["self_preferencing"] = pref
     ids = {p.id for p in owned}
     year_ago = state.turn - MONTHS_PER_YEAR
-    group = {c.id for c in state.companies if owner_of(state, c.id) == owner}
+    group = {cid for cid, top in owners_now(state).items() if top == owner}
     if any(
         x.platform_id in ids and x.status == "removed" and x.since_turn > year_ago
         and (prod := state.product(x.product_id)) is not None and prod.company_id not in group

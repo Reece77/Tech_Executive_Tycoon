@@ -20,7 +20,19 @@ from dataclasses import asdict, replace
 from functools import cache
 from typing import Any, Final, cast
 
-from sqlalchemy import Table, Update, and_, bindparam, delete, func, insert, inspect, select, tuple_
+from sqlalchemy import (
+    Table,
+    Update,
+    and_,
+    bindparam,
+    delete,
+    func,
+    insert,
+    inspect,
+    select,
+    text,
+    tuple_,
+)
 from sqlalchemy.orm import Session
 
 from tst.db.automation_io import load_automation, sync_automation
@@ -1615,8 +1627,12 @@ def has_table(session: Session, model: Any) -> bool:
     read as empty and are not written (M6 sub-task 0).
 
     M30: the answer is kept on the session (a month asks about 30 times): tables change
-    only in migrations, and each opens its own session after its DDL."""
-    known: dict[str, bool] = session.info.setdefault(_HAS_TABLE, {})
+    only in migrations, and each opens its own session after its DDL. M36p: and in the
+    process for each SQLite schema (the text of every table's CREATE statement), so a new
+    session reads one query, not two PRAGMAs a table."""
+    known: dict[str, bool] | None = session.info.get(_HAS_TABLE)
+    if known is None:
+        known = session.info[_HAS_TABLE] = _schema_answers(session)
     name = model.__tablename__
     found = known.get(name)
     if found is None:
@@ -1629,6 +1645,19 @@ def has_table(session: Session, model: Any) -> bool:
 
 
 _HAS_TABLE: Final = "tst.has_table"
+_SCHEMA_ANSWERS: dict[str, dict[str, bool]] = {}  # M36p: schema text -> has_table answers
+
+
+def _schema_answers(session: Session) -> dict[str, bool]:
+    """The has_table answers shared by every session on the same schema (SQLite only; any
+    other database gets a session's own)."""
+    if session.get_bind().dialect.name != "sqlite":
+        return {}
+    rows = session.execute(
+        text("SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY type, name")
+    ).all()
+    schema = repr([tuple(r) for r in rows])
+    return _SCHEMA_ANSWERS.setdefault(schema, {})
 
 
 def _plain(session: Session, statement: Any) -> list[Any]:
