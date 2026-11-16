@@ -21,6 +21,7 @@ from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.regulation import data as rdata
+from tst.sim.regulation import draws
 from tst.sim.regulation.config import RegulatorDef, StrictnessBalance
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -40,11 +41,11 @@ def _path(
 ) -> float:
     """The drawn path's value in `year` (> first_year), before influence."""
     rng = RngFactory(seed)
-    phase = rng.stream(0, "regulation", PATH, index, 0)
+    phase = draws.gen(rng, 0, PATH, index, 0)
     first_election = first_year + 1 + int(phase.integers(0, sb.election_years))
     value = start_value
     for y in range(first_year + 1, year + 1):
-        g = rng.stream(0, "regulation", PATH, index, y - rdata.FIRST_YEAR)
+        g = draws.gen(rng, 0, PATH, index, y - rdata.FIRST_YEAR)
         u, w = (float(x) for x in g.random(2))
         value += (2 * u - 1) * sb.sd * SQRT3
         if y >= first_election and (y - first_election) % sb.election_years == 0:
@@ -86,7 +87,12 @@ def merger_factor(
         return 1.0
     last = rdata.year_of(rdata.file(data).history_end_turn)
     ratio = max(
-        strictness(state, r, balance, data) / max(r.strictness_in(last), 1e-9) for r in regs
+        (
+            strictness(state, r, balance, data) / r.strictness_in(last)
+            if r.strictness_in(last)
+            else 1.0
+        )
+        for r in regs
     )
     keys = {r.key for r in regs}
     open_case = any(
