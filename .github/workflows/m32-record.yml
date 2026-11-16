@@ -1,0 +1,27 @@
+# TEMPORARY (M32): records M30's state hashes on CI's Linux runner (the fixture's platform),
+# comparing each month without M32's fields against main's fixture first. Removed in the next commit.
+name: m32-record
+on:
+  push:
+    branches: [m32-power]
+    paths: [.github/workflows/m32-record.yml, tools/m32_state_record.py]
+permissions:
+  contents: read
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --project backend --locked
+      - run: uv run --project backend python tools/m32_state_record.py --write --workers 4 | tee record.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m32-state
+          path: |
+            backend/tests/fixtures/m30_state_hashes.json
+            record.log
