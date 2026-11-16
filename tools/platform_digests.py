@@ -1,8 +1,8 @@
 """The same game on every platform (M35a sub-task 1): play M30's three strategies on seeds 1-3
 for 120 months in memory and record every month's full-state digest (tst.balance.m30's
-canonical digest), with a digest of each top-level state field, so two platforms' records name the first month and the first part of the state that
-differ. CI (.github/workflows/determinism.yml) runs `run` on Linux and Windows and `compare`
-on the two files.
+canonical digest), with a digest of each top-level state field, so two platforms' records name
+the first month and the first part of the state that differ. CI
+(.github/workflows/determinism.yml) runs `run` on Linux and Windows and `compare` on the two.
 
     uv run --project backend python tools/platform_digests.py run OUT.json [--turns N]
         [--workers N] [--dump JOB@TURN ...]
@@ -125,7 +125,8 @@ def run(out: Path, turns: int, workers: int, dumps: list[str]) -> int:
 
 def compare(a_path: Path, b_path: Path) -> int:
     a, b = (json.loads(p.read_text(encoding="utf-8")) for p in (a_path, b_path))
-    print(f"A: {a['platform']} {a['python'].split()[0]}  B: {b['platform']} {b['python'].split()[0]}")
+    for label, rec in (("A", a), ("B", b)):
+        print(f"{label}: {rec['platform']}, Python {rec['python'].split()[0]}")
     bad = 0
     for job in sorted(set(a["runs"]) | set(b["runs"])):
         ra, rb = a["runs"].get(job), b["runs"].get(job)
