@@ -773,3 +773,293 @@ companies:
         brand: 50
         segments:
           device_oems: { price_cents: 12800000, share_bp: 2000 }
+
+  # --- M41 (formulas.md 50.1): medical device makers, appended after every earlier entry ---------
+  # Shares are of each sub-category's D0 (categories.yaml), 6,500 bp in all (A: incumbents hold
+  # about two thirds; the rest is unserved demand), split by 2010 revenue (sources beside each).
+  # Their devices are cleared wherever they sell (history). Apple's consumer health features (the
+  # Watch ECG De Novo of September 2018) are a dated record in medical.yaml, not a product, so
+  # Apple's books to 2025 stay as they are (M41 decision).
+  - name: Medtronic
+    stage: 4
+    founded_year: 1949
+    listed_from: [1977, 1] # A: listed long before 2010 (NYSE)
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: MiniMed
+        category: wearables_diagnostics
+        quality: 68
+        features: 70
+        brand: 70
+        segments:
+          consumer: { price_cents: 15000, share_bp: 1300 } # A: insulin pumps and CGM (2010 diabetes ~$1.2B real)
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: Medtronic CRM and Neuromodulation
+        category: implantables
+        quality: 76
+        features: 75
+        brand: 85
+        segments:
+          enterprise: { price_cents: 800000, share_bp: 2000 } # A: the largest cardiac rhythm maker (FY2010 revenue $15.8B real, https://www.beckersspine.com/lists/20-of-the-most-profitable-orthopedic-and-spine-device-companies/)
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+
+  - name: Johnson & Johnson MedTech
+    stage: 4
+    founded_year: 1886
+    listed_from: [1944, 9] # A: Johnson & Johnson's devices arm (MD&D $24.6B in 2010, https://www.odtmag.com/heaps/view/1348/1/184044); J&J listed 1944
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: DePuy Synthes
+        category: implantables
+        quality: 72
+        features: 70
+        brand: 80
+        segments:
+          enterprise: { price_cents: 750000, share_bp: 1200 } # A: orthopaedic implants
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+
+  - name: Abbott
+    stage: 4
+    founded_year: 1888
+    listed_from: [1929, 3] # A: NYSE since 1929
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: FreeStyle
+        category: wearables_diagnostics
+        quality: 70
+        features: 70
+        brand: 75
+        segments:
+          consumer: { price_cents: 14000, share_bp: 2500 } # A: glucose meters, then Libre from 2014 (Libre ~$6.4B in 2024, est.: https://abbott.com/content/dam/corp/abbott/en-us/hub-new/24-101386-Q4-2024-Earnings.pdf)
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: Abbott Vascular and Rhythm
+        category: implantables
+        quality: 70
+        features: 68
+        brand: 72
+        segments:
+          enterprise: { price_cents: 780000, share_bp: 600 } # A: vascular devices; St. Jude's rhythm business from 2017
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+
+  - name: Stryker
+    stage: 4
+    founded_year: 1941
+    listed_from: [1979, 1] # A: listed long before 2010 ($7.32B revenue in 2010: https://www.biospace.com/stryker-corporation-increases-expected-2010-results-and-provides-2011-outlook)
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: Stryker Orthopaedics
+        category: implantables
+        quality: 74
+        features: 72
+        brand: 78
+        segments:
+          enterprise: { price_cents: 820000, share_bp: 1000 } # A: joint replacements
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: Mako
+        category: surgical_robotics
+        quality: 62
+        features: 60
+        brand: 50
+        segments:
+          enterprise: { price_cents: 120000000, share_bp: 300 } # A: Mako's robotic arm (Stryker bought MAKO in Dec 2013)
+        regions: [north_america, europe]
+
+  - name: Boston Scientific
+    stage: 4
+    founded_year: 1979
+    listed_from: [1992, 5] # A: IPO May 1992 ($7.81B revenue in 2010: https://news.bostonscientific.com/financial-results-q4-fy-2010)
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: Boston Scientific Rhythm and Neuro
+        category: implantables
+        quality: 70
+        features: 72
+        brand: 72
+        segments:
+          enterprise: { price_cents: 780000, share_bp: 1200 } # A: defibrillators and stimulators
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+
+  - name: Siemens Healthineers
+    stage: 4
+    founded_year: 1847
+    listed_from: [2018, 3] # IPO 16 Mar 2018 (A: Siemens' Healthcare sector before; EUR 12.4B in FY2010: https://www.sec.gov/Archives/edgar/data/0001135644/000095012310110234/f03502e20vf.htm)
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1800
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: Siemens imaging
+        category: imaging
+        quality: 76
+        features: 75
+        brand: 82
+        segments:
+          enterprise: { price_cents: 42000000, share_bp: 2300 } # A: CT, MRI and ultrasound
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: syngo AI
+        category: samd
+        quality: 60
+        features: 40
+        brand: 70
+        segments:
+          enterprise: { price_cents: 800000, share_bp: 2000 } # A: imaging software
+        regions: [north_america, europe, east_asia]
+
+  - name: GE HealthCare
+    stage: 4
+    founded_year: 1892
+    listed_from: [2023, 1] # spun off from GE, listed 4 Jan 2023 (A: GE Healthcare segment ~$16.9B in 2010: https://www.massdevice.com/report-samsung-looks-muscle-ge-siemens-imaging-market/)
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1800
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: GE imaging
+        category: imaging
+        quality: 74
+        features: 74
+        brand: 80
+        segments:
+          enterprise: { price_cents: 40000000, share_bp: 2300 } # A
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: Edison AI
+        category: samd
+        quality: 58
+        features: 40
+        brand: 68
+        segments:
+          enterprise: { price_cents: 780000, share_bp: 2000 } # A
+        regions: [north_america, europe, east_asia]
+
+  - name: Philips
+    stage: 4
+    founded_year: 1891
+    listed_from: [1912, 1] # A: Amsterdam-listed; Healthcare EUR 8.6B in 2010 (https://www.auntminnieeurope.com/clinical-news/article/15643059/philips-healthcare-sales-edge-higher-in-q4)
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: Philips imaging
+        category: imaging
+        quality: 72
+        features: 72
+        brand: 78
+        segments:
+          enterprise: { price_cents: 39000000, share_bp: 1900 } # A
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: Philips home monitoring
+        category: wearables_diagnostics
+        quality: 64
+        features: 66
+        brand: 72
+        segments:
+          consumer: { price_cents: 15000, share_bp: 1000 } # A: home health monitoring and respiratory devices
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+      - name: IntelliSpace AI
+        category: samd
+        quality: 56
+        features: 38
+        brand: 66
+        segments:
+          enterprise: { price_cents: 760000, share_bp: 1500 } # A
+        regions: [north_america, europe, east_asia]
+
+  - name: Intuitive Surgical
+    stage: 4
+    founded_year: 1995
+    listed_from: [2000, 6] # IPO 13 Jun 2000 (2010: revenue $1.413B, 53% recurring, 1,752 systems: https://www.sec.gov/Archives/edgar/data/1035267/000119312511020229/d10k.htm)
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 3500
+    cash_months: 36
+    key_people: 4
+    products:
+      - name: da Vinci
+        category: surgical_robotics
+        quality: 80
+        features: 80
+        brand: 85
+        segments:
+          enterprise: { price_cents: 150000000, share_bp: 6200 } # A: the dominant surgical robot (1,285 US, 316 Europe, 151 elsewhere in 2010, same source)
+        regions: [north_america, europe, east_asia, oceania]
+
+  - name: Dexcom
+    stage: 4
+    founded_year: 1999
+    listed_from: [2005, 4] # IPO April 2005 (A); 2010 revenue $48.6M (https://benzinga.com/z/902210)
+    personality: aggressive
+    builder_skill: 13
+    target_margin_bp: 0
+    cash_months: 36
+    key_people: 4
+    products:
+      - name: Dexcom CGM
+        category: wearables_diagnostics
+        quality: 72
+        features: 74
+        brand: 55
+        segments:
+          consumer: { price_cents: 16000, share_bp: 300 } # A: a small CGM maker in 2010; $4.03B in 2024
+        regions: [north_america, europe, oceania]
+
+  - name: Edwards Lifesciences
+    stage: 4
+    founded_year: 1958
+    listed_from: [2000, 4] # spun off from Baxter, April 2000 (A); $1.447B revenue in 2010 (https://www.sec.gov/Archives/edgar/data/0001099800/000104746911001550/a2202139z10-k.htm)
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: Edwards heart valves
+        category: implantables
+        quality: 78
+        features: 76
+        brand: 80
+        segments:
+          enterprise: { price_cents: 900000, share_bp: 500 } # A: heart valves (counted with implantables)
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+
+  - name: BD
+    stage: 4
+    founded_year: 1897
+    listed_from: [1962, 1] # A: NYSE-listed; $7.37B revenue in FY2010 (https://investors.bd.com/news-events/press-releases/detail/667/bd-announces-results-for-2010-fourth-fiscal-quarter-and-full-year)
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 4
+    products:
+      - name: BD diagnostics and diabetes care
+        category: wearables_diagnostics
+        quality: 64
+        features: 62
+        brand: 68
+        segments:
+          consumer: { price_cents: 12000, share_bp: 1400 } # A: diagnostics and diabetes care
+        regions: [north_america, europe, east_asia, latin_america, oceania]

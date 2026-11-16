@@ -28,6 +28,7 @@ accounts:
   - { code: 4000_revenue_subscriptions, name: Subscription revenue, type: revenue }
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
+  - { code: 4050_revenue_consumables, name: Consumables and service revenue, type: revenue } # M41 (50.1): medical devices' recurring revenue a month per installed unit (robotic instruments and service, sensors, service contracts)
   - { code: 4150_platform_fees, name: Platform fees, type: revenue } # M31 (44.4): a platform owner's fees on other companies' app sales through its store (a group company's go to 4300)
   - { code: 4400_revenue_commodities, name: Commodity sales, type: revenue } # M19 (35.3): a mine's output sold at spot, into contracts and offtakes
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it
@@ -61,6 +62,8 @@ accounts:
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900
   - { code: 6970_fines, name: Fines and penalties, type: expense } # M34 (48.3, 48.4): regulators' fines and periodic penalties (an annulled fine returns here)
+  - { code: 6980_recalls, name: Recalls, type: expense } # M41 (50.5): recall field actions and class I recall lawsuits
+  - { code: 6985_quality_regulatory, name: Quality and regulatory, type: expense } # M41 (50.2, 50.5): plants' quality systems, post-market surveillance and regulators' review fees
   - { code: 6960_royalties, name: Royalties and state shares, type: expense } # M19 (35.3, 35.4): host governments' royalties on mines' revenue, and a state partner's share of a mine's cash margin
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }

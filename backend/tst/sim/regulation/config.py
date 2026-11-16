@@ -186,6 +186,14 @@ class PrecedentDef(_Frozen):
     source: str = Field(min_length=1)
 
 
+class HealthRegulatorDef(RegulatorDef):
+    """M41 (docs/formulas.md 50): a health regulator, M34's record with the `health` kind. It
+    clears medical devices, inspects plants and orders recalls (tst.sim.medical); M34's
+    competition rules never read it (it is not in `regulators`)."""
+
+    kind: Literal["health"]
+
+
 class RegulationFile(_Frozen):
     """regulation.yaml (48)."""
 
@@ -195,6 +203,7 @@ class RegulationFile(_Frozen):
     designations: tuple[DesignationDef, ...] = ()
     cases: tuple[CaseDef, ...] = ()
     precedents: tuple[PrecedentDef, ...] = ()
+    health_regulators: tuple[HealthRegulatorDef, ...] = ()  # M41 (50): never in `regulators`
 
     @property
     def history_end_turn(self) -> int:

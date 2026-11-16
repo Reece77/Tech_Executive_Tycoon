@@ -63,6 +63,7 @@ from tst.sim.geopolitics.config import (
 )
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets_public.config import BanksFile
+from tst.sim.medical.config import MedicalFile
 from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
@@ -111,6 +112,7 @@ CHAIN_FILE = "chain_companies.yaml"  # M28 (formulas.md 41.1)
 PLATFORMS_FILE = "platforms.yaml"  # M31 (formulas.md 44)
 POWER_FILE = "power.yaml"  # M32 (formulas.md 46)
 REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
+MEDICAL_FILE = "medical.yaml"  # M41 (formulas.md 50)
 EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
@@ -136,6 +138,7 @@ DATA_FILES = (
     PLATFORMS_FILE,
     POWER_FILE,
     REGULATION_FILE,
+    MEDICAL_FILE,
     INTERESTS_FILE,
     MACRO_HISTORY_FILE,
     NATIONALIZATION_FILE,
@@ -499,7 +502,7 @@ def _check_hardware(balance: Balance, data: GameData, goods: set[str]) -> None:
         raise DataLoadError(f"{CATEGORIES_FILE}: one assembly_market category, {where}'s")
     for key, bom in hw.bom.items():
         cat = categories.get(key)
-        if cat is None or not cat.sells_units or cat.family is not None:
+        if cat is None or not cat.sells_units or cat.family == "chips":
             raise DataLoadError(f"{where}.bom.{key}: not a unit-sale category (chips excluded)")
         if bom.good not in goods:
             raise DataLoadError(f"{where}.bom.{key}: good {bom.good!r} not in {COMPONENTS_FILE}")
@@ -508,7 +511,7 @@ def _check_hardware(balance: Balance, data: GameData, goods: set[str]) -> None:
                 f"{where}.bom.{key}: chip_type {bom.chip_type!r} not in chips.types"
             )
     for cat in data.categories:
-        if cat.sells_units and cat.family is None and cat.key not in hw.bom:
+        if cat.sells_units and cat.family != "chips" and cat.key not in hw.bom:
             raise DataLoadError(f"{where}.bom: no bill of materials for {cat.key!r}")
         if cat.chip_type is not None and cat.chip_type not in ch.types:
             raise DataLoadError(f"{CATEGORIES_FILE}: {cat.key!r} chip_type not in chips.types")
@@ -710,6 +713,45 @@ def regulation_problems(balance: Balance, data: GameData) -> list[str]:
         problems.append("history_end must be platforms.yaml's")
     if balance.regulation.start_turn != rf.history_end_turn + 1:
         problems.append("regulation.start must be the month after regulation.yaml's history_end")
+    return problems
+
+
+def medical_problems(balance: Balance, data: GameData) -> list[str]:
+    """M41 (50): medical.yaml's sub-categories are categories.yaml's family medical; routes,
+    reliance and coverage name known health regulators and regions; history ends with the
+    regulators' (regulation.yaml)."""
+    mf = data.medical
+    if mf is None:
+        return []
+    problems: list[str] = []
+    rf = data.regulation
+    health = {r.key: r for r in rf.health_regulators} if rf is not None else {}
+    regions = set(data.region_keys)
+    parts = data.platforms.region_parts if data.platforms is not None else {}
+    for r in health.values():
+        if r.region not in regions:
+            problems.append(f"health regulator {r.key}: unknown region {r.region}")
+        if r.part is not None and r.part not in parts.get(r.region, {}):
+            problems.append(f"health regulator {r.key}: unknown part {r.part} of {r.region}")
+    medical = {c.key for c in data.categories if c.medical}
+    if missing := sorted(medical - {s.key for s in mf.subcategories}):
+        problems.append(f"no sub-category for medical categories {missing}")
+    for s in mf.subcategories:
+        if s.key not in medical:
+            problems.append(f"sub-category {s.key} is not a family medical category")
+    for route in mf.routes:
+        if route.regulator not in health:
+            problems.append(f"route {route.key}: unknown health regulator {route.regulator}")
+    for rel in mf.reliance:
+        if rel.region not in regions:
+            problems.append(f"reliance: unknown region {rel.region}")
+        if bad := sorted(set(rel.relies_on) - set(health)):
+            problems.append(f"reliance {rel.region}: unknown regulators {bad}")
+    for cov in mf.coverage:
+        if cov.region != "other" and cov.region not in regions:
+            problems.append(f"coverage: unknown region {cov.region}")
+    if rf is not None and mf.history_end != rf.history_end:
+        problems.append("medical.yaml history_end must be regulation.yaml's")
     return problems
 
 
@@ -1038,6 +1080,7 @@ def load_all(
     power = _validate(PowerFile, parsed[POWER_FILE], POWER_FILE)
     regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
     equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
+    medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
         GameData,
         {
@@ -1092,6 +1135,7 @@ def load_all(
             "power": power,
             "regulation": regulation,
             "equipment": equipment,
+            "medical": medical,
         },
         "seed data cross-check",
     )
@@ -1115,6 +1159,8 @@ def load_all(
         raise DataLoadError(f"{PLATFORMS_FILE}, {BALANCE_FILE} platforms: " + "; ".join(problems))
     if problems := regulation_problems(balance, game_data):
         raise DataLoadError(f"{REGULATION_FILE}, {BALANCE_FILE} regulation: " + "; ".join(problems))
+    if problems := medical_problems(balance, game_data):
+        raise DataLoadError(f"{MEDICAL_FILE}, {REGULATION_FILE} health: " + "; ".join(problems))
     if problems := equipment_problems(balance, game_data):
         raise DataLoadError(f"{EQUIPMENT_FILE}, {BALANCE_FILE} equipment: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):

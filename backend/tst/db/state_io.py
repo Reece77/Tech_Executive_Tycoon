@@ -89,6 +89,7 @@ from tst.db.mappers import (
     unit_from_row,
     unit_to_row,
 )
+from tst.db.medical_io import load_medical, sync_medical
 from tst.db.mining_io import load_mining, sync_mining
 from tst.db.mna_io import load_mna, sync_mna
 from tst.db.models import (
@@ -605,6 +606,7 @@ def load_state(session: Session) -> GameState:
     state = load_platforms(session, state, has_table)  # M31 (0051)
     state = load_power(session, state, has_table)  # M32 (0057_m32)
     state = load_regulation(session, state, has_table)  # M34 (0055)
+    state = load_medical(session, state, has_table)  # M41 (0058)
     state = load_equipment(session, state, has_table)  # M33 (0056_m33)
     state = load_mining(session, state, has_table)  # M19 (0043)
     state = _load_facilities(session, state)
@@ -2189,6 +2191,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_platforms(session, old, new, has_table)  # M31 (0051)
     sync_power(session, old, new, has_table)  # M32 (0057_m32)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
+    sync_medical(session, old, new, has_table)  # M41 (0058)
     sync_equipment(session, old, new, has_table)  # M33 (0056_m33)
     sync_mining(session, old, new, has_table)  # M19 (0043)
     _sync_facilities(session, old, new)
