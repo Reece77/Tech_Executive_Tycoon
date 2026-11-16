@@ -39,6 +39,17 @@ QUERY_SAMPLES: dict[str, dict[str, str | int]] = {
     },
     "/api/saves/{save_id}/fabs/quote": {"node": "n28", "region": "north_america", "size": 10_000},
     "/api/saves/{save_id}/power/siting": {"capacity": 2000, "kind": "data_centre_general"},
+    "/api/saves/{save_id}/power/quote/plant": {
+        "mw": 100,
+        "plant_type": "gas",
+        "region": "north_america",
+    },
+    "/api/saves/{save_id}/power/quote/ppa": {
+        "mwh_month": 1000,
+        "producer": "nextera",
+        "region": "north_america",
+        "years": 10,
+    },
 }
 
 
