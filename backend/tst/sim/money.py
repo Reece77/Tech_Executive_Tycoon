@@ -13,6 +13,7 @@ type Cents = int
 
 CENTS_PER_DOLLAR: Final = 100
 BP_DENOMINATOR: Final = 10_000  # tunable-exempt: definition of a basis point
+DECIMAL_BASE: Final = 10  # tunable-exempt: the base of a decimal (M36p: n / DECIMAL_BASE**k)
 
 _DOLLARS_RE: Final = re.compile(r"^(-)?\$?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$")
 
@@ -56,7 +57,7 @@ def exact(x: float | int | Fraction) -> Fraction:
     if isinstance(x, Fraction | int):
         return Fraction(x)
     numerator, places = scaled(x)
-    return Fraction(numerator, 10**places)
+    return Fraction(numerator, DECIMAL_BASE**places)
 
 
 def scaled(x: float) -> tuple[int, int]:
@@ -68,7 +69,7 @@ def scaled(x: float) -> tuple[int, int]:
     numerator = int(whole + frac)  # int() refuses inf and nan, as Fraction does
     places = len(frac) - (int(power) if power else 0)
     if places < 0:
-        return numerator * 10**-places, 0
+        return numerator * DECIMAL_BASE**-places, 0
     return numerator, places
 
 
@@ -99,7 +100,7 @@ def times(amount: int | float | Fraction, rate: float | int | Fraction, *more: f
             numerator *= factor
         else:
             return round(Fraction(amount) * exact(rate) * _product(more))
-    return round_half_even(numerator, 10**places) if places else numerator
+    return round_half_even(numerator, DECIMAL_BASE**places) if places else numerator
 
 
 def exact_product(amount: int, *rates: float | int) -> Fraction:
@@ -115,7 +116,7 @@ def exact_product(amount: int, *rates: float | int) -> Fraction:
             numerator *= factor
         else:
             return Fraction(amount) * _product(rates)
-    return Fraction(numerator, 10**places)
+    return Fraction(numerator, DECIMAL_BASE**places)
 
 
 def sum_times(rows: Iterable[tuple[int, float | int]]) -> int:
@@ -130,12 +131,12 @@ def sum_times(rows: Iterable[tuple[int, float | int]]) -> int:
         n, k = scaled(rate) if type(rate) is float else (int(rate), 0)
         term = amount * n
         if k > places:
-            total *= 10 ** (k - places)
+            total *= DECIMAL_BASE ** (k - places)
             places = k
         elif k < places:
-            term *= 10 ** (places - k)
+            term *= DECIMAL_BASE ** (places - k)
         total += term
-    return round_half_even(total, 10**places) if places else total
+    return round_half_even(total, DECIMAL_BASE**places) if places else total
 
 
 def _product(rates: tuple[float | int, ...]) -> Fraction:

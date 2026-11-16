@@ -10,7 +10,7 @@ from typing import Final
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
 from tst.sim.regulation.config import CaseDef, RegimeDef, RegulationFile, RegulatorDef
-from tst.sim.state import GameState
+from tst.sim.state import GameState, derived
 
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0's year
 BILLION: Final = 1_000_000_000  # tunable-exempt: thresholds are in billions
@@ -103,6 +103,21 @@ class HistoryDesignation:
 
 
 def history_designations(
+    state: GameState, data: GameData, turn: int
+) -> tuple[HistoryDesignation, ...]:
+    """History's designations in force by `turn`, kept once per state, turn and data (M36p:
+    the month's investigation odds ask for them for every group and regulator)."""
+    kept: tuple[GameData, tuple[HistoryDesignation, ...]] = derived(
+        state,
+        ("regulation.history_designations", turn, id(data)),
+        lambda: (data, _history_designations(state, data, turn)),
+    )
+    if kept[0] is data:
+        return kept[1]
+    return _history_designations(state, data, turn)
+
+
+def _history_designations(
     state: GameState, data: GameData, turn: int
 ) -> tuple[HistoryDesignation, ...]:
     ids = company_ids(state)

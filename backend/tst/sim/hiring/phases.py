@@ -68,6 +68,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
     ceo_of,
+    derived,
     reach_stage,
     with_candidate,
     with_candidates,
@@ -299,9 +300,27 @@ def _relocate(
     return state, [entry]
 
 
+CostLines = tuple[tuple[str, AccountCode, Cents, int | None], ...]
+
+
 def monthly_cost_lines(
     state: GameState, company_id: int, balance: Balance, data: GameData
-) -> tuple[tuple[str, AccountCode, Cents, int | None], ...]:
+) -> CostLines:
+    """`_monthly_cost_lines`, kept once per state, company, balance and data (M36p: payroll
+    and its burn projection asked twice for each company's lines of the same state)."""
+    kept: tuple[Balance, GameData, CostLines] = derived(
+        state,
+        ("monthly_cost_lines", company_id, id(balance), id(data)),
+        lambda: (balance, data, _monthly_cost_lines(state, company_id, balance, data)),
+    )
+    if kept[0] is balance and kept[1] is data:
+        return kept[2]
+    return _monthly_cost_lines(state, company_id, balance, data)
+
+
+def _monthly_cost_lines(
+    state: GameState, company_id: int, balance: Balance, data: GameData
+) -> CostLines:
     """(memo label, account, amount, division id) of one company's phase-6 costs.
 
     Phase 6 posts exactly these; the Overview shows them as this month's projection (hosting

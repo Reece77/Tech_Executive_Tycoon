@@ -1000,34 +1000,33 @@ def _staff_by_person(employments: tuple[Employment, ...]) -> dict[int, Employmen
     return out
 
 
-def _state_copier() -> Callable[[GameState, dict[str, Any]], GameState]:
+_STATE_INIT: Final = tuple(f.name for f in dataclasses.fields(GameState) if f.init)
+_STATE_FIELDS: Final = frozenset(_STATE_INIT)
+_GET_STATE: Final = attrgetter(*_STATE_INIT)  # every init field at once, in C
+_SET_STATE: Final = tuple(GameState.__dict__[n].__set__ for n in _STATE_INIT)  # slot setters
+_SET_MEMO: Final = GameState.__dict__["_memo"].__set__
+
+
+def _copy_state(state: GameState, changes: dict[str, Any]) -> GameState:
     """`dataclasses.replace` for a GameState, ~3x faster (M36p: ~700 state replaces a month in
-    2039): the same new object (every init field copied, `changes` set, a fresh `_memo`), by
-    straight-line code generated once from the fields, as dataclasses generates __init__."""
-    names = [f.name for f in dataclasses.fields(GameState) if f.init]
-    body = "".join(f"    set_(new, {n!r}, s.{n})\n" for n in names)
-    source = (
-        "def copy(s, changes):\n    new = new_(GameState)\n" + body
-        + "    for k, v in changes.items():\n        set_(new, k, v)\n"
-        + "    set_(new, '_memo', {})\n    return new\n"
-    )  # fmt: skip
-    scope: dict[str, Any] = {"new_": object.__new__, "set_": object.__setattr__}
-    scope["GameState"] = GameState
-    exec(source, scope)  # generated from the dataclass's own field names
-    copy: Callable[[GameState, dict[str, Any]], GameState] = scope["copy"]
-    return copy
-
-
-_COPY_STATE: Final = _state_copier()
-_STATE_FIELDS: Final = frozenset(f.name for f in dataclasses.fields(GameState) if f.init)
+    2039): the same new object (every init field copied, `changes` set, a fresh `_memo`),
+    without building the keyword arguments of a 160-field __init__. GameState has no
+    __post_init__, so there is nothing else __init__ would do."""
+    new = object.__new__(GameState)
+    for set_field, value in zip(_SET_STATE, _GET_STATE(state), strict=True):
+        set_field(new, value)
+    for name, value in changes.items():
+        object.__setattr__(new, name, value)
+    _SET_MEMO(new, {})
+    return new
 
 
 def replace[D](obj: D, /, **changes: Any) -> D:
-    """`dataclasses.replace`, with a fast path for GameState (`_state_copier`); any other
+    """`dataclasses.replace`, with a fast path for GameState (`_copy_state`); any other
     object, or a change that is not a GameState init field, goes to dataclasses (which
     raises as it always did)."""
     if type(obj) is GameState and changes.keys() <= _STATE_FIELDS:
-        return _COPY_STATE(obj, changes)  # type: ignore[arg-type,return-value]
+        return _copy_state(obj, changes)  # type: ignore[arg-type,return-value]
     return dataclasses.replace(obj, **changes)  # type: ignore[type-var]
 
 
