@@ -3868,3 +3868,47 @@ The v4 scripts (`tst/balance/strategies_v4.py`) and their comparisons are played
 - **T5:** §44.9, §46.8, §47.5 and §48.5's targets and §43's on the combined code (their own tools). **T6:** the known misses, reported.
 
 The rows are named `V4.T1.1` … `V4.T4` (the known-miss list matches by name). M35b carries `V4.T1.2` (known while |ratio − 1.15| ≤ 0.35) and `V4.T4` (known while the gap is ≥ 0) to M43 (`tst/balance/known_misses.py`).
+
+## 52. Dynasty mode: the second 30 years (M37; v5)
+
+Reece (2026-11-14): an optional **dynasty mode** continues the campaign past December 2039 to **December 2069**, with seeded eras beyond history. The standard campaign stays 360 turns. This section defines the mode, what the game does at the standard end, how every system's data continues past its last dated or seeded entry, and how rivals and the founder age. Nothing here changes a game before January 2040.
+
+### 52.1 The mode and the end of the standard campaign
+
+- **New game setting:** Campaign length: standard (to December 2039, 360 turns) or dynasty (to December 2069, 720 turns). Existing saves can switch to dynasty at any time before their end (a one-off confirmation).
+- **At December 2039 in a standard game:** the **campaign summary** (Hall of Fame entry, legacy and dynasty scores, §32.6 and §45.7) and a choice: end, or continue in dynasty mode. A standard game that continues becomes dynasty from that turn.
+- **At December 2069:** the final summary; the save stays open for browsing (read-only), with "continue in sandbox" (no score) as a later option (out of scope).
+
+### 52.2 Data beyond its end: seeded continuations
+
+Every series with a last dated or seeded entry before 2069 continues by a rule, from stream `dynasty` (id 65, keyed by the series' stable key and year):
+
+- **Eras** (§26.4, `eras.yaml`): a second wave of seeded future eras with windows 2040–2065 (the M37 dossier lists candidates: fusion power, general-purpose humanoids, brain–computer interfaces, quantum advantage at scale, molecular manufacturing, space industry), each with a domain and an acceleration like §26.4's.
+- **Process nodes** (§38, `nodes.yaml`): seeded successors to the last node (A10), each arriving `dynasty.node_gap_years` later than the previous (lengthening by 20% a step: Moore's law slows), with cost per transistor falling less each step and capex rising.
+- **Technology frontier** (§21): research generations continue with longer gaps and rising costs (`dynasty.frontier_slowdown`).
+- **Commodities, power and carbon** (§33, §46): the seeded paths continue (they already run open-ended); depletion and new discoveries (§34) continue; carbon's policy steps continue to a seeded long-run level.
+- **Demographics and demand:** category growth rates decay toward `dynasty.mature_growth` by category, unless an era renews them; regions' populations follow a seeded path; new segments arrive only through eras.
+- **Platforms, regulation and geopolitics** (§44, §48, §39): their seeded post-2025 rules continue; no new dated history.
+
+### 52.3 Rivals age
+
+- Every rival company has a **founder or CEO** person (already true for named rivals; generated for chain companies) with an age. From 2026, rival leaders retire (by age and performance, stream `dynasty`) and are succeeded by an heir, an insider or an outside hire, each with its own personality, which can change the rival's personality type (§13) and strategy.
+- **New rivals** keep entering after 2039 (§9's entrants with seeded categories and dates), so the market never empties.
+- **Rival companies can die and be reborn**: a bankrupt rival's brand may be bought and relaunched.
+
+### 52.4 The founder's lifetime
+
+- With M36's family, founders and heirs age; **death** becomes possible from age 75 (stream `dynasty`, annual chance from `dynasty.mortality` by age, lowered by low stress and family time), triggering §45.5's succession and §45.6's estate tax at once. If no heir is ready, the board appoints a professional CEO and the player continues as the family's head (§45.5).
+- Without a family (Family: none), the game ends with the founder's death, or at the founder's choice to retire, with the campaign summary.
+
+### 52.5 Balance targets (printed)
+
+1. **Nothing moves before 2040:** every game state and guard to December 2039 identical to `main` before M37 (state-cache and golden checks), dynasty mode on or off.
+2. **The world keeps moving:** in 2040–2069 at least 4 of the seeded eras arrive (median, 10 seeds), every category has at least 3 active rivals in each decade on 9 of 10 seeds, and no commodity's price stays below a third or above three times its 2030s average for more than 60 months.
+3. **Moore's law slows:** the gap between seeded nodes after A10 lengthens, and leading-edge wafer cost per transistor falls by at most half from 2040 to 2069.
+4. **Succession happens:** in a dynasty run with a family, at least one succession by 2069 on 9 of 10 seeds.
+5. **Turn time:** a 2069 turn on the `full_integrator` save within M30's 500 ms guard on the CI runner, and a 2069 save within 400 MB.
+
+### 52.6 What the API may show
+
+The mode, the end date, eras' public windows, nodes' announced windows, rivals' leaders and successions, the founder's age and health events as they happen. Never seeded dates before their window is public, mortality draws, or rivals' succession plans.
