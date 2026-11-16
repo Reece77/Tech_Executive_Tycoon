@@ -16,8 +16,8 @@ numbers describe the scripts, not the game, so they live here rather than in bal
   its home region (30.6, _own_compute), and from the first live data centre its spare capacity
   sold as cloud hosting (22.3, SellCapacity) at 0.9x the reference price.
 - **power_hyperscaler** (46): cloud_steady, but from stage 4 (owned plants unlock, 46.2) each
-  new data centre is sited by power (the build screen's rows, 46.6: the shortest queue among
-  the cities that serve its home market, then the cheapest grid) and, when it would queue
+  new data centre is sited by power (the build screen's rows, 46.6: the most reliable grid
+  among the cities that serve its home market, then home, then the cheapest) and, when it would queue
   (above power.queue.min_mw), comes with a plant behind its meter sized to its whole load
   (46.3: such a load skips the queue): the type whose whole-load size costs least a year.
 - **litho_bet** (47): M23b's full_integrator, which from its fab's first month funds a
@@ -258,8 +258,8 @@ PLANT_TYPES: Final = ("gas", "solar_storage", "wind")  # what the build screen r
 
 def _sited(game: Game, size: int) -> list[siting.Site]:
     """The build screen's cities for a data centre of `size` (46.6), best first: among the
-    cities whose region serves the home market (19.5), the shortest queue (none when it would
-    not queue), then the home region, then the cheapest grid."""
+    cities whose region serves the home market (19.5), the most reliable grid, then the home
+    region, then the cheapest grid."""
     b, g = game.loaded.balance, game.loaded.game_data
     home = compute.home_region_of(game.state, b, g)
     rows = [
@@ -267,12 +267,12 @@ def _sited(game: Game, size: int) -> list[siting.Site]:
         for s in siting.sites(game.state, PLAYER, DC_KIND, size, b, g)
         if compute.serves(home, s.region, g)
     ]
-    # the home region first among equal waits (M35b, rule 2): before power binds (no queue)
-    # cheaper power alone moved every data centre to the neighbour region from 2017, where
-    # 22.5's outages and 46.5's least reliable grid cost the products it serves
-    return sorted(
-        rows, key=lambda s: (s.queue_hi or 0.0, s.region != home, s.price_usd_mwh, s.city)
-    )
+    # M35b, rule 2: a load that would queue gets a plant behind its meter and skips the queue
+    # wherever it is (46.3), so the wait does not rank sites; the grid's reliability does (46.5:
+    # an outage hits the products a data centre serves), then the home region, then price.
+    # Cheaper power alone moved every data centre to the neighbour region from 2017; ranking by
+    # the queue moved them again from 2026, onto the least reliable grid.
+    return sorted(rows, key=lambda s: (s.outages_a_year, s.region != home, s.price_usd_mwh, s.city))
 
 
 def _plant_size(game: Game, kind: str, region: str, load_mw: float) -> float:
