@@ -75,9 +75,8 @@ CELL_MWH: Final = 100  # the smallest plant: about 1,600 cars of 60 kWh a month
 LI_TONNES: Final = 10_000
 LEAD: Final = 20.0
 LANDED_MARGIN: Final = 0.82  # a sensible price: cost / 0.82 (cars' 18% gross margin)
-REVENUE: Final = ("4000_revenue_subscriptions", "4410_materials_sales")
-COSTS: Final = ("5000_cogs", "5100_tariffs", "5150_platform_fees", "6700_depreciation")
 SOFTWARE_MEMO: Final = "Car software"
+ROLE: Final = "process_engineer"  # who staffs the converter and the cell plant
 
 
 @cache
@@ -129,7 +128,7 @@ def _staff(g: Game, fid: int, role: str, n: int, sub: int) -> None:
     unit = next(u.id for u in g.state.units if u.name == f"site {fid}")
     _energise(g)
     assert g.act(StaffFacility(g.founder_id, fid, unit)), g.refused
-    g.notes[f"site:{fid}"] = role
+    g.notes[f"site:{fid}"] = 1  # its role is ROLE
 
 
 def keep_staffed(g: Game) -> None:
@@ -137,13 +136,12 @@ def keep_staffed(g: Game) -> None:
     from tst.sim.facilities.lifecycle import staffing
 
     for f in list(g.state.facilities):
-        role = g.notes.get(f"site:{f.id}")
-        if role is None or f.status == "closed":
+        if f"site:{f.id}" not in g.notes or f.status == "closed":
             continue
         s = staffing(g.state, f, g.loaded.balance)
         if s.staff < s.needed:
             state, _ = fixtures.hire(
-                g.state, g.loaded, str(role), "senior", s.needed - s.staff, f"site {f.id}",
+                g.state, g.loaded, ROLE, "senior", s.needed - s.staff, f"site {f.id}",
                 12_000_000, 100 + g.state.turn,
             )  # fmt: skip
             g.state = state
@@ -252,12 +250,6 @@ def _delta(g: Game, before: dict[tuple[int, str], int], accounts: Sequence[str])
     return sum(g.balances.get((PLAYER, a), 0) - before.get((PLAYER, a), 0) for a in accounts)
 
 
-def _gross_margin(g: Game, before: dict[tuple[int, str], int]) -> float:
-    revenue = -_delta(g, before, REVENUE)
-    cost = _delta(g, before, COSTS)
-    return (revenue - cost) / revenue if revenue > 0 else 0.0
-
-
 def _car_margin(g: Game, since: int) -> float:
     """The car line's gross margin from `since`: revenue less its cars' cost by line."""
     revenue = cost = 0.0
@@ -336,13 +328,11 @@ def run_seed(seed: int) -> SeedRun:
     bought = world(seed)
     car_maker(bought, cells="catl")
     _play_to(bought, ym_to_turn(2034, 1))
-    before = dict(bought.balances)
     _play_to(bought, END_2034 + 1)
     own = world(seed)
     own_cells(own)
     car_maker(own, cells="own")
     _play_to(own, ym_to_turn(2034, 1))
-    before_own = dict(own.balances)
     _play_to(own, END_2034 + 1)
     # 4: software matters
     sw = world(seed)
@@ -459,8 +449,8 @@ def report(r: Results) -> str:
         f"2. S-curve: median global EV share 2035 {r.share_median:.1%} (35-65%):"
         f" {'met' if ok2 else 'MISSED'}; faster with cheaper batteries on {r.faster} of"
         f" {len(r.runs)} seeds",
-        f"3. Integration pays: median gross-margin gap {r.margin_gap_median * 100:.1f} points (>= 4):"
-        f" {'met' if r.margin_gap_median >= 0.04 else 'MISSED'}",
+        f"3. Integration pays: median gross-margin gap {r.margin_gap_median * 100:.1f} points"
+        f" (>= 4): {'met' if r.margin_gap_median >= 0.04 else 'MISSED'}",
         f"4. Software matters: median software share {r.software_median:.1%} (>= 10%):"
         f" {'met' if r.software_median >= 0.10 else 'MISSED'}",
         f"5. Tariffs bite: China-made car's US share at most {r.china_max:.2%} (< 2%):"
