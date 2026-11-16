@@ -35,6 +35,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="Regenerate tests/golden/snapshots/*.json (record the reason in CHANGELOG.md)",
     )
     parser.addoption(
+        "--update-state-cache",
+        action="store_true",
+        default=False,
+        help="Re-record tests/fixtures/m30_state_hashes.json (M30's state cache; an intentional "
+        "result change only, with the reason in CHANGELOG.md)",
+    )
+    parser.addoption(
         "--shard",
         default=None,
         help="Run one of N shards balanced by measured duration, as K/N (CI's matrix jobs)",

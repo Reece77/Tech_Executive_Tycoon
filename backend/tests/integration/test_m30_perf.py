@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from tests.calibration import runner_note
 from tests.helpers import answer_critical
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst import holiday
@@ -107,7 +108,7 @@ def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> 
     report = (
         f"M30: from {state.turn} ({len(state.staff(1))} staff) a month {median * 1000:.0f} ms "
         f"median, {worst * 1000:.0f} ms at most ({[round(m * 1000) for m in months]}); "
-        f"12 months of Holiday {spent:.1f} s"
+        f"12 months of Holiday {spent:.1f} s; {runner_note(median)}"
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
