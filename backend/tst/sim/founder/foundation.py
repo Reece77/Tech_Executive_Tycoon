@@ -5,10 +5,10 @@ their cause's effect."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.founder import personal
@@ -102,7 +102,7 @@ def beloved_from(grant_cents: int, balance: Balance) -> float:
     dollars = grant_cents / CENTS_A_DOLLAR
     if dollars <= fb.beloved_unit_dollars:
         return 0.0
-    return min(fb.beloved_cap, fb.beloved_k * math.log10(dollars / fb.beloved_unit_dollars))
+    return min(fb.beloved_cap, fb.beloved_k * dmath.log10(dollars / fb.beloved_unit_dollars))
 
 
 def grants_month(state: GameState, balance: Balance) -> tuple[GameState, list[LogItem]]:

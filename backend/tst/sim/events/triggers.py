@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData, TriggerBalance
 from tst.sim.events.formulas import below_strength, clamp01
 from tst.sim.finance.board import average_confidence
@@ -199,8 +200,8 @@ def triggers(
         then = {s.segment: s.customers for s in start.segments_of(p.id)} if p.id in before else {}
         total_now, total_then = sum(now.values()), sum(then.values())
         first_enterprise = now.get(ENTERPRISE, 0.0) >= 1 > then.get(ENTERPRISE, 0.0)
-        tens = total_now >= 10 and math.floor(math.log10(total_now)) > (  # tunable-exempt: 16.2
-            math.floor(math.log10(total_then)) if total_then >= 1 else 0
+        tens = total_now >= 10 and math.floor(dmath.log10(total_now)) > (  # tunable-exempt: 16.2
+            math.floor(dmath.log10(total_then)) if total_then >= 1 else 0
         )
         if first_enterprise or tens:
             segment = ENTERPRISE if first_enterprise else max(now, key=lambda k: now[k])

@@ -4,9 +4,9 @@ Read-only except `post`, which adds one balanced entry to the personal book."""
 
 from __future__ import annotations
 
-import math
 from fractions import Fraction
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.finance.captable import fd_shares, person_shares
 from tst.sim.founder.investing_models import STAKE_FULL, AngelStake, WealthPoint
@@ -158,4 +158,4 @@ def legacy_wealth(net_worth_cents: int, balance: Balance) -> float:
     pb = balance.personal
     unit = pb.legacy_unit_dollars * CENTS_A_DOLLAR
     # money-exact: ratio
-    return pb.legacy_points * math.log10(1 + max(0, net_worth_cents) / unit)
+    return pb.legacy_points * dmath.log10(1 + max(0, net_worth_cents) / unit)

@@ -8,11 +8,11 @@ stored on the mine and never leave the sim (35.2; ADR-0007)."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Final, Literal
 
+from tst.sim import dmath
 from tst.sim.actions.hiring import Outcome, spend_energy
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
@@ -466,8 +466,8 @@ def design_capacity_t(project: Project) -> float:
     feasibility life, a year (34.2's capex basis)."""
     assert project.est_tonnage_center is not None and project.est_grade_center is not None
     assert project.recovery_center is not None
-    ore = math.exp(project.est_tonnage_center) * MT
-    return ore * math.exp(project.est_grade_center) * project.recovery_center
+    ore = dmath.exp(project.est_tonnage_center) * MT
+    return ore * dmath.exp(project.est_grade_center) * project.recovery_center
 
 
 def quote(
@@ -495,7 +495,7 @@ def quote(
     if not lo * (1 - 1e-9) <= cap <= hi * (1 + 1e-9):  # tunable-exempt: float tolerance
         raise MiningRuleError(f"capacity is {lo:,.0f}-{hi:,.0f} t a year")
     estimate = mf.capex_for(
-        round(math.exp(project.capex_center) * 100), cap, design, mb.capex_scale
+        round(dmath.exp(project.capex_center) * 100), cap, design, mb.capex_scale
     )
     span = mb.subtypes[sub].construction_months
     over = mb.overrun[project.level]
@@ -585,7 +585,7 @@ def build_mine(
         subtype=q.subtype,
         level=project.level or "definitive",
         capacity_t=q.capacity_t,
-        design_grade=math.exp(project.est_grade_center),
+        design_grade=dmath.exp(project.est_grade_center),
         design_recovery=project.recovery_center,
         ordered_turn=turn,
         ready_turn=ready,

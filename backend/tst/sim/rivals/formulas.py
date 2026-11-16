@@ -5,8 +5,7 @@ Pure functions of numbers; the phases in this package gather the inputs from the
 
 from __future__ import annotations
 
-import math
-
+from tst.sim import dmath
 from tst.sim.data_models import PoachBalance, RivalNeedBalance, RivalsBalance
 from tst.sim.money import BP_DENOMINATOR
 
@@ -107,7 +106,7 @@ def poach_score(
 
 def poach_probability(score: float, pb: PoachBalance) -> float:
     """p = 1 / (1 + e^(-2 s))."""
-    return 1 / (1 + math.exp(-pb.steepness * score))
+    return 1 / (1 + dmath.exp(-pb.steepness * score))
 
 
 def poach_band(probability: float, pb: PoachBalance) -> str:

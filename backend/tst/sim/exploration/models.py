@@ -8,9 +8,10 @@ results, which the API may show. Ranges are stored as a centre and a half-width 
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from typing import Final, Literal
+
+from tst.sim import dmath
 
 type ProjectStatus = Literal["active", "permitted", "refused", "sold", "relinquished", "lapsed"]
 type StageKey = Literal[
@@ -171,4 +172,4 @@ class Project:
 
 
 def log_range(center: float, hw: float) -> tuple[float, float]:
-    return math.exp(center - hw), math.exp(center + hw)
+    return dmath.exp(center - hw), dmath.exp(center + hw)

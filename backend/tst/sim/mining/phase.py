@@ -14,11 +14,11 @@ as before (35.6 target 6).
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.commodities import costs as commodity_costs
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import QueuedEvent
@@ -247,7 +247,7 @@ def grade_now(
     z = float(mining_draws(rng, state.turn, mine.id, GRADE).standard_normal())
     assert data.geology is not None
     sd = data.geology.commodity(mine.commodity).hole_sd
-    return mine.hidden_grade * math.exp(mb.profile_share * sd * dev + mb.grade_noise * z)
+    return mine.hidden_grade * dmath.exp(mb.profile_share * sd * dev + mb.grade_noise * z)
 
 
 def months_producing(mine: Mine, turn: int) -> int:
@@ -614,7 +614,7 @@ def estimated_ore(state: GameState, mine: Mine, balance: Balance) -> float:
     project = next((p for p in state.projects if p.id == mine.project_id), None)
     if project is None or project.est_tonnage_center is None:
         return mine.ore_capacity_mt * balance.exploration.feasibility.life_years
-    return math.exp(project.est_tonnage_center)
+    return dmath.exp(project.est_tonnage_center)
 
 
 def _company_region(state: GameState, company_id: int, data: GameData) -> str | None:

@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from statistics import NormalDist
 
+from tst.sim import dmath
 from tst.sim.exploration.config import ExplorationBalance, FeasibilityBalance
 
 
@@ -17,7 +17,7 @@ def range_factor(skill: float, eb: ExplorationBalance) -> float:
 
 def z_of(confidence: float) -> float:
     """The two-sided normal quantile of a stated confidence (0.9 -> 1.645)."""
-    return NormalDist().inv_cdf((1 + confidence) / 2)
+    return dmath.normal_inv_cdf((1 + confidence) / 2)
 
 
 def fpc(n: int, cells: int) -> float:
@@ -41,14 +41,14 @@ def grade_estimate(
     n = len(assays)
     if n == 0:
         raise ValueError("no holes")
-    center = sum(math.log(a) for a in assays) / n
+    center = sum(dmath.log(a) for a in assays) / n
     spread = math.sqrt(sum(f * f for f in factors)) / n
     return center, z_of(confidence) * hole_sd * spread * fpc(n, cells)
 
 
 def half_width_pct(hw: float) -> float:
     """A log half-width as the +/-% it is shown with: the mean of the two sides."""
-    return (math.exp(hw) - math.exp(-hw)) / 2
+    return (dmath.exp(hw) - dmath.exp(-hw)) / 2
 
 
 def category_for(holes: int, inferred: int, indicated: int, measured: int) -> str | None:
@@ -64,7 +64,7 @@ def category_for(holes: int, inferred: int, indicated: int, measured: int) -> st
 
 def annuity(rate: float, years: int) -> float:
     """The present value of 1 a year for `years` years."""
-    return (1 - (1 + rate) ** -years) / rate
+    return (1 - dmath.pow(1 + rate, -years)) / rate
 
 
 def npv_usd(
@@ -87,7 +87,7 @@ def npv_usd(
     product = tonnage_mt * 1e6 * grade * recovery / life  # tunable-exempt: Mt to t; a year
     build = max(build_years, 1)
     capex_pv = capex_usd / build * annuity(r, build)
-    start = (1 + r) ** -build
+    start = dmath.pow(1 + r, -build)
     early = min(fb.deck_years, life)
 
     def cash(price: float) -> float:

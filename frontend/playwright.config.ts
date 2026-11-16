@@ -13,6 +13,10 @@ const LAUNCHER_PORT = Number(process.env.TST_E2E_LAUNCHER_PORT ?? 5176);
 // the M4c flow edits a save there with tools/e2e_set_arr.py.
 process.env.TST_E2E_SAVE_DIR ??= mkdtempSync(join(tmpdir(), 'tst-e2e-'));
 const saveDir = process.env.TST_E2E_SAVE_DIR;
+// M35a: both API servers log every unhandled exception and 5xx response here; the global
+// teardown fails the run on any the allow-list does not name (e2e/server-errors.ts).
+process.env.TST_E2E_ERROR_LOG ??= join(saveDir, 'server-errors.jsonl');
+const errorLog = process.env.TST_E2E_ERROR_LOG;
 
 // PLAYWRIGHT_CHANNEL=msedge (or chrome) uses an installed browser instead of downloading
 // Playwright's Chromium with `pnpm exec playwright install chromium`.
@@ -27,6 +31,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: 'list',
+  globalSetup: './e2e/server-errors-setup.ts',
+  globalTeardown: './e2e/server-errors.ts',
   use: {
     baseURL: `http://127.0.0.1:${WEB_PORT}`,
     trace: 'retain-on-failure',
@@ -47,7 +53,12 @@ export default defineConfig({
       cwd: '../backend',
       url: `http://127.0.0.1:${API_PORT}/api/meta/scenarios`,
       // No API key: events are written by templates, never by Claude (CLAUDE.md section 8).
-      env: { TST_SAVE_DIR: saveDir, ANTHROPIC_API_KEY: '', TST_ANTHROPIC_API_KEY: '' },
+      env: {
+        TST_SAVE_DIR: saveDir,
+        TST_ERROR_LOG: errorLog,
+        ANTHROPIC_API_KEY: '',
+        TST_ANTHROPIC_API_KEY: '',
+      },
       reuseExistingServer: false,
       timeout: 60_000,
     },
@@ -57,7 +68,12 @@ export default defineConfig({
       command: `uv run --project backend python tools/launcher.py --no-browser --skip-install --port ${LAUNCHER_PORT}`,
       cwd: '..',
       url: `http://127.0.0.1:${LAUNCHER_PORT}/api/meta/scenarios`,
-      env: { TST_SAVE_DIR: saveDir, ANTHROPIC_API_KEY: '', TST_ANTHROPIC_API_KEY: '' },
+      env: {
+        TST_SAVE_DIR: saveDir,
+        TST_ERROR_LOG: errorLog,
+        ANTHROPIC_API_KEY: '',
+        TST_ANTHROPIC_API_KEY: '',
+      },
       reuseExistingServer: false,
       timeout: 300_000,
     },
