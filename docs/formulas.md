@@ -3856,3 +3856,25 @@ Devices, their classes and routes, submissions and their stages, review ranges, 
 - **Studies:** chance = kind's rate + `study.quality_weight` x (quality - 50) + `study.evidence_weight` x evidence; shown +/- `shown_band`. Evidence adds the kind's strength (pivotal 0.6) on success.
 - **Coverage:** months ~ U(lo, lo + (hi - lo) x (1 - 0.8 x evidence)); approve = lerp(approve range, evidence). **Adoption:** a += r x a x (1 - a), r = `rate` x (1 + `evidence_weight` x evidence) x (1 + `training_weight` x min(1, training / `training_full_cents`)), from `seed` at first clearance.
 - **Recalls:** monthly chance = `chance_year` / 12 x the quality level's defect x (1 + `install_weight` x log10(1 + installed units)); class by the data's mix, one class lower when surveillance catches it. **Inspections:** monthly chance = `chance_year` / 12 x strictness; findings x the level's (and a for-cause visit's) multiplier.
+
+## 51. v4 balance targets and follow-ups (M35b)
+
+### 51.1 Rules added by the balance pass
+
+- **Regulators' strictness after 2025** (§48.1's "seeded after"; `tst.sim.regulation.strictness`, `regulation.strictness`): to `history_end` the data's index; then each January adds a drift `(2u − 1) × sd × √3` (a yearly step of sd `sd` 0.02) and, every `election_years` (4, the first in a seeded year of the first cycle), a political swing uniform in `swing` (±0.05); clamped to `bounds` [0.3, 1.3] each year. Stream `regulation` key (3, regulator index, year − 2010), uniform draws only. The value read is the path × (1 − `influence_cut` 0.30 × I / 100), I the most §32.5 influence any company holds in the regulator's region, clamped again. Investigations' chance (§48.3) and the structural gate (§48.4) read it. Hidden (§48.6).
+- **Mergers review reads the regulators** (§28.4, the brief's "§28.7"): from `regulation.start` a review's block probability is also × (the region's strictest regulator's strictness ÷ its 2025 value) × `regulation.merger_review.open_case` (1.5) while one of that region's regulators has an open case on the acquirer.
+- **Rival foundries' EUV growth waits on deliveries** (§47.2, §38.3; `market.euv_gated`): from `equipment.start`, for a foundry at an EUV-only node (in a queued generation's nodes and not DUV's), a year's seeded growth `g` becomes `g × (1 − s + s × r)`, `s` = `equipment.rival_growth.euv_share` (0.5), `r` = min(1, EUV tools ASML delivered it in the year to date ÷ its buyer share × the generation's capacity × months played / 12).
+- **The lithography gate reads the group** (§47.4): "stage 5" is the group's (a holding company's, §31.2), so an operating company at stage 4 under its Holdings, which keeps the chip and the fab, may research lithography and start the programme. Before M35b the gate read the operating company and could never open.
+- **Google Play's regulated rates** (platforms.yaml): the EU from March 2024 at 27% (DMA alternative billing, 3 points off); the US from October 2025 at 0% (Epic v. Google's injunction; no fee collected on linked-out purchases by December 2025).
+
+### 51.2 Targets (printed by `tools/v4_targets.py`, weekly `test_v4_balance.py`)
+
+The v4 scripts (`tst/balance/strategies_v4.py`) and their comparisons are played January 2010 to December 2039 on seeds 1–10 (the weekly also 11–30). ARR is 12 × the group's last month (§43).
+
+- **T1 viable, not dominant:** median ARR 0.9–1.4 × the comparison: `platform_owner` / `devices_regions`, `power_hyperscaler` / `cloud_steady` (steady_regions with integrator's data centres selling spare capacity, no plants), `litho_bet` / `full_integrator`.
+- **T2 no strategy always wins:** no v4 strategy has the top founder value in December 2039 on more than 4 of 10 seeds among §43's seven and the four v4 strategies.
+- **T3 regulation bites platforms:** `platform_owner` has a duty or a fine by December 2034 on at least 7 of 10 seeds; `compliant_platform`'s median fines to 2039 are at least 30% below it.
+- **T4 power binds:** the capacity each cloud company ordered by December 2032 (all of it serving its home market, North America, the most congested region) is all live at least 12 months earlier for `power_hyperscaler` (median of the seeds' paired gaps; not live by 2039 counts as 2040).
+- **T5:** §44.9, §46.8, §47.5 and §48.5's targets and §43's on the combined code (their own tools). **T6:** the known misses, reported.
+
+The rows are named `V4.T1.1` … `V4.T4` (the known-miss list matches by name). M35b carries `V4.T1.2` (known while |ratio − 1.15| ≤ 0.35) and `V4.T4` (known while the gap is ≥ 0) to M43 (`tst/balance/known_misses.py`).

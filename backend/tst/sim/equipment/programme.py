@@ -81,6 +81,15 @@ def level(state: GameState, company_id: int, balance: Balance, data: GameData) -
     return levels.level(state, data, balance, company_id, balance.equipment.programme.domain)
 
 
+def group_stage(state: GameState, company_id: int) -> int:
+    """The company's stage read through its group (M35b): a holding company takes stage 5
+    (31.2) while its operating company, which keeps the chip and the fab, stays at 4."""
+    from tst.sim.state import ultimate_owner
+
+    top = ultimate_owner(state, company_id)
+    return max(state.company(company_id).stage, state.company(top).stage)
+
+
 def has_chip_and_fab(state: GameState, company_id: int) -> bool:
     chip = any(
         p.category.startswith(CHIPS_PREFIX) and p.status in ("live", "development", "sunset")
@@ -117,8 +126,7 @@ def why_not(
         p = ef.stage(stage)
     except KeyError:
         return f"unknown programme stage {stage!r}"
-    company = state.company(company_id)
-    if company.stage < pb.min_stage:
+    if group_stage(state, company_id) < pb.min_stage:
         return f"the lithography programme opens at stage {pb.min_stage}"
     if not has_chip_and_fab(state, company_id):
         return "the lithography programme needs a chip product and a fab"

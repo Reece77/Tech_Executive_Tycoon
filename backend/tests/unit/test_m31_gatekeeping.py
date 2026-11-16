@@ -62,8 +62,11 @@ def test_an_app_pays_store_fees(loaded: LoadedData) -> None:
     assert due
     revenue = CUSTOMERS * 40
     total = sum(due.values())
-    # paid share 0.4 x an effective fee between 15% and 30% x every platform's users (about all)
-    assert 0.4 * 0.15 * revenue * 0.9 <= total <= 0.4 * 0.30 * revenue
+    # paid share 0.4 x an effective fee between 15% and 30% x every platform's users (about all);
+    # the regulated paths' share (alternative_share) may pay as little as 0% (M35b: Google Play's
+    # US rate under Epic v. Google from October 2025, platforms.yaml)
+    alt = loaded.balance.platforms.alternative_share
+    assert 0.4 * 0.15 * revenue * 0.9 * (1 - alt) <= total <= 0.4 * 0.30 * revenue
     entries = fees.fee_entries(state, loaded.balance, loaded.game_data)
     mine = [e for e in entries if e.company_id == state.player.id and e.memo.startswith("Platform")]
     assert sum(e.lines[0].amount for e in mine) == total

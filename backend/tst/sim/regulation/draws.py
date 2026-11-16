@@ -4,7 +4,9 @@ Keys: `(0, regulator index, *company stable key)` a regulator's monthly opening 
 `(1, case id, k)` a case's draws, `k` = STAGE_LENGTH (a stage's length, drawn when it starts),
 OUTCOME (a ruling's or an appeal's outcome and the chance inside its shown range), FINE (the
 fine's gravity), STRUCTURAL (whether a ruling is a structural order), RIVAL (a rival's answer);
-`(2, order id, k)` a structural order's appeal length and outcome. Draws are never stored."""
+`(2, order id, k)` a structural order's appeal length and outcome; `(3, regulator index,
+year - 2010)` a regulator's strictness path after the history (M35b: regulation.strictness).
+Draws are never stored."""
 
 from __future__ import annotations
 

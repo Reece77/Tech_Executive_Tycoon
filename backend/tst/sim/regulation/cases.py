@@ -47,6 +47,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.platforms import data as pdata
 from tst.sim.regulation import data as rdata
 from tst.sim.regulation import draws
+from tst.sim.regulation import strictness as strict
 from tst.sim.regulation.config import Conduct, DutyKind, RegulatorDef
 from tst.sim.regulation.designate import designated_by
 from tst.sim.regulation.duties import add_duty, breaches, platforms_in
@@ -169,7 +170,7 @@ def chance(
     floor = ib.min_revenue_cents * balance.economy_scale.money
     if not found or v.region_year(owner, reg.region) < floor:
         return 0.0
-    c = ib.base * rdata.strictness(reg, state.turn)
+    c = ib.base * strict.strictness(state, reg, balance, data)
     for factor in found.values():
         c *= factor
     c *= 1 - ib.influence_cut * influence.of(state, owner, reg.region) / PCT
