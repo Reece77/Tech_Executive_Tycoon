@@ -63,32 +63,34 @@ def get_vehicles(save_id: str, settings: SettingsDep, data: DataDep) -> Vehicles
 
 
 @router.get(
-    "/vehicles/cars/{product_id}",
+    "/vehicles/cars/{car_id}",
     response_model=MyCarOut,
     responses=ERRORS,
     operation_id="getVehicleCar",
 )
-def get_car(save_id: str, product_id: int, settings: SettingsDep, data: DataDep) -> MyCarOut:
+def get_car(save_id: str, car_id: int, settings: SettingsDep, data: DataDep) -> MyCarOut:
+    """A car line's page; `car_id` is the line's product id (a car line only, as the power
+    plants' `facility_id`)."""
     state = _state(_path(settings, save_id))
-    p = state.product(product_id)
+    p = state.product(car_id)
     if p is None or p.company_id not in group_ids(state) or not is_vehicle(p, data.balance):
-        raise HTTPException(status_code=404, detail=f"no car line {product_id}")
+        raise HTTPException(status_code=404, detail=f"no car line {car_id}")
     return vehicle_views.car_out(state, p, data)
 
 
 @router.post(
-    "/vehicles/cars/{product_id}/spec",
+    "/vehicles/cars/{car_id}/spec",
     response_model=VehiclesActionOut,
     responses=ERRORS,
     operation_id="setVehicleSpec",
 )
 def set_spec(
-    save_id: str, product_id: int, body: SetVehicleSpecIn, settings: SettingsDep, data: DataDep
+    save_id: str, car_id: int, body: SetVehicleSpecIn, settings: SettingsDep, data: DataDep
 ) -> VehiclesActionOut:
     path = _path(settings, save_id)
     action = SetVehicleSpec(
         _founder_id(_state(path)),
-        product_id,
+        car_id,
         body.pack_kwh,
         body.chemistry,
         body.charge_kw,

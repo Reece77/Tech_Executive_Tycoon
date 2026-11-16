@@ -45,7 +45,7 @@ from tst.sim.money import exact
 from tst.sim.refining import goods as rg
 from tst.sim.refining import plants as refinery
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, group_companies
+from tst.sim.state import GameState, derived, group_companies
 from tst.sim.vehicles import draws
 from tst.sim.vehicles.config import OWN, interp
 from tst.sim.vehicles.data import MONTHS, TINY, file, year_at
@@ -55,6 +55,7 @@ KWH_PER_MWH: Final = 1000  # tunable-exempt: unit conversion
 GWH_PER_KWH: Final = 1e-6  # tunable-exempt: unit conversion
 METALS: Final = ("lithium_carbonate", "nickel", "cobalt")  # tunable-exempt: 49.2's metals
 NMC: Final = "nmc"  # tunable-exempt: the metals basket is an NMC kWh's
+LEARNING_KEY: Final = "vehicles.learning_level"  # tunable-exempt: its memo key (state.derived)
 CENTS: Final = 100  # tunable-exempt: dollars to cents
 MAX_RATE: Final = 0.99  # tunable-exempt: learning never takes the whole gap in a month
 MIN_YIELD: Final = 0.05  # tunable-exempt: a plant's yield floor after noise
@@ -114,7 +115,12 @@ def metals_cents(
 
 
 def learning_level(state: GameState, balance: Balance, data: GameData) -> float | None:
-    """The learning curve's price a kWh (module docstring); None before it starts."""
+    """The learning curve's price a kWh (module docstring); None before it starts. Computed
+    once per state (M30's memo): M28's long run asks for it for every chain company's costs."""
+    return derived(state, LEARNING_KEY, lambda: _learning_level(state, balance, data))
+
+
+def _learning_level(state: GameState, balance: Balance, data: GameData) -> float | None:
     vb = balance.vehicles
     world = state.vehicle_world
     if state.turn < vb.start_turn or world.learning_rate is None:

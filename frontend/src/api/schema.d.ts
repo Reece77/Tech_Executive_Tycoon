@@ -5684,14 +5684,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/saves/{save_id}/vehicles/cars/{product_id}": {
+    "/api/saves/{save_id}/vehicles/cars/{car_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Car */
+        /**
+         * Get Car
+         * @description A car line's page; `car_id` is the line's product id (a car line only, as the power
+         *     plants' `facility_id`).
+         */
         get: operations["getVehicleCar"];
         put?: never;
         post?: never;
@@ -5701,7 +5705,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/saves/{save_id}/vehicles/cars/{product_id}/spec": {
+    "/api/saves/{save_id}/vehicles/cars/{car_id}/spec": {
         parameters: {
             query?: never;
             header?: never;
@@ -40669,7 +40673,7 @@ export interface operations {
             header?: never;
             path: {
                 save_id: string;
-                product_id: number;
+                car_id: number;
             };
             cookie?: never;
         };
@@ -40728,7 +40732,7 @@ export interface operations {
             header?: never;
             path: {
                 save_id: string;
-                product_id: number;
+                car_id: number;
             };
             cookie?: never;
         };

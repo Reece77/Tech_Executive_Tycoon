@@ -25490,12 +25490,13 @@
         }
       }
     },
-    "/api/saves/{save_id}/vehicles/cars/{product_id}": {
+    "/api/saves/{save_id}/vehicles/cars/{car_id}": {
       "get": {
         "tags": [
           "vehicles"
         ],
         "summary": "Get Car",
+        "description": "A car line's page; `car_id` is the line's product id (a car line only, as the power\nplants' `facility_id`).",
         "operationId": "getVehicleCar",
         "parameters": [
           {
@@ -25508,12 +25509,12 @@
             }
           },
           {
-            "name": "product_id",
+            "name": "car_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "integer",
-              "title": "Product Id"
+              "title": "Car Id"
             }
           }
         ],
@@ -25571,7 +25572,7 @@
         }
       }
     },
-    "/api/saves/{save_id}/vehicles/cars/{product_id}/spec": {
+    "/api/saves/{save_id}/vehicles/cars/{car_id}/spec": {
       "post": {
         "tags": [
           "vehicles"
@@ -25589,12 +25590,12 @@
             }
           },
           {
-            "name": "product_id",
+            "name": "car_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "integer",
-              "title": "Product Id"
+              "title": "Car Id"
             }
           }
         ],

@@ -28,8 +28,8 @@ export function useVehicleCar(saveId: string, productId: number) {
     queryKey: ['saves', saveId, 'vehicles', 'car', productId],
     queryFn: async () =>
       unwrap(
-        await api.GET('/api/saves/{save_id}/vehicles/cars/{product_id}', {
-          params: { path: { save_id: saveId, product_id: productId } },
+        await api.GET('/api/saves/{save_id}/vehicles/cars/{car_id}', {
+          params: { path: { save_id: saveId, car_id: productId } },
         }),
       ),
     enabled: saveId !== '' && productId > 0,
@@ -44,8 +44,8 @@ function useAct<B>(saveId: string, send: (body: B) => Promise<unknown>) {
 export function useSetVehicleSpec(saveId: string, productId: number) {
   return useAct(saveId, async (body: Schemas['SetVehicleSpecIn']) =>
     unwrap(
-      await api.POST('/api/saves/{save_id}/vehicles/cars/{product_id}/spec', {
-        params: { path: { save_id: saveId, product_id: productId } },
+      await api.POST('/api/saves/{save_id}/vehicles/cars/{car_id}/spec', {
+        params: { path: { save_id: saveId, car_id: productId } },
         body,
       }),
     ),
