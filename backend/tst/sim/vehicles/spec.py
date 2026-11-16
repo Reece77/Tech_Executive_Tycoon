@@ -246,6 +246,8 @@ def unit_cost(
 
     # money-exact: rate (cents a car)
     integration = spec.pack_kwh * cell_market.market_cents(state, balance, data) * (1 / share - 1)
+    if spec.cells == OWN:  # in-house pack assembly on the group's cells (49.2)
+        integration *= 1 - balance.vehicles.cell_plant.integration_saving
     drive = interp(balance.vehicles.bom.drive_cents, year_at(state.turn))
     run = level if level is not None else capable_level(state, spec, product.company_id, balance)
     return UnitCost(

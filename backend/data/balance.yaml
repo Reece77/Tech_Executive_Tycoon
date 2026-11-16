@@ -2699,9 +2699,10 @@ vehicles:
     learn: 0.06 # a month at skill 12 (A: like a fab's 38.2, about two years to maturity)
     skill_ref: 12
     noise_sd: 0.005 # monthly yield noise, stream vehicles (2, facility)
-    other_share: 0.40 # other variable cost a kWh (cathode and anode processing, electrolyte, separator, foils, casing, labour) as a share of the month's market cell price (A: BNEF25's $74 cells less about $21 of metals at 2024 prices, less manufacturing)
+    other_share: 0.20 # M38 tuning from 0.40 (49.6 target 3: 0.25 gave a 3.5-point median gap). Other variable cost a kWh (cathode and anode processing, electrolyte, separator, foils, casing, labour) as a share of the month's market cell price (A: BNEF25's $74 cells less about $21 of metals at 2024 prices, less manufacturing)
     mwh_per_kwh: 0.03 # power a kWh of cells (R: 20-40 kWh a kWh of cell, Degen et al., Nature Energy 2023)
     fixed_share: 0.04 # fixed running cost a year as a share of capex (A, as refining's)
+    integration_saving: 0.5 # M38 tuning from 0.25 (49.6 target 3: 0.35 with other_share 0.20 gave 3.9 points). A car on its group's own cells assembles its packs in house: pack integration x (1 - this), the pack maker's margin kept (A)
     overrun: [0.0, 0.25] # hidden capex overrun, drawn at the order (A, as refining.overrun)
   charging:
     kind: charging_network

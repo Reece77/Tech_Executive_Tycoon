@@ -9,9 +9,11 @@ company doing nothing (so history holds); the targets then branch from that mont
 3. **Integration pays in cars:** a car maker from January 2026 (a stage-4 company with 20 senior
    hardware engineers, a car at 0.9 x the reference price assembled under a 3,000-car contract
    in San Francisco, $1M a month of marketing) buying LFP cells from CATL, against the same maker
-   on its own cells: a 500 MWh-a-month LFP plant and a 10,000 t/yr lithium converter, both
-   already running (built in 2024-2025, staffed). Gross margin in 2034: revenue (4000, 4410)
-   less cost of revenue (5000, 5100, 5150 and the plants' depreciation 6700).
+   on its own cells: a 100 MWh-a-month LFP plant (the smallest, sized to the line) and a 10,000
+   t/yr lithium converter, both already running (built in 2024-2025, staffed). The car line's
+   gross margin in 2034: its revenue less its cars' cost by line (the pack at the plant's cost a
+   kWh, depreciation included, for its own cells), from its VehicleMonths; the plants' sales of
+   surplus cells and lithium are a business of their own and left out.
 4. **Software matters:** the first maker with its own OS and L2+ (an autonomy lead topped up to
    20 each January, as a player funding the research would hold): software's share of the line's
    revenue from 2026 to 2035.
@@ -69,7 +71,7 @@ STAFF: Final = 20
 CONTRACT_UNITS: Final = 3_000
 CONTRACT_MONTHS: Final = 240
 MARKETING: Final = 100_000_000  # $1M a month
-CELL_MWH: Final = 500
+CELL_MWH: Final = 100  # the smallest plant: about 1,600 cars of 60 kWh a month
 LI_TONNES: Final = 10_000
 LEAD: Final = 20.0
 LANDED_MARGIN: Final = 0.82  # a sensible price: cost / 0.82 (cars' 18% gross margin)
@@ -127,6 +129,24 @@ def _staff(g: Game, fid: int, role: str, n: int, sub: int) -> None:
     unit = next(u.id for u in g.state.units if u.name == f"site {fid}")
     _energise(g)
     assert g.act(StaffFacility(g.founder_id, fid, unit)), g.refused
+    g.notes[f"site:{fid}"] = role
+
+
+def keep_staffed(g: Game) -> None:
+    """A sensible player replaces the plants' leavers (as M21's fab script does)."""
+    from tst.sim.facilities.lifecycle import staffing
+
+    for f in list(g.state.facilities):
+        role = g.notes.get(f"site:{f.id}")
+        if role is None or f.status == "closed":
+            continue
+        s = staffing(g.state, f, g.loaded.balance)
+        if s.staff < s.needed:
+            state, _ = fixtures.hire(
+                g.state, g.loaded, str(role), "senior", s.needed - s.staff, f"site {f.id}",
+                12_000_000, 100 + g.state.turn,
+            )  # fmt: skip
+            g.state = state
 
 
 def _energise(g: Game) -> None:
@@ -238,9 +258,26 @@ def _gross_margin(g: Game, before: dict[tuple[int, str], int]) -> float:
     return (revenue - cost) / revenue if revenue > 0 else 0.0
 
 
+def _car_margin(g: Game, since: int) -> float:
+    """The car line's gross margin from `since`: revenue less its cars' cost by line."""
+    revenue = cost = 0.0
+    for m in g.state.vehicle_months:
+        if m.turn < since:
+            continue
+        p = g.state.product(m.product_id)
+        assert p is not None
+        price = next(s.price_cents for s in g.state.segments_of(p.id) if s.price_cents)
+        revenue += m.units * (price or 0) + m.software_cents
+        cost += m.units * (
+            m.battery_cents + m.drive_cents + m.chips_cents + m.body_cents + m.assembly_cents
+        )
+    return (revenue - cost) / revenue if revenue > 0 else 0.0
+
+
 def _play_to(g: Game, turn: int, top_up: bool = False) -> None:
     domain = g.loaded.balance.vehicles.domain
     while g.state.turn < turn:
+        keep_staffed(g)
         if top_up and g.state.turn % 12 == 0:
             lead = g.state.research_lead(PLAYER, domain)
             if lead < LEAD:
@@ -315,7 +352,11 @@ def run_seed(seed: int) -> SeedRun:
     while sw.state.turn <= END_2035:
         _play_to(sw, sw.state.turn + 1, top_up=True)
         row = next(
-            (m for m in sw.state.vehicle_months if m.product_id == pid and m.turn == sw.state.turn - 1),
+            (
+                m
+                for m in sw.state.vehicle_months
+                if m.product_id == pid and m.turn == sw.state.turn - 1
+            ),
             None,
         )
         software += row.software_cents if row is not None else 0
@@ -333,8 +374,8 @@ def run_seed(seed: int) -> SeedRun:
         share_2035=share,
         share_fast=global_share(fast),
         share_slow=global_share(slow),
-        margin_bought=_gross_margin(bought, before),
-        margin_own=_gross_margin(own, before_own),
+        margin_bought=_car_margin(bought, ym_to_turn(2034, 1)),
+        margin_own=_car_margin(own, ym_to_turn(2034, 1)),
         software_share=software / revenue if revenue > 0 else 0.0,
         china_share_us=max(shares) if shares else 0.0,
         turn_seconds=seconds,
@@ -363,7 +404,9 @@ def _price_landed(g: Game, pid: int) -> None:
 
 
 def _us_share(g: Game, pid: int) -> float:
-    market = next(m for m in g.state.markets if m.category == "vehicles" and m.segment == "consumer")
+    market = next(
+        m for m in g.state.markets if m.category == "vehicles" and m.segment == "consumer"
+    )
     mine = sum(s.customers for s in g.state.segments_of(pid) if s.segment == "consumer")
     return mine / market.addressable if market.addressable > 0 else 0.0
 
@@ -401,7 +444,9 @@ def run(seeds: Sequence[int] = SEEDS, jobs: int = os.cpu_count() or 1) -> Result
 
 
 def report(r: Results) -> str:
-    lines = ["M38 balance targets (formulas.md 49.6), seeds " + ", ".join(str(x.seed) for x in r.runs)]
+    lines = [
+        "M38 balance targets (formulas.md 49.6), seeds " + ", ".join(str(x.seed) for x in r.runs)
+    ]
     for x in r.runs:
         lines.append(
             f"  seed {x.seed}: EV share 2035 {x.share_2035:.1%} (fast {x.share_fast:.1%}, slow"

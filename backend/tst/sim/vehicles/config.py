@@ -365,6 +365,7 @@ class CellPlantBalance(_Frozen):
     other_share: float = Field(ge=0)  # other variable cost a kWh, x the month's market price
     mwh_per_kwh: float = Field(ge=0)  # power a kWh of cells
     fixed_share: float = Field(ge=0)  # fixed cost a year as a share of capex
+    integration_saving: float = Field(ge=0, le=1)  # a car on own cells: pack integration cut
     overrun: Range  # hidden capex overrun fraction (stream vehicles (2, facility))
 
 
