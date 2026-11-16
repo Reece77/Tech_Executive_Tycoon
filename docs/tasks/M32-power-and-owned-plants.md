@@ -68,8 +68,23 @@ Load `pt-power`. Look at the siting panel for a new data centre in Virginia and 
 
 16. **Money scale (PM note 2026-11-15, M34's `economy_scale.money` = 0.1):** not applied to M32. That factor scales real-world *revenue and market-size thresholds* (the game's incumbents book about a tenth of their real revenue); M32's money figures are the costs of physical inputs, and the game already prices those inputs at real scale. M17's grid price is EIA's real 2010 industrial price (`refining.power_cents_per_mwh` 6800, $68/MWh), and ADR-0022 makes M32's grid price equal M17's index exactly to 2025; PPAs are quoted off that price. M21's fab capex is real scale: a 5 nm, 50k-start fab costs $15-25B (`fab.capex_scale`, 38.5 target 2). M32's plant capex (Lazard/NREL ATB $/kW, in 2010 dollars) sits on that same scale: a 1 GW nuclear unit costs about $10-15B with overrun, against a fab's $15-25B, which is the real ratio. Its fuel (Henry Hub and regional gas, $/MMBtu) is real scale too, as M17's own gas and power history is. The readings agree: gas behind the meter saves 34% against the grid at an 8.3% IRR (decision 15); were either side scaled by 0.1, the saving would be about 90% or negative. Real figures are therefore the game figures, and the power screen shows them as they are. M33's tool prices are M33's to check.
 
+17. **Merging main (M34 0055, M33 0056):** the migration is re-parented as `0057_m32` (revises `0056_m33`; schema version 57). Unlock ids: M34 25, M33 26, M32 27. Streams: power 60, equipment 61, regulation 62. A fab's starts on offer take M33's tool factor, then M32's grid-outage loss; a fab order posts M33's tool entries and joins M32's queue. M36r's float-money guard: plant capex at the order now uses `times()` (exact); a data centre's metered energy uses `commodities.power.opex_cents` (the operating cost's own expression, so the cents are unchanged); the rest are rates or a ratio (`# money-exact:`), and M36r's deferred `fabs/plants.py` line, handed to M32, leaves the list. The two `mining/phase.py` sustaining lines deferred to M32 stay deferred: fixing them changes the books to 2025, which target 1 forbids (a follow-up).
+18. **Fixtures re-recorded on the combined code:** `m32_history.json` on main 9779a205 (target 1 still holds: every kind's power cost within 1% to December 2025 and the books identical on 20 runs). M30's `m30_state_hashes.json` on CI's Linux runner (a temporary workflow, removed): without M32's seven fields every run matches main's fixture until January 2026 (turn 192, `power.start`), and the full integrator until its first fab or mine (turns 120-127), whose month records gain M32's energy fields; `test_m30_state_cache` (memo equals a fresh digest, two runs repeat) passes on CI.
+19. **Turn time against main** (`make check-timing`, this Windows machine, one after the other, main 9779a205): all 7 pass on both.
+
+| Guard | main | M32 |
+| --- | --- | --- |
+| 41.8 T8: a 2039 turn with the world | 220 ms (1.03x; 261 facilities) | 224 ms (1.07x; 335 facilities) |
+| Products: 120 turns, median | 345 ms | 344 ms |
+| Hiring: 120 turns | 331 ms | 330 ms |
+| M&A: after buying Apple (brand), median | 279 ms | 285 ms |
+| M&A: after buying Facebook (integrate), median | 458 ms | 454 ms |
+
+M32 adds about 4 ms (2%) to a 2039 turn with the world, from the power producers' 74 world facilities; the others are within noise. main's weekly 500 ms guard is red from M36r (CLAUDE.md §9 rule 3; M36p fixes it), so it is not read here.
+
 ## Follow-ups
 
+- M36r's two deferred `mining/phase.py` sustaining-cost lines (float dollars from capex cents): making them exact changes mines' books before 2026, so it needs its own history ruling (decision 17).
 - Rival hyperscalers' load, PPAs and plants (decision 9): needs rival data centres (ADR-0017's static incumbents have none).
 - The named 2025 construction projects for fabs and mines (TSMC Arizona, JASM Kumamoto, ESMC Dresden, Intel Ohio, Samsung Taylor; the largest lithium, copper and nickel projects): not found cheaply in this session's sources; for M28's data.
 - An automation area for power (buying PPAs, siting plants), out of scope by the brief.
