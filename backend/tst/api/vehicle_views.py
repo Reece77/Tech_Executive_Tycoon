@@ -367,7 +367,7 @@ def vehicles_out(state: GameState, data: LoadedData) -> VehiclesScreenOut:
             facility_id=f.id,
             name=facility_name(f, b, d),
             region=f.region,
-            capacity=f.capacity,
+            cars_month=f.capacity,
             status=_status(state, f.ready_turn, f.status == "closed"),
             ready=format_turn(f.ready_turn),
             yield_rate=f.yield_rate,

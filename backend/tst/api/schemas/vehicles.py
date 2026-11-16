@@ -166,7 +166,7 @@ class VehiclePlantOut(BaseModel):
     facility_id: int
     name: str
     region: str
-    capacity: int
+    cars_month: int = Field(description="The plant's size, cars a month")
     status: str
     ready: str
     yield_rate: float
@@ -246,7 +246,7 @@ class SetVehicleSpecIn(BaseModel):
 
 class BuildCellPlantIn(BaseModel):
     region: str
-    capacity: int
+    mwh_month: int = Field(description="The plant's size, MWh of cells a month")
     chemistry: str
     city: str | None = None
 

@@ -111,7 +111,7 @@ def build_cell_plant(
 ) -> VehiclesActionOut:
     path = _path(settings, save_id)
     action = BuildCellPlant(
-        _founder_id(_state(path)), body.region, body.capacity, body.chemistry, body.city
+        _founder_id(_state(path)), body.region, body.mwh_month, body.chemistry, body.city
     )
     return _act(path, data, action)
 

@@ -1251,8 +1251,18 @@ def _sync_hardware(session: Session, old: GameState, new: GameState) -> None:
 
 def _good_order(good: str) -> tuple[int, str]:
     """Goods in components_history.yaml order (server, GPU, then M12b's device and server
-    BOMs, equipment and foundry wafers, M21's EUV tools), others after by key."""
-    known = ("server", "gpu", "device_bom", "server_bom", "equipment", "foundry_wafer", "euv_tools")
+    BOMs, equipment and foundry wafers, M21's EUV tools, M38's vehicle BOM), others after by
+    key."""
+    known = (
+        "server",
+        "gpu",
+        "device_bom",
+        "server_bom",
+        "equipment",
+        "foundry_wafer",
+        "euv_tools",
+        "vehicle_bom",
+    )
     return (known.index(good), good) if good in known else (len(known), good)
 
 
