@@ -3746,3 +3746,103 @@ Regulators, rules and their dates, designations and the thresholds, duties, inve
 - **Duties** (§48.2) add `regulated` rows to the group's platforms in the region (ADR-0021 3): side-loading and anti-steering as dated rules, alternative payments as a path at the standard rate less `alt_discount`, a fee cap on the standard rate; no self-preferencing and anti-steering set those rules off. Only the player can breach a duty (by turning a forbidden setting back on); rivals comply.
 - **Investigations** (§48.3): a case needs a cause and `min_revenue_cents` of revenue in the region; one regulator has at most one open case on a group and waits `cooldown_months` after one closes. Settling at the inquiry costs no fine; at the charges `settle_share` of the fine at the middle of its range. A ruling's fine posts at once; a won appeal returns it. Lobbying a case costs `lobby_cents` and counts as `lobby_influence` on its odds.
 - **Structural orders** (§48.4) are a ruling's outcome (stream `regulation`, (1, case, 3)); the order names the player's own platform (its OS and store) for a devices case, a single subsidiary selling in the market, or the group's products there. A sale goes to the rival with the most customers in the market at `sale_multiple` x the unit's year of revenue (4930 for the seller, 1800 for the buyer). A spin-off is §31.5's and needs the unit in a subsidiary of a listed holding company; otherwise the order stays open and periodic penalties follow its deadline.
+
+## 49. Electric vehicles (M38; v5)
+
+Reece (2026-11-14): **electric vehicles first** among v5's new industries, on the chain v3 and v4 built: lithium from the player's mines and refineries, chips from its fabs, the car's software as a platform (§44), power for charging (§46). **History holds to 2025:** EV sales and shares by region, battery prices, subsidies, tariffs and rivals' line-ups follow `vehicles.yaml` (research `docs/v5-research/ev-dossier.md`); seeded after. Money and market sizes follow the `devices` category's convention (the game's economy scale, M35a's audit), not raw real figures.
+
+### 49.1 The category family
+
+- **`vehicles`** joins the unit-sale categories (§26.1) with segments: `consumer` (passenger cars), `fleet` (rental, ride-hailing, corporate) and `commercial` (vans and light trucks). Each segment has an addressable market of *new car buyers* in a region, of which an **EV share** buys electric: the share follows the data by region to 2025, then a seeded S-curve moved by battery cost, charging coverage, subsidies and fuel prices (§49.5).
+- **A vehicle product** has the unit model's features and quality, plus **range** (from pack size and efficiency), **charging speed**, **autonomy level** (§49.4) and **software** (its platform, §49.3). Development weights add `automotive_engineering`'s skills as an existing-skill mix (`hardware_design`, `manufacturing`, `design`, `software_engineering`, `chip_design`); no new skills.
+- **Cost of a unit** (§26.2's bill of materials): battery pack (kWh × the cell price + pack integration), motors and power electronics, chips (count and type by autonomy level: SoCs and AI accelerators from §26.3's categories, the player's own or bought), body and interior, assembly. Assembly is in an owned **vehicle plant** (a facility kind: capex, build months, capacity in units a year, staff, power from §46) or a contract manufacturer (as §26.2).
+- **Rivals** from the data with their line-ups and shares to 2025: Tesla, BYD, Volkswagen Group, Toyota, Hyundai-Kia, GM, Ford, Stellantis, Geely, SAIC, NIO, Xiaomi (from 2024), Rivian; from 2026 they launch and price by §26's rival rules and personality.
+
+### 49.2 Batteries
+
+- **Cells** are a market good (§33): price per kWh by year to 2025 from the data (BloombergNEF pack-price survey: about $1,100/kWh in 2010 falling to about $115 in 2024 *(verify)*), then a seeded learning curve tied to cumulative production and M17's lithium, nickel and cobalt prices. Suppliers are chain companies (CATL, BYD, LG Energy Solution, Panasonic, SK On, Samsung SDI) with capacity and countries.
+- **Own cell plants** (gigafactories; a facility kind, stage 4, a one-off): convert lithium hydroxide (M20's refined good), nickel, cobalt, manganese and graphite (M17 commodities; graphite added if missing) into cells by chemistry (`nmc` or `lfp`, with different inputs, energy density and cost), with yield learning like §38's fabs. Group supply follows M23a's rules.
+- Battery chemistry choice is a product setting: LFP cheaper and heavier (less range), NMC denser and dearer.
+
+### 49.3 The car as a platform
+
+- A vehicle product runs a **car platform** (§44's device platform kind, `car`): the player's own OS, a licensed one (Android Automotive), or a closed in-house system with no apps. Catalogue and developer rules apply as §44, with car-specific apps (navigation, media, charging, autonomy subscriptions).
+- **Software revenue:** subscriptions per car (`vehicles.software_attach` by year) for connectivity and driver assistance, booked monthly over the car's life (§10's subscription revenue), and over-the-air updates that raise a model's features after sale (`vehicles.ota_features`).
+
+### 49.4 Autonomy
+
+- An **autonomy** research domain (§21) with levels L2 (driver assistance), L2+ (hands-off on highways), L3 (conditional), L4 (driverless in a zone). Each level needs the domain's lead, AI model quality (§26's ai_models), chips (TOPS per car), and **regulatory approval** by region (§48's regulators, with an `automotive` kind: approval stages and dates from the data, seeded after).
+- Higher levels raise feature scores and software attach; incidents (stream `vehicles`) at L3+ can trigger recalls and investigations. Robotaxi services are out of scope here (a follow-up for M39).
+
+### 49.5 Charging, subsidies and tariffs
+
+- **Charging coverage** by region (public chargers per EV, data to 2025, then growing with EV stock and investment) raises the EV share and the feature score of cars with fast charging. The player can build a **charging network** (a facility kind: sites, chargers, power from §46, revenue per kWh sold) open to all EVs or exclusive to its own (an exclusivity boosts its cars' features but draws §48 scrutiny once its share is large).
+- **Subsidies** by region and date (China's purchase subsidies to 2022 and tax exemption, the US federal credit including the 2023 IRA rules and its 2025 end, EU countries' schemes; data to 2025, seeded after) lower the buyer's effective price for eligible cars (price caps, local content, battery sourcing rules: an IRA-style rule checks the cars' cell and mineral origins against §39's blocs).
+- **Tariffs** on imported cars by origin (US 100% on Chinese EVs from 2024, EU countervailing duties from October 2024, others) through §39's tariff model.
+
+### 49.6 Balance targets (printed)
+
+1. **History holds:** EV shares, battery prices, subsidies, tariffs and rivals' shares to 2025 follow the data; every earlier guard unchanged (a software or chip company's game unchanged except through shared commodity and chip demand).
+2. **The S-curve:** global EV share of new cars reaches 35–65% by 2035 (median, 10 seeds), faster with cheaper batteries.
+3. **Integration pays in cars:** a car maker with its own cell plant and lithium supply has a median gross margin at least 4 points above the same maker buying cells, by 2034.
+4. **Software matters:** a car with an own platform and L2+ earns at least 10% of its lifetime revenue from software by 2035.
+5. **Tariffs and rules bite:** a Chinese-made car's share in the US stays under 2% while the 2024 tariff holds.
+6. **Turn time** within the guards.
+
+### 49.7 What the API may show
+
+Vehicle products and their specs, EV shares, battery prices, subsidies and tariffs, charging coverage, rivals' public line-ups and shares, approvals and recalls. Never incident draws, seeded future rules or prices before they happen, or rivals' plans.
+
+## 50. Medical devices (M41; v5)
+
+Reece (2026-11-14): **medical devices with realistic approval stages** (FDA-style 510(k) and PMA, studies, recalls). This section adds medical devices as a category family with their own regulators, clinical evidence, reimbursement and hospital buyers, reusing M34's regulator machinery (§48) with health kinds, and M21–M26's hardware and chips. **History holds to 2025:** market sizes, approval timelines and rates, dated rules (EU MDR) and rivals follow `medical.yaml` (research `docs/v5-research/medical-devices-dossier.md`); seeded after. Money and market sizes follow the game's scale (M35a's audit).
+
+### 50.1 The category family
+
+- **`medical_devices`** with sub-categories (each a category with its own market, rivals and risk class):
+  - `wearables_diagnostics`: consumer and clinical wearables, glucose monitors, home diagnostics; ties to the player's `devices`;
+  - `imaging`: ultrasound, CT, MRI and imaging software;
+  - `surgical_robotics`: robotic surgery systems, instruments and service;
+  - `implantables`: cardiac devices, neuromodulation;
+  - `samd`: software as a medical device, including AI diagnostics, built on the player's `ai_models`.
+- **Customers:** hospitals and health systems (the `enterprise` segment, buying through value-analysis committees and group purchasing: a long sales cycle and a price set per contract), clinicians (who adopt through training and evidence), and consumers for wearables. Revenue models per sub-category: units, units plus consumables (robotic instruments and sensors per procedure), and subscriptions (software and service).
+- **Rivals** from the data with shares to 2025: Medtronic, Johnson & Johnson MedTech, Abbott, Stryker, Boston Scientific, Siemens Healthineers, GE HealthCare, Philips, Intuitive Surgical, Dexcom, Edwards Lifesciences, BD; Apple in consumer health features from 2018.
+
+### 50.2 Risk classes and routes to market
+
+- Each device design has a **risk class** (US class I, II or III; EU class I, IIa, IIb or III) from its sub-category and intended use, and a **route** by region:
+  - **US:** exempt (most class I); **510(k)** (substantial equivalence to a predicate device, needs a predicate in the market); **De Novo** (novel, low-to-moderate risk, no predicate); **PMA** (class III, needs pivotal clinical evidence).
+  - **EU:** CE marking through a notified body under the **MDD** to May 2021 and the **MDR** from 26 May 2021 (more clinical evidence, longer reviews, notified-body capacity limits); legacy devices' transition dates from the data.
+  - **Other regions:** Japan (PMDA), China (NMPA), others by data, with a simplified route of the nearest kind.
+- **Review time** by route and region from the data (FDA's performance goals and observed totals, MDR's notified-body backlogs), shown as a range; **outcomes** by route with historical rates (a request for more information, approval, or refusal).
+- **AI and software:** SaMD and AI-enabled devices follow the same routes (most by 510(k) or De Novo); a model update that changes intended use needs a new submission unless a **predetermined change control plan** was approved (FDA guidance, from its dates).
+
+### 50.3 Clinical evidence
+
+- **Studies** are research projects of a new kind: feasibility, pivotal and post-market. Each has enrolment (patients, sites), duration, cost per patient by sub-category, and an endpoint. The result is drawn (stream `medical`) with a success chance from the device's quality and the design's evidence strength, shown as a range; failures can be redesigned.
+- PMA needs a successful pivotal study; MDR class III and implantables need clinical evidence too; 510(k) usually needs only bench and sometimes clinical data.
+- **Evidence strength** also drives clinician adoption and reimbursement (§50.4).
+
+### 50.4 Reimbursement and adoption
+
+- **Reimbursement** by region: in the US, coverage (national or local decisions), a payment code, and payment levels; elsewhere national health technology assessment with a price. A device without coverage sells only to early adopters at `medical.no_coverage_share` of its market. Coverage decisions take months to years and read evidence strength.
+- **Clinician adoption** follows an S-curve driven by evidence, training (the player's clinical education spending) and peer use; switching costs are high for robotic systems (training and installed base), like §44's lock-in.
+
+### 50.5 Manufacturing quality, recalls and surveillance
+
+- Medical devices are made in plants with a **quality system** (a facility setting: investment in quality raises audit outcomes and lowers defect rates). Regulators inspect (§48's investigation machinery with a `health` kind): findings range from observations to warning letters, import bans and consent decrees.
+- **Recalls** (stream `medical`), classes I (serious harm) to III, from defect rates and post-market signals: cost (field actions, replacements), brand and clinician-trust damage, and possible investigations and lawsuits. A class I recall is a critical event.
+- **Post-market surveillance** (adverse-event reporting, registries) is a monthly cost that lowers recall severity when signals are caught early.
+
+### 50.6 Balance targets (printed)
+
+1. **History holds:** market sizes, approval timelines and rates, the MDR's dates and rivals' shares to 2025 follow the data; every earlier guard unchanged (a company without medical devices plays exactly as before).
+2. **Routes differ:** median time from submission to US clearance is 4–12 months for 510(k), 8–18 for De Novo and 12–36 for PMA including the review (not the study); EU class III under the MDR takes longer than under the MDD on 8 of 10 seeds.
+3. **Evidence pays:** a device with a successful pivotal study reaches coverage and 30% clinician adoption at least 2 years earlier than one without.
+4. **Quality pays:** a plant at high quality investment has at least 60% fewer class I recalls than at low over 10 years.
+5. **A real business:** a `surgical_robotics` entrant from 2026 with competitive quality earns at least 40% of its revenue from instruments and service by year 8 (the razor-and-blade model).
+6. **Turn time** within the guards.
+
+### 50.7 What the API may show
+
+Devices, their classes and routes, submissions and their stages, review ranges, studies' designs and results once read out, coverage decisions, adoption, inspections and recalls that happened, rivals' public products and shares. Never study draws before readout, recall or inspection draws, or seeded future rules before they happen.
