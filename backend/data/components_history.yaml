@@ -102,3 +102,21 @@ goods:
       "2025-12": 1.5 # NXE:3800E, about $180M (R)
     allocation:
       - { start: "2021-01", end: "2023-06", share: 0.70 } # A: the backlog after the 2021 shortage
+
+  # M38 (formulas.md 49.1), appended: car bodies, chassis and interiors (the BOM beyond the pack,
+  # drive and chips). A: about -0.75% a year of cost-down to the 2021 chip shortage, +12% through
+  # it, back by 2024; tight in 2021-2022, when the shortage cost about 10 million cars' output
+  # (R: AutoForecast Solutions, about 11% of world production). After 2025 the engine holds its
+  # December 2025 value for cars (vehicles' BOM, formulas.md 49.1).
+  - key: vehicle_bom
+    label: Vehicle components
+    unit: index (January 2010 = 1.0)
+    points:
+      "2010-01": 1.0
+      "2021-01": 0.9205 # 0.9925 ^ 11
+      "2022-06": 1.0400 # the shortage and metals
+      "2024-06": 0.9300
+      "2025-12": 0.9200
+    allocation:
+      - { start: "2021-01", end: "2022-06", share: 0.85 }
+

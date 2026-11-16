@@ -196,3 +196,25 @@ suppliers:
   - { key: air_products, name: Air Products, region: north_america, listing: NYSE, goods: { neon: 0.08 }, reliability: 0.94, revenue_2010: null } # neon purification (dossier 2, R)
   - { key: ingas, name: Ingas, region: europe, listing: Private, goods: { neon: 0.30 }, until: "2022-02", reliability: 0.80, revenue_2010: null } # Mariupol, halted after 24 February 2022 (dossier 1.2, V)
   - { key: cryoin, name: Cryoin, region: europe, listing: Private, goods: { neon: 0.20 }, until: "2022-02", reliability: 0.80, revenue_2010: null } # Odesa, halted (dossier 1.2, V)
+  # --- M38 (formulas.md 49.2), appended: battery metals and cell makers. Shares R unless noted:
+  # nickel from USGS MCS 2025 and company reports (Tsingshan the largest producer, about a quarter
+  # through its Indonesian operations; Nornickel about 7%); manganese (South32, demerged from BHP in
+  # May 2015, about 15% of ore; Eramet's Moanda about 7%); graphite (BTR the largest anode maker,
+  # about a fifth; Syrah's Balama from 2018); battery cells: SNE's 2024 shares (vehicles.yaml
+  # cell_makers): CATL 37.9% (R), BYD 17.2% (S), LG Energy Solution 10.8% (D), Panasonic 3.9% (R),
+  # SK On 4.4% (D), Samsung SDI 3.3% (R). From: CATL founded December 2011 (R); LG Energy Solution
+  # spun off from LG Chem December 2020 (R: LG Chem's battery division before, the same supplier);
+  # SK On spun off October 2021 (R, likewise).
+  - { key: tsingshan, name: Tsingshan Holding, region: east_asia, listing: Private, goods: { nickel: 0.25 }, reliability: 0.85, revenue_2010: null }
+  - { key: nornickel, name: Nornickel, region: europe, listing: MOEX, goods: { nickel: 0.07 }, reliability: 0.85, revenue_2010: null }
+  - { key: south32, name: South32, region: oceania, listing: ASX, goods: { manganese: 0.15 }, from: "2015-05", reliability: 0.92, revenue_2010: null }
+  - { key: eramet, name: Eramet, region: europe, listing: Euronext Paris, goods: { manganese: 0.07, nickel: 0.03 }, reliability: 0.90, revenue_2010: null }
+  - { key: btr, name: BTR New Material, region: east_asia, listing: BSE (Beijing), goods: { graphite: 0.20 }, reliability: 0.85, revenue_2010: null }
+  - { key: syrah, name: Syrah Resources, region: oceania, listing: ASX, goods: { graphite: 0.05 }, from: "2018-01", reliability: 0.85, revenue_2010: null }
+  - { key: catl, name: CATL, region: east_asia, listing: Shenzhen, goods: { battery_cells: 0.379 }, from: "2011-12", reliability: 0.95, revenue_2010: null }
+  - { key: byd_battery, name: BYD Battery (FinDreams), region: east_asia, listing: Private, goods: { battery_cells: 0.172 }, reliability: 0.93, revenue_2010: null }
+  - { key: lges, name: LG Energy Solution, region: east_asia, listing: KRX, goods: { battery_cells: 0.108 }, reliability: 0.93, revenue_2010: null }
+  - { key: panasonic_energy, name: Panasonic Energy, region: east_asia, listing: TSE, goods: { battery_cells: 0.039 }, reliability: 0.95, revenue_2010: null }
+  - { key: sk_on, name: SK On, region: east_asia, listing: Private, goods: { battery_cells: 0.044 }, reliability: 0.92, revenue_2010: null }
+  - { key: samsung_sdi, name: Samsung SDI, region: east_asia, listing: KRX, goods: { battery_cells: 0.033 }, reliability: 0.94, revenue_2010: null }
+

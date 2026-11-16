@@ -107,6 +107,8 @@ from tst.sim.state import (
     with_person_state,
     with_proposal,
 )
+from tst.sim.vehicles import phase as vehicles_phase
+from tst.sim.vehicles import sales as vehicles_sales
 from tst.sim.world.phase import world_month
 
 
@@ -300,6 +302,11 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
     # M19 (35.2, 35.4-35.5): mines' construction, resource nationalism, rivals' bids.
     state, entries, logs = mining.build_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*entries).log(*logs)
+    # M38 (49.1-49.2): vehicle plants' yields; cell plants run on the group's refined metals.
+    state, car_entries, car_logs = vehicles_phase.production_month(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*car_entries).log(*car_logs)
     # M33 (47): ASML's capacity and queue, deliveries, the lithography programme.
     state, eq_entries, eq_logs = equipment_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*eq_entries).log(*eq_logs)
@@ -318,6 +325,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
+    # M38 (49.1, 49.3, 49.5): cars' range, charging, autonomy and platform points, subsidies
+    platform_effects = vehicles_sales.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -326,6 +335,11 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data, out.flows, out.regional_units
     )
     ctx = replace(ctx, state=state).post(*platform_entries).log(*platform_logs)
+    # M38 (49.1-49.5): the cars' month, own cells, software, incidents and charging
+    state, car_entries, car_logs = vehicles_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*car_entries).log(*car_logs)
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
@@ -462,13 +476,14 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     """Brand toward its marketing target and addressable demand growth (11.1, 11.5); the
     macro layer joins later."""
     state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
+    state, car_logs = vehicles_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M38
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
     moves = ctx.rival_moves + launched + arrived + founded
     ctx = replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding)
-    return ctx.log(*going_live)
+    return ctx.log(*going_live, *car_logs)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:

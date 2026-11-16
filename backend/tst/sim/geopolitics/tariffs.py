@@ -29,6 +29,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region
 from tst.sim.geopolitics import world
 from tst.sim.hardware.models import ProductionMonth
+from tst.sim.hardware.production import plant_kind
 from tst.sim.ledger import CASH, LOCAL_PARTNER_SHARE, TARIFFS, LedgerEntry, LedgerLine
 from tst.sim.money import exact
 from tst.sim.products.models import Product
@@ -104,7 +105,7 @@ def made_value(
     plants = [
         f
         for f in state.facilities
-        if f.company_id == product.company_id and f.kind == balance.hardware.plant_kind
+        if f.company_id == product.company_id and f.kind == plant_kind(product, balance)  # M38
     ]
     run = sum(f.run_units for f in plants)
     for f in plants:

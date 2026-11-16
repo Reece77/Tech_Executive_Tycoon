@@ -386,6 +386,14 @@ def run_markets(
     )
 
 
+def _rival_unit_cents(market_cents: int, price: int | None, share: float | None) -> Fraction:
+    """A rival's cost of goods a unit: the market's hosting_cents, or `share` of its own price
+    (M38, 49.1: cars)."""
+    if share is None:
+        return Fraction(market_cents)
+    return exact(price or 0) * exact(share)
+
+
 def _times(appeal: float | None, factor: float) -> float | None:
     return None if appeal is None else appeal * factor
 
@@ -442,12 +450,17 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     def platform_appeal(product_id: int) -> float:  # M31 (44.5): self-preferencing
         return effects.appeal(product_id, here) if effects else 1.0
 
+    def weighed(s: S) -> int | None:  # M38 (49.5): the price less a subsidy buyers get
+        if s.price_cents is None or not effects or not effects.price_cut:
+            return s.price_cents
+        return max(1, s.price_cents - round(effects.cut(s.product_id, here)))
+
     appeals = {
         s.product_id: _times(
             price_appeal(
                 products[s.product_id],
                 seg_key,
-                s.price_cents,
+                weighed(s),
                 data,
                 turn,
                 power(products[s.product_id]),
@@ -498,7 +511,7 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
                 low = replace(p, quality=max(0.0, p.quality - penalty))
                 lowered[s.product_id] = _times(
                     price_appeal(
-                        low, seg_key, s.price_cents, data, turn, power(p), index, bonus(p.id)
+                        low, seg_key, weighed(s), data, turn, power(p), index, bonus(p.id)
                     ),
                     first_mover_appeal(state, data, balance, p.company_id, category_def.key)
                     * platform_appeal(p.id),
@@ -722,19 +735,27 @@ def _revenue(
                 else:
                     booked += times(rseg.price_cents or 0, rseg.customers, paid)
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
+                share = category.rival_cost_share  # M38 (49.1): a share of its own price
                 cogs = round(
                     sum(
                         (
                             exact(flows.get((product.id, seg.segment), Flow()).units)
-                            * category.market(seg.segment).hosting_cents
+                            * _rival_unit_cents(
+                                category.market(seg.segment).hosting_cents, seg.price_cents, share
+                            )
                             for seg in segments
                         ),
                         Fraction(),
                     )
                     + sum(
-                        regional_units.get((product.id, r.region, r.segment), 0.0)
-                        * category.market(r.segment).hosting_cents
-                        for r in abroad
+                        (
+                            exact(regional_units.get((product.id, r.region, r.segment), 0.0))
+                            * _rival_unit_cents(
+                                category.market(r.segment).hosting_cents, r.price_cents, share
+                            )
+                            for r in abroad
+                        ),
+                        Fraction(),
                     )
                 )
                 if cogs:  # a rival's abstract cost of goods (M12b, 26.3)

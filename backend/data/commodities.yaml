@@ -20,3 +20,13 @@ goods:
   - { key: lithium_carbonate, label: Lithium carbonate, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: China, top_share: 0.62, share_basis: V } # 58-65% of chemical conversion (IEA), midpoint
   - { key: ndpr_oxide, label: NdPr oxide, unit: $/kg, volume_unit: kg, usd_per_unit: 1.0, top_country: China, top_share: 0.88, share_basis: V } # separation 87-90% (IEA)
   - { key: neon, label: Neon (semiconductor grade), unit: index, volume_unit: lot, usd_per_unit: 1000.0, top_country: Ukraine, top_share: 0.60, share_basis: V } # 50-70% before 2022; a lot is $1,000 at index 1.0 (A: no public price)
+  # M38 (formulas.md 49.2), appended (the commodity stream key is the position): battery metals
+  # and cells. nickel: Indonesia 2.2 of about 3.7 Mt mined (2024, R: USGS MCS 2025); manganese:
+  # China's share of refined battery-grade manganese about 90% (R, IEA critical minerals outlook);
+  # a dmtu is 10 kg of contained manganese, so $1/dmtu = $100/t; graphite: China about 79% of
+  # natural graphite (R: USGS MCS 2025, 1.27 of 1.6 Mt); battery_cells: a kWh of EV cells, China
+  # about 83% of cell manufacturing (R: IEA Global EV Outlook 2024's battery chapter).
+  - { key: nickel, label: Nickel, unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: Indonesia, top_share: 0.59, share_basis: R }
+  - { key: manganese, label: Manganese (contained), unit: $/dmtu, volume_unit: t, usd_per_unit: 100.0, top_country: China, top_share: 0.90, share_basis: R }
+  - { key: graphite, label: Graphite (natural flake), unit: $/t, volume_unit: t, usd_per_unit: 1.0, top_country: China, top_share: 0.79, share_basis: R }
+  - { key: battery_cells, label: Battery cells (EV), unit: $/kWh, volume_unit: kWh, usd_per_unit: 1.0, top_country: China, top_share: 0.83, share_basis: R }
