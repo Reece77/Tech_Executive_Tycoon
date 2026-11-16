@@ -23,6 +23,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.ledger import CASH, GENERAL_ADMIN, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, player_companies, with_product
 from tst.sim.vehicles import draws
@@ -108,7 +109,7 @@ def incidents_month(
             n = int(gen.poisson(cars * rate / MONTHS / PER_CARS))
             if n <= 0:
                 continue
-            cost = round(cars * vb.incident.recall_cents)
+            cost = round(exact(cars) * vb.incident.recall_cents)
             if cost > 0:
                 entries.append(
                     LedgerEntry(

@@ -1230,7 +1230,7 @@ def vehicles_problems(balance: Balance, data: GameData) -> list[str]:
             out.append(f"rival {rival.company!r}: unknown cell maker {rival.cells!r}")
         if countries and rival.origin not in countries:
             out.append(f"rival {rival.company!r}: unknown country {rival.origin!r}")
-        if bad := set(rival.shares) - set(data.region_keys):
+        if bad := set(rival.share_points) - set(data.region_keys):
             out.append(f"rival {rival.company!r}: unknown regions {sorted(bad)}")
     for region in data.region_keys:
         for year in range(FIRST_HISTORY_YEAR, LAST_HISTORY_YEAR + 1):

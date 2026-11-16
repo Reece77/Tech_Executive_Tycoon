@@ -16,6 +16,7 @@ MONTHS: Final = 12  # tunable-exempt: calendar
 MILLION: Final = 1_000_000  # tunable-exempt: car_sales are millions
 HALF: Final = 0.5  # tunable-exempt: an annual value sits at the middle of its year
 TINY: Final = 1e-9  # tunable-exempt: float tolerance
+SHARE_EPS: Final = 1e-6  # tunable-exempt: a share's logit stays finite
 
 
 def file(data: GameData) -> VehiclesFile:
@@ -59,7 +60,7 @@ def rival_def(state: GameState, product: Product, data: GameData) -> RivalCarsDe
 
 
 def logit(share: float) -> float:
-    s = min(max(share, 1e-6), 1 - 1e-6)
+    s = min(max(share, SHARE_EPS), 1 - SHARE_EPS)
     return math.log(s / (1 - s))
 
 

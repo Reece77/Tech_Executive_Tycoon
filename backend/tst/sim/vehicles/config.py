@@ -24,6 +24,7 @@ LEVELS: Final = ("none", "l2", "l2_plus", "l3", "l4")
 type Level = Literal["none", "l2", "l2_plus", "l3", "l4"]
 PLATFORM_CHOICES: Final = ("own", "licensed", "closed")
 type PlatformChoice = Literal["own", "licensed", "closed"]
+YEAR_CHARS: Final = 4  # tunable-exempt: "YYYY-MM"'s year
 OWN: Final = "own"  # tunable-exempt: a product's cell source when it uses the group's cells
 
 
@@ -57,7 +58,7 @@ def _series(raw: Any) -> dict[int, float]:
 
 
 def _year_of(month: str) -> int:
-    return int(str(month)[:4])
+    return int(str(month)[:YEAR_CHARS])
 
 
 def _strip(raw: Any) -> Any:
@@ -146,7 +147,7 @@ class RivalCarsDef(_Frozen):
     origin: str  # countries.yaml key of its main production (tariffs, subsidies)
     cells: str  # cell maker key its cars use (subsidy sourcing rules)
     launch: str | None = None  # "YYYY-MM" of its first sales; None: selling in January 2010
-    shares: dict[str, dict[int, float]]  # region -> year -> share of the region's EV sales
+    share_points: dict[str, dict[int, float]] = Field(alias="shares")  # region -> year -> share
 
     @property
     def launch_turn(self) -> int:
@@ -155,7 +156,7 @@ class RivalCarsDef(_Frozen):
     def share_at(self, region: str, year: float, turn: int | None = None) -> float:
         """The share at a fractional year: linear between points, held after the last, and
         rising from 0 over the year before a region's first point (0 before the launch)."""
-        points = self.shares.get(region)
+        points = self.share_points.get(region)
         if not points or (turn is not None and turn < self.launch_turn):
             return 0.0
         first = min(points)
@@ -259,6 +260,7 @@ class VehiclesFile(_Frozen):
         base = cpi[BASE_YEAR]
 
         def to_2010(cents: float, year: int) -> float:
+            # money-exact: rate (data's dollars into 2010 dollars at load, cents a unit)
             return cents * base / interp(cpi, year)
 
         battery = dict(raw["battery"])
@@ -409,6 +411,8 @@ class SoftwareBalance(_Frozen):
     ota_churn_cut: float = Field(ge=0, le=1)  # an over-the-air car is replaced this much less
     platform_points: dict[str, float]  # platform choice -> feature points
     ota_features: float = Field(ge=0, le=1)  # share of later feature gains cars on the road get
+    attach_growth: float = Field(ge=0)  # attach points added a year after 2025
+    attach_cap: float = Field(ge=0, le=1)  # the most the base attach reaches
 
 
 class SpecBalance(_Frozen):

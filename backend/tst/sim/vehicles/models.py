@@ -57,6 +57,7 @@ class CellPlant:
     facility_id: int
     company_id: int
     chemistry: Chemistry
+    estimate_cents: int = 0  # the quote at the order (shown; the true capex is revealed as paid)
     months_run: int = 0
     yield_rate: float = 0.0
     overrun: float = 0.0

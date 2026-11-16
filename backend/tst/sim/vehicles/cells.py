@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.commodities import commodity
@@ -55,6 +56,8 @@ GWH_PER_KWH: Final = 1e-6  # tunable-exempt: unit conversion
 METALS: Final = ("lithium_carbonate", "nickel", "cobalt")  # tunable-exempt: 49.2's metals
 NMC: Final = "nmc"  # tunable-exempt: the metals basket is an NMC kWh's
 CENTS: Final = 100  # tunable-exempt: dollars to cents
+MAX_RATE: Final = 0.99  # tunable-exempt: learning never takes the whole gap in a month
+MIN_YIELD: Final = 0.05  # tunable-exempt: a plant's yield floor after noise
 
 
 def history_cell_cents(turn: int, data: GameData) -> float:
@@ -70,9 +73,9 @@ def market_cents(state: GameState, balance: Balance, data: GameData) -> float:
 
 
 def history_cumulative_gwh(data: GameData) -> float:
-    return sum(file(data).world_cells_gwh.get(y, 0.0) for y in range(2010, 2026)) or sum(
-        interp(file(data).world_cells_gwh, y) for y in range(2010, 2026)
-    )
+    """The world's EV cells made 2010-2025, GWh (vehicles.yaml, linear between its years)."""
+    points = file(data).world_cells_gwh
+    return sum(interp(points, y) for y in range(min(points), max(points) + 1))
 
 
 def year_gwh(state: GameState, balance: Balance, data: GameData) -> float:
@@ -145,9 +148,9 @@ def plant_yield(
 ) -> float:
     cb = balance.vehicles.cell_plant
     skill = staffing(state, facility, balance).mean_skill
-    rate = min(0.99, cb.learn * max(skill, 1.0) / cb.skill_ref)
+    rate = min(MAX_RATE, cb.learn * max(skill, 1.0) / cb.skill_ref)
     y = cb.yield_mature - (cb.yield_mature - cb.yield_start) * (1 - rate) ** cp.months_run
-    return max(0.05, min(cb.yield_mature, y * (1 + cb.noise_sd * z)))
+    return max(MIN_YIELD, min(cb.yield_mature, y * (1 + cb.noise_sd * z)))
 
 
 def _want(state: GameState, product_id: int, data: GameData) -> float:
@@ -216,6 +219,7 @@ def run_plants(
             if amount > 0:
                 entries.append(_entry(turn, cp.company_id, memo, COGS, amount))
         life = balance.facility.kinds[f.kind].life_months
+        # money-exact: rate (a kWh's cost for the Vehicles screen and the transfer price)
         depreciation = f.capex_paid_cents / life if life else 0.0
         total = input_cents + power + other + fixed + depreciation
         unit = total / made if made > TINY else 0.0
@@ -282,7 +286,7 @@ def settle(
     entries: list[LedgerEntry] = []
     left: dict[int, float] = {}
     settled: list[CellLot] = []
-    spot: dict[int, float] = {}
+    spot: dict[int, Fraction] = {}
     for lot in state.cell_lots:
         if lot.turn != turn:
             continue
@@ -307,9 +311,9 @@ def settle(
             "Own-group cells",
             round(exact(taken) * exact(lot.unit_cents)),
         )
-        spot[lot.facility_id] = (
-            spot.get(lot.facility_id, 0.0) + (lot.kwh - taken) * lot.market_cents
-        )
+        spot[lot.facility_id] = spot.get(lot.facility_id, Fraction()) + exact(
+            lot.kwh - taken
+        ) * exact(lot.market_cents)
         settled.append(replace(lot, taken=taken))
     # every plant's kWh not lotted sells at spot too
     plants = []
@@ -320,7 +324,9 @@ def settle(
             continue
         unlotted = m.made_kwh - m.to_group
         back = sum(x.kwh - x.taken for x in settled if x.facility_id == cp.facility_id)
-        cents = spot.get(cp.facility_id, 0.0) + unlotted * market_cents(state, balance, data)
+        cents = spot.get(cp.facility_id, Fraction()) + exact(unlotted) * exact(
+            market_cents(state, balance, data)
+        )
         amount = round(cents)
         f = state.facility(cp.facility_id)
         if amount > 0 and f is not None:

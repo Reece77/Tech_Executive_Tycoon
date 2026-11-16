@@ -127,8 +127,9 @@ def test_goods_history(loaded: LoadedData) -> None:
         "server_bom",
         "equipment",
         "foundry_wafer",
-        "euv_tools",
-    ]  # M21
+        "euv_tools",  # M21
+        "vehicle_bom",  # M38 (49.1)
+    ]
     dev = comp.good("device_bom")
     rise = dev.index_at(ym_to_turn(2022, 4)) / dev.index_at(ym_to_turn(2021, 1))
     assert rise == pytest.approx(1.25, abs=0.01)

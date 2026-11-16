@@ -2731,6 +2731,8 @@ vehicles:
     ota_churn_cut: 0.15 # a car with over-the-air updates (own or licensed platform) is replaced this much less often (A)
     platform_points: { own: 6, licensed: 3, closed: -3 } # feature points of the car's software (A; an own OS's catalogue moves it, 44.3)
     ota_features: 0.3 # share of a model's later feature gains its cars on the road receive (A; shown on the product page)
+    attach_growth: 0.02 # vehicles.yaml's attach keeps rising this much a year after 2025 (A)
+    attach_cap: 0.6 # to at most this (A)
   spec:
     range_points: 20 # feature points per 100% of range above the market's expected (A)
     range_cap: 15

@@ -228,7 +228,13 @@ def build_cell_plant(
         balances,
         overrun,
     )
-    plant = CellPlant(facility.id, company, action.chemistry, overrun=overrun)  # type: ignore[arg-type]
+    plant = CellPlant(
+        facility.id,
+        company,
+        action.chemistry,  # type: ignore[arg-type]
+        estimate_cents=q.capex_cents,
+        overrun=overrun,
+    )
     state = replace(
         state, cell_plants=tuple(sorted((*state.cell_plants, plant), key=lambda c: c.facility_id))
     )

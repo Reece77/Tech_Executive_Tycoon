@@ -26,7 +26,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.products.models import Product
 from tst.sim.state import GameState
 from tst.sim.vehicles.config import LEVELS, OWN, interp
-from tst.sim.vehicles.data import file, year_at
+from tst.sim.vehicles.data import TINY, file, year_at
 from tst.sim.vehicles.models import VehicleSpec
 
 NO_LEVEL: Final = "none"
@@ -103,7 +103,7 @@ def capable_level(state: GameState, spec: VehicleSpec, company_id: int, balance:
         level = vb.levels.get(key)
         if level is None:
             continue
-        if lead + 1e-9 >= level.lead and (level.ai_quality <= 0 or ai >= level.ai_quality):
+        if lead + TINY >= level.lead and (level.ai_quality <= 0 or ai >= level.ai_quality):
             best = key
     return best
 
@@ -189,9 +189,9 @@ def cell_cents(state: GameState, spec: VehicleSpec, balance: Balance, data: Game
     from tst.sim.vehicles import cells
 
     v = file(data)
-    price = (
-        cells.market_cents(state, balance, data) * v.battery.chemistries[spec.chemistry].cost_mult
-    )
+    # money-exact: rate (a kWh's price; the posted amount is rounded once at sale)
+    chem = v.battery.chemistries[spec.chemistry].cost_mult
+    price = cells.market_cents(state, balance, data) * chem  # money-exact: rate
     if spec.cells != OWN:
         price *= v.cell_maker(spec.cells).price_mult
     return price
@@ -229,6 +229,7 @@ def body_cents(state: GameState, balance: Balance, data: GameData) -> float:
     assert data.components is not None
     good = data.components.good(bom.good)
     turn = min(state.turn, balance.vehicles.start_turn - 1, good.last_turn)
+    # money-exact: rate (a car's body at the index, cents a unit)
     return bom.base_cents * good.index_at(turn)
 
 
@@ -239,9 +240,11 @@ def unit_cost(
     v = file(data)
     year = year_at(min(state.turn, balance.vehicles.start_turn - 1))
     share = v.battery.cell_share_at(year)
+    # money-exact: rate (cents a car)
     cells = spec.pack_kwh * cell_cents(state, spec, balance, data)
     from tst.sim.vehicles import cells as cell_market
 
+    # money-exact: rate (cents a car)
     integration = spec.pack_kwh * cell_market.market_cents(state, balance, data) * (1 / share - 1)
     drive = interp(balance.vehicles.bom.drive_cents, year_at(state.turn))
     run = level if level is not None else capable_level(state, spec, product.company_id, balance)

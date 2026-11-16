@@ -114,7 +114,8 @@ def attach_rate(state: GameState, platform: str, balance: Balance, data: GameDat
     )
     if state.turn >= balance.vehicles.start_turn:  # after 2025 attach keeps rising (A)
         years = (state.turn - balance.vehicles.start_turn) / 12
-        base = min(0.6, base + 0.02 * years)
+        sb = balance.vehicles.software
+        base = min(sb.attach_cap, base + sb.attach_growth * years)
     return min(1.0, base * balance.vehicles.software.attach_mult.get(platform, 1.0))
 
 
@@ -135,6 +136,7 @@ def month_rows(state: GameState, balance: Balance, data: GameData) -> GameState:
         capable = vs.capable_level(state, spec, product.company_id, balance)
         cost = vs.unit_cost(state, product, balance, data, capable)
         assembly = (
+            # money-exact: rate (a car's assembly cost for the product page)
             (prow.assembly_cents / prow.units) if prow is not None and prow.units > 0 else 0.0
         )
         level = max(
@@ -234,14 +236,16 @@ def software_month(
         battery = m.battery_cents
         if own > 0 and m.units > 0:  # own cells at the plant's cost, not the market's
             per_car = own / m.units
+            # money-exact: rate (a kWh's cost for the product page)
             plant_unit = (
                 sum(
-                    lot.taken * lot.unit_cents
+                    lot.taken * lot.unit_cents  # money-exact: rate (the product page)
                     for lot in state.cell_lots
                     if lot.product_id == product.id and lot.turn == state.turn
                 )
                 / own
             )
+            # money-exact: rate (a car's pack cost for the product page)
             battery -= per_car * (cells.market_cents(state, balance, data) - plant_unit)
         out.append(
             replace(

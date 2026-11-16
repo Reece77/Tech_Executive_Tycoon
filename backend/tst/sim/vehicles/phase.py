@@ -22,7 +22,9 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_facility
-from tst.sim.vehicles import autonomy, cells, charging, demand, rivals, sales
+from tst.sim.vehicles import autonomy, cells, charging, demand, draws, rivals, sales
+
+ATTRIBUTE_MAX = 20  # tunable-exempt: the attribute scale
 from tst.sim.vehicles.data import enabled
 
 
@@ -50,8 +52,8 @@ def new_game(
 
 
 def plant_yields(state: GameState, rng: RngFactory, balance: Balance) -> GameState:
-    """A vehicle plant's yield: lo + (hi - lo) x mean manufacturing skill / 20, x (1 + noise) on
-    stream `manufacturing` (as 26.2's assembly plants)."""
+    """A vehicle plant's yield: lo + (hi - lo) x mean manufacturing skill / 20, x (1 + noise),
+    stream vehicles (4, facility) (as 26.2's assembly plants)."""
     vb = balance.vehicles
     y = vb.plant.yield_range
     sd = balance.hardware.plant_yield.noise_sd
@@ -59,9 +61,10 @@ def plant_yields(state: GameState, rng: RngFactory, balance: Balance) -> GameSta
         if f.kind != vb.plant.kind or f.live_capacity(state.turn) <= 0:
             continue
         mean = staffing(state, f, balance).mean_skill
-        noise = float(rng.stream(state.turn, "manufacturing", f.id).normal(0.0, sd))
-        value = (y.lo + (y.hi - y.lo) * mean / 20) * (1 + noise)
-        state = with_facility(state, replace(f, yield_rate=min(y.hi, max(0.5, value))))
+        noise = float(draws.gen(rng, state.turn, draws.PLANT, f.id).normal(0.0, sd))
+        value = (y.lo + (y.hi - y.lo) * mean / ATTRIBUTE_MAX) * (1 + noise)
+        floor = balance.hardware.plant_yield.bounds.lo
+        state = with_facility(state, replace(f, yield_rate=min(y.hi, max(floor, value))))
     return state
 
 
