@@ -127,6 +127,9 @@ Load `pt-medical`. File the wearable by 510(k) and the radiology AI by De Novo, 
       - M30's state cache with `--update-state-cache`, after its two real assertions (the digest is canonical; a short run repeats and its memo equals a fresh digest);
       - M28's history fingerprint, its `events` and `books` series only (decision 10's reason; prices, wafers and capacities unchanged).
       - Both were re-recorded first on `main` with M35b, and again with M38.
+17. **e2e after the M38 merge** (PR #77's first e2e run, rules 2, 5 and 6):
+    - `m5.spec.ts` (a) counts the established rivals: now 64 (M38's 52 plus the twelve medical incumbents).
+    - `m7b.spec.ts` (b) timed out at 30 s after 27.1 s on `main`'s last e2e run (90% of its budget). It plays ten months through the API to reach the 12-month periodic backup, and the twelve incumbents make each month about 5% slower (15.1 s against 15.9 s locally, three runs each). The profile puts the medical modules near zero: the extra time is the existing rival, market and people phases running over twelve more companies, so it grows with content and can't be removed with identical results. The test now sets `test.setTimeout(60_000)` for its fixture, the convention M13, M14b, M15b, M16, M18 and M19 use; every assertion keeps its 5 s wait.
 
 ## Follow-ups
 
