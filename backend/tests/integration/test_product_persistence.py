@@ -116,8 +116,8 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
         state = load_state(session)
         players = session.scalars(select(CompanyRow).where(CompanyRow.is_player)).all()
     # M9's six regional incumbents come with new games only (migration 0023_geo), as do M38's
-    # thirteen car makers (they list their regions too)
-    assert len(players) == 1 and len(state.companies) == INCUMBENTS - 6 - 13 + 1
+    # thirteen car makers and M39's twelve robot makers (they list their regions too)
+    assert len(players) == 1 and len(state.companies) == INCUMBENTS - 6 - 13 - 12 + 1
     assert state.turn == 3
     smb = state.market("b2b_saas", "smb")
     assert smb is not None

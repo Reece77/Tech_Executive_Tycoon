@@ -330,3 +330,40 @@ def test_no_automation_no_change(loaded: LoadedData) -> None:
     s3, e3, l3 = rt.zones_month(state, RngFactory(1), b, d)
     assert s3 is state and e3 == [] and l3 == []
     assert PlantAutomation  # imported for the property test's shape
+
+
+def test_incident_event_answers(loaded: LoadedData) -> None:
+    """53.3's critical event: cooperating halves the suspension's months left at a cost;
+    compensating restores brand; the event finds its zone by the month it is shown."""
+    from tst.sim.events.models import GameEvent
+    from tst.sim.robotics.events import robotics_step
+
+    b, d = loaded.balance, loaded.game_data
+    state = _l4(replace(fresh_game(loaded), turn=ym_to_turn(2027, 3)), loaded)
+    state = _active_zone(state, 100)
+    state, zone, _, _ = rt._incident(state, state.zones[0], True, "Ride in SF", b)
+    state = replace(
+        state,
+        zones=(
+            replace(
+                state.zone(zone.id) or zone,
+                status=zone.status,
+                suspended_until=zone.suspended_until,
+            ),
+        ),
+    )
+    shown = replace(state, turn=state.turn + 1)
+    event = GameEvent(
+        1, PLAYER, shown.turn, "robotaxi_collision", "robotics", "critical", "robotics", 1.0
+    )
+    left = (zone.suspended_until or 0) - shown.turn
+    out, entries, _ = robotics_step(shown, event, "cooperate", b, d)
+    z = out.zone(zone.id)
+    assert z is not None and z.event_turn is None
+    assert z.suspended_until == shown.turn + round(left * b.robotics.incident_event.cooperate_share)
+    assert entries and all(sum(x.amount for x in e.lines) == 0 for e in entries)
+    service = shown.product(zone.product_id)
+    assert service is not None
+    out2, _, _ = robotics_step(shown, event, "compensate", b, d)
+    after = out2.product(zone.product_id)
+    assert after is not None and after.brand > service.brand
