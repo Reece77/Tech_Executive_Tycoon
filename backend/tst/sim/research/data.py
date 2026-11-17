@@ -5,6 +5,7 @@ reads the files. Domains and eras are data, so v3 can add domains without code (
 
 from __future__ import annotations
 
+import bisect
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -23,14 +24,30 @@ def _sums_to_one(values: list[float]) -> bool:
     return abs(sum(values) - 1) <= _WEIGHT_TOLERANCE
 
 
+_KEYS: dict[int, tuple[dict[int, float], list[int]]] = {}  # id -> (the table, its sorted keys)
+
+
+def sorted_years(table: dict[int, float]) -> list[int]:
+    """A year table's keys, sorted once per table (M37: tables reach 2069, read every month).
+    The table is kept with its keys, so its id cannot be reused while cached; tables are
+    loaded data, never changed."""
+    hit = _KEYS.get(id(table))
+    if hit is None or hit[0] is not table:
+        hit = _KEYS[id(table)] = (table, sorted(table))
+    return hit[1]
+
+
+def latest_year(table: dict[int, float], year: int) -> int | None:
+    """The latest key at or before `year`, or None if the table starts after it."""
+    keys = sorted_years(table)
+    i = bisect.bisect_right(keys, year)
+    return keys[i - 1] if i else None
+
+
 def rate_in(table: dict[int, float], year: int) -> float:
     """The latest entry at or before `year` (the first one before the table starts)."""
-    keys = sorted(table)
-    rate = table[keys[0]]
-    for start in keys:
-        if start <= year:
-            rate = table[start]
-    return rate
+    key = latest_year(table, year)
+    return table[sorted_years(table)[0] if key is None else key]
 
 
 # --- balance.yaml: rnd ------------------------------------------------------------------------

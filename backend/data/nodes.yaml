@@ -120,6 +120,18 @@ future:
   - { key: a5, label: A5 (0.5 nm), window: ["2035-01", "2037-06"] } # A: seeded sub-1nm step
   - { key: a3, label: A3 (0.3 nm), window: ["2037-06", "2040-06"] } # A: seeded sub-1nm step (a long campaign or sandbox)
 
+# successors (M37, formulas.md 52.2): seeded nodes after A3, in order. Their windows come from
+#   balance.yaml's dynasty.nodes (each gap 20% longer than the one before: Moore's law slows),
+#   never starting before January 2040; their months, wafer prices, capital and density gains
+#   are drawn on stream dynasty (A: names only; no roadmap reaches this far).
+successors:
+  - { key: a2, label: A2 (0.2 nm-class) }
+  - { key: a1, label: A1 (0.1 nm-class) }
+  - { key: atomic1, label: Atomic-scale 1 }
+  - { key: atomic2, label: Atomic-scale 2 }
+  - { key: atomic3, label: Atomic-scale 3 }
+  - { key: atomic4, label: Atomic-scale 4 }
+
 foundries:
   - key: tsmc
     name: TSMC

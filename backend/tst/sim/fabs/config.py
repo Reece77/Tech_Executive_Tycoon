@@ -11,6 +11,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.dynasty.config import NodesRule
 from tst.sim.facilities.config import Range, month_to_turn
 
 HISTORY_END: Final = "2025-12"  # tunable-exempt: the last month of history (ADR-0019 15)
@@ -196,15 +197,29 @@ class EuvSupplyDef(_Frozen):
     first_month: str
 
 
+class SuccessorDef(_Frozen):
+    """M37 (52.2): a seeded successor to the last future node; its window comes from
+    balance.yaml's dynasty.nodes (the loader fills `NodesFile.dynasty_future`)."""
+
+    key: str
+    label: str = Field(min_length=1)
+
+
 class NodesFile(_Frozen):
     nodes: tuple[NodeDef, ...] = Field(min_length=1)
     future: tuple[FutureNodeDef, ...] = ()
+    successors: tuple[SuccessorDef, ...] = ()  # M37 (52.2), in order
+    # M37: the successors with their windows (tst.sim.dynasty.nodes.with_successors, at load);
+    # none before 2040, so a game to December 2039 is offered none of them
+    dynasty_future: tuple[FutureNodeDef, ...] = ()
+    dynasty_rule: NodesRule | None = None  # M37: balance.yaml's dynasty.nodes, set with it
     foundries: tuple[FoundryDef, ...] = Field(min_length=1)
     euv: EuvSupplyDef
 
     @model_validator(mode="after")
     def _check(self) -> NodesFile:
         keys = [n.key for n in self.nodes] + [n.key for n in self.future]
+        keys += [n.key for n in self.successors]
         if len(set(keys)) != len(keys):
             raise ValueError("nodes.yaml: node keys must be unique")
         known = set(keys)
@@ -225,7 +240,16 @@ class NodesFile(_Frozen):
         return self
 
     def node_keys(self) -> tuple[str, ...]:
-        return tuple(n.key for n in self.nodes) + tuple(n.key for n in self.future)
+        """Every node in generation order: historical, future, then M37's successors (which
+        no game is offered before 2040: tst.sim.fabs.market.offered)."""
+        return (
+            tuple(n.key for n in self.nodes)
+            + tuple(n.key for n in self.future)
+            + tuple(n.key for n in self.dynasty_future)
+        )
+
+    def is_successor(self, key: str) -> bool:
+        return any(n.key == key for n in self.dynasty_future)
 
     def generation(self, key: str) -> int:
         return self.node_keys().index(key)
@@ -243,7 +267,7 @@ class NodesFile(_Frozen):
         return None
 
     def future_node(self, key: str) -> FutureNodeDef | None:
-        for n in self.future:
+        for n in (*self.future, *self.dynasty_future):
             if n.key == key:
                 return n
         return None

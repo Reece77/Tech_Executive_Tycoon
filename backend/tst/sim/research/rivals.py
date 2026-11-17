@@ -49,7 +49,11 @@ def research_needs(
         need = (best - state.research_lead(company.id, domain)) / rv.need_span
         for era in levels.eras_in(data, domain):
             months = levels.historical_turn(era) - state.turn
-            if state.era_arrival(era.key) is None and 0 <= months <= rv.era_window_months:
+            if (
+                state.era_arrival(era.key) is None
+                and 0 <= months <= rv.era_window_months
+                and levels.in_play(era, state.turn, balance)  # M37
+            ):
                 need += rv.era_bonus
                 break
         out.append(ResearchNeed(domain, max(0.0, min(1.0, need))))

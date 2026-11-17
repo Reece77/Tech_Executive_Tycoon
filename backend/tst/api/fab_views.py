@@ -190,6 +190,8 @@ def nodes_out(state: GameState, data: LoadedData) -> NodesOut:
     names = {f.key: f.name for f in nf.foundries}
     nodes = []
     for key in nf.node_keys():
+        if not fm.offered(state, key, b, d):  # M37 (52.2): successors from 2040
+            continue
         hist = nf.node(key)
         fut = nf.future_node(key)
         arrived = tl.arrival[key] <= turn

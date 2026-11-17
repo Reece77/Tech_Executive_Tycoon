@@ -17,6 +17,7 @@ from typing import Any, Final
 from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
+from tst.sim.dynasty.models import DynastyState
 from tst.sim.equipment.models import (
     Delivery,
     FabTools,
@@ -551,6 +552,9 @@ class GameState:
     med_inspections: tuple[Inspection, ...] = ()
     med_recalls: tuple[Recall, ...] = ()
     med_drift: tuple[Drift, ...] = ()
+    # M37 (52.3-52.4): rival leaders' successions, deaths and relaunched brands from January
+    # 2040; None in every game before then (52.5 target 1)
+    dynasty: DynastyState | None = None
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

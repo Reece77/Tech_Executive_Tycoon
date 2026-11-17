@@ -5773,6 +5773,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/campaign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Campaign
+         * @description The campaign's length and end, and dynasty years' eras, successions and deaths.
+         */
+        get: operations["getCampaign"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/campaign/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Dynasty
+         * @description Continue in dynasty mode, to December 2069 (a one-off; 409 once the game is over).
+         */
+        post: operations["continueDynasty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/campaign/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End Campaign
+         * @description At December 2039: end the standard campaign with its summary.
+         */
+        post: operations["endCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/regulation": {
         parameters: {
             query?: never;
@@ -7413,6 +7473,51 @@ export interface components {
         BuybackIn: {
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** CampaignActionOut */
+        CampaignActionOut: {
+            campaign: components["schemas"]["CampaignOut"];
+        };
+        /** CampaignOut */
+        CampaignOut: {
+            /**
+             * Length
+             * @description standard | dynasty
+             */
+            length: string;
+            /**
+             * End Label
+             * @description The month the game ends after
+             */
+            end_label: string;
+            /**
+             * At End
+             * @description A standard campaign at December 2039: end or continue
+             */
+            at_end: boolean;
+            /**
+             * Can Switch
+             * @description A standard campaign may still switch to dynasty
+             */
+            can_switch: boolean;
+            /** Game State */
+            game_state: string;
+            /** Founder Age */
+            founder_age: number | null;
+            /**
+             * Dynasty Years
+             * @description 2040 or later
+             */
+            dynasty_years: boolean;
+            /**
+             * Eras
+             * @description Eras of dynasty years, once they are shown
+             */
+            eras: components["schemas"]["EraWindowOut"][];
+            /** Leader Changes */
+            leader_changes: components["schemas"]["LeaderChangeOut"][];
+            /** Deaths */
+            deaths: components["schemas"]["DeathOut"][];
         };
         /** CandidacyOut */
         CandidacyOut: {
@@ -9084,6 +9189,13 @@ export interface components {
             mod?: string | null;
             /** @description The Family setting (M36, 45.1) */
             family?: components["schemas"]["FamilyIn"] | null;
+            /**
+             * Campaign Length
+             * @description Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069
+             * @default standard
+             * @enum {string}
+             */
+            campaign_length?: "standard" | "dynasty";
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -9210,6 +9322,22 @@ export interface components {
             year_value_cents: number;
             /** Prepaid Cents */
             prepaid_cents: number;
+        };
+        /** DeathOut */
+        DeathOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Date Label */
+            date_label: string;
+            /** Age */
+            age: number;
+            /**
+             * Role
+             * @description head | member | adviser
+             */
+            role: string;
         };
         /**
          * DecisionOut
@@ -10025,6 +10153,20 @@ export interface components {
              * @description A future era's public window until it arrives, e.g. 'expected 2026-2028' (M12b, 26.4); its scheduled month is never shown
              */
             expected?: string | null;
+        };
+        /** EraWindowOut */
+        EraWindowOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Window Label
+             * @description The public window, e.g. 2040-2048
+             */
+            window_label: string;
+            /** Arrived Label */
+            arrived_label?: string | null;
         };
         /**
          * ErrorOut
@@ -11734,7 +11876,7 @@ export interface components {
         GameOverOut: {
             /**
              * Game State
-             * @description active | bankrupt | founder_removed | exit | scenario_done | retired
+             * @description active | bankrupt | founder_removed | exit | scenario_done | retired | campaign_end | dynasty_end | founder_died | founder_retired (M37)
              */
             game_state: string;
             /** Company Name */
@@ -11788,6 +11930,29 @@ export interface components {
             exit_proceeds_cents?: number | null;
             /** @description The legacy score (M24, 32.6) */
             legacy?: components["schemas"]["LegacyOut"] | null;
+            /**
+             * Campaign Length
+             * @description standard | dynasty (M37)
+             * @default standard
+             */
+            campaign_length?: string;
+            /**
+             * Can Continue
+             * @description At a standard campaign's end: continue in dynasty mode
+             * @default false
+             */
+            can_continue?: boolean;
+            /**
+             * Read Only
+             * @description After December 2069 (M37): the save stays open to browse
+             * @default false
+             */
+            read_only?: boolean;
+            /**
+             * Dynasty Score
+             * @description With a family (45.7): the generations' legacies and more
+             */
+            dynasty_score?: number | null;
             /** Ended Label */
             ended_label: string | null;
             /** Founded Label */
@@ -13345,6 +13510,26 @@ export interface components {
         LaunchRegionIn: {
             /** Region */
             region: string;
+        };
+        /** LeaderChangeOut */
+        LeaderChangeOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company Name */
+            company_name: string;
+            /** Date Label */
+            date_label: string;
+            /** Old Name */
+            old_name: string | null;
+            /** New Name */
+            new_name: string;
+            /**
+             * How
+             * @description heir | insider | outside
+             */
+            how: string;
+            /** Personality Changed */
+            personality_changed: boolean;
         };
         /**
          * LearnedOut
@@ -41418,6 +41603,180 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VehiclesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    continueDynasty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    endCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignActionOut"];
                 };
             };
             /** @description Bad Request */

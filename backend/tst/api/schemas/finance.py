@@ -422,7 +422,8 @@ class GameOverOut(BaseModel):
     """How the game ended (ADR-0018), for the game over screen."""
 
     game_state: str = Field(
-        description="active | bankrupt | founder_removed | exit | scenario_done | retired"
+        description="active | bankrupt | founder_removed | exit | scenario_done | retired | "
+        "campaign_end | dynasty_end | founder_died | founder_retired (M37)"
     )
     company_name: str
     ended_turn: int | None
@@ -444,6 +445,17 @@ class GameOverOut(BaseModel):
     exit_price_cents: int | None = None
     exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")
     legacy: LegacyOut | None = Field(default=None, description="The legacy score (M24, 32.6)")
+    # M37 (52.1): the campaign summary
+    campaign_length: str = Field(default="standard", description="standard | dynasty (M37)")
+    can_continue: bool = Field(
+        default=False, description="At a standard campaign's end: continue in dynasty mode"
+    )
+    read_only: bool = Field(
+        default=False, description="After December 2069 (M37): the save stays open to browse"
+    )
+    dynasty_score: int | None = Field(
+        default=None, description="With a family (45.7): the generations' legacies and more"
+    )
     ended_label: str | None
     founded_label: str
     months_lasted: int

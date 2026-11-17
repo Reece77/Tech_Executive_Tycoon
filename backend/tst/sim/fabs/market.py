@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim.calendar import ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.fabs import formulas as fx
 from tst.sim.fabs import nodes as nd
@@ -36,6 +37,7 @@ NEVER: Final = nd.NEVER  # a turn no game reaches (re-exported)
 HISTORY_END: Final = nd.HISTORY_END
 EUV_GOOD: Final = "euv_tools"  # components_history.yaml key (38.2)
 MONTHS: Final = 12
+MIDDLE: Final = 0.5  # tunable-exempt: a range's middle
 THOUSAND: Final = 1000  # tunable-exempt: capacity is in thousand wafer starts a month
 TOOL_PRICE_MONTH: Final = "2020-06"  # dossier 3.4: the month nodes.yaml's tool price was read
 
@@ -219,6 +221,14 @@ def public_arrival(state: GameState, node: str, balance: Balance, data: GameData
     return None
 
 
+def offered(state: GameState, node: str, balance: Balance, data: GameData) -> bool:
+    """M37 (52.2, 52.5 target 1): a dynasty successor node exists for players and the API only
+    from January of dynasty.start_year; every other node always."""
+    if not nodes_file(data).is_successor(node):
+        return True
+    return state.turn >= ym_to_turn(balance.dynasty.start_year, 1)
+
+
 def public_reach(
     state: GameState, foundry: str, node: str, balance: Balance, data: GameData
 ) -> int | None:
@@ -254,6 +264,9 @@ def planning_economics(
     fb = balance.fab
     mid_c = (fb.future_capital_mult.lo + fb.future_capital_mult.hi) / 2
     mid_w = (fb.future_wafer_mult.lo + fb.future_wafer_mult.hi) / 2
+    if nf.is_successor(node):  # M37 (52.2): a successor's public estimate, dynasty.nodes' middle
+        nr = balance.dynasty.nodes
+        mid_c, mid_w = nr.capital_mult.at(MIDDLE), nr.wafer_mult.at(MIDDLE)
     return capital * mid_c, wafer * mid_w
 
 

@@ -25,6 +25,7 @@ type ModeKind = Literal["campaign", "sandbox", "scenario"]
 type RivalsOption = Literal["all", "half", "none"]
 type ErasOption = Literal["historical", "seeded"]
 type ListKind = Literal["revenue", "places", "innovative"]
+type CampaignLength = Literal["standard", "dynasty"]  # M37 (52.1)
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,6 +39,9 @@ class GameMode:
     eras: ErasOption = "historical"
     result: Literal["success", "failure"] | None = None  # a scenario's verdict at its deadline
     result_turn: int | None = None
+    # M37 (52.1): standard ends in December 2039; dynasty runs to December 2069. A save
+    # without a mode is a standard campaign.
+    length: CampaignLength = "standard"
 
 
 @dataclass(frozen=True, slots=True)

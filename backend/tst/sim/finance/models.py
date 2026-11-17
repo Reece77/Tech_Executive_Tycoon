@@ -36,8 +36,19 @@ type RoundStatus = Literal["open", "accepted", "closed", "failed", "lapsed"]
 type SheetStatus = Literal["offered", "accepted", "lapsed"]
 type SeatKind = Literal["common", "investor", "independent"]
 # exit: M14; scenario_done: a historical scenario judged (M15b); retired: after an exit (M15b)
+# M37 (52.1, 52.4): campaign_end a standard campaign ended in December 2039; dynasty_end a game
+# at December 2069; founder_died a founder without a family died; founder_retired one retired
 type GameOutcome = Literal[
-    "active", "bankrupt", "founder_removed", "exit", "scenario_done", "retired"
+    "active",
+    "bankrupt",
+    "founder_removed",
+    "exit",
+    "scenario_done",
+    "retired",
+    "campaign_end",
+    "dynasty_end",
+    "founder_died",
+    "founder_retired",
 ]
 type LoanStatus = Literal["active", "repaid", "called"]  # M10 (20.3)
 
@@ -48,6 +59,10 @@ GAME_STATES: Final[tuple[GameOutcome, ...]] = (
     "exit",
     "scenario_done",
     "retired",
+    "campaign_end",
+    "dynasty_end",
+    "founder_died",
+    "founder_retired",
 )
 PREFERRED_CLASS: Final[dict[Series, ShareClass]] = {
     "seed": "preferred_seed",

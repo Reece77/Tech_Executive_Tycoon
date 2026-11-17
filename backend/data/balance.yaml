@@ -2829,3 +2829,46 @@ medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, app
   drift: # seeded rules after 2025: each January a regulator's review times move by a factor (stream medical, key (4, regulator index))
     sd: 0.05 # A
     bounds: [0.8, 1.3] # A
+
+dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here runs before start_year, with the mode on or off (52.5 target 1)
+  start_year: 2040 # the first year past the standard campaign (December 2039, 360 turns; 52.1)
+  end_year: 2069 # a dynasty game's last year: its final summary follows December (52.1)
+  nodes: # 52.2: seeded successors to nodes.yaml's last future node (A3), stream dynasty (0, series, step)
+    count: 6 # successors generated: their windows run past 2069 (A)
+    gap_years: 3.0 # years from the last future node's window midpoint to the first successor's (A: IRDS's 2-3 year cadence, slowing)
+    gap_growth: 0.20 # each later gap x (1 + this): Moore's law slows (52.2's 20% a step)
+    window_months: 24 # months; a successor's public window, centred on its planned midpoint (A: as A10's)
+    density: [1.15, 1.25] # x transistor density, the first successor step (A: slowing steps; M37 tuning from [1.25, 1.40] for 52.5 target 3: cost per transistor 2069/2040 0.53-0.88 on seeds 1-30)
+    density_decay: 0.85 # each later step's (gain - 1) x this (A: the gains shrink)
+    wafer_mult: [1.03, 1.08] # x the previous node's wafer price (A: under the density gain, so cost per transistor still falls, less each step; M37 tuning from [1.08, 1.18] for 52.5 target 3)
+    capital_mult: [1.10, 1.25] # x the previous node's capital per wafer-per-year (A: capex keeps rising; fab.future_capital_mult is 1.05-1.20)
+  frontier: # 52.2: research continues with longer gaps and rising costs
+    slowdown: 0.85 # x every domain's baseline points a year for each decade from start_year (A)
+    cost_growth: 0.03 # research budgets per researcher x (1 + this) a year from start_year (A)
+  markets: # 52.2: category growth decays toward a mature rate unless an era renews it
+    mature_growth: # fraction a year (A: PCs after 2011 and smartphones after 2016 grew 0-5% a year; M37 tuning down from 0.03-0.05: the largest incumbents' books must fit SQLite's int64 cents to 2069; AI models' leader books about $230T a year by 2040 on main's curves)
+      default: 0.01
+      ai_models: 0.015
+      cloud_hosting: 0.015
+      chips_ai_accelerator: 0.015
+      vehicles: 0.01
+    half_life_years: 3 # years for the gap between a category's base growth and its mature rate to halve (A; M37 tuning from 6: AI models' 25% of 2039 kept the largest incumbents compounding past int64 cents of revenue by the 2050s)
+  carbon: # 52.2: carbon policy's steps stop; a priced region's carbon reverts to a seeded long-run level
+    long_run: [120, 300] # dollars a tonne, one uniform a region (A: IPCC 1.5-2 C pathways' 2050 prices, roughly)
+    reversion: 0.15 # share of the log gap closed a year (A)
+  rivals: # 52.3: rival leaders retire and are succeeded; entrants keep coming (stream dynasty)
+    retire_age: 62 # years; a rival leader's January retirement chance starts here (A: founder-CEOs often stay into their 60s)
+    retire_rate: 0.06 # chance a year x (age - retire_age + 1) (A: a median CEO tenure of about 7-10 years)
+    loss_rate: 0.10 # extra chance a year while the rival lost money over the last 12 months (A: performance)
+    successor: { heir: 0.25, insider: 0.45, outside: 0.30 } # shares of successors (A)
+    personality_change: { heir: 0.2, insider: 0.1, outside: 0.5 } # chance the rival's personality type changes with each kind (A)
+    min_active: 3 # active rivals a category keeps: below it, seeded entrants each January to reach it (52.5 target 2 asks 3; M37 tuning from 4 for turn time)
+    entrant_staff: [4, 8] # people, the founder included (M37 tuning from [6, 14] for turn time: entrants.yaml's are 6-12)
+    entrant_cash_months: [24, 48] # months of the entrant's payroll it starts with (A)
+    relaunch_share: 0.30 # chance an entrant is a failed rival's brand bought and relaunched, when there is one (A)
+  mortality: # 52.4: a founder's or family member's annual chance of death, each January from from_age
+    from_age: 75 # years (52.4)
+    by_age: { 75: 0.036, 80: 0.058, 85: 0.095, 90: 0.157, 95: 0.252, 100: 0.36 } # q(x), the latest at or below the age (R: US SSA 2021 period life table, men, rounded)
+    wealth: 0.70 # x q: the richest live longer (R: Chetty et al. 2016, a top-1% gap of about 15 years at 40)
+    stress: [0.85, 1.25] # x q at stress 0 and at stress 100, linear (A)
+    family_time: 0.90 # x q at full family time (family.max_time), linear from 1 at none (A)

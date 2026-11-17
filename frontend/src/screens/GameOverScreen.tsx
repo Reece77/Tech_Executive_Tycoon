@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router';
+import { CampaignEndPanel } from '../components/CampaignEndPanel';
 import { ExitChoicePanel } from '../components/ExitChoicePanel';
 import { LegacyPanel } from '../components/FounderPanels';
 import { KpiTile } from '../components/KpiTile';
@@ -16,6 +17,28 @@ const LINKS = [
 ];
 
 function headline(g: GameOver): { kicker: string; title: string; text: string } {
+  if (g.game_state === 'campaign_end' || g.game_state === 'dynasty_end') {
+    // M37 (52.1): the campaign summary, at December 2039 or December 2069
+    const years = g.game_state === 'dynasty_end' ? 'sixty' : 'thirty';
+    return {
+      kicker: `Campaign summary · ${g.ended_label ?? ''}`,
+      title: `${g.company_name} after ${years} years`,
+      text: g.read_only
+        ? 'The dynasty campaign is over. The save stays open: browse it through the links below.'
+        : `Founded ${g.founded_label}. Your legacy and the Hall of Fame entry are below.`,
+    };
+  }
+  if (g.game_state === 'founder_died' || g.game_state === 'founder_retired') {
+    // M37 (52.4): a founder without a family
+    const died = g.game_state === 'founder_died';
+    return {
+      kicker: `${died ? 'The founder died' : 'Retired'} · ${g.ended_label ?? ''}`,
+      title: died
+        ? `The founder of ${g.company_name} has died`
+        : `You retired from ${g.company_name}`,
+      text: 'With no family to carry on, the campaign ends here.',
+    };
+  }
   if (g.game_state === 'scenario_done') {
     // M15b (30.3): a historical scenario judged, early on success or at its deadline
     const won = g.scenario_result === 'success';
@@ -241,6 +264,7 @@ export function GameOverScreen() {
           />
         </div>
         {g.can_found_again && <ExitChoicePanel saveId={saveId} over={g} />}
+        {g.can_continue && <CampaignEndPanel saveId={saveId} over={g} />}
         <LegacyPanel legacy={g.legacy} />
         {g.game_state === 'founder_removed' && g.directors.length > 0 && (
           <section className="tst-panel" aria-label="The directors">

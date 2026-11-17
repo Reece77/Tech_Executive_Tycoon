@@ -48,6 +48,9 @@ from tst.sim.data_models import (
     SkillsFile,
     TagsFile,
 )
+from tst.sim.dynasty.frontier import with_slowdown
+from tst.sim.dynasty.markets import with_maturity
+from tst.sim.dynasty.nodes import with_successors
 from tst.sim.equipment.config import EquipmentFile
 from tst.sim.events.data import EventTemplate, EventTemplatesFile, template_problems
 from tst.sim.exploration.config import GeologyFile
@@ -1069,7 +1072,11 @@ def load_all(
     cities = _validate(CitiesFile, parsed[CITIES_FILE], CITIES_FILE)
     components = _validate(ComponentsHistoryFile, parsed[COMPONENTS_FILE], COMPONENTS_FILE)
     tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
+    tech = with_slowdown(tech, balance.dynasty)  # M37 (52.2): the 2040s on
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
+    # M37 (52.2): category growth decays toward a mature rate from 2040
+    grown, eras = with_maturity(categories.categories, eras, balance.dynasty)
+    categories = categories.model_copy(update={"categories": grown})
     banks = _validate(BanksFile, parsed[BANKS_FILE], BANKS_FILE)
     voices = _validate(VoicesFile, parsed[VOICES_FILE], VOICES_FILE)
     commodities = _validate(CommoditiesFile, parsed[COMMODITIES_FILE], COMMODITIES_FILE)
@@ -1083,6 +1090,7 @@ def load_all(
         NationalizationHistory, parsed[NATIONALIZATION_FILE], NATIONALIZATION_FILE
     )
     nodes = _validate(NodesFile, parsed[NODES_FILE], NODES_FILE)
+    nodes = with_successors(nodes, balance.dynasty)  # M37 (52.2): successors' windows
     countries = _validate(CountriesFile, parsed[COUNTRIES_FILE], COUNTRIES_FILE)
     controls = _validate(ExportControlsFile, parsed[CONTROLS_FILE], CONTROLS_FILE)
     tariffs = _validate(TariffsFile, parsed[TARIFFS_FILE], TARIFFS_FILE)

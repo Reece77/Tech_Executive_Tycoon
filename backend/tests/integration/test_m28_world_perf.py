@@ -21,6 +21,7 @@ from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst.balance.game import Game
 from tst.balance.m28 import loaded
 from tst.balance.m28_world import turn_of, world_game
+from tst.sim.dynasty.mode import continue_dynasty
 
 pytestmark = pytest.mark.timing
 
@@ -47,6 +48,9 @@ def test_a_2039_turn_with_the_full_world() -> None:
     while game.state.turn < turn_of(2039, 12):
         game.turn()
     assert len(game.state.world_facilities) > 100 and game.state.chain()
+    # M37 (52.1): the timed blocks run past December 2039, so the game continues in dynasty
+    # mode (rule 2: what a player who plays on does); both arms start from the same state
+    game.state = continue_dynasty(game.state, game.loaded.balance)
     off = copy.copy(game)
     base = loaded()
     off.loaded = replace(

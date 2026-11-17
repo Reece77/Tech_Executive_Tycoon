@@ -25,6 +25,7 @@ from tst.db import inbox, repository
 from tst.db import saves as saves_db
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
+from tst.sim.dynasty.mode import outcome
 from tst.sim.errors import InvalidModeError
 from tst.sim.family.setup import FamilySpec
 from tst.sim.finance.options import pool_left_bp
@@ -178,7 +179,7 @@ def _overview(save_id: str, settings: SettingsDep, data: DataDep) -> OverviewOut
         mrr_cents=latest.mrr_cents if latest else 0,
         arr_cents=latest.arr_cents if latest else 0,
         month_revenue_cents=month_revenue,
-        game_state=state.save_meta.game_state,
+        game_state=outcome(state, data.balance),  # M37: campaign_end at the standard end
         ended_turn=state.save_meta.ended_turn,
         stage_since_turn=since,
         stage_since_label=format_turn(since) if since is not None else None,
@@ -242,6 +243,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
             if body.family is not None
             else None
         ),
+        length=body.campaign_length,
     )
     return _save_out(saves_db.describe(path))
 

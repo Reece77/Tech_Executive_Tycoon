@@ -92,7 +92,7 @@ def test_new_categories(loaded: LoadedData) -> None:
     assert ai.growth_in(2010) == pytest.approx(0.30)
     assert ai.growth_in(2022) == pytest.approx(1.50)
     assert ai.growth_in(2023) == pytest.approx(2.00)
-    assert ai.growth_in(2040) == pytest.approx(0.25)
+    assert ai.growth_in(2039) == pytest.approx(0.25)  # holds to 2039; M37 (52.2) matures it after
     assert monthly_growth(ai, 2023) ** 12 == pytest.approx(3.0)
 
 

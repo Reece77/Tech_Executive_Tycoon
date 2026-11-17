@@ -347,6 +347,11 @@ def mines_for(loaded: LoadedData, seed: int, commodity_key: str, n: int) -> list
         uid = add_engineers(run, need, 12.0)
         run.act(StaffMine(run.founder, mine.id, uid))
         built.append((mine, p.npv_mid_cents or 0))
+    # M37 (52.1): a standard campaign ends in December 2039; a player whose mines run on
+    # continues in dynasty mode (CLAUDE.md 9 rule 2: what a sensible player would do)
+    from tst.sim.dynasty.mode import continue_dynasty
+
+    run.state = continue_dynasty(run.state, loaded.balance)
     run_until(run, END_TURN, lambda r: all(not m.is_open for m in r.state.mines))
     d = loaded.game_data
     assert d.geology is not None
