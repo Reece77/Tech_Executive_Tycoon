@@ -110,7 +110,10 @@ END: Final = 720  # the turn after December 2069
 START: Final = 360  # January 2040
 DECADES: Final = ((360, 480), (480, 600), (600, 720))  # the 2040s, 2050s and 2060s
 COMMODITY_FROM, COMMODITY_TO = 240, 360  # the 2030s, the reference average
-FAMILY_AGES: Final = (2, 5)  # children at the start (M36's family_game)
+FAMILY_AGES: Final = (2, 5)
+# SQLite stores money as int64 (9.2e18 cents): a balance must stay within two thirds of it by
+# 2069 (the largest AI incumbent's books, already about $230T a year by 2040, set the scale)
+INT64_HEADROOM: Final = 6.1e18  # children at the start (M36's family_game)
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +130,7 @@ class DynastyResult:
     entrants: int
     cost_ratio: float  # leading-edge cost per transistor, December 2069 / January 2040
     gaps_lengthen: bool
+    max_balance: int = 0  # the largest |ledger balance| at the end, cents (int64 headroom)
 
 
 def _family_game(seed: int) -> Game:
@@ -231,6 +235,7 @@ def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
         entrants=sum(1 for c in s.companies if c.rival_key[:1] == (DYNASTY_KEY,)),
         cost_ratio=ratio,
         gaps_lengthen=lengthen,
+        max_balance=max((abs(v) for v in game.balances.values()), default=0),
     )
 
 
@@ -249,6 +254,7 @@ class Readings:
     cost_ratio_min: float  # target 3: at least 0.5
     gaps_lengthen: bool  # target 3
     succession_seeds: int  # target 4: seeds with a succession by 2069 (9 of 10)
+    max_balance: int  # the largest |ledger balance|: under INT64_HEADROOM (SQLite's integers)
 
 
 def readings(results: Sequence[DynastyResult]) -> Readings:
@@ -269,6 +275,7 @@ def readings(results: Sequence[DynastyResult]) -> Readings:
         cost_ratio_min=min(r.cost_ratio for r in results),
         gaps_lengthen=all(r.gaps_lengthen for r in results),
         succession_seeds=sum(1 for r in results if r.successions > 0 or r.deaths > 0),
+        max_balance=max((r.max_balance for r in results), default=0),
     )
 
 
@@ -290,6 +297,8 @@ def report(results: Sequence[DynastyResult]) -> str:
         f"{'pass' if x.cost_ratio_min >= 0.5 else 'MISS'} |",
         f"| 52.5 T4 a succession by 2069 | {x.succession_seeds} of {n} | 9 of 10 | "
         f"{'pass' if x.succession_seeds >= 0.9 * n else 'MISS'} |",
+        f"| M37 the largest ledger balance (cents) | {x.max_balance:.2e} | "
+        f"< {INT64_HEADROOM:.1e} | {'pass' if x.max_balance < INT64_HEADROOM else 'MISS'} |",
     ]
     for r in results:
         lines.append(

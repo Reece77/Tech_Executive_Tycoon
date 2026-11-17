@@ -13,8 +13,9 @@ personality type (15) changes to another from rivals.startup.personalities.
 live product in it, the player's group not counted) gets seeded entrants (stream `dynasty`, key
 (ENTRANT, category index, year, k)), as many as it takes: a 15.4 startup with entrant_staff
 people (all senior) and entrant_cash_months of their pay, launched at once at the category's
-median rival quality, so the market never empties. With chance relaunch_share, and a failed rival in the category, it
-carries that rival's brand (its name, "II" added): the brand bought and relaunched.
+median rival quality, so the market never empties. With chance relaunch_share, and a failed
+rival in the category, it carries that rival's brand (its name, "II" added): the brand bought
+and relaunched.
 
 Before 2040 nothing here runs: no draw, no record (52.5 target 1). Draws stay in the engine;
 the API shows a succession or an entrant once it happens (52.6).
@@ -54,6 +55,7 @@ LIVE = ("live", "sunset")
 LOSS_MONTHS = 12  # tunable-exempt: "the last 12 months" (52.3's performance)
 HOWS: tuple[SuccessorKind, ...] = ("heir", "insider", "outside")
 SECOND = " II"  # tunable-exempt: a relaunched brand's mark
+NAME_SUFFIXES = ("Labs", "Systems", "Works", "Group", "Dynamics", "Industries", "Technologies")
 
 
 def _record_state(state: GameState) -> DynastyState:
@@ -194,6 +196,17 @@ def leaders_month(
     return state, tuple(logs)
 
 
+def _free_names(pool: tuple[str, ...], taken: set[str]) -> list[str]:
+    """Startup names not in use; once the pool is used up (it has a few dozen), the pool's names
+    with a suffix, the first suffix that frees any."""
+    free = [n for n in pool if n not in taken]
+    for suffix in NAME_SUFFIXES:
+        if free:
+            break
+        free = [f"{n} {suffix}" for n in pool if f"{n} {suffix}" not in taken]
+    return free
+
+
 def active_rivals(state: GameState, category: str, mine: set[int]) -> int:
     live = {
         p.company_id
@@ -243,7 +256,7 @@ def entrants_month(
                 while name in taken:
                     name += "I"
             else:
-                names = [n for n in data.startup_names if n not in taken]
+                names = _free_names(data.startup_names, taken)
                 if not names:
                     break
                 name = names[min(len(names) - 1, int(u_name * len(names)))]

@@ -36,6 +36,7 @@ def test_52_5_targets_2_to_4() -> None:
     assert x.commodity_ok, x.excursions  # target 2
     assert x.gaps_lengthen and x.cost_ratio_min >= 0.5  # target 3
     assert x.succession_seeds >= 0.9 * n  # target 4
+    assert x.max_balance < m37.INT64_HEADROOM  # the books fit SQLite's integers to 2069
 
 
 @pytest.mark.nightly
