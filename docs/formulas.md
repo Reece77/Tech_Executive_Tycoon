@@ -3926,3 +3926,37 @@ Every series with a last dated or seeded entry before 2069 continues by a rule, 
 ### 52.6 What the API may show
 
 The mode, the end date, eras' public windows, nodes' announced windows, rivals' leaders and successions, the founder's age and health events as they happen. Never seeded dates before their window is public, mortality draws, or rivals' succession plans.
+
+## 53. Robotics and robotaxis (M39; v5)
+
+Reece (2026-11-14, 2026-11-15): **robotics** among the first new industries, with **robotaxis** in the same milestone. Industrial robots first, sold to factories including the player's own; **humanoids** from the existing `humanoid_robotics` era (window 2030–2035, §26.4); **robotaxi services** on M38's L4 cars. **History holds to 2025** (`robotics.yaml`, research `docs/v5-research/robotics-dossier.md`); markets and money follow the game's scale (M35a's audit).
+
+### 53.1 Industrial robots
+
+- **`industrial_robots`**, a unit-sale category (§26.1) with segments by buyer industry (`automotive`, `electronics`, `general_industry`), the addressable market sized from installations a year by region (data to 2025), a reference price per robot and a service attach. Development weights from existing skills (`hardware_design`, `manufacturing`, `software_engineering`, `chip_design`). Rivals from the data: FANUC, ABB, Yaskawa, KUKA (Midea), Kawasaki, Universal Robots (collaborative), Estun and other Chinese makers.
+- **Robots in the player's own plants:** any assembly, vehicle, cell or fab plant can install robots (own or bought). Each robot replaces `robotics.labour_per_robot` workers' worth of plant labour cost and raises output consistency (defect rate −), at the robot's capex and service cost. The plant's automation level is shown and drives its cost per unit (§26.2, §38, §49.1).
+
+### 53.2 Humanoids
+
+- **`humanoid_robots`** opens with the `humanoid_robotics` era's arrival (§26.4): general-purpose robots sold to businesses (logistics, retail, manufacturing) and, from a later seeded window, to homes. A humanoid's capability score combines hardware (actuators, a learning-curve good like §49.2's cells, measured as L3 against its first-year price), its AI model (the player's or a licensed `ai_models` product) and its chips (`ai_accelerator`, edge class).
+- **Demand** grows with capability over the price of the labour it replaces (by region's wage index, §2), so adoption is fastest where labour is dear.
+- Rivals: Tesla (Optimus), Figure, Agility, Unitree, UBTech, Boston Dynamics (Hyundai), and entrants after the era opens.
+
+### 53.3 Robotaxis
+
+- **A robotaxi service** is a product in a new category `mobility` (subscription-like revenue per ride): a fleet of L4 cars (the player's own from M38, or bought), **zones** by city where a regulator (§48, `automotive` kind) has approved driverless operation, and depots (a facility kind: chargers from §46, cleaning, remote assistance staff).
+- **Rides** per car per day from demand (a city's ride market, data to 2025 for the first services, then seeded), wait times (fleet density), price, and the service's safety record. **Utilisation** drives economics: revenue per ride minus energy, depreciation, insurance, remote assistance and depot costs.
+- **Safety incidents** (stream `robotics`, rate falling with the autonomy level's maturity and the AI model's quality): a serious one is a critical event that can suspend a zone's permit (as Cruise's 2023 suspension), open an investigation (§48) and hurt the brand.
+- Rivals from the data: Waymo, Baidu Apollo Go, Pony.ai, WeRide, Tesla (from 2025), Zoox; Cruise ends in the data (December 2024).
+
+### 53.4 Balance targets (printed)
+
+1. **History holds:** installations, robot prices, robotaxi services' dates and rivals to 2025 follow the data; every earlier guard unchanged (a company without robots plays exactly as before).
+2. **Automation pays where labour is dear:** a plant in a high-wage region with automation at the target level has a cost per unit at least 15% below the same plant without robots by 2030; in a low-wage region at most 5%.
+3. **Humanoids follow their era:** humanoid revenue is under 1% of robotics revenue before the era's arrival and at least 20% within 8 years of it (median).
+4. **Robotaxis are a utilisation business:** a fleet above `robotics.breakeven_rides` rides per car per day earns a positive contribution; a zone suspension cuts the service's revenue by at least 30% for its duration.
+5. **Turn time** within the guards (500 ms on both V6 saves).
+
+### 53.5 What the API may show
+
+Products, fleets, zones and permits, rides and utilisation, plant automation levels, rivals' public products and services, incidents that happened. Never incident draws, seeded approvals or windows before they open, or rivals' plans.
