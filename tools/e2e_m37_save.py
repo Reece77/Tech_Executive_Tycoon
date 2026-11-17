@@ -82,6 +82,7 @@ def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     """pt-dynasty (see the module docstring)."""
     import e2e_m12a_save as cloud
     import e2e_m38_save as cars
+    from tst.balance import fixtures
     from tst.balance.game import start_game
     from tst.balance.strategies_v3 import V3
     from tst.db.repository import ledger_balances
@@ -146,6 +147,7 @@ def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     game.state = with_product_segment(game.state, ProductSegment(pid, "smb", 3000, 0.0))
     game.state = with_company(game.state, replace(game.state.player, name="Balance Co"))
     cars._write(path, game.state, game.balances, start)
+    fixtures.finish(path, data, team=True)  # M23c: knowledge records and a believable team
     return path
 
 
