@@ -11,8 +11,9 @@ import { answerBlocking } from './helpers.ts';
 test.describe.configure({ mode: 'serial' });
 
 const stamp = Date.now();
+const savesSave = `m7b-saves-${stamp}`;
 
-function makeSave(name: string, flag?: '--critical' | '--queued') {
+function makeSave(name: string, flag?: '--critical' | '--queued' | '--year') {
   const saveDir = process.env.TST_E2E_SAVE_DIR;
   if (!saveDir) throw new Error('playwright.config.ts sets TST_E2E_SAVE_DIR');
   const args = ['run', '--project', 'backend', 'python', 'tools/e2e_event_save.py', saveDir, name];
@@ -23,6 +24,12 @@ function makeSave(name: string, flag?: '--critical' | '--queued') {
     shell: process.platform === 'win32',
   });
 }
+
+// (b)'s save plays twelve months to the periodic backup in the fixture, outside (b)'s 30 s.
+test.beforeAll(() => {
+  test.setTimeout(120_000);
+  makeSave(savesSave, '--year');
+});
 
 test('(a) a 6-month Holiday stops on a major event and the summary appears', async ({ page }) => {
   const save = `m7b-holiday-${stamp}`;
@@ -47,22 +54,8 @@ test('(a) a 6-month Holiday stops on a major event and the summary appears', asy
   await expect(page.getByTestId('continue')).toBeEnabled();
 });
 
-test('(b) rename, duplicate and restore a save, and find the restored copy', async ({
-  page,
-  request,
-}) => {
-  test.setTimeout(60_000); // the fixture plays ten months through the API to reach the periodic backup
-  const save = `m7b-saves-${stamp}`;
-  makeSave(save); // played two months; no backup yet
-  // A periodic backup comes every 12 months; play to it through the API.
-  for (let i = 0; i < 10; i++) {
-    const events = await (await request.get(`/api/saves/${save}/events`)).json();
-    for (const id of events.blocking_event_ids as number[]) {
-      // major and critical events block Continue (23.1, M10b)
-      await request.post(`/api/saves/${save}/events/${id}/choose`, { data: { choice: 'A' } });
-    }
-    expect((await request.post(`/api/saves/${save}/advance`)).ok()).toBe(true);
-  }
+test('(b) rename, duplicate and restore a save, and find the restored copy', async ({ page }) => {
+  const save = savesSave; // played to January 2011 by the fixture, with its periodic backup
   await page.goto('/');
   const row = page.getByTestId('save-row').filter({ hasText: save });
   await expect(row).toHaveCount(1);
