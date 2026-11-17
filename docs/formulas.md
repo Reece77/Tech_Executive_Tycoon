@@ -3882,3 +3882,81 @@ The v4 scripts (`tst/balance/strategies_v4.py`) and their comparisons are played
 - **T5:** §44.9, §46.8, §47.5 and §48.5's targets and §43's on the combined code (their own tools). **T6:** the known misses, reported.
 
 The rows are named `V4.T1.1` … `V4.T4` (the known-miss list matches by name). M35b carries `V4.T1.2` (known while |ratio − 1.15| ≤ 0.35) and `V4.T4` (known while the gap is ≥ 0) to M43 (`tst/balance/known_misses.py`).
+
+## 52. Dynasty mode: the second 30 years (M37; v5)
+
+Reece (2026-11-14): an optional **dynasty mode** continues the campaign past December 2039 to **December 2069**, with seeded eras beyond history. The standard campaign stays 360 turns. This section defines the mode, what the game does at the standard end, how every system's data continues past its last dated or seeded entry, and how rivals and the founder age. Nothing here changes a game before January 2040.
+
+### 52.1 The mode and the end of the standard campaign
+
+- **New game setting:** Campaign length: standard (to December 2039, 360 turns) or dynasty (to December 2069, 720 turns). Existing saves can switch to dynasty at any time before their end (a one-off confirmation).
+- **At December 2039 in a standard game:** the **campaign summary** (Hall of Fame entry, legacy and dynasty scores, §32.6 and §45.7) and a choice: end, or continue in dynasty mode. A standard game that continues becomes dynasty from that turn.
+- **At December 2069:** the final summary; the save stays open for browsing (read-only), with "continue in sandbox" (no score) as a later option (out of scope).
+
+### 52.2 Data beyond its end: seeded continuations
+
+Every series with a last dated or seeded entry before 2069 continues by a rule, from stream `dynasty` (id 65, keyed by the series' stable key and year):
+
+- **Eras** (§26.4, `eras.yaml`): a second wave of seeded future eras with windows 2040–2065 (the M37 dossier lists candidates: fusion power, general-purpose humanoids, brain–computer interfaces, quantum advantage at scale, molecular manufacturing, space industry), each with a domain and an acceleration like §26.4's.
+- **Process nodes** (§38, `nodes.yaml`): seeded successors to the last node (A10), each arriving `dynasty.node_gap_years` later than the previous (lengthening by 20% a step: Moore's law slows), with cost per transistor falling less each step and capex rising.
+- **Technology frontier** (§21): research generations continue with longer gaps and rising costs (`dynasty.frontier_slowdown`).
+- **Commodities, power and carbon** (§33, §46): the seeded paths continue (they already run open-ended); depletion and new discoveries (§34) continue; carbon's policy steps continue to a seeded long-run level.
+- **Demographics and demand:** category growth rates decay toward `dynasty.mature_growth` by category, unless an era renews them; regions' populations follow a seeded path; new segments arrive only through eras.
+- **Platforms, regulation and geopolitics** (§44, §48, §39): their seeded post-2025 rules continue; no new dated history.
+
+### 52.3 Rivals age
+
+- Every rival company has a **founder or CEO** person (already true for named rivals; generated for chain companies) with an age. From 2026, rival leaders retire (by age and performance, stream `dynasty`) and are succeeded by an heir, an insider or an outside hire, each with its own personality, which can change the rival's personality type (§13) and strategy.
+- **New rivals** keep entering after 2039 (§9's entrants with seeded categories and dates), so the market never empties.
+- **Rival companies can die and be reborn**: a bankrupt rival's brand may be bought and relaunched.
+
+### 52.4 The founder's lifetime
+
+- With M36's family, founders and heirs age; **death** becomes possible from age 75 (stream `dynasty`, annual chance from `dynasty.mortality` by age, lowered by low stress and family time), triggering §45.5's succession and §45.6's estate tax at once. If no heir is ready, the board appoints a professional CEO and the player continues as the family's head (§45.5).
+- Without a family (Family: none), the game ends with the founder's death, or at the founder's choice to retire, with the campaign summary.
+
+### 52.5 Balance targets (printed)
+
+1. **Nothing moves before 2040:** every game state and guard to December 2039 identical to `main` before M37 (state-cache and golden checks), dynasty mode on or off.
+2. **The world keeps moving:** in 2040–2069 at least 4 of the seeded eras arrive (median, 10 seeds), every category has at least 3 active rivals in each decade on 9 of 10 seeds, and no commodity's price stays below a third or above three times its 2030s average for more than 60 months.
+3. **Moore's law slows:** the gap between seeded nodes after A10 lengthens, and leading-edge wafer cost per transistor falls by at most half from 2040 to 2069.
+4. **Succession happens:** in a dynasty run with a family, at least one succession by 2069 on 9 of 10 seeds.
+5. **Turn time:** a 2069 turn on the `full_integrator` save within M30's 500 ms guard on the CI runner, and a 2069 save within 400 MB.
+
+### 52.6 What the API may show
+
+The mode, the end date, eras' public windows, nodes' announced windows, rivals' leaders and successions, the founder's age and health events as they happen. Never seeded dates before their window is public, mortality draws, or rivals' succession plans.
+
+## 53. Robotics and robotaxis (M39; v5)
+
+Reece (2026-11-14, 2026-11-15): **robotics** among the first new industries, with **robotaxis** in the same milestone. Industrial robots first, sold to factories including the player's own; **humanoids** from the existing `humanoid_robotics` era (window 2030–2035, §26.4); **robotaxi services** on M38's L4 cars. **History holds to 2025** (`robotics.yaml`, research `docs/v5-research/robotics-dossier.md`); markets and money follow the game's scale (M35a's audit).
+
+### 53.1 Industrial robots
+
+- **`industrial_robots`**, a unit-sale category (§26.1) with segments by buyer industry (`automotive`, `electronics`, `general_industry`), the addressable market sized from installations a year by region (data to 2025), a reference price per robot and a service attach. Development weights from existing skills (`hardware_design`, `manufacturing`, `software_engineering`, `chip_design`). Rivals from the data: FANUC, ABB, Yaskawa, KUKA (Midea), Kawasaki, Universal Robots (collaborative), Estun and other Chinese makers.
+- **Robots in the player's own plants:** any assembly, vehicle, cell or fab plant can install robots (own or bought). Each robot replaces `robotics.labour_per_robot` workers' worth of plant labour cost and raises output consistency (defect rate −), at the robot's capex and service cost. The plant's automation level is shown and drives its cost per unit (§26.2, §38, §49.1).
+
+### 53.2 Humanoids
+
+- **`humanoid_robots`** opens with the `humanoid_robotics` era's arrival (§26.4): general-purpose robots sold to businesses (logistics, retail, manufacturing) and, from a later seeded window, to homes. A humanoid's capability score combines hardware (actuators, a learning-curve good like §49.2's cells, measured as L3 against its first-year price), its AI model (the player's or a licensed `ai_models` product) and its chips (`ai_accelerator`, edge class).
+- **Demand** grows with capability over the price of the labour it replaces (by region's wage index, §2), so adoption is fastest where labour is dear.
+- Rivals: Tesla (Optimus), Figure, Agility, Unitree, UBTech, Boston Dynamics (Hyundai), and entrants after the era opens.
+
+### 53.3 Robotaxis
+
+- **A robotaxi service** is a product in a new category `mobility` (subscription-like revenue per ride): a fleet of L4 cars (the player's own from M38, or bought), **zones** by city where a regulator (§48, `automotive` kind) has approved driverless operation, and depots (a facility kind: chargers from §46, cleaning, remote assistance staff).
+- **Rides** per car per day from demand (a city's ride market, data to 2025 for the first services, then seeded), wait times (fleet density), price, and the service's safety record. **Utilisation** drives economics: revenue per ride minus energy, depreciation, insurance, remote assistance and depot costs.
+- **Safety incidents** (stream `robotics`, rate falling with the autonomy level's maturity and the AI model's quality): a serious one is a critical event that can suspend a zone's permit (as Cruise's 2023 suspension), open an investigation (§48) and hurt the brand.
+- Rivals from the data: Waymo, Baidu Apollo Go, Pony.ai, WeRide, Tesla (from 2025), Zoox; Cruise ends in the data (December 2024).
+
+### 53.4 Balance targets (printed)
+
+1. **History holds:** installations, robot prices, robotaxi services' dates and rivals to 2025 follow the data; every earlier guard unchanged (a company without robots plays exactly as before).
+2. **Automation pays where labour is dear:** a plant in a high-wage region with automation at the target level has a cost per unit at least 15% below the same plant without robots by 2030; in a low-wage region at most 5%.
+3. **Humanoids follow their era:** humanoid revenue is under 1% of robotics revenue before the era's arrival and at least 20% within 8 years of it (median).
+4. **Robotaxis are a utilisation business:** a fleet above `robotics.breakeven_rides` rides per car per day earns a positive contribution; a zone suspension cuts the service's revenue by at least 30% for its duration.
+5. **Turn time** within the guards (500 ms on both V6 saves).
+
+### 53.5 What the API may show
+
+Products, fleets, zones and permits, rides and utilisation, plant automation levels, rivals' public products and services, incidents that happened. Never incident draws, seeded approvals or windows before they open, or rivals' plans.
