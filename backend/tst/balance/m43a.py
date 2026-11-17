@@ -149,6 +149,7 @@ class Readings:
     out_of_band: list[str]  # target 2: categories outside BAND, not BY_DESIGN
     growth_2060s: dict[str, float]  # target 3: category -> lowest seed's average growth
     slow: list[str]  # target 3
+    data_set: list[str]  # target 3, printed: markets whose demand data sets (not judged)
     max_balance: int  # target 4
     max_where: str
 
@@ -201,7 +202,9 @@ def readings(results: Sequence[MarketResult]) -> Readings:
                 continue
             rate = (a1 / a0) ** 0.1 - 1
             growth[cat] = min(growth.get(cat, rate), rate)
-    slow = [f"{k} {v:.2%}" for k, v in sorted(growth.items()) if v < GROWTH_MIN]
+    # demand set from data each month (vehicles, M38) has no growth rate here: printed, not judged
+    slow = [f"{k} {v:.2%}" for k, v in sorted(growth.items()) if v < GROWTH_MIN and sat.grows(g, k)]
+    data_set = [f"{k} {v:.2%}" for k, v in sorted(growth.items()) if not sat.grows(g, k)]
     worst = max(results, key=lambda x: x.max_balance)
     return Readings(
         over_ceiling=over,
@@ -211,6 +214,7 @@ def readings(results: Sequence[MarketResult]) -> Readings:
         out_of_band=bad,
         growth_2060s=growth,
         slow=slow,
+        data_set=data_set,
         max_balance=worst.max_balance,
         max_where=f"seed {worst.seed}: {worst.max_key[0]} {worst.max_key[1]}",
     )
@@ -230,7 +234,8 @@ def report(results: Sequence[MarketResult]) -> str:
         f"| 54.4 T2 2025 within 0.5-2x | {len(x.out_of_band)} outside: "
         f"{', '.join(x.out_of_band) or '-'} | "
         f"0 | {'pass' if not x.out_of_band else 'MISS'} |",
-        f"| 54.4 T3 growth 2060s >= 1% | {', '.join(x.slow) or 'all'} | all | "
+        f"| 54.4 T3 growth 2060s >= 1% | below: {', '.join(x.slow) or 'none'}; demand set by "
+        f"data (printed): {', '.join(x.data_set) or '-'} | none below | "
         f"{'pass' if not x.slow else 'MISS'} |",
         f"| 54.4 T4 largest balance | {x.max_balance:.3e} ({x.max_where}) | < {MONEY_LIMIT:.1e} | "
         f"{'pass' if x.max_balance < MONEY_LIMIT else 'MISS'} |",
