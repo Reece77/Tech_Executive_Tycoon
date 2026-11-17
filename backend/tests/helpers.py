@@ -88,7 +88,8 @@ DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors 
 FIRST_PRODUCT = 1  # a new game's first player product: since M12a (ADR-0013 amendment)
 # incumbents' products take id blocks from 900,000 by their place in incumbents.yaml
 SALES_CLOUD = 900_000  # Salesforce's Sales Cloud: the first incumbent's first product
-INCUMBENTS = 52  # incumbent companies (ids 2..53; M12b appended twelve, M38 thirteen)
+INCUMBENTS = 52  # incumbent companies before M41 (ids 2..53; M12b appended twelve, M38 thirteen)
+MEDICAL_INCUMBENTS = 12  # M41 (50.1): appended after M38's, ids 54..65; new games only
 
 
 def move_directors(state: GameState) -> GameState:

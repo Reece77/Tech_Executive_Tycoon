@@ -305,6 +305,17 @@ from tst.sim.group.actions import (
 )
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.medical.actions import ACTION_TYPES as MEDICAL_ACTION_TYPES
+from tst.sim.medical.actions import (
+    DesignDevice,
+    MedicalAction,
+    RequestCoverage,
+    SetMedicalSupport,
+    SetPlantQuality,
+    StartStudy,
+    SubmitDevice,
+    apply_medical,
+)
 from tst.sim.mining.actions import ACTION_TYPES as MINING_ACTION_TYPES
 from tst.sim.mining.actions import (
     AnswerRivalBid,
@@ -410,6 +421,7 @@ type Action = (
     | RegulationAction  # M34
     | EquipmentAction  # M33
     | VehicleAction  # M38
+    | MedicalAction  # M41
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -429,6 +441,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **REGULATION_ACTION_TYPES,  # M34 (48)
     **EQUIPMENT_ACTION_TYPES,  # M33 (47)
     **VEHICLE_ACTION_TYPES,  # M38 (49)
+    **MEDICAL_ACTION_TYPES,  # M41 (50)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -970,6 +983,15 @@ def apply_action(
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():
             out = apply_equipment(state, action, rng, ledger_balances, balance, data)  # M33 (47)
+        case (
+            DesignDevice()
+            | SubmitDevice()
+            | StartStudy()
+            | RequestCoverage()
+            | SetMedicalSupport()
+            | SetPlantQuality()
+        ):  # M41 (50)
+            out = apply_medical(state, action, rng, balance, data)
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

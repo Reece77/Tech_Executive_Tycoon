@@ -3861,6 +3861,16 @@ Reece (2026-11-14): **medical devices with realistic approval stages** (FDA-styl
 
 Devices, their classes and routes, submissions and their stages, review ranges, studies' designs and results once read out, coverage decisions, adoption, inspections and recalls that happened, rivals' public products and shares. Never study draws before readout, recall or inspection draws, or seeded future rules before they happen.
 
+### 50.8 As built (M41 notes)
+
+- **Markets to the game's scale:** D0 = medical.yaml's real 2024 world revenue x `economy_scale.money` (0.0849) / (a customer's yearly spend x 2.236, the regions' size x price index summed, x 0.65, the incumbents' starting share), taken back to 2010 by `growth_by_year`; a test holds 2010 and 2024 within 25% of real. Study costs per patient are real money, as salaries are (the economy-scale audit decides later).
+- **The gate:** a device's share of a region's demand = (the parts cleared by their health regulator, M34's part shares, plus the rest by reliance) x (1, or `no_coverage_share` until covered where payers pay) x (`adoption.floor` + (1 - floor) x clinicians' adoption); zero during a recall's stop and, in a regulator's part, an import ban or consent decree. It multiplies new wins through M22's access map; existing customers keep buying. Rivals' devices are history's, cleared wherever they sell.
+- **Consumables and service:** installed units x `consumables_cents` a month at the region's price index (4050), with its cost share (5000), for every selling device, rivals' included.
+- **Reviews:** at filing, months = U(window by date) + U(more_info months) when a request is drawn + the change control plan's months, x the regulator's drift after 2025; the decision at that month: approve = route rate + `review.quality_weight` x (quality - 50) + `review.evidence_weight` x evidence, within bounds. A warning letter holds that regulator's decisions.
+- **Studies:** chance = kind's rate + `study.quality_weight` x (quality - 50) + `study.evidence_weight` x evidence; shown +/- `shown_band`. Evidence adds the kind's strength (pivotal 0.6) on success.
+- **Coverage:** months ~ U(lo, lo + (hi - lo) x (1 - 0.8 x evidence)); approve = lerp(approve range, evidence). **Adoption:** a += r x a x (1 - a), r = `rate` x (1 + `evidence_weight` x evidence) x (1 + `training_weight` x min(1, training / `training_full_cents`)), from `seed` at first clearance.
+- **Recalls:** monthly chance = `chance_year` / 12 x the quality level's defect x (1 + `install_weight` x log10(1 + installed units)); class by the data's mix, one class lower when surveillance catches it. **Inspections:** monthly chance = `chance_year` / 12 x strictness; findings x the level's (and a for-cause visit's) multiplier.
+
 ## 51. v4 balance targets and follow-ups (M35b)
 
 ### 51.1 Rules added by the balance pass
@@ -3927,6 +3937,39 @@ Every series with a last dated or seeded entry before 2069 continues by a rule, 
 
 The mode, the end date, eras' public windows, nodes' announced windows, rivals' leaders and successions, the founder's age and health events as they happen. Never seeded dates before their window is public, mortality draws, or rivals' succession plans.
 
+## 53. Robotics and robotaxis (M39; v5)
+
+Reece (2026-11-14, 2026-11-15): **robotics** among the first new industries, with **robotaxis** in the same milestone. Industrial robots first, sold to factories including the player's own; **humanoids** from the existing `humanoid_robotics` era (window 2030–2035, §26.4); **robotaxi services** on M38's L4 cars. **History holds to 2025** (`robotics.yaml`, research `docs/v5-research/robotics-dossier.md`); markets and money follow the game's scale (M35a's audit).
+
+### 53.1 Industrial robots
+
+- **`industrial_robots`**, a unit-sale category (§26.1) with segments by buyer industry (`automotive`, `electronics`, `general_industry`), the addressable market sized from installations a year by region (data to 2025), a reference price per robot and a service attach. Development weights from existing skills (`hardware_design`, `manufacturing`, `software_engineering`, `chip_design`). Rivals from the data: FANUC, ABB, Yaskawa, KUKA (Midea), Kawasaki, Universal Robots (collaborative), Estun and other Chinese makers.
+- **Robots in the player's own plants:** any assembly, vehicle, cell or fab plant can install robots (own or bought). Each robot replaces `robotics.labour_per_robot` workers' worth of plant labour cost and raises output consistency (defect rate −), at the robot's capex and service cost. The plant's automation level is shown and drives its cost per unit (§26.2, §38, §49.1).
+
+### 53.2 Humanoids
+
+- **`humanoid_robots`** opens with the `humanoid_robotics` era's arrival (§26.4): general-purpose robots sold to businesses (logistics, retail, manufacturing) and, from a later seeded window, to homes. A humanoid's capability score combines hardware (actuators, a learning-curve good like §49.2's cells, measured as L3 against its first-year price), its AI model (the player's or a licensed `ai_models` product) and its chips (`ai_accelerator`, edge class).
+- **Demand** grows with capability over the price of the labour it replaces (by region's wage index, §2), so adoption is fastest where labour is dear.
+- Rivals: Tesla (Optimus), Figure, Agility, Unitree, UBTech, Boston Dynamics (Hyundai), and entrants after the era opens.
+
+### 53.3 Robotaxis
+
+- **A robotaxi service** is a product in a new category `mobility` (subscription-like revenue per ride): a fleet of L4 cars (the player's own from M38, or bought), **zones** by city where a regulator (§48, `automotive` kind) has approved driverless operation, and depots (a facility kind: chargers from §46, cleaning, remote assistance staff).
+- **Rides** per car per day from demand (a city's ride market, data to 2025 for the first services, then seeded), wait times (fleet density), price, and the service's safety record. **Utilisation** drives economics: revenue per ride minus energy, depreciation, insurance, remote assistance and depot costs.
+- **Safety incidents** (stream `robotics`, rate falling with the autonomy level's maturity and the AI model's quality): a serious one is a critical event that can suspend a zone's permit (as Cruise's 2023 suspension), open an investigation (§48) and hurt the brand.
+- Rivals from the data: Waymo, Baidu Apollo Go, Pony.ai, WeRide, Tesla (from 2025), Zoox; Cruise ends in the data (December 2024).
+
+### 53.4 Balance targets (printed)
+
+1. **History holds:** installations, robot prices, robotaxi services' dates and rivals to 2025 follow the data; every earlier guard unchanged (a company without robots plays exactly as before).
+2. **Automation pays where labour is dear:** a plant in a high-wage region with automation at the target level has a cost per unit at least 15% below the same plant without robots by 2030; in a low-wage region at most 5%.
+3. **Humanoids follow their era:** humanoid revenue is under 1% of robotics revenue before the era's arrival and at least 20% within 8 years of it (median).
+4. **Robotaxis are a utilisation business:** a fleet above `robotics.breakeven_rides` rides per car per day earns a positive contribution; a zone suspension cuts the service's revenue by at least 30% for its duration.
+5. **Turn time** within the guards (500 ms on both V6 saves).
+
+### 53.5 What the API may show
+
+Products, fleets, zones and permits, rides and utilisation, plant automation levels, rivals' public products and services, incidents that happened. Never incident draws, seeded approvals or windows before they open, or rivals' plans.
 ### 52.7 As built (M37 notes)
 
 - **Nothing before 2040.** Every rule here starts in January of `dynasty.start_year`, the rival leaders' too (52.3's "from 2026" yields to target 1; before 2040 rival CEOs still age and retire by §10). The rules are gated on the year, not the mode: only a dynasty campaign or a Sandbox reaches 2040. Proof: `tst/balance/m37.py` replays M30's nine runs to December 2039, mode off and on, identical month by month to the digests before M37.

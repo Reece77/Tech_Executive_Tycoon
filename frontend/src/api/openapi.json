@@ -26364,6 +26364,571 @@
         }
       }
     },
+    "/api/saves/{save_id}/medical": {
+      "get": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Get Medical",
+        "description": "Devices with their class, route and evidence, submissions by regulator, studies,\ncoverage, adoption, inspections, recalls, plants' quality and rivals (50.7).",
+        "operationId": "getMedical",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/design": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Design Device",
+        "operationId": "designDevice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/submit": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Submit Device",
+        "operationId": "submitDevice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/study": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Start Study",
+        "operationId": "startStudy",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StudyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/coverage": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Request Coverage",
+        "operationId": "requestCoverage",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverageIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/support": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Set Support",
+        "operationId": "setMedicalSupport",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/medical/plant-quality": {
+      "post": {
+        "tags": [
+          "medical"
+        ],
+        "summary": "Set Plant Quality",
+        "operationId": "setPlantQuality",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlantQualityIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/equipment": {
       "get": {
         "tags": [
@@ -33585,6 +34150,24 @@
         ],
         "title": "CovenantOut"
       },
+      "CoverageIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "region"
+        ],
+        "title": "CoverageIn"
+      },
       "CreateProductIn": {
         "properties": {
           "name": {
@@ -33844,6 +34427,34 @@
           "fix"
         ],
         "title": "CrossDivisionOut"
+      },
+      "DatedRuleOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "at": {
+            "type": "string",
+            "title": "At"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "at",
+          "note",
+          "source"
+        ],
+        "title": "DatedRuleOut"
       },
       "DealModeIn": {
         "properties": {
@@ -34125,6 +34736,29 @@
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
       },
+      "DesignIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "use": {
+            "type": "string",
+            "title": "Use"
+          },
+          "pccp": {
+            "type": "boolean",
+            "title": "Pccp",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "use"
+        ],
+        "title": "DesignIn"
+      },
       "DesignationOut": {
         "properties": {
           "regime": {
@@ -34331,6 +34965,155 @@
           "catalogue_points"
         ],
         "title": "DeviceLineOut"
+      },
+      "DeviceOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "category_label": {
+            "type": "string",
+            "title": "Category Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "use": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use"
+          },
+          "use_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Use Label"
+          },
+          "us_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Us Class"
+          },
+          "eu_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eu Class"
+          },
+          "evidence": {
+            "type": "number",
+            "title": "Evidence"
+          },
+          "pccp": {
+            "type": "boolean",
+            "title": "Pccp"
+          },
+          "training_cents": {
+            "type": "integer",
+            "title": "Training Cents"
+          },
+          "surveillance": {
+            "type": "boolean",
+            "title": "Surveillance"
+          },
+          "update_needed": {
+            "type": "boolean",
+            "title": "Update Needed",
+            "description": "SaMD: a change of intended use needs a new filing"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/RouteOut"
+            },
+            "type": "array",
+            "title": "Routes"
+          },
+          "studies": {
+            "items": {
+              "$ref": "#/components/schemas/StudyOut"
+            },
+            "type": "array",
+            "title": "Studies"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "recalls": {
+            "items": {
+              "$ref": "#/components/schemas/RecallOut"
+            },
+            "type": "array",
+            "title": "Recalls"
+          },
+          "quality_level": {
+            "type": "string",
+            "title": "Quality Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "category_label",
+          "status",
+          "quality",
+          "use",
+          "use_label",
+          "us_class",
+          "eu_class",
+          "evidence",
+          "pccp",
+          "training_cents",
+          "surveillance",
+          "update_needed",
+          "routes",
+          "studies",
+          "regions",
+          "recalls",
+          "quality_level"
+        ],
+        "title": "DeviceOut"
       },
       "DevicePlatformIn": {
         "properties": {
@@ -42165,6 +42948,40 @@
         "title": "HeadcountTargetOut",
         "description": "M27b sub-task 9: a unit's headcount target in one role, which Hiring fills."
       },
+      "HealthRegulatorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Its part's share of the region's people"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region",
+          "region_label",
+          "share"
+        ],
+        "title": "HealthRegulatorOut"
+      },
       "HireBanksIn": {
         "properties": {
           "bank": {
@@ -43432,6 +44249,51 @@
           "break_even_utilization"
         ],
         "title": "InfrastructureOut"
+      },
+      "InspectionOut": {
+        "properties": {
+          "turn": {
+            "type": "string",
+            "title": "Turn"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "finding": {
+            "type": "string",
+            "title": "Finding"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          },
+          "fine_cents": {
+            "type": "integer",
+            "title": "Fine Cents"
+          },
+          "for_cause": {
+            "type": "boolean",
+            "title": "For Cause"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "regulator",
+          "finding",
+          "until",
+          "fine_cents",
+          "for_cause"
+        ],
+        "title": "InspectionOut"
       },
       "InvestingRulesOut": {
         "properties": {
@@ -46275,6 +47137,108 @@
         ],
         "title": "MarketingSplitIn",
         "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
+      },
+      "MedicalActionOut": {
+        "properties": {
+          "medical": {
+            "$ref": "#/components/schemas/MedicalOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "medical",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "MedicalActionOut"
+      },
+      "MedicalOut": {
+        "properties": {
+          "regulators": {
+            "items": {
+              "$ref": "#/components/schemas/HealthRegulatorOut"
+            },
+            "type": "array",
+            "title": "Regulators"
+          },
+          "subcategories": {
+            "items": {
+              "$ref": "#/components/schemas/SubcategoryOut"
+            },
+            "type": "array",
+            "title": "Subcategories"
+          },
+          "devices": {
+            "items": {
+              "$ref": "#/components/schemas/DeviceOut"
+            },
+            "type": "array",
+            "title": "Devices"
+          },
+          "study_kinds": {
+            "items": {
+              "$ref": "#/components/schemas/StudyKindOut"
+            },
+            "type": "array",
+            "title": "Study Kinds"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/QualityPlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "quality_levels": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Quality Levels",
+            "description": "A plant's monthly cost by level"
+          },
+          "inspections": {
+            "items": {
+              "$ref": "#/components/schemas/InspectionOut"
+            },
+            "type": "array",
+            "title": "Inspections"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalProductOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "precedents": {
+            "items": {
+              "$ref": "#/components/schemas/DatedRuleOut"
+            },
+            "type": "array",
+            "title": "Precedents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulators",
+          "subcategories",
+          "devices",
+          "study_kinds",
+          "plants",
+          "quality_levels",
+          "inspections",
+          "rivals",
+          "precedents"
+        ],
+        "title": "MedicalOut"
       },
       "MentorIn": {
         "properties": {
@@ -51834,6 +52798,29 @@
         ],
         "title": "PlantOut"
       },
+      "PlantQualityIn": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "standard",
+              "high"
+            ],
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "level"
+        ],
+        "title": "PlantQualityIn"
+      },
       "PlantQuoteOut": {
         "properties": {
           "type": {
@@ -55433,6 +56420,34 @@
         ],
         "title": "PublicOut"
       },
+      "QualityPlantOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "cents_month": {
+            "type": "integer",
+            "title": "Cents Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "region",
+          "level",
+          "cents_month"
+        ],
+        "title": "QualityPlantOut"
+      },
       "QueueOut": {
         "properties": {
           "id": {
@@ -55703,6 +56718,39 @@
           "board"
         ],
         "title": "ReadinessOut"
+      },
+      "RecallOut": {
+        "properties": {
+          "turn": {
+            "type": "string",
+            "title": "Turn"
+          },
+          "klass": {
+            "type": "string",
+            "title": "Klass"
+          },
+          "units": {
+            "type": "integer",
+            "title": "Units"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "caught_early": {
+            "type": "boolean",
+            "title": "Caught Early"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "klass",
+          "units",
+          "cost_cents",
+          "caught_early"
+        ],
+        "title": "RecallOut"
       },
       "RecipeOut": {
         "properties": {
@@ -56942,6 +57990,72 @@
         ],
         "title": "RegionEventOut"
       },
+      "RegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "cleared": {
+            "type": "string",
+            "title": "Cleared",
+            "description": "Who has cleared the device there"
+          },
+          "sells_share": {
+            "type": "number",
+            "title": "Sells Share",
+            "description": "The share of demand it may win now (public rules)"
+          },
+          "coverage": {
+            "type": "string",
+            "enum": [
+              "none",
+              "not_needed",
+              "pending",
+              "covered",
+              "denied"
+            ],
+            "title": "Coverage"
+          },
+          "coverage_window": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage Window"
+          },
+          "adoption": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adoption"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "cleared",
+          "sells_share",
+          "coverage",
+          "coverage_window",
+          "adoption"
+        ],
+        "title": "RegionOut"
+      },
       "RegionRiskOut": {
         "properties": {
           "key": {
@@ -58044,6 +59158,39 @@
         "title": "RivalProductMarketOut",
         "description": "Where one rival product sells (Reece's playtest 3): its category, segments and\nregions, in words."
       },
+      "RivalProductOut": {
+        "properties": {
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company",
+          "product",
+          "category",
+          "customers",
+          "share"
+        ],
+        "title": "RivalProductOut"
+      },
       "RivalProfileOut": {
         "properties": {
           "score": {
@@ -58882,6 +60029,115 @@
           "next"
         ],
         "title": "RoundsOut"
+      },
+      "RouteOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "route": {
+            "type": "string",
+            "title": "Route"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "review": {
+            "type": "string",
+            "title": "Review",
+            "description": "The months a decision takes, as a range"
+          },
+          "review_months": {
+            "type": "integer",
+            "title": "Review Months",
+            "description": "The range's top, for Explain"
+          },
+          "explain": {
+            "type": "string",
+            "title": "Explain",
+            "description": "How the range is made (data, not a draw)"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_filed",
+              "review",
+              "information_requested",
+              "cleared",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "filed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filed"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided"
+          },
+          "months_in": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months In",
+            "description": "Months since filing while open"
+          },
+          "blocker": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blocker",
+            "description": "Why it cannot be filed now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "regulator_name",
+          "route",
+          "label",
+          "review",
+          "review_months",
+          "explain",
+          "fee_cents",
+          "status"
+        ],
+        "title": "RouteOut"
       },
       "RuleOut": {
         "properties": {
@@ -61648,6 +62904,205 @@
         ],
         "title": "StructureGuideOut"
       },
+      "StudyIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "feasibility",
+              "pivotal",
+              "post_market"
+            ],
+            "title": "Kind"
+          },
+          "patients": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patients"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "kind"
+        ],
+        "title": "StudyIn"
+      },
+      "StudyKindOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "patients": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Patients"
+          },
+          "months": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "patients",
+          "months"
+        ],
+        "title": "StudyKindOut"
+      },
+      "StudyOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "patients": {
+            "type": "integer",
+            "title": "Patients"
+          },
+          "started": {
+            "type": "string",
+            "title": "Started"
+          },
+          "readout": {
+            "type": "string",
+            "title": "Readout",
+            "description": "The planned readout month (its design)"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "success_range": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success Range",
+            "description": "While running: the chance as a range"
+          },
+          "explain": {
+            "type": "string",
+            "title": "Explain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "patients",
+          "started",
+          "readout",
+          "cost_cents",
+          "spent_cents",
+          "status",
+          "success_range",
+          "explain"
+        ],
+        "title": "StudyOut"
+      },
+      "SubcategoryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "consumables_cents": {
+            "type": "integer",
+            "title": "Consumables Cents"
+          },
+          "needs_coverage": {
+            "type": "boolean",
+            "title": "Needs Coverage"
+          },
+          "clinicians": {
+            "type": "boolean",
+            "title": "Clinicians"
+          },
+          "software": {
+            "type": "boolean",
+            "title": "Software"
+          },
+          "uses": {
+            "items": {
+              "$ref": "#/components/schemas/UseOut"
+            },
+            "type": "array",
+            "title": "Uses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "consumables_cents",
+          "needs_coverage",
+          "clinicians",
+          "software",
+          "uses"
+        ],
+        "title": "SubcategoryOut"
+      },
+      "SubmitIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "regulator"
+        ],
+        "title": "SubmitIn"
+      },
       "SubsidiaryColumnOut": {
         "properties": {
           "company_id": {
@@ -62096,6 +63551,30 @@
           "rule"
         ],
         "title": "SupplyExposureOut"
+      },
+      "SupportIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "training_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Training Cents"
+          },
+          "surveillance": {
+            "type": "boolean",
+            "title": "Surveillance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "training_cents",
+          "surveillance"
+        ],
+        "title": "SupportIn"
       },
       "SupportPoolOut": {
         "properties": {
@@ -64167,6 +65646,39 @@
         "type": "object",
         "title": "UpgradeFabIn",
         "description": "M33: a conversion's tools (optional body)."
+      },
+      "UseOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "us_class": {
+            "type": "string",
+            "title": "Us Class"
+          },
+          "eu_class": {
+            "type": "string",
+            "title": "Eu Class"
+          },
+          "us_route": {
+            "type": "string",
+            "title": "Us Route"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "us_class",
+          "eu_class",
+          "us_route"
+        ],
+        "title": "UseOut"
       },
       "ValidationError": {
         "properties": {

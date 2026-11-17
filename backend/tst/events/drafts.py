@@ -80,6 +80,10 @@ def event_names(
         from tst.sim.platforms.gatekeep import removal_names
 
         names |= removal_names(state, data, event)
+    if event.category == "medical":  # M41 (50.5): the recall's units and cost
+        from tst.sim.medical.answers import event_names as medical_names
+
+        names |= medical_names(state, event)
     if event.category == "regulation" and balance is not None:  # M34 (48.3-48.4)
         from tst.sim.regulation.answers import event_names as regulation_names
 

@@ -3,8 +3,8 @@
 January 2040; the campaign length is in `game_mode`'s JSON (`length`, default standard), so
 existing saves need no change and are standard campaigns.
 
-Revision ID: 0059_m37
-Revises: 0058_m38
+Revision ID: 0060_m37
+Revises: 0059_m41
 """
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0059_m37"
-down_revision: str | None = "0058_m38"
+revision: str = "0060_m37"
+down_revision: str | None = "0059_m41"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -26,9 +26,9 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("data", sa.JSON(), nullable=False),
     )
-    op.execute("UPDATE save_meta SET schema_version = 59")
+    op.execute("UPDATE save_meta SET schema_version = 60")
 
 
 def downgrade() -> None:
     op.drop_table("dynasty_record")
-    op.execute("UPDATE save_meta SET schema_version = 58")
+    op.execute("UPDATE save_meta SET schema_version = 59")

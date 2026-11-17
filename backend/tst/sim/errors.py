@@ -376,6 +376,12 @@ class RegulationRuleError(SimError):
     code = "regulation_rule"
 
 
+class MedicalRuleError(SimError):
+    """A medical-device action the rules do not allow (M41, formulas.md 50)."""
+
+    code = "medical_rule"
+
+
 class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 

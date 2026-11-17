@@ -383,3 +383,38 @@ precedents:
   - { key: att_1984, label: AT&T, at: "1984-01", note: "Bell System divested into seven regional companies on 1 Jan 1984 (consent decree of 8 Jan 1982)", source: "https://www.rcrwireless.com/20010212/carriers/breaking-ma-bell" }
   - { key: microsoft_2000, label: Microsoft, at: "2000-06", note: "ordered split in two, 7 Jun 2000; reversed on appeal 28 Jun 2001", source: "https://money.cnn.com/2000/06/07/technology/microsoft_ruling/ ; https://tidbits.com/2001/06/28/appeals-court-unanimously-reverses-microsoft-breakup/" }
   - { key: google_2025, label: Google, at: "2025-09", note: "Chrome and Android divestiture refused, 2 Sep 2025", source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case" }
+
+# --- Health regulators (M41, docs/formulas.md 50) ---------------------------------------------
+# M34's regulator records with the `health` kind: they clear medical devices, inspect device
+# plants and order recalls (medical.yaml routes, inspections and recalls), and never designate,
+# open competition cases or order break-ups. strictness: an inspection index by year (A, 1.0 = the
+# FDA after FDARA 2017's risk-based schedule), read by tst.sim.medical through M34's helpers.
+health_regulators:
+  - key: fda
+    kind: health
+    name: US Food and Drug Administration (CDRH)
+    region: north_america
+    part: united_states # platforms.yaml region_parts (WB)
+    strictness: { 2010: 1.0 } # A: biennial inspections (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
+    source: "https://www.fda.gov/about-fda/cdrh-reports/cdrh-2024-annual-report"
+  - key: eu_notified_bodies
+    kind: health
+    name: EU notified bodies and national competent authorities
+    region: europe
+    part: eu # the EU-27 (platforms.yaml region_parts, WB)
+    strictness: { 2010: 0.7, 2021: 0.9 } # A: unannounced audits and the MDR from 26 May 2021; 51 MDR notified bodies by Dec 2025: https://ppri.goeg.at/system/files/inline-files/2025-10_18NBSurvey_MD_IVD_MDAvailabilityStudy.pdf
+    source: "https://bsigroup.com/de-DE/medical-devices/News/Enews/2023-news/mdr-transition-timelines-extended/"
+  - key: pmda
+    kind: health
+    name: Pharmaceuticals and Medical Devices Agency
+    region: east_asia
+    part: japan # platforms.yaml region_parts (WB)
+    strictness: { 2010: 0.8 } # A
+    source: "https://rapath.github.io/jp/pre-market/approval-shonin/pmda-review-process/"
+  - key: nmpa
+    kind: health
+    name: National Medical Products Administration
+    region: east_asia
+    part: china # platforms.yaml region_parts (WB)
+    strictness: { 2010: 0.7, 2021: 0.85 } # A: the revised device regulation (State Council Order 739) from 1 Jun 2021
+    source: "https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf"

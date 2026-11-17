@@ -1,4 +1,4 @@
-"""Loading and syncing M37's records (formulas.md 52; migration 0059_m37): one `dynasty_record`
+"""Loading and syncing M37's records (formulas.md 52; migration 0060_m37): one `dynasty_record`
 row, rewritten whole when the dynasty state changes. A save before M37, or any game before
 January 2040, has none."""
 

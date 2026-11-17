@@ -23,9 +23,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 59  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 60  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
-# M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M37: 0059_m37
+# M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37
 
 
 class Base(DeclarativeBase):
@@ -2304,7 +2304,7 @@ class VehicleRecordRow(Base):
 
 
 class DynastyRecordRow(Base):
-    """M37's dynasty-years records (52.3-52.4; 0059_m37): one row (id 1) whose `data` holds
+    """M37's dynasty-years records (52.3-52.4; 0060_m37): one row (id 1) whose `data` holds
     `leader_changes`, `deaths` and `relaunches`, each a list of records' fields. None before
     January 2040."""
 
@@ -2320,6 +2320,18 @@ class RegulationRecordRow(Base):
     its fields; rows keep each collection's order."""
 
     __tablename__ = "regulation_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class MedicalRecordRow(Base):
+    """One medical record (50; 0058): `kind` names its GameState collection (med_designs,
+    med_submissions, med_clearances, med_studies, med_coverage, med_adoption, plant_quality,
+    med_inspections, med_recalls, med_drift) and `data` its fields; rows keep each order."""
+
+    __tablename__ = "medical_record"
 
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)
