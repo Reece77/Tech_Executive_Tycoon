@@ -4521,7 +4521,8 @@ def robotics_cmd(
             continue
         typer.echo(
             f"{g.label}: {g.installations_year:,.0f} robots a year"
-            f" ({g.game_installations_year:,.0f} in the game), labour {format_money(round(g.labour_cents_hour))}/h"
+            f" ({g.game_installations_year:,.0f} in the game), labour"
+            f" {format_money(round(g.labour_cents_hour))}/h"
             + (f", density {g.density:,.0f}" if g.density is not None else "")
             + (f", humanoid adoption {g.humanoid_adoption:.2%}" if g.humanoid_adoption else "")
         )
