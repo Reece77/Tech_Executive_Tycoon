@@ -80,7 +80,9 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         # (9.22e18 cents): about 6.0 on seeds 1-10 (M37's brief, decision 22)
         worse_than=9.2,
         reason="IBM's 4000_revenue_subscriptions (its cumulative booked subscription revenue) "
-        "and its cash reach about 6e18 cents by 2069 in dynasty runs (M37)",
+        "reaches 4.0e18-6.1e18 cents by December 2069 on seeds 1-10 (1.4e16-2.3e16 in "
+        "December 2039): the AI-models market is $1.2T-1.6T real a year in 2025 and "
+        "$1,600T-2,600T in 2039, before any dynasty rule (M37)",
     ),
 )
 
