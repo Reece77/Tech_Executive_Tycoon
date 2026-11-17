@@ -289,7 +289,7 @@ export function TopBar({
         {overview?.stress && !ended && <StressMeter stress={overview.stress} />}
         {ended && overview && (
           <Link to={`/game/${overview.save_id}/over`} style={BADGE} data-testid="game-over-badge">
-            Game over
+            {overview.game_state === 'campaign_end' ? 'Campaign summary' : 'Game over'}
           </Link>
         )}
         {overview && onCoo && (

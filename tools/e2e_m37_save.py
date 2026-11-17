@@ -30,7 +30,6 @@ from tst.db import repository
 from tst.db.repository import create_save, load_state, open_session, run_turn
 from tst.db.state_io import read_meta, sync_state
 from tst.loader import LoadedData, load_all
-from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.research import levels
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -38,6 +37,7 @@ from tst.sim.state import GameState
 SEED: Final = 37
 JAN_2040: Final = 360
 FIRST_ERA: Final = "fusion_power"
+FOUNDER_AGE_2010: Final = 38  # 68 in December 2039
 
 
 def _edit(path: Path, change) -> GameState:  # type: ignore[no-untyped-def]
@@ -83,27 +83,46 @@ def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     import e2e_m12a_save as cloud
     import e2e_m38_save as cars
     from tst.balance import fixtures
-    from tst.balance.game import start_game
+    from tst.balance.game import Game
     from tst.balance.strategies_v3 import V3
     from tst.db.repository import ledger_balances
     from tst.sim.family import answers, rules
     from tst.sim.family.setup import FamilySpec, start_family
+    from tst.sim.ledger import apply_entries
+    from tst.sim.people.founder import FounderSpec
     from tst.sim.products.models import Product, ProductSegment
+    from tst.sim.setup import new_game
     from tst.sim.state import (
         with_company,
         with_family_member,
-        with_person,
         with_product,
         with_product_segment,
     )
     from tst.sim.vehicles.models import VehicleSpec
 
+    founder_spec = FounderSpec(background="engineer", age=FOUNDER_AGE_2010)  # 68 in 2039
     path = create_save(
-        name, SEED, "ex_big_tech_founders", company_name="Balance Co", data=data, save_dir=save_dir
+        name,
+        SEED,
+        "ex_big_tech_founders",
+        company_name="Balance Co",
+        data=data,
+        save_dir=save_dir,
+        founder=founder_spec,
     )
     with open_session(path) as session:
         start = dict(ledger_balances(session))
-    game = start_game(data, SEED, "ex_big_tech_founders")
+    state, entries = new_game(
+        save_name=name,
+        master_seed=SEED,
+        scenario=data.game_data.scenario("ex_big_tech_founders"),  # type: ignore[arg-type]
+        difficulty="standard",
+        company_name="Balance Co",
+        founder=founder_spec,
+        balance=data.balance,
+        data=data.game_data,
+    )
+    game = Game(data, state, apply_entries({}, entries))
     script = V3["full_integrator"]
     while game.state.turn < JAN_2040 and not game.state.ended:
         script(game)
@@ -111,9 +130,6 @@ def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     if game.state.ended:
         raise SystemExit(f"the game ended at {game.state.turn}: try another seed")
     b, d = data.balance, data.game_data
-    founder = game.state.person(game.founder_id)
-    born = game.state.turn - 1 - 68 * MONTHS_PER_YEAR  # 68 in December 2039
-    game.state = with_person(game.state, replace(founder, birth_turn=born))
     game.state = start_family(game.state, FamilySpec("children", (40, 37)), RngFactory(SEED), b, d)
     kid = rules.children(game.state)[0]
     game.state = with_family_member(game.state, replace(kid, closeness=90.0))

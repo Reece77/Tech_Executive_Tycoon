@@ -23,6 +23,8 @@ test('(a) the December 2039 summary offers to continue in dynasty mode', async (
   const save = `m37-end-${stamp}`;
   tool('end', save);
   await page.goto(`/game/${save}/overview`);
+  await expect(page.getByTestId('game-over-badge')).toHaveText('Campaign summary');
+  await page.getByTestId('game-over-badge').click();
   await expect(page).toHaveURL(new RegExp(`/game/${save}/over$`));
   await expect(page.getByTestId('over-kicker')).toContainText('Campaign summary');
   await expect(page.getByTestId('campaign-end')).toBeVisible();
