@@ -182,6 +182,32 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "staff": _CAPACITY,
         "staff_needed": _CAPACITY,
     },
+    # v5 (M39): the Robotics and Mobility screens (53.5)
+    "robotics.PlantAutomationOut": {
+        "capacity": _CAPACITY,
+        "robots": _INPUT,
+        "own_robots": _INPUT,
+        "max_robots": exempt("the robots that replace max_share of the line's workers"),
+        "level": "automation_saving",
+        "saving_cents": "automation_saving",
+        "wage_cents_month": exempt("robotics.yaml's labour cost an hour x a month's hours"),
+        "capex_cents": _CAPEX,
+        "book_cents": _BOOK,
+    },
+    "robotics.ZoneMonthOut": {
+        "cars": _INPUT,
+        "rides": _VOLUME,
+        "utilisation": "ride_contribution",
+        "revenue_cents": "ride_contribution",
+        "energy_cents": "ride_contribution",
+        "cleaning_cents": "ride_contribution",
+        "insurance_cents": "ride_contribution",
+        "remote_cents": "ride_contribution",
+        "depreciation_cents": "ride_contribution",
+        "contribution_cents": "ride_contribution",
+        "contribution_per_ride_cents": "ride_contribution",
+        "rides_per_car_day": "ride_contribution",
+    },
     # v4 (M33): the Equipment screen (47.6)
     "equipment.ToolGenerationOut": {
         "wph": _TOOL,

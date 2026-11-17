@@ -896,3 +896,17 @@ terms:
   vehicles.amount: "What an eligible buyer gets off the price, in 2010 dollars."
   vehicles.eligible: "Whether this line qualifies now: a price cap, where it is made and where its cells come from can each rule it out."
 
+  # M39 (formulas.md 53): robotics and robotaxis
+  robotics.cobot: "A collaborative robot: a small arm that works beside people without a cage (Universal Robots' since 2008). About 12% of 2024's installations; cheaper to buy and to integrate, slower and lighter than an industrial arm."
+  robotics.density: "Robot density: industrial robots in use per 10,000 manufacturing workers (IFR). Korea 1,012, Singapore 770, China 470, Germany 429, Japan 419 and the US 295 in 2023; the world 162."
+  robotics.automation: "A plant's automation level: the share of its line labour its robots replace. A robot replaces one worker's labour at the region's wage, never more than the plant's own line labour, at most 80% of it; it costs its installed price over 10 years plus service."
+  robotics.installations: "Industrial robots installed a year (IFR World Robotics): about 120,000 in 2010, 542,000 in 2024 and 603,000 in 2025, over half of them in China. The game's market is these x 0.085."
+  robotics.capability: "A humanoid's capability (0-100): its hardware quality, its AI model's (your own or a licensed one) and its chips' (your own accelerators or bought), weighted 40/40/20. Demand grows where capability x a worker's labour cost beats a humanoid's yearly cost."
+  robotics.actuators: "A humanoid's motors, gearboxes and sensors in its joints: its largest cost, falling 18% with each doubling of humanoids made after the era arrives."
+  robotics.scale: "Robot and ride markets are 8.5% of the real ones at real prices, the game's economy scale."
+  mobility.zone: "A driverless service area in a city, licensed by the regulator: small, medium or large (15%, 35% or 70% of the city's ride-hailing trips). The permit review takes 3-9 months; a serious incident suspends it."
+  mobility.utilisation: "Rides over the most a fleet could give (30 a car a day). Insurance, remote assistance and depreciation are a car's month whatever it drives, so utilisation decides whether a fleet earns."
+  mobility.remote_assistance: "Staff who watch robotaxis remotely and help when a car is stuck: one operator for 30 cars here (Waymo reportedly about one for 40)."
+  mobility.breakeven: "Rides a car a day at which the fares cover the car's month: energy and cleaning a ride, insurance, remote assistance and depreciation a car. Above it a fleet earns a positive contribution."
+  mobility.acceptance: "The share of covered ride-hailing trips riders would take in a robotaxi: 5% when a city's first driverless service starts, rising toward 30% (Waymo had about a quarter of San Francisco's bookings in 2025)."
+  mobility.depot: "A robotaxi depot: chargers, cleaning bays and remote assistance desks in a city. A fleet beyond its depots' capacity runs only the share they serve."
