@@ -69,7 +69,7 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | Milestone | Starts |
 | --- | --- |
 | M36, family and succession | now, as a fourth lane (brief `docs/tasks/M36-family-and-succession.md`, formulas §45) |
-| M37, dynasty mode (the second 30 years) | after v4 |
+| M37, dynasty mode (the second 30 years) | now, lane E; merges after M38 and M41 (brief `docs/tasks/M37-dynasty-mode.md`, formulas §52) |
 | M38, electric vehicles | now, lane C beside M35; merges after `m35b-done` (brief `docs/tasks/M38-electric-vehicles.md`, formulas §49) |
 | M39, robotics and robotaxis | after M38 |
 | M40, space and satellites | after M32 |
