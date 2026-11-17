@@ -56,9 +56,8 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 | V5.cells (≥ 75% of run × startup category × decade-after-2020 cells with a rival launch) | M23 | more than 40% of cells empty | 77% (steady_regions), 68% (research_heavy): about 11 startups a decade over 6 categories is about 1.8 launches per category-decade, e^-1.8 ≈ 17–20% empty by chance, and long-lived startups hold the 8 places (found_rate 0.05 with 12 places fell to 63%) |
 | V5.cats (no category misses a decade in more than 2 of 10 runs) | M23 | a category-decade empty in more than 7 of 10 runs | as V5.cells |
 | I1 (formulas §43: full_integrator margin − devices_regions at year 30, +3 to +10 points) | M28 | the gap below −2.0 points (the year-30 reading minus 2) | −0.0 points in M23b on the combined code (weekly 43381860624): subscriptions are 100% of both groups' 2039 revenue and cost of goods 0.2–0.3% (8–17% at year 20), so an own fab 23–24% cheaper a chip cannot move the margin; M28's supply-driven prices from 2026 change the fab's economics (product manager, 2026-11-12) |
-| M37.money (no money value over 1.0e18 cents in a dynasty run to 2069; PM, 2026-11-17) | M43 | the largest value over 9.2e18 cents (SQLite's int64) | 4.0e18-6.1e18 cents on seeds 1-10, every seed IBM's `4000_revenue_subscriptions` (cumulative booked revenue; 1.4e16-2.3e16 in December 2039). The AI-models market is already $1.2T-1.6T real a year in 2025 and $1,600T-2,600T in 2039 (economy_scale.money 0.0849), all before 2040, and grows about 50x more to 2069 at 1.5% a year plus eras (M37 brief, decision 22) |
 
-T2 (closed by M15a: wins counted over the founder-played strategies, as V1) and M10.T3 (closed: covenants re-measured as V7 with `debt.venture.covenant_burn_months` 2) left the list.
+T2 (closed by M15a: wins counted over the founder-played strategies, as V1), M37.money (closed by M43a: market ceilings, the largest value 1.48e16 cents by 2069 on seeds 1-4) and M10.T3 (closed: covenants re-measured as V7 with `debt.venture.covenant_burn_months` 2) left the list.
 
 
 ## Target curves (bands)
@@ -701,3 +700,15 @@ Tuned keys (target 1, from 1.40 at the first full reading; 3.2 before the cadenc
 
 §27.5 re-run after one-off pitches stopped going ahead on Holiday (same date and branch): target 1 7/10 (was 8/10), target 2 1.40 (was 1.68), target 3 +31 points (was +46), target 4 1.7 a year, target 5 in band on 7 or more seeds, target 7 0.86 (was 1.10). All in band; no measurement changed.
 
+
+## M43a: market sizes and saturation (§54.4)
+
+`tools/m43a_targets.py` (`tst/balance/m43a.py`): dynasty games to December 2069 (M37's family game, full_integrator), seeds 1-4, on the final keys. Target 2 judges 2025's served revenue (Reece, 2026-11-17; the M43a brief, decision 2).
+
+| Target | Reading | Band | Result |
+| --- | --- | --- | --- |
+| T1 markets past their ceiling, any year to 2069 | 0 | 0 | pass |
+| T1 technology served revenue / world GDP, largest year | 11.6% (2039; addressable 49.9%) | <= 15% | pass |
+| T2 2025 served revenue within 0.5-2x published | every category; contract manufacturing 0.02x reported (spare capacity by design) | all | pass |
+| T3 growth through the 2060s | every growing category >= 1%; vehicles 0.21% printed (demand set by M38's data) | >= 1% | pass |
+| T4 largest money value | 1.48e16 cents (`M37.money` closed) | < 1.0e18 | pass |

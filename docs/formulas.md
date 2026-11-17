@@ -3990,9 +3990,11 @@ M37's diagnosis (2026-11-17, decision 22) found the game's economy running away:
 - **Saturation:** each month a category's growth `g` (base growth plus era boosts, §21.4, §26.4) is applied as `g × (1 − A / C)`, where `A` is the addressable market. Far below the ceiling, growth is as before; near it, growth fades; a market can't pass its ceiling. Era boosts lift the ceiling of the categories they renew by `markets.era_ceiling_lift` (an era makes a market bigger, not infinite).
 - **Long-run growth** after 2030 decays toward the region's economy's growth plus a category premium (`markets.mature_premium`), replacing open-ended rates such as `ai_models`' 25%.
 
+- **As built (M43a):** A for a (category, region) is a year of its addressable customers at reference prices: addressable × p_ref × the region's price index (relative to the home region, as the game sells) × the units a customer buys a month (units / replacement months in a unit-sale market, else 1) × 12, plus a medical device's consumables (units × `consumables_cents` × 12). C = `ceiling_share` × GDP (trillions, `macro_history.yaml` `gdp` at listed years, geometric between them; after 2025 × (1 + `markets.gdp_growth[region]`) a year × the region's cycle multiplier, §41.6) × 10^14 cents × `economy_scale.money` × (1 + `era_ceiling_lift` × arrived eras with any boost to the category). Phase 9 multiplies each segment's annual growth (base + boosts, or the followed categories' mean for chips) by max(0, 1 − A/C) before the region's multiplier, then scales a (category, region)'s segments down to C if growth or the cycle took them past (`tst/sim/markets/saturation.py`). Markets whose demand data sets each month (vehicles) have no growth and no ceiling here. The long-run decay applies at load for years `mature_start_year` + 1 to the year before dynasty mode (`tst/sim/markets/longrun.py`): g(y) = target + (g_2030 − target) × 0.5^((y − 2030) / `mature_half_life_years`), target = `mature_gdp_growth` + `mature_premium[c]`, only where g_2030 is above target; M37's maturity (§52.2) then runs from 2040.
+
 ### 54.2 Calibration to 2025
 
-- Each category's 2025 addressable market at real-dollar equivalent (game value ÷ `economy_scale.money`) is compared with published 2025 market sizes (research dossier), with a band of 0.5–2× (market definitions vary). Categories outside the band are recalibrated by their `growth_by_year` and starting sizes, keeping their 2010 starts and the shape of the curve where they can.
+- Each category's 2025 **served revenue** (what companies book: customers × price × units a month, plus medical consumables, × 12; Reece, 2026-11-17, M43a decision 2: published sizes are spending) at real-dollar equivalent (game value ÷ `economy_scale.money`) is compared with published 2025 market sizes (research dossier), with a band of 0.5–2× (market definitions vary). The ceilings of §54.1 bound the addressable market, so a share sits above the category's real spending share. Categories outside the band are recalibrated by their `growth_by_year` and starting sizes, keeping their 2010 starts and the shape of the curve where they can.
 - **M8 target 4** (January 2024 AI demand 100–400× January 2010) is re-measured. If calibration needs it outside that band, the session reports the numbers: changing M8's band is the product manager's call (CLAUDE.md §9).
 
 ### 54.3 What may change, and how it is checked
@@ -4002,9 +4004,9 @@ M37's diagnosis (2026-11-17, decision 22) found the game's economy running away:
 
 ### 54.4 Balance targets (printed)
 
-1. **The economy is believable:** in every year to 2069, no category's addressable market exceeds its ceiling, and the sum of all technology categories stays under `markets.tech_share_max` (15%) of world GDP.
+1. **The economy is believable:** in every year to 2069, no category's addressable market exceeds its ceiling, and the sum of all technology categories' served revenue (`markets.non_tech` excluded: vehicles, medical) stays under `markets.tech_share_max` (15%) of world GDP; the addressable sum is printed beside it.
 2. **2025 matches the world:** every category's 2025 market sits within 0.5–2× its published size (real-dollar equivalent), or is reported with a reason.
-3. **Growth fades, not stops:** every category grows at least 1% a year (nominal) on average through the 2060s unless an era ended it.
+3. **Growth fades, not stops:** every category grows at least 1% a year (nominal) on average through the 2060s unless an era ended it; a market whose demand data sets each month (vehicles) is printed, not judged.
 4. **Headroom:** no money value in a dynasty run passes 1.0e18 cents (M37's `M37.money` guard closes as met).
 5. **Ratios hold:** v1–v4 strategy ratios (V1–V6, M23b's and M35b's targets) stay in their bands, or are reported under rules 1–4.
 6. **Turn time** within the guards.
