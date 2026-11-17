@@ -424,7 +424,7 @@ function BuildDepot({ saveId, m }: { saveId: string; m: Mobility }) {
           size="xs"
           data-testid="build-depot"
           disabled={build.isPending}
-          onClick={() => build.mutate({ city, capacity: size })}
+          onClick={() => build.mutate({ city, cars: size })}
         >
           Order <Term term="mobility.depot">depot</Term>
         </Button>

@@ -191,5 +191,5 @@ def build_depot(
     save_id: str, body: BuildDepotIn, settings: SettingsDep, data: DataDep
 ) -> MobilityActionOut:
     path = _path(settings, save_id)
-    action = BuildDepot(_founder_id(_state(path)), body.city, body.capacity)
+    action = BuildDepot(_founder_id(_state(path)), body.city, body.cars)
     return _act_mobility(path, data, action)

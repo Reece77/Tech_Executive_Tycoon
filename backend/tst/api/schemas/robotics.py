@@ -290,7 +290,7 @@ class RidePriceIn(BaseModel):
 
 class BuildDepotIn(BaseModel):
     city: str
-    capacity: int
+    cars: int = Field(description="Cars the depot serves (one of the depot sizes)")
 
 
 class RoboticsActionOut(BaseModel):

@@ -124,7 +124,7 @@ def test_robotics_routes_actions_and_hidden_values(tmp_path: Path, loaded: Loade
         (zone,) = out["mobility"]["zones"]
         assert zone["status"] == "applied"
         api.post(f"{base}/mobility/zones/{zone['zone_id']}/cars", {"cars": 20})
-        api.post(f"{base}/mobility/depots", {"city": "phoenix", "capacity": 50})
+        api.post(f"{base}/mobility/depots", {"city": "phoenix", "cars": 50})
         api.post(f"{base}/mobility/zones/{zone['zone_id']}/price", {"price_cents": 900})
         answer_events(path, loaded)
         api.post(f"{base}/advance")

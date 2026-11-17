@@ -85,10 +85,11 @@ def actuator_index(state: GameState, balance: Balance) -> float:
     hb = balance.robotics.humanoids
     made = max(hb.base_units, hb.base_units + state.robotics_world.actuator_units)
     b = dmath.log(1 - hb.learning_rate) / dmath.log(2)
-    return float((made / hb.base_units) ** b)
+    return dmath.pow(made / hb.base_units, b)
 
 
 def actuator_cents(state: GameState, balance: Balance, data: GameData) -> float:
+    # money-exact: rate (actuators' cost a humanoid, rounded where a unit's BOM is posted)
     return file(data).humanoids.actuator_cents * actuator_index(state, balance)
 
 

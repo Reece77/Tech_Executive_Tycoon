@@ -89,6 +89,7 @@ def robot_price_cents(state: GameState, data: GameData) -> float:
 
 def system_cents(state: GameState, data: GameData) -> float:
     """A bought robot installed: its price x the system multiple (integration, tooling)."""
+    # money-exact: rate (a robot's installed price, rounded where an order is posted)
     return robot_price_cents(state, data) * file(data).prices.system_mult
 
 
@@ -204,14 +205,19 @@ def unit_cost_report(
     cap = max(1, facility.capacity)
     level = level_of(facility, robots, balance)
     saved = saving_cents(state, facility, level, balance, data)
+    # money-exact: estimate (the Explain panel's and 53.4's cost a unit; nothing posts from it)
     plant_dep = facility.capex_cents / kind.life_months / cap if kind.life_months else 0.0
     price = robot_price_cents(state, data)
     service_share = file(data).prices.service_share / MONTHS
-    robot_month = robots * (
-        system_cents(state, data) / balance.robotics.automation.life_months + price * service_share
-    )
+    life = balance.robotics.automation.life_months
+    # money-exact: estimate (as above)
+    dep = system_cents(state, data) / life
+    # money-exact: estimate (as above)
+    service = price * service_share
+    robot_month = robots * (dep + service)
     return {
         "labour": kind.variable_cents - saved,
+        # money-exact: estimate (as above)
         "fixed": kind.fixed_opex_cents / cap,
         "depreciation": plant_dep,
         "robots": robot_month / cap,

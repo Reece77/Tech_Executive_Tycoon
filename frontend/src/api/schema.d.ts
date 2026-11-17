@@ -7344,8 +7344,11 @@ export interface components {
         BuildDepotIn: {
             /** City */
             city: string;
-            /** Capacity */
-            capacity: number;
+            /**
+             * Cars
+             * @description Cars the depot serves (one of the depot sizes)
+             */
+            cars: number;
         };
         /** BuildFabIn */
         BuildFabIn: {

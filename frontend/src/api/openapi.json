@@ -30197,15 +30197,16 @@
             "type": "string",
             "title": "City"
           },
-          "capacity": {
+          "cars": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Cars",
+            "description": "Cars the depot serves (one of the depot sizes)"
           }
         },
         "type": "object",
         "required": [
           "city",
-          "capacity"
+          "cars"
         ],
         "title": "BuildDepotIn"
       },

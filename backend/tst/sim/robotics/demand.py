@@ -148,7 +148,41 @@ def set_demand(state: GameState, balance: Balance, data: GameData) -> GameState:
                 addressable=addressable(state, rm.category, rm.region, rm.segment, balance, data),
             )
         regional.append(rm)
-    return with_all_markets(state, markets, regional)
+    state = with_all_markets(state, markets, regional)
+    return _fit(state, cats, home)
+
+
+def _fit(state: GameState, cats: tuple[str, str], home: str) -> GameState:
+    """A market that shrank below the customers its lines hold (installations falling, homes not
+    yet open) loses them in proportion: a segment's customers never exceed its demand."""
+    by_id = {p.id: p.category for p in state.products if p.category in cats}
+    held: dict[tuple[str, str, str], float] = {}
+    for s in state.product_segments:
+        if s.product_id in by_id:
+            key = (by_id[s.product_id], s.segment, home)
+            held[key] = held.get(key, 0.0) + s.customers
+    for rs in state.regional_segments:
+        if rs.product_id in by_id:
+            key = (by_id[rs.product_id], rs.segment, rs.region)
+            held[key] = held.get(key, 0.0) + rs.customers
+    demand = {(m.category, m.segment, home): m.addressable for m in state.markets}
+    demand.update(
+        {(m.category, m.segment, m.region): m.addressable for m in state.regional_markets}
+    )
+    over = {k: demand.get(k, 0.0) / v for k, v in held.items() if v > demand.get(k, 0.0) + TINY}
+    if not over:
+        return state
+    rows = [
+        replace(s, customers=s.customers * over[k])
+        for s in state.product_segments
+        if s.product_id in by_id and (k := (by_id[s.product_id], s.segment, home)) in over
+    ]
+    regional_rows = [
+        replace(rs, customers=rs.customers * over[k])
+        for rs in state.regional_segments
+        if rs.product_id in by_id and (k := (by_id[rs.product_id], rs.segment, rs.region)) in over
+    ]
+    return with_segments(state, rows, regional_rows)
 
 
 # --- History: makers' shares and prices ----------------------------------------------------------

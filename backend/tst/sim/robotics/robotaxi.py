@@ -39,6 +39,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import (
@@ -100,7 +101,7 @@ def _service_fleet(svc: CityServiceDef, turn: int, balance: Balance) -> float:
         return interp(svc.fleet, max(t, min(svc.fleet)))
     years = t - LAST_YEAR
     return float(
-        interp(svc.fleet, LAST_YEAR) * (1 + balance.robotics.robotaxi.rival_growth) ** years
+        interp(svc.fleet, LAST_YEAR) * dmath.pow(1 + balance.robotics.robotaxi.rival_growth, years)
     )
 
 
@@ -127,7 +128,7 @@ def rival_fleet(state: GameState, city_key: str, balance: Balance, data: GameDat
     for rc in state.robotics_world.rival_cities:
         if rc.city == city_key and rc.start_turn <= state.turn:
             years = (state.turn - rc.start_turn) / MONTHS
-            total += rc.fleet * (1 + rb.rival_growth) ** years
+            total += rc.fleet * dmath.pow(1 + rb.rival_growth, years)
     return total
 
 
@@ -168,7 +169,7 @@ def rival_services(state: GameState, balance: Balance, data: GameData) -> list[R
         if rc.start_turn > state.turn:
             continue
         years = (state.turn - rc.start_turn) / MONTHS
-        fleet = rc.fleet * (1 + rb.rival_growth) ** years
+        fleet = rc.fleet * dmath.pow(1 + rb.rival_growth, years)
         out.append(
             RivalService(
                 labels.get(rc.operator, rc.operator),
@@ -286,7 +287,7 @@ def depot_capacity(state: GameState, company_id: int, city_key: str, balance: Ba
 def incident_rate(state: GameState, company_id: int, balance: Balance) -> float:
     """Incidents a million km for the company's robotaxis this month (never shown)."""
     rb = balance.robotics.robotaxi
-    maturity = HALF ** (company_km(state, company_id) / rb.maturity_km)
+    maturity = dmath.pow(HALF, company_km(state, company_id) / rb.maturity_km)
     threshold = balance.vehicles.levels[L4].ai_quality if L4 in balance.vehicles.levels else 0.0
     ai = vs.best_ai_quality(state, company_id)
     above = max(0.0, ai - threshold) / max(TINY, SCORE - threshold)
@@ -308,7 +309,8 @@ def zone_demand(
     if covered <= TINY or zone.cars <= 0:
         return 0.0
     price = zone.price_cents or c.fare_cents
-    priced = (c.fare_cents / price) ** rb.price_elasticity if price > 0 else 0.0
+    # money-exact: ratio (the human fare over the zone's price)
+    priced = dmath.pow(c.fare_cents / price, rb.price_elasticity) if price > 0 else 0.0
     per_day = covered / rb.days_per_month / PER_THOUSAND
     density = zone.cars / per_day if per_day > TINY else 0.0
     attraction = density / (density + rb.wait_cars)
@@ -345,21 +347,22 @@ def car_month_depreciation(zone: Zone, balance: Balance) -> int:
 def car_cents_for_zone(state: GameState, zone: Zone, balance: Balance, data: GameData) -> float:
     """A zone's cost a car (its fleet's capex over its cars, or a bought robotaxi's price)."""
     if zone.cars > 0 and zone.capex_cents > 0:
-        return zone.capex_cents / zone.cars
+        return zone.capex_cents / zone.cars  # money-exact: rate (a car's cost, shown and compared)
     return float(interp(file(data).robotaxi.vehicle_cents, year_at(state.turn)))
 
 
 def breakeven_rides(c: CityDef, balance: Balance, car_cents: float) -> float:
     """Rides a car a day at which a car's month earns nothing at the city's fare (53.4)."""
     rb = balance.robotics.robotaxi
-    per_ride = c.fare_cents - (
-        c.km_per_trip * (1 + rb.deadhead) * rb.kwh_per_km * rb.power_cents + rb.cleaning_cents
-    )
-    fixed = (
-        rb.insurance_cents
-        + rb.operator_cents / rb.cars_per_operator
-        + car_cents / rb.depreciation_months
-    )
+    km = c.km_per_trip * (1 + rb.deadhead)
+    # money-exact: estimate (a break-even rate, shown and compared, never posted)
+    energy = km * rb.kwh_per_km * rb.power_cents
+    per_ride = c.fare_cents - (energy + rb.cleaning_cents)
+    # money-exact: estimate (as above)
+    remote = rb.operator_cents / rb.cars_per_operator
+    # money-exact: estimate (as above)
+    dep = car_cents / rb.depreciation_months
+    fixed = rb.insurance_cents + remote + dep
     if per_ride <= 0:
         return float("inf")
     return fixed / per_ride / rb.days_per_month
