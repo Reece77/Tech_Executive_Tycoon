@@ -116,7 +116,17 @@ Load `pt-medical`. File the wearable by 510(k) and the radiology AI by De Novo, 
     | 5 | Robotics entrant: year-8 recurring share | 48% (median) | 40%+ |
     | 6 | Turn time | `make check-timing` | within guards |
 
-15. **Unlock** `medical` (M29 system 28): a medical product of the group's, or a device, chip or AI product at stage 3.
+15. **Unlock** `medical` (M29 system 29; 28 is M38's): a medical product of the group's, or a device, chip or AI product at stage 3.
+16. **Merging main (M35a, M35b, M38).**
+    - **M35a:** the recall weight uses `dmath.log10`, M35a's platform-exact maths (`math.log10` is barred in the sim now).
+    - **M38:**
+      - the migration is re-parented as `0059_m41` (revises `0058_m38`; schema 59), and the unlock id is 29;
+      - the medical categories follow `vehicles` in categories.yaml, and the twelve medical incumbents follow M38's thirteen car makers (ids 54-65, 64 incumbents in all); both lists are append-only;
+      - ADR-0013's stream table had M38's merge conflict markers left in `main`, resolved by keeping M38's as-built `vehicles` row and M41's `medical` row (rule 8: M38 has merged).
+    - **Fixtures re-recorded on the combined code:**
+      - M30's state cache with `--update-state-cache`, after its two real assertions (the digest is canonical; a short run repeats and its memo equals a fresh digest);
+      - M28's history fingerprint, its `events` and `books` series only (decision 10's reason; prices, wafers and capacities unchanged).
+      - Both were re-recorded first on `main` with M35b, and again with M38.
 
 ## Follow-ups
 
