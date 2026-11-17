@@ -36,7 +36,7 @@ city (robotics.yaml), a size (its share of the city's ride-hailing trips) and a 
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.sim.calendar import turn_to_ym
@@ -131,9 +131,21 @@ def rival_fleet(state: GameState, city_key: str, balance: Balance, data: GameDat
     return total
 
 
-def rival_services(state: GameState, balance: Balance, data: GameData) -> list[dict[str, object]]:
+@dataclass(frozen=True, slots=True)
+class RivalService:
+    """A rival service that has started (public): operator, city, fleet, rides a week (real)."""
+
+    operator: str
+    city: str
+    since: int
+    running: bool
+    fleet: float
+    rides_week: float
+
+
+def rival_services(state: GameState, balance: Balance, data: GameData) -> list[RivalService]:
     """Every rival service that has started (public): operator, city, fleet, rides a week."""
-    out: list[dict[str, object]] = []
+    out: list[RivalService] = []
     for op in file(data).robotaxi.operators:
         ended = op.ended is not None and state.turn >= _turn(op.ended)
         for svc in op.services:
@@ -141,14 +153,14 @@ def rival_services(state: GameState, balance: Balance, data: GameData) -> list[d
                 continue
             running = svc.running(state.turn) and not ended
             out.append(
-                {
-                    "operator": op.label,
-                    "city": svc.city,
-                    "since": svc.start_turn,
-                    "running": running,
-                    "fleet": _service_fleet(svc, state.turn, balance) if running else 0.0,
-                    "rides_week": _service_rides(svc, state.turn, balance) if running else 0.0,
-                }
+                RivalService(
+                    op.label,
+                    svc.city,
+                    svc.start_turn,
+                    running,
+                    _service_fleet(svc, state.turn, balance) if running else 0.0,
+                    _service_rides(svc, state.turn, balance) if running else 0.0,
+                )
             )
     rb = balance.robotics.robotaxi
     labels = {op.key: op.label for op in file(data).robotaxi.operators}
@@ -158,14 +170,14 @@ def rival_services(state: GameState, balance: Balance, data: GameData) -> list[d
         years = (state.turn - rc.start_turn) / MONTHS
         fleet = rc.fleet * (1 + rb.rival_growth) ** years
         out.append(
-            {
-                "operator": labels.get(rc.operator, rc.operator),
-                "city": rc.city,
-                "since": rc.start_turn,
-                "running": True,
-                "fleet": fleet,
-                "rides_week": fleet * rb.rides_per_car_week,
-            }
+            RivalService(
+                labels.get(rc.operator, rc.operator),
+                rc.city,
+                rc.start_turn,
+                True,
+                fleet,
+                fleet * rb.rides_per_car_week,
+            )
         )
     return out
 
@@ -328,6 +340,13 @@ def car_month_depreciation(zone: Zone, balance: Balance) -> int:
     return min(
         book, round(exact(zone.capex_cents) / exact(balance.robotics.robotaxi.depreciation_months))
     )
+
+
+def car_cents_for_zone(state: GameState, zone: Zone, balance: Balance, data: GameData) -> float:
+    """A zone's cost a car (its fleet's capex over its cars, or a bought robotaxi's price)."""
+    if zone.cars > 0 and zone.capex_cents > 0:
+        return zone.capex_cents / zone.cars
+    return float(interp(file(data).robotaxi.vehicle_cents, year_at(state.turn)))
 
 
 def breakeven_rides(c: CityDef, balance: Balance, car_cents: float) -> float:

@@ -42,9 +42,8 @@ def _walk(node: Any, path: str, out: list[str]) -> None:
         if node and isinstance(node[0], int | float) and isinstance(node[-1], str):
             if node[-1] not in TAGS:
                 out.append(f"{path}: unknown tag {node[-1]!r}")
-            if path.endswith("_usd") or "_usd." in path:
-                if len(node) != 3:
-                    out.append(f"{path}: money needs [value, dollar year, tag]")
+            if (path.endswith("_usd") or "_usd." in path) and len(node) != 3:
+                out.append(f"{path}: money needs [value, dollar year, tag]")
             return
         for i, x in enumerate(node):
             _walk(x, f"{path}[{i}]", out)

@@ -8,10 +8,11 @@ from dataclasses import replace
 
 import pytest
 
-from tests.helpers import fresh_game
 import tst.sim.actions  # noqa: F401  (robotics.actions is imported through the actions package)
+from tests.helpers import fresh_game
 from tst.loader import LoadedData
 from tst.sim.calendar import ym_to_turn
+from tst.sim.errors import RoboticsRuleError
 from tst.sim.facilities.models import Facility
 from tst.sim.ledger import LedgerBalances
 from tst.sim.products.models import Product
@@ -123,7 +124,7 @@ def _humanoid(state: GameState, quality: float) -> tuple[GameState, Product]:
 
 
 def test_humanoid_capability_and_actuators(loaded: LoadedData) -> None:
-    b, d = loaded.balance, loaded.game_data
+    b, _d = loaded.balance, loaded.game_data
     state, p = _humanoid(replace(fresh_game(loaded), turn=ym_to_turn(2031, 1)), 80.0)
     hb = b.robotics.humanoids
     licensed = humanoids.capability(state, p, b)
@@ -227,7 +228,7 @@ def test_zone_rules_and_breakeven(loaded: LoadedData) -> None:
     founder = state.founder_of(PLAYER)
     assert founder is not None
     service = max(p.id for p in state.products)
-    with pytest.raises(Exception):  # no L4 yet
+    with pytest.raises(RoboticsRuleError):  # no L4 yet
         open_zone(state, OpenZone(founder.id, service, "phoenix", "small"), b, d)
     state = _l4(state, loaded)
     service = max(p.id for p in state.products if p.category == "mobility")
@@ -270,29 +271,29 @@ def test_rides_economics_and_seeded_incidents(loaded: LoadedData) -> None:
 
     depot = replace(_plant(state, "north_america", "depot", 100), id=9100)
     state = replace(with_facility(state, depot), depots=(Depot(depot.id, PLAYER, "san_francisco"),))
-    out, entries, logs = rt.zones_month(state, rng, b, d)
+    out, entries, _logs = rt.zones_month(state, rng, b, d)
     month = out.zones[0].month
     assert month is not None and month.rides > 0
     assert 0 < month.utilisation <= 1
     for e in entries:
         assert sum(line.amount for line in e.lines) == 0
-    again, entries2, logs2 = rt.zones_month(state, RngFactory(5), b, d)
+    again, entries2, _logs2 = rt.zones_month(state, RngFactory(5), b, d)
     assert again == out and entries2 == entries  # seeded
     # a suspended zone has no rides but its cars still cost money
     sus = replace(
         state, zones=(replace(state.zones[0], status="suspended", suspended_until=state.turn + 3),)
     )
-    out3, entries3, _ = rt.zones_month(sus, rng, b, d)
+    out3, _entries3, _ = rt.zones_month(sus, rng, b, d)
     m3 = out3.zones[0].month
     assert m3 is not None and m3.rides == 0 and m3.revenue_cents == 0 and m3.insurance_cents > 0
 
 
 def test_serious_incident_suspends_and_queues_a_critical_event(loaded: LoadedData) -> None:
-    b, d = loaded.balance, loaded.game_data
+    b, _d = loaded.balance, loaded.game_data
     state = _l4(replace(fresh_game(loaded), turn=ym_to_turn(2027, 3)), loaded)
     state = _active_zone(state, 100)
     zone = state.zones[0]
-    new_state, z, entries, logs = rt._incident(state, zone, True, "Ride in SF", b)
+    new_state, z, _entries, _logs = rt._incident(state, zone, True, "Ride in SF", b)
     assert (
         z.status == "suspended"
         and z.suspended_until == state.turn + b.robotics.robotaxi.suspend_months
