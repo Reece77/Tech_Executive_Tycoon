@@ -793,6 +793,56 @@ markets:
   neighbour_sellers: 0.5 # fraction of sellers in the neighbour region that count in a sales-led segment (19.5)
   cross_region_step: 0.05 # output lost per extra region the builders work in (19.4)
   cross_region_floor: 0.85 # lowest cross-region output factor (19.4)
+  # M43a (formulas.md 54.1): market ceilings. A category's addressable market in a region (a year of
+  # its addressable customers at reference prices, the game's economy) grows at g x (1 - A / C) and never
+  # past C = ceiling_share x the region's GDP (macro_history.yaml, then gdp_growth) x economy_scale.money
+  # x (1 + era_ceiling_lift x the arrived eras boosting it). Shares are of regional GDP. R: Gartner IT
+  # spending 2025 $5.44T, about 4.6% of world GDP ($117T): software $1.23T (1.05%), devices $760B
+  # (0.65%), data-centre systems $475B (0.4%); the largest single segment ever about 1.4-3% (IT services,
+  # 2010s telecom). A: each share is a long-run most, about 2-5x the category's 2025 world share (its
+  # source beside it, docs/v5-research/market-sizes-dossier.md), above North America's density (about
+  # 1.4x the world's in the game's regions).
+  ceiling_share:
+    default: 0.005 # A: half a percent of GDP for a category without its own
+    b2b_saas: 0.012 # 2025 $299B SaaS (Gartner) = 0.26%; all software 1.05%
+    dev_tools: 0.002 # 2025 about $14-25B (0.02%)
+    consumer_apps: 0.006 # 2025 $167B app-store spend (Sensor Tower) = 0.14%
+    cybersecurity: 0.007 # 2025 $213B (Gartner security end-user spending) = 0.18%
+    fintech: 0.012 # 2024 $378B fintech revenue (BCG/QED) = 0.34%
+    ai_models: 0.015 # 2025 AI application software $172B + GenAI models $14B (Gartner) = 0.16%; eras lift it
+    cloud_hosting: 0.012 # 2025 $419B IaaS + PaaS (Synergy) = 0.36%
+    devices: 0.012 # 2025 smartphones about $550B + PCs about $200B (IDC units x prices) = 0.64%
+    servers: 0.008 # 2025 $444B (IDC) = 0.38%
+    chips_mobile_soc: 0.0012 # 2025 about $40-50B application processors = 0.04%
+    chips_server_cpu: 0.001 # 2025 about $25-30B data-centre CPUs = 0.025%
+    chips_ai_accelerator: 0.006 # 2025 $170-290B data-centre accelerators = 0.2%
+    contract_manufacturing: 0.006 # 2024 $640-660B EMS and ODM (New Venture Research) = 0.55%
+    vehicles: 0.03 # passenger cars about $2.5-3T a year (2-3%); EVs 2025 about $600B
+    wearables_diagnostics: 0.001 # 2025 about $15-20B
+    imaging: 0.001 # 2024 $42-46B = 0.04%
+    surgical_robotics: 0.0006 # 2024 about $10-13B with instruments and service
+    implantables: 0.003 # 2024 $97-132B = 0.1%
+    samd: 0.0005 # 2024 about $1-1.5B (AI in imaging)
+  era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
+  gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
+    north_america: 0.040
+    europe: 0.035
+    east_asia: 0.040
+    south_southeast_asia: 0.065
+    latin_america: 0.050
+    africa: 0.060
+    oceania: 0.045
+  mature_start_year: 2030 # year from which base growth decays toward mature_gdp_growth + mature_premium (54.1)
+  mature_half_life_years: 4 # years for the gap to halve (A: PCs and smartphones slowed over about a decade)
+  mature_gdp_growth: 0.04 # fraction a year: the world economy's nominal growth (A, gdp_growth's mean)
+  mature_premium: # fraction a year a category grows above the economy in the 2030s (A)
+    default: 0.01
+    ai_models: 0.04
+    cloud_hosting: 0.02
+    chips_ai_accelerator: 0.03
+    cybersecurity: 0.02
+  tech_share_max: 0.15 # 54.4 target 1: the technology categories' sum at most this share of world GDP
+  non_tech: [vehicles, medical] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending)
 
 # --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
 geo:

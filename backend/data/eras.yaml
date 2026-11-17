@@ -205,6 +205,6 @@ eras:
 # arrive after the tuned decade and add growth.
 base_growth:
   ai_models: { 2010: 0.28, 2016: 0.35, 2020: 0.40, 2025: 0.50, 2030: 0.25 } # replaces M8's growth_by_year
-  consumer_apps: { 2010: 0.2568, 2020: 0.30 } # mobile-first's +15 points for 2011-2013
-  dev_tools: { 2010: 0.2208, 2020: 0.25 } # cloud-native's +10 points from June 2014
-  fintech: { 2010: 0.2235, 2021: 0.25 } # open banking's +10 points from January 2018
+  consumer_apps: { 2010: 0.2176, 2020: 0.2542 } # M43a (54.2) x0.8474 from 0.2568 / 0.30: 2025 $250B real-dollar equivalent (Sensor Tower $167B, 1.5x); mobile-first's +15 points for 2011-2013
+  dev_tools: { 2010: 0.0805, 2020: 0.0911 } # M43a (54.2) x0.3644 from 0.2208 / 0.25: 2025 $45B real-dollar equivalent (app development and ALM about $20-30B, 1.8x); cloud-native's +10 points from June 2014
+  fintech: { 2010: 0.1948, 2021: 0.218 } # M43a (54.2) x0.8718 from 0.2235 / 0.25: 2025 $600B real-dollar equivalent (BCG/QED 2024 $378B, 1.6x); open banking's +10 points from January 2018

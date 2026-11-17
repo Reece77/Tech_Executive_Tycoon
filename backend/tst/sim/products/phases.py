@@ -32,6 +32,7 @@ from tst.sim.geopolitics import sales as geo_sales
 from tst.sim.hardware import cm_market, production
 from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, LedgerLine
 from tst.sim.log import LinkKind, LogItem, inbox_item
+from tst.sim.markets import saturation
 from tst.sim.medical import gate as medical_gate
 from tst.sim.modes.rankings import brand_bonus
 from tst.sim.money import Cents, exact, times
@@ -932,10 +933,28 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     year = turn_to_ym(state.turn)[0]
     # M28 (41.6): from 2026 a region's demand also moves with its cycle (none before)
     cycling = bool(state.region_cycles)
-    home = home_region_of(state, balance, data) if cycling else ""
+    # M43a (54.1): growth fades as a market nears its ceiling, and never passes it
+    sat = saturation.enabled(balance, data)
+    home = home_region_of(state, balance, data) if cycling or sat else ""
+    values: dict[saturation.Key, float] = {}
+    caps: dict[saturation.Key, float] = {}
+    if sat:
+        rows = [(m.category, m.segment, home, m.addressable) for m in state.markets]
+        rows += [(r.category, r.segment, r.region, r.addressable) for r in state.regional_markets]
+        values = saturation.market_values(state, rows, data, home)
+        caps = saturation.ceilings(
+            state, balance, data, (k for k in values if saturation.grows(data, k[0]))
+        )
+
+    def fade(g: float, category: str, region: str) -> float:
+        cap = caps.get((category, region))
+        return g if cap is None else g * saturation.factor(values[(category, region)], cap)
+
     grown = []
     for market in state.markets:  # base growth plus era boosts (M11, 21.4)
-        g = eras.annual_growth(state, data, market.category, market.segment)
+        g = fade(
+            eras.annual_growth(state, data, market.category, market.segment), market.category, home
+        )
         growth = float(dmath.pow(1 + g, 1 / MONTHS_PER_YEAR))
         if cycling:
             growth *= cycle_ratio(state, home, state.turn)
@@ -943,10 +962,13 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     grown_regional = []
     for rmarket in state.regional_markets:  # the category's growth x the region's (M9, 19.5)
         g = eras.annual_growth(state, data, rmarket.category, rmarket.segment)
+        g = fade(g, rmarket.category, rmarket.region)
         growth = regional_monthly_growth(data, rmarket.category, rmarket.region, year, g)
         if cycling:
             growth *= cycle_ratio(state, rmarket.region, state.turn)
         grown_regional.append(replace(rmarket, addressable=rmarket.addressable * growth))
+    if caps:
+        grown, grown_regional = saturation.clamp(state, data, home, caps, grown, grown_regional)
     # M30: growth reads neither collection, so each is rebuilt once (an upsert a market
     # copied the whole tuple); the upserts' result when keys are sorted and unique
     return with_all_markets(state, grown, grown_regional)

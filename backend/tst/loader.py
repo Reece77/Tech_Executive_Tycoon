@@ -66,6 +66,7 @@ from tst.sim.geopolitics.config import (
     TariffsFile,
 )
 from tst.sim.ledger import ENGINE_ACCOUNTS
+from tst.sim.markets.longrun import with_long_run
 from tst.sim.markets_public.config import BanksFile
 from tst.sim.medical.config import MedicalFile
 from tst.sim.mining.config import NationalizationHistory
@@ -1074,6 +1075,11 @@ def load_all(
     tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
     tech = with_slowdown(tech, balance.dynasty)  # M37 (52.2): the 2040s on
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
+    # M43a (54.1): growth after 2030 decays toward the economy's plus a premium
+    grown, eras = with_long_run(
+        categories.categories, eras, balance.markets, balance.dynasty.start_year - 1
+    )
+    categories = categories.model_copy(update={"categories": grown})
     # M37 (52.2): category growth decays toward a mature rate from 2040
     grown, eras = with_maturity(categories.categories, eras, balance.dynasty)
     categories = categories.model_copy(update={"categories": grown})
