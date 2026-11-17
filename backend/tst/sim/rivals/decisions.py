@@ -116,7 +116,12 @@ def region_candidates(
             if region in selling:
                 continue
             need = 0.0
-            if months >= entry.cash_months:
+            # M38 (49.5): a car maker stays out where a vehicles tariff on its cars bites
+            from tst.sim.vehicles.rivals import blocked_region
+
+            if months >= entry.cash_months and not blocked_region(
+                state, company, region, balance, data
+            ):
                 unserved = region_unserved(state, product.category, segments, region, home)
                 need = max(0.0, min(1.0, (unserved - entry.unserved) / entry.span))
             out.append(Candidate(ENTER_REGION, need, product.id, region))
@@ -647,8 +652,12 @@ def rival_month(
     moves: list[RivalMove] = []
     logs: list[LogItem] = []
     entries: list[LedgerEntry] = []
+    from tst.sim.vehicles.rivals import holds
+
     for company in state.rivals():
         if company.personality is None:
+            continue
+        if holds(state, company, balance, data):  # M38 (49.1): car makers follow history
             continue
         gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)

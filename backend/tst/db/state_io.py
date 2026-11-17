@@ -190,6 +190,7 @@ from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.power_io import load_power, sync_power
 from tst.db.refining_io import load_refining, sync_refining
 from tst.db.regulation_io import load_regulation, sync_regulation
+from tst.db.vehicle_io import load_vehicles, sync_vehicles
 from tst.db.world_io import load_world, sync_world
 from tst.sim.errors import SaveNotFoundError
 from tst.sim.facilities.models import Facility, GoodMonth, Outage, SupplyContract
@@ -604,6 +605,7 @@ def load_state(session: Session) -> GameState:
     state = load_world(session, state, has_table)  # M28 (0050)
     state = load_platforms(session, state, has_table)  # M31 (0051)
     state = load_power(session, state, has_table)  # M32 (0057_m32)
+    state = load_vehicles(session, state, has_table)  # M38 (0058_m38)
     state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_equipment(session, state, has_table)  # M33 (0056_m33)
     state = load_mining(session, state, has_table)  # M19 (0043)
@@ -1249,8 +1251,18 @@ def _sync_hardware(session: Session, old: GameState, new: GameState) -> None:
 
 def _good_order(good: str) -> tuple[int, str]:
     """Goods in components_history.yaml order (server, GPU, then M12b's device and server
-    BOMs, equipment and foundry wafers, M21's EUV tools), others after by key."""
-    known = ("server", "gpu", "device_bom", "server_bom", "equipment", "foundry_wafer", "euv_tools")
+    BOMs, equipment and foundry wafers, M21's EUV tools, M38's vehicle BOM), others after by
+    key."""
+    known = (
+        "server",
+        "gpu",
+        "device_bom",
+        "server_bom",
+        "equipment",
+        "foundry_wafer",
+        "euv_tools",
+        "vehicle_bom",
+    )
     return (known.index(good), good) if good in known else (len(known), good)
 
 
@@ -2188,6 +2200,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_world(session, old, new, has_table)  # M28 (0050)
     sync_platforms(session, old, new, has_table)  # M31 (0051)
     sync_power(session, old, new, has_table)  # M32 (0057_m32)
+    sync_vehicles(session, old, new, has_table)  # M38 (0058_m38)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_equipment(session, old, new, has_table)  # M33 (0056_m33)
     sync_mining(session, old, new, has_table)  # M19 (0043)

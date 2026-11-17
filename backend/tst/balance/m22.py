@@ -78,6 +78,10 @@ def without_rules(keys: Sequence[str]) -> LoadedData:
 
 
 def without_geopolitics() -> LoadedData:
+    """M22's geopolitics removed: countries.yaml's blocs, bloc history and tension
+    (GameData.countries), export controls and tariffs. Its plain country data (GameData.places:
+    regions, demand shares, sites), which M38's subsidies read, stays (product manager,
+    2026-11-16)."""
     base = loaded()
     d = base.game_data.model_copy(update={"countries": None, "controls": None, "tariffs": None})
     return replace(base, game_data=d)

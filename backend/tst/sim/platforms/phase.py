@@ -405,12 +405,17 @@ class Effects:
     appeal_mult: Mapping[tuple[int, str], float] = field(default_factory=dict)
     churn_mult: Mapping[int, float] = field(default_factory=dict)
     revenue_share: Mapping[int, float] = field(default_factory=dict)
+    # M38 (49.5): cents off the price buyers weigh (a subsidy); the price paid is unchanged
+    price_cut: Mapping[tuple[int, str], float] = field(default_factory=dict)
 
     def bonus(self, product_id: int, region: str | None) -> float:
         return self.feature_bonus.get((product_id, region or ""), 0.0)
 
     def appeal(self, product_id: int, region: str | None) -> float:
         return self.appeal_mult.get((product_id, region or ""), 1.0)
+
+    def cut(self, product_id: int, region: str | None) -> float:
+        return self.price_cut.get((product_id, region or ""), 0.0)
 
 
 NO_EFFECTS: Final = Effects()

@@ -121,6 +121,8 @@ ONE_OFF_ACTIONS: Final = frozenset(
         "convert_facility",
         "close_facility",
         "build_plant",
+        "build_cell_plant",  # M38 (49.2)
+        "build_charging_network",  # M38 (49.5)
         "build_fab",
         "build_mine",
         "build_refinery",

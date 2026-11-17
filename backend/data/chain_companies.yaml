@@ -38,6 +38,10 @@ world_supply:
   cobalt: { 2010: 89000, 2015: 126000, 2020: 142000, 2023: 230000, 2024: 290000, 2025: 300000 } # R: USGS mine cobalt t
   lithium_carbonate: { 2010: 150000, 2015: 170000, 2018: 450000, 2020: 440000, 2022: 700000, 2024: 1200000, 2025: 1350000 } # R: USGS lithium x 5.32, t LCE
   ndpr_oxide: { 2010: 25000000, 2015: 26000000, 2020: 48000000, 2025: 80000000 } # A: about 20% of USGS rare-earth oxide, kg
+  nickel: { 2010: 1600000, 2015: 2200000, 2020: 2500000, 2024: 3700000, 2025: 3800000 } # R: USGS MCS mine nickel t (M38)
+  manganese: { 2010: 14000000, 2015: 18000000, 2020: 18900000, 2024: 20000000, 2025: 20000000 } # R: USGS MCS mine manganese t contained (M38)
+  graphite: { 2010: 1100000, 2015: 1200000, 2020: 1000000, 2024: 1600000, 2025: 1650000 } # R: USGS MCS natural graphite t (M38)
+  battery_cells: { 2010: 300000, 2015: 22000000, 2020: 142800000, 2022: 517900000, 2024: 894400000, 2025: 1187000000 } # S: SNE EV battery installations in kWh (vehicles.yaml world_cells_gwh x 1,000,000) (M38)
   neon: { 2010: 20000, 2025: 40000 } # A: semiconductor neon lots ($1,000 at index 1.0; no public series)
 demand_growth:
   quartz_hp: 0.04
@@ -53,6 +57,10 @@ demand_growth:
   ndpr_oxide: 0.07
   neon: 0.04
   foundry_wafer: 0.06
+  nickel: 0.05 # M38 (A: batteries and stainless)
+  manganese: 0.02 # M38 (A: steel, batteries a small share)
+  graphite: 0.06 # M38 (A: anodes)
+  battery_cells: 0.12 # M38: the rest of the world's cell demand after 2025 (A: storage and EVs beyond the game's markets, about the S-curve's pace); the game's cars add their own
 build_months:
   quartz_hp: 18
   silicon_metal: 18
@@ -67,6 +75,10 @@ build_months:
   ndpr_oxide: 30
   neon: 12
   foundry_wafer: 36
+  nickel: 30 # M38 (A: an Indonesian HPAL or NPI line)
+  manganese: 24 # M38 (A)
+  graphite: 24 # M38 (A)
+  battery_cells: 24 # M38 (A: a gigafactory line, as facility.kinds.cell_plant)
 companies:
   # --- Miners and primary producers (suppliers.yaml 3.1) -----------------------------------------
   - { key: freeport, personality: cost_leader, cost: 0.45 } # Grasberg and the Americas: large, mid-curve
@@ -113,6 +125,20 @@ companies:
   - { key: globalfoundries, personality: cost_leader, cost: 0.5, country: us }
   - { key: umc, personality: cost_leader, cost: 0.45, country: taiwan }
   - { key: smic, personality: aggressive, cost: 0.55, country: china }
+  # --- M38 (formulas.md 49.2), appended: battery metals and cell makers (A: personality and cost
+  # position from their scale and the dossier's notes; CATL and BYD the lowest-cost cells) ----------
+  - { key: tsingshan, personality: aggressive, cost: 0.2, country: indonesia } # Indonesian NPI: the lowest-cost nickel
+  - { key: nornickel, personality: premium, cost: 0.35, country: russia }
+  - { key: south32, personality: cost_leader, cost: 0.4, country: south_africa }
+  - { key: eramet, personality: fast_follower, cost: 0.5, country: rest_of_africa }
+  - { key: btr, personality: aggressive, cost: 0.3, country: china }
+  - { key: syrah, personality: fast_follower, cost: 0.6, country: rest_of_africa } # Balama, Mozambique
+  - { key: catl, personality: aggressive, cost: 0.1, country: china }
+  - { key: byd_battery, personality: cost_leader, cost: 0.15, country: china, name: BYD Battery (FinDreams) } # the car maker BYD is an incumbent (incumbents.yaml)
+  - { key: lges, personality: fast_follower, cost: 0.4, country: south_korea }
+  - { key: panasonic_energy, personality: premium, cost: 0.5, country: japan }
+  - { key: sk_on, personality: fast_follower, cost: 0.5, country: south_korea }
+  - { key: samsung_sdi, personality: premium, cost: 0.45, country: south_korea }
 # M33 (47.1): the lithography makers (equipment.yaml suppliers, by key). Their capacity, order
 # book, prices and December rule are tst.sim.equipment's, not the world's goods loop; they are
 # not takeover targets or bidders (M33 decision: ASML's scale and the Dutch state's interest
@@ -136,3 +162,7 @@ others: # the rest of each good's producers: cost position and country (commodit
   ndpr_oxide: { cost: 0.45, country: china }
   neon: { cost: 0.55, country: china }
   foundry_wafer: { cost: 0.6, country: china }
+  nickel: { cost: 0.5, country: indonesia } # M38
+  manganese: { cost: 0.5, country: south_africa } # M38
+  graphite: { cost: 0.5, country: china } # M38
+  battery_cells: { cost: 0.45, country: china } # M38: CALB, Gotion, EVE, SVOLT and smaller makers

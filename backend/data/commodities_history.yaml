@@ -309,3 +309,93 @@ goods:
       - { label: Ukraine neon shock, source: V, points: { "2022-02": 1.0, "2022-03": 10.0, "2022-06": 10.0, "2022-12": 2.0 } }
     allocation:
       - { start: "2022-03", end: "2022-06", share: 0.60 } # Ingas and Cryoin halted (V); share A
+
+  # --- M38 (formulas.md 49.2), appended (stream key = position) ---------------------------------
+  # Nickel, LME cash, World Bank Pink Sheet annual averages (V: the Feb 2026 edition's annual
+  # columns, via the M38 research's search excerpts; R years recalled from earlier editions):
+  # https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Pink-Sheet-February-2026.pdf
+  - key: nickel
+    unit: $/t
+    years:
+      2010: [21809, V]
+      2011: [22910, V]
+      2012: [17548, V]
+      2013: [15030, R]
+      2014: [16893, V]
+      2015: [11863, V]
+      2016: [9595, V]
+      2017: [10410, R]
+      2018: [13114, R]
+      2019: [13914, R]
+      2020: [13787, V]
+      2021: [18465, V]
+      2022: [25834, V]
+      2023: [21521, V]
+      2024: [16814, V]
+      2025: [15162, V]
+  # Manganese ore, 44% Mn, CIF China, $ a dry metric ton unit (CRU via USGS Mineral Commodity
+  # Summaries: 2021-2025 V from MCS 2026 as cited, 2025 the USGS estimate e; 2010-2011 and 2015-2016
+  # R from earlier MCS editions; the rest A between them):
+  # https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-manganese.pdf
+  - key: manganese
+    unit: $/dmtu
+    years:
+      2010: [8.0, R]
+      2011: [8.0, R]
+      2012: [5.0, A]
+      2013: [5.0, A]
+      2014: [4.5, A]
+      2015: [3.0, R]
+      2016: [3.0, R]
+      2017: [5.5, A]
+      2018: [6.0, A]
+      2019: [5.5, A]
+      2020: [4.5, A]
+      2021: [5.27, V]
+      2022: [5.97, V]
+      2023: [4.8, V]
+      2024: [5.53, V]
+      2025: [4.5, e]
+  # Graphite, natural flake, US import unit value (USGS MCS 2024's five years mapped to 2019-2023,
+  # V; 2011-2012's peak R; the rest A): https://pubs.usgs.gov/periodicals/mcs2025/mcs2025-graphite.pdf
+  - key: graphite
+    unit: $/t
+    years:
+      2010: [1200, A]
+      2011: [1800, R]
+      2012: [1700, R]
+      2013: [1300, A]
+      2014: [1100, A]
+      2015: [900, A]
+      2016: [850, A]
+      2017: [1000, A]
+      2018: [1300, A]
+      2019: [1340, V]
+      2020: [1340, V]
+      2021: [1330, V]
+      2022: [1200, V]
+      2023: [1200, V]
+      2024: [1100, A]
+      2025: [1000, A]
+  # Battery cells, $ a kWh in 2010 dollars: D from vehicles.yaml's BNEF pack prices x the cells'
+  # share of a pack (vehicles.yaml battery; the loader checks the two agree to a cent). After 2025
+  # the path reverts to the learning curve (vehicles.learning), not to the history's mean.
+  - key: battery_cells
+    unit: $/kWh
+    years:
+      2010: [701.3, D]
+      2011: [544.9, D]
+      2012: [429.1, D]
+      2013: [388.3, D]
+      2014: [347.8, D]
+      2015: [222.1, D]
+      2016: [170.7, D]
+      2017: [127.4, D]
+      2018: [104.0, D]
+      2019: [90.0, D]
+      2020: [78.5, D]
+      2021: [73.5, D]
+      2022: [78.7, D]
+      2023: [67.8, D]
+      2024: [54.4, D]
+      2025: [50.1, D]

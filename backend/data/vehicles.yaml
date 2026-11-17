@@ -1,0 +1,511 @@
+# Electric vehicles (docs/formulas.md 49, M38, v5 lane C). Research: M38 sub-task 1 (2026-11-16)
+# from docs/v5-research/ev-dossier.md. History holds to December 2025; seeded after (balance.yaml
+# vehicles.*). Every value carries a tag and a source:
+#   S  a sourced figure, quoted from the named source (a search engine's excerpt of the source's
+#      page counts and is marked "(search)": this session could open only en.wikipedia.org, and
+#      the IEA, BNEF, SNE, IRS, EUR-Lex, USTR and USGS pages were refused),
+#   D  derived from sourced figures (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session,
+#   A  an assumption for gameplay where no public series was found (the basis is given).
+# Re-check the R and A rows against the primary pages when www.iea.org and about.bnef.com are
+# reachable (M38 follow-up).
+#
+# Scale (Reece, 2026-11-14: "market sizes and money follow the game's own scale"): car buyers
+# here are real-world counts; the game multiplies them by balance.yaml vehicles.scale (0.085,
+# the devices incumbents' in-game revenue over their real revenue: M34's economy_scale.money
+# 0.0849, Apple 0.095), so a region's game market is a twelfth of its real one, at real prices.
+# Money is converted to the game's 2010 dollars with `cpi` at load.
+#
+# Sources:
+#   GEVO16..GEVO26  IEA Global EV Outlook, editions 2016-2026 (e.g.
+#           https://www.iea.org/reports/global-ev-outlook-2025/executive-summary ,
+#           https://www.iea.org/reports/global-ev-outlook-2026/trends-in-electric-cars ,
+#           https://www.iea.org/reports/global-ev-outlook-2025/electric-vehicle-charging ,
+#           https://www.iea.org/reports/global-ev-outlook-2024/outlook-for-electric-vehicle-charging-infrastructure)
+#   WEVC    Wikipedia, Electric car use by country (share table citing the IEA):
+#           https://en.wikipedia.org/wiki/Electric_car_use_by_country
+#   WPEV    Wikipedia, Plug-in electric vehicle: https://en.wikipedia.org/wiki/Plug-in_electric_vehicle
+#   BNEF23  BNEF, "Lithium-ion battery pack prices hit record low of $139/kWh" (Nov 2023):
+#           https://about.bnef.com/blog/lithium-ion-battery-pack-prices-hit-record-low-of-139-kwh/
+#   BNEF24  BNEF, pack prices fall to $115/kWh (Dec 2024):
+#           https://about.bnef.com/insights/clean-energy/press-japanese-lithium-ion-battery-pack-prices-see-largest-drop-since-2017-falling-to-115-per-kilowatt-hour-bloombergnef/
+#   BNEF25  BNEF, pack prices fall to $108/kWh despite rising metal prices (9 Dec 2025):
+#           https://about.bnef.com/insights/clean-energy/lithium-ion-battery-pack-prices-fall-to-108-per-kilowatt-hour-despite-rising-metal-prices-bloombergnef/
+#   BNEF21  BNEF 2021 survey ("above $1,200/kWh in 2010", real 2021 $) and its 2019 chart:
+#           https://about.bnef.com/blog/battery-pack-prices-fall-to-an-average-of-132-kwh-but-rising-commodity-prices-start-to-bite
+#   MCK     McKinsey, "Battery chemistries powering the future of EVs" (cell and pack densities)
+#   SNE     SNE Research EV battery installations via JW Insights https://jw.ijiwei.com/n/848387 ,
+#           Electrek https://electrek.co/2023/02/08/catl-dominates-global-ev-battery-market-sixth-straight-year/ ,
+#           KED Global https://www.kedglobal.com/newsView/ked202101040006 , Argus
+#           https://argusmedia.com/en/news-and-insights/latest-market-news/2656583-global-ev-battery-installation-s-2024-growth-slows-sne ,
+#           CnEVPost https://cnevpost.com/2026/2/4/global-ev-battery-market-share-2025/
+#   TSLA    Tesla quarterly production and deliveries releases (ir.tesla.com), Electrek
+#           https://electrek.co/2026/01/02/tesla-tsla-releases-q4-delivery-results/
+#   BYD     BYD monthly filings; CleanTechnica https://cleantechnica.com/2025/01/02/rebirth-of-the-phev-what-do-byds-and-teslas-2024-vehicle-sales-tell-us ,
+#           Electrek https://electrek.co/2026/01/02/byd-crushes-tesla-all-electric-sales-for-2025-secures-global-bev-crown/
+#   OEM     InsideEVs top-OEM 2023 https://insideevs.com/news/707935/world-top-ev-oem-sales-2023q4/ ,
+#           CleanTechnica https://cleantechnica.com/2025/02/05/the-automakers-selling-the-most-evs-in-the-world-are/ ,
+#           J.D. Power https://www.jdpower.com/business/news/what-are-the-global-ev-markets-most-successful-brands/ ,
+#           NIO https://www.nio.com/news/20260101001 , Rivian (Business Wire, 2 Jan 2026), Xiaomi (Gasgoo)
+#   CARS    New car sales: CAAM (China), ACEA (Europe), BEA/Wards and GlobalData (US),
+#           MarkLines https://www.marklines.com/en/report/global_report_202412 (R except 2024 S)
+#   CPI     US BLS CPI-U annual averages (R; 2025 A, preliminary), as power.yaml's
+#   CNEV    China subsidies and purchase tax: CnEVPost
+#           https://cnevpost.com/2021/12/31/chinas-subsidies-for-nevs-will-be-reduced-by-30-starting-tomorrow-and-will-no-longer-be-available-starting-2023 ,
+#           China Services Info https://www.chinaservicesinfo.com/s/202306/21/WS649ea2b9498ea274927c25c1/china-extends-nev-purchase-tax-breaks.html ,
+#           SMM https://news.metal.com/newscontent/103527259-nev-purchase-tax-to-resume-in-2026-with-5-rate-and-15000-yuan-cap
+#   IRS     IRC 30D (ARRA 2009 as amended; IRA 2022) and the OBBB termination FAQ:
+#           https://www.irs.gov/newsroom/treasury-irs-issue-faqs-to-address-the-accelerated-termination-of-several-energy-provisions-under-obbb
+#   AFO     EU Alternative Fuels Observatory, Germany's incentives:
+#           https://alternative-fuels-observatory.ec.europa.eu/transport-mode/road/germany/incentives-legislations
+#   EC24    European Commission IP/24/5589, definitive countervailing duties (Reg. (EU) 2024/2754):
+#           https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_24_5589/IP_24_5589_EN.pdf
+#   USTR    USTR Section 301 four-year review, final modifications (13 Sep 2024; 100% on EVs from
+#           27 Sep 2024) (R: not re-read)
+#   MB      Mercedes-Benz Drive Pilot approvals:
+#           https://group.mercedes-benz.com/technology/autonomous-driving/driving/system-approval-for-conditionally-automated-driving.html ,
+#           https://group.mercedes-benz.com/innovation/product-innovation/autonomous-driving/drive-pilot-nevada.html
+#   WAYMO   Wikipedia, Waymo: https://en.wikipedia.org/wiki/Waymo
+#   TN25    TechNode, China's first L3 market access (15 Dec 2025):
+#           https://technode.com/2025/12/15/china-grants-market-access-to-its-first-batch-of-l3-autonomous-driving-vehicles/
+#   NACS    Wikipedia, North American Charging Standard: https://en.wikipedia.org/wiki/North_American_Charging_Standard
+#   KBB     Cox Automotive / Kelley Blue Book, December 2024 ATP report:
+#           https://www.coxautoinc.com/insights/december-2024-atp-report/
+
+cpi: # R (CPI): annual averages; 2025 A (preliminary), as power.yaml's
+  2010: 218.056
+  2012: 229.594
+  2015: 237.017
+  2016: 240.007
+  2019: 255.657
+  2020: 258.811
+  2021: 270.970
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.0
+
+# --- Regions (49.1, 49.5) ------------------------------------------------------------------------
+# car_sales: new cars a year in the game region, millions, real world (CARS). The game's regions
+#   aggregate countries: north_america = US + Canada + Mexico (US light vehicles 11.6 / 17.4 /
+#   17.0 / 16.0 M in 2010 / 2015 / 2019 / 2024, S 2024 GlobalData (search), R earlier; Canada
+#   about 1.6-1.9 M and Mexico 0.8-1.5 M, R); europe = EU + EFTA + UK (ACEA, R; 2024 S from
+#   H1 6.88 M x 2 less the usual H2 dip); east_asia = China passenger cars (CAAM domestic, R)
+#   + Japan (4.4-5.2 M, R) + South Korea (1.5-1.8 M, R) + Taiwan (about 0.4 M, R); the rest A
+#   from national totals recalled (India 2.5-4.3 M, ASEAN 2.5-3.5 M, Brazil 2.5-3.3 M, South
+#   Africa about 0.5 M, Australia about 1.1 M).
+# ev_share: electric (BEV + PHEV) share of the region's new cars. China, Europe and US: WEVC's
+#   share table (S, citing the IEA), 2025 GEVO26 (S (search): China about 55%, Europe 28%, US just
+#   under 10%), 2010-2012 D from the plug-in counts in WPEV over car sales. east_asia is D: China's
+#   share x its sales plus Japan's (0.1-3%, WEVC) and Korea's (about 2-9%, R) over the region's.
+#   south_southeast_asia, latin_america, africa and oceania are A: India about 2% in 2024 (GEVO25,
+#   S (search)), Thailand about 10% and Brazil about 6% in 2024 (R), Australia about 9.6% (R).
+# chargers: public charging points, thousands (GEVO16-GEVO25): 2015 and 2020 R, 2023-2024 S
+#   (search) for the world (almost 4 M and over 5 M), China (about 70%), Europe (just over 1 M in
+#   2024) and the US (just under 200k in 2024); other regions A (a few per hundred EVs on the road).
+# segments: shares of new car buyers: consumer (private), fleet (rental, ride-hailing, company
+#   cars) and commercial (vans and light trucks). A: US fleet sales are about a fifth of light
+#   vehicles (R, Cox Automotive's fleet reports); Europe's company cars are more (R, about 30% of
+#   registrations counting company-owned); light commercial vehicles 5-12% of new vehicles (R).
+regions:
+  north_america:
+    car_sales: { 2010: [14.0, R], 2015: [20.6, R], 2019: [20.2, R], 2024: [19.4, D], 2025: [19.4, A] }
+    ev_share: { 2010: [0.0002, D], 2012: [0.0037, D], 2013: [0.0060, S], 2015: [0.0066, S], 2016: [0.0090, S], 2017: [0.011, S], 2018: [0.021, S], 2019: [0.019, S], 2020: [0.022, S], 2021: [0.040, S], 2022: [0.068, S], 2023: [0.094, S], 2024: [0.099, S], 2025: [0.097, S] }
+    chargers: { 2010: [1, A], 2012: [5, A], 2015: [30, R], 2020: [100, R], 2022: [130, R], 2023: [165, D], 2024: [195, S] }
+    segments: { consumer: [0.74, A], fleet: [0.20, A], commercial: [0.06, A] }
+  europe:
+    car_sales: { 2010: [13.8, R], 2015: [14.2, R], 2019: [15.8, R], 2024: [13.0, S], 2025: [13.3, A] }
+    ev_share: { 2010: [0.0001, D], 2012: [0.002, D], 2013: [0.0049, S], 2015: [0.0141, S], 2016: [0.013, S], 2017: [0.0174, S], 2018: [0.025, S], 2019: [0.036, S], 2020: [0.114, S], 2021: [0.190, S], 2022: [0.229, S], 2023: [0.234, S], 2024: [0.228, S], 2025: [0.285, S] }
+    chargers: { 2010: [2, A], 2012: [12, A], 2015: [70, R], 2020: [280, R], 2022: [500, R], 2023: [750, D], 2024: [1010, S] }
+    segments: { consumer: [0.62, A], fleet: [0.30, A], commercial: [0.08, A] }
+  east_asia:
+    car_sales: { 2010: [20.5, D], 2015: [28.3, D], 2019: [28.8, D], 2024: [29.0, D], 2025: [30.0, A] }
+    ev_share: { 2010: [0.0003, D], 2012: [0.002, D], 2013: [0.0012, D], 2015: [0.0067, D], 2016: [0.0100, D], 2017: [0.016, D], 2018: [0.032, D], 2019: [0.037, D], 2020: [0.041, D], 2021: [0.115, D], 2022: [0.230, D], 2023: [0.290, D], 2024: [0.378, D], 2025: [0.440, D] }
+    chargers: { 2010: [1, A], 2012: [8, A], 2015: [80, R], 2020: [850, R], 2022: [1850, R], 2023: [2780, D], 2024: [3700, D] }
+    segments: { consumer: [0.78, A], fleet: [0.14, A], commercial: [0.08, A] }
+  south_southeast_asia:
+    car_sales: { 2010: [5.0, A], 2015: [6.0, A], 2019: [6.5, A], 2024: [7.6, A], 2025: [7.8, A] }
+    ev_share: { 2010: [0.0, A], 2015: [0.0005, A], 2019: [0.002, A], 2021: [0.004, A], 2022: [0.010, A], 2023: [0.025, A], 2024: [0.040, A], 2025: [0.055, A] }
+    chargers: { 2010: [0, A], 2015: [1, A], 2020: [5, A], 2024: [40, A] }
+    segments: { consumer: [0.78, A], fleet: [0.12, A], commercial: [0.10, A] }
+  latin_america:
+    car_sales: { 2010: [5.0, A], 2015: [4.0, A], 2019: [4.5, A], 2024: [4.5, A], 2025: [4.7, A] }
+    ev_share: { 2010: [0.0, A], 2015: [0.0002, A], 2019: [0.001, A], 2021: [0.004, A], 2022: [0.008, A], 2023: [0.015, A], 2024: [0.030, A], 2025: [0.045, A] }
+    chargers: { 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [20, A] }
+    segments: { consumer: [0.78, A], fleet: [0.12, A], commercial: [0.10, A] }
+  africa:
+    car_sales: { 2010: [1.3, A], 2015: [1.4, A], 2019: [1.3, A], 2024: [1.4, A], 2025: [1.4, A] }
+    ev_share: { 2010: [0.0, A], 2019: [0.0003, A], 2022: [0.001, A], 2024: [0.003, A], 2025: [0.005, A] }
+    chargers: { 2010: [0, A], 2020: [0.3, A], 2024: [2, A] }
+    segments: { consumer: [0.80, A], fleet: [0.10, A], commercial: [0.10, A] }
+  oceania:
+    car_sales: { 2010: [1.15, A], 2015: [1.25, A], 2019: [1.2, A], 2024: [1.35, A], 2025: [1.35, A] }
+    ev_share: { 2010: [0.0, A], 2015: [0.002, A], 2019: [0.006, A], 2021: [0.020, R], 2022: [0.038, R], 2023: [0.085, R], 2024: [0.096, R], 2025: [0.110, A] }
+    chargers: { 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [14, A] }
+    segments: { consumer: [0.70, A], fleet: [0.20, A], commercial: [0.10, A] }
+
+# --- Batteries (49.2) ----------------------------------------------------------------------------
+# pack_usd: BNEF's volume-weighted average lithium-ion pack price, $/kWh, as [value, dollar year,
+#   tag]: 2013 and 2015-2021 from BNEF23's restated real-2023 series (R: the chart, not re-read);
+#   2022 161 and 2023 139 (S, BNEF23); 2024 115 (S, BNEF24, real 2024 $); 2025 108 (S, BNEF25,
+#   real 2025 $); 2010 about 1,400 (D: BNEF21's "above $1,200 in 2010" in real 2021 $ x CPI to
+#   2023); 2011, 2012 and 2014 D from BNEF's 2019 chart (917, 721, 588 real 2019 $) x CPI.
+#   (The dossier's "about $1,100+ in 2010" is an older BNEF vintage.)
+# cell_share: the cells' share of the pack price: 2025 cells $74 of $108 (S, BNEF25: 0.685);
+#   2024 about $78 of $115 (R: 0.68); 2010 0.70 (A: held back).
+# lfp_share: LFP's share of EV cells (context; R from SNE and IEA's chemistry charts: about 5% in
+#   2018, about 30% in 2021, about 45% in 2024).
+battery:
+  pack_usd:
+    2010: [1400, 2023, D]
+    2011: [1090, 2023, D]
+    2012: [860, 2023, D]
+    2013: [780, 2023, R]
+    2014: [700, 2023, D]
+    2015: [448, 2023, R]
+    2016: [345, 2023, R]
+    2017: [258, 2023, R]
+    2018: [211, 2023, R]
+    2019: [183, 2023, R]
+    2020: [160, 2023, R]
+    2021: [150, 2023, R]
+    2022: [161, 2023, S]
+    2023: [139, 2023, S]
+    2024: [115, 2024, S]
+    2025: [108, 2025, S]
+  cell_share: { 2010: [0.70, A], 2024: [0.68, R], 2025: [0.685, S] }
+  lfp_share: { 2010: [0.05, A], 2018: [0.05, R], 2021: [0.30, R], 2024: [0.45, R], 2025: [0.50, A] }
+  # chemistries: wh_per_kg cell-level 2024 (S, MCK (search): LFP 160-180, NMC 220-250; midpoints);
+  #   cost_mult x the market's average cell price (D: BNEF25 LFP packs $81 and NMC $128 against
+  #   the $108 average); range_mult (D: the 5-20% pack-level density gap (MCK) adds about 50 kg
+  #   to a 60 kWh pack, about 3% of a car's energy use); inputs in commodities.yaml volume units
+  #   (t) a kWh of cells: NMC as a mix of NMC811 and NMC622 (lithium as LCE 0.55 kg, nickel
+  #   0.65 kg, cobalt 0.12 kg, manganese 0.12 kg, graphite 1.0 kg), LFP (LCE 0.45 kg, graphite
+  #   1.1 kg); D from ICCT's lithium intensities (ICCT 2024 EV supply chain report, S (search):
+  #   NMC 0.09-0.10 kg Li, LFP about 0.08 kg Li, 0.47 kg Li2CO3) x 5.32, the rest R from the
+  #   BatPaC-derived figures the IEA quotes (Role of Critical Minerals, 2021).
+  chemistries:
+    nmc:
+      label: NMC (nickel manganese cobalt)
+      wh_per_kg: [235, S]
+      cost_mult: [1.18, D]
+      range_mult: [1.0, D]
+      inputs: { lithium_carbonate: [0.00055, D], nickel: [0.00065, R], cobalt: [0.00012, R], manganese: [0.00012, R], graphite: [0.0010, R] }
+    lfp:
+      label: LFP (lithium iron phosphate)
+      wh_per_kg: [170, S]
+      cost_mult: [0.75, D]
+      range_mult: [0.97, D]
+      inputs: { lithium_carbonate: [0.00045, D], graphite: [0.0011, R] }
+
+# world_cells_gwh: EV battery installations a year, GWh (SNE): 2020 142.8 (S incl. hybrids), 2022
+#   517.9 (S), 2023 705.5 (S), 2024 894.4 (S), 2025 about 1,187 (S); 2021 296.8 (R); 2019 116.6
+#   (R); 2010-2018 D from WPEV's yearly plug-in sales x an average pack (about 25 kWh in 2010-2013
+#   with many PHEVs, 40 kWh by 2016, 50 kWh by 2018: A).
+world_cells_gwh: { 2010: [0.3, D], 2012: [3, D], 2013: [5, D], 2014: [8, D], 2015: [22, D], 2016: [31, D], 2017: [55, D], 2018: [100, D], 2019: [116.6, R], 2020: [142.8, S], 2021: [296.8, R], 2022: [517.9, S], 2023: [705.5, S], 2024: [894.4, S], 2025: [1187, S] }
+
+# km_per_kwh: a typical BEV's rated efficiency, km a kWh of pack (D: EPA and WLTP ratings, 150-200
+#   Wh/km for cars in 2024 (5-6.5 km/kWh); the 2010 Nissan Leaf's 24 kWh and 117 km EPA, 4.9; the
+#   2015 Model S 85's 426 km, 5.0; the 2020 Model 3 Long Range's 75 kWh and 518 km, 6.9; mixes A).
+km_per_kwh: { 2010: [4.9, D], 2015: [5.1, D], 2020: [5.8, D], 2024: [6.0, D] }
+# range_expected_km: the market's expected range (feature score, 49.1): 2010 the Leaf's 117 km
+#   (S, EPA via Wikipedia's Nissan Leaf page), 2024 D from the IEA's 65 kWh global average BEV pack
+#   (GEVO25, S (search)) x 6.0 km/kWh; between A.
+range_expected_km: { 2010: [120, D], 2015: [200, A], 2018: [300, A], 2020: [350, A], 2024: [390, D] }
+# charge_expected_kw: the market's expected DC charging peak: 2010 CHAdeMO's 50 kW (R), 2024 150-250
+#   kW typical (E in the research; A midpoint 175), between A.
+charge_expected_kw: { 2010: [50, R], 2015: [75, A], 2020: [120, A], 2024: [175, A] }
+# software_attach: share of connected cars paying a software subscription (49.3). A: no public
+#   series; Tesla's FSD take-rate estimates (about 37% in 2019, 22% in 2020, 12% in 2021, WPEV's
+#   Tesla Autopilot page) bound the driver-assistance share, and Premium Connectivity ($9.99 a
+#   month, R) is the base subscription most connected cars offer.
+software_attach: { 2010: [0.0, A], 2012: [0.02, A], 2015: [0.06, A], 2020: [0.15, A], 2024: [0.22, A] }
+
+# --- Cell makers (49.2): chain companies of battery_cells (41.1) ----------------------------------
+# share: share of world EV cell installations (SNE): CATL 24.0% (2020, S), 33% (2021, S), 37.0% (2022,
+#   S), 37.9% (2024, R), 39.2% (2025, S); BYD 13.6% (2022, S), 17.2% (2024, S), 16.4% (2025, S); LG
+#   Energy Solution 23.5% (2020, S), 20.3% (2021, S), 13.6% (2022, S), 9.2% (2025, S); Panasonic 18.5%
+#   (2020, S), the rest R; SK On and Samsung SDI R, with 2024 and 2025 GWh S; before 2020 A from the
+#   Nevada gigafactory's start (Panasonic about 40% in 2017-2018, R) and BYD's own cars.
+# country: where its cells are mostly made (R: CATL and BYD in China; LG ES Korea, then Poland,
+#   China and the US; Panasonic Japan and Nevada; SK On and Samsung SDI Korea, Hungary, the US).
+# key: its suppliers.yaml and chain_companies.yaml key (personality and cost position are there);
+#   price_mult: a supplier's
+#   cells x the market price (A: Chinese cells about 10% cheaper, BNEF25's China packs $84 against
+#   North America 44% and Europe 56% higher (S (search)).
+cell_makers:
+  - { key: catl, name: CATL, country: china, price_mult: [0.92, A], share: { 2010: [0.0, A], 2015: [0.10, A], 2018: [0.22, A], 2020: [0.240, S], 2021: [0.33, S], 2022: [0.370, S], 2024: [0.379, R], 2025: [0.392, S] }, gwh: { 2022: [191.6, S], 2023: [259.7, S], 2025: [464.7, S] } }
+  - { key: byd_battery, name: BYD Battery (FinDreams), country: china, price_mult: [0.92, A], share: { 2010: [0.15, A], 2015: [0.12, A], 2018: [0.12, A], 2020: [0.067, R], 2021: [0.088, R], 2022: [0.136, S], 2023: [0.158, D], 2024: [0.172, S], 2025: [0.164, S] }, gwh: { 2022: [70.4, S], 2024: [153.7, S], 2025: [194.8, S] } }
+  - { key: lges, name: LG Energy Solution, country: south_korea, price_mult: [1.0, A], share: { 2010: [0.20, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.235, S], 2021: [0.203, S], 2022: [0.136, S], 2023: [0.136, R], 2024: [0.108, D], 2025: [0.092, S] }, gwh: { 2024: [96.3, S], 2025: [108.8, S] } }
+  - { key: panasonic_energy, name: Panasonic Energy, country: japan, price_mult: [1.05, A], share: { 2010: [0.30, A], 2015: [0.35, A], 2018: [0.30, R], 2020: [0.185, S], 2021: [0.122, R], 2022: [0.073, R], 2023: [0.064, R], 2024: [0.039, R], 2025: [0.03, R] } }
+  - { key: sk_on, name: SK On, country: south_korea, price_mult: [1.0, A], share: { 2010: [0.02, A], 2015: [0.03, A], 2018: [0.04, A], 2020: [0.054, R], 2021: [0.056, R], 2022: [0.054, R], 2023: [0.049, R], 2024: [0.044, D], 2025: [0.037, D] }, gwh: { 2024: [39.0, S], 2025: [44.5, S] } }
+  - { key: samsung_sdi, name: Samsung SDI, country: south_korea, price_mult: [1.02, A], share: { 2010: [0.05, A], 2015: [0.08, A], 2018: [0.07, A], 2020: [0.058, R], 2021: [0.045, R], 2022: [0.047, R], 2023: [0.046, R], 2024: [0.033, R], 2025: [0.03, R] } }
+
+# --- Rivals (49.1) ---------------------------------------------------------------------------------
+# Each is an incumbents.yaml company (appended for M38) with one vehicles product. shares: its share
+# of each region's electric car sales by year to 2025, linear between points and 0 outside a
+# region's list; the rest of a region's buyers choose makers outside the game (Nissan, BMW,
+# Mercedes, Renault, Chery, Li Auto ...): its unserved demand. Global volumes (S unless noted):
+# Tesla deliveries (TSLA): 22,477 (2013), 50,580 (2015), 245,240 (2018), 499,550 (2020), 1,313,851
+# (2022), 1,808,581 (2023), 1,789,226 (2024), 1,636,129 (2025); BYD NEVs (BYD): 61,722 (2015),
+# 227,152 passenger (2018), 1.85 M (2022), 3,024,417 (2023), 4,272,145 (2024), 4,602,436 (2025);
+# NIO 43,728 (2020), 122.5k (2022), 222.0k (2024, R), 326.0k (2025); Xiaomi 136.9k (2024), 411.1k
+# (2025); Rivian 51.6k (2024), 42.2k (2025); global shares in OEM: BYD 22% and Tesla 13.2% (2023),
+# VW 7.3%, Geely 6.8% (2023), BYD 24.7%, Tesla 10.4%, Geely 8.5%, SAIC 7.6%, VW 6.9% (2024); GM US
+# 114.4k and Ford US 97.9k (2024). Regional splits are D where a maker sells mainly in one region
+# (Tesla's US, China and Europe deliveries, R from its registrations; BYD's China and exports, R),
+# else A, made so each region's makers sum to its electric sales (WEVC) less the makers outside.
+# origin: where its cars for export are made (tariffs, 39.3); cells: its main cell supplier.
+rivals:
+  - company: Tesla
+    origin: us
+    cells: panasonic_energy
+    shares:
+      north_america: { 2010: [0.05, A], 2012: [0.05, D], 2013: [0.19, D], 2015: [0.26, D], 2018: [0.53, D], 2020: [0.55, D], 2022: [0.53, D], 2023: [0.46, D], 2024: [0.40, D], 2025: [0.39, D] }
+      europe: { 2010: [0.01, A], 2013: [0.08, A], 2015: [0.10, A], 2018: [0.12, A], 2019: [0.19, A], 2020: [0.07, A], 2021: [0.13, A], 2022: [0.12, A], 2023: [0.15, A], 2024: [0.13, A], 2025: [0.08, A] }
+      east_asia: { 2014: [0.02, A], 2018: [0.01, A], 2020: [0.11, D], 2021: [0.10, A], 2022: [0.08, A], 2023: [0.07, A], 2024: [0.06, A], 2025: [0.05, A] }
+      oceania: { 2014: [0.20, A], 2019: [0.45, A], 2022: [0.60, A], 2024: [0.40, A], 2025: [0.35, A] }
+      latin_america: { 2022: [0.01, A], 2025: [0.01, A] }
+  - company: BYD
+    origin: china
+    cells: byd_battery
+    shares:
+      east_asia: { 2010: [0.10, A], 2013: [0.10, A], 2015: [0.18, D], 2018: [0.20, D], 2020: [0.14, D], 2021: [0.17, D], 2022: [0.30, D], 2023: [0.32, D], 2024: [0.36, D], 2025: [0.32, D] }
+      europe: { 2022: [0.002, A], 2023: [0.007, A], 2024: [0.02, A], 2025: [0.045, A] }
+      south_southeast_asia: { 2021: [0.0, A], 2023: [0.15, A], 2024: [0.25, A], 2025: [0.27, A] }
+      latin_america: { 2020: [0.05, A], 2022: [0.15, A], 2024: [0.35, A], 2025: [0.40, A] }
+      oceania: { 2021: [0.0, A], 2022: [0.08, A], 2024: [0.17, A], 2025: [0.20, A] }
+      africa: { 2022: [0.0, A], 2024: [0.15, A], 2025: [0.20, A] }
+  - company: Volkswagen Group
+    origin: germany
+    cells: lges
+    shares:
+      europe: { 2010: [0.02, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.25, A], 2021: [0.24, A], 2022: [0.22, A], 2023: [0.22, A], 2024: [0.24, A], 2025: [0.26, A] }
+      north_america: { 2014: [0.02, A], 2015: [0.06, A], 2020: [0.05, A], 2022: [0.06, A], 2024: [0.06, A], 2025: [0.05, A] }
+      east_asia: { 2018: [0.01, A], 2019: [0.02, A], 2020: [0.07, A], 2021: [0.05, A], 2022: [0.03, A], 2023: [0.03, A], 2024: [0.02, A], 2025: [0.02, A] }
+      latin_america: { 2022: [0.03, A], 2025: [0.05, A] }
+  - company: Toyota
+    origin: japan
+    cells: panasonic_energy
+    shares:
+      east_asia: { 2010: [0.0, A], 2012: [0.20, A], 2015: [0.05, A], 2020: [0.02, A], 2024: [0.01, A], 2025: [0.01, A] }
+      north_america: { 2011: [0.0, A], 2012: [0.24, A], 2015: [0.03, A], 2018: [0.08, A], 2020: [0.07, A], 2024: [0.06, A], 2025: [0.06, A] }
+      europe: { 2012: [0.05, A], 2015: [0.02, A], 2024: [0.03, A], 2025: [0.03, A] }
+      south_southeast_asia: { 2019: [0.05, A], 2025: [0.05, A] }
+      latin_america: { 2019: [0.05, A], 2025: [0.05, A] }
+      africa: { 2019: [0.10, A], 2025: [0.10, A] }
+      oceania: { 2019: [0.03, A], 2025: [0.03, A] }
+  - company: Hyundai-Kia
+    origin: south_korea
+    cells: sk_on
+    shares:
+      north_america: { 2014: [0.0, A], 2015: [0.02, A], 2019: [0.05, A], 2022: [0.07, A], 2024: [0.09, A], 2025: [0.09, A] }
+      europe: { 2015: [0.0, A], 2016: [0.03, A], 2019: [0.07, A], 2021: [0.07, A], 2023: [0.07, A], 2024: [0.06, A], 2025: [0.06, A] }
+      east_asia: { 2014: [0.0, A], 2015: [0.01, A], 2019: [0.03, A], 2022: [0.02, A], 2024: [0.012, A], 2025: [0.012, A] }
+      south_southeast_asia: { 2020: [0.10, A], 2024: [0.08, A], 2025: [0.08, A] }
+      latin_america: { 2020: [0.05, A], 2025: [0.05, A] }
+      africa: { 2020: [0.05, A], 2025: [0.05, A] }
+      oceania: { 2019: [0.10, A], 2025: [0.10, A] }
+  - company: General Motors
+    origin: us
+    cells: lges
+    shares:
+      north_america: { 2010: [0.30, A], 2011: [0.45, D], 2013: [0.24, D], 2015: [0.13, D], 2017: [0.20, D], 2019: [0.07, D], 2020: [0.07, D], 2022: [0.04, D], 2023: [0.05, D], 2024: [0.073, D], 2025: [0.11, A] }
+      europe: { 2011: [0.0, A], 2012: [0.10, A], 2014: [0.02, A], 2017: [0.02, A], 2018: [0.0, A] }
+      latin_america: { 2022: [0.03, A], 2025: [0.05, A] }
+  - company: Ford
+    origin: us
+    cells: sk_on
+    shares:
+      north_america: { 2012: [0.0, A], 2013: [0.10, A], 2015: [0.06, A], 2019: [0.04, A], 2021: [0.09, A], 2022: [0.06, A], 2024: [0.063, D], 2025: [0.055, A] }
+      europe: { 2019: [0.0, A], 2021: [0.03, A], 2024: [0.03, A], 2025: [0.03, A] }
+  - company: Stellantis
+    origin: france
+    cells: samsung_sdi
+    shares:
+      europe: { 2010: [0.01, A], 2015: [0.03, A], 2020: [0.08, A], 2021: [0.10, A], 2023: [0.10, A], 2024: [0.09, A], 2025: [0.08, A] }
+      north_america: { 2017: [0.0, A], 2018: [0.03, A], 2021: [0.08, A], 2023: [0.09, A], 2024: [0.07, A], 2025: [0.06, A] }
+      latin_america: { 2022: [0.02, A], 2025: [0.03, A] }
+  - company: Geely
+    origin: china
+    cells: catl
+    shares:
+      east_asia: { 2014: [0.0, A], 2018: [0.05, A], 2020: [0.05, A], 2022: [0.06, A], 2023: [0.07, A], 2024: [0.11, A], 2025: [0.13, A] }
+      europe: { 2014: [0.0, A], 2015: [0.03, A], 2020: [0.06, A], 2022: [0.06, A], 2024: [0.07, A], 2025: [0.07, A] }
+      north_america: { 2019: [0.0, A], 2020: [0.02, A], 2024: [0.03, A], 2025: [0.02, A] }
+      south_southeast_asia: { 2022: [0.0, A], 2025: [0.02, A] }
+      oceania: { 2021: [0.0, A], 2022: [0.06, A], 2025: [0.06, A] }
+  - company: SAIC
+    origin: china
+    cells: catl
+    shares:
+      east_asia: { 2013: [0.0, A], 2015: [0.03, A], 2018: [0.08, A], 2020: [0.15, A], 2021: [0.18, A], 2022: [0.12, A], 2023: [0.10, A], 2024: [0.10, A], 2025: [0.11, A] }
+      europe: { 2019: [0.0, A], 2020: [0.02, A], 2022: [0.04, A], 2023: [0.05, A], 2024: [0.04, A], 2025: [0.04, A] }
+      south_southeast_asia: { 2020: [0.0, A], 2021: [0.15, A], 2024: [0.15, A], 2025: [0.14, A] }
+      latin_america: { 2022: [0.02, A], 2025: [0.05, A] }
+      oceania: { 2021: [0.0, A], 2022: [0.08, A], 2025: [0.08, A] }
+  - company: NIO
+    origin: china
+    cells: catl
+    launch: "2018-06" # R: ES8 deliveries began June 2018
+    shares:
+      east_asia: { 2018: [0.01, D], 2020: [0.035, D], 2022: [0.02, D], 2024: [0.02, D], 2025: [0.025, D] }
+      europe: { 2021: [0.0, A], 2022: [0.001, A], 2025: [0.001, A] }
+  - company: Xiaomi
+    origin: china
+    cells: catl
+    launch: "2024-04" # R: SU7 deliveries began April 2024
+    shares:
+      east_asia: { 2024: [0.012, D], 2025: [0.03, D] }
+  - company: Rivian
+    origin: us
+    cells: samsung_sdi
+    launch: "2021-09" # R: R1T deliveries began September 2021
+    shares:
+      north_america: { 2021: [0.01, D], 2022: [0.02, D], 2023: [0.035, D], 2024: [0.033, D], 2025: [0.028, D] }
+
+# --- Subsidies (49.5) -------------------------------------------------------------------------------
+# steps: ("YYYY-MM", US dollars of that year) a buyer gets per eligible car in the scheme's country
+#   (its countries.yaml demand share of the region's buyers); price_cap: cars above it get nothing;
+#   rules: sourcing rules from their month. Amounts are the typical BEV's (D from the sources'
+#   yuan and euro figures at the year's exchange rate: CNY 6.77 (2010), 6.20 (2013), 6.64 (2016),
+#   6.90 (2020), 6.45 (2021), 6.73 (2022), 7.19 (2024), 7.20 (2026); EUR 1.33 (2010-2019), 1.14
+#   (2020-2022), 1.08 (2023): R).
+subsidies:
+  - key: us_30d
+    title: US federal EV tax credit
+    region: north_america
+    country: us
+    # IRS: up to $7,500 from January 2010 (ARRA 30D, R); the 200,000-car phase-out per maker (Tesla
+    # from 2019, GM from 2019) is not modelled (A: a credit for every eligible car); IRA from 18 April
+    # 2023 with the North American assembly rule (S (search): from 17 August 2022), MSRP caps of
+    # $55,000 for cars (R) and the FEOC rule on battery components from 1 January 2024 (R); terminated
+    # for cars acquired after 30 September 2025 (S, IRS FAQ).
+    steps: [["2010-01", [7500, R]], ["2025-10", [0, S]]]
+    price_cap: [["2023-04", [55000, R]]]
+    rules:
+      - { start: "2022-08", made_in: [us, canada, mexico], label: "IRA: final assembly in North America" }
+      - { start: "2024-01", cells_not_from: [china], label: "IRA: no battery components from a foreign entity of concern" }
+  - key: cn_nev
+    title: China NEV purchase subsidy and purchase-tax exemption
+    region: east_asia
+    country: china
+    # CNEV: central subsidies of up to 60,000 yuan a BEV from 2010 (R: about $8,900), 35,000-60,000
+    # by range 2013-2015 (R: about $7,500 for a typical BEV), 55,000 cap 2016 falling to 25,000
+    # (2019), 22,500 (2020), 18,000 (2021) and 12,600 (2022, S), ended 31 December 2022 (S); plus the
+    # 10% purchase-tax exemption from September 2014 (R: about $2,000 on a typical car), capped at
+    # 30,000 yuan in 2024-2025 (S) and halved with a 15,000 cap in 2026-2027 (S).
+    steps: [["2010-06", [8900, D]], ["2013-01", [7500, D]], ["2014-09", [9500, D]], ["2016-01", [9300, D]], ["2017-01", [8000, D]], ["2019-06", [5600, D]], ["2020-01", [5300, D]], ["2021-01", [4800, D]], ["2022-01", [3900, D]], ["2023-01", [2000, D]], ["2026-01", [1000, D]], ["2028-01", [0, S]]]
+  - key: de_umweltbonus
+    title: Germany's Umweltbonus
+    region: europe
+    country: germany
+    # AFO: from 29 June 2016 (S), BEV EUR 4,000 to October 2019 (S), up to EUR 9,000 from July 2020 to
+    # December 2022 (S, the Innovationspraemie), EUR 6,750 in 2023 (S); ended 18 December 2023 (S).
+    steps: [["2016-07", [5300, D]], ["2019-11", [6600, D]], ["2020-07", [10300, D]], ["2023-01", [7300, D]], ["2024-01", [0, S]]]
+    price_cap: [["2016-07", [65000, R]]]
+  - key: fr_bonus
+    title: France's bonus ecologique
+    region: europe
+    country: france
+    # R: since 2008; BEVs up to EUR 6,000-7,000 in 2017-2023 (R); from 2024 EUR 4,000 with an
+    # environmental score that excludes most China-built cars (R); cut further in 2025 (A: EUR 2,000).
+    steps: [["2010-01", [6600, R]], ["2017-01", [6700, R]], ["2024-01", [4300, R]], ["2025-01", [2200, A]]]
+    price_cap: [["2020-06", [50000, R]]]
+    rules:
+      - { start: "2024-01", cells_not_from: [china], label: "Environmental score: China-made cars and cells excluded" }
+
+# --- Tariffs on imported cars (49.5, appended to tariffs.yaml's schedules for the vehicles good) ----
+tariffs:
+  - key: us_301_ev
+    title: Section 301 tariffs on Chinese electric vehicles
+    origin: china
+    market: us
+    # USTR: 25% from the 2018 lists (R) plus 2.5% MFN; 100% (plus 2.5%) from 27 September 2024 (R;
+    # rates are capped at 100%, 39.3).
+    steps: [["2010-01", 0.025], ["2018-07", 0.275], ["2024-09", 1.0]]
+    tag: R
+  - key: eu_cvd_ev
+    title: EU countervailing duties on Chinese battery-electric cars
+    origin: china
+    market: rest_of_eu
+    # EC24: 10% MFN (V); definitive duties from 30 October 2024 (S): BYD 17.0%, Geely 18.8%, SAIC
+    # 35.3%, other cooperating 20.7%, Tesla 7.8%; a new maker pays the cooperating 20.7% (S); the
+    # provisional duties from July 2024 (R) are folded into October.
+    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    tag: V
+  - key: eu_cvd_ev_de
+    title: EU countervailing duties on Chinese battery-electric cars (Germany)
+    origin: china
+    market: germany
+    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    tag: V
+  - key: eu_cvd_ev_fr
+    title: EU countervailing duties on Chinese battery-electric cars (France)
+    origin: china
+    market: france
+    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    tag: V
+  - key: eu_cvd_ev_nl
+    title: EU countervailing duties on Chinese battery-electric cars (Netherlands)
+    origin: china
+    market: netherlands
+    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    tag: V
+  - key: eu_cvd_ev_ie
+    title: EU countervailing duties on Chinese battery-electric cars (Ireland)
+    origin: china
+    market: ireland
+    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    tag: V
+  - key: ca_surtax_ev
+    title: Canada's surtax on Chinese electric vehicles
+    origin: china
+    market: canada
+    # S (search): 100% from 1 October 2024; the March 2026 quota deal is after the history.
+    steps: [["2010-01", 0.061], ["2024-10", 1.0]] # tariffs.yaml rates are capped at 100% (39.3): the 6.1% MFN on top is dropped
+    tag: V
+
+# --- Automotive regulators (49.4) ---------------------------------------------------------------------
+# approvals: the first month a level was approved for sale or service in the region. l2 (driver
+# assistance) needs none. l2_plus (hands-off on highways): GM Super Cruise, September 2017 (R); the
+# EU's UN-R171 DCAS from 2024 (R, A month); China's highway NOA from 2021 (R, A month). l3: MB's
+# Drive Pilot under UN-R157, KBA approval 9 December 2021 (S); Nevada 26 January 2023 (S); Japan's
+# Honda Legend, March 2021 (R); China's first L3 market access 15 December 2025 (S, TN25). l4
+# (driverless in a zone): Waymo's public driverless service in Phoenix, 8 October 2020 (S, WAYMO);
+# Baidu Apollo Go's driverless rides in Wuhan, August 2022 (R).
+regulators:
+  - key: nhtsa
+    name: NHTSA and state DMVs
+    region: north_america
+    approvals:
+      - { level: l2_plus, month: "2017-09", label: "Hands-off highway driving (Super Cruise)" }
+      - { level: l4, month: "2020-10", label: "Driverless service in a zone (Phoenix)" }
+      - { level: l3, month: "2023-01", label: "Conditional automation (Nevada, Drive Pilot)" }
+  - key: unece_eu
+    name: European type approval (UNECE WP.29)
+    region: europe
+    approvals:
+      - { level: l3, month: "2021-12", label: "UN-R157 conditional automation (KBA, Drive Pilot)" }
+      - { level: l2_plus, month: "2024-09", label: "UN-R171 driver control assistance" }
+  - key: miit
+    name: MIIT (China) and East Asian regulators
+    region: east_asia
+    approvals:
+      - { level: l3, month: "2021-03", label: "Japan: conditional automation (Honda Legend)" }
+      - { level: l2_plus, month: "2021-06", label: "China: highway navigate-on-autopilot" }
+      - { level: l4, month: "2022-08", label: "China: driverless rides in a zone (Wuhan)" }
+  - key: asean_regs
+    name: South and Southeast Asian regulators
+    region: south_southeast_asia
+  - key: latam_regs
+    name: Latin American regulators
+    region: latin_america
+  - key: africa_regs
+    name: African regulators
+    region: africa
+  - key: oceania_regs
+    name: Australian and New Zealand regulators
+    region: oceania
+    approvals:
+      - { level: l2_plus, month: "2022-06", label: "Hands-off highway driving (A: after the US)" }
