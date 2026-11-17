@@ -120,4 +120,10 @@ Engineering and design gaps the spec, ADRs and brief left open (CLAUDE.md §9), 
 
 ## Follow-ups
 
-(filled in by the agent)
+- **v5 performance milestone (after M37):** a 2069 month at about 6.5 workloads (decision 19). The 60-year world's people and segment lookups dominate: `state.person` is a bisect over about 100k people, called about 108k times a month; product and regional segments are scanned linearly. The save's size is people's records (person_reveal, person_skill), mostly departed strangers': thinning them would keep long saves well under 400 MB (397 MB at 2069 now).
+- **M43 (balance):** the largest AI incumbent books about $230T a year by 2040 on main's curves (base growth 25% a year to 2039), which forced dynasty-years growth down to 1-1.5% to keep the books inside SQLite's int64 (decision 17). Damping the 2030s would let dynasty years grow more.
+- **Mortality beyond the head:** the partner, children and the adviser have no mortality draw (decision 12); a family member's death needs a status on `FamilyMember` (M36's model).
+- **M38's vehicles past 2025:** car sales and subsidy steps hold their last values (the audit, decision 16). Dynasty years may want a continuation; M37 may not edit `vehicles/`.
+- **Rival leaders' personalities** change the company's personality type only; successors' own traits do not yet steer the rival's decisions beyond it.
+- **Chain companies' leaders** keep M28's monthly CEO changes (named characters); they have no ages.
+- **Hall of Fame:** the December 2039 and 2069 summaries reuse the game-over screen with the legacy and the dynasty score. A Hall of Fame entry written at the end, with a "Dynasty" column for 2069 games, is not built.
