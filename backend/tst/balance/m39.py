@@ -15,10 +15,10 @@ company doing nothing (so history holds), then on to December 2039; the targets 
 4. **Robotaxis are a utilisation business:** from January 2027 the player's company gets L4 (an
    autonomy lead of 60 and an AI model of quality 90), a robotaxi service and a large San
    Francisco zone, active, with a 300-car depot; one run with 40 bought cars and one with 300,
-   24 months each. Every month above `robotics.robotaxi.breakeven_rides` rides a car a day must
-   earn a positive contribution; then in the 40-car run a serious incident in month 13 suspends
-   the zone, and its revenue during the suspension against the 3 months before must fall by at
-   least 30%.
+   24 months each. Every active month above `robotics.robotaxi.breakeven_rides` rides a car a day
+   must earn a positive contribution; in the 40-car run a serious incident in month 13 (or a
+   seeded one before it) suspends the zone, and its revenue a month during that first suspension
+   against the 3 months before it must fall by at least 30%.
 5. **Turn time:** the mean wall-clock time of a turn from 2026 to 2035 on these worlds (the guards
    themselves are M30's `make check-timing`).
 """
@@ -146,8 +146,9 @@ def _product(state: GameState, category: str, name: str, quality: float) -> tupl
     return replace(with_product(state, p), next_ids=ids), pid
 
 
-def taxi_run(g: Game, cars: int, incident: bool) -> list[tuple[float, int, int]]:
-    """Target 4: (rides a car a day, contribution, revenue) for each month of a 24-month run."""
+def taxi_run(g: Game, cars: int, incident: bool) -> list[tuple[float, int, int, bool]]:
+    """Target 4: (rides a car a day, contribution, revenue, suspended) for each month of a
+    24-month run."""
     b = loaded().balance
     s = g.state
     s = with_research_lead(s, ResearchLead(PLAYER, b.vehicles.domain, 60.0))
@@ -181,11 +182,29 @@ def taxi_run(g: Game, cars: int, incident: bool) -> list[tuple[float, int, int]]
         g.turn()
         z = g.state.zones[0]
         m = z.month
+        held = z.status == "suspended"
         if m is None:
-            out.append((0.0, 0, 0))
+            out.append((0.0, 0, 0, held))
         else:
-            out.append((m.rides / max(1, m.cars) / days, m.contribution_cents, m.revenue_cents))
+            rides = m.rides / max(1, m.cars) / days
+            out.append((rides, m.contribution_cents, m.revenue_cents, held))
     return out
+
+
+def _suspension_cut(months: list[tuple[float, int, int, bool]]) -> float:
+    """1 - revenue a month while the zone's first suspension lasts over the 3 months before it
+    (a seeded serious incident may come before the forced one in month 13)."""
+    first = next((i for i, m in enumerate(months) if m[3]), None)
+    if first is None or first < 1:
+        return 0.0
+    before = [m[2] for m in months[max(0, first - 3) : first]]
+    during = []
+    for m in months[first:]:
+        if not m[3]:
+            break
+        during.append(m[2])
+    base = sum(before) / len(before)
+    return 1 - (sum(during) / len(during)) / base if base > 0 else 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -241,18 +260,14 @@ def run_seed(seed: int) -> SeedRun:
     for cars in FLEETS:
         branch = Game(loaded(), taxi.state, dict(taxi.balances))
         months = taxi_run(branch, cars, incident=cars == FLEETS[0])
-        for i, (rides_day, contribution, _) in enumerate(months):
-            if cars == FLEETS[0] and i >= INCIDENT_MONTH:
+        for rides_day, contribution, _, held in months:
+            if held:
                 continue
             if rides_day > loaded().balance.robotics.robotaxi.breakeven_rides:
                 above += 1
                 positive += contribution > 0
         if cars == FLEETS[0]:
-            before_rev = sum(r for _, _, r in months[INCIDENT_MONTH - 3 : INCIDENT_MONTH]) / 3
-            span = loaded().balance.robotics.robotaxi.suspend_months
-            during = months[INCIDENT_MONTH : INCIDENT_MONTH + span]
-            during_rev = sum(r for _, _, r in during) / max(1, len(during))
-            cut = 1 - during_rev / before_rev if before_rev > 0 else 0.0
+            cut = _suspension_cut(months)
     return SeedRun(
         seed=seed,
         cut_dear=cut_dear,
