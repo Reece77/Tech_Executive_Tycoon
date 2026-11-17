@@ -870,6 +870,18 @@ class Builder:
 
         return v4_power.plant_levelised(self, m, entity)
 
+    # --- v5 (M38): vehicles ------------------------------------------------------------------
+
+    def car_unit_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_vehicles
+
+        return v5_vehicles.car_unit_cost(self, m, entity)
+
+    def battery_price(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_vehicles
+
+        return v5_vehicles.battery_price(self, m, entity)
+
     # --- v4 (M34): regulation ----------------------------------------------------------------
 
     def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:

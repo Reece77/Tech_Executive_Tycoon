@@ -54,6 +54,7 @@ from tst.sim.geopolitics.config import (
     CountriesFile,
     ExportControlsFile,
     GeopoliticsBalance,
+    PlacesFile,
     TariffsFile,
 )
 from tst.sim.group.config import GroupBalance
@@ -82,6 +83,7 @@ from tst.sim.press.config import (
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
+from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
 SCORE_MAX = 100  # quality, feature score, brand and appeal are on 0-100 (formulas.md 11.6)
@@ -1384,6 +1386,7 @@ class Balance(_Frozen):
     regulation: RegulationBalance  # M34 (formulas.md 48): regulation with teeth
     economy_scale: EconomyScaleBalance  # M34: real thresholds read in the game's economy
     equipment: EquipmentBalance  # M33 (formulas.md 47): semiconductor equipment
+    vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1687,6 +1690,9 @@ class CategoryDef(_Frozen):
     # segment -> categories whose demand growth this segment's demand follows (26.3)
     growth_follows: dict[str, tuple[str, ...]] | None = None
     assembly_market: bool = False  # M12b (26.2): sells spare assembly-plant capacity
+    # M38 (49.1): a rival's cost of goods a unit is this share of its own price (cars' prices
+    # differ too much for one hosting_cents); None = the market's hosting_cents
+    rival_cost_share: float | None = Field(default=None, gt=0, lt=1)
 
     @property
     def sells_units(self) -> bool:
@@ -2094,6 +2100,8 @@ class GameData(_Frozen):
     nodes: NodesFile | None = None  # M21 (38.1, 38.3): process nodes and rival foundries
     # M22 (39): countries and blocs, export controls and tariffs; None = no geopolitics
     countries: CountriesFile | None = None
+    # M38: countries.yaml's plain data (no blocs), kept when geopolitics is off (geopolitics/config)
+    places: PlacesFile | None = None
     controls: ExportControlsFile | None = None
     tariffs: TariffsFile | None = None
     chain_companies: ChainCompaniesFile | None = None  # M28 (41.1); None = no living world
@@ -2101,6 +2109,7 @@ class GameData(_Frozen):
     power: PowerFile | None = None  # M32 (46); None = no plants, contracts or producers
     regulation: RegulationFile | None = None  # M34 (48); None = no regulation
     equipment: EquipmentFile | None = None  # M33 (47); None = M21's EUV tools good
+    vehicles: VehiclesFile | None = None  # M38 (49); None = no vehicles market's history
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

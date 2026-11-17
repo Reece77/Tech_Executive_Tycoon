@@ -238,6 +238,10 @@ def commodity_month(
     cb = balance.commodity
     top = data.commodities.good(history.key).top_share
     level = history.long_run / mean
+    if history.key == balance.vehicles.cell_good:  # M38 (49.2): cells revert to the learning curve
+        from tst.sim.vehicles.cells import commodity_level
+
+        level = commodity_level(state, mean, balance, data) or level
     month = step_commodity(prev, turn, draws(rng, turn, i), level, cb.vol[history.key], top, cb)
     return world_month(state, month)
 

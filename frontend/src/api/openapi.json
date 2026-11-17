@@ -25417,6 +25417,507 @@
         }
       }
     },
+    "/api/saves/{save_id}/vehicles": {
+      "get": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Get Vehicles",
+        "description": "EV markets by region (share, sales, charging, subsidies, tariffs, approvals), battery\nprices, rivals' line-ups and shares, and the player's cars, plants and networks.",
+        "operationId": "getVehicles",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclesScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/vehicles/cars/{car_id}": {
+      "get": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Get Car",
+        "description": "A car line's page; `car_id` is the line's product id (a car line only, as the power\nplants' `facility_id`).",
+        "operationId": "getVehicleCar",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "car_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Car Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyCarOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/vehicles/cars/{car_id}/spec": {
+      "post": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Set Spec",
+        "operationId": "setVehicleSpec",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "car_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Car Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetVehicleSpecIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/vehicles/cell-plants": {
+      "post": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Build Cell Plant",
+        "operationId": "buildCellPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildCellPlantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/vehicles/charging": {
+      "post": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Build Charging",
+        "operationId": "buildChargingNetwork",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildChargingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/vehicles/charging/{facility_id}/access": {
+      "post": {
+        "tags": [
+          "vehicles"
+        ],
+        "summary": "Set Access",
+        "operationId": "setChargingAccess",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargingAccessIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehiclesActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -28295,6 +28796,51 @@
         ],
         "title": "BankOut"
       },
+      "BatteryOut": {
+        "properties": {
+          "cell_cents": {
+            "type": "number",
+            "title": "Cell Cents",
+            "description": "This month's market price of a kWh of cells"
+          },
+          "pack_cents": {
+            "type": "number",
+            "title": "Pack Cents",
+            "description": "A kWh of pack (cells and integration)"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/YearValueOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Cell price a kWh by year, to now"
+          },
+          "chemistries": {
+            "items": {
+              "$ref": "#/components/schemas/ChemistryOut"
+            },
+            "type": "array",
+            "title": "Chemistries"
+          },
+          "cell_makers": {
+            "items": {
+              "$ref": "#/components/schemas/CellMakerOut"
+            },
+            "type": "array",
+            "title": "Cell Makers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cell_cents",
+          "pack_cents",
+          "history",
+          "chemistries",
+          "cell_makers"
+        ],
+        "title": "BatteryOut"
+      },
       "BidAnswerIn": {
         "properties": {
           "accept": {
@@ -28721,6 +29267,75 @@
         ],
         "title": "BreakdownOut",
         "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
+      },
+      "BuildCellPlantIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "mwh_month": {
+            "type": "integer",
+            "title": "Mwh Month",
+            "description": "The plant's size, MWh of cells a month"
+          },
+          "chemistry": {
+            "type": "string",
+            "title": "Chemistry"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "mwh_month",
+          "chemistry"
+        ],
+        "title": "BuildCellPlantIn"
+      },
+      "BuildChargingIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "chargers": {
+            "type": "integer",
+            "title": "Chargers"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "title": "Exclusive",
+            "default": false
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "chargers"
+        ],
+        "title": "BuildChargingIn"
       },
       "BuildFabIn": {
         "properties": {
@@ -29513,6 +30128,39 @@
         ],
         "title": "CapitalOut"
       },
+      "CarMonthOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "units": {
+            "type": "number",
+            "title": "Units"
+          },
+          "software_cents": {
+            "type": "integer",
+            "title": "Software Cents"
+          },
+          "licence_cents": {
+            "type": "integer",
+            "title": "Licence Cents"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "units",
+          "software_cents",
+          "licence_cents",
+          "unit_cost_cents"
+        ],
+        "title": "CarMonthOut"
+      },
       "CareIn": {
         "properties": {
           "restart": {
@@ -29940,6 +30588,134 @@
           "first_mover"
         ],
         "title": "CategoryTechOut"
+      },
+      "CellMakerOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "price_mult": {
+            "type": "number",
+            "title": "Price Mult"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "country",
+          "price_mult",
+          "share"
+        ],
+        "title": "CellMakerOut"
+      },
+      "CellPlantOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "chemistry": {
+            "type": "string",
+            "title": "Chemistry"
+          },
+          "capacity_mwh": {
+            "type": "integer",
+            "title": "Capacity Mwh"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "estimate_cents": {
+            "type": "integer",
+            "title": "Estimate Cents",
+            "description": "The quote at the order"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents"
+          },
+          "yield_rate": {
+            "type": "number",
+            "title": "Yield Rate"
+          },
+          "made_kwh": {
+            "type": "number",
+            "title": "Made Kwh"
+          },
+          "to_group_kwh": {
+            "type": "number",
+            "title": "To Group Kwh"
+          },
+          "to_spot_kwh": {
+            "type": "number",
+            "title": "To Spot Kwh"
+          },
+          "unit_cents": {
+            "type": "number",
+            "title": "Unit Cents",
+            "description": "Its cost a kWh last month"
+          },
+          "market_cents": {
+            "type": "number",
+            "title": "Market Cents"
+          },
+          "staff": {
+            "type": "integer",
+            "title": "Staff"
+          },
+          "staff_needed": {
+            "type": "integer",
+            "title": "Staff Needed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "region",
+          "chemistry",
+          "capacity_mwh",
+          "status",
+          "ready",
+          "estimate_cents",
+          "capex_paid_cents",
+          "yield_rate",
+          "made_kwh",
+          "to_group_kwh",
+          "to_spot_kwh",
+          "unit_cents",
+          "market_cents",
+          "staff",
+          "staff_needed"
+        ],
+        "title": "CellPlantOut"
       },
       "CeoAuthorityIn": {
         "properties": {
@@ -30443,6 +31219,77 @@
         ],
         "title": "ChannelOut"
       },
+      "ChargingAccessIn": {
+        "properties": {
+          "exclusive": {
+            "type": "boolean",
+            "title": "Exclusive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exclusive"
+        ],
+        "title": "ChargingAccessIn"
+      },
+      "ChargingOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "chargers": {
+            "type": "integer",
+            "title": "Chargers"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "title": "Exclusive"
+          },
+          "kwh_sold": {
+            "type": "number",
+            "title": "Kwh Sold"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "energy_cents": {
+            "type": "integer",
+            "title": "Energy Cents"
+          },
+          "use": {
+            "type": "number",
+            "title": "Use"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "region",
+          "chargers",
+          "status",
+          "exclusive",
+          "kwh_sold",
+          "revenue_cents",
+          "energy_cents",
+          "use"
+        ],
+        "title": "ChargingOut"
+      },
       "ChartsOut": {
         "properties": {
           "kpis": {
@@ -30750,6 +31597,39 @@
         ],
         "title": "CheckOut",
         "description": "An interview or reference check: the candidate's profile now, and what it taught."
+      },
+      "ChemistryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "wh_per_kg": {
+            "type": "number",
+            "title": "Wh Per Kg"
+          },
+          "cost_mult": {
+            "type": "number",
+            "title": "Cost Mult"
+          },
+          "range_mult": {
+            "type": "number",
+            "title": "Range Mult"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "wh_per_kg",
+          "cost_mult",
+          "range_mult"
+        ],
+        "title": "ChemistryOut"
       },
       "ChipOut": {
         "properties": {
@@ -32295,29 +33175,6 @@
           "question"
         ],
         "title": "CooQuestionIn"
-      },
-      "CostLineOut": {
-        "properties": {
-          "account": {
-            "type": "string",
-            "title": "Account"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "amount_cents": {
-            "type": "integer",
-            "title": "Amount Cents"
-          }
-        },
-        "type": "object",
-        "required": [
-          "account",
-          "label",
-          "amount_cents"
-        ],
-        "title": "CostLineOut"
       },
       "CounterIn": {
         "properties": {
@@ -34201,6 +35058,42 @@
           "cost_cents"
         ],
         "title": "EducationChoiceOut"
+      },
+      "EligibilityOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "scheme": {
+            "type": "string",
+            "title": "Scheme"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "failed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "scheme",
+          "amount_cents",
+          "eligible",
+          "failed"
+        ],
+        "title": "EligibilityOut"
       },
       "EmploymentOut": {
         "properties": {
@@ -41872,6 +42765,49 @@
         ],
         "title": "InboxOut"
       },
+      "IncidentOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "when": {
+            "type": "string",
+            "title": "When"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "cars_recalled": {
+            "type": "number",
+            "title": "Cars Recalled"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "when",
+          "product",
+          "region",
+          "level",
+          "cars_recalled",
+          "cost_cents"
+        ],
+        "title": "IncidentOut"
+      },
       "InfluenceOut": {
         "properties": {
           "region": {
@@ -43286,6 +44222,70 @@
         ],
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
+      },
+      "LevelOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "lead": {
+            "type": "number",
+            "title": "Lead"
+          },
+          "ai_quality": {
+            "type": "number",
+            "title": "Ai Quality"
+          },
+          "features": {
+            "type": "number",
+            "title": "Features"
+          },
+          "needs_approval": {
+            "type": "boolean",
+            "title": "Needs Approval"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "lead",
+          "ai_quality",
+          "features",
+          "needs_approval"
+        ],
+        "title": "LevelOptionOut"
+      },
+      "LevelRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "approved": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approved"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "level",
+          "approved"
+        ],
+        "title": "LevelRegionOut"
       },
       "LicenceOut": {
         "properties": {
@@ -46301,6 +47301,126 @@
         ],
         "title": "MoveUnitIn"
       },
+      "MyCarOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/VehicleSpecOut"
+          },
+          "range_km": {
+            "type": "number",
+            "title": "Range Km"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "The highest level its cars run in a region now"
+          },
+          "capable_level": {
+            "type": "string",
+            "title": "Capable Level"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers",
+            "description": "Cars on the road"
+          },
+          "units_last_month": {
+            "type": "number",
+            "title": "Units Last Month"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "unit_cost": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__vehicles__CostLineOut"
+            },
+            "type": "array",
+            "title": "Unit Cost"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents"
+          },
+          "software_cents_last_month": {
+            "type": "integer",
+            "title": "Software Cents Last Month"
+          },
+          "software_share": {
+            "type": "number",
+            "title": "Software Share",
+            "description": "Software's share of the line's revenue to date"
+          },
+          "feature_points": {
+            "type": "number",
+            "title": "Feature Points",
+            "description": "Range, charging, autonomy and platform points"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelRegionOut"
+            },
+            "type": "array",
+            "title": "Levels"
+          },
+          "eligibility": {
+            "items": {
+              "$ref": "#/components/schemas/EligibilityOut"
+            },
+            "type": "array",
+            "title": "Eligibility"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/CarMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "spec",
+          "range_km",
+          "level",
+          "capable_level",
+          "customers",
+          "units_last_month",
+          "price_cents",
+          "unit_cost",
+          "unit_cost_cents",
+          "software_cents_last_month",
+          "software_share",
+          "feature_points",
+          "levels",
+          "eligibility",
+          "history"
+        ],
+        "title": "MyCarOut"
+      },
       "NetWorthOut": {
         "properties": {
           "total_cents": {
@@ -48204,7 +49324,7 @@
           },
           "costs_last_month": {
             "items": {
-              "$ref": "#/components/schemas/CostLineOut"
+              "$ref": "#/components/schemas/tst__api__schemas__saves__CostLineOut"
             },
             "type": "array",
             "title": "Costs Last Month",
@@ -48223,7 +49343,7 @@
           },
           "month_costs": {
             "items": {
-              "$ref": "#/components/schemas/CostLineOut"
+              "$ref": "#/components/schemas/tst__api__schemas__saves__CostLineOut"
             },
             "type": "array",
             "title": "Month Costs",
@@ -48231,7 +49351,7 @@
           },
           "month_paid": {
             "items": {
-              "$ref": "#/components/schemas/CostLineOut"
+              "$ref": "#/components/schemas/tst__api__schemas__saves__CostLineOut"
             },
             "type": "array",
             "title": "Month Paid",
@@ -56094,6 +57214,59 @@
         ],
         "title": "RivalBidOut"
       },
+      "RivalCarOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "launched": {
+            "type": "boolean",
+            "title": "Launched"
+          },
+          "shares": {
+            "items": {
+              "$ref": "#/components/schemas/RivalShareOut"
+            },
+            "type": "array",
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "product",
+          "quality",
+          "price_cents",
+          "launched",
+          "shares"
+        ],
+        "title": "RivalCarOut"
+      },
       "RivalLeadOut": {
         "properties": {
           "company_id": {
@@ -56750,6 +57923,25 @@
           "running_until_label"
         ],
         "title": "RivalSegmentOut"
+      },
+      "RivalShareOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Its share of the region's EV buyers now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "share"
+        ],
+        "title": "RivalShareOut"
       },
       "RivalsOut": {
         "properties": {
@@ -58655,6 +59847,55 @@
         ],
         "title": "SetPolicyIn"
       },
+      "SetVehicleSpecIn": {
+        "properties": {
+          "pack_kwh": {
+            "type": "number",
+            "title": "Pack Kwh"
+          },
+          "chemistry": {
+            "type": "string",
+            "title": "Chemistry"
+          },
+          "charge_kw": {
+            "type": "number",
+            "title": "Charge Kw"
+          },
+          "autonomy": {
+            "type": "string",
+            "title": "Autonomy"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "cells": {
+            "type": "string",
+            "title": "Cells"
+          },
+          "os_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Os Product Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pack_kwh",
+          "chemistry",
+          "charge_kw",
+          "autonomy",
+          "platform",
+          "cells"
+        ],
+        "title": "SetVehicleSpecIn"
+      },
       "SharePointOut": {
         "properties": {
           "turn": {
@@ -60114,6 +61355,51 @@
         ],
         "title": "SubsidiaryUpdatesOut"
       },
+      "SubsidyOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents",
+            "description": "A buyer's subsidy for an eligible car, 2010 cents"
+          },
+          "price_cap_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cap Cents"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Sourcing and assembly rules running now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "country",
+          "amount_cents",
+          "price_cap_cents",
+          "rules"
+        ],
+        "title": "SubsidyOut"
+      },
       "SuccessionIn": {
         "properties": {
           "heir_id": {
@@ -60884,53 +62170,6 @@
           "feature_low"
         ],
         "title": "TargetProductOut"
-      },
-      "TariffOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "origin": {
-            "type": "string",
-            "title": "Origin"
-          },
-          "market": {
-            "type": "string",
-            "title": "Market"
-          },
-          "goods": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Goods"
-          },
-          "rate": {
-            "type": "number",
-            "title": "Rate",
-            "description": "This month's rate on the goods' cost"
-          },
-          "tag": {
-            "type": "string",
-            "title": "Tag"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "title",
-          "origin",
-          "market",
-          "goods",
-          "rate",
-          "tag"
-        ],
-        "title": "TariffOut"
       },
       "TeamMoodOut": {
         "properties": {
@@ -62543,6 +63782,385 @@
         ],
         "title": "VariantOut"
       },
+      "VehicleOptionsOut": {
+        "properties": {
+          "chemistries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chemistries"
+          },
+          "platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Platforms"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/LevelOptionOut"
+            },
+            "type": "array",
+            "title": "Levels"
+          },
+          "cell_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cell Sources"
+          },
+          "cell_plant_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Cell Plant Sizes"
+          },
+          "charging_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Charging Sizes"
+          },
+          "vehicle_plant_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Vehicle Plant Sizes"
+          },
+          "pack_kwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Pack Kwh"
+          },
+          "charge_kw": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Charge Kw"
+          },
+          "cell_plant_stage": {
+            "type": "integer",
+            "title": "Cell Plant Stage"
+          },
+          "autonomy_lead": {
+            "type": "number",
+            "title": "Autonomy Lead",
+            "description": "Your lead in the autonomy domain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chemistries",
+          "platforms",
+          "levels",
+          "cell_sources",
+          "cell_plant_sizes",
+          "charging_sizes",
+          "vehicle_plant_sizes",
+          "pack_kwh",
+          "charge_kw",
+          "cell_plant_stage",
+          "autonomy_lead"
+        ],
+        "title": "VehicleOptionsOut"
+      },
+      "VehiclePlantOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "cars_month": {
+            "type": "integer",
+            "title": "Cars Month",
+            "description": "The plant's size, cars a month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "yield_rate": {
+            "type": "number",
+            "title": "Yield Rate"
+          },
+          "run_units": {
+            "type": "number",
+            "title": "Run Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "region",
+          "cars_month",
+          "status",
+          "ready",
+          "yield_rate",
+          "run_units"
+        ],
+        "title": "VehiclePlantOut"
+      },
+      "VehicleRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "ev_share": {
+            "type": "number",
+            "title": "Ev Share",
+            "description": "This month's electric share of new car sales"
+          },
+          "ev_share_history": {
+            "items": {
+              "$ref": "#/components/schemas/YearValueOut"
+            },
+            "type": "array",
+            "title": "Ev Share History"
+          },
+          "ev_sales_year": {
+            "type": "number",
+            "title": "Ev Sales Year",
+            "description": "EV sales a year at the game's scale, cars"
+          },
+          "car_sales_year": {
+            "type": "number",
+            "title": "Car Sales Year",
+            "description": "New cars a year at the game's scale"
+          },
+          "public_chargers": {
+            "type": "number",
+            "title": "Public Chargers",
+            "description": "Public chargers, real world"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage",
+            "description": "Charging coverage, 0-1"
+          },
+          "subsidies": {
+            "items": {
+              "$ref": "#/components/schemas/SubsidyOut"
+            },
+            "type": "array",
+            "title": "Subsidies"
+          },
+          "tariffs": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__vehicles__TariffOut"
+            },
+            "type": "array",
+            "title": "Tariffs"
+          },
+          "approved_levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approved Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "ev_share",
+          "ev_share_history",
+          "ev_sales_year",
+          "car_sales_year",
+          "public_chargers",
+          "coverage",
+          "subsidies",
+          "tariffs",
+          "approved_levels"
+        ],
+        "title": "VehicleRegionOut"
+      },
+      "VehicleSpecOut": {
+        "properties": {
+          "pack_kwh": {
+            "type": "number",
+            "title": "Pack Kwh"
+          },
+          "chemistry": {
+            "type": "string",
+            "title": "Chemistry"
+          },
+          "charge_kw": {
+            "type": "number",
+            "title": "Charge Kw"
+          },
+          "autonomy": {
+            "type": "string",
+            "title": "Autonomy"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "cells": {
+            "type": "string",
+            "title": "Cells"
+          },
+          "os_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Os Product Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pack_kwh",
+          "chemistry",
+          "charge_kw",
+          "autonomy",
+          "platform",
+          "cells",
+          "os_product_id"
+        ],
+        "title": "VehicleSpecOut"
+      },
+      "VehiclesActionOut": {
+        "properties": {
+          "vehicles": {
+            "$ref": "#/components/schemas/VehiclesScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicles",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "VehiclesActionOut"
+      },
+      "VehiclesScreenOut": {
+        "properties": {
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          },
+          "in_history": {
+            "type": "boolean",
+            "title": "In History",
+            "description": "True to December 2025: shares and rivals follow history"
+          },
+          "scale_note": {
+            "type": "string",
+            "title": "Scale Note"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "battery": {
+            "$ref": "#/components/schemas/BatteryOut"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalCarOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "cars": {
+            "items": {
+              "$ref": "#/components/schemas/MyCarOut"
+            },
+            "type": "array",
+            "title": "Cars"
+          },
+          "vehicle_plants": {
+            "items": {
+              "$ref": "#/components/schemas/VehiclePlantOut"
+            },
+            "type": "array",
+            "title": "Vehicle Plants"
+          },
+          "cell_plants": {
+            "items": {
+              "$ref": "#/components/schemas/CellPlantOut"
+            },
+            "type": "array",
+            "title": "Cell Plants"
+          },
+          "charging": {
+            "items": {
+              "$ref": "#/components/schemas/ChargingOut"
+            },
+            "type": "array",
+            "title": "Charging"
+          },
+          "incidents": {
+            "items": {
+              "$ref": "#/components/schemas/IncidentOut"
+            },
+            "type": "array",
+            "title": "Incidents"
+          },
+          "options": {
+            "$ref": "#/components/schemas/VehicleOptionsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "turn",
+          "in_history",
+          "scale_note",
+          "regions",
+          "battery",
+          "rivals",
+          "cars",
+          "vehicle_plants",
+          "cell_plants",
+          "charging",
+          "incidents",
+          "options"
+        ],
+        "title": "VehiclesScreenOut"
+      },
       "VentureIn": {
         "properties": {
           "company_id": {
@@ -63292,7 +64910,7 @@
           },
           "tariffs": {
             "items": {
-              "$ref": "#/components/schemas/TariffOut"
+              "$ref": "#/components/schemas/tst__api__schemas__geopolitics__TariffOut"
             },
             "type": "array",
             "title": "Tariffs",
@@ -63324,6 +64942,24 @@
           "tool_licensable"
         ],
         "title": "WorldOut"
+      },
+      "YearValueOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "value"
+        ],
+        "title": "YearValueOut"
       },
       "tst__api__schemas__automation__UnitChoiceOut": {
         "properties": {
@@ -63574,6 +65210,53 @@
           "reason"
         ],
         "title": "ListingOut"
+      },
+      "tst__api__schemas__geopolitics__TariffOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "goods": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Goods"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate",
+            "description": "This month's rate on the goods' cost"
+          },
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "title",
+          "origin",
+          "market",
+          "goods",
+          "rate",
+          "tag"
+        ],
+        "title": "TariffOut"
       },
       "tst__api__schemas__hardware__OptionOut": {
         "properties": {
@@ -63934,6 +65617,75 @@
           "researchers"
         ],
         "title": "UnitChoiceOut"
+      },
+      "tst__api__schemas__saves__CostLineOut": {
+        "properties": {
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "label",
+          "amount_cents"
+        ],
+        "title": "CostLineOut"
+      },
+      "tst__api__schemas__vehicles__CostLineOut": {
+        "properties": {
+          "line": {
+            "type": "string",
+            "title": "Line"
+          },
+          "cents": {
+            "type": "number",
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "cents"
+        ],
+        "title": "CostLineOut"
+      },
+      "tst__api__schemas__vehicles__TariffOut": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "origin",
+          "market",
+          "rate"
+        ],
+        "title": "TariffOut"
       },
       "tst__api__schemas__world__NamedOut": {
         "properties": {

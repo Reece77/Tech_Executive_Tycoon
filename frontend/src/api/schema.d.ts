@@ -5663,6 +5663,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Vehicles
+         * @description EV markets by region (share, sales, charging, subsidies, tariffs, approvals), battery
+         *     prices, rivals' line-ups and shares, and the player's cars, plants and networks.
+         */
+        get: operations["getVehicles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/vehicles/cars/{car_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Car
+         * @description A car line's page; `car_id` is the line's product id (a car line only, as the power
+         *     plants' `facility_id`).
+         */
+        get: operations["getVehicleCar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/vehicles/cars/{car_id}/spec": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Spec */
+        post: operations["setVehicleSpec"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/vehicles/cell-plants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Cell Plant */
+        post: operations["buildCellPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/vehicles/charging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Charging */
+        post: operations["buildChargingNetwork"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/vehicles/charging/{facility_id}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Access */
+        post: operations["setChargingAccess"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/regulation": {
         parameters: {
             query?: never;
@@ -6804,6 +6914,28 @@ export interface components {
              */
             reputation: string;
         };
+        /** BatteryOut */
+        BatteryOut: {
+            /**
+             * Cell Cents
+             * @description This month's market price of a kWh of cells
+             */
+            cell_cents: number;
+            /**
+             * Pack Cents
+             * @description A kWh of pack (cells and integration)
+             */
+            pack_cents: number;
+            /**
+             * History
+             * @description Cell price a kWh by year, to now
+             */
+            history: components["schemas"]["YearValueOut"][];
+            /** Chemistries */
+            chemistries: components["schemas"]["ChemistryOut"][];
+            /** Cell Makers */
+            cell_makers: components["schemas"]["CellMakerOut"][];
+        };
         /** BidAnswerIn */
         BidAnswerIn: {
             /** Accept */
@@ -6983,6 +7115,34 @@ export interface components {
             items: components["schemas"]["BreakdownItemOut"][];
             /** Note */
             note?: string | null;
+        };
+        /** BuildCellPlantIn */
+        BuildCellPlantIn: {
+            /** Region */
+            region: string;
+            /**
+             * Mwh Month
+             * @description The plant's size, MWh of cells a month
+             */
+            mwh_month: number;
+            /** Chemistry */
+            chemistry: string;
+            /** City */
+            city?: string | null;
+        };
+        /** BuildChargingIn */
+        BuildChargingIn: {
+            /** Region */
+            region: string;
+            /** Chargers */
+            chargers: number;
+            /**
+             * Exclusive
+             * @default false
+             */
+            exclusive?: boolean;
+            /** City */
+            city?: string | null;
         };
         /** BuildFabIn */
         BuildFabIn: {
@@ -7312,6 +7472,19 @@ export interface components {
             /** Secondary Energy */
             secondary_energy: number;
         };
+        /** CarMonthOut */
+        CarMonthOut: {
+            /** Turn */
+            turn: number;
+            /** Units */
+            units: number;
+            /** Software Cents */
+            software_cents: number;
+            /** Licence Cents */
+            licence_cents: number;
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+        };
         /** CareIn */
         CareIn: {
             /**
@@ -7522,6 +7695,62 @@ export interface components {
              */
             first_mover: boolean;
         };
+        /** CellMakerOut */
+        CellMakerOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Country */
+            country: string;
+            /** Price Mult */
+            price_mult: number;
+            /** Share */
+            share: number;
+        };
+        /** CellPlantOut */
+        CellPlantOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Chemistry */
+            chemistry: string;
+            /** Capacity Mwh */
+            capacity_mwh: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
+            /**
+             * Estimate Cents
+             * @description The quote at the order
+             */
+            estimate_cents: number;
+            /** Capex Paid Cents */
+            capex_paid_cents: number;
+            /** Yield Rate */
+            yield_rate: number;
+            /** Made Kwh */
+            made_kwh: number;
+            /** To Group Kwh */
+            to_group_kwh: number;
+            /** To Spot Kwh */
+            to_spot_kwh: number;
+            /**
+             * Unit Cents
+             * @description Its cost a kWh last month
+             */
+            unit_cents: number;
+            /** Market Cents */
+            market_cents: number;
+            /** Staff */
+            staff: number;
+            /** Staff Needed */
+            staff_needed: number;
+        };
         /** CeoAuthorityIn */
         CeoAuthorityIn: {
             /** Scopes */
@@ -7723,6 +7952,34 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** ChargingAccessIn */
+        ChargingAccessIn: {
+            /** Exclusive */
+            exclusive: boolean;
+        };
+        /** ChargingOut */
+        ChargingOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Chargers */
+            chargers: number;
+            /** Status */
+            status: string;
+            /** Exclusive */
+            exclusive: boolean;
+            /** Kwh Sold */
+            kwh_sold: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Energy Cents */
+            energy_cents: number;
+            /** Use */
+            use: number;
+        };
         /** ChartsOut */
         ChartsOut: {
             /**
@@ -7829,6 +8086,19 @@ export interface components {
             /** @description An executive's pitch record, once they have pitched (M13b) */
             pitch_record?: components["schemas"]["PitchRecordOut"] | null;
             learned: components["schemas"]["LearnedOut"];
+        };
+        /** ChemistryOut */
+        ChemistryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Wh Per Kg */
+            wh_per_kg: number;
+            /** Cost Mult */
+            cost_mult: number;
+            /** Range Mult */
+            range_mult: number;
         };
         /** ChipOut */
         ChipOut: {
@@ -8590,15 +8860,6 @@ export interface components {
         CooQuestionIn: {
             /** Question */
             question: string;
-        };
-        /** CostLineOut */
-        CostLineOut: {
-            /** Account */
-            account: string;
-            /** Label */
-            label: string;
-            /** Amount Cents */
-            amount_cents: number;
         };
         /** CounterIn */
         CounterIn: {
@@ -9381,6 +9642,19 @@ export interface components {
             tier: string;
             /** Cost Cents */
             cost_cents: number;
+        };
+        /** EligibilityOut */
+        EligibilityOut: {
+            /** Region */
+            region: string;
+            /** Scheme */
+            scheme: string;
+            /** Amount Cents */
+            amount_cents: number;
+            /** Eligible */
+            eligible: boolean;
+            /** Failed */
+            failed: string[];
         };
         /** EmploymentOut */
         EmploymentOut: {
@@ -12400,6 +12674,23 @@ export interface components {
             /** Items */
             items: components["schemas"]["InboxItemOut"][];
         };
+        /** IncidentOut */
+        IncidentOut: {
+            /** Turn */
+            turn: number;
+            /** When */
+            when: string;
+            /** Product */
+            product: string;
+            /** Region */
+            region: string;
+            /** Level */
+            level: string;
+            /** Cars Recalled */
+            cars_recalled: number;
+            /** Cost Cents */
+            cost_cents: number;
+        };
         /** InfluenceOut */
         InfluenceOut: {
             /** Region */
@@ -12940,6 +13231,30 @@ export interface components {
              * @default 0
              */
             net_worth_cents?: number;
+        };
+        /** LevelOptionOut */
+        LevelOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Lead */
+            lead: number;
+            /** Ai Quality */
+            ai_quality: number;
+            /** Features */
+            features: number;
+            /** Needs Approval */
+            needs_approval: boolean;
+        };
+        /** LevelRegionOut */
+        LevelRegionOut: {
+            /** Region */
+            region: string;
+            /** Level */
+            level: string;
+            /** Approved */
+            approved: string[];
         };
         /** LicenceOut */
         LicenceOut: {
@@ -14209,6 +14524,56 @@ export interface components {
              */
             parent_id: number | null;
         };
+        /** MyCarOut */
+        MyCarOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            spec: components["schemas"]["VehicleSpecOut"];
+            /** Range Km */
+            range_km: number;
+            /**
+             * Level
+             * @description The highest level its cars run in a region now
+             */
+            level: string;
+            /** Capable Level */
+            capable_level: string;
+            /**
+             * Customers
+             * @description Cars on the road
+             */
+            customers: number;
+            /** Units Last Month */
+            units_last_month: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Unit Cost */
+            unit_cost: components["schemas"]["tst__api__schemas__vehicles__CostLineOut"][];
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+            /** Software Cents Last Month */
+            software_cents_last_month: number;
+            /**
+             * Software Share
+             * @description Software's share of the line's revenue to date
+             */
+            software_share: number;
+            /**
+             * Feature Points
+             * @description Range, charging, autonomy and platform points
+             */
+            feature_points: number;
+            /** Levels */
+            levels: components["schemas"]["LevelRegionOut"][];
+            /** Eligibility */
+            eligibility: components["schemas"]["EligibilityOut"][];
+            /** History */
+            history: components["schemas"]["CarMonthOut"][];
+        };
         /** NetWorthOut */
         NetWorthOut: {
             /** Total Cents */
@@ -15024,7 +15389,7 @@ export interface components {
              * Costs Last Month
              * @description Expenses posted last month
              */
-            costs_last_month: components["schemas"]["CostLineOut"][];
+            costs_last_month: components["schemas"]["tst__api__schemas__saves__CostLineOut"][];
             /**
              * Latest Inbox
              * @description Five newest inbox items
@@ -15035,12 +15400,12 @@ export interface components {
              * Month Costs
              * @description This month's projected month-end costs at the current team and searches
              */
-            month_costs: components["schemas"]["CostLineOut"][];
+            month_costs: components["schemas"]["tst__api__schemas__saves__CostLineOut"][];
             /**
              * Month Paid
              * @description Expenses already posted this month
              */
-            month_paid: components["schemas"]["CostLineOut"][];
+            month_paid: components["schemas"]["tst__api__schemas__saves__CostLineOut"][];
             /**
              * Month Total Cents
              * @description Projected plus already posted
@@ -18366,6 +18731,23 @@ export interface components {
             /** Expires Label */
             expires_label: string;
         };
+        /** RivalCarOut */
+        RivalCarOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Product */
+            product: string;
+            /** Quality */
+            quality: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Launched */
+            launched: boolean;
+            /** Shares */
+            shares: components["schemas"]["RivalShareOut"][];
+        };
         /** RivalLeadOut */
         RivalLeadOut: {
             /** Company Id */
@@ -18631,6 +19013,16 @@ export interface components {
             running: string | null;
             /** Running Until Label */
             running_until_label: string | null;
+        };
+        /** RivalShareOut */
+        RivalShareOut: {
+            /** Region */
+            region: string;
+            /**
+             * Share
+             * @description Its share of the region's EV buyers now
+             */
+            share: number;
         };
         /** RivalsOut */
         RivalsOut: {
@@ -19397,6 +19789,23 @@ export interface components {
              */
             policy: string | null;
         };
+        /** SetVehicleSpecIn */
+        SetVehicleSpecIn: {
+            /** Pack Kwh */
+            pack_kwh: number;
+            /** Chemistry */
+            chemistry: string;
+            /** Charge Kw */
+            charge_kw: number;
+            /** Autonomy */
+            autonomy: string;
+            /** Platform */
+            platform: string;
+            /** Cells */
+            cells: string;
+            /** Os Product Id */
+            os_product_id?: number | null;
+        };
         /** SharePointOut */
         SharePointOut: {
             /** Turn */
@@ -20019,6 +20428,25 @@ export interface components {
             /** Updates */
             updates: components["schemas"]["SubsidiaryUpdateOut"][];
         };
+        /** SubsidyOut */
+        SubsidyOut: {
+            /** Title */
+            title: string;
+            /** Country */
+            country: string;
+            /**
+             * Amount Cents
+             * @description A buyer's subsidy for an eligible car, 2010 cents
+             */
+            amount_cents: number;
+            /** Price Cap Cents */
+            price_cap_cents: number | null;
+            /**
+             * Rules
+             * @description Sourcing and assembly rules running now
+             */
+            rules: string[];
+        };
         /** SuccessionIn */
         SuccessionIn: {
             /** Heir Id */
@@ -20364,26 +20792,6 @@ export interface components {
             feature_low: number | null;
             /** Feature High */
             feature_high?: number | null;
-        };
-        /** TariffOut */
-        TariffOut: {
-            /** Key */
-            key: string;
-            /** Title */
-            title: string;
-            /** Origin */
-            origin: string;
-            /** Market */
-            market: string;
-            /** Goods */
-            goods: string[];
-            /**
-             * Rate
-             * @description This month's rate on the goods' cost
-             */
-            rate: number;
-            /** Tag */
-            tag: string;
         };
         /** TeamMoodOut */
         TeamMoodOut: {
@@ -21093,6 +21501,148 @@ export interface components {
              */
             voided_by: string[];
         };
+        /** VehicleOptionsOut */
+        VehicleOptionsOut: {
+            /** Chemistries */
+            chemistries: string[];
+            /** Platforms */
+            platforms: string[];
+            /** Levels */
+            levels: components["schemas"]["LevelOptionOut"][];
+            /** Cell Sources */
+            cell_sources: string[];
+            /** Cell Plant Sizes */
+            cell_plant_sizes: number[];
+            /** Charging Sizes */
+            charging_sizes: number[];
+            /** Vehicle Plant Sizes */
+            vehicle_plant_sizes: number[];
+            /** Pack Kwh */
+            pack_kwh: number[];
+            /** Charge Kw */
+            charge_kw: number[];
+            /** Cell Plant Stage */
+            cell_plant_stage: number;
+            /**
+             * Autonomy Lead
+             * @description Your lead in the autonomy domain
+             */
+            autonomy_lead: number;
+        };
+        /** VehiclePlantOut */
+        VehiclePlantOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /**
+             * Cars Month
+             * @description The plant's size, cars a month
+             */
+            cars_month: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
+            /** Yield Rate */
+            yield_rate: number;
+            /** Run Units */
+            run_units: number;
+        };
+        /** VehicleRegionOut */
+        VehicleRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Ev Share
+             * @description This month's electric share of new car sales
+             */
+            ev_share: number;
+            /** Ev Share History */
+            ev_share_history: components["schemas"]["YearValueOut"][];
+            /**
+             * Ev Sales Year
+             * @description EV sales a year at the game's scale, cars
+             */
+            ev_sales_year: number;
+            /**
+             * Car Sales Year
+             * @description New cars a year at the game's scale
+             */
+            car_sales_year: number;
+            /**
+             * Public Chargers
+             * @description Public chargers, real world
+             */
+            public_chargers: number;
+            /**
+             * Coverage
+             * @description Charging coverage, 0-1
+             */
+            coverage: number;
+            /** Subsidies */
+            subsidies: components["schemas"]["SubsidyOut"][];
+            /** Tariffs */
+            tariffs: components["schemas"]["tst__api__schemas__vehicles__TariffOut"][];
+            /** Approved Levels */
+            approved_levels: string[];
+        };
+        /** VehicleSpecOut */
+        VehicleSpecOut: {
+            /** Pack Kwh */
+            pack_kwh: number;
+            /** Chemistry */
+            chemistry: string;
+            /** Charge Kw */
+            charge_kw: number;
+            /** Autonomy */
+            autonomy: string;
+            /** Platform */
+            platform: string;
+            /** Cells */
+            cells: string;
+            /** Os Product Id */
+            os_product_id: number | null;
+        };
+        /** VehiclesActionOut */
+        VehiclesActionOut: {
+            vehicles: components["schemas"]["VehiclesScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** VehiclesScreenOut */
+        VehiclesScreenOut: {
+            /** Turn */
+            turn: number;
+            /**
+             * In History
+             * @description True to December 2025: shares and rivals follow history
+             */
+            in_history: boolean;
+            /** Scale Note */
+            scale_note: string;
+            /** Regions */
+            regions: components["schemas"]["VehicleRegionOut"][];
+            battery: components["schemas"]["BatteryOut"];
+            /** Rivals */
+            rivals: components["schemas"]["RivalCarOut"][];
+            /** Cars */
+            cars: components["schemas"]["MyCarOut"][];
+            /** Vehicle Plants */
+            vehicle_plants: components["schemas"]["VehiclePlantOut"][];
+            /** Cell Plants */
+            cell_plants: components["schemas"]["CellPlantOut"][];
+            /** Charging */
+            charging: components["schemas"]["ChargingOut"][];
+            /** Incidents */
+            incidents: components["schemas"]["IncidentOut"][];
+            options: components["schemas"]["VehicleOptionsOut"];
+        };
         /** VentureIn */
         VentureIn: {
             /** Company Id */
@@ -21361,12 +21911,19 @@ export interface components {
              * Tariffs
              * @description Tariff schedules in force this month
              */
-            tariffs: components["schemas"]["TariffOut"][];
+            tariffs: components["schemas"]["tst__api__schemas__geopolitics__TariffOut"][];
             /**
              * Tool Licensable
              * @description Countries where a tool licence for fabs can be asked
              */
             tool_licensable: string[];
+        };
+        /** YearValueOut */
+        YearValueOut: {
+            /** Year */
+            year: number;
+            /** Value */
+            value: number;
         };
         /** UnitChoiceOut */
         tst__api__schemas__automation__UnitChoiceOut: {
@@ -21469,6 +22026,26 @@ export interface components {
             since: string;
             /** Reason */
             reason: string;
+        };
+        /** TariffOut */
+        tst__api__schemas__geopolitics__TariffOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Origin */
+            origin: string;
+            /** Market */
+            market: string;
+            /** Goods */
+            goods: string[];
+            /**
+             * Rate
+             * @description This month's rate on the goods' cost
+             */
+            rate: number;
+            /** Tag */
+            tag: string;
         };
         /** OptionOut */
         tst__api__schemas__hardware__OptionOut: {
@@ -21617,6 +22194,33 @@ export interface components {
              * @description Members in builder roles who would research
              */
             researchers: number;
+        };
+        /** CostLineOut */
+        tst__api__schemas__saves__CostLineOut: {
+            /** Account */
+            account: string;
+            /** Label */
+            label: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** CostLineOut */
+        tst__api__schemas__vehicles__CostLineOut: {
+            /** Line */
+            line: string;
+            /** Cents */
+            cents: number;
+        };
+        /** TariffOut */
+        tst__api__schemas__vehicles__TariffOut: {
+            /** Title */
+            title: string;
+            /** Origin */
+            origin: string;
+            /** Market */
+            market: string;
+            /** Rate */
+            rate: number;
         };
         /** NamedOut */
         tst__api__schemas__world__NamedOut: {
@@ -39965,6 +40569,373 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PowerActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getVehicles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehiclesScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getVehicleCar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                car_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyCarOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setVehicleSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                car_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetVehicleSpecIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehiclesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildCellPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildCellPlantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehiclesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildChargingNetwork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildChargingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehiclesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setChargingAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChargingAccessIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehiclesActionOut"];
                 };
             };
             /** @description Bad Request */

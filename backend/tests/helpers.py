@@ -68,9 +68,12 @@ def rival_cash(state: GameState, loaded: LoadedData) -> dict[tuple[int, str], in
     ledger balances so rivals are not insolvent from the first month."""
     from tst.sim.ledger import CASH
     from tst.sim.rivals.setup import opening_cash_cents
+    from tst.sim.vehicles.rivals import is_car_maker
 
+    capital = loaded.balance.vehicles.rival_cash_cents  # M38: a car maker's opening capital
     return {
         (c.id, CASH): opening_cash_cents(state, c.id, loaded.game_data)
+        + (capital if is_car_maker(c, loaded.game_data) else 0)
         for c in state.companies
         if not c.is_player
     }
@@ -85,7 +88,7 @@ DIRECTOR_IDS_FROM = 900  # test fixtures put employees at ids 2.., so directors 
 FIRST_PRODUCT = 1  # a new game's first player product: since M12a (ADR-0013 amendment)
 # incumbents' products take id blocks from 900,000 by their place in incumbents.yaml
 SALES_CLOUD = 900_000  # Salesforce's Sales Cloud: the first incumbent's first product
-INCUMBENTS = 39  # incumbent companies (ids 2..40; M12b appended twelve)
+INCUMBENTS = 52  # incumbent companies (ids 2..53; M12b appended twelve, M38 thirteen)
 
 
 def move_directors(state: GameState) -> GameState:

@@ -189,6 +189,15 @@ export const GUIDES: Record<string, Guide> = {
       'A PPA fixes the price of a volume for 5-20 years; energy you do not use still pays 70%.',
     ],
   },
+  vehicles: {
+    title: 'Vehicles',
+    path: 'products/vehicles',
+    what: 'Electric cars: EV markets by region, battery prices, subsidies, tariffs and approvals, the rival car makers, and your own cars, vehicle plants, battery cell plants and charging networks.',
+    start: [
+      'A car line is a product (Electric vehicles); set its pack, chemistry, charging, autonomy, platform and cells on its page here.',
+      "Cells are the biggest cost a car's maker controls: from stage 4 a cell plant fed by your own lithium makes them at cost.",
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',

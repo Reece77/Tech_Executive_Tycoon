@@ -175,6 +175,10 @@ def new_game(
     state = initial_cap_table(state, PLAYER_COMPANY_ID, person.id, scenario, rng, balance, data)
     state, rival_cash = setup_incumbents(state, rng, balance, data)  # M5 (formulas.md 15.1)
     state = with_geology(state, rng, balance, data)  # M18 (34.1): blocks and hidden deposits
+    from tst.sim.vehicles.phase import new_game as vehicles_new_game
+
+    state, car_cash = vehicles_new_game(state, balance, data)  # M38 (49.1): history to 2025
+    rival_cash = (*rival_cash, *car_cash)
     if family is not None and family.setting != "none":  # M36 (45.1): Family none adds nothing
         state = start_family(state, family, rng, balance, data)
     entries: tuple[LedgerEntry, ...] = rival_cash

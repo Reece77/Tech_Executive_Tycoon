@@ -90,6 +90,13 @@ def long_run_usd(state: GameState, good: str, balance: Balance, data: GameData) 
     assert data.commodities is not None
     g = data.commodities.good(good)
     history = commodity.history_of(data, good)
+    if good == balance.vehicles.cell_good:  # M38 (49.2): cells' long run is the learning curve
+        from tst.sim.vehicles import cells
+
+        level = cells.learning_level(state, balance, data)
+        if level is None:
+            level = cells.history_cell_cents(balance.vehicles.start_turn - 1, data)
+        return level / CENTS  # money-exact: rate
     return history.long_run * commodity.price_multiple(good, balance) * g.usd_per_unit
 
 

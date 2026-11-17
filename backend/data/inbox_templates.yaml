@@ -795,3 +795,23 @@ templates:
   emissions_report:
     title: "Emissions report"
     body: "This year: scope 1 (your plants) {scope1} t CO2, scope 2 (bought energy) {scope2} t, {intensity} t per $1M of revenue; {clean} of your energy from your own plants and contracts. {effect}"
+  # --- M38 (formulas.md 49) ---
+  charging_opened:
+    title: "Regulator opens {network}"
+    body: "Your exclusive network holds {share} of {region}'s public chargers. The region's automotive regulator ordered it opened to every EV: from next month other makers' cars charge there too, and your cars lose the exclusive network's points."
+  autonomy_approved:
+    title: "{region} approves {level}"
+    body: "The region's automotive regulator now allows {level}. Cars whose autonomy reaches it run it there from next month."
+  autonomy_incident:
+    title: "Autonomy incident: {product} in {region}"
+    body: "A crash with {level} engaged led to a recall of {cars} cars in {region}, costing {cost_cents}. The regulator suspended {level} for your cars there for {months} months."
+  vehicle_designed:
+    title: "{product}: design set"
+    body: "{pack} kWh {chemistry} pack, {range} km of range, {charge} kW charging, aiming for {level}, on {platform}, with cells from {cells}."
+  cell_plant_ordered:
+    title: "{facility} ordered"
+    body: "You ordered a {units} {chemistry} cell plant in {region}. Capex of {capex_cents} is paid in equal parts over {months} months; it goes live in {ready}. It needs {staff} process engineers. Its yield starts low and learns."
+  charging_ordered:
+    title: "{facility} ordered"
+    body: "You ordered {units} in {region}, {mode}. Capex of {capex_cents} is paid in equal parts over {months} months; it goes live in {ready}."
+

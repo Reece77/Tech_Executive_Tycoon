@@ -25,7 +25,7 @@ test('(a) the Commodities tab shows the 2022 lithium spike on a 2023 save', asyn
   fixture('y2023', save);
   await page.goto(`/game/${save}/products/markets`);
   await page.getByTestId('category-commodities').click();
-  await expect(page.getByTestId('commodity-row')).toHaveCount(12);
+  await expect(page.getByTestId('commodity-row')).toHaveCount(16); // M17's twelve + M38's nickel, manganese, graphite and battery cells
   await page.getByTestId('commodity-lithium_carbonate').click();
   const chart = page.getByTestId('commodity-chart');
   await expect(chart).toContainText('Lithium carbonate: price by month');

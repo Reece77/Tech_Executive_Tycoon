@@ -157,6 +157,31 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "intensity": _POWER,
         "outage_until": exempt("a forced outage's last month, from the plant outage inbox item"),
     },
+    # v5 (M38): the Vehicles screen (49.7)
+    "vehicles.BatteryOut": {"cell_cents": "battery_price", "pack_cents": "battery_price"},
+    "vehicles.MyCarOut": {
+        "range_km": exempt("the design's range: pack x usable share x the year's km a kWh"),
+        "customers": _COUNT,
+        "units_last_month": _VOLUME,
+        "price_cents": _INPUT,
+        "unit_cost_cents": "car_unit_cost",
+        "software_cents_last_month": exempt("subscriptions on the cars on the road, by platform"),
+        "software_share": exempt("software over the line's revenue to date, both shown"),
+        "feature_points": exempt("range, charging, autonomy and platform points, in the glossary"),
+    },
+    "vehicles.CellPlantOut": {
+        "capacity_mwh": _CAPACITY,
+        "estimate_cents": _CAPEX,
+        "capex_paid_cents": _CAPEX,
+        "yield_rate": exempt("a cell plant's yield, learning toward its mature yield"),
+        "made_kwh": _VOLUME,
+        "to_group_kwh": _VOLUME,
+        "to_spot_kwh": _VOLUME,
+        "unit_cents": exempt("the plant's month over the kWh it made, itemised on its page"),
+        "market_cents": "battery_price",
+        "staff": _CAPACITY,
+        "staff_needed": _CAPACITY,
+    },
     # v4 (M33): the Equipment screen (47.6)
     "equipment.ToolGenerationOut": {
         "wph": _TOOL,

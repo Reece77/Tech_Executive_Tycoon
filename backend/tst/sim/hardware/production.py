@@ -52,11 +52,22 @@ def is_plant(facility: Facility, balance: Balance) -> bool:
     return facility.kind == balance.hardware.plant_kind
 
 
-def live_plants(state: GameState, company_id: int, balance: Balance) -> list[Facility]:
+def plant_kind(product: Product, balance: Balance) -> str:
+    """The plant kind a unit-sale product is made in: cars in vehicle plants (M38, 49.1), the
+    rest in assembly plants (26.2)."""
+    if product.category == balance.vehicles.category:
+        return balance.vehicles.plant.kind
+    return balance.hardware.plant_kind
+
+
+def live_plants(
+    state: GameState, company_id: int, balance: Balance, kind: str | None = None
+) -> list[Facility]:
+    kind = kind or balance.hardware.plant_kind
     return [
         f
         for f in state.company_facilities(company_id)
-        if is_plant(f, balance) and f.live_capacity(state.turn) > 0
+        if f.kind == kind and f.live_capacity(state.turn) > 0
     ]
 
 
@@ -98,7 +109,7 @@ def has_source(state: GameState, product: Product, balance: Balance, data: GameD
         )
     if assembly_contracts(state, product.id):
         return True
-    return bool(live_plants(state, product.company_id, balance))
+    return bool(live_plants(state, product.company_id, balance, plant_kind(product, balance)))
 
 
 @dataclass
@@ -120,6 +131,8 @@ class ProductionPlan:
     plant_run: dict[int, float] = field(default_factory=dict)  # plant id -> run for own products
     plant_yield: dict[int, float] = field(default_factory=dict)
     plants_of: dict[int, list[int]] = field(default_factory=dict)  # company -> plant ids
+    vplants_of: dict[int, list[int]] = field(default_factory=dict)  # M38: company -> car plants
+    vehicles: set[int] = field(default_factory=set)  # M38: car product ids (car plants, no chip)
     contract_left: dict[int, float] = field(default_factory=dict)
     contract_used: dict[int, float] = field(default_factory=dict)
     contract_delivered: dict[int, float] = field(default_factory=dict)
@@ -146,7 +159,7 @@ class ProductionPlan:
         slots = self.slots.get(product_id, 1)
         plant = sum(
             self.plant_left[f] * self.plant_yield[f] / slots
-            for f in self.plants_of.get(company, [])
+            for f in self._plants(product_id, company)
         )
         made = plant + sum(self.contract_left[c] for c in self.contracts_of.get(product_id, []))
         if product_id in self.unit_cap:  # M17: a commodity shortage (33.1)
@@ -167,7 +180,7 @@ class ProductionPlan:
         left = units
         company = self.company_of[product_id]
         slots = self.slots.get(product_id, 1)
-        for f in self.plants_of.get(company, []):
+        for f in self._plants(product_id, company):
             per_run = self.plant_yield[f] / slots  # good units per run unit
             can = self.plant_left[f] * per_run
             got = min(left, can)
@@ -193,6 +206,11 @@ class ProductionPlan:
             self.unit_cap[product_id] = max(0.0, self.unit_cap[product_id] - made)
         self._chips_for(product_id, made)
         return made
+
+    def _plants(self, product_id: int, company: int) -> list[int]:
+        if product_id in self.vehicles:  # M38 (49.1): cars are made in vehicle plants
+            return self.vplants_of.get(company, [])
+        return self.plants_of.get(company, [])
 
     def _chips_for(self, product_id: int, units: float) -> None:
         chip_type = self.chip_type.get(product_id)
@@ -253,7 +271,9 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
             continue
         plants = live_plants(state, company.id, balance)
         plan.plants_of[company.id] = [f.id for f in plants]
-        for f in plants:
+        vplants = live_plants(state, company.id, balance, balance.vehicles.plant.kind)
+        plan.vplants_of[company.id] = [f.id for f in vplants]  # M38 (49.1)
+        for f in (*plants, *vplants):
             plan.plant_left[f.id] = runnable(state, f, balance)
             plan.plant_yield[f.id] = plant_yield_of(f, balance)
         for p in products:
@@ -271,7 +291,10 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
                 continue
             bom = balance.hardware.bom[p.category]
             plan.slots[p.id] = bom.plant_slots
-            plan.chip_type[p.id] = bom.chip_type
+            if p.category == balance.vehicles.category:  # M38: chips are in the car's BOM
+                plan.vehicles.add(p.id)
+            else:
+                plan.chip_type[p.id] = bom.chip_type
             ids = []
             for c in assembly_contracts(state, p.id):
                 delivered = contract_delivered(state, c, balance, data)
@@ -291,7 +314,12 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
 
 
 def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: GameData) -> float:
-    """The BOM at this month's index with its commodities at spot (26.2, 33.2)."""
+    """The BOM at this month's index with its commodities at spot (26.2, 33.2). M38 (49.1): a
+    car's is its pack, drive, chips and body (tst.sim.vehicles.spec)."""
+    if product.category == balance.vehicles.category:
+        from tst.sim.vehicles import spec as vehicle_spec
+
+        return vehicle_spec.unit_cost(state, product, balance, data).total
     bom = balance.hardware.bom[product.category]
     cents = hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
     # M22 (39.3): the premium on its commodities bought from a restricting actor
@@ -362,15 +390,19 @@ def settle(
                 continue
             units = use.plant + use.contract
             bom = round(exact(units) * exact(unit_bom_cents(state, product, balance, data)))
-            chip_type = plan.chip_type[pid]
-            own_id = plan.own_chip_of.get((product.company_id, chip_type))
+            chip_type = plan.chip_type.get(pid)
+            own_id = plan.own_chip_of.get((product.company_id, chip_type)) if chip_type else None
             own_unit = 0.0
             if own_id is not None:
                 own_unit = posted.get(own_id, 0.0)
-            bought = units - use.own_chips
-            chip = round(
-                exact(use.own_chips) * exact(own_unit)
-                + exact(bought) * exact(chips.bought_price_cents(data, balance, chip_type))
+            bought = units - use.own_chips if chip_type else 0.0
+            chip = (
+                round(
+                    exact(use.own_chips) * exact(own_unit)
+                    + exact(bought) * exact(chips.bought_price_cents(data, balance, chip_type))
+                )
+                if chip_type
+                else 0
             )
             fees = sum(
                 exact(plan.contract_used.get(c, 0.0)) * exact(contract.price_cents)
@@ -378,12 +410,12 @@ def settle(
                 if (contract := state.production_contract(c)) is not None
             )
             run = (
-                use.plant / _mean_yield(plan, product.company_id) * plan.slots[pid]
+                use.plant / _mean_yield(plan, product.company_id, pid) * plan.slots[pid]
                 if use.plant
                 else 0
             )
             variable = (
-                exact(run) * balance.facility.kinds[balance.hardware.plant_kind].variable_cents
+                exact(run) * balance.facility.kinds[plant_kind(product, balance)].variable_cents
             )
             assembly = round(fees + variable)
             rows.append(
@@ -480,9 +512,14 @@ def _cap_share(
     return plan.fab_chips.get(pid, 0.0) / full if full > 0 else 0.0
 
 
-def _mean_yield(plan: ProductionPlan, company: int) -> float:
-    """The run-weighted yield of the company's plants this month (cost per good unit)."""
-    ids = plan.plants_of.get(company, [])
+def _mean_yield(plan: ProductionPlan, company: int, product_id: int | None = None) -> float:
+    """The run-weighted yield of the company's plants this month (cost per good unit): its car
+    plants for a car (M38)."""
+    ids = (
+        plan._plants(product_id, company)
+        if product_id is not None
+        else plan.plants_of.get(company, [])
+    )
     run = sum(plan.plant_run.get(f, 0.0) for f in ids)
     if run <= 0:
         return 1.0
@@ -557,7 +594,8 @@ def _plants_month(
     units run for contract-manufacturing customers (5000)."""
     entries: list[LedgerEntry] = []
     for company in player_companies(state):
-        for f in live_plants(state, company.id, balance):
+        cars = live_plants(state, company.id, balance, balance.vehicles.plant.kind)  # M38
+        for f in (*live_plants(state, company.id, balance), *cars):
             own = plan.plant_run.get(f.id, 0.0) if plan else 0.0
             sold = cm_sold.get(f.id, 0.0)
             cost = round(sold * plant_unit_cents(state, f, balance))
