@@ -87,7 +87,7 @@ Load `pt-robotics`. Automate your vehicle plant, then launch robotaxis in Phoeni
 | 2 Automation pays where labour is dear | a 2,000-car plant's conversion cost a unit at 60% automation, January 2030: **28.7%** lower in North America, **3.4% higher** in South and Southeast Asia (every seed: the formula reads no draw) | >= 15% / <= 5% | met |
 | 3 Humanoids follow their era | humanoid share of robotics revenue before the era: **0.00%** on every seed (the era arrives April 2031 to November 2035); within 8 years: median **87.7%** (84.4-89.4%) | < 1% / >= 20% | met |
 | 4 Robotaxis are a utilisation business | **176 of 176** active months above 6 rides a car a day earn a positive contribution; a suspension cuts the zone's revenue **85-100%** | positive / >= 30% | met |
-| 5 Turn time | **292 ms** a turn (median, 2026-2035, these worlds, four at once on 4 cores); the guards: `make check-timing` and weekly-v6 (see the merge) | M30's guards | see the merge |
+| 5 Turn time | **292 ms** a turn (median, 2026-2035, these worlds, four at once on 4 cores). Guards on the branch (before M41 and M37): `make check-timing` passes (7 tests); weekly-v6 on CI (run 44036867526): plain V6 save **412 ms** median (451 at most), integrator save **449 ms** (501 at most); re-run after the merge below | 500 ms median, 1,000 ms at most | met |
 
 ## Follow-ups
 
