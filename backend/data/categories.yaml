@@ -104,7 +104,7 @@ segments:
 categories:
   - key: b2b_saas
     label: B2B SaaS
-    growth: 0.1911 # M43a (54.2) calibration from 0.20: 2025 $420B real-dollar equivalent (Gartner SaaS $299B, 1.4x)
+    growth: 0.20
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -117,7 +117,7 @@ categories:
 
   - key: dev_tools
     label: Developer tools
-    growth: 0.1096 # M43a (54.2) from 0.25, matching eras.yaml's base_growth to January 2020 (21.8 target 1); demand reads eras.yaml
+    growth: 0.25
     features_at_start: 50
     features_per_month: 4.0
     scope: 5
@@ -130,7 +130,7 @@ categories:
 
   - key: consumer_apps
     label: Consumer apps
-    growth: 0.2608 # M43a (54.2) from 0.30, matching eras.yaml's base_growth to January 2020 (21.8 target 1); demand reads eras.yaml
+    growth: 0.30
     features_at_start: 40
     features_per_month: 5.0
     scope: 4
@@ -142,7 +142,7 @@ categories:
 
   - key: cybersecurity
     label: Cybersecurity
-    growth: 0.1467 # M43a (54.2) calibration from 0.15: 2025 $300B real-dollar equivalent (Gartner security $213B, 1.4x)
+    growth: 0.15
     features_at_start: 70
     features_per_month: 3.5
     scope: 7
@@ -156,7 +156,7 @@ categories:
   # --- M8 (formulas.md 18.6), open from January 2010 ---
   - key: fintech
     label: Fintech
-    growth: 0.2142 # M43a (54.2) from 0.25, matching eras.yaml's base_growth to January 2020 (21.8 target 1); demand reads eras.yaml
+    growth: 0.25
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -182,15 +182,11 @@ categories:
     # the brief's 60% (which gives about 465x).
     growth_by_year: { 2010: 0.30, 2016: 0.50, 2020: 0.40, 2022: 1.50, 2023: 2.00, 2024: 1.20, 2025: 0.60, 2030: 0.25 }
     dev_weights: { ml_research: 0.40, software_engineering: 0.20, data: 0.20, infrastructure: 0.20 }
-    # M43a (54.2): D0 x 0.016 (from 200,000 / 20,000 / 2,000 / 300) so 2025's market is about $300B
-    # real-dollar equivalent (pinned: AI models and applications, Gartner AI application software $172B +
-    # GenAI models $14B = $186B, 1.6x) while growth_by_year and eras.yaml keep 18.9 target 4's 100-400x
-    # (M11's 359x, 21.8 target 1): a ratio, so the 2010 start is what moves. 2010 about $0.1B real.
     markets:
-      - { segment: consumer, addressable: 3200, reference_price_cents: 50, hosting_cents: 20 }
-      - { segment: smb, addressable: 320, reference_price_cents: 10000, hosting_cents: 4000 }
-      - { segment: mid_market, addressable: 32, reference_price_cents: 200000, hosting_cents: 60000 }
-      - { segment: enterprise, addressable: 4.8, reference_price_cents: 2500000, hosting_cents: 600000 }
+      - { segment: consumer, addressable: 200000, reference_price_cents: 50, hosting_cents: 20 }
+      - { segment: smb, addressable: 20000, reference_price_cents: 10000, hosting_cents: 4000 }
+      - { segment: mid_market, addressable: 2000, reference_price_cents: 200000, hosting_cents: 60000 }
+      - { segment: enterprise, addressable: 300, reference_price_cents: 2500000, hosting_cents: 600000 }
 
   # --- M12a (formulas.md 22.3): Cloud and GPU hosting, open from January 2010 ---
   # Sells spare data-centre capacity (compute.capacity_category): a company sells here only
@@ -201,7 +197,7 @@ categories:
   # abstract: hosting_cents is their cost of a customer's CU (55% of p_ref).
   - key: cloud_hosting
     label: Cloud and GPU hosting
-    growth: 0.1993 # M43a (54.2) calibration from 0.30: 2025 $750B real-dollar equivalent (Synergy IaaS + PaaS $419B, 1.8x)
+    growth: 0.30
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -240,7 +236,7 @@ categories:
 
   - key: servers
     label: Servers
-    growth: 0.1822 # M43a (54.2) calibration from 0.10: 2025 $300B real-dollar equivalent (IDC $444B, 0.68x)
+    growth: 0.15 # M43a (54.2) calibration from 0.10 (with D0 x5): 2025 served about 0.6x IDC's $444B (real-dollar equivalent; 2010 about $48B)
     features_at_start: 50
     features_per_month: 8.0
     scope: 6
@@ -249,8 +245,9 @@ categories:
     revenue_model: units
     dev_weights: { hardware_design: 0.40, infrastructure: 0.25, manufacturing: 0.20, chip_design: 0.15 }
     markets:
-      - { segment: enterprise, addressable: 30000, reference_price_cents: 500000, hosting_cents: 225000, units_per_customer: 20, replacement_months: 48 }
-      - { segment: hyperscalers, addressable: 30, reference_price_cents: 400000, hosting_cents: 180000, units_per_customer: 5000, replacement_months: 48 }
+      # M43a (54.2): D0 x5 (from 30,000 / 30): the game's 2010 servers sold about a seventh of IDC's $48B
+      - { segment: enterprise, addressable: 150000, reference_price_cents: 500000, hosting_cents: 225000, units_per_customer: 20, replacement_months: 48 }
+      - { segment: hyperscalers, addressable: 150, reference_price_cents: 400000, hosting_cents: 180000, units_per_customer: 5000, replacement_months: 48 }
 
   # Chips (26.3): one category per chip type (family chips, chip_type the product's type),
   # so each type has its own demand. Device OEM demand grows with the devices and servers
@@ -303,11 +300,8 @@ categories:
     growth_follows: { device_oems: [servers], hyperscalers: [ai_models] }
     dev_weights: { chip_design: 0.60, hardware_design: 0.20, software_engineering: 0.10, manufacturing: 0.10 }
     markets:
-      # M43a (54.2): D0 x 0.0532 (from 100 / 30): its growth follows servers and AI models, so its 2010 start
-      # is what calibrates it: 2010 about $0.14B real-dollar equivalent (NVIDIA Tesla about $0.1B), 2020 about
-      # $10B (NVIDIA data centre FY2021 $6.7B), 2025 about $300B (data-centre accelerators $170-290B, 1.3x)
-      - { segment: device_oems, addressable: 5.32, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 500, replacement_months: 24 }
-      - { segment: hyperscalers, addressable: 1.596, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 2000, replacement_months: 24 }
+      - { segment: device_oems, addressable: 100, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 500, replacement_months: 24 }
+      - { segment: hyperscalers, addressable: 30, reference_price_cents: 150000, hosting_cents: 60000, units_per_customer: 2000, replacement_months: 24 }
 
   # Contract manufacturing (26.2): sells a company's spare assembly-plant capacity, like
   # Cloud hosting sells spare compute. A customer buys units_per_customer units a month at
@@ -430,8 +424,8 @@ categories:
   - key: samd
     label: "Medical: software and AI"
     family: medical
-    growth: 0.1639
-    growth_by_year: { 2010: 0.1639, 2016: 0.2868, 2025: 0.1639 } # M43a (54.2) calibration from 0.20 / 0.35 / 0.20 (x0.82): 2025 $3B real-dollar equivalent with saturation (AI in imaging about $1-1.5B, 2x); M41: 2010 $0.05B to 2024 $1.5B real; A after
+    growth: 0.20
+    growth_by_year: { 2010: 0.20, 2016: 0.35, 2025: 0.20 } # 2010 $0.05B to 2024 $1.5B real (x32.9); A after
     features_at_start: 30
     features_per_month: 6.0
     scope: 8

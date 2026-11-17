@@ -4,8 +4,10 @@
 to December 2069 and records, after every December, each category's addressable market and
 ceiling by region (tst.sim.markets.saturation), the regions' GDP at the game's economy, and the
 largest ledger balance. `readings` judges 54.4's targets 1-4 over several seeds; target 2 reads
-2025 against PUBLISHED (docs/v5-research/market-sizes-dossier.md), in real dollars (game
-dollars / economy_scale.money)."""
+2025's SERVED revenue (what companies book: customers x price x units a month, plus medical
+consumables, x 12; Reece, 2026-11-17) against PUBLISHED (docs/v5-research/market-sizes-
+dossier.md), in real dollars (game dollars / economy_scale.money). Target 1's technology share
+of world GDP is judged on served revenue too, with the addressable sum printed beside it."""
 
 from __future__ import annotations
 
@@ -49,17 +51,11 @@ PUBLISHED: Final[dict[str, tuple[float, str]]] = {
     "chips_ai_accelerator": (230.0, "data-centre accelerators $170-290B (NVIDIA FY26, Omdia)"),
     "contract_manufacturing": (648.0, "EMS and ODM 2024 (New Venture Research)"),
     "vehicles": (600.0, "EVs 20M+ units 2025 (IEA) x about $30k (derived)"),
-    "wearables_diagnostics": (
-        15.0,
-        "CGM about $11B + other wearables diagnostics (M41's $14B 2024)",
-    ),
-    "imaging": (44.0, "medical imaging equipment 2024 $42-46B"),
-    "surgical_robotics": (
-        11.5,
-        "surgical robotics with instruments and service, about $10-13B 2024",
-    ),
-    "implantables": (110.0, "implantable devices 2024 $97-132B"),
-    "samd": (1.5, "AI in medical imaging about $1-1.5B 2024 (derived)"),
+    "wearables_diagnostics": (14.0, "M41: CGM $11-13B + home diagnostics, 2024"),
+    "imaging": (44.0, "M41: medical imaging equipment $42-46B, 2024"),
+    "surgical_robotics": (10.0, "M41: GlobalData about $10B, 2024"),
+    "implantables": (30.5, "M41: cardiac rhythm $23.5B + neuromodulation $7B, 2024"),
+    "samd": (1.5, "M41: AI imaging and diagnostic software about $1-2B, 2024"),
 }
 # categories reported, not judged, by target 2 (decisions in the M43a brief)
 BY_DESIGN: Final[dict[str, str]] = {
@@ -73,6 +69,7 @@ class MarketResult:
     # year -> category -> region -> (A, C), cents a year (C 0 for a category without one)
     years: dict[int, dict[str, dict[str, tuple[float, float]]]] = field(default_factory=dict)
     gdp: dict[int, float] = field(default_factory=dict)  # year -> world GDP, game cents a year
+    served: dict[int, dict[str, float]] = field(default_factory=dict)  # year -> category -> cents
     max_balance: int = 0
     max_key: tuple[str, str] = ("", "")
 
@@ -95,6 +92,24 @@ def snapshot(
     return out, gdp * sat.TRILLION_CENTS * balance.economy_scale.money
 
 
+def served(state: GameState, balance: Balance, data: GameData) -> dict[str, float]:
+    """Each category's booked revenue a year at this month's rate, cents (module docstring)."""
+    from tst.sim.products.formulas import sale_rate
+    from tst.sim.score import market_revenue
+
+    out: dict[str, float] = {}
+    for (cat, seg, _), by in market_revenue(state, data, balance).items():
+        c = data.category(cat)
+        m = c.market(seg)
+        revenue = sum(by.values())
+        month = revenue * sale_rate(c, seg)
+        if c.medical:  # installed units x consumables, at the market's own price mix
+            units = revenue / m.reference_price_cents * m.units_per_customer
+            month += units * sat._consumables(data, cat)
+        out[cat] = out.get(cat, 0.0) + 12 * month
+    return out
+
+
 def market_run(seed: int, turns: int = END) -> MarketResult:
     data = m30.loaded()
     g, b = data.game_data, data.balance
@@ -108,6 +123,7 @@ def market_run(seed: int, turns: int = END) -> MarketResult:
         year, month = turn_to_ym(game.state.turn - 1)
         if month == 12:
             result.years[year], result.gdp[year] = snapshot(game.state, b, g)
+            result.served[year] = served(game.state, b, g)
     top = max(game.balances, key=lambda k: abs(game.balances[k]), default=None)
     if top is not None:
         result.max_balance = abs(game.balances[top])
@@ -127,7 +143,8 @@ def total(result: MarketResult, year: int, category: str) -> float:
 @dataclass(frozen=True, slots=True)
 class Readings:
     over_ceiling: list[str]  # target 1: "seed:year:category/region" past C
-    tech_share_max: float  # target 1: the largest tech sum / world GDP in any year
+    tech_share_max: float  # target 1: the largest served tech sum / world GDP in any year
+    tech_addressable_max: float  # the same for addressable markets (printed)
     real_2025: dict[str, float]  # target 2: category -> median real 2025 size, $B
     out_of_band: list[str]  # target 2: categories outside BAND, not BY_DESIGN
     growth_2060s: dict[str, float]  # target 3: category -> lowest seed's average growth
@@ -148,7 +165,7 @@ def readings(results: Sequence[MarketResult]) -> Readings:
     g, b = data.game_data, data.balance
     money = b.economy_scale.money
     over: list[str] = []
-    share = 0.0
+    share = share_a = 0.0
     for r in results:
         for year, cats in r.years.items():
             tech = 0.0
@@ -158,12 +175,16 @@ def readings(results: Sequence[MarketResult]) -> Readings:
                 for region, (a, c) in regions.items():
                     if c > 0 and a > c * (1 + TOLERANCE):
                         over.append(f"{r.seed}:{year}:{cat}/{region}")
+            booked = sum(v for k, v in r.served.get(year, {}).items() if not _non_tech(g, b, k))
             if r.gdp.get(year):
-                share = max(share, tech / r.gdp[year])
+                share_a = max(share_a, tech / r.gdp[year])
+                share = max(share, booked / r.gdp[year])
     real: dict[str, float] = {}
     bad: list[str] = []
     for cat, (published, _) in PUBLISHED.items():
-        vals = [total(r, 2025, cat) / 100 / money / 1e9 for r in results if 2025 in r.years]
+        vals = [
+            r.served[2025].get(cat, 0.0) / 100 / money / 1e9 for r in results if 2025 in r.served
+        ]
         if not vals:
             continue
         real[cat] = statistics.median(vals)
@@ -185,6 +206,7 @@ def readings(results: Sequence[MarketResult]) -> Readings:
     return Readings(
         over_ceiling=over,
         tech_share_max=share,
+        tech_addressable_max=share_a,
         real_2025=real,
         out_of_band=bad,
         growth_2060s=growth,
@@ -202,7 +224,8 @@ def report(results: Sequence[MarketResult]) -> str:
         "| --- | --- | --- | --- |",
         f"| 54.4 T1 markets past their ceiling | {len(x.over_ceiling)} | 0 | "
         f"{'pass' if not x.over_ceiling else 'MISS'} |",
-        f"| 54.4 T1 tech share of world GDP (largest) | {x.tech_share_max:.2%} | <= "
+        f"| 54.4 T1 tech share of world GDP, served (largest) | {x.tech_share_max:.2%} "
+        f"(addressable {x.tech_addressable_max:.2%}) | <= "
         f"{cap:.0%} | {'pass' if x.tech_share_max <= cap else 'MISS'} |",
         f"| 54.4 T2 2025 within 0.5-2x | {len(x.out_of_band)} outside: "
         f"{', '.join(x.out_of_band) or '-'} | "
@@ -212,7 +235,7 @@ def report(results: Sequence[MarketResult]) -> str:
         f"| 54.4 T4 largest balance | {x.max_balance:.3e} ({x.max_where}) | < {MONEY_LIMIT:.1e} | "
         f"{'pass' if x.max_balance < MONEY_LIMIT else 'MISS'} |",
         "",
-        "| Category | 2025 real $B (median) | Published $B | Ratio | Source |",
+        "| Category | 2025 served, real $B (median) | Published $B | Ratio | Source |",
         "| --- | --- | --- | --- | --- |",
     ]
     for cat, (pub, src) in PUBLISHED.items():
