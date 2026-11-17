@@ -18,13 +18,14 @@ import itertools
 import json
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Final
 
 from tst.balance import m30
 from tst.balance.game import Game, start_game
 from tst.balance.report import SCENARIO
+from tst.loader import LoadedData
 from tst.sim.dynasty.mode import continue_dynasty
 from tst.sim.modes.models import GameMode
 from tst.sim.state import GameState, group_companies
@@ -131,6 +132,11 @@ class DynastyResult:
     cost_ratio: float  # leading-edge cost per transistor, December 2069 / January 2040
     gaps_lengthen: bool
     max_balance: int = 0  # the largest |ledger balance| at the end, cents (int64 headroom)
+    # the PM's diagnosis (2026-11-17): where that balance is and how the markets grew
+    max_key: tuple[str, str] = ("", "")  # (company, account) of the largest balance
+    max_2039: int = 0  # the same balance after December 2039, cents
+    markets: dict[int, dict[str, float]] = field(default_factory=dict)  # year -> category ->
+    # annualised revenue (this month's x 12), cents, at the end of December
 
 
 def _family_game(seed: int) -> Game:
@@ -190,10 +196,16 @@ def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
     goods = [c.key for c in g.commodities.goods] if g.commodities else []
     prices: dict[str, list[float]] = {k: [] for k in goods}
     rivals: dict[str, int] = {}
+    markets: dict[int, dict[str, float]] = {}
+    balances_2039: dict[tuple[int, str], int] = {}
     while game.state.turn < turns and not game.state.ended:
         script(game)
         game.turn()
         s = game.state
+        if s.turn in MARKET_YEARS:
+            markets[MARKET_YEARS[s.turn]] = category_revenue(s, data)
+        if s.turn == START:
+            balances_2039 = dict(game.balances)
         for k in goods:
             prices[k].append(index_now(s, k, g))
         if s.turn > START and s.turn % 12 == 1:  # after each January's turn, 2040 on
@@ -222,6 +234,7 @@ def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
         successions = len(family.generations) - 1 + (family.head_mode == "family_head")
     d = s.dynasty
     ratio, lengthen = _cost_ratio(seed)
+    top = max(game.balances, key=lambda k: abs(game.balances[k]), default=None)
     return DynastyResult(
         seed=seed,
         ended=s.save_meta.game_state,
@@ -235,8 +248,73 @@ def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
         entrants=sum(1 for c in s.companies if c.rival_key[:1] == (DYNASTY_KEY,)),
         cost_ratio=ratio,
         gaps_lengthen=lengthen,
-        max_balance=max((abs(v) for v in game.balances.values()), default=0),
+        max_balance=abs(game.balances[top]) if top else 0,
+        max_key=(s.company(top[0]).name, top[1]) if top else ("", ""),
+        max_2039=abs(balances_2039.get(top, 0)) if top else 0,
+        markets=markets,
     )
+
+
+MARKET_YEARS: Final = {192: 2025, 360: 2039, 720: 2069}  # the state after December of the year
+MONEY_LIMIT: Final = 1.0e18  # cents: the PM's guard (2026-11-17) on any ledger balance
+
+
+def category_revenue(state: GameState, data: LoadedData) -> dict[str, float]:
+    """Each category's revenue this month (customers x prices, every region) x 12, cents."""
+    from tst.sim.score import market_revenue
+
+    out: dict[str, float] = {}
+    for (category, _, _), by in market_revenue(state, data.game_data, data.balance).items():
+        out[category] = out.get(category, 0.0) + 12 * sum(by.values())
+    return out
+
+
+@dataclass(frozen=True, slots=True)
+class MoneyRow:
+    """The PM's money guard as a judged row (tst.balance.known_misses): ok while every ledger
+    balance stays under MONEY_LIMIT; the score is the largest over the limit."""
+
+    target: str
+    ok: bool
+    score: float
+    detail: str
+
+
+def money_row(results: Sequence[DynastyResult]) -> MoneyRow:
+    worst = max(results, key=lambda r: r.max_balance)
+    company, account = worst.max_key
+    return MoneyRow(
+        "M37.money",
+        worst.max_balance < MONEY_LIMIT,
+        worst.max_balance / MONEY_LIMIT,
+        f"seed {worst.seed}: {company} {account} {worst.max_balance:.3e} cents in December 2069 "
+        f"({worst.max_2039:.3e} in December 2039); limit {MONEY_LIMIT:.1e}",
+    )
+
+
+def diagnosis(results: Sequence[DynastyResult], money: float) -> str:
+    """The largest balance and the markets' annualised revenue in 2025, 2039 and 2069, in game
+    cents and in real dollars (game dollars / economy_scale.money)."""
+    lines = [
+        money_row(results).detail,
+        "",
+        "| seed | year | AI models | top three |",
+        "| --- | --- | --- | --- |",
+    ]
+    for r in results:
+        for year, cats in sorted(r.markets.items()):
+            top = sorted(cats.items(), key=lambda kv: -kv[1])[:3]
+            ai = cats.get("ai_models", 0.0)
+
+            def real(cents: float) -> str:
+                return f"{cents:.2e} (${cents / 100 / money / 1e12:,.1f}T real)"
+
+            lines.append(
+                f"| {r.seed} | {year} | {real(ai)} | "
+                + "; ".join(f"{k} {real(v)}" for k, v in top)
+                + " |"
+            )
+    return "\n".join(lines)
 
 
 def run_all(workers: int, seeds: Sequence[int] = SEEDS) -> list[DynastyResult]:

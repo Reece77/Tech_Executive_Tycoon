@@ -73,6 +73,15 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         reason="+0 months on seeds 21-30 (M35b): in 6 of 10 runs grid power never binds "
         "before 2032, so both scripts' capacity goes live together; +12 over seeds 1-30",
     ),
+    KnownMiss(
+        target="M37.money",  # PM, 2026-11-17: no ledger balance over 1.0e18 cents to 2069
+        owner="M43",  # the PM's ruling: the pre-2040 scale of the largest AI incumbent
+        # score: the largest balance / 1.0e18; known while it still fits SQLite's int64
+        # (9.22e18 cents): about 6.0 on seeds 1-10 (M37's brief, decision 22)
+        worse_than=9.2,
+        reason="IBM's 4000_revenue_subscriptions (its cumulative booked subscription revenue) "
+        "and its cash reach about 6e18 cents by 2069 in dynasty runs (M37)",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

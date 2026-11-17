@@ -1,7 +1,7 @@
 """M37's target 5 (docs/formulas.md 52.5) on the CI runner: from a full_integrator dynasty save
 with a family at January 2069 (tools/v6_save.py, built by the weekly-m37 job), no month over
-M30's 1.0 s budget. The 500 ms median and the 400 MB save are printed and carried to the v5
-performance milestone (the brief's decision 19): a 2069 month reads about 6.5 workloads on
+M30's 1.0 s budget. The 500 ms median and the 400 MB save are printed and carried to M45 (PM,
+2026-11-17) (the brief's decision 19): a 2069 month reads about 6.5 workloads on
 CI against 4.9 for a 2039 month, the cost of 60 years of people and segments, not of a dynasty
 rule. Runs only where TST_M37_SAVE names the save; it copies the save and never changes it."""
 

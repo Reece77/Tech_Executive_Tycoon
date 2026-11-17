@@ -13,6 +13,7 @@ import os
 import pytest
 
 from tst.balance import m37
+from tst.balance.known_misses import known_miss, verdict
 
 JOBS = int(os.environ.get("TST_BALANCE_JOBS", str(os.cpu_count() or 1)))
 
@@ -36,7 +37,21 @@ def test_52_5_targets_2_to_4() -> None:
     assert x.commodity_ok, x.excursions  # target 2
     assert x.gaps_lengthen and x.cost_ratio_min >= 0.5  # target 3
     assert x.succession_seeds >= 0.9 * n  # target 4
-    assert x.max_balance < m37.INT64_HEADROOM  # the books fit SQLite's integers to 2069
+    _money_guard(results)
+
+
+def _money_guard(results: list[m37.DynastyResult]) -> None:
+    """The PM's guard (2026-11-17): no ledger balance (a company's account, the cumulative
+    total SQLite sums) passes 1.0e18 cents in a dynasty run to 2069; known miss owned by M43
+    while it still fits int64 (tst/balance/known_misses.py)."""
+    row = m37.money_row(results)
+    print(m37.diagnosis(results, m37.m30.loaded().balance.economy_scale.money))
+    v = verdict(row)
+    assert v != "fail", row.detail
+    if v == "known":
+        k = known_miss(row.target)
+        assert k is not None
+        pytest.xfail(f"KNOWN MISS ({k.owner}): {k.reason}; {row.detail}")
 
 
 @pytest.mark.nightly
