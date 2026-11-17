@@ -79,8 +79,15 @@ Load `pt-robotics`. Automate your vehicle plant, then launch robotaxis in Phoeni
 10. **Unlock ids.** Robotics is system 30 and Mobility 31 (M41 takes 29).
 11. **Target 4's measurement** (the script, not the game, rule 2): the 40-car run's revenue cut is measured over the zone's first suspension against the 3 months before it, because on seeds 6 and 9 a seeded serious incident suspended the zone before the forced one in month 13 (the first reading compared a suspension with a suspension and read 0%). Months above break-even count only while the zone runs.
 12. **No tuning was needed** (rule 1): every target is met at the first values of `robotics.*`. Humanoids reach 84-89% of robotics revenue within 8 years of their era, well above the 20% floor: real forecasts put the humanoid market at or above the industrial one by the mid-2030s (Goldman Sachs $38bn by 2035 against IFR's $16.7bn of robots, S (search)); a lower cap is a follow-up for v5's balance (M43) if Reece wants industrial robots to keep more of it.
+13. **Readings (53.4), seeds 1-10 (`tools/m39_targets.py`):**
 
-READINGS
+| Target | Reading | Band | |
+| --- | --- | --- | --- |
+| 1 History holds | installations, makers' shares, humanoid announcements and robotaxi services follow robotics.yaml to 2025 (`tests/unit/test_m39_robotics_data.py`); a company without robots plays as before (decision 5) | the data | met |
+| 2 Automation pays where labour is dear | a 2,000-car plant's conversion cost a unit at 60% automation, January 2030: **28.7%** lower in North America, **3.4% higher** in South and Southeast Asia (every seed: the formula reads no draw) | >= 15% / <= 5% | met |
+| 3 Humanoids follow their era | humanoid share of robotics revenue before the era: **0.00%** on every seed (the era arrives April 2031 to November 2035); within 8 years: median **87.7%** (84.4-89.4%) | < 1% / >= 20% | met |
+| 4 Robotaxis are a utilisation business | **176 of 176** active months above 6 rides a car a day earn a positive contribution; a suspension cuts the zone's revenue **85-100%** | positive / >= 30% | met |
+| 5 Turn time | **292 ms** a turn (median, 2026-2035, these worlds, four at once on 4 cores); the guards: `make check-timing` and weekly-v6 (see the merge) | M30's guards | see the merge |
 
 ## Follow-ups
 
