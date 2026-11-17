@@ -90,6 +90,17 @@ Load `pt-robotics`. Automate your vehicle plant, then launch robotaxis in Phoeni
 | 5 Turn time | **292 ms** a turn (median, 2026-2035, these worlds, four at once on 4 cores). Guards on the branch (before M41 and M37): `make check-timing` passes (7 tests); weekly-v6 on CI (run 44036867526): plain V6 save **412 ms** median (451 at most), integrator save **449 ms** (501 at most); re-run after the merge below | 500 ms median, 1,000 ms at most | met |
 
 14. **Merge with M37 (after `m37-done`).** The migration is re-parented: `0061_m39` on M37's `0060_m37`, schema 61. Conflicts were each milestone's appended lines (stream ids 65 and 66, balance sections, state fields, routers, loaders), kept both, M37's first. Re-recorded on the combined code: M30's state cache (`--update-state-cache`; its repeat and memo checks pass), M28's history (`tools/m28_targets.py --write-history`, unchanged: M37 touches nothing before 2040), and M32's history fixture's books hashes only (`cost_diffs` empty, 320 books rows replaced). M32's fixture had been stale on main since M41 (M37's decision 23, rule 3); M39 moves the same books, so re-recording it here clears both. The test-durations file is refreshed for the shard balance (CI-fix lane's request).
+15. **The V6 saves' 500 ms median guard after the M37 merge (rule 3).** `make weekly-v6` and `make weekly-v6-integrator` miss the raw 500 ms median on main as well. Readings (raw median, runner ratio, month in workloads):
+
+    | Run | Save | main (`bbebad9`) | m39-robotics (`1aaa3e8`) |
+    |---|---|---|---|
+    | CI weekly #51 / #52, dispatched together | v6 | 430 ms, x1.19, 5.1 (pass) | 556 ms, x1.38, 5.7 (miss) |
+    | CI weekly #51 / #52 | v6-integrator | 587 ms, x1.38, 6.1 (miss) | 709 ms, x1.62, 6.3 (miss) |
+    | Local, one machine, back to back | v6, M30 test | 560 ms, x1.27, 6.3 (miss) | 596 ms, x1.34, 6.3 (miss) |
+    | Local | v6, V6 test | 540 ms | 578 ms |
+
+    The 1,000 ms budget holds on every run. A profile of six turns on the same save (local) puts M39's cost at +6.7% a turn (6.42 s to 6.85 s): the robot categories' segments in `run_markets` (+0.16 s) and the twelve robot makers in `rival_decisions` (+0.10 s), each proportional to what M39 adds; M39's own robotics phase is about 3 ms a turn. No step is out of proportion (rule 6), and the guard misses on a clean main, so it is recorded here, not fixed. The fix lane is the CI-fix session's runner-adjusted guard (branch `claude/eloquent-lamport-mlnznj`, PM 2026-11-17); under it these readings are 361 to 437 ms and pass. M39 adds nothing to `known_misses.py`.
+16. **e2e m5 after the M41 merge.** The merge took M41's rival count (64); with M39's twelve robot makers the Competitors screen shows 76, as `test_api_rivals.py` already expected. `m5.spec.ts` (a) now expects 76.
 
 ## Follow-ups
 
