@@ -39,7 +39,7 @@ def domains_out(state: GameState, data: LoadedData, cid: int) -> list[DomainOut]
     g, b = data.game_data, data.balance
     out = []
     for d in levels.domain_keys(g):
-        era = estimates.next_era(state, g, d)
+        era = estimates.next_era(state, g, d, b)
         base = levels.baseline(state, g, b, d)
         lead = state.research_lead(cid, d)
         out.append(
@@ -97,7 +97,7 @@ def projects_out(state: GameState, data: LoadedData, cid: int) -> list[ProjectOu
         unit = state.unit(p.unit_id)
         work = lab(state, view, p, b, g, estimate=True)  # 18.8, 21.7 (M12r)
         look = estimates.outlook(state, cid, p.domain, work, b, g)
-        era = estimates.next_era(state, g, p.domain)
+        era = estimates.next_era(state, g, p.domain, b)
         early = None
         if era is not None and look.months is not None:
             early = levels.historical_turn(era) - (state.turn + look.months)
@@ -227,9 +227,11 @@ def eras_out(state: GameState, data: LoadedData, me: int) -> list[EraOut]:
         f"For {rnd.first_mover_months} months: +{rnd.first_mover_cap:g} quality cap and "
         f"+{rnd.first_mover_brand:g} brand target in its markets, and no decay of the lead"
     )
-    nexts = {d: estimates.next_era(state, g, d) for d in levels.domain_keys(g)}
+    nexts = {d: estimates.next_era(state, g, d, b) for d in levels.domain_keys(g)}
     out = []
     for era in g.eras.eras:
+        if not levels.in_play(era, state.turn, b):  # M37: dynasty eras from January 2040
+            continue
         a = state.era_arrival(era.key)
         caused = None
         if a is not None and a.company_id is not None:

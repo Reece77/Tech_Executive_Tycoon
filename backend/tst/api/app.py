@@ -13,6 +13,7 @@ from sqlalchemy.exc import OperationalError
 from tst.api.error_log import ErrorLogMiddleware
 from tst.api.routers import (
     automation,
+    campaign,
     commodities,
     contracts,
     coo,
@@ -141,6 +142,7 @@ def create_app() -> FastAPI:
     app.include_router(platforms.router)  # M31
     app.include_router(power.router)  # M32
     app.include_router(vehicles.router)  # M38
+    app.include_router(campaign.router)  # M37
     app.include_router(regulation.router)  # M34
     app.include_router(equipment.router)  # M33
     app.include_router(events.settings_router)

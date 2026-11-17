@@ -173,6 +173,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const mods = useMods(); // M25: a data-editor mod for the new game
   const [mod, setMod] = useState<string | null>(null);
   const [familySetting, setFamilySetting] = useState('none'); // M36 (45.1)
+  const [length, setLength] = useState<'standard' | 'dynasty'>('standard'); // M37 (52.1)
   const [childAges, setChildAges] = useState<number[]>([NEW_CHILD_AGE]);
 
   const backgroundDef = meta.backgrounds.find((b) => b.key === background) ?? firstBackground;
@@ -249,6 +250,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
                 setting: familySetting,
                 child_ages: familySetting === 'children' ? childAges : [],
               },
+        campaign_length: mode.kind === 'campaign' ? length : 'standard',
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -344,6 +346,21 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
           ))}
         </CardGrid>
         <ModePicker meta={meta} value={mode} onChange={setMode} />
+        {mode.kind === 'campaign' && (
+          <NativeSelect
+            label="Campaign length"
+            description="Standard ends in December 2039 with a summary. Dynasty plays on to December 2069, with new eras and a second generation."
+            data={[
+              { value: 'standard', label: 'Standard: to December 2039 (30 years)' },
+              { value: 'dynasty', label: 'Dynasty: to December 2069 (60 years)' },
+            ]}
+            value={length}
+            onChange={(e) =>
+              setLength(e.currentTarget.value === 'dynasty' ? 'dynasty' : 'standard')
+            }
+            data-testid="campaign-length"
+          />
+        )}
         {(mods.data ?? []).length > 0 && (
           <Select
             label="Mod"
