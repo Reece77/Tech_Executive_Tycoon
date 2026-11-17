@@ -4500,6 +4500,55 @@ def vehicles_cmd(
         )
 
 
+@app.command("medical")
+def medical_cmd(
+    save: SaveOpt,
+    rivals: Annotated[bool, typer.Option(help="Also list rivals' medical devices")] = False,
+) -> None:
+    """Medical devices (M41, 50): your devices with their class, routes and review ranges,
+    studies, coverage and adoption by region, recalls, inspections and plants' quality."""
+    from tst.api import medical_views
+
+    _path, data, state = _game(save)
+    m = medical_views.medical_out(state, data)
+    if not m.devices:
+        typer.echo("No medical devices: create a product in a medical category to start.")
+    for d in m.devices:
+        cls = f"US class {d.us_class}, EU {d.eu_class}" if d.use else "no intended use chosen"
+        typer.echo(
+            f"{d.name} ({d.category_label}, {d.status}): {d.use_label or '-'}; {cls};"
+            f" evidence {d.evidence:.0%}; quality system {d.quality_level}"
+        )
+        for r in d.routes:
+            extra = f", filed {r.filed}" if r.filed else ""
+            why = f" [{r.blocker}]" if r.blocker and r.status == "not_filed" else ""
+            typer.echo(f"  {r.regulator_name}: {r.label}, {r.review}; {r.status}{extra}{why}")
+        for s in d.studies:
+            odds = f", success {s.success_range}" if s.success_range else ""
+            typer.echo(
+                f"  study {s.kind} {s.patients} patients, readout {s.readout}: {s.status}{odds}"
+            )
+        for g in d.regions:
+            if g.cleared == "not cleared":
+                continue
+            adopt = f", adoption {g.adoption:.0%}" if g.adoption is not None else ""
+            typer.echo(
+                f"  {g.label}: {g.cleared}; coverage {g.coverage}{adopt}; sells to"
+                f" {g.sells_share:.0%} of demand"
+            )
+        for x in d.recalls:
+            typer.echo(
+                f"  recall class {x.klass} {x.turn}: {x.units} units, {format_money(x.cost_cents)}"
+            )
+    for i in m.inspections:
+        typer.echo(f"inspection {i.turn} {i.regulator}: {i.finding}")
+    for p in m.plants:
+        typer.echo(f"plant {p.facility_id} ({p.region}): quality {p.level}")
+    if rivals:
+        for rv in m.rivals:
+            typer.echo(f"rival {rv.company} {rv.product} ({rv.category}): {rv.share:.0%}")
+
+
 @app.command("robotics")
 def robotics_cmd(
     save: SaveOpt,

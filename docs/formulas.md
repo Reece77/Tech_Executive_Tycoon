@@ -3861,6 +3861,16 @@ Reece (2026-11-14): **medical devices with realistic approval stages** (FDA-styl
 
 Devices, their classes and routes, submissions and their stages, review ranges, studies' designs and results once read out, coverage decisions, adoption, inspections and recalls that happened, rivals' public products and shares. Never study draws before readout, recall or inspection draws, or seeded future rules before they happen.
 
+### 50.8 As built (M41 notes)
+
+- **Markets to the game's scale:** D0 = medical.yaml's real 2024 world revenue x `economy_scale.money` (0.0849) / (a customer's yearly spend x 2.236, the regions' size x price index summed, x 0.65, the incumbents' starting share), taken back to 2010 by `growth_by_year`; a test holds 2010 and 2024 within 25% of real. Study costs per patient are real money, as salaries are (the economy-scale audit decides later).
+- **The gate:** a device's share of a region's demand = (the parts cleared by their health regulator, M34's part shares, plus the rest by reliance) x (1, or `no_coverage_share` until covered where payers pay) x (`adoption.floor` + (1 - floor) x clinicians' adoption); zero during a recall's stop and, in a regulator's part, an import ban or consent decree. It multiplies new wins through M22's access map; existing customers keep buying. Rivals' devices are history's, cleared wherever they sell.
+- **Consumables and service:** installed units x `consumables_cents` a month at the region's price index (4050), with its cost share (5000), for every selling device, rivals' included.
+- **Reviews:** at filing, months = U(window by date) + U(more_info months) when a request is drawn + the change control plan's months, x the regulator's drift after 2025; the decision at that month: approve = route rate + `review.quality_weight` x (quality - 50) + `review.evidence_weight` x evidence, within bounds. A warning letter holds that regulator's decisions.
+- **Studies:** chance = kind's rate + `study.quality_weight` x (quality - 50) + `study.evidence_weight` x evidence; shown +/- `shown_band`. Evidence adds the kind's strength (pivotal 0.6) on success.
+- **Coverage:** months ~ U(lo, lo + (hi - lo) x (1 - 0.8 x evidence)); approve = lerp(approve range, evidence). **Adoption:** a += r x a x (1 - a), r = `rate` x (1 + `evidence_weight` x evidence) x (1 + `training_weight` x min(1, training / `training_full_cents`)), from `seed` at first clearance.
+- **Recalls:** monthly chance = `chance_year` / 12 x the quality level's defect x (1 + `install_weight` x log10(1 + installed units)); class by the data's mix, one class lower when surveillance catches it. **Inspections:** monthly chance = `chance_year` / 12 x strictness; findings x the level's (and a for-cause visit's) multiplier.
+
 ## 51. v4 balance targets and follow-ups (M35b)
 
 ### 51.1 Rules added by the balance pass

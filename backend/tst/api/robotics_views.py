@@ -10,7 +10,6 @@ from typing import Final
 from tst.api.schemas.robotics import (
     AnnouncementOut,
     AutomationMonthOut,
-    RobotaxiCityOut,
     DepotOut,
     HistoryIncidentOut,
     HumanoidMarketOut,
@@ -20,6 +19,7 @@ from tst.api.schemas.robotics import (
     ProductOptionOut,
     RivalServiceOut,
     RoboIncidentOut,
+    RobotaxiCityOut,
     RoboticsOptionsOut,
     RoboticsScreenOut,
     RobotLineOut,

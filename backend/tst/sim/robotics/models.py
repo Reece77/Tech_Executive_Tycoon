@@ -2,7 +2,7 @@
 (robots installed by facility), humanoid designs (their AI model and chips), robotaxi zones and
 depots, the month's zone rows and incidents, and the game-wide `RoboticsWorld` (installations'
 seeded growth after 2025, humanoid adoption by region, actuator learning, rival operators' new
-cities). Persisted in `robotics_record` (migration 0059_m39), one row a record.
+cities). Persisted in `robotics_record` (migration 0060_m39), one row a record.
 
 Hidden values (53.5): `RoboticsWorld.growth` (each region's drawn path after 2025), `home_turn`
 (the seeded home window) and a zone's `decision_turn` before it comes are engine-only: the API

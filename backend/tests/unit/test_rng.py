@@ -109,6 +109,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "regulation": 62,  # M34 (48)
         "equipment": 61,  # M33 (47)
         "vehicles": 63,
+        "medical": 64,
         "robotics": 66,
         "misc": 99,
     }

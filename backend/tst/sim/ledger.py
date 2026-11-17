@@ -67,6 +67,9 @@ FINES: Final = "6970_fines"  # regulators' fines and periodic penalties (M34, 48
 TOOL_INVENTORY: Final = "1530_tool_inventory"  # tools held, not yet in a fab (M33, 47.2, 47.4)
 TOOL_SALES: Final = "4430_tool_sales"  # own lithography tools sold to rivals (M33, 47.4)
 TOOL_COST: Final = "5200_tool_cost"  # their made cost (M33, 47.4)
+MEDICAL_RECURRING: Final = "4050_revenue_consumables"  # instruments, sensors, service (M41, 50.1)
+RECALLS: Final = "6980_recalls"  # field actions and recall lawsuits (M41, 50.5)
+QUALITY_REGULATORY: Final = "6985_quality_regulatory"  # quality systems, surveillance, fees (M41)
 ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
@@ -120,6 +123,9 @@ ENGINE_ACCOUNTS: Final = (
     TOOL_INVENTORY,
     TOOL_SALES,
     TOOL_COST,
+    MEDICAL_RECURRING,
+    RECALLS,
+    QUALITY_REGULATORY,
 )
 
 

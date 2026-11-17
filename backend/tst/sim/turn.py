@@ -55,6 +55,8 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.public import public_month
+from tst.sim.medical.month import medical_month
+from tst.sim.medical.recurring import recurring_month
 from tst.sim.mining import phase as mining
 from tst.sim.mna.closing import mna_month
 from tst.sim.mna.integration import integration_month
@@ -352,6 +354,7 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=state).post(*robot_entries).log(*robot_logs)
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
+    ctx = ctx.post(*recurring_month(ctx.state, ctx.balance, ctx.data))  # M41 (50.1)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
     state, entries, logs = mining.operate_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*logs)
@@ -692,6 +695,9 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
         state, ctx.rng, ctx.balances, ctx.balance, ctx.data, ctx.entries
     )
     ctx = ctx.post(*reg_entries).log(*reg_logs)
+    # M41 (50): studies, reviews, coverage and adoption, quality, inspections and recalls.
+    state, med_entries, med_logs = medical_month(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = ctx.post(*med_entries).log(*med_logs)
     player = state.player.id
     state, requests = direct(
         state,

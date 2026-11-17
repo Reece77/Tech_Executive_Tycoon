@@ -35,6 +35,10 @@ _RULE = exempt("a world rule's figure (a tariff, a share, an allocation) from it
 _PLATFORM = exempt(
     "a platform's public figure (users, a fee rate, a share) from the data or its month"
 )
+# M41 (50): medical devices
+_MEDICAL = exempt(
+    "a published medical figure (a fee, an enrolment) from medical.yaml or its design"
+)
 # M32 (46): power
 _POWER = exempt("a published power figure (a price, a rate, a factor) from power.yaml or its path")
 _QUEUE = exempt("the grid queue's wait as a range from the region's median, in its glossary")
@@ -70,6 +74,17 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
     "regulation.CaseOut": {"fine_cents": "regulation_fines", "final_cents": _REGULATION},
     "regulation.WatchOut": {"months": _COUNT, "needed_months": _THRESHOLD},
     "regulation.RegulationOut": {"fines_cents": "regulation_fines"},
+    # M41 (50): the Medical screen
+    "medical.RouteOut": {
+        "review_months": "medical_review",
+        "fee_cents": _MEDICAL,
+        "months_in": _COUNT,
+    },
+    "medical.StudyOut": {
+        "cost_cents": "study_cost",
+        "spent_cents": exempt("a study's spending to date, itemised in its cost's breakdown"),
+        "patients": _MEDICAL,
+    },
     # M36 (45.4, 45.6): the Family screen and the founder's Family tab
     "family.ReadinessOut": {
         "points": "heir_readiness",

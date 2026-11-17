@@ -1,0 +1,324 @@
+# Medical devices (docs/formulas.md 50, M41). Built from docs/v5-research/medical-devices-dossier.md;
+# every value carries its source (researched 2026-11-16). A value marked A is an assumption for
+# gameplay (no public figure) and is listed in the M41 brief's "Decisions made"; "est." marks a
+# figure from secondary sources or a range's midpoint. Dates are "YYYY-MM" (the month a rule took
+# effect). Money is in real US cents unless it says otherwise; markets are sized to the game's
+# economy (economy_scale.money, M34 decision 3), see `subcategories.*.market`.
+#
+# History holds (50.6 target 1): the medical model acts only on products in these sub-categories.
+# Rivals' devices to 2025 are incumbents.yaml's (cleared everywhere they sell, as history had them);
+# a company without medical devices draws, posts and logs nothing here.
+
+history_end: "2025-12"
+
+# --- Sub-categories (50.1) ------------------------------------------------------------------------
+# key: the categories.yaml key (family medical). market: real 2024 world revenue (USD billions) and
+# 2010's, with sources; categories.yaml's D0 and growth are derived from them (the derivation sits
+# beside each category there), x economy_scale.money. consumables_cents: recurring revenue a month
+# per installed unit (instruments and service, sensors, service contracts), with its cost share.
+# needs_coverage: sales beyond early adopters need reimbursement (50.4); consumer cash-pay devices
+# do not. uses: intended uses (the design's choice), each with its US class by date, its EU class
+# under the MDD and the MDR, and the US route when a predicate exists or not (50.2).
+subcategories:
+  - key: wearables_diagnostics
+    label: Wearables and diagnostics
+    market:
+      real_2024_b: 14.0 # CGM ~$11-13B (GMI $10.9B; Abbott Libre ~$6.4B + Dexcom $4.03B + others): https://www.gminsights.com/pressrelease/continuous-glucose-monitoring-market ; https://investors.dexcom.com/news/news-details/2025/Dexcom-Reports-Fourth-Quarter-and-Fiscal-Year-2024-Financial-Results/ ; plus home diagnostics (A: ~$2B)
+      real_2010_b: 2.0 # A: Dexcom $48.6M and Abbott diabetes care ~$1.3B in 2010 (https://benzinga.com/z/902210 ; https://www.sec.gov/Archives/edgar/data/1800/000104746911001056/a2201962z10-k.htm), with home diagnostics
+    consumables_cents: 10000 # $100 a month in sensors per user (A: Libre/Dexcom sensors ~$75 a fortnight cash, less reimbursed; $1,250 a user a year with the reader matches ~$12B over ~10M users, est.)
+    consumables_cogs: 0.35 # A: CGM gross margins ~60-65% (Dexcom 2024 GAAP ~61%, est.)
+    needs_coverage: false # consumers pay; Rx CGMs are covered (A: the game's consumer segment buys cash-pay)
+    clinicians: false # bought by consumers: no clinician adoption curve (50.4)
+    uses:
+      - key: wellness_tracking
+        label: Wellness tracking
+        us_class: { "2010-01": I } # most class I devices (FDA classification, ~47% of device types): https://meddeviceguide.com/blog/fda-device-classification-guide
+        eu_class: { mdd: I, mdr: I } # A: MDR rule 1 non-invasive devices
+        exempt: true # general wellness and most class I devices are 510(k)-exempt (~90% of class I codes): https://meddeviceguide.com/blog/fda-device-classification-guide
+      - key: glucose_monitoring
+        label: Continuous glucose monitoring
+        us_class: { "2010-01": III, "2018-03": II } # CGMs were PMA devices until Dexcom G6's De Novo created iCGM, class II, 27 Mar 2018 (DEN170088): https://fda.innolitics.com/device/DEN170088
+        eu_class: { mdd: IIb, mdr: IIb } # A: rule 10 active diagnostic monitoring of vital parameters
+        predicate_from: "2018-03" # iCGMs after the G6 go by 510(k) (same source)
+      - key: arrhythmia_detection
+        label: Arrhythmia detection (ECG)
+        us_class: { "2010-01": II } # an ECG app is class II (21 CFR 870.2345, DEN180044 above)
+        eu_class: { mdd: IIa, mdr: IIa } # A
+        predicate_from: "2018-09" # Apple Watch ECG app DEN180044 and IRN DEN180042, 11 Sep 2018: https://fda.innolitics.com/device/DEN180044
+  - key: imaging
+    label: Imaging
+    market:
+      real_2024_b: 44.0 # medical imaging equipment ~$42-46B: https://www.fortunebusinessinsights.com/press-release/medical-imaging-equipment-market-9103
+      real_2010_b: 30.0 # A: from Siemens Healthcare EUR 12.4B, GE Healthcare $16.9B and Philips Healthcare EUR 8.6B in 2010 (imaging their largest part): https://www.sec.gov/Archives/edgar/data/0001135644/000095012310110234/f03502e20vf.htm
+    consumables_cents: 270000 # $2,700 a month a system in service contracts (A: ~8% of a $400k system a year)
+    consumables_cogs: 0.50 # A
+    needs_coverage: true
+    clinicians: true
+    uses:
+      - key: ultrasound
+        label: Ultrasound
+        us_class: { "2010-01": II } # diagnostic ultrasound systems are class II (21 CFR 892.1550; A: the game's grouping)
+        eu_class: { mdd: IIa, mdr: IIa } # A: rule 10
+        predicate_from: "1990-01" # A: long-established 510(k) devices
+      - key: ct_mri
+        label: CT and MRI
+        us_class: { "2010-01": II } # CT and MRI systems are class II (21 CFR 892.1750, 892.1000; A: the game's grouping)
+        eu_class: { mdd: IIb, mdr: IIb } # A: rule 10 ionising radiation (CT)
+        predicate_from: "1990-01" # A
+  - key: surgical_robotics
+    label: Surgical robotics
+    market:
+      real_2024_b: 10.0 # ~$8-11B (GlobalData ~$10B; Intuitive alone $8.35B): https://www.globaldata.com/media/medical-devices/robotic-surgery-devices-market-reach-10-billion-2024-forecasts-globaldata/
+      real_2010_b: 1.6 # A: Intuitive $1.413B in 2010 (https://www.sec.gov/Archives/edgar/data/1035267/000119312511020229/d10k.htm) and a few others
+    consumables_cents: 5740000 # $57,400 a month a system: Intuitive 2024 instruments and accessories $5.08B + services ~$1.30B over its mean installed base (8,606 to 9,902): https://www.sec.gov/Archives/edgar/data/1035267/000103526725000017/isrg-20241231.htm
+    consumables_cogs: 0.32 # Intuitive 2024 GAAP gross margin 67.5% (same source)
+    needs_coverage: true # procedure payment (A: robotic procedures are paid under existing codes once covered)
+    clinicians: true
+    uses:
+      - key: robotic_surgery
+        label: Robotic-assisted surgery
+        us_class: { "2010-01": II } # da Vinci was cleared as class II by 510(k) (K990144, above)
+        eu_class: { mdd: IIb, mdr: IIb } # A
+        predicate_from: "2000-07" # da Vinci K990144, cleared 11 Jul 2000 (510(k), with a 113 v 132 patient study): https://fda.innolitics.com/device/K990144
+  - key: implantables
+    label: Implantables
+    market:
+      real_2024_b: 30.5 # cardiac rhythm management ~$23.5B (https://gminsights.com/toc/detail/cardiac-rhythm-management-devices-market) + neuromodulation ~$7B (https://straitsresearch.com/report/neuromodulation-market)
+      real_2010_b: 20.0 # A: from the 5.2% CAGR (same source) back to 2010
+    consumables_cents: 0 # implants are units (A: follow-ups are the hospital's)
+    consumables_cogs: 0.0 # no consumables (A)
+    needs_coverage: true
+    clinicians: true
+    uses:
+      - key: cardiac_rhythm
+        label: Pacemakers and defibrillators
+        us_class: { "2010-01": III } # pacemakers and ICDs are class III PMA devices (A: 21 CFR 870.3610 and 870.3680)
+        eu_class: { mdd: III, mdr: III } # AIMDD active implants; MDR rule 8
+        pivotal: true # PMA: a successful pivotal study
+      - key: neurostimulator
+        label: Neurostimulators
+        us_class: { "2010-01": III } # implanted neurostimulators are class III PMA devices (A)
+        eu_class: { mdd: III, mdr: III } # AIMDD active implants; MDR rule 8
+        pivotal: true
+      - key: orthopaedic_implant
+        label: Orthopaedic implants
+        us_class: { "2010-01": II } # most joint implants are 510(k) class II (A: 21 CFR 888)
+        eu_class: { mdd: IIb, mdr: III } # MDR rule 8: joint replacements up-classified to III (A: the game's simplification of 'IIb, III for joints')
+        predicate_from: "1990-01" # A
+  - key: samd
+    label: Software and AI as a medical device
+    market:
+      real_2024_b: 1.5 # est.: AI imaging and diagnostic software ~$1-2B (no primary figure; 1,016 AI-enabled devices authorised by Dec 2024, ~76% radiology): https://www.fda.gov/news-events/press-announcements/fda-roundup-december-20-2024 ; https://www.jmir.org/2026/1/e103040
+      real_2010_b: 0.05 # A
+    consumables_cents: 0 # software sells as subscriptions (categories.yaml), no consumables
+    consumables_cogs: 0.0 # none
+    needs_coverage: true
+    clinicians: true
+    software: true # change control plans apply (50.2)
+    uses:
+      - key: radiology_triage
+        label: Radiology triage
+        us_class: { "2010-01": II } # radiological computer-aided triage, class II (21 CFR 892.2080, created by DEN170073)
+        eu_class: { mdd: I, mdr: IIa } # MDR rule 11 up-classifies most diagnostic software
+        predicate_from: "2018-02" # Viz.ai ContaCT, De Novo DEN170073, 13 Feb 2018: https://510k.innolitics.com/device/DEN170073
+      - key: autonomous_diagnosis
+        label: Autonomous screening (retina)
+        us_class: { "2010-01": II } # IDx-DR, class II (DEN180001, above)
+        eu_class: { mdd: I, mdr: IIb } # A: rule 11, decisions that may cause serious deterioration
+        predicate_from: "2018-04" # IDx-DR, De Novo DEN180001, 11 Apr 2018, class II: https://public4.pagefreezer.com:443/content/FDA/01-03-2022T00:42/https://www.accessdata.fda.gov/cdrh_docs/pdf18/DEN180001.pdf
+      - key: autonomous_radiology
+        label: Autonomous radiology reporting
+        us_class: { "2010-01": II } # A: a novel diagnostic software function, class II by De Novo
+        eu_class: { mdd: I, mdr: IIb } # Oxipit ChestLink, the first autonomous chest X-ray AI, CE class IIb in March 2022 (A: from the company's announcement)
+        # no predicate: no autonomous radiology reporting authorised by the FDA by 2025 (A), so De Novo
+
+# --- Routes (50.2) ----------------------------------------------------------------------------
+# By regulator (regulation.yaml health_regulators). review: months from submission to a decision
+# with no request for more information, a range by date ("from": the first month it applies);
+# more_info: the chance of a request (one cycle) and the months it adds; approve: the chance of a
+# positive decision at standard quality and evidence. fee_cents: the regulator's fee (FY2024 FDA).
+# A route's total time is shown as the range [review lo, review hi + more_info hi].
+routes:
+  - key: exempt
+    regulator: fda
+    label: Registration (exempt)
+    review: [{ from: "2010-01", months: [1, 1] }] # A: listing and registration, no premarket review
+    more_info: { chance: 0.0, months: [0, 0] } # A: no review
+    approve: 1.0 # A: registration
+    fee_cents: 0 # no premarket fee for exempt devices (FDA user fees cover 510(k), De Novo and PMA)
+    source: "https://meddeviceguide.com/blog/fda-device-classification-guide"
+  - key: k510
+    regulator: fda
+    label: "510(k)"
+    review:
+      - { from: "2010-01", months: [3, 5] } # A from ~150-day totals then; AI requests on 77% of 2010 files: https://www.massdevice.com/new-fda-study-insufficient-510k-submissions-causing-bulk-510k-review-delays/
+      - { from: "2017-10", months: [3, 4] } # MDUFA IV/V: 90 FDA days; total time goal 128 calendar days (FY2023), actual ~127-145 days, est.: https://www.fda.gov/media/158308/download ; https://ovasolutions.com/510k-review-time-2026/
+    more_info: { chance: 0.65, months: [1, 3] } # 63-68% of 510(k)s get an Additional Information request (MDUFA V Q2 FY2023 report, as cited): https://www.thefdalawblog.com/2023/07/mastering-responses-to-fda-510k-ai-letters-a-strategic-approach/
+    approve: 0.92 # A: NSE ~2-4% of decisions, est.; the rest of the gap is withdrawals (https://www.bioworld.com/blogs/2-bioworld-medtech-perspectives/post/291-fda-report-on-nse-decisions-what-does-it-not-say-)
+    fee_cents: 2176000 # FY2024 standard 510(k) fee $21,760: https://hs.qualio.com/blog/fda-medical-device-registration-fee
+    source: "https://www.fda.gov/media/158308/download"
+  - key: de_novo
+    regulator: fda
+    label: De Novo
+    review:
+      - { from: "2010-01", months: [12, 18] } # A: before direct De Novo (FDASIA s.607, 9 Jul 2012) a request followed an NSE 510(k); 76 completed in 15 years
+      - { from: "2012-07", months: [8, 12] } # 150 FDA review days (MDUFA IV/V goal); totals ~415-420 days (BTIG 2023-24), est.: https://www.mddionline.com/medical-device-regulations/2024-medtech-fda-approval-volume-trends-down
+    more_info: { chance: 0.60, months: [2, 4] } # A: requests as common as for 510(k)s
+    approve: 0.60 # est.: ~55-65% granted (2019: 20 of 61 declined or withdrawn, 36 pending): https://www.mondaq.com/unitedstates/Food-Drugs-Healthcare-Life-Sciences/903746/Variable-De-Novo-Review-Metrics-Plan-Ahead
+    fee_cents: 14506800 # FY2024 De Novo fee $145,068: https://www.raps.org/resource/fda-unveils-fy-2025-user-fee-rates.html
+    source: "https://www.fda.gov/media/158308/download"
+  - key: pma
+    regulator: fda
+    label: PMA
+    review: [{ from: "2010-01", months: [9, 12] }] # 180 FDA days statutory; MDUFA V total-time goal 290 calendar days; actual ~10-13 months, est.: https://www.fda.gov/media/158308/download ; https://www.medtechdive.com/news/fda-turnaround-510k-record-approval-waits/687476/
+    more_info: { chance: 0.50, months: [3, 8] } # A: major-deficiency letters and advisory panels (320 FDA days with a panel, same source)
+    approve: 0.88 # ~12% of original PMAs withdrawn or not approvable over seven years to 2019: https://www.mondaq.com/unitedstates/Food-Drugs-Healthcare-Life-Sciences/903746/Variable-De-Novo-Review-Metrics-Plan-Ahead
+    fee_cents: 48356000 # FY2024 PMA fee $483,560: https://hs.qualio.com/blog/fda-medical-device-registration-fee
+    needs_pivotal: true
+    source: "https://www.fda.gov/media/158308/download"
+  - key: ce_self
+    regulator: eu_notified_bodies
+    label: CE (self-declared, class I)
+    review: [{ from: "2010-01", months: [1, 2] }] # A: class I non-sterile, non-measuring devices need no notified body
+    more_info: { chance: 0.0, months: [0, 0] } # A: no notified body
+    approve: 1.0 # A: self-declared
+    fee_cents: 0 # A: no notified body fee
+    source: "https://advisera.com/articles/deadlines-for-medical-device-manufacturers-to-transition-from-mdd-to-mdr/"
+  - key: ce_mdd
+    regulator: eu_notified_bodies
+    label: CE marking (MDD)
+    until: "2021-04" # the MDD's last month: the MDR applies from 26 May 2021 (postponed from 2020 by Reg. 2020/561): https://bsigroup.com/de-DE/medical-devices/News/Enews/2023-news/mdr-transition-timelines-extended/
+    review: [{ from: "2010-01", months: [5, 9] }] # est.: MDD-era norms ~6-12 months with requests: https://www.team-nb.org/faq-2/
+    more_info: { chance: 0.40, months: [1, 3] } # A
+    approve: 0.92 # A
+    fee_cents: 5000000 # A: notified-body fees ~$50k for a review
+    source: "https://www.team-nb.org/faq-2/"
+  - key: ce_mdr
+    regulator: eu_notified_bodies
+    label: CE marking (MDR)
+    from: "2021-05" # MDR (EU) 2017/745 applies from 26 May 2021 (above)
+    review: [{ from: "2021-05", months: [11, 16] }] # most often 13-18 months to an MDR certificate (48% of responses), range 9-24: https://www.team-nb.org/wp-content/uploads/2025/06/Survey-2024.pdf
+    more_info: { chance: 0.60, months: [2, 6] } # A: the survey's 9-24 month spread
+    approve: 0.85 # A
+    fee_cents: 10000000 # A: MDR reviews cost about twice the MDD's
+    class_iii_months: 4 # A: class III and implantables add the clinical evaluation consultation (expert panels, Art. 54)
+    source: "https://www.team-nb.org/wp-content/uploads/2025/06/Survey-2024.pdf"
+  - key: shonin
+    regulator: pmda
+    label: Shonin (PMDA approval)
+    review: [{ from: "2010-01", months: [9, 13] }] # ~12 months of PMDA review for a standard new device; ~17 months in all with questions; generics ~4 months: https://rapath.github.io/jp/pre-market/approval-shonin/pmda-review-process/
+    more_info: { chance: 0.60, months: [2, 5] } # A: the target includes the applicant's answers (same source)
+    approve: 0.90 # A
+    fee_cents: 15000000 # A
+    predicate_months: [3, 5] # a device equivalent to an approved one: about 4 months (same source)
+    source: "https://rapath.github.io/jp/pre-market/approval-shonin/pmda-review-process/"
+  - key: nmpa_registration
+    regulator: nmpa
+    label: NMPA registration
+    review: [{ from: "2010-01", months: [8, 14] }] # 60 (class II) or 90 (class III) working days of technical review, then a deficiency round of 60 more; 12-24 months in all: https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf
+    more_info: { chance: 0.80, months: [3, 8] } # the first round ends in a deficiency letter (same source)
+    approve: 0.85 # A
+    fee_cents: 10000000 # A
+    source: "https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf"
+
+# Regions without a listed regulator accept a clearance from one of `relies_on` after `months`
+# (A: Australia's TGA, Brazil's ANVISA and many others rely on FDA or CE evidence; "a simplified
+# route of the nearest kind", 50.2). Regions with a regulator's part (platforms.yaml region_parts)
+# sell in proportion to the parts cleared.
+reliance:
+  - { region: latin_america, relies_on: [fda, eu_notified_bodies], months: [6, 12] } # A
+  - { region: south_southeast_asia, relies_on: [fda, eu_notified_bodies], months: [6, 12] } # A
+  - { region: africa, relies_on: [fda, eu_notified_bodies], months: [6, 12] } # A
+  - { region: oceania, relies_on: [eu_notified_bodies, fda], months: [4, 9] } # A: the TGA accepts CE and FDA evidence for conformity
+  - { region: north_america, relies_on: [fda], months: [3, 6] } # A: Canada's part of North America (Health Canada licences, outside the FDA's part)
+  - { region: europe, relies_on: [eu_notified_bodies], months: [3, 6] } # A: the UK and the rest of Europe recognise CE marking (UKCA alongside)
+  - { region: east_asia, relies_on: [fda, eu_notified_bodies], months: [6, 12] } # A: Korea and Taiwan, outside PMDA's and NMPA's parts
+
+# --- Dated rules (50.2, 50.4) ------------------------------------------------------------------
+dates:
+  de_novo_direct: "2012-07" # FDASIA s.607, 9 Jul 2012 (direct De Novo): https://meddeviceguide.com/blog/fda-de-novo-classification-guide
+  mdr_applies: "2021-05" # 26 May 2021 (routes above)
+  mdd_legacy_until: { III: "2027-12", IIb: "2028-12", IIa: "2028-12", I: "2028-12" } # Reg. (EU) 2023/607: 31 Dec 2027 class III and implantable IIb, 31 Dec 2028 the rest: https://bsigroup.com/de-DE/medical-devices/News/Enews/2023-news/mdr-transition-timelines-extended/
+  pccp_from: "2024-12" # FDA final PCCP guidance for AI-enabled device software, 4 Dec 2024 (FDORA s.3308, Dec 2022): https://www.foley.com/insights/publications/2025/01/fda-final-guidance-ai-device-software-predetermined-change-control-plan/
+  breakthrough_from: "2018-12" # Breakthrough Devices Program final guidance, Dec 2018; 1,246 designations to 31 Dec 2025: https://www.medtechdive.com/news/fda-breakthrough-device-update-2025/758292/
+  tcet_from: "2024-08" # CMS TCET final notice, effective 12 Aug 2024 (up to 5 devices a year): https://www.cms.gov/newsroom/fact-sheets/final-notice-transitional-coverage-emerging-technologies-cms-3421-fn
+  eu_hta_devices_from: "2026-01" # HTA Regulation (EU) 2021/2282 applies from 12 Jan 2025; high-risk devices' joint assessments from 2026: https://eur-lex.europa.eu/EN/legal-content/summary/health-technology-assessment.html
+
+# --- Clinical studies (50.3) ---------------------------------------------------------------------
+# patients and months by kind and sub-category; cost_per_patient_cents by sub-category (real money,
+# as salaries: M41 decision). success: the base chance a study meets its endpoint at standard
+# quality (balance medical.study moves it with quality and evidence).
+studies:
+  kinds:
+    feasibility: { patients: [20, 60], months: [9, 15], evidence: 0.2, success: 0.75 } # A: early feasibility studies of tens of patients
+    pivotal: { patients: [147, 415], months: [18, 36], evidence: 0.6, success: 0.67 } # median pivotal enrolment 241 (IQR 147-415), Rathi et al., JAMA 2015: https://pubmed.ncbi.nlm.nih.gov/26262798/ ; success est. ~60-75% (no published rate; dossier)
+    post_market: { patients: [300, 1000], months: [24, 48], evidence: 0.2, success: 0.85 } # A: registries and post-approval studies
+  cost_per_patient_cents: # ~CAD 18,000 an enrollee across 18 device trials (https://pmc.ncbi.nlm.nih.gov/articles/PMC6861404); planning range $15k-75k (est.)
+    wearables_diagnostics: 800000 # A: $8,000 (short accuracy studies)
+    imaging: 500000 # A: $5,000 (reader studies)
+    surgical_robotics: 2500000 # A: $25,000
+    implantables: 4000000 # A: $40,000 (long follow-up)
+    samd: 300000 # A: $3,000 (retrospective reader studies)
+  de_novo_pivotal_patients: [60, 180] # De Novo pivotal studies: median 112.5 patients: https://pmc.ncbi.nlm.nih.gov/articles/PMC7551221
+
+# --- Reimbursement (50.4) ------------------------------------------------------------------------
+# By regulator's region. months: from a request to a decision, a range read by evidence strength
+# (strong evidence takes the low end); approve: the chance with no evidence and with full evidence.
+coverage:
+  - region: north_america
+    label: Medicare coverage (NCD or LCD)
+    months: [9, 72] # NCD: proposal within 6 months, final within 90 days (~9 months, SSA 1862(l)): https://cms.gov/cms-guide-medical-technology-companies-and-other-interested-parties/coverage/national-coverage-determination-process-timeline ; novel devices: median 5.7 years, 44% ever covered: https://pmc.ncbi.nlm.nih.gov/articles/PMC10403784/
+    approve: [0.30, 0.90] # 44% of 64 novel technologies (2016-19) reached coverage (same source; A: read by evidence)
+    tcet_months: 6 # TCET: CMS aims to finalise an NCD within ~6 months of FDA authorisation (dates.tcet_from)
+  - region: europe
+    label: National HTA and pricing
+    months: [12, 36] # A: national HTA and price negotiation; joint clinical assessments from 2026 (dates)
+    approve: [0.35, 0.90] # A
+  - region: east_asia
+    label: National insurance listing
+    months: [6, 24] # A: Japan's insurance listing after Shonin; China's provincial tenders
+    approve: [0.40, 0.90] # A
+  - region: other
+    label: National purchasing
+    months: [6, 24] # A
+    approve: [0.40, 0.90] # A
+
+# --- Quality, inspections and recalls (50.5) -----------------------------------------------------
+quality:
+  levels: # a plant's quality-system investment (a facility setting)
+    low: { label: Minimal, cents_month: 1000000, defect: 2.0, inspection: 2.0 } # A: $10k a month
+    standard: { label: Standard, cents_month: 4000000, defect: 1.0, inspection: 1.0 } # A: $40k a month (ISO 13485 / 21 CFR 820 upkeep)
+    high: { label: Best practice, cents_month: 12000000, defect: 0.3, inspection: 0.4 } # A: $120k a month
+  contract_level: standard # A: a contract manufacturer runs a standard quality system
+inspections:
+  chance_year: 0.5 # biennial inspection of class II/III makers (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
+  outcomes: # at standard quality; low and high scale every finding by `inspection` (none takes the rest)
+    observations: 0.35 # A: Form 483 (VAI)
+    warning_letter: 0.06 # FY2023: 89 OAI inspections and 28 warning letters (A: as shares of ~1,500 device inspections): https://www.raps.org/resource/fda-compliance-chiefs-detail-fy2023-trends-plans.html
+    import_ban: 0.01 # A: import alerts on foreign sites
+    consent_decree: 0.003 # A: rare; Philips Respironics, entered April 2024 (precedents)
+recalls:
+  chance_year: 0.12 # A: ~800-1,050 device recall events a year (https://www.yourlawyer.com/article/medical-device-recalls-reach-a-four-year-high) over US device makers' marketed lines
+  classes: { I: 0.09, II: 0.88, III: 0.03 } # FY2020-24 mix (GAO, 3,934 recalls): https://24x7mag.com/standards/fda-updates/recalls/gao-report-finds-fda-struggles-meet-medical-device-recall-termination-goals
+  cost_share: { I: 0.60, II: 0.12, III: 0.02 } # A: field action cost as a share of the installed base's unit price (Philips' ~EUR 3-4B on ~5.5M devices, est.)
+precedents:
+  - key: philips_respironics
+    label: Philips Respironics sleep and respiratory devices
+    at: "2021-06"
+    note: Class I recall of ~5.5M CPAP and BiPAP devices (foam); consent decree entered April 2024 halted new US sales from its sites; a USD 1.1B personal-injury settlement in 2024.
+    source: "https://www.sec.gov/Archives/edgar/data/313216/000031321625000009/phg-20241231.htm"
+  - key: apple_watch_ecg
+    label: Apple Watch ECG app and irregular rhythm notification
+    at: "2018-09"
+    note: Over-the-counter De Novo grants (DEN180044, DEN180042), the first consumer smartwatch health features; later ECG apps cite them as predicates.
+    source: "https://fda.innolitics.com/device/DEN180044"
+  - key: dexcom_stelo
+    label: Dexcom Stelo, the first over-the-counter CGM
+    at: "2024-03"
+    note: Cleared 5 March 2024 for adults not on insulin; Abbott's Lingo and Libre Rio followed in June 2024.
+    source: "https://www.medtechdive.com/news/dexcom-stelo-over-the-counter-cgm/709416/"
+  - key: ai_devices_1000
+    label: FDA's list of AI-enabled devices passes 1,000
+    at: "2024-12"
+    note: 1,016 authorisations by the 20 Dec 2024 update, about 76% in radiology and 96-97% by 510(k).
+    source: "https://www.fda.gov/news-events/press-announcements/fda-roundup-december-20-2024"

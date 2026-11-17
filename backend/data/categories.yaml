@@ -100,6 +100,7 @@ segments:
     base_churn: 0.012
     adoption: 0.015
     reach: sales
+
   # M39 (formulas.md 53.1-53.2): robot buyers by industry, all sales-led. Industrial robots sell to
   # car and parts makers (automotive), electronics makers and the rest of industry (metal, plastics,
   # food, general); humanoids to logistics, retail and manufacturing, and to homes (the consumer
@@ -147,7 +148,6 @@ segments:
     base_churn: 0.017
     adoption: 0.01
     reach: sales
-
 categories:
   - key: b2b_saas
     label: B2B SaaS
@@ -403,6 +403,83 @@ categories:
       - { segment: consumer, addressable: 1400, reference_price_cents: 3500000, hosting_cents: 2870000, replacement_months: 96 }
       - { segment: fleet, addressable: 4, reference_price_cents: 3200000, hosting_cents: 2624000, units_per_customer: 50, replacement_months: 48 }
       - { segment: commercial, addressable: 5, reference_price_cents: 4000000, hosting_cents: 3280000, units_per_customer: 20, replacement_months: 84 }
+  # --- M41 (formulas.md 50.1): medical devices, family medical --------------------------------
+  # Each sub-category's routes, studies, coverage and recalls are medical.yaml's; a product sells in
+  # a region only once cleared there (tst.sim.medical gates new wins in the market phase). Markets
+  # follow the game's economy (M41 decision): D0 = medical.yaml's real 2024 world revenue x
+  # economy_scale.money (0.0849) / (a customer's yearly spend x 2.236, the regions' size x price
+  # index summed, x 0.65, incumbents' starting share of D0), taken back to 2010 by `growth_by_year`
+  # so 2010's real revenue (medical.yaml) also matches. A customer's yearly spend is units x price x
+  # 12 / replacement_months plus units x medical.yaml consumables_cents x 12. hosting_cents is a
+  # rival's cost per unit (35% of the price: device makers' ~65% gross margins, A) or per customer.
+  # Random startups, CPO pitches and angel backing skip family medical (scheduled rivals only).
+  - key: wearables_diagnostics
+    label: "Medical: wearables and diagnostics"
+    family: medical
+    growth: 0.15
+    growth_by_year: { 2010: 0.15, 2025: 0.08 } # 2010 $2B to 2024 $14B real (x7.08); A after
+    features_at_start: 50
+    features_per_month: 6.0
+    scope: 6
+    brand_constant: 120
+    launch_quality: 40 # A: a device must work before its review
+    revenue_model: units
+    dev_weights: { hardware_design: 0.35, software_engineering: 0.20, data: 0.15, manufacturing: 0.15, design: 0.15 }
+    markets:
+      - { segment: consumer, addressable: 92464, reference_price_cents: 15000, hosting_cents: 5250, replacement_months: 36 } # $1,250 a user a year with sensors; 654k in 2024
+  - key: imaging
+    label: "Medical: imaging"
+    family: medical
+    growth: 0.03 # 2010 $30B to 2024 $44B real (x1.51)
+    features_at_start: 50
+    features_per_month: 4.0
+    scope: 6
+    brand_constant: 150
+    launch_quality: 40
+    revenue_model: units
+    dev_weights: { hardware_design: 0.40, software_engineering: 0.20, manufacturing: 0.20, data: 0.10, design: 0.10 }
+    markets:
+      - { segment: enterprise, addressable: 5155, reference_price_cents: 40000000, hosting_cents: 14000000, units_per_customer: 4, replacement_months: 96 } # a hospital's four systems at $400k, with service; $329.6k a year
+  - key: surgical_robotics
+    label: "Medical: surgical robotics"
+    family: medical
+    growth: 0.14
+    growth_by_year: { 2010: 0.14, 2025: 0.10 } # 2010 $1.6B to 2024 $10B real (x6.26); A after
+    features_at_start: 50
+    features_per_month: 4.0
+    scope: 8
+    brand_constant: 150
+    launch_quality: 45
+    revenue_model: units
+    dev_weights: { hardware_design: 0.35, software_engineering: 0.25, manufacturing: 0.20, ml_research: 0.10, design: 0.10 }
+    markets:
+      - { segment: enterprise, addressable: 111, reference_price_cents: 150000000, hosting_cents: 52500000, replacement_months: 120 } # a $1.5M system with $57.4k a month in instruments and service: $838.8k a year (Intuitive 2024)
+  - key: implantables
+    label: "Medical: implantables"
+    family: medical
+    growth: 0.03 # 2010 $20B to 2024 $30.5B real (x1.51)
+    features_at_start: 50
+    features_per_month: 3.0
+    scope: 6
+    brand_constant: 150
+    launch_quality: 45
+    revenue_model: units
+    dev_weights: { hardware_design: 0.35, manufacturing: 0.30, software_engineering: 0.15, design: 0.10, data: 0.10 }
+    markets:
+      - { segment: enterprise, addressable: 736, reference_price_cents: 800000, hosting_cents: 280000, units_per_customer: 200, replacement_months: 12 } # a hospital's 200 implants a year at $8,000: $1.6M
+  - key: samd
+    label: "Medical: software and AI"
+    family: medical
+    growth: 0.20
+    growth_by_year: { 2010: 0.20, 2016: 0.35, 2025: 0.20 } # 2010 $0.05B to 2024 $1.5B real (x32.9); A after
+    features_at_start: 30
+    features_per_month: 6.0
+    scope: 8
+    brand_constant: 80
+    launch_quality: 40
+    dev_weights: { ml_research: 0.40, software_engineering: 0.25, data: 0.25, security: 0.10 }
+    markets:
+      - { segment: enterprise, addressable: 28, reference_price_cents: 800000, hosting_cents: 120000 } # a hospital's $8,000 a month for diagnostic AI: $96k a year
 
   # M39 (formulas.md 53.1): industrial robots. A unit-sale market whose addressable customers are
   # set each month from robotics.yaml (not grown here): a region's installations a year (IFR,

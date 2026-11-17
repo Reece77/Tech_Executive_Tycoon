@@ -374,6 +374,12 @@ def apply_choice(
             state, posted, logged = platform_step(state, event, effect.stat, rng, balance, data)
             entries += posted
             logs += logged
+        elif t == "medical_step" and effect.stat:  # M41 (50.5): a class I recall's answer
+            from tst.sim.medical.answers import medical_step
+
+            state, posted, logged = medical_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "regulation_step" and effect.stat:  # M34 (48.3-48.4)
             from tst.sim.regulation.answers import regulation_step
             from tst.sim.rng import RngFactory

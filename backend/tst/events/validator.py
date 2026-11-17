@@ -17,6 +17,7 @@ from tst.sim.events.data import (
     FOUNDER_STEPS,
     GEOPOLITICS_STEPS,
     GROUP_STEPS,
+    MEDICAL_STEPS,
     MINING_STEPS,
     MODIFIER_STATS,
     PLATFORM_STEPS,
@@ -89,6 +90,8 @@ def allowed_effects(
             continue  # M31 (44.5): only a removal template's own answers
         if effect == "regulation_step" and "regulation_step" not in template_types:
             continue  # M34 (48): only a regulation template's own answers
+        if effect == "medical_step" and "medical_step" not in template_types:
+            continue  # M41 (50.5): only a recall template's own answers
         if effect == "robotics_step" and "robotics_step" not in template_types:
             continue  # M39 (53.3): only a robotaxi incident template's own answers
         if effect == "public_step" and "public_step" not in template_types:
@@ -182,6 +185,7 @@ def validate_event(
                 "geopolitics_step",
                 "platform_step",
                 "regulation_step",
+                "medical_step",
                 "robotics_step",
             ):  # engine steps
                 stat = item.get("stat")
@@ -196,6 +200,7 @@ def validate_event(
                     "geopolitics_step": GEOPOLITICS_STEPS,
                     "platform_step": PLATFORM_STEPS,
                     "regulation_step": REGULATION_STEPS,
+                    "medical_step": MEDICAL_STEPS,
                     "robotics_step": ROBOTICS_STEPS,
                 }[kind]
                 if stat not in steps:

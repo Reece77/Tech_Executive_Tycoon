@@ -43,6 +43,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "geopolitics": 6,
         "platforms": 1,  # M31: a gatekeeper's removal (44.5)
         "regulation": 4,  # M34: an inquiry, charges, a ruling and a structural order (48)
+        "medical": 1,  # M41: a class I recall (50.5)
         "robotics": 2,  # M39: a robotaxi collision and a pedestrian struck (53.3)
     }
     for trigger in TRIGGERS:

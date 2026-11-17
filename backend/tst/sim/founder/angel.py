@@ -357,7 +357,12 @@ def back_startup(
     if category_key not in keys:
         raise InvalidActionError(f"unknown category {category_key!r}")
     category = data.category(category_key)
-    if category.capacity_market or category.sells_units or category.assembly_market:
+    if (
+        category.capacity_market
+        or category.sells_units
+        or category.assembly_market
+        or category.medical
+    ):
         raise InvalidActionError(f"a new startup cannot start in {category.label}")
     taken = {c.name for c in state.companies}
     names = [n for n in data.startup_names if n not in taken]

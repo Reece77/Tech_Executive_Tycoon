@@ -1,4 +1,4 @@
-"""Loading and syncing M39's records (formulas.md 53; migration 0059_m39). Every collection lives
+"""Loading and syncing M39's records (formulas.md 53; migration 0060_m39). Every collection lives
 in `robotics_record`, one row a record (`kind` = the GameState field), its fields in `data`; a
 changed collection is rewritten whole. Nested months (a plant automation's month and history, a
 zone's month) and the game-wide `robotics_world` (one row) are encoded field by field."""
@@ -91,7 +91,7 @@ def _decode(kind: str, data: dict[str, Any]) -> Any:
 def load_robotics(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every robotics record (0059_m39); a save from before M39 has none."""
+    """Every robotics record (0060_m39); a save from before M39 has none."""
     if not has_table(session, RoboticsRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

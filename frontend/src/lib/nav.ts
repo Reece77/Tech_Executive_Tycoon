@@ -94,6 +94,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'products',
   },
   {
+    path: 'products/medical',
+    label: 'Medical',
+    group: 'products',
+    unlock: 'medical',
+    side: true,
+    parent: 'products',
+  }, // M41
+  {
     path: 'products/markets',
     label: 'Markets',
     group: 'markets',

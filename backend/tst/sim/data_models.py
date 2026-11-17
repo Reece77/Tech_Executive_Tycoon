@@ -60,6 +60,7 @@ from tst.sim.geopolitics.config import (
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
+from tst.sim.medical.config import MedicalBalance, MedicalFile
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
 from tst.sim.modes.config import (
@@ -1385,6 +1386,7 @@ class Balance(_Frozen):
     estate_tax: dict[str, EstateRegion]  # M36 (formulas.md 45.6): by home region
     platforms: PlatformsBalance  # M31 (formulas.md 44): platforms and ecosystems
     regulation: RegulationBalance  # M34 (formulas.md 48): regulation with teeth
+    medical: MedicalBalance  # M41 (formulas.md 50): medical devices
     economy_scale: EconomyScaleBalance  # M34: real thresholds read in the game's economy
     equipment: EquipmentBalance  # M33 (formulas.md 47): semiconductor equipment
     vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
@@ -1687,7 +1689,7 @@ class CategoryDef(_Frozen):
     capacity_market: bool = False  # M12a (22.3): sells spare data-centre capacity
     # M12b (26.1-26.3): `units` sells units once per customer in play (subscription: monthly)
     revenue_model: RevenueModel = "subscription"
-    family: str | None = None  # "chips" for the chip categories (one per chip type)
+    family: str | None = None  # "chips" for the chip categories (one per chip type); M41 "medical"
     chip_type: str | None = None  # chips.types key a chip category's products are
     # segment -> categories whose demand growth this segment's demand follows (26.3)
     growth_follows: dict[str, tuple[str, ...]] | None = None
@@ -1695,6 +1697,11 @@ class CategoryDef(_Frozen):
     # M38 (49.1): a rival's cost of goods a unit is this share of its own price (cars' prices
     # differ too much for one hosting_cents); None = the market's hosting_cents
     rival_cost_share: float | None = Field(default=None, gt=0, lt=1)
+
+    @property
+    def medical(self) -> bool:
+        """M41 (50.1): a medical-device sub-category (scheduled rivals only; regulated sales)."""
+        return self.family == "medical"
 
     @property
     def sells_units(self) -> bool:
@@ -2112,6 +2119,7 @@ class GameData(_Frozen):
     regulation: RegulationFile | None = None  # M34 (48); None = no regulation
     equipment: EquipmentFile | None = None  # M33 (47); None = M21's EUV tools good
     vehicles: VehiclesFile | None = None  # M38 (49); None = no vehicles market's history
+    medical: MedicalFile | None = None  # M41 (50); None = no medical rules
     robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
 
     def bank(self, key: str) -> Bank:

@@ -18,6 +18,7 @@ import { KpiTile } from '../components/KpiTile';
 import { ExportPanel } from '../components/ExportPanel';
 import { RegionsPanel } from '../components/RegionsPanel';
 import { PlatformSection } from '../components/PlatformSection';
+import { MedicalSection } from '../components/MedicalSection';
 import { BreakdownTip, Term } from '../components/Term';
 import { LifecycleChip } from '../components/LifecycleChip';
 import { ScoreBar, ScoreLegend, type ScoreBarItem } from '../components/ScoreBar';
@@ -201,6 +202,7 @@ function ProductBody({
       <ActiveEffects saveId={saveId} effects={p.active_effects} />
       <RegionsPanel saveId={saveId} productId={p.product_id} />
       <PlatformSection saveId={saveId} productId={p.product_id} />
+      <MedicalSection saveId={saveId} productId={p.product_id} />
       <ExportPanel saveId={saveId} productId={p.product_id} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
         {editing && (

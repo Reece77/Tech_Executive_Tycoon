@@ -198,6 +198,15 @@ export const GUIDES: Record<string, Guide> = {
       "Cells are the biggest cost a car's maker controls: from stage 4 a cell plant fed by your own lithium makes them at cost.",
     ],
   },
+  medical: {
+    title: 'Medical',
+    path: 'products/medical',
+    what: "Medical devices: wearables and diagnostics, imaging, surgical robots, implants and diagnostic software. Each needs clearance by region before it sells (510(k), De Novo or PMA in the US, CE marking in the EU), and payers' coverage and clinicians' trust before it sells widely.",
+    start: [
+      "Choose the device's intended use: its class and route follow. A 510(k) needs a predicate on the market and takes months; a PMA needs a pivotal study first and takes years.",
+      'Evidence from studies shortens coverage decisions and speeds adoption; a better quality system means fewer recalls.',
+    ],
+  },
   robotics: {
     title: 'Robotics',
     path: 'products/robotics',

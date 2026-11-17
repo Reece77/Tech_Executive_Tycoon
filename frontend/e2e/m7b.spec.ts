@@ -51,6 +51,7 @@ test('(b) rename, duplicate and restore a save, and find the restored copy', asy
   page,
   request,
 }) => {
+  test.setTimeout(60_000); // the fixture plays ten months through the API to reach the periodic backup
   const save = `m7b-saves-${stamp}`;
   makeSave(save); // played two months; no backup yet
   // A periodic backup comes every 12 months; play to it through the API.
