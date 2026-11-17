@@ -387,6 +387,13 @@ class VehicleRuleError(SimError):
     code = "vehicle_rule"
 
 
+class RoboticsRuleError(SimError):
+    """A robotics action the rules do not allow (M39, formulas.md 53). The message never names
+    a permit's decision month or an incident's chance."""
+
+    code = "robotics_rule"
+
+
 class EquipmentRuleError(SimError):
     """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
     formulas.md 47). The message never names an allocation weight or a programme's draws."""
