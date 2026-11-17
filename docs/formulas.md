@@ -3979,3 +3979,32 @@ Products, fleets, zones and permits, rides and utilisation, plant automation lev
 - **Frontier and markets** continue at load: each domain's rate x0.85 a decade from 2040; research budgets +3% a year; base growth decays to `markets.mature_growth` (0.01-0.015) with a 3-year half-life. Carbon reverts to a seeded long-run level ($120-300/t) at 15% of the log gap a year.
 - **Rivals:** each January a leader retires with chance 0.06 x (age - 61), +0.10 after a losing year; an heir, insider or outside hire succeeds (25/45/30%), and the personality type may change (20/10/50%). A category below 3 active rivals gets as many seeded entrants as it takes; 30% carry a failed rival's brand.
 - **The founder:** from 75, q = the SSA 2021 male period table x 0.70 x stress (0.85-1.25) x family time (to 0.90). A death settles the estate at once and hands over to the readiest heir; with none ready, the eldest living child (else the partner) becomes the head and the board appoints a CEO; with no family the game ends (`founder_died`). Without a family a founder may retire in dynasty years (`founder_retired`).
+
+## 54. Market sizes and saturation (M43a; v5)
+
+M37's diagnosis (2026-11-17, decision 22) found the game's economy running away: the AI-models market is about **$1.2–1.6 trillion a year in 2025** at real-dollar equivalent (`economy_scale.money` 0.0849), about **$1,600–2,600 trillion in 2039**, and about **$100,000 trillion in 2069**. World GDP is about $110 trillion. The cause is growth with no ceiling: from 2030 `ai_models` grows 25% a year for ever, era boosts add on top, and nothing makes a market slow as it approaches the size of the economy that buys from it. This section adds that ceiling for every category, recalibrates 2025 against published market sizes, and keeps the history the player has seen as close as it can.
+
+### 54.1 A ceiling for every market
+
+- Each category has a **ceiling** `C_c(t)`: the most its addressable market can be in a region, as a share of that region's economy (`markets.ceiling_share.<category>`, from the research dossier: for example, all IT spending is about 4–6% of world GDP, and no single category may take more than a set share of that), times the region's GDP path (`macro_history.yaml` to 2025, then a seeded path with long-run growth about 2–3% a year real plus inflation).
+- **Saturation:** each month a category's growth `g` (base growth plus era boosts, §21.4, §26.4) is applied as `g × (1 − A / C)`, where `A` is the addressable market. Far below the ceiling, growth is as before; near it, growth fades; a market can't pass its ceiling. Era boosts lift the ceiling of the categories they renew by `markets.era_ceiling_lift` (an era makes a market bigger, not infinite).
+- **Long-run growth** after 2030 decays toward the region's economy's growth plus a category premium (`markets.mature_premium`), replacing open-ended rates such as `ai_models`' 25%.
+
+### 54.2 Calibration to 2025
+
+- Each category's 2025 addressable market at real-dollar equivalent (game value ÷ `economy_scale.money`) is compared with published 2025 market sizes (research dossier), with a band of 0.5–2× (market definitions vary). Categories outside the band are recalibrated by their `growth_by_year` and starting sizes, keeping their 2010 starts and the shape of the curve where they can.
+- **M8 target 4** (January 2024 AI demand 100–400× January 2010) is re-measured. If calibration needs it outside that band, the session reports the numbers: changing M8's band is the product manager's call (CLAUDE.md §9).
+
+### 54.3 What may change, and how it is checked
+
+- Unlike every milestone since M28, **history before 2026 may change** where §54.2's calibration requires it, because the history the game currently shows is wrong in scale. Every change to a series before 2026 is listed with before and after values. M28's history fingerprint and M30's state cache are re-recorded with the reason.
+- Every earlier guard is re-run, and rules 1–4 apply. Guards that measure ratios (most of them) should hold; guards on absolute sizes are re-measured and reported.
+
+### 54.4 Balance targets (printed)
+
+1. **The economy is believable:** in every year to 2069, no category's addressable market exceeds its ceiling, and the sum of all technology categories stays under `markets.tech_share_max` (15%) of world GDP.
+2. **2025 matches the world:** every category's 2025 market sits within 0.5–2× its published size (real-dollar equivalent), or is reported with a reason.
+3. **Growth fades, not stops:** every category grows at least 1% a year (nominal) on average through the 2060s unless an era ended it.
+4. **Headroom:** no money value in a dynasty run passes 1.0e18 cents (M37's `M37.money` guard closes as met).
+5. **Ratios hold:** v1–v4 strategy ratios (V1–V6, M23b's and M35b's targets) stay in their bands, or are reported under rules 1–4.
+6. **Turn time** within the guards.
