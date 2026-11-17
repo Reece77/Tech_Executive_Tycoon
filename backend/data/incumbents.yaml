@@ -1057,3 +1057,261 @@ companies:
           consumer: { price_cents: 5000000, share_bp: 0 }
           fleet: { price_cents: 4550000, share_bp: 0 }
           commercial: { price_cents: 5700000, share_bp: 0 }
+
+  # --- M39 (formulas.md 53.1-53.2), appended: robot makers, each with one robots product. Industrial
+  # robot prices are a robot's in North America in 2010 dollars (A from robotics.yaml's average value a
+  # robot, by maker: FANUC and ABB at the market, KUKA dearer for car lines, Estun about 30% cheaper),
+  # x the region's price index elsewhere. share_bp 0: customers follow robotics.yaml's shares to 2025
+  # (53.4 target 1, history holds), set each month. Humanoid makers sell from the humanoid_robotics
+  # era's arrival (no price before); Tesla Optimus is Tesla's humanoid programme kept as its own rival
+  # (product ids follow this file, so Tesla's entry above is not reordered). Quality, features and
+  # brand: A, from industry rankings and reviews. Each has 2 named key people (as M38's car makers).
+  # listed_from: R (FANUC and Yaskawa on the Tokyo exchange long before 2010; Estun Shenzhen 2015;
+  # UBTech Hong Kong December 2023); KUKA was listed in Frankfurt to its 2022 squeeze-out (not modelled).
+
+  - name: FANUC
+    stage: 4
+    founded_year: 1972
+    listed_from: [1984, 1]
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: FANUC robots
+        category: industrial_robots
+        quality: 82
+        features: 78
+        brand: 85
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          automotive: { price_cents: 4500000, share_bp: 0 }
+          electronics: { price_cents: 2800000, share_bp: 0 }
+          general_industry: { price_cents: 3500000, share_bp: 0 }
+
+  - name: ABB Robotics
+    stage: 4
+    founded_year: 1974
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: ABB robots
+        category: industrial_robots
+        quality: 80
+        features: 80
+        brand: 82
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          automotive: { price_cents: 4600000, share_bp: 0 }
+          electronics: { price_cents: 2900000, share_bp: 0 }
+          general_industry: { price_cents: 3600000, share_bp: 0 }
+
+  - name: Yaskawa
+    stage: 4
+    founded_year: 1915
+    listed_from: [1949, 5]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Yaskawa Motoman
+        category: industrial_robots
+        quality: 78
+        features: 74
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, oceania]
+        segments:
+          automotive: { price_cents: 4300000, share_bp: 0 }
+          electronics: { price_cents: 2600000, share_bp: 0 }
+          general_industry: { price_cents: 3300000, share_bp: 0 }
+
+  - name: KUKA
+    stage: 4
+    founded_year: 1898
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: KUKA robots
+        category: industrial_robots
+        quality: 80
+        features: 76
+        brand: 78
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa]
+        segments:
+          automotive: { price_cents: 4800000, share_bp: 0 }
+          electronics: { price_cents: 3000000, share_bp: 0 }
+          general_industry: { price_cents: 3700000, share_bp: 0 }
+
+  - name: Universal Robots
+    stage: 3
+    founded_year: 2005
+    personality: aggressive
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: UR cobots
+        category: industrial_robots
+        quality: 72
+        features: 82
+        brand: 70
+        regions: [north_america, europe, east_asia, south_southeast_asia, oceania]
+        segments:
+          automotive: { price_cents: 3000000, share_bp: 0 }
+          electronics: { price_cents: 2200000, share_bp: 0 }
+          general_industry: { price_cents: 2400000, share_bp: 0 }
+
+  - name: Estun
+    stage: 3
+    founded_year: 1993
+    listed_from: [2015, 3]
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Estun robots
+        category: industrial_robots
+        quality: 66
+        features: 64
+        brand: 55
+        regions: [east_asia, south_southeast_asia, latin_america, africa]
+        segments:
+          automotive: { price_cents: 3200000, share_bp: 0 }
+          electronics: { price_cents: 2000000, share_bp: 0 }
+          general_industry: { price_cents: 2400000, share_bp: 0 }
+
+  - name: Tesla Optimus
+    stage: 3
+    founded_year: 2021
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Optimus
+        category: humanoid_robots
+        quality: 72
+        features: 75
+        brand: 80
+        regions: [north_america, europe, east_asia]
+        segments:
+          logistics: { price_cents: 3500000, share_bp: 0 }
+          retail: { price_cents: 3500000, share_bp: 0 }
+          manufacturing: { price_cents: 3500000, share_bp: 0 }
+          consumer: { price_cents: 2200000, share_bp: 0 }
+
+  - name: Figure AI
+    stage: 2
+    founded_year: 2022
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Figure
+        category: humanoid_robots
+        quality: 74
+        features: 78
+        brand: 65
+        regions: [north_america, europe]
+        segments:
+          logistics: { price_cents: 4200000, share_bp: 0 }
+          retail: { price_cents: 4200000, share_bp: 0 }
+          manufacturing: { price_cents: 4200000, share_bp: 0 }
+          consumer: { price_cents: 2800000, share_bp: 0 }
+
+  - name: Agility Robotics
+    stage: 2
+    founded_year: 2015
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Digit
+        category: humanoid_robots
+        quality: 70
+        features: 68
+        brand: 60
+        regions: [north_america, europe]
+        segments:
+          logistics: { price_cents: 3800000, share_bp: 0 }
+          retail: { price_cents: 3800000, share_bp: 0 }
+          manufacturing: { price_cents: 3800000, share_bp: 0 }
+
+  - name: Unitree
+    stage: 3
+    founded_year: 2016
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Unitree humanoids
+        category: humanoid_robots
+        quality: 66
+        features: 70
+        brand: 60
+        regions: [east_asia, north_america, europe, south_southeast_asia]
+        segments:
+          logistics: { price_cents: 2200000, share_bp: 0 }
+          retail: { price_cents: 2200000, share_bp: 0 }
+          manufacturing: { price_cents: 2200000, share_bp: 0 }
+          consumer: { price_cents: 1500000, share_bp: 0 }
+
+  - name: UBTech
+    stage: 3
+    founded_year: 2012
+    listed_from: [2023, 12]
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Walker
+        category: humanoid_robots
+        quality: 64
+        features: 66
+        brand: 55
+        regions: [east_asia, south_southeast_asia]
+        segments:
+          logistics: { price_cents: 2800000, share_bp: 0 }
+          retail: { price_cents: 2800000, share_bp: 0 }
+          manufacturing: { price_cents: 2800000, share_bp: 0 }
+
+  - name: Boston Dynamics
+    stage: 3
+    founded_year: 1992
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Atlas
+        category: humanoid_robots
+        quality: 78
+        features: 72
+        brand: 72
+        regions: [north_america, europe, east_asia]
+        segments:
+          logistics: { price_cents: 5000000, share_bp: 0 }
+          retail: { price_cents: 5000000, share_bp: 0 }
+          manufacturing: { price_cents: 5000000, share_bp: 0 }

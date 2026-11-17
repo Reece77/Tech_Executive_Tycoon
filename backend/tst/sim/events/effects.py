@@ -354,6 +354,12 @@ def apply_choice(
             state, posted, logged = refining_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "robotics_step" and effect.stat:  # M39 (53.3): a robotaxi incident's answer
+            from tst.sim.robotics.events import robotics_step
+
+            state, posted, logged = robotics_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "geopolitics_step" and effect.stat:  # M22 (39.3): an export rule's answer
             from tst.sim.geopolitics.events import geopolitics_step
 

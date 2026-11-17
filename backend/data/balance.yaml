@@ -347,6 +347,12 @@ products:
     fleet: 1.0 # M38 (49.1): fleets (rental, ride-hailing, company cars) buy through sales; a customer is a fleet of 50 cars (A)
     commercial: 1.0 # M38 (49.1): van and light-truck buyers, 20 a customer (A)
     device_oems: 0.1 # M12b (26.2, 26.3): device OEMs are sales-led
+    automotive: 0.3 # M39 (53.1): a car plant's robot cell order, 20 robots a customer (A)
+    electronics: 0.5 # M39: 8 robots a customer (A)
+    general_industry: 1.0 # M39: 3 robots a customer (A)
+    logistics: 0.5 # M39 (53.2): humanoid buyers (A)
+    retail: 0.5
+    manufacturing: 0.5
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
   qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
@@ -526,6 +532,8 @@ rivals:
     chips_ai_accelerator: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
     contract_manufacturing: { builder: 0.70, seller: 0.25, marketer: 0.05 } # M12b (26.2)
     vehicles: { builder: 0.65, seller: 0.20, marketer: 0.15 } # M38 (49.1): car makers (A, as devices with more sales for fleets)
+    industrial_robots: { builder: 0.65, seller: 0.25, marketer: 0.10 } # M39 (53.1): robot makers (A, as servers: sold to factories)
+    humanoid_robots: { builder: 0.75, seller: 0.15, marketer: 0.10 } # M39 (53.2): humanoid makers (A: engineering-led)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -1032,6 +1040,20 @@ facility:
       staff_skill: infrastructure
       sizes: [20, 50, 100, 250, 500] # chargers
       outages: false
+    depot: # M39 (53.3): a robotaxi depot in a city (chargers, cleaning bays, remote assistance desks) on the generic lifecycle; capacity in cars it serves; its zone's costs are tst.sim.robotics's
+      label: Robotaxi depot
+      unit: cars
+      input_good: equipment
+      output_good: mobility
+      capex_per_unit_cents: 1500000 # $15,000 a car served (A: a depot of 100-200 cars with fast chargers, land and building, $2-3M, in 2010 dollars)
+      build_months: 6 # A: a leased site fitted out
+      opex_per_unit_cents: 25000 # $250 a car a month: lease, utilities, upkeep (A)
+      life_months: 180 # 15 years (A)
+      staff_per: 100 # cars per operations manager (A; remote assistance is robotics.robotaxi's)
+      staff_roles: [operations_manager]
+      staff_skill: operations
+      sizes: [50, 100, 250, 500, 1000] # cars
+      outages: false
     plant: # M32 (46.2): an owned power plant on the shared facility record; its type, capex, build and costs are in power.yaml (module power)
       label: Power plant
       unit: MW
@@ -1093,6 +1115,8 @@ hardware:
     devices: { good: device_bom, base_cents: 18000, chip_type: mobile_soc, contract_fee_cents: 1300, plant_slots: 1 } # $180 BOM, a mobile SoC, $13 a unit at a contract manufacturer in Shenzhen (26.7)
     servers: { good: server_bom, base_cents: 280000, chip_type: server_cpu, contract_fee_cents: 8000, plant_slots: 6 }
     vehicles: { good: vehicle_bom, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 120000, plant_slots: 1 } # M38 (49.1): the body, chassis and interior ($18,000 at index 1.0, A: about half a $35,000 car less its powertrain); the pack, drive and chips are vehicles.bom's; a contract maker's fee $1,200 a car (A: contract assembly as Magna Steyr's or Foxconn's Foxtron, about twice an own plant's labour, Oliver Wyman 2025 labour cost $585-1,341 a car, S (search)); assembly units are cars # $2,800 BOM, a server CPU, $80 a unit; a server takes 6 units of plant capacity (M12b decision)
+    industrial_robots: { good: equipment, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 200000, plant_slots: 25 } # M39 (53.1): a six-axis robot's arm, reducers, servo motors and controller ($18,000 at index 1.0, A: about 55% of a $33,000 robot's price, makers' gross margins 35-45%, R); a contract maker's fee $2,000 (A); one robot takes 25 units of plant capacity (A: hours of assembly and test against a device's)
+    humanoid_robots: { good: device_bom, base_cents: 600000, chip_type: ai_accelerator, contract_fee_cents: 150000, plant_slots: 20 } # M39 (53.2): a humanoid's frame, battery, sensors and wiring ($6,000 at index 1.0, A); its actuators are robotics.yaml's learning-curve cost (tst.sim.robotics.humanoids) and its edge AI chip is an ai_accelerator (bought or own); 20 units of plant capacity (A)
   contract:
     energy: 6 # founder energy to sign a contract-manufacturing contract (26.2)
     months: [12, 24] # whole months a contract may run (26.2)
@@ -2774,3 +2798,95 @@ vehicles:
   energy: { design: 2, cell_plant: 12, charging: 8, exclusive: 2 } # founder energy (a vehicle plant is facility.build_energy)
   cell_good: battery_cells # commodities.yaml key of battery cells
   unlock_year: 2012 # the 2012 EV era: the Vehicles screen opens (M29), or with lithium supply
+
+# --- Robotics and robotaxis (formulas.md 53, M39, v5 lane F) ---------------------------------------
+# History to 2025 is robotics.yaml's (sourced); these are the rules and the seeded world after it.
+# A = an assumption for gameplay (no public figure); cited figures are marked. Money in 2010 cents.
+robotics:
+  start: "2026-01" # history holds before this month: installations, makers' shares, services; seeded from it
+  industrial: industrial_robots # categories.yaml keys
+  humanoid: humanoid_robots
+  mobility: mobility # a pseudo-category: a robotaxi service is built like a product and run by tst.sim.robotics
+  scale: 0.085 # game robot buyers and riders = real x this: the game's economy scale (as vehicles.scale; M34's economy_scale.money 0.0849; Reece 2026-11-15)
+  scale_basis: "Game robot and ride markets are 8.5% of the real ones at real prices (the game's economy scale)"
+  growth_after: [0.0, 0.08] # installations' annual growth after 2025, drawn by region each January (A: IFR's outlook of about 4-6% a year to 2028, around a flat 2023-2024)
+  replacement_months: { automotive: 84, electronics: 60, general_industry: 96 } # how often a buyer orders a new robot cell (also categories.yaml; A: automotive retools with model cycles of about 7 years, electronics with product cycles)
+  units_per_customer: { automotive: 20, electronics: 8, general_industry: 3 } # robots an order (also categories.yaml; A: a body-shop line takes dozens, a machine-tending cell one to three)
+  cobot_share: 0.11 # collaborative robots' share of installations (context, robotics.yaml)
+  automation:
+    plant_kinds: [assembly_plant, vehicle_plant] # facility kinds robots install in (cell plants and fabs: a follow-up)
+    workers_per_unit: { assembly_plant: 0.004, vehicle_plant: 0.19 } # line workers a unit a month at full capacity (D: about 30 labour hours a car at 160 hours a month, Harbour-style hours a vehicle, R; a phone or server board about 0.6 hours)
+    labour_share: { assembly_plant: 1.0, vehicle_plant: 1.0 } # share of the kind's variable_cents that is line labour (vehicle_plant: "line labour", facility.kinds; assembly: handling and test)
+    labour_per_robot: 1.0 # workers' worth of line labour a robot replaces (A: studies put one robot at 1-3 jobs across the economy, less on a line)
+    hours_per_month: 160 # a line worker's paid hours a month
+    max_share: 0.8 # of a plant's line labour robots can replace (A: final assembly and inspection stay manual)
+    life_months: 120 # a robot's depreciation, 10 years (A: industrial robots run 10-15 years)
+    target_level: 0.6 # the automation level 53.4 target 2 measures
+    defect_cut: 0.3 # share of a plant's yield loss full automation removes (output consistency, 53.1)
+    max_robots: 2000 # most robots one install order may add
+  humanoids:
+    weights: { hardware: 0.4, ai: 0.4, chips: 0.2 } # a humanoid's capability (53.2, A)
+    licensed_ai_quality: 70 # a licensed model's quality (A: a frontier model a generation behind)
+    bought_chip_quality: 60 # a bought edge accelerator's quality (A)
+    chip_cents: 150000 # $1,500 of bought edge compute a humanoid (A: a Jetson Thor-class module about $3,500 in 2025, in 2010 dollars and falling)
+    licence_cents: 100000 # a licensed AI model's fee a humanoid sold (A)
+    learning_rate: 0.18 # actuator cost falls 18% with each doubling of humanoids made (A: as 49.2's cells, robotics hardware learning 15-20%)
+    base_units: 20000 # cumulative humanoids at the era's arrival, the learning curve's base (A: the 2024-2029 pilots, robotics.yaml)
+    adoption_seed: 0.0005 # share of the worker pool's potential at the era's arrival (A)
+    adoption_cap: 0.05 # most of a region's worker pool humanoids serve (A)
+    adoption_k: 1.2 # logit a year per unit of value over cost above 1 (A, tuned for 53.4 target 3)
+    adoption_floor_k: 0.3 # logit a year at least once the era has arrived (A)
+    life_months: 60 # a humanoid's working life and its buyers' replacement cycle (A)
+    service_share: 0.10 # a year's service over its price (A)
+    capability_points: 0.3 # feature points a capability point above 50 (A)
+    home_window: [5, 10] # years after the era's arrival the home segment opens (seeded, hidden; A)
+    home_share: 0.02 # home buyers per business worker's potential (A)
+  robotaxi:
+    zone_sizes: # a zone's share of the city's ride-hailing trips and its permit review (A; Waymo's 2024 San Francisco zone covered most of the city)
+      small: { share: 0.15, review_months: 3 }
+      medium: { share: 0.35, review_months: 6 }
+      large: { share: 0.70, review_months: 9 }
+    acceptance: [0.05, 0.30] # riders' robotaxi share of covered trips at a city's first service and its cap (D: Waymo about 20-27% of San Francisco's ride-hail trips in 2025, robotaxi research)
+    acceptance_years: 4 # years from a city's first driverless service to half the cap (A)
+    price_elasticity: 1.0 # demand x (human fare / price) ** this (A)
+    wait_cars: 1.5 # cars per 1,000 covered trips a day for half the fleet's attraction (A)
+    max_rides_per_day: 30 # a car's most rides a day (A: charging, cleaning and peaks; Waymo's cars about 20-30)
+    days_per_month: 30.4
+    deadhead: 0.4 # empty km per paid km (A: ride-hail deadheading 30-45%)
+    kwh_per_km: 0.22 # an electric robotaxi (A: a Jaguar I-Pace about 0.22-0.25 kWh a km)
+    power_cents: 10 # a kWh at the depot at index 1.0 (A: US commercial power about $0.12 in 2024, in 2010 dollars)
+    cleaning_cents: 100 # $1 a ride (A)
+    insurance_cents: 40000 # $400 a car a month (A: commercial fleet cover)
+    cars_per_operator: 30 # remote assistance (A: Cruise had about 1.5 staff a car in 2023, Waymo's ratio is far lower)
+    operator_cents: 450000 # a remote assistance operator a month, loaded (A: about $55,000 a year)
+    depreciation_months: 60 # a robotaxi's life, 5 years (A)
+    depot_cars: 1 # cars one unit of depot capacity serves
+    incident_rate: 2.0 # incidents a million km at maturity zero (A: police-reported crashes about 3 a million miles for human drivers, Waymo's under half)
+    maturity_km: 20 # million km of the company's driverless driving that halves the rate (A)
+    ai_cut: 0.5 # rate cut at AI quality 100, from the L4 threshold (A)
+    serious_share: 0.04 # of incidents that are serious: a critical event (A: Waymo's injury crashes are a small share)
+    minor_cents: 2000000 # $20,000 a minor incident (A: repairs and a claim)
+    serious_cents: 200000000 # $2M a serious incident (A: claims, a recall of the zone's software)
+    brand_points: { minor: 0.5, serious: 8 }
+    suspend_months: 6 # a serious incident suspends the zone's permit (D: Cruise's suspension, October 2023, never lifted; Waymo's recalls cost weeks)
+    approval_chance: 0.25 # a month's chance of the regulator's decision once the review's least length has passed (A)
+    refusal_share: 0.1 # of decisions that refuse (A)
+    incident_refusal: 0.25 # refusal share added per serious incident in the last 24 months (A)
+    breakeven_rides: 6 # rides a car a day above which a fleet earns a positive contribution (53.4 target 4; D from these costs at a $17 fare)
+    rival_entry: 0.35 # a rival operator's chance each December of a new city (2026+, A)
+    rival_fleet: 200 # a new rival city's fleet, real cars (A: Waymo's launches with about 100-300)
+    rival_growth: 0.30 # a rival fleet's growth a year after 2025 (A)
+    rides_per_car_week: 120 # a rival car's paid rides a week after 2025 (D: Waymo about 250,000 a week on about 1,500 cars in 2025, robotics.yaml)
+    max_cars: 2000 # most cars one order adds
+  depot_kind: depot # facility.kinds key
+  rival_cash_cents: 20000000000 # $200M opening capital for each robot maker's robot business (A: as vehicles.rival_cash_cents)
+  history_months: 36 # months of a plant's, product's or zone's history the API shows
+  energy: { install: 4, design: 2, zone: 6, fleet: 4, depot: 8, price: 1, close: 4 } # founder energy
+  unlock_year: 2013 # the Robotics screen opens (M29) from 2013 for a stage-3 company, or with a plant
+  incident_event: # M39 (53.3): the answer to a serious robotaxi incident (data/events/robotics.yaml, A)
+    cooperate_share: 0.5 # the suspension's months left are halved
+    cooperate_cents: 50000000 # $500,000 of legal and audit cost
+    compensate_cents: 300000000 # $3M to the people hurt and for a software recall
+    recover_points: 5 # brand points back on the service
+    contest_chance: 0.5 # chance the regulator extends the suspension (stream robotics (1, zone_id, cities))
+    contest_months: 6 # months it adds

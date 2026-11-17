@@ -96,6 +96,7 @@ from tst.sim.rivals.startups import (
 )
 from tst.sim.rivals.stories import STORY, month_stories
 from tst.sim.rng import RngFactory
+from tst.sim.robotics import phase as robotics_phase
 from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import (
@@ -307,6 +308,8 @@ def production_and_capacity(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*car_entries).log(*car_logs)
+    # M39 (53.1): automated plants' saving a unit and yield (after the plants' yields).
+    ctx = replace(ctx, state=robotics_phase.production_month(ctx.state, ctx.balance, ctx.data))
     # M33 (47): ASML's capacity and queue, deliveries, the lithography programme.
     state, eq_entries, eq_logs = equipment_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*eq_entries).log(*eq_logs)
@@ -327,6 +330,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     )
     # M38 (49.1, 49.3, 49.5): cars' range, charging, autonomy and platform points, subsidies
     platform_effects = vehicles_sales.with_effects(platform_effects, state, ctx.balance, ctx.data)
+    # M39 (53.2): the player's humanoids' capability points
+    platform_effects = robotics_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -340,6 +345,11 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*car_entries).log(*car_logs)
+    # M39 (53.1-53.3): automated plants, humanoid licences, robotaxi zones
+    state, robot_entries, robot_logs = robotics_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*robot_entries).log(*robot_logs)
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
@@ -477,6 +487,7 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     macro layer joins later."""
     state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
     state, car_logs = vehicles_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M38
+    state = robotics_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M39 (53)
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)

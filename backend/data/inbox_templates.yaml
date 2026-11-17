@@ -802,6 +802,42 @@ templates:
   autonomy_approved:
     title: "{region} approves {level}"
     body: "The region's automotive regulator now allows {level}. Cars whose autonomy reaches it run it there from next month."
+  robots_installed: # M39 (53.1)
+    title: "{facility}: {robots} robots installed"
+    body: "You installed {robots} {source} robots for {capex_cents}. The plant's automation level is now {level}; they save {saving_cents} of line labour a unit run at this region's wages, and cost {service_cents} a month in service."
+  humanoid_designed: # M39 (53.2)
+    title: "{product}: design set"
+    body: "It runs {ai} and {chips}. Its capability is {capability} of 100."
+  zone_applied: # M39 (53.3)
+    title: "Permit applied for: {zone}"
+    body: "The regulator reviews a {size} driverless zone for at least {months} months. The decision is not known ahead."
+  zone_approved:
+    title: "Permit granted: {zone}"
+    body: "Driverless rides can start. Add cars and a depot in the city if you have not."
+  zone_refused:
+    title: "Permit refused: {zone}"
+    body: "The regulator turned the application down. You may apply again; a better safety record helps."
+  zone_reinstated:
+    title: "Permit reinstated: {zone}"
+    body: "The suspension has ended and the zone's cars are back in service."
+  zone_closed:
+    title: "Zone closed: {zone}"
+    body: "Its {cars} cars were sold for {sale_cents}."
+  fleet_added:
+    title: "{zone}: {cars} cars added"
+    body: "{cars} {source} robotaxis for {capex_cents}, depreciated over {months} months."
+  depot_ordered:
+    title: "{facility} ordered"
+    body: "A depot for {units} in {city}: capex of {capex_cents} paid over {months} months, live in {ready}. It needs {staff} operations managers."
+  robotaxi_minor:
+    title: "Minor robotaxi incident: {zone}"
+    body: "A low-speed collision with no injuries cost {cost_cents} in repairs and claims."
+  robotaxi_serious:
+    title: "Serious robotaxi incident: {zone}"
+    body: "A serious crash cost {cost_cents}. The regulator suspended the zone's permit for {months} months; no rides until it ends."
+  robotaxi_answered:
+    title: "Robotaxi incident: you chose to {step}"
+    body: "The zone's suspension now ends in month {until}."
   autonomy_incident:
     title: "Autonomy incident: {product} in {region}"
     body: "A crash with {level} engaged led to a recall of {cars} cars in {region}, costing {cost_cents}. The regulator suspended {level} for your cars there for {months} months."

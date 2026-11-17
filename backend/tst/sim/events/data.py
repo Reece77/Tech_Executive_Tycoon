@@ -36,6 +36,7 @@ CATEGORIES: Final = (
     "geopolitics",  # M22: export rules, détentes and listings (39), queued by the engine
     "platforms",  # M31: a gatekeeper's removal (44.5), queued by the engine
     "regulation",  # M34: investigations' stages and structural orders (48), queued by the engine
+    "robotics",  # M39: serious robotaxi incidents (53.3), queued by the engine
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
 NO_STAFF_CATEGORIES: Final = ("market", "finance", "founder")
@@ -95,6 +96,8 @@ GEOPOLITICS_TRIGGER: Final = "geopolitics"
 PLATFORMS_TRIGGER: Final = "platforms"
 # M34 (48.3-48.4): an investigation's stage or a structural order, queued by the engine.
 REGULATION_TRIGGER: Final = "regulation"
+# M39 (53.3): a serious robotaxi incident, queued by the engine by template id.
+ROBOTICS_TRIGGER: Final = "robotics"
 SCHEDULED: Final = (
     "storyline",
     "follow_up",
@@ -109,6 +112,7 @@ SCHEDULED: Final = (
     GEOPOLITICS_TRIGGER,
     PLATFORMS_TRIGGER,
     REGULATION_TRIGGER,
+    ROBOTICS_TRIGGER,
 )
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
 # critical template whenever it holds and no critical event came in the last 6 months.
@@ -129,7 +133,8 @@ CRITICAL_TRIGGERS: Final = (
     GEOPOLITICS_TRIGGER,
     PLATFORMS_TRIGGER,
     REGULATION_TRIGGER,
-)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3; 44.5; 48
+    ROBOTICS_TRIGGER,
+)  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3; 44.5; 48; 53.3
 
 EFFECT_TYPES: Final = (
     "morale_delta",
@@ -175,6 +180,8 @@ EFFECT_TYPES: Final = (
     "platform_step",
     # M34 (48.3-48.4): an investigation's or an order's answer (REGULATION_STEPS), by the engine.
     "regulation_step",
+    # M39 (53.3): a serious robotaxi incident's answer (ROBOTICS_STEPS), applied by the engine.
+    "robotics_step",
 )
 PRESS_STEPS: Final = ("bold", "measured", "deflect")
 FOUNDER_STEPS: Final = (
@@ -204,6 +211,7 @@ GEOPOLITICS_STEPS: Final = (  # M22 (39.3): export rules, supply cuts and listin
     "appeal",
 )
 PLATFORM_STEPS: Final = ("comply", "appeal", "regulators")  # M31 (44.5): a removal
+ROBOTICS_STEPS: Final = ("cooperate", "compensate", "contest")  # M39 (53.3): a robotaxi incident
 REGULATION_STEPS: Final = (  # M34 (48.3-48.4): an investigation's stage, a structural order
     "cooperate",
     "settle",
@@ -269,6 +277,7 @@ VALUELESS: Final = (
     "geopolitics_step",
     "platform_step",
     "regulation_step",
+    "robotics_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
 
@@ -302,6 +311,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "geopolitics_step": ("company",),
     "platform_step": ("product",),
     "regulation_step": ("company",),
+    "robotics_step": ("company",),
 }
 
 # M10b (23.2): what a modifier can change, and the target words each stat accepts. A company
@@ -374,6 +384,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     GEOPOLITICS_TRIGGER: frozenset({"rule"}),  # M22: the rule (or détente) the event is about
     PLATFORMS_TRIGGER: frozenset({"product", "platform", "owner", "regions"}),  # M31 (44.5)
     REGULATION_TRIGGER: frozenset({"regulator", "case", "market", "fine", "odds", "unit"}),  # M34
+    ROBOTICS_TRIGGER: frozenset(),  # M39 (53.3): company and founder only
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
 PLACEHOLDERS: Final = (
@@ -465,6 +476,9 @@ class EffectSpec(_Frozen):
         elif self.type == "regulation_step":
             if self.stat not in REGULATION_STEPS or self.months is not None:
                 raise ValueError(f"a regulation_step needs a stat in {list(REGULATION_STEPS)}")
+        elif self.type == "robotics_step":
+            if self.stat not in ROBOTICS_STEPS or self.months is not None:
+                raise ValueError(f"a robotics_step needs a stat in {list(ROBOTICS_STEPS)}")
         elif self.stat is not None or self.months is not None:
             raise ValueError("only a modifier has a stat and months")
         if self.target not in EFFECT_TARGETS[self.type]:
@@ -632,6 +646,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             GEOPOLITICS_TRIGGER,
             PLATFORMS_TRIGGER,
             REGULATION_TRIGGER,
+            ROBOTICS_TRIGGER,
         ):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
             if missing:

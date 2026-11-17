@@ -117,6 +117,10 @@ STREAM_IDS: Final = MappingProxyType(
         # after 2025, (0, n_regions) the game-wide learning rate; (1, product_id) autonomy
         # incidents; (2, facility) a cell plant's overrun and yield; (3, rival key) rival refreshes
         "vehicles": 63,
+        # M39 (formulas.md 53): (0, region_index, year) installations' growth after 2025 and
+        # (0, n_regions) the home humanoid window; (1, zone_id, city_index) a zone's incidents;
+        # (2, region_index, zone_id) a zone's permit decision; (3, operator_index) rival entries
+        "robotics": 66,
         "misc": 99,
     }
 )
