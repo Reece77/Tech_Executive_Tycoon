@@ -37,6 +37,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     CompanyState,
     GameState,
+    derived,
     player_companies,
     with_approach,
     with_pool,
@@ -371,21 +372,32 @@ def candidates(
     return ranked + region_candidates(state, company, months, balance, data) + research
 
 
+def _moves_of(state: GameState, company_id: int) -> tuple[RivalMove, ...]:
+    """A rival's moves in the state, in the state's order, from an index built once per state
+    (M37: scanning every rival's moves for every candidate grew with the dynasty years'
+    entrants; the same moves, so the same answers)."""
+
+    def index() -> dict[int, tuple[RivalMove, ...]]:
+        out: dict[int, list[RivalMove]] = {}
+        for m in state.rival_moves:
+            out.setdefault(m.company_id, []).append(m)
+        return {k: tuple(v) for k, v in out.items()}
+
+    return derived(state, "rival_moves_by_company", index).get(company_id, ())
+
+
 def _cooling(state: GameState, company_id: int, c: Candidate, balance: Balance) -> bool:
     rv = balance.rivals
     since = state.turn - rv.cooldown_turns
     if c.action == RESEARCH:  # M11 (21.6): one research action at a time
         return researching(state, company_id)
+    mine = _moves_of(state, company_id)
     if c.action == ENTER_REGION:  # M9: one region entry per rival per its cooldown (19.6)
         after = state.turn - balance.geo.region_entry.cooldown_turns
-        return any(
-            m.company_id == company_id and m.action == ENTER_REGION and m.turn > after
-            for m in state.rival_moves
-        )
-    for m in state.rival_moves:
+        return any(m.action == ENTER_REGION and m.turn > after for m in mine)
+    for m in mine:
         if (
-            m.company_id == company_id
-            and m.action == c.action
+            m.action == c.action
             and m.product_id == c.product_id
             and m.segment == c.segment
             and m.turn > since

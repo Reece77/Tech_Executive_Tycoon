@@ -83,7 +83,7 @@ from tst.sim.press.config import (
 )
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
-from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile
+from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1705,11 +1705,8 @@ class CategoryDef(_Frozen):
         before it, else `growth` (18.6)."""
         if not self.growth_by_year:
             return self.growth
-        rate = self.growth
-        for start in sorted(self.growth_by_year):
-            if start <= year:
-                rate = self.growth_by_year[start]
-        return rate
+        key = latest_year(self.growth_by_year, year)  # M37: a sorted, cached lookup
+        return self.growth if key is None else self.growth_by_year[key]
 
     @model_validator(mode="after")
     def _check(self) -> CategoryDef:
