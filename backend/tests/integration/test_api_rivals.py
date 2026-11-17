@@ -17,8 +17,8 @@ def test_rivals_profile_news_and_poach(tmp_path: Path, loaded: LoadedData) -> No
     with hiring_client(tmp_path) as api:
         rivals = api.get(f"{BASE}/rivals")
         assert (
-            rivals["established"] == 51 and rivals["startups_alive"] == 0
-        )  # M12a +4, M12b +12, M41 +12
+            rivals["established"] == 64 and rivals["startups_alive"] == 0
+        )  # M12a +4, M12b +12, M38 +13, M41 +12
         names = {r["name"]: r for r in rivals["rivals"]}
         salesforce = names["Salesforce"]
         assert salesforce["personality_label"] == "Premium"

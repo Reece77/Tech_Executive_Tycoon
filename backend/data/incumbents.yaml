@@ -774,6 +774,289 @@ companies:
         segments:
           device_oems: { price_cents: 12800000, share_bp: 2000 }
 
+  # --- M38 (formulas.md 49.1), appended: car makers, each with one vehicles product. Prices are
+  # a car's in North America in 2010 dollars (A: each maker's typical EV transaction price in its
+  # main market, R from their line-ups: Tesla Model 3/Y about $45,000-50,000 in 2024 dollars, BYD
+  # about $25,000-30,000 in China and more abroad, Rivian R1 about $75,000), x the region's price
+  # index elsewhere (tst.sim.vehicles.setup). share_bp 0: customers follow vehicles.yaml's shares to
+  # 2025 (49.1, history holds), set each month; NIO, Xiaomi and Rivian sell from their
+  # vehicles.yaml launch months. Quality, features and brand: A, from reviews and brand rankings.
+  # Each has 2 named key people (as M12b's 4, to keep the turn within its budget: product manager,
+  # 2026-11-03); their pools take the rest. listed_from: R (Tesla June 2010, GM's IPO November 2010,
+  # BYD's Hong Kong listing July 2002, NIO September 2018, Xiaomi July 2018, Rivian November 2021).
+
+  - name: Tesla
+    stage: 4
+    founded_year: 2003
+    listed_from: [2010, 6]
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Tesla Model line
+        category: vehicles
+        quality: 78
+        features: 85
+        brand: 85
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          consumer: { price_cents: 4200000, share_bp: 0 }
+          fleet: { price_cents: 3822000, share_bp: 0 }
+          commercial: { price_cents: 4788000, share_bp: 0 }
+
+  - name: BYD
+    stage: 4
+    founded_year: 1995
+    listed_from: [2002, 7]
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: BYD Dynasty and Ocean
+        category: vehicles
+        quality: 70
+        features: 72
+        brand: 70
+        regions: [east_asia, europe, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          consumer: { price_cents: 2600000, share_bp: 0 }
+          fleet: { price_cents: 2366000, share_bp: 0 }
+          commercial: { price_cents: 2964000, share_bp: 0 }
+
+  - name: Volkswagen Group
+    stage: 4
+    founded_year: 1937
+    listed_from: [1961, 8]
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Volkswagen ID
+        category: vehicles
+        quality: 72
+        features: 68
+        brand: 80
+        regions: [europe, north_america, east_asia, latin_america]
+        segments:
+          consumer: { price_cents: 3600000, share_bp: 0 }
+          fleet: { price_cents: 3276000, share_bp: 0 }
+          commercial: { price_cents: 4104000, share_bp: 0 }
+
+  - name: Toyota
+    stage: 4
+    founded_year: 1937
+    listed_from: [1949, 5]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2000
+    cash_months: 48
+    key_people: 2
+    products:
+      - name: Toyota Prime and bZ
+        category: vehicles
+        quality: 75
+        features: 60
+        brand: 85
+        regions: [east_asia, north_america, europe, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          consumer: { price_cents: 3400000, share_bp: 0 }
+          fleet: { price_cents: 3094000, share_bp: 0 }
+          commercial: { price_cents: 3876000, share_bp: 0 }
+
+  - name: Hyundai-Kia
+    stage: 4
+    founded_year: 1967
+    listed_from: [1974, 6]
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Hyundai Ioniq and Kia EV
+        category: vehicles
+        quality: 72
+        features: 70
+        brand: 70
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          consumer: { price_cents: 3300000, share_bp: 0 }
+          fleet: { price_cents: 3003000, share_bp: 0 }
+          commercial: { price_cents: 3762000, share_bp: 0 }
+
+  - name: General Motors
+    stage: 4
+    founded_year: 1908
+    listed_from: [2010, 11]
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Chevrolet Volt and Bolt
+        category: vehicles
+        quality: 66
+        features: 62
+        brand: 70
+        regions: [north_america, europe, latin_america]
+        segments:
+          consumer: { price_cents: 3300000, share_bp: 0 }
+          fleet: { price_cents: 3003000, share_bp: 0 }
+          commercial: { price_cents: 3762000, share_bp: 0 }
+
+  - name: Ford
+    stage: 4
+    founded_year: 1903
+    listed_from: [1956, 1]
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Ford Mustang Mach-E
+        category: vehicles
+        quality: 66
+        features: 62
+        brand: 72
+        regions: [north_america, europe]
+        segments:
+          consumer: { price_cents: 3500000, share_bp: 0 }
+          fleet: { price_cents: 3185000, share_bp: 0 }
+          commercial: { price_cents: 3990000, share_bp: 0 }
+
+  - name: Stellantis
+    stage: 4
+    founded_year: 2021
+    listed_from: [2021, 1]
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Stellantis e-CMP
+        category: vehicles
+        quality: 60
+        features: 55
+        brand: 65
+        regions: [europe, north_america, latin_america]
+        segments:
+          consumer: { price_cents: 2900000, share_bp: 0 }
+          fleet: { price_cents: 2639000, share_bp: 0 }
+          commercial: { price_cents: 3306000, share_bp: 0 }
+
+  - name: Geely
+    stage: 4
+    founded_year: 1986
+    listed_from: [2005, 5]
+    personality: fast_follower
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Geely, Volvo and Zeekr
+        category: vehicles
+        quality: 68
+        features: 70
+        brand: 60
+        regions: [east_asia, europe, north_america, south_southeast_asia, oceania]
+        segments:
+          consumer: { price_cents: 2800000, share_bp: 0 }
+          fleet: { price_cents: 2548000, share_bp: 0 }
+          commercial: { price_cents: 3192000, share_bp: 0 }
+
+  - name: SAIC
+    stage: 4
+    founded_year: 1955
+    listed_from: [1997, 11]
+    personality: cost_leader
+    builder_skill: 11
+    target_margin_bp: 1000
+    cash_months: 48
+    key_people: 2
+    products:
+      - name: SAIC MG and Wuling
+        category: vehicles
+        quality: 58
+        features: 55
+        brand: 50
+        regions: [east_asia, europe, south_southeast_asia, latin_america, oceania]
+        segments:
+          consumer: { price_cents: 1800000, share_bp: 0 }
+          fleet: { price_cents: 1638000, share_bp: 0 }
+          commercial: { price_cents: 2052000, share_bp: 0 }
+
+  - name: NIO
+    stage: 4
+    founded_year: 2014
+    listed_from: [2018, 9]
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: NIO ES and ET
+        category: vehicles
+        quality: 74
+        features: 80
+        brand: 62
+        regions: [east_asia, europe]
+        segments:
+          consumer: { price_cents: 3800000, share_bp: 0 }
+          fleet: { price_cents: 3458000, share_bp: 0 }
+          commercial: { price_cents: 4332000, share_bp: 0 }
+
+  - name: Xiaomi
+    stage: 4
+    founded_year: 2010
+    listed_from: [2018, 7]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Xiaomi SU7
+        category: vehicles
+        quality: 74
+        features: 82
+        brand: 75
+        regions: [east_asia]
+        segments:
+          consumer: { price_cents: 2900000, share_bp: 0 }
+          fleet: { price_cents: 2639000, share_bp: 0 }
+          commercial: { price_cents: 3306000, share_bp: 0 }
+
+  - name: Rivian
+    stage: 4
+    founded_year: 2009
+    listed_from: [2021, 11]
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Rivian R1
+        category: vehicles
+        quality: 72
+        features: 75
+        brand: 60
+        regions: [north_america]
+        segments:
+          consumer: { price_cents: 5000000, share_bp: 0 }
+          fleet: { price_cents: 4550000, share_bp: 0 }
+          commercial: { price_cents: 5700000, share_bp: 0 }
   # --- M41 (formulas.md 50.1): medical device makers, appended after every earlier entry ---------
   # Shares are of each sub-category's D0 (categories.yaml), 6,500 bp in all (A: incumbents hold
   # about two thirds; the rest is unserved demand), split by 2010 revenue (sources beside each).

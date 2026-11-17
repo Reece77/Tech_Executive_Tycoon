@@ -42,6 +42,7 @@ def test_facilities_round_trip(
         "equipment",
         "foundry_wafer",
         "euv_tools",  # M21 (38.2)
+        "vehicle_bom",  # M38 (49.1)
         # M17 (33.1, 33.5): the twelve commodities and power by region share the table
         *(g.key for g in loaded.game_data.commodities.goods),  # type: ignore[union-attr]
         *(f"power_{r}" for r in loaded.game_data.region_keys),

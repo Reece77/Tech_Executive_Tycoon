@@ -54,6 +54,7 @@ from tst.api.routers import (
     rivals,
     saves,
     scaleup,
+    vehicles,
 )
 from tst.api.schemas.common import ErrorOut
 from tst.config import get_settings
@@ -140,6 +141,7 @@ def create_app() -> FastAPI:
     app.include_router(family.router)  # M36
     app.include_router(platforms.router)  # M31
     app.include_router(power.router)  # M32
+    app.include_router(vehicles.router)  # M38
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41
     app.include_router(equipment.router)  # M33

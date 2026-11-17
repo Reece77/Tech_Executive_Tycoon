@@ -344,6 +344,8 @@ products:
     mid_market: 2
     enterprise: 0.3
     hyperscalers: 0.03 # M12a (22.3): the hyperscalers segment is sales-led
+    fleet: 1.0 # M38 (49.1): fleets (rental, ride-hailing, company cars) buy through sales; a customer is a fleet of 50 cars (A)
+    commercial: 1.0 # M38 (49.1): van and light-truck buyers, 20 a customer (A)
     device_oems: 0.1 # M12b (26.2, 26.3): device OEMs are sales-led
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
@@ -523,6 +525,7 @@ rivals:
     chips_server_cpu: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
     chips_ai_accelerator: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
     contract_manufacturing: { builder: 0.70, seller: 0.25, marketer: 0.05 } # M12b (26.2)
+    vehicles: { builder: 0.65, seller: 0.20, marketer: 0.15 } # M38 (49.1): car makers (A, as devices with more sales for fleets)
     wearables_diagnostics: { builder: 0.60, seller: 0.15, marketer: 0.25 } # M41 (50.1, A)
     imaging: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M41 (A: hospital sales forces)
     surgical_robotics: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M41 (A)
@@ -990,6 +993,50 @@ facility:
       sizes: [10000, 25000, 50000, 100000] # wafer starts a month a build may choose (38.2: 10,000-100,000)
       outages: false
       module: fabs # skipped by the generic capex, depreciation, operating cost and sale (tst.sim.fabs owns them)
+    vehicle_plant: # M38 (49.1): an owned car plant on the generic lifecycle; capacity in cars a month
+      label: Vehicle plant
+      unit: cars/month
+      input_good: equipment
+      output_good: assembly # hardware.output_good: assembly units (cars)
+      capex_per_unit_cents: 6000000 # $60,000 a car-a-month of capacity in 2010 dollars at index 1.0 (D: Tesla Shanghai about $2B for 500k a year, Berlin about EUR 5B for 500k, Hyundai Georgia $7.6B for 300k (vehicles research 14, R): $4,000-15,000 a car a year, x 12, in 2010 dollars)
+      build_months: 24 # D: Shanghai about 11 months, Berlin 25, Texas 21, Georgia 24 (R)
+      opex_per_unit_cents: 0 # fixed_opex plus variable a car instead
+      life_months: 240 # 20 years (A)
+      staff_per: 100 # cars a month per manufacturing engineer (A: the plant's lead engineers; line labour is in variable_cents)
+      staff_roles: [manufacturing_engineer]
+      staff_skill: manufacturing # sets yield (vehicles.plant)
+      fixed_opex_cents: 30000000 # $300,000 a live month (A: site, maintenance and overheads of a plant at the game's scale)
+      variable_cents: 60000 # $600 a car run: line labour (D: Oliver Wyman 2025 labour cost a car $585 China, $769 Japan, $1,341 US (S, search), in 2010 dollars)
+      sizes: [500, 1000, 2000, 5000, 10000] # cars a month: at vehicles.scale (0.085) a 500,000-a-year real plant is about 3,500 (D)
+      outages: false
+    cell_plant: # M38 (49.2): an own battery cell plant (gigafactory); output and costs are tst.sim.vehicles's (vehicles.cell_plant)
+      label: Battery cell plant
+      unit: MWh/month # MWh of cells a month at full yield
+      input_good: equipment
+      output_good: battery_cells
+      capex_per_unit_cents: 65000000 # $650,000 a MWh-a-month (D: about $72M a GWh a year in China and over $100M in North America in 2023 (Benchmark, S (search)); $85M at 12 MWh a year per MWh a month, in 2010 dollars)
+      build_months: 24 # A: Nevada 2014-2017 about 30 months to cells, China's lines 12-18
+      opex_per_unit_cents: 0 # costs are vehicles.cell_plant's
+      life_months: 180 # 15 years (A)
+      staff_per: 25 # MWh a month per process engineer (A)
+      staff_roles: [process_engineer]
+      staff_skill: manufacturing # sets yield learning (vehicles.cell_plant)
+      sizes: [100, 250, 500, 1000, 2000] # MWh a month: 1.2-24 GWh a year
+      outages: false
+    charging_network: # M38 (49.5): a region's public fast chargers on the generic lifecycle; sales are tst.sim.vehicles's (vehicles.charging)
+      label: Charging network
+      unit: chargers
+      input_good: equipment
+      output_good: charging
+      capex_per_unit_cents: 9000000 # $90,000 a 150 kW charger installed (D: ICCT 2019 hardware $75,000 a 150 kW unit plus installation, R $30,000-100,000; BNEF 2024 ultra-fast $58,100 (S, search); in 2010 dollars)
+      build_months: 9 # A: permitting and grid connection
+      opex_per_unit_cents: 40000 # $400 a charger a month: site lease, maintenance, network fees (A)
+      life_months: 120 # 10 years (A)
+      staff_per: 100 # chargers per site engineer (A)
+      staff_roles: [operations_manager, devops_engineer]
+      staff_skill: infrastructure
+      sizes: [20, 50, 100, 250, 500] # chargers
+      outages: false
     plant: # M32 (46.2): an owned power plant on the shared facility record; its type, capex, build and costs are in power.yaml (module power)
       label: Power plant
       unit: MW
@@ -1049,7 +1096,8 @@ hardware:
   capacity_category: contract_manufacturing # categories.yaml market that sells spare plant capacity (26.2)
   bom: # per unit-sale category (26.2): base cents x the good's index, plus the chip, plus assembly
     devices: { good: device_bom, base_cents: 18000, chip_type: mobile_soc, contract_fee_cents: 1300, plant_slots: 1 } # $180 BOM, a mobile SoC, $13 a unit at a contract manufacturer in Shenzhen (26.7)
-    servers: { good: server_bom, base_cents: 280000, chip_type: server_cpu, contract_fee_cents: 8000, plant_slots: 6 } # $2,800 BOM, a server CPU, $80 a unit; a server takes 6 units of plant capacity (M12b decision)
+    servers: { good: server_bom, base_cents: 280000, chip_type: server_cpu, contract_fee_cents: 8000, plant_slots: 6 }
+    vehicles: { good: vehicle_bom, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 120000, plant_slots: 1 } # M38 (49.1): the body, chassis and interior ($18,000 at index 1.0, A: about half a $35,000 car less its powertrain); the pack, drive and chips are vehicles.bom's; a contract maker's fee $1,200 a car (A: contract assembly as Magna Steyr's or Foxconn's Foxtron, about twice an own plant's labour, Oliver Wyman 2025 labour cost $585-1,341 a car, S (search)); assembly units are cars # $2,800 BOM, a server CPU, $80 a unit; a server takes 6 units of plant capacity (M12b decision)
     wearables_diagnostics: { good: device_bom, base_cents: 3500, chip_type: mobile_soc, contract_fee_cents: 1000, plant_slots: 1 } # M41 (50.1): a $35 sensor and reader BOM (A: ~35% of the $150 price with the chip)
     imaging: { good: server_bom, base_cents: 12000000, chip_type: server_cpu, contract_fee_cents: 1000000, plant_slots: 20 } # M41: a $120k imaging system BOM, $10k assembly (A), 20 slots
     surgical_robotics: { good: server_bom, base_cents: 45000000, chip_type: server_cpu, contract_fee_cents: 3000000, plant_slots: 40 } # M41: a $450k robot BOM, $30k assembly (A: 30% of $1.5M), 40 slots
@@ -1620,6 +1668,10 @@ commodity:
     lithium_carbonate: 0.42
     ndpr_oxide: 0.30
     neon: 0.05
+    nickel: 0.25 # M38 (49.2): A, from the World Bank series' 2011-2025 annual log changes (vehicles research 13: 21,809 to 9,595 to 25,834 $/t)
+    manganese: 0.20 # M38: A (ore prices 2021-2025 moved 4.80-5.97 $/dmtu)
+    graphite: 0.15 # M38: A (flake import values were flat, 1,200-1,340 $/t)
+    battery_cells: 0.06 # M38 (49.2): around the learning curve (vehicles.learning), not the history's fall (A: BNEF's only rise in 2022 was 7%)
   semi_poly_multiple: 5 # semiconductor-grade polysilicon = solar spot x this (33.1; an assumption, dossier 1.1 suggests 2-4x)
   ban_concentration: 0.60 # one country's share of production or refining above which export bans are likelier (33.1)
   gap_months: 24 # months after a shock ends before the same good can start another (M17 decision)
@@ -2142,6 +2194,7 @@ geopolitics:
     devices: [devices]
     servers: [servers]
     chips: [chips_mobile_soc, chips_server_cpu, chips_ai_accelerator]
+    vehicles: [vehicles] # M38 (49.5): vehicles.yaml's tariffs on imported cars
   actor_regions: { us_aligned: north_america, china: east_asia, non_aligned: south_southeast_asia } # a bloc actor's influence region (a country actor's is its own region)
 
 contracts: # M23a (playtest 5): breaking contracts, counterparties' memory, foundry contracts
@@ -2645,6 +2698,91 @@ economy_scale: # M34 (PM ruling 2026-11-15): real-world thresholds read in the g
   money: 0.0849 # Apple 0.0952, Microsoft 0.1275, Meta 0.0319: the designated incumbents' in-game 2025 booked revenue (4000-4899, not intercompany) / their real 2025 revenue, mean of three: Apple $416.2B (FY to Sep 2025: https://yourstory.com/2025/10/apple-extraordinary-year-all-time-record-india-tim-cook), Microsoft $281.7B with Microsoft Azure (FY to Jun 2025: https://www.sec.gov/Archives/edgar/data/0000789019/000095017025100226/msft-ex99_1.htm), Meta $200.97B as Facebook (2025: https://finviz.com/news/290695/meta-reports-fourth-quarter-and-full-year-2025-results)
   users: 1.0 # the game's user tests read shares of a region's users (platforms.yaml's StatCounter shares and the installed base), not counts, so they are already at real scale
 
+# --- Electric vehicles (formulas.md 49, M38, v5 lane C) --------------------------------------------
+# History to 2025 is vehicles.yaml's (sourced); these are the rules and the seeded world after it.
+# A = an assumption for gameplay (no public figure); cited figures are marked.
+vehicles:
+  start: "2026-01" # history holds before this month: EV shares, rivals' shares, approvals; seeded from it
+  category: vehicles # categories.yaml key of the vehicles market
+  scale: 0.085 # game car buyers = real buyers x this: the devices convention (M34's economy_scale.money 0.0849, the devices incumbents' in-game revenue over their real revenue; Reece 2026-11-14)
+  scale_basis: "Game car markets are 8.5% of the real ones at real prices (the game's economy scale)"
+  replacement_months: { consumer: 96, fleet: 48, commercial: 84 } # a car's replacement cycle (also categories.yaml): A, from US average ownership about 8 years (R, S&P Global Mobility), fleet cycles 3-4 years (R), vans 7 (A)
+  plant:
+    kind: vehicle_plant # facility.kinds key
+    yield_range: [0.90, 0.99] # good cars a car started: 0.90 + 0.09 x mean manufacturing skill / 20 (A, as 26.2's assembly yield)
+  cell_plant:
+    kind: cell_plant
+    stage: 4 # company stage a cell plant needs (49.2: stage 4)
+    yield_start: 0.70 # a new line's first cells (A: scrap rates of new gigafactories 30%+, R)
+    yield_mature: 0.93 # where learning ends (A: 5-10% scrap at mature lines, R)
+    learn: 0.06 # a month at skill 12 (A: like a fab's 38.2, about two years to maturity)
+    skill_ref: 12
+    noise_sd: 0.005 # monthly yield noise, stream vehicles (2, facility)
+    other_share: 0.20 # M38 tuning from 0.40 (49.6 target 3: 0.25 gave a 3.5-point median gap). Other variable cost a kWh (cathode and anode processing, electrolyte, separator, foils, casing, labour) as a share of the month's market cell price (A: BNEF25's $74 cells less about $21 of metals at 2024 prices, less manufacturing)
+    mwh_per_kwh: 0.03 # power a kWh of cells (R: 20-40 kWh a kWh of cell, Degen et al., Nature Energy 2023)
+    fixed_share: 0.04 # fixed running cost a year as a share of capex (A, as refining's)
+    integration_saving: 0.5 # M38 tuning from 0.25 (49.6 target 3: 0.35 with other_share 0.20 gave 3.9 points). A car on its group's own cells assembles its packs in house: pack integration x (1 - this), the pack maker's margin kept (A)
+    overrun: [0.0, 0.25] # hidden capex overrun, drawn at the order (A, as refining.overrun)
+  charging:
+    kind: charging_network
+    kwh_per_charger_month: 109500 # a 150 kW charger running every hour of a month (D: 150 x 730)
+    use: { north_america: 0.15, europe: 0.15, east_asia: 0.18, south_southeast_asia: 0.10, latin_america: 0.10, africa: 0.06, oceania: 0.12 } # share of hours a public fast charger sells in 2024, scaled by the EV share against 2024's (A: US DCFC about 15-20% of hours, R)
+    price_cents_kwh: { north_america: 31, europe: 38, east_asia: 13, south_southeast_asia: 18, latin_america: 22, africa: 22, oceania: 30 } # cents a kWh in 2010 dollars (D: US $0.45 in Q4 2024 (Stable Auto, S search); Europe EUR 0.40-0.89 (S search, low authority; midpoint A); China 1.3 yuan (S search, single operator); others A)
+    exclusive_use: 0.5 # an exclusive network sells only to its owner's cars: this share of an open one's use (A)
+    exclusive_points: 4 # feature points the owner's cars gain in a region where its network is exclusive (A)
+    coverage_points: 6 # feature points of a car charging at the market's expected speed at full regional coverage (A)
+    coverage_ref: 0.3 # public chargers per EV sold a year at full coverage (D: China about 3.7 M for 11 M sold in 2024, 0.33; Europe 1.0 M for 3.0 M, 0.34; the US 0.2 M for 1.6 M, 0.12)
+    scrutiny_share: 0.3 # an exclusive network with this share of a region's public chargers draws a regulator's case (49.5)
+  s_curve:
+    k: [0.06, 0.14] # the logit's rise a year after 2025, drawn per region at vehicles.start (A: 2035 global share 35-65%, 49.6 target 2)
+    battery: 0.8 # x (1 - the cell price / its 2025 price): cheaper batteries, faster (49.1)
+    charging: 0.2 # x the region's charging coverage (0-1)
+    subsidy: 2.0 # x the region's subsidy as a share of the reference price
+    cap: 0.98 # the most a region's EV share can reach
+    floor_k: 0.02 # the least a year
+  learning:
+    rate: [0.12, 0.20] # cell cost cut per doubling of cumulative EV cells, drawn once (R: BNEF's observed learning rate about 18%)
+    metals_share: 0.25 # share of the 2025 cell price that moves with lithium, nickel and cobalt (A: about $21 of metals in $74 cells)
+    floor_cents: 2500 # a kWh of cells never below $25 (2010 dollars, A)
+  software:
+    price_cents: { own: 1000, licensed: 800, closed: 600 } # connectivity a car a month (2010 dollars; D: Tesla Premium Connectivity $9.99 (R) in 2010 dollars about $7; an own platform's app store adds apps (A))
+    attach_mult: { own: 1.3, licensed: 1.0, closed: 0.6 } # x vehicles.yaml's attach: an own store's apps lift it, a closed system has none (A)
+    licence_cents: 2000 # Android Automotive (Google Automotive Services) a car (A: undisclosed; reported $10-20 a car)
+    ota_churn_cut: 0.15 # a car with over-the-air updates (own or licensed platform) is replaced this much less often (A)
+    platform_points: { own: 6, licensed: 3, closed: -3 } # feature points of the car's software (A; an own OS's catalogue moves it, 44.3)
+    ota_features: 0.3 # share of a model's later feature gains its cars on the road receive (A; shown on the product page)
+    attach_growth: 0.02 # vehicles.yaml's attach keeps rising this much a year after 2025 (A)
+    attach_cap: 0.6 # to at most this (A)
+  spec:
+    range_points: 20 # feature points per 100% of range above the market's expected (A)
+    range_cap: 15
+    charge_points: 8 # per 100% of charging speed above the expected (A)
+    charge_cap: 6
+    pack_kwh: [20, 150] # pack sizes a design may choose
+    charge_kw: [7, 400]
+    usable: 0.92 # usable share of a pack (R: 90-95% buffers)
+  bom:
+    drive_cents: { 2010: 300000, 2015: 220000, 2020: 160000, 2024: 130000 } # motors, inverter, onboard charger and thermal system, 2010 dollars (A: falling with volume; ICCT's 2019 cost study puts electric powertrain parts near $2,000 in 2020, R)
+  levels: # 49.4: what each autonomy level needs and gives (A unless noted)
+    none: { label: None, lead: 0, ai_quality: 0, chips: { mobile_soc: 1 }, features: 0, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }
+    l2: { label: L2 driver assistance, lead: 0, ai_quality: 0, chips: { mobile_soc: 2 }, features: 4, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }
+    l2_plus: { label: L2+ hands-off on highways, lead: 10, ai_quality: 0, chips: { mobile_soc: 2, ai_accelerator: 1 }, features: 8, attach: 0.15, price_cents: 6000, incident_rate: 0.0, approval: true } # price: Tesla FSD $99 a month from April 2024 (Wikipedia, Tesla Autopilot, S) in 2010 dollars; take rates 12-37% (S)
+    l3: { label: L3 conditional automation, lead: 25, ai_quality: 65, chips: { mobile_soc: 2, ai_accelerator: 1 }, features: 12, attach: 0.25, price_cents: 8000, incident_rate: 2.0, approval: true } # incidents a year per 100,000 cars running it
+    l4: { label: L4 driverless in a zone, lead: 45, ai_quality: 80, chips: { mobile_soc: 2, ai_accelerator: 2 }, features: 16, attach: 0.35, price_cents: 10000, incident_rate: 4.0, approval: true }
+  incident:
+    recall_cents: 50000 # $500 a car on the road running the level (A: a software recall plus goodwill)
+    brand_points: 5 # brand lost on the product (A)
+    suspend_months: 12 # the region's regulator suspends the level for the company's cars (A)
+  domain: autonomy # tech_frontier.yaml key
+  approval_chance: { l2_plus: 0.35, l3: 0.25, l4: 0.12 } # a region's chance a year (each December from vehicles.start) of approving a level it has not (A)
+  tariff_block: 0.5 # a rival car maker does not enter a region whose tariff on its cars is at least this (A, 49.6 target 5)
+  rival_refresh: 0.4 # a rival's chance each December (from vehicles.start) of a model refresh (stream vehicles (3, rival)) (A)
+  rival_refresh_points: 6 # quality and held-feature points a refresh adds (A)
+  rival_cash_cents: 50000000000 # $500M opening capital for each car maker's car business (A: its line sells little before the 2020s, so 15.1's months of revenue would leave it no cash)
+  history_months: 36 # months of a product's, plant's or network's history the API shows
+  energy: { design: 2, cell_plant: 12, charging: 8, exclusive: 2 } # founder energy (a vehicle plant is facility.build_energy)
+  cell_good: battery_cells # commodities.yaml key of battery cells
+  unlock_year: 2012 # the 2012 EV era: the Vehicles screen opens (M29), or with lithium supply
 medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, approval rates, studies, coverage, recalls) is medical.yaml's, cited; these are the game's dials. A = an assumption for gameplay
   quality_energy: 1 # founder energy to change a plant's quality system (A)
   study:

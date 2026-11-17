@@ -179,6 +179,15 @@ from tst.sim.rivals.models import (
     SegmentShare,
     WorkforcePool,
 )
+from tst.sim.vehicles.models import (
+    CellLot,
+    CellPlant,
+    ChargingNetwork,
+    Incident,
+    VehicleMonth,
+    VehicleSpec,
+    VehicleWorld,
+)
 from tst.sim.world.models import (
     ChainCompany,
     ChinaLag,
@@ -519,6 +528,16 @@ class GameState:
     programmes: tuple[Programme, ...] = ()
     own_tools: tuple[OwnTools, ...] = ()
     fab_tools: tuple[FabTools, ...] = ()
+    # M38 (49): cars' designs by product id, the player's cell plants and charging networks by
+    # facility id, this month's own-cell lots, product months (vehicles.history_months),
+    # incidents that happened, and the game-wide EV paths, approvals and suspensions.
+    vehicle_specs: tuple[VehicleSpec, ...] = ()
+    cell_plants: tuple[CellPlant, ...] = ()
+    charging_networks: tuple[ChargingNetwork, ...] = ()
+    cell_lots: tuple[CellLot, ...] = ()
+    vehicle_months: tuple[VehicleMonth, ...] = ()
+    incidents: tuple[Incident, ...] = ()
+    vehicle_world: VehicleWorld = field(default_factory=VehicleWorld)
     # M41 (50): medical products' designs, submissions and clearances, studies, coverage and
     # clinicians' adoption, plants' quality systems, inspections, recalls and regulators' review
     # drift after 2025. Empty for a company without medical devices.
@@ -538,6 +557,12 @@ class GameState:
     _memo: dict[object, Any] = field(
         default_factory=dict, init=False, repr=False, compare=False, hash=False
     )
+
+    def vehicle_spec(self, product_id: int) -> VehicleSpec | None:  # M38 (49.1)
+        return next((v for v in self.vehicle_specs if v.product_id == product_id), None)
+
+    def cell_plant(self, facility_id: int) -> CellPlant | None:  # M38 (49.2)
+        return next((c for c in self.cell_plants if c.facility_id == facility_id), None)
 
     def platform(self, platform_id: int) -> Platform | None:  # M31 (44.1)
         return next((p for p in self.platforms if p.id == platform_id), None)

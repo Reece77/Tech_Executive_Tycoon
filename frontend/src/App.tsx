@@ -37,6 +37,7 @@ import { WorldNewsScreen } from './screens/WorldNewsScreen';
 import { EquipmentScreen } from './screens/EquipmentScreen';
 import { PlatformsScreen } from './screens/PlatformsScreen';
 import { PowerPlantScreen, PowerScreen } from './screens/PowerScreen';
+import { VehicleCarScreen, VehiclesScreen } from './screens/VehiclesScreen';
 import { MedicalScreen } from './screens/MedicalScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
@@ -73,6 +74,8 @@ export default function App() {
           <Route path="products/fabs" element={<FabsScreen />} />
           <Route path="products/power" element={<PowerScreen />} />
           <Route path="products/power/plants/:facilityId" element={<PowerPlantScreen />} />
+          <Route path="products/vehicles" element={<VehiclesScreen />} />
+          <Route path="products/vehicles/cars/:productId" element={<VehicleCarScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
           <Route path="products/mines" element={<MinesScreen />} />

@@ -129,6 +129,11 @@ def company_use(
             continue
         for g, q in use_per_unit(bom.base_cents, mix, data).items():
             use[g] = use.get(g, 0.0) + row.units * q
+    if state.cell_plants:  # M38 (49.2): cell plants' metals, so the group's refineries supply them
+        from tst.sim.vehicles.cells import company_use as cell_use
+
+        for g, q in cell_use(state, company_id).items():
+            use[g] = use.get(g, 0.0) + q
     return use
 
 

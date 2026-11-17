@@ -189,6 +189,9 @@ class CommodityDef(_Frozen):
     top_country: str = Field(min_length=1)
     top_share: float = Field(gt=0, le=1)
     share_basis: str
+    # a good whose long-run price follows a learning curve (M38: battery cells), not a mean; the
+    # v3 balance's L3 band reads its index against December 2025 (formulas.md 43, PM 2026-11-16)
+    learning_curve: bool = False
 
 
 class CommoditiesFile(_Frozen):

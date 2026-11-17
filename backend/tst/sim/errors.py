@@ -387,6 +387,12 @@ class PowerRuleError(SimError):
     code = "power_rule"
 
 
+class VehicleRuleError(SimError):
+    """A vehicle action the rules do not allow (M38, formulas.md 49)."""
+
+    code = "vehicle_rule"
+
+
 class EquipmentRuleError(SimError):
     """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
     formulas.md 47). The message never names an allocation weight or a programme's draws."""

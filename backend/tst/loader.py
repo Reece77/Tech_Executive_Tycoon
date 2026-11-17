@@ -59,6 +59,7 @@ from tst.sim.geopolitics.config import (
     BLOCS,
     CountriesFile,
     ExportControlsFile,
+    TariffSchedule,
     TariffsFile,
 )
 from tst.sim.ledger import ENGINE_ACCOUNTS
@@ -71,9 +72,16 @@ from tst.sim.platforms.config import PlatformsFile
 from tst.sim.power.config import PowerFile
 from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
+from tst.sim.vehicles.config import LEVELS, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile
 
 POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
+FIRST_HISTORY_YEAR = 2010  # tunable-exempt: the game's first year
+LAST_HISTORY_YEAR = 2025  # tunable-exempt: history holds to December 2025
+CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
+CELL_PRICE_TOLERANCE = (
+    0.06  # tunable-exempt: battery_cells history is vehicles.yaml's to 0.1 dollar
+)
 BALANCE_FILE = "balance.yaml"
 SCENARIOS_FILE = "scenarios.yaml"
 ACCOUNTS_FILE = "accounts.yaml"
@@ -114,6 +122,7 @@ POWER_FILE = "power.yaml"  # M32 (formulas.md 46)
 REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
 MEDICAL_FILE = "medical.yaml"  # M41 (formulas.md 50)
 EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
+VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -137,6 +146,7 @@ DATA_FILES = (
     INVESTORS_FILE,
     PLATFORMS_FILE,
     POWER_FILE,
+    VEHICLES_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -380,6 +390,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             and kind.output_good not in balance.compute.goods
             and kind.output_good != balance.hardware.output_good
             and kind.output_good not in refined  # M20: a refinery makes its recipe's good
+            and key not in vehicle_kinds(balance)  # M38: cells and charging are 49's
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -1080,6 +1091,8 @@ def load_all(
     power = _validate(PowerFile, parsed[POWER_FILE], POWER_FILE)
     regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
     equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
+    vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
+    tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
         GameData,
@@ -1128,6 +1141,7 @@ def load_all(
             "nationalization": nationalization,
             "nodes": nodes,
             "countries": countries,
+            "places": countries.plain(),
             "controls": controls,
             "tariffs": tariffs,
             "chain_companies": chain,
@@ -1135,6 +1149,7 @@ def load_all(
             "power": power,
             "regulation": regulation,
             "equipment": equipment,
+            "vehicles": vehicles,
             "medical": medical,
         },
         "seed data cross-check",
@@ -1163,6 +1178,8 @@ def load_all(
         raise DataLoadError(f"{MEDICAL_FILE}, {REGULATION_FILE} health: " + "; ".join(problems))
     if problems := equipment_problems(balance, game_data):
         raise DataLoadError(f"{EQUIPMENT_FILE}, {BALANCE_FILE} equipment: " + "; ".join(problems))
+    if problems := vehicles_problems(balance, game_data):
+        raise DataLoadError(f"{VEHICLES_FILE}, {BALANCE_FILE} vehicles: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1205,3 +1222,112 @@ def load_all(
         mod_hash=mod_hash,
         mod_overlay=overlay,
     )
+
+
+def with_vehicle_tariffs(tariffs: TariffsFile, vehicles: VehiclesFile) -> TariffsFile:
+    """M38 (49.5): vehicles.yaml's tariffs on imported cars, appended to tariffs.yaml's schedules
+    for the `vehicles` good (39.3), so one file cites every vehicles figure."""
+    extra = tuple(
+        TariffSchedule(
+            key=t.key,
+            title=t.title,
+            origin=t.origin,
+            market=t.market,
+            goods=("vehicles",),
+            steps=t.steps,
+            tag=t.tag,
+        )
+        for t in vehicles.tariffs
+    )
+    return TariffsFile(schedules=(*tariffs.schedules, *extra))
+
+
+def vehicles_problems(balance: Balance, data: GameData) -> list[str]:
+    """M38 (49): vehicles.yaml covers every region, names known incumbents, countries, cell makers,
+    commodities and levels; its cell prices agree with commodities_history.yaml's battery_cells."""
+    v = data.vehicles
+    vb = balance.vehicles
+    out: list[str] = []
+    if v is None:
+        return ["vehicles.yaml is required"]
+    if [r.key for r in v.regions] != list(data.region_keys):
+        out.append("regions must list every regions.yaml region in its order")
+    category = next((c for c in data.categories if c.key == vb.category), None)
+    if category is None or not category.sells_units:
+        out.append(f"vehicles.category {vb.category!r} must be a unit-sale category")
+    else:
+        for m in category.markets:
+            if vb.replacement_months.get(m.segment) != m.replacement_months:
+                out.append(f"replacement_months for {m.segment} differ from categories.yaml")
+    segs = set(category.segment_keys) if category is not None else set()
+    for r in v.regions:
+        if set(r.segments) != segs or abs(sum(r.segments.values()) - 1) > 1e-6:
+            out.append(f"{r.key}: segments must split 1 over {sorted(segs)}")
+        if any(not 0 <= x <= 1 for x in r.ev_share.values()):
+            out.append(f"{r.key}: ev_share must be in 0-1")
+        if max(r.ev_share) < LAST_HISTORY_YEAR:
+            out.append(f"{r.key}: ev_share must reach {LAST_HISTORY_YEAR}")
+    names = {c.name for c in data.incumbents}
+    makers = {m.key for m in v.cell_makers}
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    for rival in v.rivals:
+        if rival.company not in names:
+            out.append(f"rival {rival.company!r} is not in incumbents.yaml")
+        if rival.cells not in makers:
+            out.append(f"rival {rival.company!r}: unknown cell maker {rival.cells!r}")
+        if countries and rival.origin not in countries:
+            out.append(f"rival {rival.company!r}: unknown country {rival.origin!r}")
+        if bad := set(rival.share_points) - set(data.region_keys):
+            out.append(f"rival {rival.company!r}: unknown regions {sorted(bad)}")
+    for region in data.region_keys:
+        for year in range(FIRST_HISTORY_YEAR, LAST_HISTORY_YEAR + 1):
+            total = sum(r.share_at(region, year) for r in v.rivals)
+            if total > 1 + 1e-9:
+                out.append(f"{region} {year}: rivals' shares sum to {total:.3f} > 1")
+    vehicle_incumbents = {
+        c.name for c in data.incumbents for p in c.products if p.category == vb.category
+    }
+    if missing := sorted(vehicle_incumbents - {r.company for r in v.rivals}):
+        out.append(f"vehicle incumbents without vehicles.yaml history: {missing}")
+    goods = {g.key for g in data.commodities.goods} if data.commodities is not None else set()
+    for chem in v.battery.chemistries.values():
+        if bad := set(chem.inputs) - goods:
+            out.append(f"chemistry {chem.label!r}: unknown commodities {sorted(bad)}")
+    if vb.cell_good not in goods:
+        out.append(f"vehicles.cell_good {vb.cell_good!r} is not a commodity")
+    elif data.commodity_history is not None:
+        hist = next((g for g in data.commodity_history.goods if g.key == vb.cell_good), None)
+        if hist is None:
+            out.append(f"commodities_history.yaml has no {vb.cell_good}")
+        else:
+            for year, (value, _tag) in hist.years.items():
+                want = v.battery.pack_at(year) * v.battery.cell_share_at(year) / CENTS_PER_DOLLAR
+                if abs(value - want) > CELL_PRICE_TOLERANCE:
+                    out.append(f"{vb.cell_good} {year}: {value} != vehicles.yaml's {want:.1f}")
+    for subsidy in v.subsidies:
+        if subsidy.region not in data.region_keys:
+            out.append(f"subsidy {subsidy.key!r}: unknown region {subsidy.region!r}")
+        if countries and subsidy.country not in countries:
+            out.append(f"subsidy {subsidy.key!r}: unknown country {subsidy.country!r}")
+    for g in v.regulators:
+        if g.region not in data.region_keys:
+            out.append(f"regulator {g.key!r}: unknown region {g.region!r}")
+    if [k for k in LEVELS if k in vb.levels] != list(vb.levels):
+        out.append(f"vehicles.levels must be {list(LEVELS)} in order")
+    if vb.plant.kind not in balance.facility.kinds or vb.cell_plant.kind not in (
+        balance.facility.kinds
+    ):
+        out.append("vehicles.plant and cell_plant kinds must be facility.kinds")
+    if vb.charging.kind not in balance.facility.kinds:
+        out.append("vehicles.charging.kind must be a facility kind")
+    if data.tech is not None and vb.domain not in {d.key for d in data.tech.domains}:
+        out.append(f"vehicles.domain {vb.domain!r} is not a tech_frontier.yaml domain")
+    if vb.category not in balance.hardware.bom:
+        out.append("hardware.bom needs the vehicles category")
+    return out
+
+
+def vehicle_kinds(balance: Balance) -> tuple[str, ...]:
+    """M38 (49.2, 49.5): the facility kinds whose output tst.sim.vehicles runs on the generic
+    lifecycle (cell plants and charging networks)."""
+    return (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind)

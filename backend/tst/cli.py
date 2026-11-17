@@ -4429,6 +4429,77 @@ def regulation_cmd(
         typer.echo(f"  order {o.company}: separate {o.unit} by {o.deadline} ({o.status})")
 
 
+@app.command("vehicles")
+def vehicles_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="One region key; default every region")] = None,
+) -> None:
+    """Electric vehicles (M38, 49): EV shares, battery prices, subsidies, tariffs and approvals by
+    region; rivals' shares; your cars, cell plants and charging networks."""
+    from tst.api import vehicle_views
+
+    _, data, state = _game(save)
+    v = vehicle_views.vehicles_out(state, data)
+    b = v.battery
+    typer.echo(
+        f"{format_turn(state.turn)}: cells {format_money(round(b.cell_cents))}/kWh, packs"
+        f" {format_money(round(b.pack_cents))}/kWh (2010 dollars)"
+        + (" - history holds to December 2025" if v.in_history else "")
+    )
+    typer.echo(f"  {v.scale_note}")
+    for r in v.regions:
+        if region and r.region != region:
+            continue
+        line = (
+            f"{r.label}: EV share {r.ev_share:.1%}, {r.ev_sales_year:,.0f} EVs a year of"
+            f" {r.car_sales_year:,.0f} cars, coverage {r.coverage:.0%}"
+        )
+        if r.approved_levels:
+            line += f", approved {', '.join(r.approved_levels)}"
+        typer.echo(line)
+        for s in r.subsidies:
+            rules = f" ({'; '.join(s.rules)})" if s.rules else ""
+            typer.echo(f"  subsidy {s.title}: {format_money(s.amount_cents)}{rules}")
+        for t in r.tariffs:
+            typer.echo(f"  tariff {t.title}: {t.rate:.0%} on cars from {t.origin}")
+        for rv in v.rivals:
+            for sh in rv.shares:
+                if sh.region == r.region and sh.share >= 0.01:
+                    typer.echo(f"  {rv.company}: {sh.share:.0%}")
+    for c in v.cars:
+        typer.echo(
+            f"car {c.name} ({c.status}): {c.spec.pack_kwh:g} kWh {c.spec.chemistry},"
+            f" {c.range_km:,.0f} km, {c.spec.charge_kw:g} kW, {c.level} (capable"
+            f" {c.capable_level}), {c.spec.platform} platform, cells {c.spec.cells};"
+            f" {c.units_last_month:,.0f} sold last month, {c.customers:,.0f} on the road; unit"
+            f" cost {format_money(round(c.unit_cost_cents))}; software"
+            f" {format_money(c.software_cents_last_month)} a month ({c.software_share:.1%} of"
+            " revenue)"
+        )
+        for e in c.eligibility:
+            why = "" if e.eligible else f": {'; '.join(e.failed)}"
+            typer.echo(
+                f"  {e.scheme} in {e.region}: {'eligible' if e.eligible else 'not eligible'}{why}"
+            )
+    for p in v.cell_plants:
+        typer.echo(
+            f"cell plant {p.name}: {p.status}, {p.capacity_mwh:,} MWh a month {p.chemistry}, yield"
+            f" {p.yield_rate:.0%}, made {p.made_kwh:,.0f} kWh at"
+            f" {format_money(round(p.unit_cents))}/kWh; quoted {format_money(p.estimate_cents)}"
+        )
+    for n in v.charging:
+        typer.echo(
+            f"charging {n.name}: {n.status}, {n.chargers:,} chargers,"
+            f" {'exclusive' if n.exclusive else 'open'}, sold {n.kwh_sold:,.0f} kWh for"
+            f" {format_money(n.revenue_cents)}"
+        )
+    for i in v.incidents:
+        typer.echo(
+            f"incident {i.when}: {i.product} in {i.region} ({i.level}), {i.cars_recalled:,.0f}"
+            f" cars recalled, {format_money(i.cost_cents)}"
+        )
+
+
 @app.command("medical")
 def medical_cmd(
     save: SaveOpt,

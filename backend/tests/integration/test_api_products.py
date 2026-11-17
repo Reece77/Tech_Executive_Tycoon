@@ -78,6 +78,7 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "chips_server_cpu",
         "chips_ai_accelerator",
         "contract_manufacturing",
+        "vehicles",  # M38
         "wearables_diagnostics",  # M41 (50.1)
         "imaging",
         "surgical_robotics",

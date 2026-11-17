@@ -82,6 +82,24 @@ segments:
     base_churn: 0.04 # contract manufacturing customers; chip markets use replacement_months
     adoption: 0.01
     reach: sales
+  # M38 (formulas.md 49.1): car buyers beside consumers. A fleet customer is a fleet (rental,
+  # ride-hailing, company cars) and a commercial customer a business buying vans and light trucks,
+  # both sales-led; base churn is the vehicles market's replacement cycle (A weights: fleets weigh
+  # price and running cost, vans price and quality).
+  - key: fleet
+    label: Fleet
+    weights: { quality: 0.30, price: 0.40, brand: 0.10, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.02 # vehicles use replacement_months
+    adoption: 0.02
+    reach: sales
+  - key: commercial
+    label: Commercial
+    weights: { quality: 0.35, price: 0.40, brand: 0.05, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.012
+    adoption: 0.015
+    reach: sales
 
 categories:
   - key: b2b_saas
@@ -313,6 +331,31 @@ categories:
     brand_constant: 150
     dev_weights: { software_engineering: 0.50, infrastructure: 0.20, security: 0.15, product: 0.15 }
 
+  # M38 (formulas.md 49.1): electric vehicles. A unit-sale market whose addressable customers are
+  # set each month from vehicles.yaml (not grown here): a region's new car buyers in the segment x
+  # its EV share x vehicles.scale (0.085, the game's economy scale) x replacement_months / 12 /
+  # units_per_customer, so a month's replacements are about a month's EV sales. The D0 below is
+  # North America's January 2010 value of that formula (14.0 M cars x segment share x 0.0002 x
+  # 0.085 x months / 12 / units). Prices in 2010 dollars: consumer $35,000 (D: KBB's US EV average
+  # $55,544 in December 2024 (S) in 2010 dollars about $38,600; the 2010 Leaf $32,780 and Volt
+  # $41,000 (R)); fleets about 9% less (A); vans $40,000 (A). hosting_cents is a rival's cost of
+  # goods a car (82% of the price: A, car makers' gross margins 15-20%, R). Development needs the
+  # existing hardware skills (no new skills, 49.1).
+  - key: vehicles
+    label: Electric vehicles
+    growth: 0.0 # demand comes from vehicles.yaml each month (49.1), not growth
+    features_at_start: 50
+    features_per_month: 5.0 # cars age more slowly than phones (26.1's 8)
+    scope: 10
+    brand_constant: 200
+    launch_quality: 40 # safety and homologation (A)
+    revenue_model: units
+    rival_cost_share: 0.82 # a rival's cost of goods a car: 82% of its own price (A: car makers' gross margins 15-20%, R); hosting_cents below is the same share of the reference price
+    dev_weights: { hardware_design: 0.35, manufacturing: 0.25, design: 0.15, software_engineering: 0.15, chip_design: 0.10 }
+    markets:
+      - { segment: consumer, addressable: 1400, reference_price_cents: 3500000, hosting_cents: 2870000, replacement_months: 96 }
+      - { segment: fleet, addressable: 4, reference_price_cents: 3200000, hosting_cents: 2624000, units_per_customer: 50, replacement_months: 48 }
+      - { segment: commercial, addressable: 5, reference_price_cents: 4000000, hosting_cents: 3280000, units_per_customer: 20, replacement_months: 84 }
   # --- M41 (formulas.md 50.1): medical devices, family medical --------------------------------
   # Each sub-category's routes, studies, coverage and recalls are medical.yaml's; a product sells in
   # a region only once cleared there (tst.sim.medical gates new wins in the market phase). Markets

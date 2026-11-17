@@ -36,6 +36,7 @@ accounts:
   - { code: 4420_foundry_sales, name: Foundry sales, type: revenue } # M21 (38.2): own fabs' spare wafer starts sold as foundry slots
   - { code: 4950_energy_sales, name: Energy sales, type: revenue } # M32 (46.2): own plants' surplus energy sold to the grid at the grid price less power.export_discount
   - { code: 4430_tool_sales, name: Tool sales, type: revenue } # M33 (47.4): the player's own lithography tools sold to rival foundries
+  - { code: 4440_charging_sales, name: Charging sales, type: revenue } # M38 (49.5): energy a charging network sells to EVs
   - { code: 4900_other_income, name: Other income, type: revenue } # M6: event cash gains
   - { code: 4910_share_of_associates, name: Share of associates' profit, type: revenue } # M16 (31.3): the group's share of associates' profit; below the operating result
   - { code: 4920_fair_value_gains, name: Fair-value gains and losses, type: revenue } # M16 (31.3): December marks of stakes under 20%; below the operating result

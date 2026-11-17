@@ -110,6 +110,58 @@ class CountriesFile(_Frozen):
     def of_region(self, region: str) -> tuple[CountryDef, ...]:
         return tuple(c for c in self.countries if c.region == region)
 
+    def plain(self) -> PlacesFile:
+        """The file's plain country data, without its geopolitics (M38 split, below)."""
+        return PlacesFile(
+            places=tuple(
+                PlaceDef(
+                    key=c.key,
+                    label=c.label,
+                    aliases=c.aliases,
+                    region=c.region,
+                    demand_share=c.demand_share,
+                    default=c.default,
+                )
+                for c in self.countries
+            ),
+            sites=dict(self.sites),
+            rivals=dict(self.rivals),
+        )
+
+
+# --- countries.yaml's plain data (M38; product manager, 2026-11-16) ------------------------------
+#
+# countries.yaml holds two kinds of field. **Geopolitics** (M22's rules): `bloc`, `bloc_history`
+# and `tension_history`, read with export controls and tariffs; GameData.countries carries them
+# and None turns geopolitics off. **Plain country data**: `key`, `label`, `aliases`, `region`,
+# `demand_share`, `default`, `sites` and `rivals`, where things are and how a region's demand
+# splits; GameData.places carries these (loaded from the same file) for code that is not
+# geopolitics, such as M38's subsidies, and keeps them when geopolitics is off (M22 target 7's
+# counterfactual).
+
+
+class PlaceDef(_Frozen):
+    """A country's plain data: CountryDef without its bloc."""
+
+    key: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    aliases: tuple[str, ...] = ()
+    region: str
+    demand_share: float = Field(ge=0, le=1)
+    default: bool = False
+
+
+class PlacesFile(_Frozen):
+    places: tuple[PlaceDef, ...]
+    sites: dict[str, str] = Field(default_factory=dict)
+    rivals: dict[str, str] = Field(default_factory=dict)
+
+    def place(self, key: str) -> PlaceDef | None:
+        return next((c for c in self.places if c.key == key), None)
+
+    def of_region(self, region: str) -> tuple[PlaceDef, ...]:
+        return tuple(c for c in self.places if c.region == region)
+
 
 # --- export_controls.yaml ---------------------------------------------------------------------
 

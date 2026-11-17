@@ -14,6 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geopolitics import supply, world
 from tst.sim.state import GameState, group_companies, listed_id, player_companies
@@ -71,7 +72,8 @@ SYSTEMS: tuple[System, ...] = (
     System(25, "regulation", "Regulation", "world"),  # tunable-exempt: stable id (M34)
     System(26, "equipment", "Equipment", "chain"),  # tunable-exempt: stable id (M33; 25 is M34's)
     System(27, "power", "Power", "chain"),  # tunable-exempt: stable id (M32)
-    System(28, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41)
+    System(28, "vehicles", "Vehicles", "products"),  # tunable-exempt: stable id (M38)
+    System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -212,6 +214,26 @@ def _power(state: GameState, ids: set[int], b: Balance, _d: GameData) -> str | N
     return None
 
 
+def _vehicles(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M38 (49): the EV era (from vehicles.unlock_year) for a stage-3 company, a car line, or
+    the group's own lithium supply (a lithium mine or converter)."""
+    if d.vehicles is None:
+        return None
+    vb = b.vehicles
+    if any(p.category == vb.category for p in state.products if p.company_id in ids):
+        return "the company makes cars"
+    lithium = "lithium_carbonate"
+    if any(m.commodity == lithium for m in state.mines if m.company_id in ids and m.is_open):
+        return "the group holds lithium supply"
+    for r in state.refineries:
+        if r.company_id in ids and b.refining.recipes[r.recipe].output_good == lithium:
+            return "the group holds lithium supply"
+    year = turn_to_ym(state.turn)[0]
+    if year >= vb.unlock_year and _stage(state) >= STAGE_GROWTH:
+        return f"the EV era opened ({vb.unlock_year}) at stage 3"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -302,6 +324,7 @@ CHECKS: dict[str, Check] = {
     "platforms": _any(_by_stage(STAGE_GROWTH, "stage 3"), _platforms),  # M31
     "power": _any(_by_stage(STAGE_LISTED, "stage 4"), _power),  # M32 (46)
     "regulation": _regulation,  # M34
+    "vehicles": _vehicles,  # M38 (49)
     "medical": _medical,  # M41 (50)
 }
 

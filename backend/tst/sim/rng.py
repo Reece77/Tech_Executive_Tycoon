@@ -113,6 +113,10 @@ STREAM_IDS: Final = MappingProxyType(
         # (1, company id, stage index, attempt) a programme's draws and overrun; (2, foundry
         # index) a Chinese foundry's own EUV-class tools' month
         "equipment": 61,
+        # M38 (formulas.md 49): (0, region_index) a region's EV-share speed and its approvals
+        # after 2025, (0, n_regions) the game-wide learning rate; (1, product_id) autonomy
+        # incidents; (2, facility) a cell plant's overrun and yield; (3, rival key) rival refreshes
+        "vehicles": 63,
         # M41 (formulas.md 50): (0, study_id) a study's result; (1, submission_id) a review's
         # length and outcome; (2, facility or company) inspections and recalls; (3, product_id)
         # post-market signals; (4, regulator index) seeded review drift after 2025
