@@ -44,7 +44,7 @@ weekly-v5:
 	uv run --project backend python tools/v2_targets.py --long --runs
 weekly-v6:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: its targets on CI's runner
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite TST_M30_MEDIAN_MS=500 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 500 ms guard on this save from M38 until the v5 performance milestone after M37 (PM, 2026-11-17); the 1,000 ms budget stays
 
 # M23b's v3 targets (tst.balance.v3; CI: weekly.yml): the chain's shocks, 20 years of the v2
 # and v3 founder-played strategies (integration pays), the v3 scripts to December 2039, and V6
