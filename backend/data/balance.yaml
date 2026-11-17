@@ -2785,7 +2785,7 @@ dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here r
     window_months: 24 # months; a successor's public window, centred on its planned midpoint (A: as A10's)
     density: [1.25, 1.40] # x transistor density, the first successor step (A: 2030s-class steps of 1.3-1.6x, slowing)
     density_decay: 0.85 # each later step's (gain - 1) x this (A: the gains shrink)
-    wafer_mult: [1.08, 1.18] # x the previous node's wafer price (A: under the density gain, so cost per transistor still falls, less each step)
+    wafer_mult: [1.05, 1.15] # x the previous node's wafer price (A: under the density gain, so cost per transistor still falls, less each step; M37 tuning from [1.08, 1.18] for 52.5 target 3)
     capital_mult: [1.10, 1.25] # x the previous node's capital per wafer-per-year (A: capex keeps rising; fab.future_capital_mult is 1.05-1.20)
   frontier: # 52.2: research continues with longer gaps and rising costs
     slowdown: 0.85 # x every domain's baseline points a year for each decade from start_year (A)

@@ -250,19 +250,24 @@ def test_retire_chance_rises_with_age_and_losses(loaded: LoadedData) -> None:
 def test_short_markets_get_entrants_in_every_category(loaded: LoadedData) -> None:
     from tst.sim.dynasty import rivals
     from tst.sim.rng import RngFactory
+    from tst.sim.state import group_companies
 
     b = loaded.balance
+    want = 6
     many = b.model_copy(
         update={
             "dynasty": b.dynasty.model_copy(
-                update={"rivals": b.dynasty.rivals.model_copy(update={"min_active": 999})}
+                update={"rivals": b.dynasty.rivals.model_copy(update={"min_active": want})}
             )
         }
     )
     state = _at_2040(loaded)
     out, entries, moves = rivals.entrants_month(state, RngFactory(1), many, loaded.game_data)
-    cats = [c for c in loaded.game_data.categories if c.markets]
-    assert len(moves) == len(entries) == len(cats)
+    assert len(moves) == len(entries) > 0
+    mine = {c.id for c in group_companies(out, out.player.id)}
+    for c in loaded.game_data.categories:
+        if c.markets:
+            assert rivals.active_rivals(out, c.key, mine) >= want, c.key
     for c in out.companies:
         if c.rival_key[:1] == (rivals.DYNASTY_KEY,):
             (product,) = out.company_products(c.id)

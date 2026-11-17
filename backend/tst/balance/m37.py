@@ -192,9 +192,9 @@ def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
         s = game.state
         for k in goods:
             prices[k].append(index_now(s, k, g))
-        if s.turn >= START and s.turn % 12 == 0:
+        if s.turn > START and s.turn % 12 == 1:  # after each January's turn, 2040 on
             mine = {c.id for c in group_companies(s, s.player.id)}
-            decade = next(i for i, (a, b) in enumerate(DECADES) if a <= s.turn < b + 1)
+            decade = next(i for i, (a, b) in enumerate(DECADES) if a <= s.turn - 1 < b)
             for c in g.categories:
                 if not c.markets:
                     continue

@@ -10,10 +10,10 @@ at exec level, generated on the same stream. With chance `personality_change[how
 personality type (15) changes to another from rivals.startup.personalities.
 
 **Entrants.** A category with fewer than `min_active` active rivals (rivals in business with a
-live product in it, the player's group not counted) gets a seeded entrant (stream `dynasty`,
-key (ENTRANT, category index, year)): a 15.4 startup with entrant_staff people (all senior) and
-entrant_cash_months of their pay, launched at once at the category's median rival quality, so
-the market never empties. With chance relaunch_share, and a failed rival in the category, it
+live product in it, the player's group not counted) gets seeded entrants (stream `dynasty`, key
+(ENTRANT, category index, year, k)), as many as it takes: a 15.4 startup with entrant_staff
+people (all senior) and entrant_cash_months of their pay, launched at once at the category's
+median rival quality, so the market never empties. With chance relaunch_share, and a failed rival in the category, it
 carries that rival's brand (its name, "II" added): the brand bought and relaunched.
 
 Before 2040 nothing here runs: no draw, no record (52.5 target 1). Draws stay in the engine;
@@ -215,80 +215,85 @@ def entrants_month(
     entries: list[LedgerEntry] = []
     moves: list[RivalMove] = []
     for index, category in enumerate(data.categories):
-        if not category.markets or active_rivals(state, category.key, mine) >= r.min_active:
+        if not category.markets:
             continue
-        g = gen(rng, state.turn, ENTRANT, index, year)
-        draws = g.random(5)  # tunable-exempt: five draws
-        u_relaunch, u_name, u_pers, u_staff, u_cash = (float(t) for t in draws)
-        failed = sorted(
-            (
-                c
-                for c in state.companies
-                if c.failed_turn is not None
-                and not c.is_player
-                and any(p.company_id == c.id and p.category == category.key for p in state.products)
-            ),
-            key=lambda c: c.id,
-        )
-        taken = {c.name for c in state.companies}
-        brand: CompanyState | None = None
-        if failed and u_relaunch < r.relaunch_share:
-            brand = failed[min(len(failed) - 1, int(u_name * len(failed)))]
-            name = brand.name + SECOND
-            while name in taken:
-                name += "I"
-        else:
-            names = [n for n in data.startup_names if n not in taken]
-            if not names:
-                continue
-            name = names[min(len(names) - 1, int(u_name * len(names)))]
-        people = balance.rivals.startup.personalities
-        personality = people[min(len(people) - 1, int(u_pers * len(people)))]
-        lo, hi = r.entrant_staff
-        staff = lo + min(hi - lo, int(u_staff * (hi - lo + 1)))
-        role = balance.rivals.function_roles["builder"]
-        pay = market_salary_cents(role, ENTRANT_LEVEL, balance, data)
-        cash = round(pay * staff * r.entrant_cash_months.at(u_cash))
-        functions = ["builder", *key_people_split(staff - 1, _mix(category.key, balance))]
-        state, company, entry = found_company(
-            state,
-            name,
-            personality,
-            category,
-            list(category.segment_keys),
-            cash,
-            functions,
-            [ENTRANT_LEVEL] * staff,
-            rng,
-            balance,
-            data,
-            gen=g,
-            rival_key=(DYNASTY_KEY, index, year),
-        )
-        entries.append(entry)
-        product = state.company_products(company.id)[0]
-        rivals_q = [
-            p.quality
-            for p in state.products
-            if p.category == category.key and p.status in LIVE and p.company_id not in mine
-        ]
-        quality = statistics.median(rivals_q) if rivals_q else product.quality
-        state = with_product(
-            state,
-            replace(
-                product,
-                status="live",
-                quality=quality,
-                feature_points=max(product.feature_points, category.features_at_start),
-                launched_turn=state.turn,
-            ),
-        )
-        state = sell_first_in(state, company, product.id, "north_america", balance, data)
-        if brand is not None:
-            d = _record_state(state)
-            relaunch = Relaunch(company.id, brand.id, state.turn)
-            state = replace(state, dynasty=replace(d, relaunches=(*d.relaunches, relaunch)))
-        what = f"relaunched {brand.name}'s brand in" if brand else "entered"
-        state, move = _record(state, company, "founded", f"{what} {category.label}", product.id)
-        moves.append(move)
+        for k in range(r.min_active):  # as many as it takes to reach min_active
+            if active_rivals(state, category.key, mine) >= r.min_active:
+                break
+            g = gen(rng, state.turn, ENTRANT, index, year, k)
+            draws = g.random(5)  # tunable-exempt: five draws
+            u_relaunch, u_name, u_pers, u_staff, u_cash = (float(t) for t in draws)
+            failed = sorted(
+                (
+                    c
+                    for c in state.companies
+                    if c.failed_turn is not None
+                    and not c.is_player
+                    and any(
+                        p.company_id == c.id and p.category == category.key for p in state.products
+                    )
+                ),
+                key=lambda c: c.id,
+            )
+            taken = {c.name for c in state.companies}
+            brand: CompanyState | None = None
+            if failed and u_relaunch < r.relaunch_share:
+                brand = failed[min(len(failed) - 1, int(u_name * len(failed)))]
+                name = brand.name + SECOND
+                while name in taken:
+                    name += "I"
+            else:
+                names = [n for n in data.startup_names if n not in taken]
+                if not names:
+                    break
+                name = names[min(len(names) - 1, int(u_name * len(names)))]
+            people = balance.rivals.startup.personalities
+            personality = people[min(len(people) - 1, int(u_pers * len(people)))]
+            lo, hi = r.entrant_staff
+            staff = lo + min(hi - lo, int(u_staff * (hi - lo + 1)))
+            role = balance.rivals.function_roles["builder"]
+            pay = market_salary_cents(role, ENTRANT_LEVEL, balance, data)
+            cash = round(pay * staff * r.entrant_cash_months.at(u_cash))
+            functions = ["builder", *key_people_split(staff - 1, _mix(category.key, balance))]
+            state, company, entry = found_company(
+                state,
+                name,
+                personality,
+                category,
+                list(category.segment_keys),
+                cash,
+                functions,
+                [ENTRANT_LEVEL] * staff,
+                rng,
+                balance,
+                data,
+                gen=g,
+                rival_key=(DYNASTY_KEY, index, year, k),
+            )
+            entries.append(entry)
+            product = state.company_products(company.id)[0]
+            rivals_q = [
+                p.quality
+                for p in state.products
+                if p.category == category.key and p.status in LIVE and p.company_id not in mine
+            ]
+            quality = statistics.median(rivals_q) if rivals_q else product.quality
+            state = with_product(
+                state,
+                replace(
+                    product,
+                    status="live",
+                    quality=quality,
+                    feature_points=max(product.feature_points, category.features_at_start),
+                    launched_turn=state.turn,
+                ),
+            )
+            state = sell_first_in(state, company, product.id, "north_america", balance, data)
+            if brand is not None:
+                d = _record_state(state)
+                relaunch = Relaunch(company.id, brand.id, state.turn)
+                state = replace(state, dynasty=replace(d, relaunches=(*d.relaunches, relaunch)))
+            what = f"relaunched {brand.name}'s brand in" if brand else "entered"
+            state, move = _record(state, company, "founded", f"{what} {category.label}", product.id)
+            moves.append(move)
     return state, tuple(entries), tuple(moves)
