@@ -5773,6 +5773,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/robotics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Robotics
+         * @description Robot installations by region, makers' lines and shares, the humanoid market, and the
+         *     player's robot lines and plant automation.
+         */
+        get: operations["getRobotics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/robotics/plants/{facility_id}/robots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Install Robots */
+        post: operations["installRobots"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/robotics/humanoids/{product_id}/spec": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Humanoid Spec */
+        post: operations["setHumanoidSpec"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Mobility
+         * @description Robotaxi cities, rival services, and the player's zones, fleets, depots and incidents.
+         */
+        get: operations["getMobility"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open Zone */
+        post: operations["openZone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/cars": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Cars */
+        post: operations["addRobotaxis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Price */
+        post: operations["setRidePrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close Zone */
+        post: operations["closeZone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/mobility/depots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Depot */
+        post: operations["buildDepot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/regulation": {
         parameters: {
             query?: never;
@@ -6310,6 +6470,16 @@ export interface components {
             /** Months Left */
             months_left: number;
         };
+        /** AddCarsIn */
+        AddCarsIn: {
+            /** Cars */
+            cars: number;
+            /**
+             * Car Product Id
+             * @description An own L4 car line; None buys
+             */
+            car_product_id?: number | null;
+        };
         /** AdoptIn */
         AdoptIn: {
             /** Product Id */
@@ -6410,6 +6580,17 @@ export interface components {
              * @description disclosed | concealed | found, once raised
              */
             conflict: string | null;
+        };
+        /** AnnouncementOut */
+        AnnouncementOut: {
+            /** Month */
+            month: string;
+            /** Company */
+            company: string;
+            /** Label */
+            label: string;
+            /** Price Cents */
+            price_cents: number | null;
         };
         /** AnswerOrderIn */
         AnswerOrderIn: {
@@ -6790,6 +6971,21 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** AutomationMonthOut */
+        AutomationMonthOut: {
+            /** Month */
+            month: string;
+            /** Units */
+            units: number;
+            /** Saved Cents */
+            saved_cents: number;
+            /** Service Cents */
+            service_cents: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /** Level */
+            level: number;
+        };
         /** AutomationOut */
         AutomationOut: {
             /** Company Id */
@@ -7143,6 +7339,13 @@ export interface components {
             exclusive?: boolean;
             /** City */
             city?: string | null;
+        };
+        /** BuildDepotIn */
+        BuildDepotIn: {
+            /** City */
+            city: string;
+            /** Capacity */
+            capacity: number;
         };
         /** BuildFabIn */
         BuildFabIn: {
@@ -9088,6 +9291,21 @@ export interface components {
              * @description A plausible but worse choice (24.2)
              */
             mistake: boolean;
+        };
+        /** DepotOut */
+        DepotOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** City */
+            city: string;
+            /** Capacity */
+            capacity: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
         };
         /** DesignationOut */
         DesignationOut: {
@@ -12438,6 +12656,17 @@ export interface components {
             /** Deadline Label */
             deadline_label: string;
         };
+        /** HistoryIncidentOut */
+        HistoryIncidentOut: {
+            /** Month */
+            month: string;
+            /** Operator */
+            operator: string;
+            /** City */
+            city: string;
+            /** Label */
+            label: string;
+        };
         /** HistoryRowOut */
         HistoryRowOut: {
             /**
@@ -12596,6 +12825,49 @@ export interface components {
             default_stop: string;
             /** Stop Runway Months */
             stop_runway_months: number;
+        };
+        /** HumanoidMarketOut */
+        HumanoidMarketOut: {
+            /** Era */
+            era: string;
+            /**
+             * Window
+             * @description The era's public window, e.g. 2030-2035
+             */
+            window: string;
+            /**
+             * Arrived
+             * @description The month it arrived; None before
+             */
+            arrived: string | null;
+            /** Open */
+            open: boolean;
+            /**
+             * Homes Open
+             * @description Whether humanoids sell to homes yet
+             */
+            homes_open: boolean;
+            /**
+             * Actuator Index
+             * @description Actuators' cost over their first-year cost
+             */
+            actuator_index: number;
+            /**
+             * Actuator Cents
+             * @description A humanoid's actuators this month, 2010 cents
+             */
+            actuator_cents: number;
+            /** Best Capability */
+            best_capability: number;
+            /** Announcements */
+            announcements: components["schemas"]["AnnouncementOut"][];
+        };
+        /** HumanoidSpecIn */
+        HumanoidSpecIn: {
+            /** Ai Product Id */
+            ai_product_id?: number | null;
+            /** Chip Product Id */
+            chip_product_id?: number | null;
         };
         /**
          * InboxBulkOut
@@ -12772,6 +13044,16 @@ export interface components {
              * @description Use at which a general CU costs spot
              */
             break_even_utilization: number;
+        };
+        /** InstallRobotsIn */
+        InstallRobotsIn: {
+            /** Robots */
+            robots: number;
+            /**
+             * Product Id
+             * @description An own robot line; None buys
+             */
+            product_id?: number | null;
         };
         /** InvestingRulesOut */
         InvestingRulesOut: {
@@ -14366,6 +14648,63 @@ export interface components {
              */
             listed: boolean;
         };
+        /** MobilityActionOut */
+        MobilityActionOut: {
+            mobility: components["schemas"]["MobilityScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** MobilityOptionsOut */
+        MobilityOptionsOut: {
+            /** Can Drive L4 */
+            can_drive_l4: boolean;
+            /** L4 Lead */
+            l4_lead: number;
+            /** L4 Ai Quality */
+            l4_ai_quality: number;
+            /** Zone Sizes */
+            zone_sizes: components["schemas"]["ZoneSizeOut"][];
+            /**
+             * Robotaxi Cents
+             * @description A bought robotaxi's price this month
+             */
+            robotaxi_cents: number;
+            /**
+             * Own Car Lines
+             * @description Own car lines that drive at L4
+             */
+            own_car_lines: components["schemas"]["ProductOptionOut"][];
+            /** Depot Sizes */
+            depot_sizes: number[];
+            /**
+             * Depot Capex Cents
+             * @description A depot's capex a car served, at index 1.0
+             */
+            depot_capex_cents: number;
+            /** Max Cars */
+            max_cars: number;
+        };
+        /** MobilityScreenOut */
+        MobilityScreenOut: {
+            /** Month */
+            month: string;
+            /** Cities */
+            cities: components["schemas"]["RobotaxiCityOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RivalServiceOut"][];
+            /** History Incidents */
+            history_incidents: components["schemas"]["HistoryIncidentOut"][];
+            /** Services */
+            services: components["schemas"]["ServiceOut"][];
+            /** Zones */
+            zones: components["schemas"]["ZoneOut"][];
+            /** Depots */
+            depots: components["schemas"]["DepotOut"][];
+            /** Incidents */
+            incidents: components["schemas"]["RoboIncidentOut"][];
+            options: components["schemas"]["MobilityOptionsOut"];
+        };
         /** ModChangeIn */
         ModChangeIn: {
             /** File */
@@ -15056,6 +15395,21 @@ export interface components {
              * @default true
              */
             open?: boolean;
+        };
+        /** OpenZoneIn */
+        OpenZoneIn: {
+            /** Product Id */
+            product_id: number;
+            /** City */
+            city: string;
+            /** Size */
+            size: string;
+            /**
+             * Price Cents
+             * @description 0: the city's human fare
+             * @default 0
+             */
+            price_cents?: number;
         };
         /** OpinionOut */
         OpinionOut: {
@@ -16184,6 +16538,51 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /** PlantAutomationOut */
+        PlantAutomationOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Region */
+            region: string;
+            /** Capacity */
+            capacity: number;
+            /** Robots */
+            robots: number;
+            /** Own Robots */
+            own_robots: number;
+            /** Max Robots */
+            max_robots: number;
+            /**
+             * Level
+             * @description Share of the plant's line labour robots replace
+             */
+            level: number;
+            /**
+             * Saving Cents
+             * @description Line labour saved a unit run
+             */
+            saving_cents: number;
+            /**
+             * Wage Cents Month
+             * @description A line worker's labour a month in the region
+             */
+            wage_cents_month: number;
+            /** @description Conversion cost a unit at full use, no robots */
+            cost_without: components["schemas"]["UnitCostOut"];
+            /** @description The same with its robots */
+            cost_with: components["schemas"]["UnitCostOut"];
+            /** Capex Cents */
+            capex_cents: number;
+            /** Book Cents */
+            book_cents: number;
+            month: components["schemas"]["AutomationMonthOut"] | null;
+            /** History */
+            history: components["schemas"]["AutomationMonthOut"][];
+        };
         /** PlantIn */
         PlantIn: {
             /** City */
@@ -17119,6 +17518,15 @@ export interface components {
             churned: number;
             /** Revenue Cents */
             revenue_cents: number;
+        };
+        /** ProductOptionOut */
+        ProductOptionOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Quality */
+            quality: number;
         };
         /** ProductOut */
         ProductOut: {
@@ -18714,6 +19122,11 @@ export interface components {
             /** License Energy */
             license_energy: number;
         };
+        /** RidePriceIn */
+        RidePriceIn: {
+            /** Price Cents */
+            price_cents: number;
+        };
         /** RivalBidOut */
         RivalBidOut: {
             /** Id */
@@ -19014,6 +19427,24 @@ export interface components {
             /** Running Until Label */
             running_until_label: string | null;
         };
+        /** RivalServiceOut */
+        RivalServiceOut: {
+            /** Operator */
+            operator: string;
+            /** City */
+            city: string;
+            /** Since */
+            since: string;
+            /** Running */
+            running: boolean;
+            /** Fleet */
+            fleet: number;
+            /**
+             * Rides Week
+             * @description Paid rides a week, real world
+             */
+            rides_week: number;
+        };
         /** RivalShareOut */
         RivalShareOut: {
             /** Region */
@@ -19034,6 +19465,205 @@ export interface components {
             startups_failed: number;
             /** Rivals */
             rivals: components["schemas"]["RivalRowOut"][];
+        };
+        /** RoboIncidentOut */
+        RoboIncidentOut: {
+            /** Month */
+            month: string;
+            /** Zone Id */
+            zone_id: number;
+            /** City */
+            city: string;
+            /** Serious */
+            serious: boolean;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Suspended Until */
+            suspended_until: string | null;
+        };
+        /** RobotLineOut */
+        RobotLineOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /**
+             * Capability
+             * @description A humanoid's capability, 0-100
+             */
+            capability: number | null;
+            /** Ai */
+            ai: string | null;
+            /** Chips */
+            chips: string | null;
+            /** Customers */
+            customers: number;
+            /** Unit Cost Cents */
+            unit_cost_cents: number;
+        };
+        /** RobotMakerOut */
+        RobotMakerOut: {
+            /** Company Id */
+            company_id: number;
+            /** Company */
+            company: string;
+            /** Owner */
+            owner: string;
+            /** Product */
+            product: string;
+            /** Category */
+            category: string;
+            /** Quality */
+            quality: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Selling */
+            selling: boolean;
+            /** Shares */
+            shares: components["schemas"]["RobotShareOut"][];
+        };
+        /** RobotRegionOut */
+        RobotRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Installations Year
+             * @description Industrial robots installed a year, real world
+             */
+            installations_year: number;
+            /**
+             * Game Installations Year
+             * @description The same at the game's scale
+             */
+            game_installations_year: number;
+            /**
+             * History
+             * @description Installations a year, real world, to now
+             */
+            history: components["schemas"]["YearPointOut"][];
+            /**
+             * Density
+             * @description Robots per 10,000 manufacturing workers (latest)
+             */
+            density: number | null;
+            /**
+             * Labour Cents Hour
+             * @description Manufacturing labour cost an hour, 2010 cents
+             */
+            labour_cents_hour: number;
+            /**
+             * Humanoid Adoption
+             * @description Share of the worker pool humanoids serve now
+             */
+            humanoid_adoption: number;
+        };
+        /** RobotShareOut */
+        RobotShareOut: {
+            /** Region */
+            region: string;
+            /**
+             * Share
+             * @description Its share of the region's served robot buyers now
+             */
+            share: number;
+        };
+        /** RobotaxiCityOut */
+        RobotaxiCityOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /**
+             * L4 Approved
+             * @description The region's regulator allows driverless service
+             */
+            l4_approved: boolean;
+            /**
+             * Trips Month
+             * @description Ride-hailing trips a month at the game's scale
+             */
+            trips_month: number;
+            /**
+             * Fare Cents
+             * @description A human ride-hail trip's fare, 2010 cents
+             */
+            fare_cents: number;
+            /**
+             * Acceptance
+             * @description Riders' robotaxi share of covered trips
+             */
+            acceptance: number;
+            /** First Service */
+            first_service: string | null;
+            /**
+             * Rival Fleet
+             * @description Rival robotaxis in the city, real cars
+             */
+            rival_fleet: number;
+        };
+        /** RoboticsActionOut */
+        RoboticsActionOut: {
+            robotics: components["schemas"]["RoboticsScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** RoboticsOptionsOut */
+        RoboticsOptionsOut: {
+            /**
+             * Robot Cents
+             * @description A bought robot's price, 2010 cents
+             */
+            robot_cents: number;
+            /**
+             * System Cents
+             * @description A bought robot installed (integration included)
+             */
+            system_cents: number;
+            /**
+             * Service Share
+             * @description A year's service over the robot's price
+             */
+            service_share: number;
+            /** Own Robot Lines */
+            own_robot_lines: components["schemas"]["ProductOptionOut"][];
+            /** Ai Models */
+            ai_models: components["schemas"]["ProductOptionOut"][];
+            /** Accelerators */
+            accelerators: components["schemas"]["ProductOptionOut"][];
+            /** Max Robots */
+            max_robots: number;
+            /** Target Level */
+            target_level: number;
+        };
+        /** RoboticsScreenOut */
+        RoboticsScreenOut: {
+            /** Month */
+            month: string;
+            /** Scale */
+            scale: number;
+            /** Scale Basis */
+            scale_basis: string;
+            /** Regions */
+            regions: components["schemas"]["RobotRegionOut"][];
+            /** Makers */
+            makers: components["schemas"]["RobotMakerOut"][];
+            humanoids: components["schemas"]["HumanoidMarketOut"];
+            /** Lines */
+            lines: components["schemas"]["RobotLineOut"][];
+            /** Plants */
+            plants: components["schemas"]["PlantAutomationOut"][];
+            options: components["schemas"]["RoboticsOptionsOut"];
         };
         /** RoleChoiceOut */
         RoleChoiceOut: {
@@ -19767,6 +20397,19 @@ export interface components {
             open_turns: number;
             /** Energy Cost */
             energy_cost: number;
+        };
+        /** ServiceOut */
+        ServiceOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Brand */
+            brand: number;
         };
         /** SetLeaderIn */
         SetLeaderIn: {
@@ -21369,6 +22012,19 @@ export interface components {
             };
             onboarding?: components["schemas"]["Onboarding"];
         };
+        /** UnitCostOut */
+        UnitCostOut: {
+            /** Labour Cents */
+            labour_cents: number;
+            /** Fixed Cents */
+            fixed_cents: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /** Robots Cents */
+            robots_cents: number;
+            /** Total Cents */
+            total_cents: number;
+        };
         /** UnitOfficeIn */
         UnitOfficeIn: {
             /**
@@ -21918,12 +22574,102 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /** YearPointOut */
+        YearPointOut: {
+            /** Year */
+            year: number;
+            /** Value */
+            value: number;
+        };
         /** YearValueOut */
         YearValueOut: {
             /** Year */
             year: number;
             /** Value */
             value: number;
+        };
+        /** ZoneMonthOut */
+        ZoneMonthOut: {
+            /** Month */
+            month: string;
+            /** Cars */
+            cars: number;
+            /** Rides */
+            rides: number;
+            /** Utilisation */
+            utilisation: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Energy Cents */
+            energy_cents: number;
+            /** Cleaning Cents */
+            cleaning_cents: number;
+            /** Insurance Cents */
+            insurance_cents: number;
+            /** Remote Cents */
+            remote_cents: number;
+            /** Depreciation Cents */
+            depreciation_cents: number;
+            /** Contribution Cents */
+            contribution_cents: number;
+            /** Contribution Per Ride Cents */
+            contribution_per_ride_cents: number | null;
+            /** Rides Per Car Day */
+            rides_per_car_day: number;
+        };
+        /** ZoneOut */
+        ZoneOut: {
+            /** Zone Id */
+            zone_id: number;
+            /** Product Id */
+            product_id: number;
+            /** Service */
+            service: string;
+            /** City */
+            city: string;
+            /** City Label */
+            city_label: string;
+            /** Size */
+            size: string;
+            /**
+             * Status
+             * @description applied (under review), active, suspended, refused, closed
+             */
+            status: string;
+            /** Applied */
+            applied: string;
+            /** Approved */
+            approved: string | null;
+            /** Suspended Until */
+            suspended_until: string | null;
+            /** Cars */
+            cars: number;
+            /** Car Source */
+            car_source: string;
+            /** Price Cents */
+            price_cents: number;
+            /**
+             * Depot Cars
+             * @description Cars the company's depots in the city serve
+             */
+            depot_cars: number;
+            /**
+             * Breakeven Rides
+             * @description Rides a car a day at which a car breaks even
+             */
+            breakeven_rides: number;
+            month: components["schemas"]["ZoneMonthOut"] | null;
+            /** History */
+            history: components["schemas"]["ZoneMonthOut"][];
+        };
+        /** ZoneSizeOut */
+        ZoneSizeOut: {
+            /** Key */
+            key: string;
+            /** Share */
+            share: number;
+            /** Review Months */
+            review_months: number;
         };
         /** UnitChoiceOut */
         tst__api__schemas__automation__UnitChoiceOut: {
@@ -40936,6 +41682,557 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VehiclesActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getRobotics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoboticsScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    installRobots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InstallRobotsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoboticsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setHumanoidSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HumanoidSpecIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoboticsActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMobility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenZoneIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    addRobotaxis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                zone_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddCarsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setRidePrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                zone_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RidePriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    closeZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                zone_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildDepot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BuildDepotIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MobilityActionOut"];
                 };
             };
             /** @description Bad Request */

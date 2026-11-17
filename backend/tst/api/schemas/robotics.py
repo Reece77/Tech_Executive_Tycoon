@@ -142,7 +142,7 @@ class RoboticsScreenOut(BaseModel):
     options: RoboticsOptionsOut
 
 
-class CityOut(BaseModel):
+class RobotaxiCityOut(BaseModel):
     key: str
     label: str
     region: str
@@ -252,7 +252,7 @@ class MobilityOptionsOut(BaseModel):
 
 class MobilityScreenOut(BaseModel):
     month: str
-    cities: list[CityOut]
+    cities: list[RobotaxiCityOut]
     rivals: list[RivalServiceOut]
     history_incidents: list[HistoryIncidentOut]
     services: list[ServiceOut]

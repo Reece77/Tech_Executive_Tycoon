@@ -159,6 +159,22 @@ export const SCREENS: readonly Screen[] = [
     parent: 'products',
   }, // M38
   {
+    path: 'products/robotics',
+    label: 'Robotics',
+    group: 'products',
+    unlock: 'robotics',
+    side: true,
+    parent: 'products',
+  }, // M39
+  {
+    path: 'products/mobility',
+    label: 'Mobility',
+    group: 'products',
+    unlock: 'mobility',
+    side: true,
+    parent: 'products',
+  }, // M39
+  {
     path: 'products/equipment',
     label: 'Equipment',
     group: 'chain',

@@ -25918,6 +25918,761 @@
         }
       }
     },
+    "/api/saves/{save_id}/robotics": {
+      "get": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Get Robotics",
+        "description": "Robot installations by region, makers' lines and shares, the humanoid market, and the\nplayer's robot lines and plant automation.",
+        "operationId": "getRobotics",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoboticsScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/robotics/plants/{facility_id}/robots": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Install Robots",
+        "operationId": "installRobots",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallRobotsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoboticsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/robotics/humanoids/{product_id}/spec": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Set Humanoid Spec",
+        "operationId": "setHumanoidSpec",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanoidSpecIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoboticsActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility": {
+      "get": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Get Mobility",
+        "description": "Robotaxi cities, rival services, and the player's zones, fleets, depots and incidents.",
+        "operationId": "getMobility",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility/zones": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Open Zone",
+        "operationId": "openZone",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenZoneIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/cars": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Add Cars",
+        "operationId": "addRobotaxis",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "zone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Zone Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCarsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/price": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Set Price",
+        "operationId": "setRidePrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "zone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Zone Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RidePriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility/zones/{zone_id}/close": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Close Zone",
+        "operationId": "closeZone",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "zone_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Zone Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/mobility/depots": {
+      "post": {
+        "tags": [
+          "robotics"
+        ],
+        "summary": "Build Depot",
+        "operationId": "buildDepot",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildDepotIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -27333,6 +28088,32 @@
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
       },
+      "AddCarsIn": {
+        "properties": {
+          "cars": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Cars"
+          },
+          "car_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Car Product Id",
+            "description": "An own L4 car line; None buys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cars"
+        ],
+        "title": "AddCarsIn"
+      },
       "AdoptIn": {
         "properties": {
           "product_id": {
@@ -27582,6 +28363,41 @@
           "conflict"
         ],
         "title": "AngelStakeOut"
+      },
+      "AnnouncementOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "company",
+          "label",
+          "price_cents"
+        ],
+        "title": "AnnouncementOut"
       },
       "AnswerOrderIn": {
         "properties": {
@@ -28523,6 +29339,44 @@
         ],
         "title": "AutomationActionOut"
       },
+      "AutomationMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "units": {
+            "type": "number",
+            "title": "Units"
+          },
+          "saved_cents": {
+            "type": "integer",
+            "title": "Saved Cents"
+          },
+          "service_cents": {
+            "type": "integer",
+            "title": "Service Cents"
+          },
+          "depreciation_cents": {
+            "type": "integer",
+            "title": "Depreciation Cents"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "units",
+          "saved_cents",
+          "service_cents",
+          "depreciation_cents",
+          "level"
+        ],
+        "title": "AutomationMonthOut"
+      },
       "AutomationOut": {
         "properties": {
           "company_id": {
@@ -29336,6 +30190,24 @@
           "chargers"
         ],
         "title": "BuildChargingIn"
+      },
+      "BuildDepotIn": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "capacity"
+        ],
+        "title": "BuildDepotIn"
       },
       "BuildFabIn": {
         "properties": {
@@ -33769,6 +34641,44 @@
         ],
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
+      },
+      "DepotOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "city",
+          "capacity",
+          "status",
+          "ready"
+        ],
+        "title": "DepotOut"
       },
       "DesignationOut": {
         "properties": {
@@ -42189,6 +43099,34 @@
         "title": "HistoricalOut",
         "description": "A historical scenario (30.3): its start, goal and deadline."
       },
+      "HistoryIncidentOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "operator",
+          "city",
+          "label"
+        ],
+        "title": "HistoryIncidentOut"
+      },
       "HistoryRowOut": {
         "properties": {
           "key": {
@@ -42608,6 +43546,102 @@
         ],
         "title": "HolidayOut"
       },
+      "HumanoidMarketOut": {
+        "properties": {
+          "era": {
+            "type": "string",
+            "title": "Era"
+          },
+          "window": {
+            "type": "string",
+            "title": "Window",
+            "description": "The era's public window, e.g. 2030-2035"
+          },
+          "arrived": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrived",
+            "description": "The month it arrived; None before"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open"
+          },
+          "homes_open": {
+            "type": "boolean",
+            "title": "Homes Open",
+            "description": "Whether humanoids sell to homes yet"
+          },
+          "actuator_index": {
+            "type": "number",
+            "title": "Actuator Index",
+            "description": "Actuators' cost over their first-year cost"
+          },
+          "actuator_cents": {
+            "type": "number",
+            "title": "Actuator Cents",
+            "description": "A humanoid's actuators this month, 2010 cents"
+          },
+          "best_capability": {
+            "type": "number",
+            "title": "Best Capability"
+          },
+          "announcements": {
+            "items": {
+              "$ref": "#/components/schemas/AnnouncementOut"
+            },
+            "type": "array",
+            "title": "Announcements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "era",
+          "window",
+          "arrived",
+          "open",
+          "homes_open",
+          "actuator_index",
+          "actuator_cents",
+          "best_capability",
+          "announcements"
+        ],
+        "title": "HumanoidMarketOut"
+      },
+      "HumanoidSpecIn": {
+        "properties": {
+          "ai_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Product Id"
+          },
+          "chip_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chip Product Id"
+          }
+        },
+        "type": "object",
+        "title": "HumanoidSpecIn"
+      },
       "InboxBulkOut": {
         "properties": {
           "changed": {
@@ -43012,6 +44046,32 @@
           "break_even_utilization"
         ],
         "title": "InfrastructureOut"
+      },
+      "InstallRobotsIn": {
+        "properties": {
+          "robots": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Robots"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id",
+            "description": "An own robot line; None buys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "robots"
+        ],
+        "title": "InstallRobotsIn"
       },
       "InvestingRulesOut": {
         "properties": {
@@ -46924,6 +47984,165 @@
         ],
         "title": "MnaOut"
       },
+      "MobilityActionOut": {
+        "properties": {
+          "mobility": {
+            "$ref": "#/components/schemas/MobilityScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mobility",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "MobilityActionOut"
+      },
+      "MobilityOptionsOut": {
+        "properties": {
+          "can_drive_l4": {
+            "type": "boolean",
+            "title": "Can Drive L4"
+          },
+          "l4_lead": {
+            "type": "number",
+            "title": "L4 Lead"
+          },
+          "l4_ai_quality": {
+            "type": "number",
+            "title": "L4 Ai Quality"
+          },
+          "zone_sizes": {
+            "items": {
+              "$ref": "#/components/schemas/ZoneSizeOut"
+            },
+            "type": "array",
+            "title": "Zone Sizes"
+          },
+          "robotaxi_cents": {
+            "type": "number",
+            "title": "Robotaxi Cents",
+            "description": "A bought robotaxi's price this month"
+          },
+          "own_car_lines": {
+            "items": {
+              "$ref": "#/components/schemas/ProductOptionOut"
+            },
+            "type": "array",
+            "title": "Own Car Lines",
+            "description": "Own car lines that drive at L4"
+          },
+          "depot_sizes": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Depot Sizes"
+          },
+          "depot_capex_cents": {
+            "type": "number",
+            "title": "Depot Capex Cents",
+            "description": "A depot's capex a car served, at index 1.0"
+          },
+          "max_cars": {
+            "type": "integer",
+            "title": "Max Cars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_drive_l4",
+          "l4_lead",
+          "l4_ai_quality",
+          "zone_sizes",
+          "robotaxi_cents",
+          "own_car_lines",
+          "depot_sizes",
+          "depot_capex_cents",
+          "max_cars"
+        ],
+        "title": "MobilityOptionsOut"
+      },
+      "MobilityScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/RobotaxiCityOut"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalServiceOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "history_incidents": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryIncidentOut"
+            },
+            "type": "array",
+            "title": "History Incidents"
+          },
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceOut"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "zones": {
+            "items": {
+              "$ref": "#/components/schemas/ZoneOut"
+            },
+            "type": "array",
+            "title": "Zones"
+          },
+          "depots": {
+            "items": {
+              "$ref": "#/components/schemas/DepotOut"
+            },
+            "type": "array",
+            "title": "Depots"
+          },
+          "incidents": {
+            "items": {
+              "$ref": "#/components/schemas/RoboIncidentOut"
+            },
+            "type": "array",
+            "title": "Incidents"
+          },
+          "options": {
+            "$ref": "#/components/schemas/MobilityOptionsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "cities",
+          "rivals",
+          "history_incidents",
+          "services",
+          "zones",
+          "depots",
+          "incidents",
+          "options"
+        ],
+        "title": "MobilityScreenOut"
+      },
       "ModChangeIn": {
         "properties": {
           "file": {
@@ -48564,6 +49783,36 @@
           "product_id"
         ],
         "title": "OpenSourceIn"
+      },
+      "OpenZoneIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "size": {
+            "type": "string",
+            "title": "Size"
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price Cents",
+            "description": "0: the city's human fare",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "city",
+          "size"
+        ],
+        "title": "OpenZoneIn"
       },
       "OpinionOut": {
         "properties": {
@@ -51081,6 +52330,111 @@
         ],
         "title": "PlanActivityOut"
       },
+      "PlantAutomationOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "capacity": {
+            "type": "integer",
+            "title": "Capacity"
+          },
+          "robots": {
+            "type": "integer",
+            "title": "Robots"
+          },
+          "own_robots": {
+            "type": "integer",
+            "title": "Own Robots"
+          },
+          "max_robots": {
+            "type": "integer",
+            "title": "Max Robots"
+          },
+          "level": {
+            "type": "number",
+            "title": "Level",
+            "description": "Share of the plant's line labour robots replace"
+          },
+          "saving_cents": {
+            "type": "number",
+            "title": "Saving Cents",
+            "description": "Line labour saved a unit run"
+          },
+          "wage_cents_month": {
+            "type": "number",
+            "title": "Wage Cents Month",
+            "description": "A line worker's labour a month in the region"
+          },
+          "cost_without": {
+            "$ref": "#/components/schemas/UnitCostOut",
+            "description": "Conversion cost a unit at full use, no robots"
+          },
+          "cost_with": {
+            "$ref": "#/components/schemas/UnitCostOut",
+            "description": "The same with its robots"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "book_cents": {
+            "type": "integer",
+            "title": "Book Cents"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AutomationMonthOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/AutomationMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "kind",
+          "region",
+          "capacity",
+          "robots",
+          "own_robots",
+          "max_robots",
+          "level",
+          "saving_cents",
+          "wage_cents_month",
+          "cost_without",
+          "cost_with",
+          "capex_cents",
+          "book_cents",
+          "month",
+          "history"
+        ],
+        "title": "PlantAutomationOut"
+      },
       "PlantIn": {
         "properties": {
           "city": {
@@ -53427,6 +54781,29 @@
           "revenue_cents"
         ],
         "title": "ProductMonthOut"
+      },
+      "ProductOptionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "quality"
+        ],
+        "title": "ProductOptionOut"
       },
       "ProductOut": {
         "properties": {
@@ -57157,6 +58534,20 @@
         ],
         "title": "ResearchOut"
       },
+      "RidePriceIn": {
+        "properties": {
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price_cents"
+        ],
+        "title": "RidePriceIn"
+      },
       "RivalBidOut": {
         "properties": {
           "id": {
@@ -57924,6 +59315,45 @@
         ],
         "title": "RivalSegmentOut"
       },
+      "RivalServiceOut": {
+        "properties": {
+          "operator": {
+            "type": "string",
+            "title": "Operator"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "fleet": {
+            "type": "number",
+            "title": "Fleet"
+          },
+          "rides_week": {
+            "type": "number",
+            "title": "Rides Week",
+            "description": "Paid rides a week, real world"
+          }
+        },
+        "type": "object",
+        "required": [
+          "operator",
+          "city",
+          "since",
+          "running",
+          "fleet",
+          "rides_week"
+        ],
+        "title": "RivalServiceOut"
+      },
       "RivalShareOut": {
         "properties": {
           "region": {
@@ -57973,6 +59403,486 @@
           "rivals"
         ],
         "title": "RivalsOut"
+      },
+      "RoboIncidentOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "zone_id": {
+            "type": "integer",
+            "title": "Zone Id"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "serious": {
+            "type": "boolean",
+            "title": "Serious"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "suspended_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suspended Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "zone_id",
+          "city",
+          "serious",
+          "cost_cents",
+          "suspended_until"
+        ],
+        "title": "RoboIncidentOut"
+      },
+      "RobotLineOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "capability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capability",
+            "description": "A humanoid's capability, 0-100"
+          },
+          "ai": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai"
+          },
+          "chips": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chips"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "unit_cost_cents": {
+            "type": "number",
+            "title": "Unit Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "status",
+          "quality",
+          "capability",
+          "ai",
+          "chips",
+          "customers",
+          "unit_cost_cents"
+        ],
+        "title": "RobotLineOut"
+      },
+      "RobotMakerOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "owner": {
+            "type": "string",
+            "title": "Owner"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "selling": {
+            "type": "boolean",
+            "title": "Selling"
+          },
+          "shares": {
+            "items": {
+              "$ref": "#/components/schemas/RobotShareOut"
+            },
+            "type": "array",
+            "title": "Shares"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "owner",
+          "product",
+          "category",
+          "quality",
+          "price_cents",
+          "selling",
+          "shares"
+        ],
+        "title": "RobotMakerOut"
+      },
+      "RobotRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "installations_year": {
+            "type": "number",
+            "title": "Installations Year",
+            "description": "Industrial robots installed a year, real world"
+          },
+          "game_installations_year": {
+            "type": "number",
+            "title": "Game Installations Year",
+            "description": "The same at the game's scale"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/YearPointOut"
+            },
+            "type": "array",
+            "title": "History",
+            "description": "Installations a year, real world, to now"
+          },
+          "density": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Density",
+            "description": "Robots per 10,000 manufacturing workers (latest)"
+          },
+          "labour_cents_hour": {
+            "type": "number",
+            "title": "Labour Cents Hour",
+            "description": "Manufacturing labour cost an hour, 2010 cents"
+          },
+          "humanoid_adoption": {
+            "type": "number",
+            "title": "Humanoid Adoption",
+            "description": "Share of the worker pool humanoids serve now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "installations_year",
+          "game_installations_year",
+          "history",
+          "density",
+          "labour_cents_hour",
+          "humanoid_adoption"
+        ],
+        "title": "RobotRegionOut"
+      },
+      "RobotShareOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Its share of the region's served robot buyers now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "share"
+        ],
+        "title": "RobotShareOut"
+      },
+      "RobotaxiCityOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "l4_approved": {
+            "type": "boolean",
+            "title": "L4 Approved",
+            "description": "The region's regulator allows driverless service"
+          },
+          "trips_month": {
+            "type": "number",
+            "title": "Trips Month",
+            "description": "Ride-hailing trips a month at the game's scale"
+          },
+          "fare_cents": {
+            "type": "number",
+            "title": "Fare Cents",
+            "description": "A human ride-hail trip's fare, 2010 cents"
+          },
+          "acceptance": {
+            "type": "number",
+            "title": "Acceptance",
+            "description": "Riders' robotaxi share of covered trips"
+          },
+          "first_service": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Service"
+          },
+          "rival_fleet": {
+            "type": "number",
+            "title": "Rival Fleet",
+            "description": "Rival robotaxis in the city, real cars"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "region",
+          "l4_approved",
+          "trips_month",
+          "fare_cents",
+          "acceptance",
+          "first_service",
+          "rival_fleet"
+        ],
+        "title": "RobotaxiCityOut"
+      },
+      "RoboticsActionOut": {
+        "properties": {
+          "robotics": {
+            "$ref": "#/components/schemas/RoboticsScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "robotics",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "RoboticsActionOut"
+      },
+      "RoboticsOptionsOut": {
+        "properties": {
+          "robot_cents": {
+            "type": "number",
+            "title": "Robot Cents",
+            "description": "A bought robot's price, 2010 cents"
+          },
+          "system_cents": {
+            "type": "number",
+            "title": "System Cents",
+            "description": "A bought robot installed (integration included)"
+          },
+          "service_share": {
+            "type": "number",
+            "title": "Service Share",
+            "description": "A year's service over the robot's price"
+          },
+          "own_robot_lines": {
+            "items": {
+              "$ref": "#/components/schemas/ProductOptionOut"
+            },
+            "type": "array",
+            "title": "Own Robot Lines"
+          },
+          "ai_models": {
+            "items": {
+              "$ref": "#/components/schemas/ProductOptionOut"
+            },
+            "type": "array",
+            "title": "Ai Models"
+          },
+          "accelerators": {
+            "items": {
+              "$ref": "#/components/schemas/ProductOptionOut"
+            },
+            "type": "array",
+            "title": "Accelerators"
+          },
+          "max_robots": {
+            "type": "integer",
+            "title": "Max Robots"
+          },
+          "target_level": {
+            "type": "number",
+            "title": "Target Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "robot_cents",
+          "system_cents",
+          "service_share",
+          "own_robot_lines",
+          "ai_models",
+          "accelerators",
+          "max_robots",
+          "target_level"
+        ],
+        "title": "RoboticsOptionsOut"
+      },
+      "RoboticsScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "scale": {
+            "type": "number",
+            "title": "Scale"
+          },
+          "scale_basis": {
+            "type": "string",
+            "title": "Scale Basis"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RobotRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "makers": {
+            "items": {
+              "$ref": "#/components/schemas/RobotMakerOut"
+            },
+            "type": "array",
+            "title": "Makers"
+          },
+          "humanoids": {
+            "$ref": "#/components/schemas/HumanoidMarketOut"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/RobotLineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/PlantAutomationOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "options": {
+            "$ref": "#/components/schemas/RoboticsOptionsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "scale",
+          "scale_basis",
+          "regions",
+          "makers",
+          "humanoids",
+          "lines",
+          "plants",
+          "options"
+        ],
+        "title": "RoboticsScreenOut"
       },
       "RoleChoiceOut": {
         "properties": {
@@ -59791,6 +61701,39 @@
         ],
         "title": "SeriesGuideOut",
         "description": "The next round and whether it is allowed (14.5)."
+      },
+      "ServiceOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "quality",
+          "brand"
+        ],
+        "title": "ServiceOut"
       },
       "SetLeaderIn": {
         "properties": {
@@ -63440,6 +65383,39 @@
         "type": "object",
         "title": "UISettings"
       },
+      "UnitCostOut": {
+        "properties": {
+          "labour_cents": {
+            "type": "number",
+            "title": "Labour Cents"
+          },
+          "fixed_cents": {
+            "type": "number",
+            "title": "Fixed Cents"
+          },
+          "depreciation_cents": {
+            "type": "number",
+            "title": "Depreciation Cents"
+          },
+          "robots_cents": {
+            "type": "number",
+            "title": "Robots Cents"
+          },
+          "total_cents": {
+            "type": "number",
+            "title": "Total Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "labour_cents",
+          "fixed_cents",
+          "depreciation_cents",
+          "robots_cents",
+          "total_cents"
+        ],
+        "title": "UnitCostOut"
+      },
       "UnitOfficeIn": {
         "properties": {
           "office_id": {
@@ -64943,6 +66919,24 @@
         ],
         "title": "WorldOut"
       },
+      "YearPointOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "value"
+        ],
+        "title": "YearPointOut"
+      },
       "YearValueOut": {
         "properties": {
           "year": {
@@ -64960,6 +66954,228 @@
           "value"
         ],
         "title": "YearValueOut"
+      },
+      "ZoneMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "cars": {
+            "type": "integer",
+            "title": "Cars"
+          },
+          "rides": {
+            "type": "number",
+            "title": "Rides"
+          },
+          "utilisation": {
+            "type": "number",
+            "title": "Utilisation"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "energy_cents": {
+            "type": "integer",
+            "title": "Energy Cents"
+          },
+          "cleaning_cents": {
+            "type": "integer",
+            "title": "Cleaning Cents"
+          },
+          "insurance_cents": {
+            "type": "integer",
+            "title": "Insurance Cents"
+          },
+          "remote_cents": {
+            "type": "integer",
+            "title": "Remote Cents"
+          },
+          "depreciation_cents": {
+            "type": "integer",
+            "title": "Depreciation Cents"
+          },
+          "contribution_cents": {
+            "type": "integer",
+            "title": "Contribution Cents"
+          },
+          "contribution_per_ride_cents": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contribution Per Ride Cents"
+          },
+          "rides_per_car_day": {
+            "type": "number",
+            "title": "Rides Per Car Day"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "cars",
+          "rides",
+          "utilisation",
+          "revenue_cents",
+          "energy_cents",
+          "cleaning_cents",
+          "insurance_cents",
+          "remote_cents",
+          "depreciation_cents",
+          "contribution_cents",
+          "contribution_per_ride_cents",
+          "rides_per_car_day"
+        ],
+        "title": "ZoneMonthOut"
+      },
+      "ZoneOut": {
+        "properties": {
+          "zone_id": {
+            "type": "integer",
+            "title": "Zone Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "city_label": {
+            "type": "string",
+            "title": "City Label"
+          },
+          "size": {
+            "type": "string",
+            "title": "Size"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "applied (under review), active, suspended, refused, closed"
+          },
+          "applied": {
+            "type": "string",
+            "title": "Applied"
+          },
+          "approved": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved"
+          },
+          "suspended_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suspended Until"
+          },
+          "cars": {
+            "type": "integer",
+            "title": "Cars"
+          },
+          "car_source": {
+            "type": "string",
+            "title": "Car Source"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "depot_cars": {
+            "type": "number",
+            "title": "Depot Cars",
+            "description": "Cars the company's depots in the city serve"
+          },
+          "breakeven_rides": {
+            "type": "number",
+            "title": "Breakeven Rides",
+            "description": "Rides a car a day at which a car breaks even"
+          },
+          "month": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ZoneMonthOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ZoneMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "zone_id",
+          "product_id",
+          "service",
+          "city",
+          "city_label",
+          "size",
+          "status",
+          "applied",
+          "approved",
+          "suspended_until",
+          "cars",
+          "car_source",
+          "price_cents",
+          "depot_cars",
+          "breakeven_rides",
+          "month",
+          "history"
+        ],
+        "title": "ZoneOut"
+      },
+      "ZoneSizeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "review_months": {
+            "type": "integer",
+            "title": "Review Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "share",
+          "review_months"
+        ],
+        "title": "ZoneSizeOut"
       },
       "tst__api__schemas__automation__UnitChoiceOut": {
         "properties": {

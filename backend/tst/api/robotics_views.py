@@ -10,7 +10,7 @@ from typing import Final
 from tst.api.schemas.robotics import (
     AnnouncementOut,
     AutomationMonthOut,
-    CityOut,
+    RobotaxiCityOut,
     DepotOut,
     HistoryIncidentOut,
     HumanoidMarketOut,
@@ -328,7 +328,7 @@ def mobility_out(state: GameState, data: LoadedData) -> MobilityScreenOut:
     for c in f.cities:
         first = rt.first_service_turn(state, c.key, d)
         cities.append(
-            CityOut(
+            RobotaxiCityOut(
                 key=c.key,
                 label=c.label,
                 region=c.region,
