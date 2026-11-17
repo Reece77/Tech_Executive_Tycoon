@@ -123,7 +123,20 @@ Engineering and design gaps the spec, ADRs and brief left open (CLAUDE.md §9), 
     | main | 330 ms | x0.89 | 5.3 | 4.1 s (66 workloads) |
     | branch | 519 ms | x1.37 | 5.4 | 6.7 s (70 workloads) |
 
-    Per unit of work the branch matches main within 2% (the Holiday year within 6%). In memory, main against the branch on the same months is within 5-8%: the dynasty years' entrants are a bigger world. On a x1.37 runner main's 5.3 workloads would read about 509 ms, also over 500 ms. Earlier branch runs read 531, 635 and 551 ms on x1.37-1.84 runners. The guard was not changed and no retries were added (rule 5). **PM ruling (2026-11-17):** a slow-runner miss of this guard that main shows the same way side by side is rule 3. Both readings are recorded with the runner ratio and the milestone merges; the guard moves to runner-adjusted time in the CI-fix lane.
+    Per unit of work the branch matches main within 2% (the Holiday year within 6%). In memory, main against the branch on the same months is within 5-8%: the dynasty years' entrants are a bigger world. On a x1.37 runner main's 5.3 workloads would read about 509 ms, also over 500 ms. Earlier branch runs read 531, 635 and 551 ms on x1.37-1.84 runners. The guard was not changed and no retries were added (rule 5). After the M41 merge (main at `m41-done` b0c844a, branch at d4fd03f; weekly runs 44092218791, 44096696384 on main and 44092224791, 44096702488 on the branch, dispatched together):
+
+    | | median | runner | workloads a month | Holiday year | result |
+    | --- | --- | --- | --- | --- | --- |
+    | main | 393 ms | x0.95 | 5.9 | 4.8 s | pass |
+    | main | 414 ms | x0.97 | 6.1 | 5.2 s | fail: worst month 1428 ms (1.0 s) |
+    | main | 729 ms | x1.85 | 5.6 | 8.9 s | fail: median (500 ms) and Holiday (6.0 s) |
+    | branch | 482 ms | x1.22 | 5.6 | 6.07 s | fail: Holiday (6.0 s) |
+    | branch | 640 ms | x1.60 | 5.7 | 8.1 s | fail: median and Holiday |
+    | branch | 790 ms | x1.85 | 6.1 | 9.9 s | fail: median and Holiday |
+
+    Per unit of work the two match (main 5.6-6.1 workloads a month, the branch 5.6-6.1); on the same x1.85 runner class main reads 729 ms and the branch 790 ms, and main fails the median and Holiday guards there the same way. This is rule 3 under the ruling below (runner calibration in the table); the fix is the CI-fix lane's runner-adjusted time.
+
+    **PM ruling (2026-11-17):** a slow-runner miss of this guard that main shows the same way side by side is rule 3. Both readings are recorded with the runner ratio and the milestone merges; the guard moves to runner-adjusted time in the CI-fix lane.
 
 21. **§52.5 readings (final code, seeds 1-10, `tools/m37_targets.py`; nightly `tests/balance/test_m37_balance.py` green on CI).** Target 1: M30's nine runs to December 2039 identical to the digests before M37, month by month, dynasty mode off and on (18 of 18, locally and in the nightly). Target 2: eras arriving 2040-2069, median **7** (>= 4). Every category had 3+ active rivals in every decade on **10 of 10** seeds (9 of 10). The longest run of a commodity outside a third to three times its 2030s mean was **26** months (<= 60). Target 3: node gaps lengthen on every seed; cost per transistor 2069/2040 was **0.55-0.73** (>= 0.50, falling). Target 4: a succession by 2069 on **10 of 10** (9 of 10): 1-2 successions a seed, a death on 4. Target 5: decision 19 (carried: the median, and the save's size since M41). The largest ledger balance by 2069 was **6.04e18 cents**, inside two thirds of int64 (6.1e18) but with little headroom (see Follow-ups).
 
