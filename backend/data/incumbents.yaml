@@ -1268,7 +1268,7 @@ companies:
         quality: 66
         features: 70
         brand: 60
-        regions: [east_asia, north_america, europe, south_southeast_asia]
+        regions: [east_asia, north_america, europe, south_southeast_asia, latin_america, africa, oceania] # A: Unitree sells its robots through distributors worldwide (M9 target 5: a rival in every region)
         segments:
           logistics: { price_cents: 2200000, share_bp: 0 }
           retail: { price_cents: 2200000, share_bp: 0 }

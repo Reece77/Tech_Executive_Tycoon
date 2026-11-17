@@ -33,6 +33,8 @@ def served_shares(state: GameState) -> dict[tuple[str, str, int], float]:
         * s.customers
         / totals[(products[s.product_id].category, s.segment)]
         for s in state.product_segments
+        # M39: a market with no customers yet (humanoids before their era) has no shares
+        if totals[(products[s.product_id].category, s.segment)] > 0
     }
 
 
