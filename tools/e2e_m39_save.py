@@ -26,12 +26,16 @@ from pathlib import Path
 from typing import Final
 
 import e2e_m38_save as m38
-
 from tst.balance import fixtures
 from tst.balance.game import Game, start_game
 from tst.config import Settings
-from tst.db.repository import create_save, existing_save_path, ledger_balances, load_state
-from tst.db.repository import open_session
+from tst.db.repository import (
+    create_save,
+    existing_save_path,
+    ledger_balances,
+    load_state,
+    open_session,
+)
 from tst.loader import LoadedData, load_all
 from tst.sim.actions.facilities import BuildFacility
 from tst.sim.calendar import ym_to_turn

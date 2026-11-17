@@ -34656,9 +34656,10 @@
             "type": "string",
             "title": "City"
           },
-          "capacity": {
+          "cars": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Cars",
+            "description": "Cars the depot serves"
           },
           "status": {
             "type": "string",
@@ -34674,7 +34675,7 @@
           "facility_id",
           "name",
           "city",
-          "capacity",
+          "cars",
           "status",
           "ready"
         ],
@@ -37119,7 +37120,8 @@
               "refinery",
               "region",
               "plant",
-              "order"
+              "order",
+              "zone"
             ],
             "title": "Scope"
           },
@@ -52348,9 +52350,10 @@
             "type": "string",
             "title": "Region"
           },
-          "capacity": {
+          "units_month": {
             "type": "integer",
-            "title": "Capacity"
+            "title": "Units Month",
+            "description": "Units a month the plant can run"
           },
           "robots": {
             "type": "integer",
@@ -52419,7 +52422,7 @@
           "name",
           "kind",
           "region",
-          "capacity",
+          "units_month",
           "robots",
           "own_robots",
           "max_robots",

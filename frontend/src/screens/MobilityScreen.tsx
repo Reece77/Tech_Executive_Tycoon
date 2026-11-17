@@ -80,7 +80,7 @@ function MobilityBody({ saveId, m }: { saveId: string; m: Mobility }) {
           <ul style={{ margin: 0 }}>
             {m.depots.map((d) => (
               <li key={d.facility_id}>
-                {d.name}: {d.capacity.toLocaleString()} cars in {d.city.replaceAll('_', ' ')},{' '}
+                {d.name}: {d.cars.toLocaleString()} cars in {d.city.replaceAll('_', ' ')},{' '}
                 {d.status} (ready {d.ready})
               </li>
             ))}

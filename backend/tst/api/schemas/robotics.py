@@ -98,7 +98,7 @@ class PlantAutomationOut(BaseModel):
     name: str
     kind: str
     region: str
-    capacity: int
+    units_month: int = Field(description="Units a month the plant can run")
     robots: int
     own_robots: int
     max_robots: int
@@ -210,7 +210,7 @@ class DepotOut(BaseModel):
     facility_id: int
     name: str
     city: str
-    capacity: int
+    cars: int = Field(description="Cars the depot serves")
     status: str
     ready: str
 

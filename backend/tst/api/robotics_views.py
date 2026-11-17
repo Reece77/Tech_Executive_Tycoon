@@ -246,7 +246,7 @@ def plants_out(state: GameState, data: LoadedData) -> list[PlantAutomationOut]:
                 name=facility_name(f, b, d),
                 kind=f.kind,
                 region=f.region,
-                capacity=f.capacity,
+                units_month=f.capacity,
                 robots=robots,
                 own_robots=a.own_robots if a is not None else 0,
                 max_robots=automation.robots_for(f, b.robotics.automation.max_share, b),
@@ -402,7 +402,7 @@ def mobility_out(state: GameState, data: LoadedData) -> MobilityScreenOut:
                 facility_id=fac.id,
                 name=facility_name(fac, b, d),
                 city=dp.city,
-                capacity=fac.capacity,
+                cars=fac.capacity,
                 status=fac.status,
                 ready=_month(fac.ready_turn),
             )

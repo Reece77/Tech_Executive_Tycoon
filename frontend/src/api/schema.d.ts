@@ -9300,8 +9300,11 @@ export interface components {
             name: string;
             /** City */
             city: string;
-            /** Capacity */
-            capacity: number;
+            /**
+             * Cars
+             * @description Cars the depot serves
+             */
+            cars: number;
             /** Status */
             status: string;
             /** Ready */
@@ -10337,7 +10340,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone";
             /** Entity */
             entity?: string | null;
             /**
@@ -16548,8 +16551,11 @@ export interface components {
             kind: string;
             /** Region */
             region: string;
-            /** Capacity */
-            capacity: number;
+            /**
+             * Units Month
+             * @description Units a month the plant can run
+             */
+            units_month: number;
             /** Robots */
             robots: number;
             /** Own Robots */

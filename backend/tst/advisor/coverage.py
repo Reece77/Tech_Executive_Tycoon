@@ -184,7 +184,7 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
     },
     # v5 (M39): the Robotics and Mobility screens (53.5)
     "robotics.PlantAutomationOut": {
-        "capacity": _CAPACITY,
+        "units_month": _CAPACITY,
         "robots": _INPUT,
         "own_robots": _INPUT,
         "max_robots": exempt("the robots that replace max_share of the line's workers"),
