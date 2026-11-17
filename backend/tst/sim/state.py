@@ -96,6 +96,18 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.medical.models import (
+    Adoption,
+    Clearance,
+    Coverage,
+    Design,
+    Drift,
+    Inspection,
+    PlantQuality,
+    Recall,
+    Study,
+    Submission,
+)
 from tst.sim.mining.models import Mine, MineDeal, RivalBid
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking, Venture
@@ -526,6 +538,19 @@ class GameState:
     vehicle_months: tuple[VehicleMonth, ...] = ()
     incidents: tuple[Incident, ...] = ()
     vehicle_world: VehicleWorld = field(default_factory=VehicleWorld)
+    # M41 (50): medical products' designs, submissions and clearances, studies, coverage and
+    # clinicians' adoption, plants' quality systems, inspections, recalls and regulators' review
+    # drift after 2025. Empty for a company without medical devices.
+    med_designs: tuple[Design, ...] = ()
+    med_submissions: tuple[Submission, ...] = ()
+    med_clearances: tuple[Clearance, ...] = ()
+    med_studies: tuple[Study, ...] = ()
+    med_coverage: tuple[Coverage, ...] = ()
+    med_adoption: tuple[Adoption, ...] = ()
+    plant_quality: tuple[PlantQuality, ...] = ()
+    med_inspections: tuple[Inspection, ...] = ()
+    med_recalls: tuple[Recall, ...] = ()
+    med_drift: tuple[Drift, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

@@ -41,6 +41,7 @@ V3 = [
     ("e2e_m34_save", "regulated", "/regulation", True),  # M34: the practice save pt-regulated
     ("e2e_m33_save", "litho", "/equipment", True),  # M33: the practice save pt-litho
     ("e2e_m38_save", "ev", "/vehicles", True),  # M38: the practice save pt-ev
+    ("e2e_m41_save", "medical", "/medical", True),  # M41: the practice save pt-medical
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

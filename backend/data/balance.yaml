@@ -526,6 +526,11 @@ rivals:
     chips_ai_accelerator: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M12b (26.3)
     contract_manufacturing: { builder: 0.70, seller: 0.25, marketer: 0.05 } # M12b (26.2)
     vehicles: { builder: 0.65, seller: 0.20, marketer: 0.15 } # M38 (49.1): car makers (A, as devices with more sales for fleets)
+    wearables_diagnostics: { builder: 0.60, seller: 0.15, marketer: 0.25 } # M41 (50.1, A)
+    imaging: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M41 (A: hospital sales forces)
+    surgical_robotics: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M41 (A)
+    implantables: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M41 (A)
+    samd: { builder: 0.70, seller: 0.20, marketer: 0.10 } # M41 (A)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -1093,6 +1098,10 @@ hardware:
     devices: { good: device_bom, base_cents: 18000, chip_type: mobile_soc, contract_fee_cents: 1300, plant_slots: 1 } # $180 BOM, a mobile SoC, $13 a unit at a contract manufacturer in Shenzhen (26.7)
     servers: { good: server_bom, base_cents: 280000, chip_type: server_cpu, contract_fee_cents: 8000, plant_slots: 6 }
     vehicles: { good: vehicle_bom, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 120000, plant_slots: 1 } # M38 (49.1): the body, chassis and interior ($18,000 at index 1.0, A: about half a $35,000 car less its powertrain); the pack, drive and chips are vehicles.bom's; a contract maker's fee $1,200 a car (A: contract assembly as Magna Steyr's or Foxconn's Foxtron, about twice an own plant's labour, Oliver Wyman 2025 labour cost $585-1,341 a car, S (search)); assembly units are cars # $2,800 BOM, a server CPU, $80 a unit; a server takes 6 units of plant capacity (M12b decision)
+    wearables_diagnostics: { good: device_bom, base_cents: 3500, chip_type: mobile_soc, contract_fee_cents: 1000, plant_slots: 1 } # M41 (50.1): a $35 sensor and reader BOM (A: ~35% of the $150 price with the chip)
+    imaging: { good: server_bom, base_cents: 12000000, chip_type: server_cpu, contract_fee_cents: 1000000, plant_slots: 20 } # M41: a $120k imaging system BOM, $10k assembly (A), 20 slots
+    surgical_robotics: { good: server_bom, base_cents: 45000000, chip_type: server_cpu, contract_fee_cents: 3000000, plant_slots: 40 } # M41: a $450k robot BOM, $30k assembly (A: 30% of $1.5M), 40 slots
+    implantables: { good: device_bom, base_cents: 200000, chip_type: mobile_soc, contract_fee_cents: 30000, plant_slots: 1 } # M41: a $2,000 implant BOM, $300 assembly (A: ~30% of $8,000)
   contract:
     energy: 6 # founder energy to sign a contract-manufacturing contract (26.2)
     months: [12, 24] # whole months a contract may run (26.2)
@@ -2774,3 +2783,49 @@ vehicles:
   energy: { design: 2, cell_plant: 12, charging: 8, exclusive: 2 } # founder energy (a vehicle plant is facility.build_energy)
   cell_good: battery_cells # commodities.yaml key of battery cells
   unlock_year: 2012 # the 2012 EV era: the Vehicles screen opens (M29), or with lithium supply
+medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, approval rates, studies, coverage, recalls) is medical.yaml's, cited; these are the game's dials. A = an assumption for gameplay
+  quality_energy: 1 # founder energy to change a plant's quality system (A)
+  study:
+    quality_weight: 0.006 # success chance per quality point above 50 (A: 70 quality adds 0.12)
+    evidence_weight: 0.10 # success chance at full prior evidence (feasibility work de-risks a pivotal, A)
+    bounds: [0.10, 0.95] # the success chance stays within these
+    shown_band: 0.10 # the screen shows the chance as +/- this, never the draw (50.7)
+    redesign_months: 6 # a failed study's redesign before a new study may start (50.3, A)
+    redesign_cost_share: 0.20 # the redesign costs this x the failed study (A)
+    energy: 3 # founder energy to start a study (A)
+  review:
+    quality_weight: 0.004 # approval chance per quality point above 50 (A)
+    evidence_weight: 0.10 # approval chance at full evidence (A)
+    bounds: [0.05, 0.99]
+    pccp_months: 2 # a predetermined change control plan adds this to a review (A)
+    update_features: 40.0 # SaMD feature points past its clearance that change intended use without a PCCP (50.2, A)
+    warning_hold_months: 6 # an open warning letter delays that regulator's decisions (A: FDA holds approvals pending corrections)
+    energy: 2 # founder energy to file a submission (A)
+  coverage:
+    no_coverage_share: 0.15 # 50.4: a device without coverage sells only to early adopters (A: Rogers' innovators and early adopters, ~16%)
+    energy: 1
+  adoption:
+    seed: 0.03 # clinicians using a device at clearance (A)
+    rate: 0.025 # monthly logistic growth with no evidence or training (A: ~15 years from 3% to 50%)
+    evidence_weight: 2.0 # rate x (1 + this x evidence strength) (A)
+    training_weight: 1.0 # rate x (1 + this x min(1, training / training_full)) (A)
+    training_full_cents: 5000000 # $50,000 a month a region of clinical education for the full effect (A)
+    floor: 0.10 # demand share a clinician-led device reaches at no adoption (A)
+    recall_hit: 0.25 # a class I recall loses this share of adoption (A)
+  recall:
+    surveillance_cents: 1500000 # $15,000 a month a product for post-market surveillance (A)
+    caught_early: 0.6 # chance surveillance catches a defect before harm: the recall drops a class (A)
+    install_weight: 0.25 # the yearly chance x (1 + this x log10(1 + installed units)) (A)
+    block_months: { I: 3, II: 1, III: 0 } # months a recall stops new sales (A)
+    brand_hit: { I: 12.0, II: 3.0, III: 0.5 } # brand points lost (A)
+    lawsuit_share: 0.5 # class I recalls add lawsuits of this x the field action (A: Philips' settlements, medical.yaml precedents)
+    inspect_after_class_i: 0.5 # chance a class I recall brings a for-cause inspection (A)
+  inspection:
+    import_ban_months: 9 # months an import ban stops sales in the regulator's part (A)
+    consent_decree_months: 24 # months a consent decree stops sales there (A: Philips' from April 2024)
+    consent_fine_share: 0.05 # a consent decree's payment, x the year's medical revenue (A)
+    warning_brand_hit: 2.0 # brand points a warning letter costs (A)
+    for_cause_mult: 2.0 # a for-cause inspection after a class I recall finds faults at this x the usual rate (A)
+  drift: # seeded rules after 2025: each January a regulator's review times move by a factor (stream medical, key (4, regulator index))
+    sd: 0.05 # A
+    bounds: [0.8, 1.3] # A

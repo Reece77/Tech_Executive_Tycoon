@@ -5828,6 +5828,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/medical": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Medical
+         * @description Devices with their class, route and evidence, submissions by regulator, studies,
+         *     coverage, adoption, inspections, recalls, plants' quality and rivals (50.7).
+         */
+        get: operations["getMedical"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/design": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Design Device */
+        post: operations["designDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Device */
+        post: operations["submitDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/study": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Study */
+        post: operations["startStudy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Coverage */
+        post: operations["requestCoverage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/support": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Support */
+        post: operations["setMedicalSupport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/medical/plant-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Plant Quality */
+        post: operations["setPlantQuality"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/equipment": {
         parameters: {
             query?: never;
@@ -8899,6 +9022,13 @@ export interface components {
             /** Holds */
             holds: boolean;
         };
+        /** CoverageIn */
+        CoverageIn: {
+            /** Product Id */
+            product_id: number;
+            /** Region */
+            region: string;
+        };
         /** CreateProductIn */
         CreateProductIn: {
             /** Name */
@@ -8992,6 +9122,17 @@ export interface components {
              * @description The move that removes the factor
              */
             fix: string;
+        };
+        /** DatedRuleOut */
+        DatedRuleOut: {
+            /** Label */
+            label: string;
+            /** At */
+            at: string;
+            /** Note */
+            note: string;
+            /** Source */
+            source: string;
         };
         /** DealModeIn */
         DealModeIn: {
@@ -9089,6 +9230,18 @@ export interface components {
              */
             mistake: boolean;
         };
+        /** DesignIn */
+        DesignIn: {
+            /** Product Id */
+            product_id: number;
+            /** Use */
+            use: string;
+            /**
+             * Pccp
+             * @default false
+             */
+            pccp?: boolean;
+        };
         /** DesignationOut */
         DesignationOut: {
             /** Regime */
@@ -9164,6 +9317,52 @@ export interface components {
             catalogue_points: {
                 [key: string]: number;
             };
+        };
+        /** DeviceOut */
+        DeviceOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Category Label */
+            category_label: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Use */
+            use: string | null;
+            /** Use Label */
+            use_label: string | null;
+            /** Us Class */
+            us_class: string | null;
+            /** Eu Class */
+            eu_class: string | null;
+            /** Evidence */
+            evidence: number;
+            /** Pccp */
+            pccp: boolean;
+            /** Training Cents */
+            training_cents: number;
+            /** Surveillance */
+            surveillance: boolean;
+            /**
+             * Update Needed
+             * @description SaMD: a change of intended use needs a new filing
+             */
+            update_needed: boolean;
+            /** Routes */
+            routes: components["schemas"]["RouteOut"][];
+            /** Studies */
+            studies: components["schemas"]["StudyOut"][];
+            /** Regions */
+            regions: components["schemas"]["RegionOut"][];
+            /** Recalls */
+            recalls: components["schemas"]["RecallOut"][];
+            /** Quality Level */
+            quality_level: string;
         };
         /** DevicePlatformIn */
         DevicePlatformIn: {
@@ -12270,6 +12469,22 @@ export interface components {
              */
             gap: number;
         };
+        /** HealthRegulatorOut */
+        HealthRegulatorOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Share
+             * @description Its part's share of the region's people
+             */
+            share: number;
+        };
         /** HireBanksIn */
         HireBanksIn: {
             /** Bank */
@@ -12772,6 +12987,21 @@ export interface components {
              * @description Use at which a general CU costs spot
              */
             break_even_utilization: number;
+        };
+        /** InspectionOut */
+        InspectionOut: {
+            /** Turn */
+            turn: string;
+            /** Regulator */
+            regulator: string;
+            /** Finding */
+            finding: string;
+            /** Until */
+            until: string | null;
+            /** Fine Cents */
+            fine_cents: number;
+            /** For Cause */
+            for_cause: boolean;
         };
         /** InvestingRulesOut */
         InvestingRulesOut: {
@@ -13970,6 +14200,39 @@ export interface components {
             shares: {
                 [key: string]: number;
             };
+        };
+        /** MedicalActionOut */
+        MedicalActionOut: {
+            medical: components["schemas"]["MedicalOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** MedicalOut */
+        MedicalOut: {
+            /** Regulators */
+            regulators: components["schemas"]["HealthRegulatorOut"][];
+            /** Subcategories */
+            subcategories: components["schemas"]["SubcategoryOut"][];
+            /** Devices */
+            devices: components["schemas"]["DeviceOut"][];
+            /** Study Kinds */
+            study_kinds: components["schemas"]["StudyKindOut"][];
+            /** Plants */
+            plants: components["schemas"]["QualityPlantOut"][];
+            /**
+             * Quality Levels
+             * @description A plant's monthly cost by level
+             */
+            quality_levels: {
+                [key: string]: number;
+            };
+            /** Inspections */
+            inspections: components["schemas"]["InspectionOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RivalProductOut"][];
+            /** Precedents */
+            precedents: components["schemas"]["DatedRuleOut"][];
         };
         /** MentorIn */
         MentorIn: {
@@ -16300,6 +16563,16 @@ export interface components {
             /** Sale Value Cents */
             sale_value_cents: number;
         };
+        /** PlantQualityIn */
+        PlantQualityIn: {
+            /** Facility Id */
+            facility_id: number;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "low" | "standard" | "high";
+        };
         /** PlantQuoteOut */
         PlantQuoteOut: {
             /** Type */
@@ -17814,6 +18087,17 @@ export interface components {
             stock: components["schemas"]["StockOut"] | null;
             ceo: components["schemas"]["CeoOut"];
         };
+        /** QualityPlantOut */
+        QualityPlantOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Region */
+            region: string;
+            /** Level */
+            level: string;
+            /** Cents Month */
+            cents_month: number;
+        };
         /** QueueOut */
         QueueOut: {
             /** Id */
@@ -17935,6 +18219,19 @@ export interface components {
              * @description (board confidence - 50) / divisor
              */
             board: number;
+        };
+        /** RecallOut */
+        RecallOut: {
+            /** Turn */
+            turn: string;
+            /** Klass */
+            klass: string;
+            /** Units */
+            units: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Caught Early */
+            caught_early: boolean;
         };
         /** RecipeOut */
         RecipeOut: {
@@ -18433,6 +18730,32 @@ export interface components {
             /** Seeded */
             seeded: boolean;
         };
+        /** RegionOut */
+        RegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Cleared
+             * @description Who has cleared the device there
+             */
+            cleared: string;
+            /**
+             * Sells Share
+             * @description The share of demand it may win now (public rules)
+             */
+            sells_share: number;
+            /**
+             * Coverage
+             * @enum {string}
+             */
+            coverage: "none" | "not_needed" | "pending" | "covered" | "denied";
+            /** Coverage Window */
+            coverage_window: string | null;
+            /** Adoption */
+            adoption: number | null;
+        };
         /** RegionRiskOut */
         RegionRiskOut: {
             /** Key */
@@ -18881,6 +19204,19 @@ export interface components {
             /** Region Labels */
             region_labels: string[];
         };
+        /** RivalProductOut */
+        RivalProductOut: {
+            /** Company */
+            company: string;
+            /** Product */
+            product: string;
+            /** Category */
+            category: string;
+            /** Customers */
+            customers: number;
+            /** Share */
+            share: number;
+        };
         /** RivalProfileOut */
         RivalProfileOut: {
             /** @description The company score (M15b, 30.1) */
@@ -19204,6 +19540,53 @@ export interface components {
              */
             rounds: components["schemas"]["RoundOut"][];
             next: components["schemas"]["SeriesGuideOut"];
+        };
+        /** RouteOut */
+        RouteOut: {
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Route */
+            route: string;
+            /** Label */
+            label: string;
+            /**
+             * Review
+             * @description The months a decision takes, as a range
+             */
+            review: string;
+            /**
+             * Review Months
+             * @description The range's top, for Explain
+             */
+            review_months: number;
+            /**
+             * Explain
+             * @description How the range is made (data, not a draw)
+             */
+            explain: string;
+            /** Fee Cents */
+            fee_cents: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "not_filed" | "review" | "information_requested" | "cleared" | "refused";
+            /** Filed */
+            filed?: string | null;
+            /** Decided */
+            decided?: string | null;
+            /**
+             * Months In
+             * @description Months since filing while open
+             */
+            months_in?: number | null;
+            /**
+             * Blocker
+             * @description Why it cannot be filed now
+             */
+            blocker?: string | null;
         };
         /** RuleOut */
         RuleOut: {
@@ -20348,6 +20731,83 @@ export interface components {
             /** Sections */
             sections: components["schemas"]["GuideSectionOut"][];
         };
+        /** StudyIn */
+        StudyIn: {
+            /** Product Id */
+            product_id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "feasibility" | "pivotal" | "post_market";
+            /** Patients */
+            patients?: number | null;
+        };
+        /** StudyKindOut */
+        StudyKindOut: {
+            /** Kind */
+            kind: string;
+            /** Patients */
+            patients: number[];
+            /** Months */
+            months: number[];
+        };
+        /** StudyOut */
+        StudyOut: {
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Patients */
+            patients: number;
+            /** Started */
+            started: string;
+            /**
+             * Readout
+             * @description The planned readout month (its design)
+             */
+            readout: string;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "succeeded" | "failed";
+            /**
+             * Success Range
+             * @description While running: the chance as a range
+             */
+            success_range: string | null;
+            /** Explain */
+            explain: string;
+        };
+        /** SubcategoryOut */
+        SubcategoryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Consumables Cents */
+            consumables_cents: number;
+            /** Needs Coverage */
+            needs_coverage: boolean;
+            /** Clinicians */
+            clinicians: boolean;
+            /** Software */
+            software: boolean;
+            /** Uses */
+            uses: components["schemas"]["UseOut"][];
+        };
+        /** SubmitIn */
+        SubmitIn: {
+            /** Product Id */
+            product_id: number;
+            /** Regulator */
+            regulator: string;
+        };
         /**
          * SubsidiaryColumnOut
          * @description A kept brand's own numbers for each period (M14, 28.5): a column on the Finance screen.
@@ -20536,6 +20996,15 @@ export interface components {
             price_premium: number;
             /** Rule */
             rule: string | null;
+        };
+        /** SupportIn */
+        SupportIn: {
+            /** Product Id */
+            product_id: number;
+            /** Training Cents */
+            training_cents: number;
+            /** Surveillance */
+            surveillance: boolean;
         };
         /** SupportPoolOut */
         SupportPoolOut: {
@@ -21468,6 +21937,19 @@ export interface components {
              * @default false
              */
             prepay?: boolean;
+        };
+        /** UseOut */
+        UseOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Us Class */
+            us_class: string;
+            /** Eu Class */
+            eu_class: string;
+            /** Us Route */
+            us_route: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -41114,6 +41596,436 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegulationActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMedical: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    designDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DesignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    submitDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startStudy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StudyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    requestCoverage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CoverageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMedicalSupport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setPlantQuality: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlantQualityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MedicalActionOut"];
                 };
             };
             /** @description Bad Request */

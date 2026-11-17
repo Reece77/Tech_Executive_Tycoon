@@ -135,6 +135,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return PLATFORM_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "regulation_step":  # M34 (48.3-48.4)
             return REGULATION_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "medical_step":  # M41 (50.5)
+            return MEDICAL_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -147,6 +149,11 @@ PLATFORM_STEP_TEXT: dict[str, str] = {  # M31 (44.5): never the odds' true value
     "comply": "the app is relisted now; its lost users come back over a few months",
     "appeal": "an answer in 1-3 months; until then the app stays off the store",
     "regulators": "an answer in 6 months where platform rules apply; the app stays off until then",
+}
+MEDICAL_STEP_TEXT: dict[str, str] = {  # M41 (50.5): never a draw or a chance
+    "full": "recall every affected unit: the full cost now, half the brand loss back",
+    "correct": "correct units in the field: 40% of the cost back, 3 more brand points lost",
+    "dispute": "dispute the classification: 60% of the cost back; the FDA's warning letter follows",
 }
 REGULATION_STEP_TEXT: dict[str, str] = {  # M34 (48.3-48.4): never a draw or a chance
     "cooperate": "answer the regulator's questions; the inquiry runs 6-12 months",
