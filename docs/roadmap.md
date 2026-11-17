@@ -76,6 +76,7 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | M41, medical devices | now, lane D; merges after `m35b-done` and M38 (brief `docs/tasks/M41-medical-devices.md`, formulas §50) |
 | M42, pharmaceuticals | after M41 |
 | M44, defence and government contracts | after M40 |
+| M43a, market sizes and saturation | now, lane G; merges after M39 (brief `docs/tasks/M43a-market-sizes-and-saturation.md`, formulas §54): closes M37's runaway economy |
 | M45, performance at scale, part two | after M37: rival decisions and per-turn saving proportional; both 2039 saves back to 400 ms; a 2069 turn under 500 ms |
 | M43, v5 balance and polish, with the conglomerate view | last; closes v5 |
 
