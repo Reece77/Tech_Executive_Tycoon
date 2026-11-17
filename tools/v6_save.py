@@ -20,7 +20,17 @@ BACKEND = Path(__file__).resolve().parent.parent / "backend"
 STRATEGY = "research_heavy"
 
 
-def build(save_dir: Path, name: str, turns: int, seed: int, strategy: str = STRATEGY) -> Path:
+def build(
+    save_dir: Path,
+    name: str,
+    turns: int,
+    seed: int,
+    strategy: str = STRATEGY,
+    length: str = "standard",
+    children: tuple[int, ...] = (),
+) -> Path:
+    """`length` dynasty (M37): a campaign to 2069; `children`: a family with children of these
+    ages (M36), so the game outlives its founder."""
     os.environ.setdefault("TST_LLM_ADAPTER", "mock")
     sys.path.insert(0, str(BACKEND))
     from tst.balance.game import PLAYER, Game
@@ -80,8 +90,18 @@ def build(save_dir: Path, name: str, turns: int, seed: int, strategy: str = STRA
     old = repository.save_path(save_dir, name)
     for suffix in ("", "-wal", "-shm"):
         Path(f"{old}{suffix}").unlink(missing_ok=True)
+    from tst.sim.family.setup import FamilySpec
+
+    family = FamilySpec("children", children) if children else None
     path = repository.create_save(
-        name, seed, SCENARIO, company_name="Balance Co", data=data, save_dir=save_dir
+        name,
+        seed,
+        SCENARIO,
+        company_name="Balance Co",
+        data=data,
+        save_dir=save_dir,
+        family=family,
+        length=length,  # type: ignore[arg-type]
     )
     game = SaveGame.__new__(SaveGame)
     with repository.open_session(path) as session:
@@ -113,9 +133,22 @@ def main() -> int:
     parser.add_argument("--turns", type=int, default=360)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--strategy", default=STRATEGY, help="M23b: V6 extended")
+    parser.add_argument("--length", default="standard", help="M37: standard | dynasty")
+    parser.add_argument("--children", default="", help="M37: a family, children's ages (2,5)")
     args = parser.parse_args()
     args.save_dir.mkdir(parents=True, exist_ok=True)
-    print(build(args.save_dir.resolve(), args.name, args.turns, args.seed, args.strategy))
+    kids = tuple(int(a) for a in args.children.split(",") if a.strip())
+    print(
+        build(
+            args.save_dir.resolve(),
+            args.name,
+            args.turns,
+            args.seed,
+            args.strategy,
+            args.length,
+            kids,
+        )
+    )
     return 0
 
 

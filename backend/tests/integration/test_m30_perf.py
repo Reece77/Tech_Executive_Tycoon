@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from tests.calibration import runner_note
-from tests.helpers import answer_critical
+from tests.helpers import answer_critical, continue_at_end
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst import holiday
 from tst.db import migrate
@@ -83,6 +83,7 @@ def _copy(tmp_path: Path, name: str) -> Path:
 
 def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> None:
     path = _copy(tmp_path, "turns")
+    continue_at_end(path, loaded)  # M37 (52.1): playing on past December 2039
     with open_session(path) as session:
         state = load_state(session)
     assert not state.ended
@@ -98,6 +99,7 @@ def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> 
     median, worst = statistics.median(months), max(months)
 
     path = _copy(tmp_path, "holiday")
+    continue_at_end(path, loaded)
     played, spent = 0, 0.0
     while played < MONTHS:
         _answer(path, loaded)

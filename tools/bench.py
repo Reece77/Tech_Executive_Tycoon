@@ -151,6 +151,11 @@ def answer_blockers(path: Path, data: Any) -> None:
             state = repository.read_state(session)
         founder = state.founder_of(state.player.id)
         actor = founder.id if founder is not None else 1
+        from tst.sim.dynasty.mode import ContinueDynasty, at_standard_end
+
+        if at_standard_end(state, data.balance):  # M37 (52.1): a player plays on past 2039
+            repository.run_action(path, data, ContinueDynasty(actor))
+            continue
         todo: list[Any] = [
             ChooseEvent(actor, e.id, e.choices[0].key) for e in blocking_events(state) if e.choices
         ]

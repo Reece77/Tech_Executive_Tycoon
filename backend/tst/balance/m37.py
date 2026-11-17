@@ -14,10 +14,11 @@ differs. After M37 merges the fixture is re-recorded with the new fields (CHANGE
 
 from __future__ import annotations
 
+import itertools
 import json
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Final
 
@@ -26,7 +27,7 @@ from tst.balance.game import Game, start_game
 from tst.balance.report import SCENARIO
 from tst.sim.dynasty.mode import continue_dynasty
 from tst.sim.modes.models import GameMode
-from tst.sim.state import GameState
+from tst.sim.state import GameState, group_companies
 
 TURNS: Final = 360  # January 2010 to December 2039
 LEGACY_FILE: Final = (
@@ -99,3 +100,218 @@ def legacy() -> Hashes:
 def compare(runs: Mapping[str, list[str]], want: Hashes) -> dict[str, str | None]:
     """run -> None if identical to the pre-M37 digests, else the first difference."""
     return {k: m30.first_difference(v, want[k.rsplit("/", 1)[0]]) for k, v in runs.items()}
+
+
+# --- Targets 2-5: dynasty games to December 2069 ---------------------------------------------
+
+SEEDS: Final = tuple(range(1, 11))
+STRATEGY: Final = "full_integrator"  # every system the turn runs (M30's chain builder)
+END: Final = 720  # the turn after December 2069
+START: Final = 360  # January 2040
+DECADES: Final = ((360, 480), (480, 600), (600, 720))  # the 2040s, 2050s and 2060s
+COMMODITY_FROM, COMMODITY_TO = 240, 360  # the 2030s, the reference average
+FAMILY_AGES: Final = (2, 5)  # children at the start (M36's family_game)
+
+
+@dataclass(frozen=True, slots=True)
+class DynastyResult:
+    seed: int
+    ended: str  # the game state at the end
+    end_turn: int
+    eras: int  # eras arrived in 2040-2069
+    min_rivals: dict[str, int]  # "category/decade" -> fewest active rivals in a January
+    commodity_excursion: dict[str, int]  # good -> longest run of months outside 1/3-3x
+    successions: int  # generations handed over, or a professional CEO appointed
+    deaths: int
+    leader_changes: int
+    entrants: int
+    cost_ratio: float  # leading-edge cost per transistor, December 2069 / January 2040
+    gaps_lengthen: bool
+
+
+def _family_game(seed: int) -> Game:
+    from tst.balance.game import Game
+    from tst.sim.family.setup import FamilySpec
+    from tst.sim.ledger import apply_entries
+    from tst.sim.setup import DEFAULT_FOUNDER, new_game
+
+    data = m30.loaded()
+    scenario = data.game_data.scenario(SCENARIO)
+    assert scenario is not None
+    state, entries = new_game(
+        save_name="m37",
+        master_seed=seed,
+        scenario=scenario,
+        difficulty="standard",
+        company_name="Dynasty Co",
+        founder=DEFAULT_FOUNDER,
+        balance=data.balance,
+        data=data.game_data,
+        family=FamilySpec("children", FAMILY_AGES),
+    )
+    game = Game(data, state, apply_entries({}, entries))
+    game.record_value()
+    return game
+
+
+def _cost_ratio(seed: int) -> tuple[float, bool]:
+    from tst.sim.dynasty import nodes as dn
+    from tst.sim.fabs import nodes as fnodes
+
+    data = m30.loaded()
+    nf = data.game_data.nodes
+    assert nf is not None
+    tl = fnodes.timeline(seed, nf, data.balance.fab)
+
+    def cost(turn: int) -> float:
+        node = tl.leading(turn)
+        return tl.wafer_cents[node] / dn.density(seed, nf, node)
+
+    mids = [n.start_turn + n.months // 2 for n in nf.dynasty_future]
+    gaps = [b - a for a, b in itertools.pairwise(mids)]
+    lengthen = all(b > a for a, b in itertools.pairwise(gaps))
+    return cost(END - 1) / cost(START), lengthen
+
+
+def dynasty_run(seed: int, turns: int = END) -> DynastyResult:
+    """One dynasty game with a family (M36's two children), full_integrator, to `turns`."""
+    from tst.sim.commodities.commodity import index_now
+    from tst.sim.dynasty.rivals import DYNASTY_KEY, active_rivals
+
+    data = m30.loaded()
+    g = data.game_data
+    game = _family_game(seed)
+    game.state = continue_dynasty(game.state, data.balance)
+    script = m30.strategy(STRATEGY)
+    goods = [c.key for c in g.commodities.goods] if g.commodities else []
+    prices: dict[str, list[float]] = {k: [] for k in goods}
+    rivals: dict[str, int] = {}
+    while game.state.turn < turns and not game.state.ended:
+        script(game)
+        game.turn()
+        s = game.state
+        for k in goods:
+            prices[k].append(index_now(s, k, g))
+        if s.turn >= START and s.turn % 12 == 0:
+            mine = {c.id for c in group_companies(s, s.player.id)}
+            decade = next(i for i, (a, b) in enumerate(DECADES) if a <= s.turn < b + 1)
+            for c in g.categories:
+                if not c.markets:
+                    continue
+                key = f"{c.key}/{2040 + 10 * decade}s"
+                rivals[key] = min(rivals.get(key, 10**6), active_rivals(s, c.key, mine))
+    s = game.state
+    excursion: dict[str, int] = {}
+    for k, series in prices.items():
+        ref = series[COMMODITY_FROM - 1 : COMMODITY_TO - 1]
+        if not ref or len(series) < START:
+            continue
+        mean = sum(ref) / len(ref)
+        run = worst = 0
+        for p in series[START - 1 :]:
+            run = run + 1 if not mean / 3 <= p <= 3 * mean else 0
+            worst = max(worst, run)
+        excursion[k] = worst
+    family = s.family
+    successions = 0
+    if family is not None:
+        successions = len(family.generations) - 1 + (family.head_mode == "family_head")
+    d = s.dynasty
+    ratio, lengthen = _cost_ratio(seed)
+    return DynastyResult(
+        seed=seed,
+        ended=s.save_meta.game_state,
+        end_turn=s.turn,
+        eras=sum(1 for a in s.era_arrivals if a.turn >= START),
+        min_rivals=rivals,
+        commodity_excursion=excursion,
+        successions=successions,
+        deaths=len(d.deaths) if d else 0,
+        leader_changes=len(d.leader_changes) if d else 0,
+        entrants=sum(1 for c in s.companies if c.rival_key[:1] == (DYNASTY_KEY,)),
+        cost_ratio=ratio,
+        gaps_lengthen=lengthen,
+    )
+
+
+def run_all(workers: int, seeds: Sequence[int] = SEEDS) -> list[DynastyResult]:
+    with ProcessPoolExecutor(max_workers=max(1, workers)) as pool:
+        return list(pool.map(dynasty_run, seeds))
+
+
+@dataclass(frozen=True, slots=True)
+class Readings:
+    eras_median: float  # target 2
+    rivals_ok_seeds: int  # target 2: seeds where every category had 3+ in every decade
+    thin: list[str]  # "seed:category/decade" short of 3
+    commodity_ok: bool  # target 2: no good outside 1/3-3x its 2030s mean for over 60 months
+    excursions: dict[str, int]
+    cost_ratio_min: float  # target 3: at least 0.5
+    gaps_lengthen: bool  # target 3
+    succession_seeds: int  # target 4: seeds with a succession by 2069 (9 of 10)
+
+
+def readings(results: Sequence[DynastyResult]) -> Readings:
+    import statistics
+
+    thin = [f"{r.seed}:{k}" for r in results for k, n in sorted(r.min_rivals.items()) if n < 3]
+    bad_seeds = {t.split(":")[0] for t in thin}
+    worst: dict[str, int] = {}
+    for r in results:
+        for k, n in r.commodity_excursion.items():
+            worst[k] = max(worst.get(k, 0), n)
+    return Readings(
+        eras_median=statistics.median(r.eras for r in results),
+        rivals_ok_seeds=len(results) - len(bad_seeds),
+        thin=thin,
+        commodity_ok=all(n <= 60 for n in worst.values()),
+        excursions=worst,
+        cost_ratio_min=min(r.cost_ratio for r in results),
+        gaps_lengthen=all(r.gaps_lengthen for r in results),
+        succession_seeds=sum(1 for r in results if r.successions > 0 or r.deaths > 0),
+    )
+
+
+def report(results: Sequence[DynastyResult]) -> str:
+    x = readings(results)
+    n = len(results)
+    lines = [
+        "| Target | Reading | Band | Result |",
+        "| --- | --- | --- | --- |",
+        f"| 52.5 T2 eras 2040-2069 (median) | {x.eras_median} | >= 4 | "
+        f"{'pass' if x.eras_median >= 4 else 'MISS'} |",
+        f"| 52.5 T2 every category 3+ rivals each decade | {x.rivals_ok_seeds} of {n} | 9 of 10 | "
+        f"{'pass' if x.rivals_ok_seeds >= 0.9 * n else 'MISS'} |",
+        f"| 52.5 T2 commodity months outside 1/3-3x | max {max(x.excursions.values(), default=0)} "
+        f"| <= 60 | {'pass' if x.commodity_ok else 'MISS'} |",
+        f"| 52.5 T3 gaps lengthen | {x.gaps_lengthen} | true | "
+        f"{'pass' if x.gaps_lengthen else 'MISS'} |",
+        f"| 52.5 T3 cost per transistor 2069/2040 | min {x.cost_ratio_min:.2f} | >= 0.50 | "
+        f"{'pass' if x.cost_ratio_min >= 0.5 else 'MISS'} |",
+        f"| 52.5 T4 a succession by 2069 | {x.succession_seeds} of {n} | 9 of 10 | "
+        f"{'pass' if x.succession_seeds >= 0.9 * n else 'MISS'} |",
+    ]
+    for r in results:
+        lines.append(
+            f"<!-- seed {r.seed}: {r.ended} at {r.end_turn}, eras {r.eras}, successions "
+            f"{r.successions}, deaths {r.deaths}, leaders {r.leader_changes}, entrants "
+            f"{r.entrants}, cost ratio {r.cost_ratio:.2f} -->"
+        )
+    if x.thin:
+        lines.append(f"<!-- thin: {', '.join(x.thin)} -->")
+    return "\n".join(lines)
+
+
+def dynasty_digests(seed: int, turns: int) -> list[str]:
+    """M30's digest of a family dynasty game, month by month to `turns` (the seeded test)."""
+    data = m30.loaded()
+    game = _family_game(seed)
+    game.state = continue_dynasty(game.state, data.balance)
+    script = m30.strategy(STRATEGY)
+    digester = m30.Digester()
+    out: list[str] = []
+    while game.state.turn < turns and not game.state.ended:
+        script(game)
+        game.turn()
+        out.append(m30.month_digest(digester, game))
+    return out

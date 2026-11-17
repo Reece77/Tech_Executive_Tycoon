@@ -22,6 +22,7 @@ from tst.db.repository import open_session, run_turn
 from tst.db.state_io import load_state, sync_state
 from tst.events.context import Kpis, build_prompt
 from tst.loader import LoadedData
+from tst.sim.calendar import format_turn
 from tst.sim.dynasty.lifetime import death_chance
 from tst.sim.errors import CampaignEndError
 from tst.sim.events.director import eligible_targets
@@ -110,22 +111,23 @@ def test_continuing_at_the_end_plays_on(client: tuple[Client, Path], loaded: Loa
     assert all("-" in e["window_label"] for e in shown["eras"])
 
 
-def _secrets(state: GameState, loaded: LoadedData) -> list[str]:
-    """Values that must never be shown: the founder's mortality chance, and the drawn months
-    of dynasty eras not yet arrived."""
+def _secrets(state: GameState, loaded: LoadedData) -> tuple[list[str], list[str]]:
+    """Values that must never be shown: the founder's mortality chance; and, for the
+    campaign route, the drawn months of dynasty eras not yet arrived."""
     b, g = loaded.balance, loaded.game_data
     founder = state.founder_of(state.player.id)
     assert founder is not None
     q = death_chance(state, founder.id, b)
     assert q > 0
-    out = [f"{q:.6f}", repr(q)]
     rng = RngFactory(state.save_meta.master_seed)
-    for i, era in enumerate(g.eras.eras):
-        if era.window and era.window[0][0] >= b.dynasty.start_year:
-            if state.era_arrival(era.key) is None:
-                t = levels.scheduled_turn(era, i, rng)
-                out.append(f'"scheduled_turn": {t}')
-    return out
+    months = [
+        format_turn(levels.scheduled_turn(era, i, rng))
+        for i, era in enumerate(g.eras.eras)
+        if era.window
+        and era.window[0][0] >= b.dynasty.start_year
+        and state.era_arrival(era.key) is None
+    ]
+    return [f"{q:.6f}", repr(q)], months
 
 
 def test_hidden_values_never_in_a_response_or_a_prompt(
@@ -136,7 +138,10 @@ def test_hidden_values_never_in_a_response_or_a_prompt(
     path = save_dir / "old.tst.sqlite"
     _edit(path, lambda s: replace(s, turn=JAN_2040 + 1))  # the founder is 90
     state = _state(path)
-    secrets = _secrets(state, loaded)
+    secrets, months = _secrets(state, loaded)
+    assert months
+    campaign = json.dumps(c.get("/api/saves/old/campaign"))
+    assert not any(m in campaign for m in months)
     bodies = [
         json.dumps(c.get(f"/api/saves/old/{route}"))
         for route in ("campaign", "overview", "finance/game-over", "founder", "family")

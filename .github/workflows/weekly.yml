@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems"]') }}
+        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m37", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems"]') }}
     steps:
       - uses: actions/checkout@v4
 

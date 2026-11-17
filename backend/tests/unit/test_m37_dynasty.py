@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 from dataclasses import replace
 from pathlib import Path
 
@@ -100,8 +101,8 @@ def test_successor_nodes_slow_down_and_start_in_2040(loaded: LoadedData) -> None
     nf = loaded.game_data.nodes
     assert nf is not None and len(nf.dynasty_future) == loaded.balance.dynasty.nodes.count
     mids = [n.start_turn + n.months // 2 for n in nf.dynasty_future]
-    gaps = [b - a for a, b in zip(mids, mids[1:], strict=False)]
-    assert all(later > earlier for earlier, later in zip(gaps, gaps[1:], strict=False))
+    gaps = [b - a for a, b in itertools.pairwise(mids)]
+    assert all(later > earlier for earlier, later in itertools.pairwise(gaps))
     assert all(n.start_turn >= JAN_2040 for n in nf.dynasty_future)
     tl = fnodes.timeline(7, nf, loaded.balance.fab)
     for n in nf.dynasty_future:
@@ -128,7 +129,7 @@ def test_successors_are_seeded(loaded: LoadedData) -> None:
     assert dn.successors(5, nf) == dn.successors(5, nf)
     assert dn.successors(5, nf) != dn.successors(6, nf)
     gains = [s.density_gain for s in dn.successors(5, nf)]
-    assert all(b < a for a, b in zip(gains, gains[1:], strict=False))
+    assert all(b < a for a, b in itertools.pairwise(gains))
 
 
 def test_frontier_and_growth_unchanged_to_2039(loaded: LoadedData) -> None:
