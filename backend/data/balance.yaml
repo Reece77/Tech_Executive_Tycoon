@@ -2898,11 +2898,11 @@ dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here r
     slowdown: 0.85 # x every domain's baseline points a year for each decade from start_year (A)
     cost_growth: 0.03 # research budgets per researcher x (1 + this) a year from start_year (A)
   markets: # 52.2: category growth decays toward a mature rate unless an era renews it
-    mature_growth: # fraction a year (A: PCs after 2011 and smartphones after 2016 grew 0-5% a year; M37 tuning down from 0.03-0.05: the largest incumbents' books must fit SQLite's int64 cents to 2069; AI models' leader books about $230T a year by 2040 on main's curves)
-      default: 0.01
-      ai_models: 0.015
-      cloud_hosting: 0.015
-      chips_ai_accelerator: 0.015
+    mature_growth: # fraction a year (A: PCs after 2011 and smartphones after 2016 grew 0-5% a year; M37 tuning down from 0.03-0.05: the largest incumbents' books must fit SQLite's int64 cents to 2069; M43a back up from 0.01 / 0.015: 54.1's ceilings now bound the books (largest balance 1.5e16 cents by 2069, seeds 1-4) and 54.4 target 3 asks 1% a year through the 2060s with cycles and saturation on top)
+      default: 0.02
+      ai_models: 0.025
+      cloud_hosting: 0.025
+      chips_ai_accelerator: 0.025
       vehicles: 0.01
     half_life_years: 3 # years for the gap between a category's base growth and its mature rate to halve (A; M37 tuning from 6: AI models' 25% of 2039 kept the largest incumbents compounding past int64 cents of revenue by the 2050s)
   carbon: # 52.2: carbon policy's steps stop; a priced region's carbon reverts to a seeded long-run level
