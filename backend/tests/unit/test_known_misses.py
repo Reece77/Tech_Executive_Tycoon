@@ -75,17 +75,16 @@ def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
     assert verdict(t4(-1)) == "fail"
 
 
-def test_m37_money_is_known_to_m43_while_it_fits_int64() -> None:
-    """The PM's money guard (2026-11-17; M37's brief, decision 22): no ledger value over 1.0e18
-    cents in a dynasty run to 2069; known (M43) up to int64's 9.2e18, a failure beyond."""
+def test_m37_money_is_closed_by_m43a() -> None:
+    """The PM's money guard (2026-11-17; M37's brief, decision 22) passes since M43a's market
+    ceilings (1.48e16 cents at most by 2069, seeds 1-4): no known miss, so any value over
+    1.0e18 cents fails."""
     from tst.balance.m37 import MoneyRow
 
-    assert [m.target for m in KNOWN_MISSES][6:] == ["M37.money"]
-    assert known_miss("M37.money").owner == "M43"  # type: ignore[union-attr]
+    assert "M37.money" not in [m.target for m in KNOWN_MISSES]
 
     def money(cents: float) -> MoneyRow:
         return MoneyRow("M37.money", cents < 1.0e18, cents / 1.0e18, f"{cents:.1e}")
 
     assert verdict(money(9.0e17)) == "ok"
-    assert [verdict(money(c)) for c in (1.1e18, 6.07e18, 9.2e18)] == ["known"] * 3
-    assert verdict(money(9.3e18)) == "fail"
+    assert verdict(money(1.1e18)) == "fail"
