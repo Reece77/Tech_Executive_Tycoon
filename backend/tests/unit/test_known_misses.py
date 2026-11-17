@@ -57,7 +57,7 @@ def test_closed_and_unlisted_misses_fail_and_the_table_says_known() -> None:
 def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
     """M35b's v4 misses (docs/tasks/M35b-v4-balance.md): T1.2 known down to 0.80x, T4 known
     while power_hyperscaler's capacity is never later than cloud_steady's."""
-    assert [m.target for m in KNOWN_MISSES][4:] == ["V4.T1.2", "V4.T4"]
+    assert [m.target for m in KNOWN_MISSES][4:6] == ["V4.T1.2", "V4.T4"]
     assert {known_miss(t).owner for t in ("V4.T1.2", "V4.T4")} == {"M43"}  # type: ignore[union-attr]
 
     def t12(r: float) -> Row:
@@ -73,3 +73,19 @@ def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
     assert verdict(t12(0.79)) == "fail" and verdict(t12(1.51)) == "fail"
     assert [verdict(t4(g)) for g in (11, 0)] == ["known"] * 2
     assert verdict(t4(-1)) == "fail"
+
+
+def test_m37_money_is_known_to_m43_while_it_fits_int64() -> None:
+    """The PM's money guard (2026-11-17; M37's brief, decision 22): no ledger value over 1.0e18
+    cents in a dynasty run to 2069; known (M43) up to int64's 9.2e18, a failure beyond."""
+    from tst.balance.m37 import MoneyRow
+
+    assert [m.target for m in KNOWN_MISSES][6:] == ["M37.money"]
+    assert known_miss("M37.money").owner == "M43"  # type: ignore[union-attr]
+
+    def money(cents: float) -> MoneyRow:
+        return MoneyRow("M37.money", cents < 1.0e18, cents / 1.0e18, f"{cents:.1e}")
+
+    assert verdict(money(9.0e17)) == "ok"
+    assert [verdict(money(c)) for c in (1.1e18, 6.07e18, 9.2e18)] == ["known"] * 3
+    assert verdict(money(9.3e18)) == "fail"

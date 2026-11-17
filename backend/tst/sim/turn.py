@@ -18,6 +18,9 @@ from tst.sim.automation.run import automation_month
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn
 from tst.sim.data_models import AccountType, Balance, GameData
 from tst.sim.decisions import Decisions
+from tst.sim.dynasty import rivals as dynasty_rivals
+from tst.sim.dynasty.lifetime import lifetime_month
+from tst.sim.dynasty.mode import check_can_play, close_at_final
 from tst.sim.equipment.phase import equipment_month
 from tst.sim.errors import CriticalEventOpenError, EventsOpenError, GameOverError
 from tst.sim.events.describe import month_choices
@@ -495,9 +498,12 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
-    moves = ctx.rival_moves + launched + arrived + founded
-    ctx = replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding)
-    return ctx.log(*going_live, *car_logs)
+    # M37 (52.3): each January from 2040, rival leaders hand over and short markets get entrants
+    state, successions = dynasty_rivals.leaders_month(state, ctx.rng, ctx.balance, ctx.data)
+    state, entering, entered = dynasty_rivals.entrants_month(state, ctx.rng, ctx.balance, ctx.data)
+    moves = ctx.rival_moves + launched + arrived + founded + entered
+    ctx = replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding, *entering)
+    return ctx.log(*going_live, *car_logs, *successions)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:
@@ -509,7 +515,9 @@ def stage_checks(ctx: TurnContext) -> TurnContext:
     logs = (*logs, *funded)
     cash = {c.id: account_balance(ctx.balances, c.id, CASH) for c in state.ledger_companies()}
     state, board = board_month(state, cash, ctx.balance, ctx.data)  # M4 (14.6)
-    return replace(ctx, state=state).log(*logs, *board)
+    # M37 (52.4): each January from 2040, the founder's lifetime
+    state, life = lifetime_month(state, ctx.rng, ctx.balances, ctx.balance, ctx.data)
+    return replace(ctx, state=state).log(*logs, *board, *life)
 
 
 def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
@@ -789,6 +797,7 @@ def advance_turn(
     (23.1, M10b); otherwise (Holiday, scripts) they take their first choice in phase 1."""
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
+    check_can_play(state, balance)  # M37 (52.1): a standard campaign ends in December 2039
     for event in state.open_events(state.player.id):
         if event.severity == "critical" and event.status == "open":
             raise CriticalEventOpenError(
@@ -833,7 +842,7 @@ def advance_turn(
         final = with_person_state(final, replace(ps, energy=max(0, (ps.energy or 0) + bonus)))
     final = next_budget(final, balance)  # M24 (32.1): the burnout cut; the month's budget
     return TurnResult(
-        new_state=replace(final, turn=state.turn + 1),
+        new_state=close_at_final(replace(final, turn=state.turn + 1), balance),  # M37 (52.1)
         ledger_entries=ctx.entries,
         log_items=file_with_digest(ctx.state, ctx.log_items),  # M27a (40.4)
         snapshot=ctx.snapshot,

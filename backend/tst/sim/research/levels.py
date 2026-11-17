@@ -98,6 +98,14 @@ def _window_draw(rng: RngFactory, era_index: int) -> float:
     return float(rng.stream(0, "era_window", era_index).random())
 
 
+def in_play(era: EraDef, turn: int, balance: Balance) -> bool:
+    """M37 (52.2, 52.5 target 1): an era whose window starts in dynasty years (from
+    dynasty.start_year) cannot arrive, be aimed at or be shown before January of that year."""
+    if era.window is None or era.window[0][0] < balance.dynasty.start_year:
+        return True
+    return turn >= ym_to_turn(balance.dynasty.start_year, 1)
+
+
 def eras_in(data: GameData, domain: str) -> tuple[EraDef, ...]:
     return tuple(e for e in data.eras.eras if e.domain == domain)
 

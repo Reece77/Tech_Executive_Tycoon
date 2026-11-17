@@ -19,7 +19,13 @@ from tst.sim.research import levels
 from tst.sim.research.data import EraDef, rate_in
 from tst.sim.research.models import EraArrival, EraWindow
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, player_companies, with_era_arrival, with_era_window
+from tst.sim.state import (
+    GameState,
+    derived,
+    player_companies,
+    with_era_arrival,
+    with_era_window,
+)
 
 TREND_MONTHS = 12  # tunable-exempt: the pre-era trend's window (27.3: "12-month trend")
 
@@ -37,14 +43,23 @@ def _active(arrival: EraArrival | None, months: int, turn: int) -> bool:
     return arrival is not None and arrival.turn <= turn < arrival.turn + months
 
 
+def arrived(state: GameState, data: GameData) -> tuple[tuple[EraDef, EraArrival], ...]:
+    """The arrived eras with their arrivals, in eras.yaml order, once per state (M37: eras.yaml
+    grew by seven eras of dynasty years; the boosts' loops stay proportional to arrivals)."""
+    return derived(
+        state,
+        ("arrived_eras", id(data)),
+        lambda: tuple(
+            (e, a) for e in data.eras.eras if (a := state.era_arrival(e.key)) is not None
+        ),
+    )
+
+
 def growth_boost(state: GameState, data: GameData, category: str, segment: str | None) -> float:
     """Annual growth points the arrived eras add this month; `segment` None counts only the
     boosts that cover every segment (the category's own growth, for startups and the API)."""
     total = 0.0
-    for era in data.eras.eras:
-        arrival = state.era_arrival(era.key)
-        if arrival is None:
-            continue
+    for era, arrival in arrived(state, data):
         for b in era.boosts:
             if b.category != category or not _active(arrival, b.months, state.turn):
                 continue
@@ -73,8 +88,7 @@ def annual_growth(
 def adoption_factor(state: GameState, data: GameData, category: str, segment: str) -> float:
     """The product of the running eras' adoption multipliers for a segment (21.4)."""
     factor = 1.0
-    for era in data.eras.eras:
-        arrival = state.era_arrival(era.key)
+    for era, arrival in arrived(state, data):
         for b in era.boosts:
             if (
                 b.adoption != 1
@@ -114,6 +128,8 @@ def arrive_eras(
     logs: list[LogItem] = []
     for index, era in enumerate(data.eras.eras):
         if state.era_arrival(era.key) is not None:
+            continue
+        if not levels.in_play(era, state.turn, balance):  # M37: dynasty years only
             continue
         hist = levels.scheduled_turn(era, index, rng, **_seeded(state, balance))
         found = causer(state, data, balance, era) if state.turn < hist else None

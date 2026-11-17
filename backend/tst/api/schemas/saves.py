@@ -78,6 +78,10 @@ class CreateSaveIn(BaseModel):
         default=None, description="A data-editor mod in saves/mods (M25); earns no achievements"
     )
     family: FamilyIn | None = Field(default=None, description="The Family setting (M36, 45.1)")
+    campaign_length: Literal["standard", "dynasty"] = Field(
+        default="standard",
+        description="Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069",
+    )
 
 
 class SaveOut(BaseModel):

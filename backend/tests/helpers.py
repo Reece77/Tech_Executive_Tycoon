@@ -376,6 +376,19 @@ def answer_events(path: Path, loaded: LoadedData) -> None:
             run_action(path, loaded, ChooseEvent(founder.id, event.id, event.choices[0].key))
 
 
+def continue_at_end(path: Path, loaded: LoadedData) -> None:
+    """M37 (52.1): a standard campaign stops after December 2039; a player who plays on
+    continues in dynasty mode. Scripts that play a 2039 save on call this first."""
+    from tst.db.repository import read_session, read_state, run_action
+    from tst.sim.dynasty.mode import ContinueDynasty, at_standard_end
+
+    with read_session(path) as session:
+        state = read_state(session)
+    if at_standard_end(state, loaded.balance):
+        founder = state.founder_of(state.player.id)
+        run_action(path, loaded, ContinueDynasty(founder.id if founder is not None else 1))
+
+
 def play_turn(path: Path, loaded: LoadedData) -> Any:
     """run_turn after answering any open critical event (M6)."""
     from tst.db.repository import run_turn

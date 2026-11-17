@@ -70,9 +70,12 @@ class Digester:
     identity, holding the object so its id cannot be reused; `next_month` keeps only what
     the last digest saw, so the memo never outgrows one state."""
 
-    def __init__(self) -> None:
+    def __init__(self, skip: Mapping[type, frozenset[str]] | None = None) -> None:
         self._memo: dict[int, tuple[object, bytes]] = {}
         self._seen: dict[int, tuple[object, bytes]] = {}
+        # M37: fields left out of the digest, by class (fields a later milestone added, to
+        # compare a run with a fixture recorded before them: tst.balance.m37)
+        self._skip = skip or {}
 
     def next_month(self) -> None:
         self._memo, self._seen = self._seen, {}
@@ -101,7 +104,10 @@ class Digester:
         if dataclasses.is_dataclass(value) and not isinstance(value, type):
             cls = type(value)
             parts = [f"dc:{cls.__module__}.{cls.__qualname__}".encode()]
-            parts += [self.digest(getattr(value, name)) for name in _fields(cls)]
+            left_out = self._skip.get(cls, frozenset())
+            parts += [
+                self.digest(getattr(value, name)) for name in _fields(cls) if name not in left_out
+            ]
             return b"|".join(parts)
         if isinstance(value, tuple | list):
             return b"seq:" + b"".join(self.digest(v) for v in value)

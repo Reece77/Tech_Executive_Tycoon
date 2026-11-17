@@ -3970,6 +3970,15 @@ Reece (2026-11-14, 2026-11-15): **robotics** among the first new industries, wit
 ### 53.5 What the API may show
 
 Products, fleets, zones and permits, rides and utilisation, plant automation levels, rivals' public products and services, incidents that happened. Never incident draws, seeded approvals or windows before they open, or rivals' plans.
+### 52.7 As built (M37 notes)
+
+- **Nothing before 2040.** Every rule here starts in January of `dynasty.start_year`, the rival leaders' too (52.3's "from 2026" yields to target 1; before 2040 rival CEOs still age and retire by §10). The rules are gated on the year, not the mode: only a dynasty campaign or a Sandbox reaches 2040. Proof: `tst/balance/m37.py` replays M30's nine runs to December 2039, mode off and on, identical month by month to the digests before M37.
+- **The standard end is derived.** A standard campaign with December 2039 played waits at its end (`CampaignEndError`, 409; the API's `campaign_end`) until the player ends it or continues; nothing is stored in that month. After December 2069 every game ends (`dynasty_end`).
+- **Eras** 2040-2065: seven in eras.yaml, drawn as 26.4's (stream `era_window`); none arrives, is aimed at or is shown before 2040 (`levels.in_play`). Their boosts are renewals, 0.03-0.05.
+- **Nodes:** six successors to A3 (nodes.yaml's last future node, not A10), windows from `dynasty.nodes` at load (centred 3 years after A3's midpoint, each gap x1.2), drawn on stream `dynasty` (0, 0, j); offered from 2040 only. Cost per transistor: wafer price / density, A3's density = 1.
+- **Frontier and markets** continue at load: each domain's rate x0.85 a decade from 2040; research budgets +3% a year; base growth decays to `markets.mature_growth` (0.01-0.015) with a 3-year half-life. Carbon reverts to a seeded long-run level ($120-300/t) at 15% of the log gap a year.
+- **Rivals:** each January a leader retires with chance 0.06 x (age - 61), +0.10 after a losing year; an heir, insider or outside hire succeeds (25/45/30%), and the personality type may change (20/10/50%). A category below 3 active rivals gets as many seeded entrants as it takes; 30% carry a failed rival's brand.
+- **The founder:** from 75, q = the SSA 2021 male period table x 0.70 x stress (0.85-1.25) x family time (to 0.90). A death settles the estate at once and hands over to the readiest heir; with none ready, the eldest living child (else the partner) becomes the head and the board appoints a CEO; with no family the game ends (`founder_died`). Without a family a founder may retire in dynasty years (`founder_retired`).
 
 ### 53.6 As built (M39 notes)
 

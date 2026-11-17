@@ -25918,6 +25918,225 @@
         }
       }
     },
+    "/api/saves/{save_id}/campaign": {
+      "get": {
+        "tags": [
+          "campaign"
+        ],
+        "summary": "Get Campaign",
+        "description": "The campaign's length and end, and dynasty years' eras, successions and deaths.",
+        "operationId": "getCampaign",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/campaign/continue": {
+      "post": {
+        "tags": [
+          "campaign"
+        ],
+        "summary": "Continue Dynasty",
+        "description": "Continue in dynasty mode, to December 2069 (a one-off; 409 once the game is over).",
+        "operationId": "continueDynasty",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/campaign/end": {
+      "post": {
+        "tags": [
+          "campaign"
+        ],
+        "summary": "End Campaign",
+        "description": "At December 2039: end the standard campaign with its summary.",
+        "operationId": "endCampaign",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/robotics": {
       "get": {
         "tags": [
@@ -31160,6 +31379,98 @@
         ],
         "title": "BuybackIn"
       },
+      "CampaignActionOut": {
+        "properties": {
+          "campaign": {
+            "$ref": "#/components/schemas/CampaignOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "campaign"
+        ],
+        "title": "CampaignActionOut"
+      },
+      "CampaignOut": {
+        "properties": {
+          "length": {
+            "type": "string",
+            "title": "Length",
+            "description": "standard | dynasty"
+          },
+          "end_label": {
+            "type": "string",
+            "title": "End Label",
+            "description": "The month the game ends after"
+          },
+          "at_end": {
+            "type": "boolean",
+            "title": "At End",
+            "description": "A standard campaign at December 2039: end or continue"
+          },
+          "can_switch": {
+            "type": "boolean",
+            "title": "Can Switch",
+            "description": "A standard campaign may still switch to dynasty"
+          },
+          "game_state": {
+            "type": "string",
+            "title": "Game State"
+          },
+          "founder_age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Age"
+          },
+          "dynasty_years": {
+            "type": "boolean",
+            "title": "Dynasty Years",
+            "description": "2040 or later"
+          },
+          "eras": {
+            "items": {
+              "$ref": "#/components/schemas/EraWindowOut"
+            },
+            "type": "array",
+            "title": "Eras",
+            "description": "Eras of dynasty years, once they are shown"
+          },
+          "leader_changes": {
+            "items": {
+              "$ref": "#/components/schemas/LeaderChangeOut"
+            },
+            "type": "array",
+            "title": "Leader Changes"
+          },
+          "deaths": {
+            "items": {
+              "$ref": "#/components/schemas/DeathOut"
+            },
+            "type": "array",
+            "title": "Deaths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "length",
+          "end_label",
+          "at_end",
+          "can_switch",
+          "game_state",
+          "founder_age",
+          "dynasty_years",
+          "eras",
+          "leader_changes",
+          "deaths"
+        ],
+        "title": "CampaignOut"
+      },
       "CandidacyOut": {
         "properties": {
           "search_id": {
@@ -34879,6 +35190,16 @@
               }
             ],
             "description": "The Family setting (M36, 45.1)"
+          },
+          "campaign_length": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "dynasty"
+            ],
+            "title": "Campaign Length",
+            "description": "Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069",
+            "default": "standard"
           }
         },
         "type": "object",
@@ -35218,6 +35539,40 @@
           "prepaid_cents"
         ],
         "title": "DealQuoteOut"
+      },
+      "DeathOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "head | member | adviser"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "date_label",
+          "age",
+          "role"
+        ],
+        "title": "DeathOut"
       },
       "DecisionOut": {
         "properties": {
@@ -37220,6 +37575,41 @@
           "first_mover_reward"
         ],
         "title": "EraOut"
+      },
+      "EraWindowOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "window_label": {
+            "type": "string",
+            "title": "Window Label",
+            "description": "The public window, e.g. 2040-2048"
+          },
+          "arrived_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arrived Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "window_label"
+        ],
+        "title": "EraWindowOut"
       },
       "ErrorOut": {
         "properties": {
@@ -41672,7 +42062,7 @@
           "game_state": {
             "type": "string",
             "title": "Game State",
-            "description": "active | bankrupt | founder_removed | exit | scenario_done | retired"
+            "description": "active | bankrupt | founder_removed | exit | scenario_done | retired | campaign_end | dynasty_end | founder_died | founder_retired (M37)"
           },
           "company_name": {
             "type": "string",
@@ -41815,6 +42205,36 @@
               }
             ],
             "description": "The legacy score (M24, 32.6)"
+          },
+          "campaign_length": {
+            "type": "string",
+            "title": "Campaign Length",
+            "description": "standard | dynasty (M37)",
+            "default": "standard"
+          },
+          "can_continue": {
+            "type": "boolean",
+            "title": "Can Continue",
+            "description": "At a standard campaign's end: continue in dynasty mode",
+            "default": false
+          },
+          "read_only": {
+            "type": "boolean",
+            "title": "Read Only",
+            "description": "After December 2069 (M37): the save stays open to browse",
+            "default": false
+          },
+          "dynasty_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dynasty Score",
+            "description": "With a family (45.7): the generations' legacies and more"
           },
           "ended_label": {
             "anyOf": [
@@ -45910,6 +46330,57 @@
           "region"
         ],
         "title": "LaunchRegionIn"
+      },
+      "LeaderChangeOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "company_name": {
+            "type": "string",
+            "title": "Company Name"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "old_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Old Name"
+          },
+          "new_name": {
+            "type": "string",
+            "title": "New Name"
+          },
+          "how": {
+            "type": "string",
+            "title": "How",
+            "description": "heir | insider | outside"
+          },
+          "personality_changed": {
+            "type": "boolean",
+            "title": "Personality Changed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company_name",
+          "date_label",
+          "old_name",
+          "new_name",
+          "how",
+          "personality_changed"
+        ],
+        "title": "LeaderChangeOut"
       },
       "LearnedOut": {
         "properties": {

@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from tests.calibration import runner_note
-from tests.helpers import play_turn
+from tests.helpers import continue_at_end, play_turn
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
 from tst.db.repository import load_state, open_session
 from tst.loader import LoadedData
@@ -44,6 +44,7 @@ def test_a_2039_stage_4_company_keeps_the_turn_budget(tmp_path: Path, loaded: Lo
         state = load_state(session)
     assert state.turn >= ym_to_turn(2039, 12), state.turn  # December 2039 played
     assert state.player.stage >= 4 and not state.ended
+    continue_at_end(path, loaded)  # M37 (52.1): playing on past December 2039
     for _ in range(WARM_UP):
         play_turn(path, loaded)
     blocks = []

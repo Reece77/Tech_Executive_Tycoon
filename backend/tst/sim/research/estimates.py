@@ -43,7 +43,7 @@ def outlook(
     lead = state.research_lead(company_id, domain)
     gain = progress(shown.funded_output, lead, balance)
     net = gain - (lead + gain) * balance.rnd.decay
-    target = next_era(state, data, domain)
+    target = next_era(state, data, domain, balance)
     months: int | None = None
     if target is not None and gain > 0:
         need = levels.threshold(data, balance, target)
@@ -59,10 +59,11 @@ def outlook(
     return Outlook(gain, net, months)
 
 
-def next_era(state: GameState, data: GameData, domain: str) -> EraDef | None:
-    """The domain's first era that has not arrived, in eras.yaml order; None if none."""
+def next_era(state: GameState, data: GameData, domain: str, balance: Balance) -> EraDef | None:
+    """The domain's first era that has not arrived, in eras.yaml order; None if none. An era
+    of dynasty years only from January 2040 (M37, `levels.in_play`)."""
     for era in levels.eras_in(data, domain):
-        if state.era_arrival(era.key) is None:
+        if state.era_arrival(era.key) is None and levels.in_play(era, state.turn, balance):
             return era
     return None
 

@@ -14,7 +14,7 @@ from typing import Final
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidActionError
 from tst.sim.family import dynasty, estate, rules
-from tst.sim.family.models import Generation
+from tst.sim.family.models import EX_PARTNER, FAMILY_ROLE, Generation
 from tst.sim.family.people import family_stream
 from tst.sim.finance.board import BOARD_ROLE
 from tst.sim.finance.models import BoardSeat
@@ -47,7 +47,7 @@ from tst.sim.state import (
     with_seat,
 )
 
-HOWS: Final = ("choice", "health", "board")
+HOWS: Final = ("choice", "health", "board", "death")  # death: M37 (52.4), dynasty years
 FOUNDER_LEVEL: Final = "exec"
 CEO_KEY: Final = 3  # tunable-exempt: stream key (head_id, 3, 0): a CEO search
 CEO_LEVEL: Final = "exec"
@@ -110,7 +110,11 @@ def hand_to_heir(
         raise InvalidActionError(f"unknown succession {how!r}")
     fb = balance.family
     least = "developing" if how == "board" else "not_ready"
-    if heir_id not in rules.eligible_heirs(state, balance, least):
+    dead = how == "death"  # M37 (52.4): any living family member may have to take over
+    members = {m.person_id for m in state.family_members if m.relation != EX_PARTNER}
+    if dead and heir_id not in members:
+        raise InvalidActionError("the successor at a death must be one of the family")
+    if not dead and heir_id not in rules.eligible_heirs(state, balance, least):
         raise InvalidActionError(
             f"an heir must be one of your children, at least {fb.heir_min_age}, in the group"
             + (" and at least developing" if how == "board" else "")
@@ -120,7 +124,7 @@ def hand_to_heir(
     old_life = life_of(state, old.id)
     logs: list[LogItem] = []
     legacy = dynasty.generation_legacy(state, old.id, balance)
-    if how == "health":
+    if how in ("health", "death"):  # M37: a death settles the estate at once too (45.6)
         state, more = estate.settle(state, old.id, heir_id, balances, balance, data)
         logs += more
     # Employment: the heir becomes the founder at the player's company; the old founder retires.
@@ -129,8 +133,24 @@ def hand_to_heir(
             state, replace(e, status="ended", end_turn=turn, end_reason="retired")
         )
     job = state.employment_of(heir_id)
-    assert job is not None
-    if job.company_id == cid:
+    if job is None:  # M37: a family member outside the group, taking over at a death
+        emp_id, ids = state.next_ids.take("employment")
+        state = with_employment(
+            replace(state, next_ids=ids),
+            Employment(
+                id=emp_id,
+                person_id=heir_id,
+                company_id=cid,
+                role=FOUNDER_ROLE,
+                level=FOUNDER_LEVEL,
+                salary_cents=0,
+                equity_bp=0,
+                start_turn=turn,
+                end_turn=None,
+                status="active",
+            ),
+        )
+    elif job.company_id == cid:
         state = with_employment(
             state, replace(job, role=FOUNDER_ROLE, level=FOUNDER_LEVEL, unit_id=None)
         )
@@ -162,7 +182,8 @@ def hand_to_heir(
         state = with_ceo(state, replace(ceo, ended_turn=turn, end_reason="left"))
     # The people: who the founder is.
     heir = state.person(heir_id)
-    state = with_person(state, replace(old, is_founder=False, role=BOARD_ROLE))
+    old_role = FAMILY_ROLE if dead else BOARD_ROLE  # M37: the dead keep no seat
+    state = with_person(state, replace(old, is_founder=False, role=old_role))
     state = with_person(state, replace(heir, is_founder=True, role=None, level=FOUNDER_LEVEL))
     heir = state.person(heir_id)
     old_ps = state.person_state(old.id)
@@ -193,7 +214,7 @@ def hand_to_heir(
     for seat in state.seats:
         if seat.person_id == old.id:
             state = with_seat(state, replace(seat, person_id=heir_id))
-    if state.board(cid):
+    if state.board(cid) and not dead:
         seat_id, ids = state.next_ids.take("seat")
         adviser_seat = BoardSeat(
             id=seat_id, company_id=cid, kind="common", person_id=old.id, seated_turn=turn
@@ -224,8 +245,14 @@ def hand_to_heir(
         step_back_delays=0,
         step_back_open=False,
         succession_open=None,
-        adviser_id=old.id,
-        adviser_seat_id=adviser_seat.id if adviser_seat is not None else None,
+        adviser_id=family.adviser_id if dead else old.id,
+        adviser_seat_id=(
+            family.adviser_seat_id
+            if dead
+            else adviser_seat.id
+            if adviser_seat is not None
+            else None
+        ),
         opinions=(),
     )
     family = rules.note(

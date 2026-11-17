@@ -46,6 +46,7 @@ from tst.db.inbox import InboxMessage
 from tst.loader import LoadedData
 from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym, ym_to_turn
 from tst.sim.data_models import LEVELS, AccountType, FinanceBalance
+from tst.sim.dynasty.mode import at_standard_end, length, outcome
 from tst.sim.errors import FinanceRuleError
 from tst.sim.finance import formulas as f
 from tst.sim.finance import statements as fs
@@ -907,12 +908,21 @@ def game_over_out(
     sale = sale_of(state, company.id) if sold else None
     per_share = sale.price_cents // fd if sale is not None and fd else 0
     from tst.api.founder_views import legacy_out
+    from tst.sim.family.dynasty import dynasty
 
+    shown = outcome(state, data.balance)  # M37 (52.1): campaign_end at the standard end
+    family_score = dynasty(state, None, data.balance, data.game_data)
+    if shown == "campaign_end" and ended is None:
+        ended = last = state.turn - 1
     return GameOverOut(
         legacy=legacy_out(state, data),  # M24 (32.6)
-        game_state=meta.game_state,
+        game_state=shown,
         company_name=company.name,
         ended_turn=ended,
+        campaign_length=length(state),
+        can_continue=at_standard_end(state, data.balance),
+        read_only=meta.game_state == "dynasty_end",
+        dynasty_score=family_score.total if family_score is not None else None,
         can_found_again=meta.game_state == "exit",
         **_scenario_fields(state, data),
         min_new_cash_cents=data.balance.serial.min_cash_dollars * 100,  # tunable-exempt: cents
@@ -981,7 +991,7 @@ def summary_out(
         runway_months=runway,
         profitable=burn <= 0,
         insolvent_months=company.insolvent_months,
-        game_state=state.save_meta.game_state,
+        game_state=outcome(state, data.balance),  # M37: campaign_end at the standard end
         ended_turn=state.save_meta.ended_turn,
         stage=company.stage,
         stage_label=STAGE_LABELS.get(company.stage, f"Stage {company.stage}"),

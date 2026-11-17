@@ -121,6 +121,10 @@ STREAM_IDS: Final = MappingProxyType(
         # length and outcome; (2, facility or company) inspections and recalls; (3, product_id)
         # post-market signals; (4, regulator index) seeded review drift after 2025
         "medical": 64,
+        # M37 (formulas.md 52): (0, series, *key) a data series' seeded continuation past its
+        # last entry; (1, *rival key, year) a rival leader's retirement and successor; (2,
+        # person_id, year) a founder's or family member's mortality; (3, category, year) entrants
+        "dynasty": 65,
         # M39 (formulas.md 53): (0, region_index, year) installations' growth after 2025 and
         # (0, n_regions) the home humanoid window; (1, zone_id, city_index) a zone's incidents;
         # (2, region_index, zone_id) a zone's permit decision; (3, operator_index) rival entries

@@ -13,6 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
+from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events import modifiers as mf
 from tst.sim.finance import macro
@@ -67,12 +68,20 @@ def research_skill(skills: Mapping[str, float], domain: DomainDef) -> float:
     return sum(w * skills[k] for k, w in domain.research_skill.items())
 
 
-def researcher_cost_cents(state: GameState, data: GameData, domain: DomainDef) -> int:
+def researcher_cost_cents(
+    state: GameState, data: GameData, domain: DomainDef, balance: Balance
+) -> int:
     """A researcher's monthly budget (21.3); x the AI compute index for an indexed domain,
-    in exact fractions rounded half-to-even once (ADR-0003; M12r)."""
+    in exact fractions rounded half-to-even once (ADR-0003; M12r). From dynasty.start_year,
+    x (1 + dynasty.frontier.cost_growth) a year since then (M37, 52.2): 1 in 2040."""
+    cents = exact(domain.budget_cents)
     if domain.compute_indexed:
-        return round(exact(domain.budget_cents) * exact(macro.ai_index(state, data)))
-    return domain.budget_cents
+        cents *= exact(macro.ai_index(state, data))
+    years = turn_to_ym(state.turn)[0] - balance.dynasty.start_year
+    step = exact(1 + balance.dynasty.frontier.cost_growth)
+    for _ in range(max(0, years)):
+        cents *= step
+    return round(cents) if domain.compute_indexed or years > 0 else domain.budget_cents
 
 
 def _shown_skills(state: GameState, company_id: int, person_id: int) -> dict[str, float]:
@@ -135,7 +144,7 @@ def lab(
         r = research_skill(skills, domain)
         out.append(Researcher(person_id, r, r / ATTR_NEUTRAL * m * lam))
     output = pf.coord_factor(len(out), pb) * sum(r.output for r in out) if out else 0.0
-    needed = len(out) * researcher_cost_cents(state, data, domain)
+    needed = len(out) * researcher_cost_cents(state, data, domain, balance)
     budget = needed if project.budget_cents is None else min(project.budget_cents, needed)
     return Lab(tuple(out), output, needed, budget)
 

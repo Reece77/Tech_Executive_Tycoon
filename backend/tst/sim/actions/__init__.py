@@ -240,6 +240,13 @@ from tst.sim.automation.actions import (
 from tst.sim.contracts.termination import ACTION_TYPES as CONTRACT_ACTION_TYPES
 from tst.sim.contracts.termination import TerminateContract, terminate
 from tst.sim.data_models import Balance, GameData
+from tst.sim.dynasty.lifetime import RetireFounder, retire_founder
+from tst.sim.dynasty.mode import (
+    ContinueDynasty,
+    EndCampaign,
+    apply_mode_action,
+    check_can_play,
+)
 from tst.sim.equipment.actions import ACTION_TYPES as EQUIPMENT_ACTION_TYPES
 from tst.sim.equipment.actions import (
     EquipmentAction,
@@ -403,6 +410,9 @@ type Action = (
     | MnaAction  # M14
     | FoundAgain  # M15b addendum 10
     | Retire
+    | ContinueDynasty  # M37 (52.1)
+    | RetireFounder  # M37 (52.4)
+    | EndCampaign
     | PressAction
     | ReplaceLeaver
     | FounderAction  # M24
@@ -542,6 +552,9 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **MNA_ACTION_TYPES,  # M14
     "found_again": FoundAgain,  # M15b addendum 10
     "retire": Retire,
+    "continue_dynasty": ContinueDynasty,  # M37 (52.1)
+    "end_campaign": EndCampaign,
+    "retire_founder": RetireFounder,
 }
 
 __all__ = [
@@ -736,8 +749,13 @@ def apply_action(
             state, action.company_name, action.keep_cents, rng, balance, data
         )
         return ActionResult(new, entries, logs)
+    if isinstance(action, ContinueDynasty | EndCampaign):  # M37 (52.1): before or at the end
+        return ActionResult(apply_mode_action(state, action, balance), (), ())
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
+    check_can_play(state, balance)  # M37 (52.1): at the standard end only the choice
+    if isinstance(action, RetireFounder):  # M37 (52.4): dynasty years, no family
+        return ActionResult(retire_founder(state, balance), (), ())
     if draws is None:
         turn = state.turn
 

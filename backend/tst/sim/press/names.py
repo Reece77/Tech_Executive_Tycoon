@@ -10,10 +10,17 @@ from tst.sim.state import GameState
 def rival_ceo_id(state: GameState, rival_id: int) -> int | None:
     """A rival's CEO (29.4): the founder at a startup (its first executive-level key person),
     else the key person with the highest leadership. Re-chosen whenever asked, so a CEO who
-    leaves is succeeded."""
+    leaves is succeeded. From 2040 (M37, 52.3) the latest successor dynasty years recorded,
+    while still on the staff."""
     staff = [e for e in state.staff(rival_id) if e.status in ("active", "notice")]
     if not staff:
         return None
+    if state.dynasty is not None:  # None in every game before 2040
+        for change in reversed(state.dynasty.leader_changes):
+            if change.company_id == rival_id:
+                if any(e.person_id == change.new_person_id for e in staff):
+                    return change.new_person_id
+                break
     company = state.company(rival_id)
     if company.is_startup:
         execs = [e for e in staff if e.level == "exec"]

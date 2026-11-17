@@ -89,6 +89,8 @@ Load `pt-robotics`. Automate your vehicle plant, then launch robotaxis in Phoeni
 | 4 Robotaxis are a utilisation business | **176 of 176** active months above 6 rides a car a day earn a positive contribution; a suspension cuts the zone's revenue **85-100%** | positive / >= 30% | met |
 | 5 Turn time | **292 ms** a turn (median, 2026-2035, these worlds, four at once on 4 cores). Guards on the branch (before M41 and M37): `make check-timing` passes (7 tests); weekly-v6 on CI (run 44036867526): plain V6 save **412 ms** median (451 at most), integrator save **449 ms** (501 at most); re-run after the merge below | 500 ms median, 1,000 ms at most | met |
 
+14. **Merge with M37 (after `m37-done`).** The migration is re-parented: `0061_m39` on M37's `0060_m37`, schema 61. Conflicts were each milestone's appended lines (stream ids 65 and 66, balance sections, state fields, routers, loaders), kept both, M37's first. Re-recorded on the combined code: M30's state cache (`--update-state-cache`; its repeat and memo checks pass), M28's history (`tools/m28_targets.py --write-history`, unchanged: M37 touches nothing before 2040), and M32's history fixture's books hashes only (`cost_diffs` empty, 320 books rows replaced). M32's fixture had been stale on main since M41 (M37's decision 23, rule 3); M39 moves the same books, so re-recording it here clears both. The test-durations file is refreshed for the shard balance (CI-fix lane's request).
+
 ## Follow-ups
 
 - Re-check robotics.yaml's R and A rows (regional installations outside the named countries, makers' regional shares, labour costs outside the US, city ride markets, humanoid prices) against IFR's World Robotics tables, BLS and city transport studies when those hosts are reachable.

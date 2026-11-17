@@ -149,6 +149,9 @@ def new_game(
         str | None, typer.Option(help="With --family children: ages, comma-separated (e.g. 4,7)")
     ] = None,
     age: Annotated[int | None, typer.Option(help="The founder's age; default 28")] = None,
+    length: Annotated[
+        str, typer.Option(help="Campaign length (M37, 52.1): standard (to 2039) | dynasty (2069)")
+    ] = "standard",
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background. A
     historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
@@ -190,6 +193,8 @@ def new_game(
     except ValueError as exc:
         raise _fail("--children takes ages, e.g. 4,7") from exc
     family_spec = FamilySpec(family, ages)
+    if length not in ("standard", "dynasty"):
+        raise _fail("--length is standard|dynasty")
     try:
         path = repository.create_save(
             name,
@@ -204,6 +209,7 @@ def new_game(
             save_dir=settings.resolved_save_dir(),
             mode=mode,
             family=family_spec,
+            length=length,  # type: ignore[arg-type]
         )
     except SimError as exc:
         raise _fail(exc.message) from exc
@@ -219,9 +225,34 @@ def advance(
     until_needed: Annotated[
         bool, typer.Option(help="M15b (30.5): continue until something needs you, up to a year")
     ] = False,
+    until: Annotated[
+        str | None,
+        typer.Option(help="M37: play every month through this one (YYYY-MM), e.g. 2069-12"),
+    ] = None,
 ) -> None:
-    """Play N monthly turns, each in its own transaction."""
+    """Play N monthly turns, each in its own transaction (or every month through --until)."""
     settings, data = _context()
+    if until is not None:
+        try:
+            year, month = (int(x) for x in until.split("-"))
+            last = ym_to_turn(year, month)
+        except (ValueError, SimError) as exc:
+            raise _fail("--until takes YYYY-MM, e.g. 2069-12") from exc
+        try:
+            path = repository.existing_save_path(settings.resolved_save_dir(), save)
+            data = _save_data(settings, path, data)  # M25: its mod, if any
+            with repository.read_session(path) as session:
+                now = repository.read_state(session).turn
+            played = 0
+            while now <= last:
+                now = repository.run_turn(path, data).new_state.turn
+                played += 1
+        except CriticalEventOpenError as exc:
+            raise _fail(f"{exc.message} (tst events --save {save}; tst choose)") from exc
+        except SimError as exc:
+            raise _fail(exc.message) from exc
+        typer.echo(f"Advanced {played} turn(s); now {format_turn(now)}")
+        return
     if until_needed:
         from tst.sim.modes.continue_until import LABELS
 
@@ -288,6 +319,41 @@ def holiday(
     with repository.open_session(path) as session:
         item = session.get(InboxItemRow, result.summary_item_id)
         typer.echo(item.body if item else "")
+
+
+@app.command()
+def campaign(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    choice: Annotated[
+        str | None,
+        typer.Option(
+            help="continue (dynasty mode, to 2069) | end (at December 2039); omit to show"
+        ),
+    ] = None,
+) -> None:
+    """M37 (52.1): the campaign's length, and the choice at a standard campaign's end."""
+    from tst.sim.dynasty.mode import ContinueDynasty, EndCampaign, length, outcome
+
+    settings, data = _context()
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        data = _save_data(settings, path, data)
+        with repository.read_session(path) as session:
+            state = repository.read_state(session)
+        if choice is not None:
+            if choice not in ("continue", "end"):
+                raise _fail("--choice is continue|end")
+            founder = state.founder_of(state.player.id)
+            actor = founder.id if founder is not None else 0
+            action = ContinueDynasty(actor) if choice == "continue" else EndCampaign(actor)
+            state = repository.run_action(path, data, action).new_state
+    except SimError as exc:
+        raise _fail(exc.message) from exc
+    end = data.balance.dynasty.end_year if length(state) == "dynasty" else 2039
+    typer.echo(
+        f"{length(state).capitalize()} campaign to December {end}; "
+        f"{format_turn(state.turn)}; {outcome(state, data.balance).replace('_', ' ')}"
+    )
 
 
 @app.command()

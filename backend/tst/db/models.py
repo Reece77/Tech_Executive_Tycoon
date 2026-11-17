@@ -23,9 +23,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 60  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 61  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
-# M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M39: 0060_m39
+# M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39
 
 
 class Base(DeclarativeBase):
@@ -2303,8 +2303,19 @@ class VehicleRecordRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+class DynastyRecordRow(Base):
+    """M37's dynasty-years records (52.3-52.4; 0060_m37): one row (id 1) whose `data` holds
+    `leader_changes`, `deaths` and `relaunches`, each a list of records' fields. None before
+    January 2040."""
+
+    __tablename__ = "dynasty_record"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 class RoboticsRecordRow(Base):
-    """One robotics record (53; 0060_m39): `kind` names its GameState collection
+    """One robotics record (53; 0061_m39): `kind` names its GameState collection
     (plant_automations, humanoid_specs, zones, depots, zone_months, robo_incidents,
     robotics_world) and `data` its fields; rows keep each collection's order."""
 

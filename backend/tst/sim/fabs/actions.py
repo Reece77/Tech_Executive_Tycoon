@@ -121,6 +121,8 @@ def quote(
     plan_tools: bool = True,
 ) -> FabQuote:
     _check_node(data, node, duv)
+    if not fm.offered(state, node, balance, data):  # M37: successors from 2040
+        raise FabRuleError(f"unknown node {node!r}")
     if region not in data.region_keys:
         raise FabRuleError(f"unknown region {region!r}")
     kind = balance.facility.kinds[FAB_KIND]
@@ -380,6 +382,8 @@ def upgrade_quote(
     keys = nf.node_keys()
     i = keys.index(fab.node)
     new = keys[i + 1] if i + 1 < len(keys) else None
+    if new is not None and not fm.offered(state, new, balance, data):  # M37
+        new = None
     fb = balance.fab
     reason: str | None = None
     capex = months = tools = needed = 0

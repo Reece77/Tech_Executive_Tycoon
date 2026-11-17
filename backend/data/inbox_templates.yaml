@@ -899,3 +899,19 @@ templates:
   medical_recall: # M41 (50.5)
     title: "Class {klass} recall of {product}"
     body: "{units} installed units are affected ({early}). The field action costs {cost_cents}, and new sales stop while it runs."
+  # M37 (formulas.md 52.1-52.4): dynasty years
+  rival_succession:
+    title: "{rival}: {new} succeeds {old}"
+    body: "{old} has retired as head of {rival}. {new}, {how}, takes over; watch for a change of course."
+  dynasty_entrant:
+    title: "{rival} enters {category}"
+    body: "{rival} has launched in {category}, a market short of competitors."
+  founder_died:
+    title: "{name} has died, aged {age}"
+    body: "{name}, founder of {company}, died this month. The estate pays its tax now; the succession follows."
+  founder_died_no_family:
+    title: "{name} has died, aged {age}"
+    body: "{name}, founder of {company}, died this month with no family to carry on. The campaign ends here."
+  family_member_died:
+    title: "{name} has died, aged {age}"
+    body: "Your family mourns {name}."
