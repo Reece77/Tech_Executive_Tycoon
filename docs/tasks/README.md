@@ -69,6 +69,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M35b-v4-balance.md](M35b-v4-balance.md) | v4 balance (lane B, closes v4; done 2026-11-16): platform-owner, power-hyperscaler and lithography strategies over 30 years; v4 and v3 targets on the combined code; known misses; M32–M34's balance and data follow-ups | M35a |
 | [M38-electric-vehicles.md](M38-electric-vehicles.md) | Electric vehicles (v5, lane C, merges after M35b): vehicles as a category family, cells and own cell plants on the player's lithium, the car as a platform with software revenue, autonomy with approvals, charging, subsidies and tariffs, Tesla, BYD and incumbents from history (formulas §49) | M31, M32, M34 |
 | [M41-medical-devices.md](M41-medical-devices.md) | Medical devices (v5, lane D, merges after M35b and M38): wearables and diagnostics, imaging, surgical robotics, implantables and SaMD; US 510(k), De Novo and PMA and the EU MDR; clinical studies, reimbursement and adoption, hospital buyers, quality, inspections and recalls (formulas §50) | M34 |
+| [M37-dynasty-mode.md](M37-dynasty-mode.md) | Dynasty mode (v5, lane E, merges after M38 and M41): an optional campaign to 2069, the December 2039 summary and choice, seeded continuations for every data series, rival leaders ageing and handing over, the founder's mortality with M36's succession (formulas §52) | M35b, M36 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
