@@ -117,6 +117,10 @@ STREAM_IDS: Final = MappingProxyType(
         # after 2025, (0, n_regions) the game-wide learning rate; (1, product_id) autonomy
         # incidents; (2, facility) a cell plant's overrun and yield; (3, rival key) rival refreshes
         "vehicles": 63,
+        # M37 (formulas.md 52): (0, series, *key) a data series' seeded continuation past its
+        # last entry; (1, *rival key, year) a rival leader's retirement and successor; (2,
+        # person_id, year) a founder's or family member's mortality; (3, category, year) entrants
+        "dynasty": 65,
         "misc": 99,
     }
 )

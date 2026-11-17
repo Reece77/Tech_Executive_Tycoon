@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from tst.sim import dmath
+from tst.sim.dynasty.nodes import successors
 from tst.sim.fabs.config import FabBalance, FoundryDef, NodesFile
 from tst.sim.fabs.draws import FUTURE, GROWTH, LAG, fab_draws, node_window_draw
 from tst.sim.facilities.config import month_to_turn
@@ -99,17 +100,24 @@ def build(seed: int, nodes: NodesFile, fb: FabBalance) -> Timeline:
         )
         price_turn[fut.key] = arrival[fut.key]
         prev = fut.key
+    for step in successors(seed, nodes):  # M37 (52.2): after the last future node
+        arrival[step.key] = step.arrival
+        wafer[step.key] = wafer[prev] * step.wafer_mult
+        capital[step.key] = capital[prev] * step.capital_mult
+        price_turn[step.key] = step.arrival
+        prev = step.key
+    later = (*nodes.future, *nodes.dynasty_future)
     for i, f in enumerate(nodes.foundries):
         if not _can_go_on(f):
             continue
-        for fut in nodes.future:
+        for fut in later:
             if _blocked(f, fut.key, keys):
                 break
             g = keys.index(fut.key)
             u = float(fab_draws(rng, 0, LAG, i, g).random())
             reach[(f.key, fut.key)] = arrival[fut.key] + round(_lerp(f.lag.lo, f.lag.hi, u))
     # the first to a future node arrives at the scheduled month: the leader's lag counts
-    for fut in nodes.future:
+    for fut in later:
         got = [t for (_, k), t in reach.items() if k == fut.key]
         if got:
             arrival[fut.key] = min(got)

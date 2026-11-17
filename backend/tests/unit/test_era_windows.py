@@ -69,7 +69,8 @@ def test_eras_to_2039_leave_earlier_months_alone(loaded: LoadedData) -> None:
     """30.8's five eras are appended with windows ending by December 2039; the eras before
     them keep their months on every seed."""
     eras_ = loaded.game_data.eras.eras
-    new = {e.key for e in eras_[len(BEFORE_M15A[1]) :]}
+    m15a = eras_[len(BEFORE_M15A[1]) : len(BEFORE_M15A[1]) + 5]  # M37 appends after them
+    new = {e.key for e in m15a}
     assert new == {
         "post_quantum_security",
         "ar_glasses",
@@ -77,7 +78,7 @@ def test_eras_to_2039_leave_earlier_months_alone(loaded: LoadedData) -> None:
         "photonic_interconnect",
         "practical_quantum",
     }
-    for era in eras_[len(BEFORE_M15A[1]) :]:
+    for era in m15a:
         start, n = levels.window_span(era)
         assert era.windowed and start + n - 1 <= ym_to_turn(2039, 12), era.key
     for seed, months in BEFORE_M15A.items():

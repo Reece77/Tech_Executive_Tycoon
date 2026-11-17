@@ -54,13 +54,17 @@ def step_region(
     growth: float,
     region: str,
     balance: Balance,
+    long_run: float | None = None,
 ) -> RegionPath:
     """One region's year from last year's (module docstring). `draws`: two standard normals
     (carbon, intensity), a uniform for the step or start, a uniform for its size, and a normal
     for the queue."""
     cb, qb = balance.power.carbon, balance.power.queue
     z_c, z_i, u, v, z_q = draws
-    if prev.carbon > 0:
+    if prev.carbon > 0 and long_run is not None:  # M37 (52.2): toward a long-run level
+        gap = dmath.log(long_run / prev.carbon)
+        carbon = prev.carbon * dmath.exp(balance.dynasty.carbon.reversion * gap + cb.sd * z_c)
+    elif prev.carbon > 0:
         carbon = prev.carbon * dmath.exp(cb.drift[region] + cb.sd * z_c)
         if u < cb.step_rate:
             carbon *= 1 + cb.step.lo + (cb.step.hi - cb.step.lo) * v
@@ -90,8 +94,19 @@ def paths_month(state: GameState, rng: RngFactory, balance: Balance, data: GameD
         z_c, z_i, z_q = (float(x) for x in gen.standard_normal(3))  # tunable-exempt: draws
         u, v = (float(x) for x in gen.random(2))
         prev = _previous(state, r.key, year, data)
-        out.append(step_region(prev, year, (z_c, z_i, u, v, z_q), r.demand_growth, r.key, balance))
+        late = long_run_carbon(rng, i, balance) if year >= balance.dynasty.start_year else None
+        args = (z_c, z_i, u, v, z_q)
+        out.append(step_region(prev, year, args, r.demand_growth, r.key, balance, late))
     return replace(state, region_paths=tuple(out))
 
 
-__all__ = ["grid", "paths_month", "step_region"]
+def long_run_carbon(rng: RngFactory, region_index: int, balance: Balance) -> float:
+    """M37 (52.2): a region's long-run carbon price from 2040, dollars a tonne: one uniform in
+    dynasty.carbon.long_run from stream dynasty, key (SERIES, CARBON, region_index)."""
+    from tst.sim.dynasty.draws import CARBON, SERIES, gen
+
+    u = float(gen(rng, 0, SERIES, CARBON, region_index).random())
+    return balance.dynasty.carbon.long_run.at(u)
+
+
+__all__ = ["grid", "long_run_carbon", "paths_month", "step_region"]

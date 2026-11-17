@@ -34,7 +34,10 @@ def test_half_a_cent_rounds_to_even(loaded: LoadedData) -> None:
     ai = levels.domain_def(loaded.game_data, "ai")
     assert ai.budget_cents == 600_000 and ai.compute_indexed
     assert 600_000 * 0.5000075 > 300_004.5  # the binary product is past the half
-    assert researcher_cost_cents(_at(loaded, 0.5000075), loaded.game_data, ai) == 300_004
+    assert (
+        researcher_cost_cents(_at(loaded, 0.5000075), loaded.game_data, ai, loaded.balance)
+        == 300_004
+    )
 
 
 @settings(max_examples=300, deadline=None)
@@ -45,4 +48,6 @@ def test_half_a_cent_rounds_to_even(loaded: LoadedData) -> None:
 def test_matches_fraction_arithmetic(loaded: LoadedData, budget: int, index: float) -> None:
     ai = levels.domain_def(loaded.game_data, "ai").model_copy(update={"budget_cents": budget})
     expected = round(Fraction(budget) * Fraction(repr(index)))
-    assert researcher_cost_cents(_at(loaded, index), loaded.game_data, ai) == expected
+    assert (
+        researcher_cost_cents(_at(loaded, index), loaded.game_data, ai, loaded.balance) == expected
+    )

@@ -11,7 +11,7 @@ import threading
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, cast
 
@@ -75,6 +75,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
+    InvalidModeError,
     InvalidSaveNameError,
     InvalidSeedError,
     ReplayMismatchError,
@@ -89,6 +90,7 @@ from tst.sim.family.setup import FamilySpec
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
+from tst.sim.modes.models import CampaignLength, GameMode
 from tst.sim.modes.world import ModeSpec, start_mode
 from tst.sim.money import Cents
 from tst.sim.people.founder import FounderSpec
@@ -418,8 +420,10 @@ def create_save(
     hq_city: str | None = None,
     mode: ModeSpec | None = None,
     family: FamilySpec | None = None,
+    length: CampaignLength = "standard",
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
+    `length` (M37, 52.1): a campaign's length, standard (to December 2039) or dynasty (2069).
     `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
     or scenario start, the world built to its start month."""
     path = save_path(save_dir, name)
@@ -451,6 +455,10 @@ def create_save(
         state, entries = start_mode(
             state, entries, mode, founder, RngFactory(seed), data.balance, data.game_data
         )
+    if length == "dynasty":  # M37 (52.1): only a campaign has one
+        if mode is not None:
+            raise InvalidModeError("only a campaign can be played in dynasty mode")
+        state = replace(state, mode=GameMode(kind="campaign", length="dynasty"))
 
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -957,7 +965,7 @@ def continue_until(
     while True:
         with read_session(save_path) as session:
             state = read_state(session)
-        reason = needs_player(state)
+        reason = needs_player(state, data.balance)
         if reason is not None:
             return played, reason
         if played >= max_months:

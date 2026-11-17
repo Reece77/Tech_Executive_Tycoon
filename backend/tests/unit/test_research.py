@@ -88,7 +88,7 @@ def test_progress_and_budget(loaded: LoadedData) -> None:
         == work.needed_cents
         == 6
         * rp.researcher_cost_cents(
-            state, loaded.game_data, rp.levels.domain_def(loaded.game_data, "ai")
+            state, loaded.game_data, rp.levels.domain_def(loaded.game_data, "ai"), loaded.balance
         )
     )
     decayed = rp.decay_leads(after, loaded.game_data, quiet)

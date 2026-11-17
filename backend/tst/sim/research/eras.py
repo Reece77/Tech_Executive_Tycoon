@@ -115,6 +115,8 @@ def arrive_eras(
     for index, era in enumerate(data.eras.eras):
         if state.era_arrival(era.key) is not None:
             continue
+        if not levels.in_play(era, state.turn, balance):  # M37: dynasty years only
+            continue
         hist = levels.scheduled_turn(era, index, rng, **_seeded(state, balance))
         found = causer(state, data, balance, era) if state.turn < hist else None
         if state.turn < hist and found is None:

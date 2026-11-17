@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
+from tst.sim.data_models import Balance
 from tst.sim.events.effects import blocking_events
 from tst.sim.state import GameState
 
@@ -27,10 +28,16 @@ LABELS: Final[dict[str, str]] = {
 }
 
 
-def needs_player(state: GameState) -> StopReason | None:
-    """The first thing that needs the player now, or None."""
+def needs_player(state: GameState, balance: Balance | None = None) -> StopReason | None:
+    """The first thing that needs the player now, or None. With `balance`, a standard
+    campaign at its end (M37, 52.1) is over too."""
     if state.save_meta.game_state != "active":
         return "game_over"
+    if balance is not None:
+        from tst.sim.dynasty.mode import at_standard_end
+
+        if at_standard_end(state, balance):
+            return "game_over"
     cid = state.player.id
     blocking = blocking_events(state)
     if any(e.severity == "critical" for e in blocking):

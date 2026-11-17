@@ -247,6 +247,11 @@ def _reason(
     player = state.player.id
     if state.ended:
         return "game_over"
+    if balance is not None:  # M37 (52.1): a standard campaign stops after December 2039
+        from tst.sim.dynasty.mode import at_standard_end
+
+        if at_standard_end(state, balance):
+            return "game_over"
     rank = STOP_LEVELS.index(stop)
     if any(
         r.company_id == player and STOP_LEVELS.index(r.severity) >= rank

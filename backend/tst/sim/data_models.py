@@ -23,6 +23,7 @@ from tst.sim.commodities.config import (
     SuppliersFile,
 )
 from tst.sim.contracts.config import ContractsBalance
+from tst.sim.dynasty.config import DynastyBalance
 from tst.sim.equipment.config import EquipmentBalance, EquipmentFile
 from tst.sim.events.data import (
     EFFECT_TYPES,
@@ -1387,6 +1388,7 @@ class Balance(_Frozen):
     economy_scale: EconomyScaleBalance  # M34: real thresholds read in the game's economy
     equipment: EquipmentBalance  # M33 (formulas.md 47): semiconductor equipment
     vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
+    dynasty: DynastyBalance  # M37 (formulas.md 52): dynasty mode, 2040-2069
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

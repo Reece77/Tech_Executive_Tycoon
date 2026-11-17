@@ -253,6 +253,13 @@ class GameOverError(SimError):
     code = "game_over"
 
 
+class CampaignEndError(GameOverError):
+    """A standard campaign is at its end (December 2039, formulas.md 52.1): only the choice to
+    end it or continue in dynasty mode is allowed."""
+
+    code = "campaign_end"
+
+
 class UnknownCityError(SimError):  # M9 (19.1)
     code = "unknown_city"
 
