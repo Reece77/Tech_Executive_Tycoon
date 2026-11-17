@@ -5,12 +5,13 @@ the template adapter, as after a real turn. Events the director queued itself ar
 first, so the scripted one is the only one open. `--critical` queues the critical payroll
 event instead (formulas.md 16.3); `--queued` opens no event but queues the payroll event's
 follow-up for next month, so the next Continue brings a known event; `--modifier` opens the
-minor award event whose first choice starts a morale-target modifier (M10b, 23.2). It runs
-before the API
+minor award event whose first choice starts a morale-target modifier (M10b, 23.2); `--year`
+then plays ten more months as the player at the controls would, answering each blocking event
+with choice A, to January 2011's periodic backup (m7b.spec.ts (b)). It runs before the API
 opens the file. Never used by the game itself.
 
 Usage: uv run --project backend python tools/e2e_event_save.py <dir> <name>
-       [--critical|--queued|--modifier]
+       [--critical|--queued|--modifier|--year]
 """
 
 from __future__ import annotations
@@ -19,7 +20,9 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+from tst.api import interruptions
 from tst.config import Settings
+from tst.db import backup
 from tst.db.events import write_pending
 from tst.db.repository import (
     create_save,
@@ -31,7 +34,7 @@ from tst.db.repository import (
 )
 from tst.db.state_io import sync_state
 from tst.llm.offline import TemplateAdapter
-from tst.loader import load_all
+from tst.loader import LoadedData, load_all
 from tst.sim.actions import ChooseEvent, Interview, MakeOffer, OpenSearch
 from tst.sim.events.formulas import cash_base_cents
 from tst.sim.events.models import GameEvent, QueuedEvent
@@ -40,6 +43,7 @@ from tst.sim.state import with_event, with_queued
 SEED = 16
 FOUNDER = 1
 HIRES = 3
+YEAR_MONTHS = 10  # months 3-12: the 12-month periodic backup comes at January 2011
 
 
 def main(argv: list[str]) -> int:
@@ -49,6 +53,7 @@ def main(argv: list[str]) -> int:
     save_dir, name = Path(argv[0]), argv[1]
     critical, queued = argv[2:] == ["--critical"], argv[2:] == ["--queued"]
     modifier = argv[2:] == ["--modifier"]
+    year = argv[2:] == ["--year"]
     data = load_all(Settings().data_dir)
     offline = TemplateAdapter()
     path = create_save(
@@ -123,8 +128,22 @@ def main(argv: list[str]) -> int:
             )
         sync_state(session, state, new)
     write_pending(path, data, adapter=offline)
+    if year:
+        _play_to_backup(path, data, offline)
     print(path)
     return 0
+
+
+def _play_to_backup(path: Path, data: LoadedData, offline: TemplateAdapter) -> None:
+    """Ten months as the API's Continue plays them (block_major), each blocking event answered
+    with choice A first, as m7b.spec.ts (b) did through the API before; then the backup."""
+    for _ in range(YEAR_MONTHS):
+        with open_session(path) as session:
+            state = load_state(session)
+        for event_id in interruptions.blocking_ids(state, "major", data.balance):
+            run_action(path, data, ChooseEvent(FOUNDER, event_id, "A"))
+        run_turn(path, data, adapter=offline, block_major=True)
+    backup.wait(path)
 
 
 if __name__ == "__main__":
