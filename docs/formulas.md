@@ -3986,3 +3986,32 @@ Products, fleets, zones and permits, rides and utilisation, plant automation lev
 - **Plant automation:** line workers `W = capacity x workers_per_unit[kind]`; replaced `R = min(robots x labour_per_robot, W x max_share)`; level `a = R / W`; saving a unit run `a x min(variable_cents x labour_share, workers_per_unit x wage(region) x hours_per_month)` (wage: robotics.yaml's manufacturing labour cost an hour), taken off the variable cost a unit at sale; robots depreciate over `life_months` and cost `service_share` of the robot's price a year; yield loss x (1 - defect_cut x a). Target 2 reads the plant's conversion cost a unit at full use (line labour, fixed cost, depreciation, robots).
 - **Humanoids:** capability `0.4 quality + 0.4 AI (own or 70) + 0.2 chips (own or 60)`; adoption share `cap x sigmoid(logit)`, the logit from `logit(seed / cap)` at the era's arrival rising `max(floor_k, adoption_k x (value - 1)) / 12` a month, `value = best capability / 100 x a worker's labour a year / (price / life years + service)`; `D = workers x share x scale x replacement_months / 12`; homes from a seeded 5-10 years after arrival. Actuators `first-year cost x (made / base_units) ** log2(1 - 0.18)`. A robot market that shrinks below its lines' customers takes them down in proportion.
 - **Robotaxis:** covered trips `= city trips x scale x zone share`; rides `= covered x acceptance x (fare / price) ** elasticity x d / (d + wait_cars) x (0.5 + brand / 100) x cars / (cars + rival cars there)`, at most `cars x 30 x days x depot cover`; acceptance `lo + (hi - lo) x y / (y + acceptance_years)` from the city's first driverless service. Incidents `Poisson(million km x incident_rate x 0.5 ** (company km / maturity_km) x (1 - ai_cut x AI above L4's threshold))`, serious with `serious_share`. Zones' L4 approvals are M38's automotive regulators (vehicles.yaml), not regulation.yaml.
+
+## 54. Market sizes and saturation (M43a; v5)
+
+M37's diagnosis (2026-11-17, decision 22) found the game's economy running away: the AI-models market is about **$1.2–1.6 trillion a year in 2025** at real-dollar equivalent (`economy_scale.money` 0.0849), about **$1,600–2,600 trillion in 2039**, and about **$100,000 trillion in 2069**. World GDP is about $110 trillion. The cause is growth with no ceiling: from 2030 `ai_models` grows 25% a year for ever, era boosts add on top, and nothing makes a market slow as it approaches the size of the economy that buys from it. This section adds that ceiling for every category, recalibrates 2025 against published market sizes, and keeps the history the player has seen as close as it can.
+
+### 54.1 A ceiling for every market
+
+- Each category has a **ceiling** `C_c(t)`: the most its addressable market can be in a region, as a share of that region's economy (`markets.ceiling_share.<category>`, from the research dossier: for example, all IT spending is about 4–6% of world GDP, and no single category may take more than a set share of that), times the region's GDP path (`macro_history.yaml` to 2025, then a seeded path with long-run growth about 2–3% a year real plus inflation).
+- **Saturation:** each month a category's growth `g` (base growth plus era boosts, §21.4, §26.4) is applied as `g × (1 − A / C)`, where `A` is the addressable market. Far below the ceiling, growth is as before; near it, growth fades; a market can't pass its ceiling. Era boosts lift the ceiling of the categories they renew by `markets.era_ceiling_lift` (an era makes a market bigger, not infinite).
+- **Long-run growth** after 2030 decays toward the region's economy's growth plus a category premium (`markets.mature_premium`), replacing open-ended rates such as `ai_models`' 25%.
+
+### 54.2 Calibration to 2025
+
+- Each category's 2025 addressable market at real-dollar equivalent (game value ÷ `economy_scale.money`) is compared with published 2025 market sizes (research dossier), with a band of 0.5–2× (market definitions vary). Categories outside the band are recalibrated by their `growth_by_year` and starting sizes, keeping their 2010 starts and the shape of the curve where they can.
+- **M8 target 4** (January 2024 AI demand 100–400× January 2010) is re-measured. If calibration needs it outside that band, the session reports the numbers: changing M8's band is the product manager's call (CLAUDE.md §9).
+
+### 54.3 What may change, and how it is checked
+
+- Unlike every milestone since M28, **history before 2026 may change** where §54.2's calibration requires it, because the history the game currently shows is wrong in scale. Every change to a series before 2026 is listed with before and after values. M28's history fingerprint and M30's state cache are re-recorded with the reason.
+- Every earlier guard is re-run, and rules 1–4 apply. Guards that measure ratios (most of them) should hold; guards on absolute sizes are re-measured and reported.
+
+### 54.4 Balance targets (printed)
+
+1. **The economy is believable:** in every year to 2069, no category's addressable market exceeds its ceiling, and the sum of all technology categories stays under `markets.tech_share_max` (15%) of world GDP.
+2. **2025 matches the world:** every category's 2025 market sits within 0.5–2× its published size (real-dollar equivalent), or is reported with a reason.
+3. **Growth fades, not stops:** every category grows at least 1% a year (nominal) on average through the 2060s unless an era ended it.
+4. **Headroom:** no money value in a dynasty run passes 1.0e18 cents (M37's `M37.money` guard closes as met).
+5. **Ratios hold:** v1–v4 strategy ratios (V1–V6, M23b's and M35b's targets) stay in their bands, or are reported under rules 1–4.
+6. **Turn time** within the guards.
