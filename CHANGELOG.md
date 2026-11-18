@@ -6,7 +6,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 - M45 performance at scale, part two (v5, lane J; no migration; golden snapshots, M30's state cache and the new 720-month dynasty fixture unchanged):
   - **Faster turns, same results:** indexed state lookups and rival decisions, kept per-state and per-input values (era adoption, scale-up, monthly costs, rankings, regulation cases, groups, founders), batched month-end updates, raw-driver reveal, skill and insert writes, and the living world's costs once per good and region.
-  - **CI, runner-adjusted:** V6 `research_heavy` 2039 from 430 to 367-396 ms; `full_integrator` 2039 from 528 to 399-404 ms; a 2069 month from 518 to 417-434 ms.
+  - **CI, runner-adjusted:** V6 `research_heavy` 2039 from 430 to 367-398 ms; `full_integrator` 2039 from 528 to 398-404 ms (at the 400 ms line); a 2069 month from 518 to 417-483 ms.
   - **Guards:** both V6 saves are guarded at 400 ms runner-adjusted (the CI-fix lane's guard, cherry-picked); `test_m37_perf.py` asserts a 500 ms adjusted 2069 median and the save at most 400 MB.
   - **Smaller dynasty saves:** the 2069 save falls from 391 to 197 MiB. Each June, people who were only ever candidates, closed more than `retention.candidate_people_months` (new, 120) ago, lose the skill, trait, reveal and city rows nothing reads; their names stay (`tst.db.history.prune_candidates`).
   - **Tools:** `tools/bench.py` builds the two 2039 saves and the 2069 dynasty save; the 720-month fixture `tests/fixtures/m45_dynasty_hashes.json` (seeds 1-3, recorded before any change) runs in `make weekly-m45`.

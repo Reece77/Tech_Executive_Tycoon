@@ -71,8 +71,12 @@
    - V6 `full_integrator` 2039: 528 ms before, 399 and 404 ms after (target 400).
    - 2069 dynasty: 518 ms before, 434 and 417 ms after (target 500).
    - 2069 save: 391 MiB before, 197-198 MiB after (target 400 MB).
-   - The weekly run on the final branch: WEEKLY_PLACEHOLDER
-9. **The raw Holiday guard on slow runners (rule 3).** `test_m30_perf.py`'s 6 s Holiday year is raw (the PM's ruling keeps it raw). It fails on slow runners on main and on this branch alike: before M45, v6 10.4 s at x1.92 and v6i 6.1 s at x0.95; after, v6 9.3 s at x1.81 and v6i 8.0 s at x1.58. That is 4.7-5.1 s adjusted on this branch, against 5.4 and 6.4 s before. M45 makes Holiday faster, not slower; the measure is the CI-fix lane's.
+   - **The weekly run on the final branch** (run 44359432719, `626a4de`):
+     - `weekly-v6`: 351 ms raw at x0.88, **398 ms** adjusted against 400; passed.
+     - `weekly-v6-integrator`: 742 ms raw at x1.86, **398 ms** adjusted against 400. The median passed; the raw 6 s Holiday year failed at 9.4 s (5.1 s adjusted; decision 9).
+     - `weekly-m37`: 619 ms raw at x1.28, **483 ms** adjusted against 500; save 197 MB; passed.
+     - `weekly-m45`: the 720-month fixture identical on seeds 1-3; passed.
+9. **The raw Holiday guard on slow runners (rule 3).** `test_m30_perf.py`'s 6 s Holiday year is raw (the PM's ruling keeps it raw). It fails on slow runners on main and on this branch alike: before M45, v6 10.4 s at x1.92 and v6i 6.1 s at x0.95; after, v6 9.3 s at x1.81 and v6i 8.0 s at x1.58. That is 4.7-5.1 s adjusted on this branch, against 5.4 and 6.4 s before. M45 makes Holiday faster, not slower; the measure is the CI-fix lane's. The final weekly's `weekly-v6-integrator` reads 9.4 s at x1.86 (5.1 s adjusted). By the PM's ruling (2026-11-17), a slow-runner miss that main shows the same way is rule 3: it is recorded here, nothing is added to `known_misses.py`, and the milestone merges.
 
 ## Follow-ups
 
