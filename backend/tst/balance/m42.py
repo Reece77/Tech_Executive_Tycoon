@@ -111,7 +111,7 @@ def _cohort(
                 company_id=PLAYER,
                 name=f"P{pid}",
                 indication=ind,
-                area=area,  # type: ignore[arg-type]
+                area=area,
                 modality="small_molecule" if pid % 2 else "biologic",
                 stage="discovery",
                 start_turn=state.turn,

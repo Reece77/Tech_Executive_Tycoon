@@ -143,7 +143,8 @@ def _cmo(state: GameState, company_id: int, kind: str, data: GameData) -> str:
 
 def cmo_capacity(data: GameData, name: str, kind: str) -> float:
     cmo = next(c for c in pd.file(data).cmos if c.name == name)
-    return cmo.capacity.get(kind, 0.0) * THOUSAND
+    caps: dict[str, float] = dict(cmo.capacity)
+    return caps.get(kind, 0.0) * THOUSAND
 
 
 def month(
