@@ -75,17 +75,44 @@ def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
     assert verdict(t4(-1)) == "fail"
 
 
-def test_m37_money_is_known_to_m43_while_it_fits_int64() -> None:
-    """The PM's money guard (2026-11-17; M37's brief, decision 22): no ledger value over 1.0e18
-    cents in a dynasty run to 2069; known (M43) up to int64's 9.2e18, a failure beyond."""
+def test_m37_money_is_closed_by_m43a() -> None:
+    """The PM's money guard (2026-11-17; M37's brief, decision 22) passes since M43a's market
+    ceilings (1.48e16 cents at most by 2069, seeds 1-4): no known miss, so any value over
+    1.0e18 cents fails."""
     from tst.balance.m37 import MoneyRow
 
-    assert [m.target for m in KNOWN_MISSES][6:] == ["M37.money"]
-    assert known_miss("M37.money").owner == "M43"  # type: ignore[union-attr]
+    assert "M37.money" not in [m.target for m in KNOWN_MISSES]
 
     def money(cents: float) -> MoneyRow:
         return MoneyRow("M37.money", cents < 1.0e18, cents / 1.0e18, f"{cents:.1e}")
 
     assert verdict(money(9.0e17)) == "ok"
-    assert [verdict(money(c)) for c in (1.1e18, 6.07e18, 9.2e18)] == ["known"] * 3
-    assert verdict(money(9.3e18)) == "fail"
+    assert verdict(money(1.1e18)) == "fail"
+
+
+def test_m43a_misses_are_known_to_m43_within_the_pms_bounds() -> None:
+    """PM, 2026-11-18 (M43a brief, decision 10): six earlier guards moved by M43a's targeted
+    recalibrations are known misses owned by M43, each with its bound."""
+    from tst.balance.known_misses import Reading
+    from tst.balance.report import Row
+
+    for target in ("M13.T2.blitzscale", "M13b.T1", "M22.T2.variant", "V2.wins", "V3.margin"):
+        assert known_miss(target).owner == "M43"  # type: ignore[union-attr]
+
+    def reading(target: str, score: float) -> str:
+        return verdict(Reading(target, False, score))
+
+    assert (
+        reading("M13.T2.blitzscale", -1.0) == "known"
+        and reading("M13.T2.blitzscale", 0.0) == "fail"
+    )
+    assert verdict(Reading("M13.T2.steady", False, -3.0)) == "fail"  # steady is not covered
+    assert reading("M13b.T1", -6.0) == "known" and reading("M13b.T1", -5.0) == "fail"
+    assert reading("M22.T2.variant", 0.22) == "known" and reading("M22.T2.variant", 0.23) == "fail"
+
+    def row(target: str, score: float) -> str:
+        return verdict(Row(target, "", "", "", False, score=score))
+
+    assert row("V2.wins", 5.0) == "known" and row("V2.wins", 6.0) == "fail"
+    assert row("V3.margin", 0.020) == "known" and row("V3.margin", 0.021) == "fail"
+    assert row("V4.T1.1", 0.30) == "known" and row("V4.T1.1", 0.31) == "fail"  # 0.85x

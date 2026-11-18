@@ -206,5 +206,5 @@ eras:
 base_growth:
   ai_models: { 2010: 0.28, 2016: 0.35, 2020: 0.40, 2025: 0.50, 2030: 0.25 } # replaces M8's growth_by_year
   consumer_apps: { 2010: 0.2568, 2020: 0.30 } # mobile-first's +15 points for 2011-2013
-  dev_tools: { 2010: 0.2208, 2020: 0.25 } # cloud-native's +10 points from June 2014
+  dev_tools: { 2010: 0.1457, 2020: 0.1650 } # M43a (54.2) x0.66 from 0.2208 / 0.25: main's 2025 served revenue was 3.7x the published $25B; cloud-native's +10 points from June 2014
   fintech: { 2010: 0.2235, 2021: 0.25 } # open banking's +10 points from January 2018

@@ -74,19 +74,66 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "before 2032, so both scripts' capacity goes live together; +12 over seeds 1-30",
     ),
     KnownMiss(
-        target="M37.money",  # PM, 2026-11-17: no ledger balance over 1.0e18 cents to 2069
-        owner="M43",  # the PM's ruling: the pre-2040 scale of the largest AI incumbent
-        # score: the largest balance / 1.0e18; known while it still fits SQLite's int64
-        # (9.22e18 cents): about 6.0 on seeds 1-10 (M37's brief, decision 22)
-        worse_than=9.2,
-        reason="IBM's 4000_revenue_subscriptions (its cumulative booked subscription revenue) "
-        "reaches 4.0e18-6.1e18 cents by December 2069 on seeds 1-10 (1.4e16-2.3e16 in "
-        "December 2039): the AI-models market is $1.2T-1.6T real a year in 2025 and "
-        "$1,600T-2,600T in 2039, before any dynasty rule (M37)",
+        target="M13.T2.blitzscale",  # formulas 25.9 T2: listed by turn 180 on >= 4 of 10 seeds
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10): v5's balance pass
+        # score: minus the seeds listed; known while at least 1 of 10 lists
+        worse_than=-1.0,
+        reason="1/10 on M43a (main 4/10): blitzscale's second product is developer tools, whose "
+        "base growth M43a cut x0.66 (2025 within 2x of published), so its 2020 market is about "
+        "63% of main's; M43 first checks whether the IPO thresholds need economy_scale",
+    ),
+    KnownMiss(
+        target="M13b.T1",  # formulas 27.5 T1: a new product and region on >= 7 of 10 seeds
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
+        # score: minus the seeds; known while at least 6 of 10
+        worse_than=-6.0,
+        reason="6/10 on M43a (main 7/10): AI models' D0 x0.19 leaves about 5x fewer AI "
+        "customers in the era window",
+    ),
+    KnownMiss(
+        target="M22.T2.variant",  # formulas 39.4 T2: revenue lost with a variant 5-15%, every seed
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
+        # score: the largest seed's loss; known while at most 22%
+        worse_than=0.22,
+        reason="10.5-20.8% on M43a (main 10.5-10.8%): one seed out; the chip markets the variant "
+        "sells into follow cloud and servers, both recalibrated before 2026",
+    ),
+    KnownMiss(
+        target="V2.wins",  # formulas 30.7 V2: research_heavy wins at most 4 of 10
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
+        # score: research_heavy's wins out of 10; known while at most 5
+        worse_than=5.0,
+        reason="5/10 on M43a (main <= 4): measured before 2026, where only M43a's four "
+        "recalibrations (AI models, cloud, developer tools, servers) act",
+    ),
+    KnownMiss(
+        target="V3.margin",  # formulas 30.7 V3: integrator - steady_regions margin -1 pt or more
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
+        # score: minus the margin gap; known while the gap is at least -2.0 points
+        worse_than=0.020,
+        reason="-1.4 pts on M43a (62.1% vs 63.6%; main passes): before 2026, as V2.wins",
+    ),
+    KnownMiss(
+        target="V4.T1.1",  # formulas 51 T1: platform_owner ARR / devices_regions, 0.90-1.40x
+        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
+        # score: |ratio - 1.15|; known down to 0.85x (score 0.30)
+        worse_than=0.30,
+        reason="0.89x on M43a (main 0.99x), December 2039: not traced; likely the ceilings from "
+        "2026 and the long-run decay from 2030 acting on the two strategies' markets differently",
     ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]
+
+
+@dataclass(frozen=True, slots=True)
+class Reading:
+    """A target a plain test asserts, judged like a report Row (M43a: M13, M13b, M22)."""
+
+    target: str
+    ok: bool
+    score: float
+    detail: str = ""
 
 
 class _Judged(Protocol):

@@ -1278,6 +1278,33 @@ class RegionalMarketsBalance(_Frozen):
     neighbour_sellers: float = Field(ge=0, le=1)
     cross_region_step: float = Field(ge=0)
     cross_region_floor: float = Field(ge=0, le=1)
+    # M43a (54.1): market ceilings and long-run growth
+    ceiling_share: dict[str, float]  # category|default -> share of a region's GDP
+    ceiling_start_year: int  # ceilings apply from January of this year (PM, 2026-11-18)
+    era_ceiling_lift: float = Field(ge=0)  # ceiling x (1 + this x eras arrived)
+    gdp_growth: dict[str, float]  # region -> nominal growth a year after macro history
+    mature_start_year: int
+    mature_half_life_years: float = Field(gt=0)
+    mature_gdp_growth: float = Field(ge=0)
+    mature_premium: dict[str, float]  # category|default -> fraction a year above the economy
+    tech_share_max: float = Field(gt=0)  # 54.4 target 1
+    non_tech: tuple[str, ...]  # category keys or families outside target 1's sum
+
+    @model_validator(mode="after")
+    def _ceilings(self) -> RegionalMarketsBalance:
+        if self.ceiling_share and "default" not in self.ceiling_share:
+            raise ValueError("markets.ceiling_share needs a default")
+        if any(v <= 0 for v in self.ceiling_share.values()):
+            raise ValueError("markets.ceiling_share must be positive")
+        if self.mature_premium and "default" not in self.mature_premium:
+            raise ValueError("markets.mature_premium needs a default")
+        return self
+
+    def ceiling_of(self, category: str) -> float:
+        return self.ceiling_share.get(category, self.ceiling_share.get("default", 0.0))
+
+    def premium_of(self, category: str) -> float:
+        return self.mature_premium.get(category, self.mature_premium.get("default", 0.0))
 
 
 class RegionEntryBalance(_Frozen):
@@ -1865,9 +1892,15 @@ class MacroHistory(_Frozen):
     climate: dict[int, float]
     base_rate: dict[int, tuple[float, ...]]
     confidence: dict[int, tuple[float, ...]]
+    # M43a (54.1): region -> listed year -> nominal GDP, trillions of dollars
+    gdp: dict[str, dict[int, float]] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check(self) -> MacroHistory:
+        if any(v <= 0 for t in self.gdp.values() for v in t.values()) or any(
+            not t for t in self.gdp.values()
+        ):
+            raise ValueError("gdp must list positive values for at least one year a region")
         years = list(range(self.first_year, self.last_year + 1))
         for name, table in (
             ("climate", self.climate),
@@ -2291,6 +2324,9 @@ class GameData(_Frozen):
                 problems.append(f"{where}: unknown talent keys {bad}")
         if set(self.region_growth) != regions:
             problems.append(f"cities.yaml: region_growth must cover exactly {sorted(regions)}")
+        gdp = self.macro_history.gdp if self.macro_history else {}
+        if gdp and set(gdp) != regions:  # M43a (54.1)
+            problems.append(f"macro_history.yaml: gdp must cover exactly {sorted(regions)}")
         with_city = {c.region for c in self.cities}
         for region in sorted(regions - with_city):
             if self.home_city_region.get(region) not in with_city:
