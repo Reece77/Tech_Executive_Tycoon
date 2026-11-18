@@ -98,6 +98,11 @@ def build_facility(
         raise FacilityRuleError("order a cell plant or charging network from Vehicles")  # M38
     if action.facility_kind == balance.robotics.depot_kind:
         raise FacilityRuleError("order a robotaxi depot from Mobility")  # M39 (53.3)
+    if (
+        action.facility_kind == balance.space.site_kind
+        and action.region not in balance.space.site_regions
+    ):  # M40 (56.1): a launch site needs a launch range
+        raise FacilityRuleError("a launch site needs a region with a launch range")
     kind = fb.kinds[action.facility_kind]
     allowed = kind.sizes or fb.sizes  # M12b: plants have their own sizes
     if action.capacity not in allowed:

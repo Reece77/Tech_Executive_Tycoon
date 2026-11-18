@@ -360,6 +360,12 @@ def apply_choice(
             state, posted, logged = robotics_step(state, event, effect.stat, balance, data)
             entries += posted
             logs += logged
+        elif t == "space_step" and effect.stat:  # M40 (56.1): a launch failure's answer
+            from tst.sim.space.events import space_step
+
+            state, posted, logged = space_step(state, event, effect.stat, balance, data)
+            entries += posted
+            logs += logged
         elif t == "geopolitics_step" and effect.stat:  # M22 (39.3): an export rule's answer
             from tst.sim.geopolitics.events import geopolitics_step
 

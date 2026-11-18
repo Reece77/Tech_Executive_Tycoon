@@ -76,6 +76,7 @@ SYSTEMS: tuple[System, ...] = (
     System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
     System(30, "robotics", "Robotics", "products"),  # tunable-exempt: stable id (M39; 29 is M41's)
     System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
+    System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -268,6 +269,23 @@ def _mobility(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     return None
 
 
+def _space(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M40 (56): a launch, broadband or Earth-observation line, a launch site or satellite plant,
+    or the space year (space.unlock_year) for a stage-3 company that makes chips or devices."""
+    if d.space is None:
+        return None
+    sb = b.space
+    cats = (sb.launch, sb.broadband, sb.eo)
+    if any(p.category in cats for p in state.products if p.company_id in ids):
+        return "the company has a space line"
+    kinds = (sb.site_kind, sb.plant_kind)
+    if any(f.kind in kinds for f in state.facilities if f.company_id in ids):
+        return "the group runs a launch site or satellite plant"
+    if turn_to_ym(state.turn)[0] >= sb.unlock_year and _stage(state) >= STAGE_GROWTH:
+        return f"space is open to a stage-3 company ({sb.unlock_year})"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -362,6 +380,7 @@ CHECKS: dict[str, Check] = {
     "medical": _medical,  # M41 (50)
     "robotics": _robotics,  # M39 (53.1-53.2)
     "mobility": _mobility,  # M39 (53.3)
+    "space": _space,  # M40 (56)
 }
 
 

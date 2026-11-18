@@ -407,6 +407,8 @@ class Effects:
     revenue_share: Mapping[int, float] = field(default_factory=dict)
     # M38 (49.5): cents off the price buyers weigh (a subsidy); the price paid is unchanged
     price_cut: Mapping[tuple[int, str], float] = field(default_factory=dict)
+    # M40 (56.3): a segment's appeal x this, (product id, region, segment): direct-to-device
+    segment_appeal: Mapping[tuple[int, str, str], float] = field(default_factory=dict)
 
     def bonus(self, product_id: int, region: str | None) -> float:
         return self.feature_bonus.get((product_id, region or ""), 0.0)
@@ -416,6 +418,11 @@ class Effects:
 
     def cut(self, product_id: int, region: str | None) -> float:
         return self.price_cut.get((product_id, region or ""), 0.0)
+
+    def in_segment(self, product_id: int, region: str | None, segment: str) -> float:
+        if not self.segment_appeal:
+            return 1.0
+        return self.segment_appeal.get((product_id, region or "", segment), 1.0)
 
 
 NO_EFFECTS: Final = Effects()

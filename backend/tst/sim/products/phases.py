@@ -451,7 +451,10 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
         return effects.bonus(product_id, here) if effects else 0.0
 
     def platform_appeal(product_id: int) -> float:  # M31 (44.5): self-preferencing
-        return effects.appeal(product_id, here) if effects else 1.0
+        if not effects:
+            return 1.0
+        # M40 (56.3): a segment the product cannot serve (direct-to-device without its satellites)
+        return effects.appeal(product_id, here) * effects.in_segment(product_id, here, seg_key)
 
     def weighed(s: S) -> int | None:  # M38 (49.5): the price less a subsidy buyers get
         if s.price_cents is None or not effects or not effects.price_cut:
