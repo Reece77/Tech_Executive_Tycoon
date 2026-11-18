@@ -219,7 +219,18 @@ class LoadedData:
     mod_overlay: dict[str, Any] | None = None
 
 
-class _UniqueKeyLoader(yaml.SafeLoader):
+# libyaml's parser where PyYAML has it (its wheels do on every platform CI runs): the same
+# documents as the pure-Python SafeLoader, about 10x faster (tests/unit/test_yaml_loader.py).
+# Saving a mod validates every data file, and the pure parser had grown to most of that time.
+_SAFE: type[yaml.SafeLoader] = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
+def safe_load(text: str | bytes) -> Any:
+    """yaml.safe_load with the C parser where available (identical results)."""
+    return yaml.load(text, Loader=_SAFE)
+
+
+class _UniqueKeyLoader(_SAFE):
     """SafeLoader that rejects duplicate mapping keys instead of silently keeping the last."""
 
 
