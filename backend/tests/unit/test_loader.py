@@ -42,10 +42,10 @@ def test_hashes_cover_every_file(loaded: LoadedData) -> None:
     assert (
         sorted(loaded.hashes) == sorted([*DATA_FILES, *events])
         and len(events)
-        == 26  # M10b: crisis; M10c: executive; M11: research; M14: deals; M14b: press; M16; M18;
+        == 27  # M10b: crisis; M10c: executive; M11: research; M14: deals; M14b: press; M16; M18;
         # M19: mining.yaml; M26: personal.yaml; M20: refining.yaml; M22: geopolitics.yaml
         # M31: platforms.yaml; M36: family.yaml; M34: regulation.yaml; M41: medical.yaml
-        # M39: robotics.yaml
+        # M39: robotics.yaml; M40: space.yaml
     )  # M7a: founder.yaml; M10: lender.yaml; M12a: facility.yaml; M13: public.yaml
     # M14b: press.yaml
     for name, digest in loaded.hashes.items():

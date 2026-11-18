@@ -148,6 +148,39 @@ segments:
     base_churn: 0.017
     adoption: 0.01
     reach: sales
+  # M40 (formulas.md 56.1, 56.3): launch buyers (commercial satellite operators and governments, both
+  # sales-led: a launch is a contract), broadband buyers in aircraft and ships, and phones served
+  # directly from satellites (self-serve through carriers' plans). A weights: operators weigh price and
+  # reliability (quality), governments reliability; aviation and maritime coverage and quality; phone
+  # users price and brand. Base churn: launch customers use replacement_months.
+  - key: satellite_operators
+    label: Satellite operators
+    weights: { quality: 0.40, price: 0.35, brand: 0.10, features: 0.15 }
+    outside_option: 45
+    base_churn: 0.04 # launches use replacement_months
+    adoption: 0.02
+    reach: sales
+  - key: government
+    label: Government
+    weights: { quality: 0.45, price: 0.20, brand: 0.20, features: 0.15 }
+    outside_option: 45
+    base_churn: 0.01
+    adoption: 0.01
+    reach: sales
+  - key: aviation_maritime
+    label: Aviation and maritime
+    weights: { quality: 0.40, price: 0.25, brand: 0.15, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.01
+    adoption: 0.01
+    reach: sales
+  - key: direct_to_device
+    label: Direct to device
+    weights: { quality: 0.25, price: 0.35, brand: 0.30, features: 0.10 }
+    outside_option: 45
+    base_churn: 0.03
+    adoption: 0.02
+    reach: self_serve
 categories:
   - key: b2b_saas
     label: B2B SaaS
@@ -549,3 +582,84 @@ categories:
     brand_constant: 150
     launch_quality: 50 # safety case for driverless operation (A)
     dev_weights: { software_engineering: 0.40, infrastructure: 0.20, security: 0.15, operations: 0.15, product: 0.10 }
+
+  # --- M40 (formulas.md 56): space and satellites. Sized at the game's economy scale (space.scale
+  # 0.085, as robotics.scale) from space.yaml's history and taken forward by growth_by_year and, from
+  # 2026, M43a's ceilings (markets.ceiling_share). Regions split D0 by the regions table above (2.81x
+  # the home region's D0 worldwide).
+  #
+  # launch (56.1): a unit is one launch, revenue_model units; a customer buys one launch every
+  # replacement_months (A: an operator or agency launches every two years). D0 = world launches in 2010
+  # (74, space.yaml, S) x 0.085 x 24 / 12 / 2.81 regions = 4.5 home customers, split commercial 45% /
+  # government 55% (A: "As of 2010, 31% of all space launches were commercial", Commercial use of space,
+  # S, plus foreign governments buying commercially). growth_by_year follows the world's launches (74 in
+  # 2010, 91 in 2017, 114 in 2020, 330 in 2025, S): 3% a year to 2016, 8% to 2019, 24% to 2025, then 10%
+  # (A) under M43a's ceilings. Prices in 2010 dollars: a commercial launch $55M (D: Falcon 9 $56.5-62M
+  # in 2013-2016, S, against Ariane 5's and Atlas V's $130-190M), a government launch $90M (D: F9 "U.S.
+  # Air Force launches ... $95 million", S); hosting_cents is a rival's cost of goods (60%, A: SpaceX's
+  # internal $15-28M a Falcon 9 in 2024 (S) against older rivals near break-even).
+  - key: launch
+    label: Launch services
+    family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
+    growth: 0.03
+    growth_by_year: { 2010: 0.03, 2017: 0.08, 2020: 0.24, 2026: 0.10 }
+    features_at_start: 40
+    features_per_month: 1.5 # launch vehicles age slowly
+    scope: 10
+    brand_constant: 200
+    launch_quality: 40 # a flight-proven vehicle (A)
+    revenue_model: units
+    rival_cost_share: 0.60
+    dev_weights: { hardware_design: 0.40, manufacturing: 0.25, software_engineering: 0.15, operations: 0.10, chip_design: 0.10 }
+    markets:
+      - { segment: satellite_operators, addressable: 2.0, reference_price_cents: 5500000000, hosting_cents: 3300000000, replacement_months: 24 }
+      - { segment: government, addressable: 2.5, reference_price_cents: 9000000000, hosting_cents: 5400000000, replacement_months: 24 }
+
+  # satellite_broadband (56.3): a subscription. D0 is the potential market for satellite internet in
+  # 2010 (A: about 8 million households and sites worldwide beyond good terrestrial broadband, four times
+  # the about 2 million GEO subscribers of HughesNet and WildBlue/ViaSat, R) x 0.085 / 2.81, split
+  # consumer 200,000, enterprise 15,000, aviation and maritime 6,000, government 12,000; direct_to_device
+  # (phones with no terrestrial signal; no seller before space.yaml d2d.open) 300,000 (A). Growth: 3% a
+  # year to 2018, 10% from 2019, 15% from 2021, 6% from 2026 (A) under M43a's ceilings: about 1.8M
+  # consumer prospects worldwide in 2026, three times Starlink's 2025 consumers at the game's scale
+  # (8.9M subscribers in December 2025 x 0.085 x 0.8, S), so rivals' growth after 2025 meets saturation
+  # rather than an empty market. Prices a month in 2010 dollars: consumer
+  # $90 (D: Starlink's ARPU $99 in 2023 to $81 in 2025, S), enterprise $500, aviation and maritime $2,500,
+  # government $1,500 (A: Starlink's business and maritime plans, R), D2D $7.60 (R: T-Satellite's $10 a
+  # month in 2025); hosting_cents is the ground segment, gateways and support a subscriber a month (A).
+  - key: satellite_broadband
+    label: Satellite broadband
+    family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
+    growth: 0.03
+    growth_by_year: { 2010: 0.03, 2019: 0.10, 2021: 0.15, 2026: 0.06 }
+    features_at_start: 40
+    features_per_month: 3.0
+    scope: 8
+    brand_constant: 100
+    launch_quality: 35
+    dev_weights: { hardware_design: 0.30, infrastructure: 0.30, software_engineering: 0.25, security: 0.15 }
+    markets:
+      - { segment: consumer, addressable: 200000, reference_price_cents: 9000, hosting_cents: 2500 }
+      - { segment: enterprise, addressable: 15000, reference_price_cents: 50000, hosting_cents: 12000 }
+      - { segment: aviation_maritime, addressable: 6000, reference_price_cents: 250000, hosting_cents: 60000 }
+      - { segment: government, addressable: 12000, reference_price_cents: 150000, hosting_cents: 40000 }
+      - { segment: direct_to_device, addressable: 300000, reference_price_cents: 760, hosting_cents: 150 }
+
+  # earth_observation (56.3): imagery and analytics subscriptions. D0 from about $2B of EO data and
+  # services in 2010 (A, against Euroconsult's about $4-5B in the early 2020s, R) x 0.085, served 60%:
+  # government customers at $200,000 a month and enterprise at $20,000 (A: DigitalGlobe's and Planet's
+  # contracts, R). Growth 6% a year, 8% from 2018 (A: small-satellite constellations).
+  - key: earth_observation
+    label: Earth observation
+    family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
+    growth: 0.06
+    growth_by_year: { 2010: 0.06, 2018: 0.08 }
+    features_at_start: 40
+    features_per_month: 3.0
+    scope: 8
+    brand_constant: 100
+    launch_quality: 35
+    dev_weights: { data: 0.30, ml_research: 0.20, hardware_design: 0.25, software_engineering: 0.25 }
+    markets:
+      - { segment: enterprise, addressable: 170, reference_price_cents: 2000000, hosting_cents: 600000 }
+      - { segment: government, addressable: 25, reference_price_cents: 20000000, hosting_cents: 6000000 }
