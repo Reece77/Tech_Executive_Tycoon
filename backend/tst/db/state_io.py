@@ -1831,6 +1831,40 @@ def _raw_update(session: Session, model: Any, keys: tuple[str, ...]) -> RawUpdat
     return _raw_sql(model, keys, "sqlite")
 
 
+def _update_raw(
+    session: Session, model: Any, keys: tuple[str, ...], rows: list[tuple[Any, ...]]
+) -> None:
+    """`_update_rows` for rows given as values in the order `_raw_sql` binds them (its SET
+    attributes, then the primary key), Float columns already as float: the same SQL without
+    a dict per row (M45: the player's knowledge of its people rewrites thousands of reveal
+    records and skills a month). Other dialects take the dict path."""
+    if not rows:
+        return
+    raw = _raw_update(session, model, keys)
+    if raw is None:
+        spec = _raw_sql(model, keys, "sqlite")
+        assert spec is not None
+        _update_rows(session, model, [dict(zip(spec[1], r, strict=True)) for r in rows])
+        return
+    session.flush()  # a Core statement does not flush: rows it may reference come first
+    cursor = session.connection().connection.driver_connection.cursor()  # type: ignore[union-attr]
+    try:
+        cursor.executemany(raw[0], rows)
+    finally:
+        cursor.close()
+
+
+_REVEAL_KEYS: Final = (
+    "person_id",
+    "observer_company_id",
+    "attribute",
+    "hw",
+    "center_offset",
+    "last_updated_turn",
+)
+_SKILL_KEYS: Final = ("person_id", "skill", "value")
+
+
 SAVE_CHUNK = 500  # tunable-exempt: primary keys per existence query (SQLite's variable limit)
 
 
@@ -1888,7 +1922,72 @@ def _insert(session: Session, rows: Iterable[Any]) -> None:
             }
         )
     for model, values in by_model.items():
-        session.execute(insert(model), values)
+        _insert_values(session, model, values)
+
+
+@cache
+def _raw_insert_sql(
+    model: Any, keys: tuple[str, ...], dialect_name: str
+) -> tuple[str, tuple[bool, ...]] | None:
+    """INSERT INTO <table> (<keys>) VALUES (?, ...) as driver SQL, and which keys are Float
+    columns (bound as float, as SQLAlchemy binds them), when SQLAlchemy would send exactly
+    these values: no column it binds converts its value, and no column left out has a
+    Python-side default it would fill in. Else None (M45)."""
+    from sqlalchemy import Float
+    from sqlalchemy.dialects import sqlite
+
+    mapper = model.__mapper__
+    dialect = sqlite.dialect()
+    floats = []
+    for k in keys:
+        col_type = mapper.columns[k].type
+        is_float = type(col_type) is Float and not col_type.asdecimal
+        if not is_float and col_type.bind_processor(dialect) is not None:
+            return None
+        floats.append(is_float)
+    given = set(keys)
+    if any(a.key not in given and a.columns[0].default is not None for a in mapper.column_attrs):
+        return None
+    table = model.__table__.name
+    names = ", ".join(f'"{mapper.columns[k].name}"' for k in keys)
+    marks = ", ".join("?" for _ in keys)
+    return f'INSERT INTO "{table}" ({names}) VALUES ({marks})', tuple(floats)
+
+
+def _insert_values(
+    session: Session, model: Any, values: list[dict[str, Any]], target: Any = None
+) -> None:
+    """`session.execute(insert(target or model), values)`, straight to the driver where the
+    SQL and values would be the same (M45: append-only rows a month cost more in SQLAlchemy's
+    per-row parameter work than in SQLite)."""
+    if not values:
+        return
+    statement = insert(target if target is not None else model)
+    if session.get_bind().dialect.name != "sqlite":
+        session.execute(statement, values)
+        return
+    groups: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
+    for row in values:
+        groups[tuple(row)].append(row)
+    if len(groups) > 1 or any(_raw_insert_sql(model, k, "sqlite") is None for k in groups):
+        session.execute(statement, values)  # the rows' columns differ: as before
+        return
+    ((keys, same),) = groups.items()
+    raw = _raw_insert_sql(model, keys, "sqlite")
+    assert raw is not None
+    sql, floats = raw
+    params = [
+        tuple(
+            float(v) if f and v is not None else v
+            for v, f in zip(row.values(), floats, strict=True)
+        )
+        for row in same
+    ]
+    cursor = session.connection().connection.driver_connection.cursor()  # type: ignore[union-attr]
+    try:
+        cursor.executemany(sql, params)
+    finally:
+        cursor.close()
 
 
 def insert_rows(session: Session, rows: Iterable[Any]) -> None:
@@ -1906,12 +2005,14 @@ def insert_entries(session: Session, entries: Iterable[LedgerEntry]) -> None:
         return
     session.flush()
     first = int(session.scalar(select(func.max(LedgerEntryRow.id))) or 0) + 1
-    session.execute(
-        insert(cast(Table, LedgerEntryRow.__table__)),
+    _insert_values(
+        session,
+        LedgerEntryRow,
         [
             {"id": first + i, "turn": e.turn, "company_id": e.company_id, "memo": e.memo}
             for i, e in enumerate(entries)
         ],
+        cast(Table, LedgerEntryRow.__table__),
     )
     lines = [
         {"entry_id": first + i, "account_code": ln.account, "amount_cents": ln.amount}
@@ -1922,7 +2023,7 @@ def insert_entries(session: Session, entries: Iterable[LedgerEntry]) -> None:
     if any(d is not None for d in divisions):  # M8 (18.1); absent keeps pre-0020 saves working
         for line, division in zip(lines, divisions, strict=True):
             line["division_id"] = division
-    session.execute(insert(cast(Table, LedgerLineRow.__table__)), lines)
+    _insert_values(session, LedgerLineRow, lines, cast(Table, LedgerLineRow.__table__))
 
 
 def _sync_relationships(session: Session, old: GameState, new: GameState) -> None:
@@ -1977,7 +2078,7 @@ def _sync_reveal(
     session: Session,
     old: RevealState | None,
     new: RevealState,
-    changed: list[dict[str, Any]],
+    changed: list[tuple[Any, ...]],
     fresh: list[RevealState],
 ) -> None:
     """Write one reveal; its changed attribute records go to `changed`, and a new reveal's
@@ -1988,14 +2089,9 @@ def _sync_reveal(
         return
     base = {"person_id": new.person_id, "observer_company_id": new.observer_company_id}
     old_records = dict(old.attributes)
-    changed += [
-        {
-            **base,
-            "attribute": attr,
-            "hw": rec.hw,
-            "center_offset": rec.offset,
-            "last_updated_turn": rec.last_updated_turn,
-        }
+    pid, oid = new.person_id, new.observer_company_id
+    changed += [  # `_update_raw`'s order: hw, center_offset, last_updated_turn, then the key
+        (float(rec.hw), float(rec.offset), rec.last_updated_turn, pid, oid, attr)
         for attr, rec in new.attributes
         if old_records.get(attr) != rec
     ]
@@ -2051,7 +2147,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     _write(session, old.markets, new.markets, lambda m: (m.category, m.segment), market_to_row)
 
     old_people = {p.id: p for p in old.people}
-    skill_updates: list[dict[str, Any]] = []
+    skill_updates: list[tuple[Any, ...]] = []  # `_update_raw`'s order: value, then the key
     asks: list[dict[str, Any]] = []  # a poached key person's new ask (M5, 15.6)
     headers: list[dict[str, Any]] = []
     added = [p for p in new.people if p.id not in old_people]
@@ -2086,15 +2182,14 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
                     "is_founder": person.is_founder,
                 }
             )
-        if before is not None and before is not person and before != person:
+        # only skills changed write skill rows (M45: the same rows as comparing whole people)
+        if before is not None and before.skills is not person.skills:
             old_skills = before.skills.as_dict()
             skill_updates += [
-                {"person_id": person.id, "skill": k, "value": v}
-                for k, v in person.skills.items
-                if old_skills[k] != v
+                (float(v), person.id, k) for k, v in person.skills.items if old_skills[k] != v
             ]
     session.flush()
-    _update_rows(session, PersonSkillRow, skill_updates)
+    _update_raw(session, PersonSkillRow, _SKILL_KEYS, skill_updates)
     _update_rows(session, PersonRow, asks)
     _update_rows(session, PersonRow, headers)
 
@@ -2124,14 +2219,14 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     )
 
     old_reveals = {(r.observer_company_id, r.person_id): r for r in old.reveals}
-    reveal_updates: list[dict[str, Any]] = []
+    reveal_updates: list[tuple[Any, ...]] = []
     fresh: list[RevealState] = []  # new records, inserted at once (M30: an executemany each)
     for reveal in new.reveals:
         known = old_reveals.get((reveal.observer_company_id, reveal.person_id))
         if known is not reveal and known != reveal:
             _sync_reveal(session, known, reveal, reveal_updates, fresh)
     _insert_reveals(session, fresh)
-    _update_rows(session, PersonRevealRow, reveal_updates)
+    _update_raw(session, PersonRevealRow, _REVEAL_KEYS, reveal_updates)
 
     # Finance (M4): rounds before their term sheets.
     for items in (

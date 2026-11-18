@@ -32,7 +32,7 @@ from tst.sim.org.formulas import (
 )
 from tst.sim.org.rules import OrgView
 from tst.sim.products.models import Product
-from tst.sim.state import GameState
+from tst.sim.state import GameState, derived
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,7 +68,22 @@ def modifiers(
     state: GameState, view: OrgView, balance: Balance, data: GameData, *, estimate: bool = False
 ) -> Modifiers | None:
     """Seat, support and structure factors (18.5). `estimate`: seat effects from displayed
-    ranges, for the API (M8r); the engine always uses true values."""
+    ranges, for the API (M8r); the engine always uses true values. Kept once per state, view
+    and rules (M45: every product's team asked for its company's factors)."""
+    kept: tuple[OrgView, Balance, GameData, Modifiers | None] = derived(
+        state,
+        ("scaleup_modifiers", view.company_id, estimate, id(view), id(balance), id(data)),
+        lambda: (view, balance, data, _modifiers(state, view, balance, data, estimate=estimate)),
+    )
+    held_view, held_balance, held_data, value = kept
+    if held_view is view and held_balance is balance and held_data is data:
+        return value
+    return _modifiers(state, view, balance, data, estimate=estimate)
+
+
+def _modifiers(
+    state: GameState, view: OrgView, balance: Balance, data: GameData, *, estimate: bool = False
+) -> Modifiers | None:
     company = state.company(view.company_id)
     seats = ex.seats_in_play(state, company.id, balance)
     if not seats and not company_divisions(state, company.id):

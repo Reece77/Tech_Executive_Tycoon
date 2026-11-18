@@ -1,6 +1,7 @@
 """A runner's speed beside a wall-time guard (M35a, M36p's follow-up): a fixed CPU-bound
 workload in pure Python, timed the same way as the month it sits next to, so a slow runner
-shows in the log. The guards themselves stay in milliseconds."""
+shows in the log. The guards stay in milliseconds; M30's 500 ms guard on the V6 saves reads the
+median divided by the runner's ratio (product manager, 2026-11-17)."""
 
 from __future__ import annotations
 
@@ -38,9 +39,10 @@ def calibrate() -> float:
     return statistics.median(times)
 
 
-def runner_note(month_s: float) -> str:
-    """'runner x1.20 (workload 120 ms against 100 ms); month = 3.1 workloads'."""
-    w = calibrate()
+def runner_note(month_s: float, workload_s: float | None = None) -> str:
+    """'runner x1.20 (workload 120 ms against 100 ms); month = 3.1 workloads'. Pass the
+    workload's time from `calibrate()` to reuse it rather than time it again."""
+    w = calibrate() if workload_s is None else workload_s
     return (
         f"runner x{w / REFERENCE_S:.2f} (workload {w * 1000:.0f} ms against "
         f"{REFERENCE_S * 1000:.0f} ms); month = {month_s / w:.1f} workloads"

@@ -35,6 +35,7 @@ retention: # M30: old history rows summarised, not lost (tst.db.history; the eng
   snapshot_months: 60 # months; older month-end snapshots keep quarter ends, a company's first year and record highs
   log_months: 60 # months; older log items become a count a company, kind and year
   major_news: [deal, spinoff, bid, failure, close, china] # World news kinds archived when they leave world.news_months (ownership, exits, closures, China's milestones)
+  candidate_people_months: 120 # months; M45: a candidate who closed this long ago and was never anything else keeps their person row (the Timeline's name) but loses the skill, trait, reveal and city rows nothing reads (each June)
 
 inbox: # the player's inbox (formulas.md 23.1, M10b)
   auto_archive_months: 3 # months; read, unbookmarked items this old archive at month end

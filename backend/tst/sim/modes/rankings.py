@@ -19,7 +19,7 @@ from tst.sim.modes.config import RankWeights
 from tst.sim.modes.models import ListKind, Ranking
 from tst.sim.money import format_money
 from tst.sim.people.models import FOUNDER_ROLE
-from tst.sim.state import GameState, player_companies
+from tst.sim.state import GameState, from_inputs, player_companies
 
 MONTHS_A_YEAR: Final = 12  # tunable-exempt: calendar
 DECEMBER: Final = 11  # tunable-exempt: calendar (turn % 12)
@@ -172,12 +172,20 @@ def publish(
 def placed(state: GameState, company_id: int, kind: ListKind, balance: Balance) -> bool:
     """A top rank.effect_places place in this year's `kind` list, while its effect runs."""
     rb = balance.rank
+    rankings = state.rankings
+
+    def index() -> dict[tuple[str, int], tuple[Ranking, ...]]:
+        out: dict[tuple[str, int], list[Ranking]] = {}
+        for r in rankings:
+            out.setdefault((r.kind, r.company_id), []).append(r)
+        return {k: tuple(v) for k, v in out.items()}
+
+    # M45: a company's places in a list from an index kept with the rankings tuple (every
+    # call scanned the decades of lists)
+    mine = from_inputs(rankings, "rankings_by_kind_company", index).get((kind, company_id), ())
     return any(
-        r.kind == kind
-        and r.company_id == company_id
-        and r.place <= rb.effect_places
-        and r.turn <= state.turn < r.turn + rb.effect_months
-        for r in state.rankings
+        r.place <= rb.effect_places and r.turn <= state.turn < r.turn + rb.effect_months
+        for r in mine
     )
 
 
