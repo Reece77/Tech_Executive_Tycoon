@@ -88,3 +88,31 @@ def test_m37_money_is_closed_by_m43a() -> None:
 
     assert verdict(money(9.0e17)) == "ok"
     assert verdict(money(1.1e18)) == "fail"
+
+
+def test_m43a_misses_are_known_to_m43_within_the_pms_bounds() -> None:
+    """PM, 2026-11-18 (M43a brief, decision 10): six earlier guards moved by M43a's targeted
+    recalibrations are known misses owned by M43, each with its bound."""
+    from tst.balance.known_misses import Reading
+    from tst.balance.report import Row
+
+    for target in ("M13.T2.blitzscale", "M13b.T1", "M22.T2.variant", "V2.wins", "V3.margin"):
+        assert known_miss(target).owner == "M43"  # type: ignore[union-attr]
+
+    def reading(target: str, score: float) -> str:
+        return verdict(Reading(target, False, score))
+
+    assert (
+        reading("M13.T2.blitzscale", -1.0) == "known"
+        and reading("M13.T2.blitzscale", 0.0) == "fail"
+    )
+    assert verdict(Reading("M13.T2.steady", False, -3.0)) == "fail"  # steady is not covered
+    assert reading("M13b.T1", -6.0) == "known" and reading("M13b.T1", -5.0) == "fail"
+    assert reading("M22.T2.variant", 0.22) == "known" and reading("M22.T2.variant", 0.23) == "fail"
+
+    def row(target: str, score: float) -> str:
+        return verdict(Row(target, "", "", "", False, score=score))
+
+    assert row("V2.wins", 5.0) == "known" and row("V2.wins", 6.0) == "fail"
+    assert row("V3.margin", 0.020) == "known" and row("V3.margin", 0.021) == "fail"
+    assert row("V4.T1.1", 0.30) == "known" and row("V4.T1.1", 0.31) == "fail"  # 0.85x

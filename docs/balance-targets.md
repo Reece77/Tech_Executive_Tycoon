@@ -57,6 +57,13 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 | V5.cats (no category misses a decade in more than 2 of 10 runs) | M23 | a category-decade empty in more than 7 of 10 runs | as V5.cells |
 | I1 (formulas §43: full_integrator margin − devices_regions at year 30, +3 to +10 points) | M28 | the gap below −2.0 points (the year-30 reading minus 2) | −0.0 points in M23b on the combined code (weekly 43381860624): subscriptions are 100% of both groups' 2039 revenue and cost of goods 0.2–0.3% (8–17% at year 20), so an own fab 23–24% cheaper a chip cannot move the margin; M28's supply-driven prices from 2026 change the fab's economics (product manager, 2026-11-12) |
 
+| M13.T2.blitzscale (§25.9 T2, blitzscale listed by turn 180, >= 4 of 10) | M43 | fewer than 1 of 10 | 1/10 on M43a (main 4/10): blitzscale's second product is developer tools, recalibrated by M43a (PM, 2026-11-18; M43a brief, decision 10) |
+| M13b.T1 (§27.5 T1, new product and region, >= 7 of 10) | M43 | fewer than 6 of 10 | 6/10 (main 7/10): AI models' D0 x0.19 |
+| M22.T2.variant (§39.4 T2, revenue lost with a variant 5-15%) | M43 | over 22% on any seed | 10.5-20.8% (main 10.5-10.8%): the chip markets follow cloud and servers |
+| V2.wins (§30.7 V2, research_heavy wins <= 4 of 10) | M43 | more than 5 of 10 | 5/10 (main <= 4): before 2026, M43a's recalibrations |
+| V3.margin (§30.7 V3, integrator - steady_regions margin, -1 pt or more) | M43 | below -2.0 points | -1.4 pts (main passes) |
+| V4.T1.1 (§51 T1, platform_owner / devices_regions 0.90-1.40x) | M43 | below 0.85x | 0.89x (main 0.99x): not traced |
+
 T2 (closed by M15a: wins counted over the founder-played strategies, as V1), M37.money (closed by M43a: market ceilings, the largest value 1.48e16 cents by 2069 on seeds 1-4) and M10.T3 (closed: covenants re-measured as V7 with `debt.venture.covenant_burn_months` 2) left the list.
 
 
