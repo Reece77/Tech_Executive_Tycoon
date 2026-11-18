@@ -53,6 +53,11 @@ domains:
     research_skill: { ml_research: 0.45, software_engineering: 0.25, hardware_design: 0.15, data: 0.15 } # A: perception models, the driving stack, sensors and fleet data
     budget_cents: 1000000 # A: $10,000 a researcher a month (test fleets and compute)
     compute_indexed: true
+  - key: drug_discovery # M42 (55.1): the player's drug discovery; its lead raises discovery throughput and the hidden efficacy distribution's mean (pharma.discovery, pharma.efficacy)
+    label: Drug discovery
+    baseline: { start: 20, per_year: { 2010: 1.0, 2021: 2.0 } } # A: the world's diffused medicinal chemistry and biology; faster after AlphaFold 2 (2021)
+    research_skill: { data: 0.45, ml_research: 0.35, manufacturing: 0.20 } # A: assays and biology data, computational models, process chemistry and CMC (no research or science skill exists: skills.yaml)
+    budget_cents: 1500000 # A: $15,000 a researcher a month (wet labs, assays and compute)
 
 # Which domains count for a category, and how much (21.1): a company's lead for a category is
 # sum of weight x its lead in each domain. Weights sum to 1. A category not listed has no lead.

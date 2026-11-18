@@ -418,3 +418,37 @@ health_regulators:
     part: china # platforms.yaml region_parts (WB)
     strictness: { 2010: 0.7, 2021: 0.85 } # A: the revised device regulation (State Council Order 739) from 1 Jun 2021
     source: "https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf"
+
+# M42 (formulas.md 55.3): medicines regulators, M34's records with the `drugs` kind. They approve
+# drugs and inspect drug plants (tst.sim.pharma; reviews' months and expedited programmes are
+# pharma.yaml's); M34's competition rules and M41's device code read neither this list nor them.
+# Parts as the health regulators' (platforms.yaml region_parts); other regions register by reliance.
+drug_regulators:
+  - key: fda_drugs
+    kind: drugs
+    name: US Food and Drug Administration (CDER and CBER)
+    region: north_america
+    part: united_states # platforms.yaml region_parts (WB)
+    strictness: { 2010: 1.0 } # A: surveillance inspections risk-based, about every 2-3 years (FDA's site selection model)
+    source: "https://fda.gov/media/184967/download"
+  - key: ema
+    kind: drugs
+    name: European Medicines Agency
+    region: europe
+    part: eu # platforms.yaml region_parts (WB)
+    strictness: { 2010: 0.9 } # A: GMP inspections by national authorities under the EMA's coordination
+    source: "https://www.ema.europa.eu/assets/en/annual-report/2023/human-medicines.html"
+  - key: pmda_drugs
+    kind: drugs
+    name: Pharmaceuticals and Medical Devices Agency (drugs)
+    region: east_asia
+    part: japan # platforms.yaml region_parts (WB)
+    strictness: { 2010: 0.8 } # A
+    source: "https://www.pmda.go.jp/english/"
+  - key: nmpa_drugs
+    kind: drugs
+    name: National Medical Products Administration (drugs)
+    region: east_asia
+    part: china # platforms.yaml region_parts (WB)
+    strictness: { 2010: 0.6, 2017: 0.8 } # A: the 2015-2017 drug review reforms and ICH membership (June 2017)
+    source: "https://english.nmpa.gov.cn/"

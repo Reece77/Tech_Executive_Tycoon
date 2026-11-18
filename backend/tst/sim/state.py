@@ -110,6 +110,7 @@ from tst.sim.medical.models import (
     Submission,
 )
 from tst.sim.mining.models import Mine, MineDeal, RivalBid
+from tst.sim.pharma import models as pharma
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking, Venture
 from tst.sim.money import Cents
@@ -574,6 +575,27 @@ class GameState:
     zone_months: tuple[ZoneMonth, ...] = ()
     robo_incidents: tuple[RoboIncident, ...] = ()
     robotics_world: RoboticsWorld = field(default_factory=RoboticsWorld)
+    # M42 (55): pharmaceutical programmes (each molecule's hidden efficacy and safety inside,
+    # never shown), readouts, reviews and authorisations, marketed drugs, HTAs, drug months
+    # (pharma.history_months), rivals' seeded approvals, seeded rules and IRA picks, plants,
+    # contract supply, inspections, recalls, assets listed for licence and deals. Empty for a game
+    # where no company has entered pharmaceuticals (55.6 target 1).
+    pharma_programmes: tuple[pharma.Programme, ...] = ()
+    pharma_readouts: tuple[pharma.Readout, ...] = ()
+    pharma_reviews: tuple[pharma.Review, ...] = ()
+    pharma_authorisations: tuple[pharma.Authorisation, ...] = ()
+    pharma_drugs: tuple[pharma.Drug, ...] = ()
+    pharma_hta: tuple[pharma.Hta, ...] = ()
+    pharma_months: tuple[pharma.DrugMonth, ...] = ()
+    pharma_seeded: tuple[pharma.SeededDrug, ...] = ()
+    pharma_rules: tuple[pharma.Rule, ...] = ()
+    pharma_ira: tuple[pharma.IraPick, ...] = ()
+    pharma_plants: tuple[pharma.Plant, ...] = ()
+    pharma_supply: tuple[pharma.Supply, ...] = ()
+    pharma_inspections: tuple[pharma.Inspection, ...] = ()
+    pharma_recalls: tuple[pharma.Recall, ...] = ()
+    pharma_assets: tuple[pharma.Asset, ...] = ()
+    pharma_deals: tuple[pharma.Deal, ...] = ()
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

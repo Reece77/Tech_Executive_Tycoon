@@ -549,3 +549,79 @@ categories:
     brand_constant: 150
     launch_quality: 50 # safety case for driverless operation (A)
     dev_weights: { software_engineering: 0.40, infrastructure: 0.20, security: 0.15, operations: 0.15, product: 0.10 }
+
+  # M42 (formulas.md 55.1): pharmaceuticals' therapeutic areas, family pharma. Pseudo-categories (as
+  # M31's `os` and M39's `mobility`): no market segments, so the market engine, rivals and every
+  # per-category loop never see them; drugs are pharma programmes, not products (tst.sim.pharma), and
+  # their demand is pharma.yaml's indications (patients x share x price by region). A generic product
+  # cannot be created in them. The development fields below are unused (the schema requires them).
+  - key: pharma_oncology
+    label: "Pharma: oncology"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_metabolic
+    label: "Pharma: metabolic and obesity"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_immunology
+    label: "Pharma: immunology"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_neuroscience
+    label: "Pharma: neuroscience"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_infectious
+    label: "Pharma: infectious disease and vaccines"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_cardiovascular
+    label: "Pharma: cardiovascular"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }
+  - key: pharma_rare
+    label: "Pharma: rare disease"
+    pseudo: true
+    family: pharma
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 1.0
+    scope: 6
+    brand_constant: 150
+    dev_weights: { data: 0.5, ml_research: 0.3, manufacturing: 0.2 }

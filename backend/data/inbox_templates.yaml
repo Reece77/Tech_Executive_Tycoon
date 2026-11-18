@@ -899,6 +899,75 @@ templates:
   medical_recall: # M41 (50.5)
     title: "Class {klass} recall of {product}"
     body: "{units} installed units are affected ({early}). The field action costs {cost_cents}, and new sales stop while it runs."
+  pharma_programme_started: # M42 (55.1)
+    title: "{name} enters discovery: {indication}"
+    body: "Chemists and biologists look for a candidate molecule; discovery is planned to take {months} months. The Pharma screen shows its chance and expected value."
+  pharma_candidate: # M42 (55.1)
+    title: "{name}: a candidate molecule"
+    body: "Discovery found a candidate. Preclinical work (toxicology and pharmacology) starts now, and the composition patent is filed: its 20 years run from today."
+  pharma_readout_success: # M42 (55.1)
+    title: "{name}: the {stage} readout is positive"
+    body: "The data support the programme, and its efficacy estimate narrows. Choose the next trial's design, or file it, from the Pharma screen."
+  pharma_readout_failed: # M42 (55.1)
+    title: "{name}: the {stage} readout failed"
+    body: "The trial missed. Redesign it (run the stage again, at its cost and more) or stop the programme."
+  pharma_filed: # M42 (55.3)
+    title: "{name} filed: {application} with the {regulator}"
+    body: "The review takes the regulator's standard or priority months. An advisory committee may meet half way."
+  pharma_adcom_positive: # M42 (55.3)
+    title: "Advisory committee backs {name}"
+    body: "The {regulator}'s committee voted in favour. Regulators usually follow the vote."
+  pharma_adcom_negative: # M42 (55.3)
+    title: "Advisory committee votes against {name}"
+    body: "The {regulator}'s committee voted against approval. The decision is still the regulator's, but it is now less likely."
+  pharma_approved: # M42 (55.3)
+    title: "{name} approved by the {regulator}"
+    body: "The drug may now be sold where the {regulator} decides. Other regions register it by reliance, and health-technology assessments set prices where they apply."
+  pharma_crl: # M42 (55.3)
+    title: "Complete response letter for {name}"
+    body: "The {regulator} will not approve the application as filed. The company may answer and file again; a resubmission is likelier to fail."
+  pharma_hta_covered: # M42 (55.4)
+    title: "{name} is reimbursed in {region}"
+    body: "The health-technology assessment accepted its price for its benefit: it now reaches every patient there."
+  pharma_hta_refused: # M42 (55.4)
+    title: "{name}: reimbursement refused in {region}"
+    body: "The assessment found the price too high for the benefit. Without reimbursement it reaches few patients there; a lower list price asks again."
+  pharma_confirmed: # M42 (55.3)
+    title: "{name}'s confirmatory trial succeeded"
+    body: "The accelerated approval is confirmed."
+  pharma_withdrawn: # M42 (55.3)
+    title: "{name}'s accelerated approval is withdrawn"
+    body: "The confirmatory Phase III did not confirm the benefit; the US approval is withdrawn."
+  pharma_plant_ordered: # M42 (55.5)
+    title: "{plant} ordered"
+    body: "It will be built and qualified in {months} months; until then contract manufacturers make the company's drugs."
+  pharma_inspection_none: # M42 (55.5, 50.5)
+    title: "The {regulator} inspected the company's drug manufacturing"
+    body: "The inspectors left without findings."
+  pharma_inspection_observations: # M42 (55.5, 50.5)
+    title: "The {regulator}'s GMP inspection ends with observations"
+    body: "Inspectors listed observations for the quality team to put right. No action follows if they are corrected."
+  pharma_inspection_warning_letter: # M42 (55.5, 50.5)
+    title: "A warning letter from the {regulator}"
+    body: "Significant manufacturing failures. The regulator's decisions on the company's filings are held for {months} months."
+  pharma_inspection_import_ban: # M42 (55.5, 50.5)
+    title: "The {regulator} stops the company's drugs at the border"
+    body: "An import alert stops sales in the regulator's market for {months} months."
+  pharma_inspection_consent_decree: # M42 (55.5, 50.5)
+    title: "Consent decree: the {regulator} halts the company's drug sales"
+    body: "Sales there stop for {months} months while manufacturing is rebuilt under supervision, and the company pays {fine_cents}."
+  pharma_recall: # M42 (55.5)
+    title: "Recall of {name}"
+    body: "A quality problem forces a recall: shipments stop for {months} months."
+  pharma_in_licensed: # M42 (55.5)
+    title: "{name} joins the pipeline"
+    body: "The programme is the company's now: milestones and royalties follow its progress where the deal has them."
+  pharma_out_licensed: # M42 (55.5)
+    title: "{name} licensed to {partner}"
+    body: "The partner pays the upfront now and milestones and royalties as the programme succeeds."
+  pharma_ira_selected: # M42 (55.4)
+    title: "{name} selected for Medicare price negotiation"
+    body: "From January its Medicare price is about {discount_pct}% lower (the Inflation Reduction Act)."
   # M37 (formulas.md 52.1-52.4): dynasty years
   rival_succession:
     title: "{rival}: {new} succeeds {old}"

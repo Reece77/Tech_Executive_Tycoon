@@ -85,6 +85,7 @@ from tst.sim.press.config import (
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
+from tst.sim.pharma.config import PharmaBalance, PharmaFile
 from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
@@ -1393,6 +1394,7 @@ class Balance(_Frozen):
     vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
     dynasty: DynastyBalance  # M37 (formulas.md 52): dynasty mode, 2040-2069
     robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
+    pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -1701,6 +1703,11 @@ class CategoryDef(_Frozen):
     rival_cost_share: float | None = Field(default=None, gt=0, lt=1)
 
     @property
+    def pharma(self) -> bool:
+        """M42 (55.1): a pharmaceutical therapeutic area (a pseudo-category: drugs are programmes)."""
+        return self.family == "pharma"
+
+    @property
     def medical(self) -> bool:
         """M41 (50.1): a medical-device sub-category (scheduled rivals only; regulated sales)."""
         return self.family == "medical"
@@ -1786,7 +1793,8 @@ class IncumbentCompany(_Frozen):
     builder_skill: float = Field(ge=1, le=20)  # tunable-exempt: attribute scale; pool skill d
     target_margin_bp: int = Field(ge=0, lt=BP_DENOMINATOR)  # margin its pools are sized for
     cash_months: float = Field(ge=0)  # starting cash in months of revenue (15.1)
-    products: tuple[IncumbentProduct, ...] = Field(min_length=1)
+    # M42 (55.5): empty only for a pharma rival (its business is pharma.yaml's; loader check)
+    products: tuple[IncumbentProduct, ...] = ()
     # M12b: named key people for this incumbent; None = rivals.key_people (15.1)
     key_people: int | None = Field(default=None, ge=1)
     # M14 (28.1): (year, month) the company is listed from, following history; None = private
@@ -2120,6 +2128,7 @@ class GameData(_Frozen):
     vehicles: VehiclesFile | None = None  # M38 (49); None = no vehicles market's history
     medical: MedicalFile | None = None  # M41 (50); None = no medical rules
     robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
+    pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:
