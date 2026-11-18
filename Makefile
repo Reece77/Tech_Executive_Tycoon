@@ -67,7 +67,7 @@ weekly-m45:
 	cd backend && uv run pytest -q -n 3 -s -m weekly tests/balance/test_m45_state_cache.py
 
 # M37 (52.5 target 5): a full_integrator dynasty save with a family to January 2069 (708
-# months), then its 2069 months against M30's 500 ms guard and the save under 400 MB.
+# months), then its 2069 months against a 500 ms runner-adjusted median (M45) and the save under 400 MB.
 weekly-m37:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) m37 --strategy full_integrator --turns 708 --length dynasty --children 2,5
 	cd backend && TST_M37_SAVE=$(V6_SAVE_DIR)/m37.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m37_perf.py
