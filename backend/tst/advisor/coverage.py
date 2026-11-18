@@ -91,16 +91,18 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "patients": _MEDICAL,
     },
     # M42 (55): the Pharma screen
-    "pharma.ProgrammeOut": {
+    "pharma.RxProgrammeOut": {
         "patients": _PHARMA,
         "cost_cents": "trial_cost",
         "spent_cents": exempt("a stage's spending to date, itemised in its cost's breakdown"),
         "readouts": _COUNT,
         "next_cost_cents": "trial_cost",
         "next_months": "trial_cost",
+        "preclinical_months": _PHARMA,
+        "preclinical_months_without_ai": _PHARMA,
         "redesign_cost_cents": "trial_cost",
     },
-    "pharma.ValueOut": {
+    "pharma.RxValueOut": {
         "rnpv_lo_cents": "pharma_value",
         "rnpv_hi_cents": "pharma_value",
         "peak_lo_cents": "pharma_value",
@@ -108,7 +110,7 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "cost_left_cents": "pharma_value",
         "years_to_launch": "pharma_value",
     },
-    "pharma.DrugOut": {
+    "pharma.RxDrugOut": {
         "list_cents": _PHARMA,
         "reference_cents": _PHARMA,
         "support": _PHARMA,

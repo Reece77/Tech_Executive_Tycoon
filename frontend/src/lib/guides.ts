@@ -216,6 +216,15 @@ export const GUIDES: Record<string, Guide> = {
       'Humanoids sell only once their era arrives; your own AI model and accelerators lift their capability.',
     ],
   },
+  pharma: {
+    title: 'Pharma',
+    path: 'products/pharma',
+    what: 'Drug discovery to the generics cliff: programmes through preclinical work and Phase I-III trials at historical odds, filings with the FDA, EMA, PMDA and NMPA, prices by region and the IRA, plants and contract manufacturers, biotech licences and twelve big-pharma rivals.',
+    start: [
+      "About 8% of programmes entering Phase I reach approval, and it takes about a decade: run several, and stop the ones whose estimates disappoint. A molecule's true efficacy is never shown; each readout narrows its range.",
+      'AI discovery (with a strong AI model) gives more candidates, a shorter preclinical stage and a modest lift in the early phases. When exclusivity ends, generics take most of a small molecule’s sales within a year.',
+    ],
+  },
   mobility: {
     title: 'Mobility',
     path: 'products/mobility',

@@ -120,8 +120,8 @@ def test_pharma_routes_actions_and_hidden_values(tmp_path: Path, loaded: LoadedD
             names |= set(cls.model_fields)
     assert not names & {"safety", "due_turn", "adcom_turn", "obs_safety", "true_efficacy"}
     # efficacy is served only as a range
-    assert schemas.ProgrammeOut.model_fields["efficacy"].annotation is schemas.RangeOut
-    assert schemas.AssetOut.model_fields["efficacy"].annotation is schemas.RangeOut
+    assert schemas.RxProgrammeOut.model_fields["efficacy"].annotation is schemas.RxRangeOut
+    assert schemas.RxAssetOut.model_fields["efficacy"].annotation is schemas.RxRangeOut
 
 
 def test_prompts_never_read_pharma_hidden_values() -> None:

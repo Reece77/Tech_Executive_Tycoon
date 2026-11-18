@@ -6171,6 +6171,214 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/pharma": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Pharma
+         * @description Programmes by stage with readouts, ranges, filings, approvals, exclusivity and Explain;
+         *     drugs with prices and revenue; plants, CMOs, assets, deals and rivals (55.7).
+         */
+        get: operations["getPharma"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Programme */
+        post: operations["startProgramme"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/trial": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Trial */
+        post: operations["startTrial"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop Programme */
+        post: operations["stopProgramme"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** File Drug */
+        post: operations["fileDrug"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Drug Price */
+        post: operations["setDrugPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/plant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Pharma Plant */
+        post: operations["buildPharmaPlant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/plant-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Pharma Plant Quality */
+        post: operations["setPharmaPlantQuality"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/cmo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Choose Cmo */
+        post: operations["chooseCmo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/license-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** License Asset */
+        post: operations["licenseAsset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/license-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Out License */
+        post: operations["outLicense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/pharma/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** License Platform */
+        post: operations["licensePlatform"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/equipment": {
         parameters: {
             query?: never;
@@ -16816,6 +17024,56 @@ export interface components {
             /** Stake Bp */
             stake_bp: number;
         };
+        /** PharmaActionOut */
+        PharmaActionOut: {
+            pharma: components["schemas"]["PharmaOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** PharmaOut */
+        PharmaOut: {
+            /** Engaged */
+            engaged: boolean;
+            /** Ai Ready */
+            ai_ready: boolean;
+            /** Discovery Slots */
+            discovery_slots: number;
+            /** In Discovery */
+            in_discovery: number;
+            /** Researchers */
+            researchers: number;
+            /** Indications */
+            indications: components["schemas"]["RxIndicationOut"][];
+            /** Modalities */
+            modalities: string[];
+            /** Designs */
+            designs: string[];
+            /** Regulators */
+            regulators: components["schemas"]["RxRegulatorOut"][];
+            /** Programmes */
+            programmes: components["schemas"]["RxProgrammeOut"][];
+            /** Drugs */
+            drugs: components["schemas"]["RxDrugOut"][];
+            /** Plants */
+            plants: components["schemas"]["RxPlantOut"][];
+            /** Cmos */
+            cmos: components["schemas"]["RxCmoOut"][];
+            /** Assets */
+            assets: components["schemas"]["RxAssetOut"][];
+            /** Deals */
+            deals: components["schemas"]["RxDealOut"][];
+            /** Inspections */
+            inspections: components["schemas"]["RxInspectionOut"][];
+            /** Recalls */
+            recalls: components["schemas"]["RxRecallOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RxRivalOut"][];
+            /** Rules */
+            rules: components["schemas"]["RxRuleOut"][];
+            /** Facts */
+            facts: components["schemas"]["RxFactOut"][];
+        };
         /** PitchAnswerIn */
         PitchAnswerIn: {
             /** Approve */
@@ -20461,6 +20719,594 @@ export interface components {
             source: string;
             /** Seeded */
             seeded: boolean;
+        };
+        /** RxAssetOut */
+        RxAssetOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Indication Label */
+            indication_label: string;
+            /** Area */
+            area: string;
+            /** Modality */
+            modality: string;
+            /** Stage */
+            stage: string;
+            /** @description The estimate from its readouts so far */
+            efficacy: components["schemas"]["RxRangeOut"];
+            /** Upfront Cents */
+            upfront_cents: number;
+            /** Milestones Cents */
+            milestones_cents: number;
+            /** Royalty */
+            royalty: number;
+            /** Acquire Cents */
+            acquire_cents: number;
+            /** Until */
+            until: string;
+        };
+        /** RxCmoIn */
+        RxCmoIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "api" | "biologics";
+            /** Cmo */
+            cmo: string;
+        };
+        /** RxCmoOut */
+        RxCmoOut: {
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Kinds */
+            kinds: string[];
+            /** Quality */
+            quality: string;
+            /** Chosen For */
+            chosen_for: string[];
+        };
+        /** RxDealOut */
+        RxDealOut: {
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Counterparty */
+            counterparty: string;
+            /** Programme */
+            programme: string | null;
+            /** Signed */
+            signed: string;
+            /** Upfront Cents */
+            upfront_cents: number;
+            /** Milestones Cents */
+            milestones_cents: number;
+            /** Royalty */
+            royalty: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /** Until */
+            until: string | null;
+        };
+        /** RxDrugOut */
+        RxDrugOut: {
+            /** Programme Id */
+            programme_id: number;
+            /** Name */
+            name: string;
+            /** Indication Label */
+            indication_label: string;
+            /** Modality */
+            modality: string;
+            /**
+             * List Cents
+             * @description US list price a patient-year (real cents)
+             */
+            list_cents: number;
+            /**
+             * Reference Cents
+             * @description The indication's branded reference price
+             */
+            reference_cents: number;
+            /** Support */
+            support: number;
+            /**
+             * Patients
+             * @description Real patients last month
+             */
+            patients: number;
+            /**
+             * Revenue Cents
+             * @description Last month's revenue (game cents)
+             */
+            revenue_cents: number;
+            /**
+             * Year Cents
+             * @description The last 12 months' revenue
+             */
+            year_cents: number;
+            /**
+             * Generic
+             * @description Exclusivity has ended somewhere it sells
+             */
+            generic: boolean;
+            /**
+             * Ira
+             * @description The Medicare negotiation, once selected
+             */
+            ira?: string | null;
+            /** Hta */
+            hta: components["schemas"]["RxHtaOut"][];
+            /** History */
+            history: components["schemas"]["RxMonthPointOut"][];
+            /** Blocked */
+            blocked: boolean;
+        };
+        /** RxExclusivityOut */
+        RxExclusivityOut: {
+            /** Region */
+            region: string;
+            /** Region Label */
+            region_label: string;
+            /**
+             * Ends
+             * @description The month exclusivity ends there (once approved)
+             */
+            ends: string | null;
+            /** Ended */
+            ended: boolean;
+        };
+        /** RxFactOut */
+        RxFactOut: {
+            /** Month */
+            month: string;
+            /** Text */
+            text: string;
+        };
+        /** RxFileIn */
+        RxFileIn: {
+            /** Programme Id */
+            programme_id: number;
+            /** Regulator */
+            regulator: string;
+        };
+        /** RxHtaOut */
+        RxHtaOut: {
+            /** Region */
+            region: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "covered" | "refused";
+            /**
+             * Expected
+             * @description When it decides, as a range (never the draw)
+             */
+            expected: string;
+        };
+        /** RxIndicationOut */
+        RxIndicationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Area */
+            area: string;
+            /** Area Label */
+            area_label: string;
+            /** Orphan */
+            orphan: boolean;
+            /**
+             * Market Cents
+             * @description Branded sales a year, world, at the game's scale
+             */
+            market_cents: number;
+            /**
+             * Prevalence M
+             * @description People living with it (oncology: new cases), M
+             */
+            prevalence_m: number;
+            /**
+             * Price Cents
+             * @description A branded therapy's US list price a patient-year (real)
+             */
+            price_cents: number;
+        };
+        /** RxInspectionOut */
+        RxInspectionOut: {
+            /** Regulator */
+            regulator: string;
+            /** Month */
+            month: string;
+            /** Finding */
+            finding: string;
+            /** Until */
+            until: string | null;
+            /** Fine Cents */
+            fine_cents: number;
+        };
+        /** RxLicenseInIn */
+        RxLicenseInIn: {
+            /** Asset Id */
+            asset_id: number;
+            /**
+             * Acquire
+             * @default false
+             */
+            acquire?: boolean;
+        };
+        /** RxLicenseOutIn */
+        RxLicenseOutIn: {
+            /** Programme Id */
+            programme_id: number;
+            /** Rival Id */
+            rival_id: number;
+            /**
+             * Co Develop
+             * @default false
+             */
+            co_develop?: boolean;
+        };
+        /** RxMonthPointOut */
+        RxMonthPointOut: {
+            /** Month */
+            month: string;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Us Cents */
+            us_cents: number;
+            /** Patients */
+            patients: number;
+        };
+        /** RxPlantIn */
+        RxPlantIn: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "api" | "biologics";
+            /** Region */
+            region: string;
+        };
+        /** RxPlantOut */
+        RxPlantOut: {
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Ordered */
+            ordered: string;
+            /** Ready */
+            ready: string;
+            /** Live */
+            live: boolean;
+            /** Quality */
+            quality: string;
+            /** Capex Cents */
+            capex_cents: number;
+            /**
+             * Patient Years K
+             * @description Real thousand patient-years a year it makes
+             */
+            patient_years_k: number;
+        };
+        /** RxPlantQualityIn */
+        RxPlantQualityIn: {
+            /** Plant Id */
+            plant_id: number;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "low" | "standard" | "high";
+        };
+        /** RxPlatformIn */
+        RxPlatformIn: {
+            /** Rival Id */
+            rival_id: number;
+        };
+        /** RxPriceIn */
+        RxPriceIn: {
+            /** Programme Id */
+            programme_id: number;
+            /** List Cents */
+            list_cents: number;
+            /** Support */
+            support: number;
+        };
+        /** RxProgrammeIn */
+        RxProgrammeIn: {
+            /** Programme Id */
+            programme_id: number;
+        };
+        /** RxProgrammeOut */
+        RxProgrammeOut: {
+            /** Id */
+            id: number;
+            /** Company */
+            company: string;
+            /** Name */
+            name: string;
+            /** Indication */
+            indication: string;
+            /** Indication Label */
+            indication_label: string;
+            /** Area */
+            area: string;
+            /** Modality */
+            modality: string;
+            /** Stage */
+            stage: string;
+            /** Status */
+            status: string;
+            /** Design */
+            design: string;
+            /** Patients */
+            patients: number;
+            /** Started */
+            started: string;
+            /**
+             * Planned End
+             * @description The stage's planned end (its design)
+             */
+            planned_end: string;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+            /** Ai */
+            ai: boolean;
+            /**
+             * Preclinical Months
+             * @description Its preclinical stage's planned months
+             */
+            preclinical_months: number;
+            /**
+             * Preclinical Months Without Ai
+             * @description The same without AI discovery
+             */
+            preclinical_months_without_ai: number;
+            /** Origin */
+            origin: string;
+            /** @description The estimate's range (never the true value) */
+            efficacy: components["schemas"]["RxRangeOut"];
+            /** Readouts */
+            readouts: number;
+            /**
+             * Next Stage
+             * @description The trial it can start next, if ready
+             */
+            next_stage: string | null;
+            /** @description That stage's chance, as a range */
+            next_chance: components["schemas"]["RxRangeOut"] | null;
+            /** Next Cost Cents */
+            next_cost_cents?: number | null;
+            /** Next Months */
+            next_months?: number | null;
+            /**
+             * Redesign Cost Cents
+             * @description After a failure
+             */
+            redesign_cost_cents?: number | null;
+            /**
+             * Can File
+             * @description Regulators it can be filed with now
+             */
+            can_file: string[];
+            /** Breakthrough */
+            breakthrough: boolean;
+            /** Accelerated */
+            accelerated: boolean;
+            /** Orphan */
+            orphan: boolean;
+            /** Partner */
+            partner?: string | null;
+            /** History */
+            history: components["schemas"]["RxReadoutOut"][];
+            /** Reviews */
+            reviews: components["schemas"]["RxReviewOut"][];
+            /**
+             * Approvals
+             * @description Where it is approved (regulator or region)
+             */
+            approvals: string[];
+            /** Exclusivity */
+            exclusivity: components["schemas"]["RxExclusivityOut"][];
+            value: components["schemas"]["RxValueOut"] | null;
+        };
+        /** RxRangeOut */
+        RxRangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
+        };
+        /** RxReadoutOut */
+        RxReadoutOut: {
+            /** Stage */
+            stage: string;
+            /** Month */
+            month: string;
+            /** Success */
+            success: boolean;
+            /** @description The chance shown before it read out */
+            shown: components["schemas"]["RxRangeOut"];
+            /**
+             * Observed
+             * @description Its observed efficacy score
+             */
+            observed: number;
+            /** Design */
+            design: string;
+        };
+        /** RxRecallOut */
+        RxRecallOut: {
+            /** Programme */
+            programme: string;
+            /** Month */
+            month: string;
+            /** Cost Cents */
+            cost_cents: number;
+        };
+        /** RxRegulatorOut */
+        RxRegulatorOut: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /** Application */
+            application: string;
+            /**
+             * Standard
+             * @description Its standard review's months, as a range
+             */
+            standard: string;
+            /** Priority */
+            priority?: string | null;
+        };
+        /** RxReviewOut */
+        RxReviewOut: {
+            /** Regulator */
+            regulator: string;
+            /** Regulator Name */
+            regulator_name: string;
+            /** Application */
+            application: string;
+            /** Filed */
+            filed: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "review" | "approved" | "crl" | "withdrawn";
+            /** Priority */
+            priority: boolean;
+            /**
+             * Expected
+             * @description When a decision comes, as a range (never the draw)
+             */
+            expected: string;
+            /**
+             * Adcom
+             * @description The committee's vote, once it met
+             */
+            adcom?: string | null;
+            /** Decided */
+            decided?: string | null;
+        };
+        /** RxRivalApprovalOut */
+        RxRivalApprovalOut: {
+            /** Name */
+            name: string;
+            /** Area */
+            area: string;
+            /** Modality */
+            modality: string;
+            /** Month */
+            month: string;
+        };
+        /** RxRivalDrugOut */
+        RxRivalDrugOut: {
+            /** Name */
+            name: string;
+            /** Indication Label */
+            indication_label: string;
+            /** Approved */
+            approved: number;
+            /** Loe Us */
+            loe_us: number;
+        };
+        /** RxRivalOut */
+        RxRivalOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Generics */
+            generics: boolean;
+            /**
+             * Year Cents
+             * @description Revenue over the last 12 months
+             */
+            year_cents: number;
+            /** Drugs */
+            drugs: components["schemas"]["RxRivalDrugOut"][];
+            /** Pipeline */
+            pipeline: string[];
+            /**
+             * Approvals
+             * @description Its approvals after 2025
+             */
+            approvals: components["schemas"]["RxRivalApprovalOut"][];
+        };
+        /** RxRuleOut */
+        RxRuleOut: {
+            /** Year */
+            year: number;
+            /** Text */
+            text: string;
+        };
+        /** RxStartIn */
+        RxStartIn: {
+            /** Name */
+            name: string;
+            /** Indication */
+            indication: string;
+            /**
+             * Modality
+             * @enum {string}
+             */
+            modality: "small_molecule" | "biologic" | "cell_and_gene";
+            /**
+             * Ai
+             * @default false
+             */
+            ai?: boolean;
+        };
+        /** RxTrialIn */
+        RxTrialIn: {
+            /** Programme Id */
+            programme_id: number;
+            /**
+             * Design
+             * @default standard
+             * @enum {string}
+             */
+            design?: "lean" | "standard" | "large";
+        };
+        /** RxValueOut */
+        RxValueOut: {
+            /** @description Chance to approval from here, as a range */
+            to_approval: components["schemas"]["RxRangeOut"];
+            /** Rnpv Lo Cents */
+            rnpv_lo_cents: number;
+            /** Rnpv Hi Cents */
+            rnpv_hi_cents: number;
+            /**
+             * Peak Lo Cents
+             * @description Peak sales a year at the estimate's range
+             */
+            peak_lo_cents: number;
+            /** Peak Hi Cents */
+            peak_hi_cents: number;
+            /** Cost Left Cents */
+            cost_left_cents: number;
+            /** Years To Launch */
+            years_to_launch: number;
+            /** Explain */
+            explain: string;
         };
         /**
          * SafeHintOut
@@ -43691,6 +44537,746 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MedicalActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getPharma: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startProgramme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startTrial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxTrialIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    stopProgramme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxProgrammeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    fileDrug: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxFileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setDrugPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildPharmaPlant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxPlantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setPharmaPlantQuality: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxPlantQualityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    chooseCmo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxCmoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    licenseAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxLicenseInIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    outLicense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxLicenseOutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    licensePlatform: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RxPlatformIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmaActionOut"];
                 };
             };
             /** @description Bad Request */
