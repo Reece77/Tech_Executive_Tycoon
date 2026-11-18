@@ -43,6 +43,7 @@ V3 = [
     ("e2e_m38_save", "ev", "/vehicles", True),  # M38: the practice save pt-ev
     ("e2e_m41_save", "medical", "/medical", True),  # M41: the practice save pt-medical
     ("e2e_m37_save", "practice", "/campaign", False),  # M37: the practice save pt-dynasty
+    ("e2e_m39_save", "robotics", "/robotics", True),  # M39: the practice save pt-robotics
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

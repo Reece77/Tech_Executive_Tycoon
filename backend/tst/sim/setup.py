@@ -179,6 +179,10 @@ def new_game(
 
     state, car_cash = vehicles_new_game(state, balance, data)  # M38 (49.1): history to 2025
     rival_cash = (*rival_cash, *car_cash)
+    from tst.sim.robotics.phase import new_game as robotics_new_game
+
+    state, robot_cash = robotics_new_game(state, balance, data)  # M39 (53.1): history to 2025
+    rival_cash = (*rival_cash, *robot_cash)
     if family is not None and family.setting != "none":  # M36 (45.1): Family none adds nothing
         state = start_family(state, family, rng, balance, data)
     entries: tuple[LedgerEntry, ...] = rival_cash

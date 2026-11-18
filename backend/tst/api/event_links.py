@@ -20,6 +20,7 @@ MAX_PEOPLE = 2  # tunable-exempt: a pair event names two people; more would crow
 CATEGORY_SCREENS: dict[str, tuple[str, str]] = {
     "mining": ("products/mines", "Mines"),
     "refining": ("products/refineries", "Refineries"),
+    "robotics": ("products/mobility", "Mobility"),
     "exploration": ("products/exploration", "Exploration"),
     "geopolitics": ("competitors/world", "World"),
     "group": ("finance/group", "Group"),

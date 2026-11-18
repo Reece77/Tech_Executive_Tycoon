@@ -130,6 +130,10 @@ def insolvency(
 
             if holds(state, company, balance, data):  # M38 (49.1): car makers follow history
                 continue
+            from tst.sim.robotics.rivals import holds as robot_holds
+
+            if robot_holds(state, company, balance, data):  # M39 (53.1): robot makers likewise
+                continue
         months = company.insolvent_months + 1
         state = with_company(state, replace(company, insolvent_months=months))
         if not company.is_player:  # a rival fails after the same months; no bridges (15.1)

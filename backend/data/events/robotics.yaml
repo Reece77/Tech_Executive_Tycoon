@@ -1,0 +1,48 @@
+# Robotics event templates (docs/formulas.md 53.3, M39): queued by the engine by template id
+# (trigger robotics) the month after a serious robotaxi incident; the zone's permit is already
+# suspended. The answer is applied by the engine (robotics_step): cooperating halves the suspension
+# at a legal cost; compensating costs money and wins back brand; contesting costs nothing now but
+# the regulator may extend the suspension. Tone: grounded realism (ADR-0011). The first choice is
+# what happens when it is left unanswered at Continue.
+templates:
+  - id: robotaxi_collision
+    category: robotics
+    trigger: robotics
+    severities: [critical]
+    weight: 1.0
+    title: "A {company} robotaxi crash makes the evening news"
+    body: >-
+      One of {company}'s driverless cars ran a late amber light and hit a delivery van. The van's
+      driver is in hospital, the regulator has suspended the zone's permit, and the city council
+      wants to know why the remote assistance team did not step in.
+    choices:
+      - key: A
+        label: "Hand the regulator every log and video"
+        effects: [{ type: robotics_step, target: company, stat: cooperate }]
+      - key: B
+        label: "Compensate the driver and recall the software"
+        effects: [{ type: robotics_step, target: company, stat: compensate }]
+      - key: C
+        label: "Dispute the regulator's account of the crash"
+        effects: [{ type: robotics_step, target: company, stat: contest }]
+
+  - id: robotaxi_pedestrian
+    category: robotics
+    trigger: robotics
+    severities: [critical]
+    weight: 1.0
+    title: "A {company} robotaxi injures a pedestrian"
+    body: >-
+      A pedestrian knocked into the path of one of {company}'s driverless cars was struck and
+      dragged before the car stopped. The regulator has suspended the zone's permit, reporters are
+      asking what the company knew and when, and safety groups want driverless service halted.
+    choices:
+      - key: A
+        label: "Open the full incident record to investigators"
+        effects: [{ type: robotics_step, target: company, stat: cooperate }]
+      - key: B
+        label: "Pay the victim's costs and ground the software version"
+        effects: [{ type: robotics_step, target: company, stat: compensate }]
+      - key: C
+        label: "Contest the findings and keep the rest of the fleet running"
+        effects: [{ type: robotics_step, target: company, stat: contest }]

@@ -20,6 +20,7 @@ type Scope = Literal[
     "region",  # M32: a region's power
     "plant",  # M32: a power plant
     "order",  # M33: a tool order in ASML's queue
+    "zone",  # M39: a robotaxi zone
 ]
 
 

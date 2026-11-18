@@ -882,6 +882,18 @@ class Builder:
 
         return v5_vehicles.battery_price(self, m, entity)
 
+    # --- v5 (M39): robotics -------------------------------------------------------------------
+
+    def automation_saving(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_robotics
+
+        return v5_robotics.automation_saving(self, m, entity)
+
+    def ride_contribution(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_robotics
+
+        return v5_robotics.ride_contribution(self, m, entity)
+
     # --- v4 (M34): regulation ----------------------------------------------------------------
 
     def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:

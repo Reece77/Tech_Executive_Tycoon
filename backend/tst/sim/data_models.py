@@ -85,6 +85,7 @@ from tst.sim.press.config import (
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
+from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1391,6 +1392,7 @@ class Balance(_Frozen):
     equipment: EquipmentBalance  # M33 (formulas.md 47): semiconductor equipment
     vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
     dynasty: DynastyBalance  # M37 (formulas.md 52): dynasty mode, 2040-2069
+    robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -2117,6 +2119,7 @@ class GameData(_Frozen):
     equipment: EquipmentFile | None = None  # M33 (47); None = M21's EUV tools good
     vehicles: VehiclesFile | None = None  # M38 (49); None = no vehicles market's history
     medical: MedicalFile | None = None  # M41 (50); None = no medical rules
+    robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:
