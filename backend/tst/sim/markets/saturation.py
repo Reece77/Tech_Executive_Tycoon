@@ -19,7 +19,7 @@ from itertools import pairwise
 from typing import Final
 
 from tst.sim import dmath
-from tst.sim.calendar import turn_to_ym
+from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.formulas import price_ratio
 from tst.sim.geo.models import RegionalMarket
@@ -35,6 +35,13 @@ type Key = tuple[str, str]  # (category, region)
 def enabled(balance: Balance, data: GameData) -> bool:
     mh = data.macro_history
     return bool(balance.markets.ceiling_share) and mh is not None and bool(mh.gdp)
+
+
+def active(state: GameState, balance: Balance, data: GameData) -> bool:
+    """Ceilings apply from January of `markets.ceiling_start_year` (PM, 2026-11-18: the
+    history to 2025 is main's, recalibrated only where 2025 was outside 0.5-2x, 54.3)."""
+    start = ym_to_turn(balance.markets.ceiling_start_year, 1)
+    return state.turn >= start and enabled(balance, data)
 
 
 def _listed(table: dict[int, float], year: float) -> float:
@@ -174,15 +181,19 @@ def clamp[M: MarketSegment, R: RegionalMarket](
     data: GameData,
     home: str,
     caps: dict[Key, float],
+    before: dict[Key, float],
     markets: list[M],
     regional: list[R],
 ) -> tuple[list[M], list[R]]:
-    """Scale a (category, region)'s segments down to its ceiling where growth (or a cycle)
-    took it past (54.1: a market can't pass its ceiling)."""
+    """Scale a (category, region)'s segments back where growth (or a cycle) took it past its
+    ceiling (54.1: a market can't pass its ceiling). A market already past it (one that came
+    out of the history above it in January 2026) is held at its size before this month's
+    growth, never cut: it waits for the economy to catch up."""
     rows = [(m.category, m.segment, home, m.addressable) for m in markets]
     rows += [(r.category, r.segment, r.region, r.addressable) for r in regional]
     values = market_values(state, rows, data, home)
-    over = {k: caps[k] / v for k, v in values.items() if k in caps and v > caps[k]}
+    limit = {k: max(c, before.get(k, 0.0)) for k, c in caps.items()}
+    over = {k: limit[k] / v for k, v in values.items() if k in limit and v > limit[k]}
     if not over:
         return markets, regional
     out_m = [

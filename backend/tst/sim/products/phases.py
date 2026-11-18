@@ -933,8 +933,8 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
     year = turn_to_ym(state.turn)[0]
     # M28 (41.6): from 2026 a region's demand also moves with its cycle (none before)
     cycling = bool(state.region_cycles)
-    # M43a (54.1): growth fades as a market nears its ceiling, and never passes it
-    sat = saturation.enabled(balance, data)
+    # M43a (54.1): from 2026 growth fades as a market nears its ceiling, and never passes it
+    sat = saturation.active(state, balance, data)
     home = home_region_of(state, balance, data) if cycling or sat else ""
     values: dict[saturation.Key, float] = {}
     caps: dict[saturation.Key, float] = {}
@@ -968,7 +968,9 @@ def brand_and_demand(state: GameState, balance: Balance, data: GameData) -> Game
             growth *= cycle_ratio(state, rmarket.region, state.turn)
         grown_regional.append(replace(rmarket, addressable=rmarket.addressable * growth))
     if caps:
-        grown, grown_regional = saturation.clamp(state, data, home, caps, grown, grown_regional)
+        grown, grown_regional = saturation.clamp(
+            state, data, home, caps, values, grown, grown_regional
+        )
     # M30: growth reads neither collection, so each is rebuilt once (an upsert a market
     # copied the whole tuple); the upserts' result when keys are sorted and unique
     return with_all_markets(state, grown, grown_regional)

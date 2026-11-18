@@ -1280,6 +1280,7 @@ class RegionalMarketsBalance(_Frozen):
     cross_region_floor: float = Field(ge=0, le=1)
     # M43a (54.1): market ceilings and long-run growth
     ceiling_share: dict[str, float]  # category|default -> share of a region's GDP
+    ceiling_start_year: int  # ceilings apply from January of this year (PM, 2026-11-18)
     era_ceiling_lift: float = Field(ge=0)  # ceiling x (1 + this x eras arrived)
     gdp_growth: dict[str, float]  # region -> nominal growth a year after macro history
     mature_start_year: int

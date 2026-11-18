@@ -1,9 +1,11 @@
-"""M43a (formulas.md 54.1, acceptance): no market passes its ceiling, from any starting size."""
+"""M43a (formulas.md 54.1, acceptance): from 2026 no market grows past its ceiling, from any
+starting size; one that starts past it is held, never cut."""
 
 from __future__ import annotations
 
 from dataclasses import replace
 
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -13,6 +15,7 @@ from tst.sim.calendar import ym_to_turn
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.markets import saturation as sat
 from tst.sim.products.phases import brand_and_demand
+from tst.sim.state import GameState
 
 TOLERANCE = 1e-9
 
@@ -22,7 +25,7 @@ TOLERANCE = 1e-9
 )
 @given(
     scale=st.floats(min_value=0.01, max_value=1e4),
-    year=st.integers(min_value=2010, max_value=2025),
+    year=st.integers(min_value=2026, max_value=2060),
     months=st.integers(min_value=1, max_value=6),
 )
 def test_no_market_passes_its_ceiling(
@@ -39,14 +42,21 @@ def test_no_market_passes_its_ceiling(
         ),
     )
     home = home_region_of(state, balance, data)
+
+    def values_of(s: GameState) -> dict[sat.Key, float]:
+        rows = [(m.category, m.segment, home, m.addressable) for m in s.markets]
+        rows += [(r.category, r.segment, r.region, r.addressable) for r in s.regional_markets]
+        return sat.market_values(s, rows, data, home)
+
     for _ in range(months):
+        before = values_of(state)
         state = brand_and_demand(state, balance, data)
-        rows = [(m.category, m.segment, home, m.addressable) for m in state.markets]
-        rows += [(r.category, r.segment, r.region, r.addressable) for r in state.regional_markets]
-        values = sat.market_values(state, rows, data, home)
-        for (cat, region), v in values.items():
+        for (cat, region), v in values_of(state).items():
             if not sat.grows(data, cat):
                 continue
             cap = sat.ceiling_cents(state, balance, data, cat, region)
-            assert v <= cap * (1 + TOLERANCE), (cat, region, v, cap)
+            limit = max(cap, before[(cat, region)])
+            assert v <= limit * (1 + TOLERANCE), (cat, region, v, cap)
+            if before[(cat, region)] > cap:  # past it: held, not cut
+                assert v == pytest.approx(before[(cat, region)], rel=1e-9)
         state = replace(state, turn=state.turn + 1)

@@ -164,7 +164,7 @@ categories:
 
   - key: dev_tools
     label: Developer tools
-    growth: 0.25
+    growth: 0.1749 # M43a (54.2) from 0.25, matching eras.yaml's base_growth (x0.66) to January 2020 (21.8 target 1); demand reads eras.yaml
     features_at_start: 50
     features_per_month: 4.0
     scope: 5
@@ -229,11 +229,14 @@ categories:
     # the brief's 60% (which gives about 465x).
     growth_by_year: { 2010: 0.30, 2016: 0.50, 2020: 0.40, 2022: 1.50, 2023: 2.00, 2024: 1.20, 2025: 0.60, 2030: 0.25 }
     dev_weights: { ml_research: 0.40, software_engineering: 0.20, data: 0.20, infrastructure: 0.20 }
+    # M43a (54.2): D0 x 0.19 (from 200,000 / 20,000 / 2,000 / 300): main's 2025 served revenue was 8x the
+    # published $186B (Gartner AI application software $172B + GenAI models $14B); growth_by_year and
+    # eras.yaml keep 18.9 target 4 and 21.8 target 1 (ratios to January 2010), so the 2010 start moves
     markets:
-      - { segment: consumer, addressable: 200000, reference_price_cents: 50, hosting_cents: 20 }
-      - { segment: smb, addressable: 20000, reference_price_cents: 10000, hosting_cents: 4000 }
-      - { segment: mid_market, addressable: 2000, reference_price_cents: 200000, hosting_cents: 60000 }
-      - { segment: enterprise, addressable: 300, reference_price_cents: 2500000, hosting_cents: 600000 }
+      - { segment: consumer, addressable: 38000, reference_price_cents: 50, hosting_cents: 20 }
+      - { segment: smb, addressable: 3800, reference_price_cents: 10000, hosting_cents: 4000 }
+      - { segment: mid_market, addressable: 380, reference_price_cents: 200000, hosting_cents: 60000 }
+      - { segment: enterprise, addressable: 57, reference_price_cents: 2500000, hosting_cents: 600000 }
 
   # --- M12a (formulas.md 22.3): Cloud and GPU hosting, open from January 2010 ---
   # Sells spare data-centre capacity (compute.capacity_category): a company sells here only
@@ -244,7 +247,7 @@ categories:
   # abstract: hosting_cents is their cost of a customer's CU (55% of p_ref).
   - key: cloud_hosting
     label: Cloud and GPU hosting
-    growth: 0.30
+    growth: 0.225 # M43a (54.2) calibration from 0.30: main's 2025 served revenue was 3.5x Synergy's $419B (real-dollar equivalent)
     features_at_start: 60
     features_per_month: 4.0
     scope: 6

@@ -5,8 +5,9 @@ category's base growth decays toward the economy's growth plus a category premiu
     target = markets.mature_gdp_growth + markets.mature_premium[category],
 
 for every year to the year before dynasty mode's start (M37's maturity takes over from there,
-52.2). A rate already at or below its target is unchanged; rates a table lists after the start are
-replaced (they are not history: 54.3). Applied at load to categories.yaml's growth and eras.yaml's base_growth."""
+52.2). A rate already at or below its target is unchanged; rates a table lists after the
+start are replaced (they are not history: 54.3). Applied at load to categories.yaml's growth
+and eras.yaml's base_growth."""
 
 from __future__ import annotations
 

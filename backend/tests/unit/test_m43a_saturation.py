@@ -90,7 +90,7 @@ def test_unit_and_medical_values(loaded: LoadedData) -> None:
 def test_growth_fades_near_the_ceiling(loaded: LoadedData) -> None:
     """A home market at half its ceiling grows at half its rate (54.1)."""
     data, balance = loaded.game_data, loaded.balance
-    state = fresh_game(loaded)
+    state = replace(fresh_game(loaded), turn=ym_to_turn(2026, 1))
     m = next(x for x in state.markets if x.category == "b2b_saas" and x.segment == "smb")
     others = [x for x in state.markets if x.category == "b2b_saas"]
     home = "north_america"
@@ -105,13 +105,29 @@ def test_growth_fades_near_the_ceiling(loaded: LoadedData) -> None:
     before = replace(state, markets=markets)
     after = brand_and_demand(before, balance, data)
     grown = next(x for x in after.markets if x.category == "b2b_saas" and x.segment == "smb")
-    g = data.category("b2b_saas").growth_in(2010)
+    g = data.category("b2b_saas").growth_in(2026)
     assert grown.addressable / (m.addressable * scale) == pytest.approx((1 + g * 0.5) ** (1 / 12))
 
 
+def test_no_ceiling_before_2026(loaded: LoadedData) -> None:
+    """PM, 2026-11-18: the history to 2025 grows as before M43a, whatever a market's size."""
+    data, balance = loaded.game_data, loaded.balance
+    state = replace(fresh_game(loaded), turn=ym_to_turn(2025, 12))
+    assert not sat.active(state, balance, data)
+    assert sat.active(replace(state, turn=ym_to_turn(2026, 1)), balance, data)
+    big = replace(
+        state, markets=tuple(replace(x, addressable=x.addressable * 1e6) for x in state.markets)
+    )
+    after = brand_and_demand(big, balance, data)
+    m = next(x for x in after.markets if x.category == "b2b_saas" and x.segment == "smb")
+    b = next(x for x in big.markets if x.category == "b2b_saas" and x.segment == "smb")
+    g = data.category("b2b_saas").growth_in(2025)
+    assert m.addressable / b.addressable == pytest.approx((1 + g) ** (1 / 12))
+
+
 def test_long_run_decays_after_its_start(loaded: LoadedData) -> None:
-    """54.1: AI models' base growth from markets.mature_start_year halves its gap to the economy's growth plus its
-    premium every half-life, then M37's maturity takes over in 2040."""
+    """54.1: AI models' base growth from markets.mature_start_year halves its gap to the
+    economy's growth plus its premium every half-life; M37's maturity takes over in 2040."""
     data, balance = loaded.game_data, loaded.balance
     mb = balance.markets
     table = data.eras.base_growth["ai_models"]

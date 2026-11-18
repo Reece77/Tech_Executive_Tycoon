@@ -212,15 +212,7 @@ def test_brand_follows_marketing_and_demand_grows(loaded: LoadedData) -> None:
     target = f.target_brand(10, loaded.game_data.category("b2b_saas").brand_constant)
     assert product.brand == pytest.approx(0.1 * target)
     smb = after.market("b2b_saas", "smb")
-    # M43a (54.1): growth x (1 - A / C) for b2b SaaS in the home region this month
-    from tst.sim.markets import saturation as sat
-
-    rows = [(m.category, m.segment, "north_america", m.addressable) for m in state.markets]
-    value = sat.market_values(state, rows, loaded.game_data, "north_america")
-    cap = sat.ceiling_cents(state, loaded.balance, loaded.game_data, "b2b_saas", "north_america")
-    fade = sat.factor(value[("b2b_saas", "north_america")], cap)
-    g = 0.2 * fade
-    assert smb is not None and smb.addressable == pytest.approx(400_000 * (1 + g) ** (1 / 12))
+    assert smb is not None and smb.addressable == pytest.approx(400_000 * 1.2 ** (1 / 12))
     sales_cloud = after.product(SALES_CLOUD)
     assert sales_cloud is not None
     assert sales_cloud.brand == 80  # incumbents keep their brand (ADR-0017)

@@ -833,6 +833,7 @@ markets:
     surgical_robotics: 0.003 # A 0.02%
     implantables: 0.008 # A 0.06%
     samd: 0.001 # A 0.005%
+  ceiling_start_year: 2026 # ceilings apply from January of this year; the history to 2025 is main's, recalibrated only where 2025 was outside 0.5-2x (PM, 2026-11-18; 54.3). A market already past its ceiling then is held, not cut, until the economy catches up
   era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
   gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
     north_america: 0.040
