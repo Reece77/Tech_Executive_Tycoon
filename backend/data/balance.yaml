@@ -807,6 +807,62 @@ markets:
   neighbour_sellers: 0.5 # fraction of sellers in the neighbour region that count in a sales-led segment (19.5)
   cross_region_step: 0.05 # output lost per extra region the builders work in (19.4)
   cross_region_floor: 0.85 # lowest cross-region output factor (19.4)
+  # M43a (formulas.md 54.1): market ceilings. A category's addressable market in a region (a year of
+  # its addressable customers at reference prices, the game's economy) grows at g x (1 - A / C) and never
+  # past C = ceiling_share x the region's GDP (macro_history.yaml, then gdp_growth) x economy_scale.money
+  # x (1 + era_ceiling_lift x the arrived eras boosting it). Shares are of regional GDP and bound the
+  # ADDRESSABLE market, every potential customer, not spending: the game's served revenue is about 15-70%
+  # of addressable (4-7% for chips, whose design wins adopt slowly), so a share sits well above the
+  # category's real spending share. Calibrated (Reece, 2026-11-17: 54.4 target 2 judges served revenue)
+  # so that 2025's served revenue sits within 0.5-2x the published size (docs/v5-research/market-sizes-
+  # dossier.md) and, where it already did, a ceiling barely binds in the developed regions before 2026
+  # (A: about 5x North America's 2025 addressable share on main's curves; with ceilings from 2026 they bind only after the history, 54.4 target 1) and binds where addressable
+  # demand had run past the economy (Asia and Africa: AI models at 90-105% of their GDP in 2025). R for
+  # scale: Gartner IT spending 2025 $5.44T, about 4.6% of world GDP ($117T); software $1.23T (1.05%).
+  ceiling_share:
+    default: 0.01 # A
+    b2b_saas: 0.08 # served 2025 in band on main (0.64x Gartner SaaS $299B); A 0.63% of North America's GDP
+    dev_tools: 0.002 # binds: main's served 2025 was 3.7x the published $25B; A 0.44% of North America's GDP
+    consumer_apps: 0.026 # in band on main (1.7x Sensor Tower $167B); A 0.53%
+    cybersecurity: 0.024 # in band on main (0.72x Gartner $213B); A 0.49%
+    fintech: 0.07 # in band on main (1.0x BCG/QED $378B); A 1.37%
+    ai_models: 0.015 # binds: main's served 2025 was 8x the published $186B; A 8.8% of North America's GDP, 105% of Africa's
+    cloud_hosting: 0.012 # binds: main's served 2025 was 3.5x Synergy's $419B; A 6.6%
+    devices: 0.05 # in band on main (0.91x IDC phones + PCs $750B); A 1.04%
+    servers: 0.06 # A about 0.9% after its recalibration (categories.yaml)
+    chips_mobile_soc: 0.004 # in band on main (1.04x about $45B); A 0.08%
+    chips_server_cpu: 0.012 # in band on main (1.13x about $27B); A 0.25%
+    chips_ai_accelerator: 0.30 # in band on main (1.11x $170-290B); A 4.4% of North America's GDP, 54-65% of South Asia's and Africa's
+    contract_manufacturing: 0.003 # a spare-capacity market by design (economy-scale audit 4); A 0.05%
+    wearables_diagnostics: 0.002 # M41's sizes (2024 real); A 0.03%
+    imaging: 0.005 # A 0.09%
+    surgical_robotics: 0.0015 # A 0.02%
+    implantables: 0.004 # A 0.06%
+    samd: 0.0005 # A 0.005%
+    launch: 0.0016 # M40 (decision 18): about 5x North America's 2025 addressable share (A 0.031% of its GDP); served 2025 1.05x SIA's about $15B (R)
+    satellite_broadband: 0.0038 # M40: about 5x (A 0.076% of North America's GDP, 0.12% of Oceania's); served 2025 1.03x Starlink's $11.4B (S) with space.history_split (decision 18)
+    earth_observation: 0.0005 # M40: about 5x (A 0.010%); served 2025 0.99x Euroconsult's about $4.5B (R)
+  ceiling_start_year: 2026 # ceilings apply from January of this year; the history to 2025 is main's, recalibrated only where 2025 was outside 0.5-2x (PM, 2026-11-18; 54.3). A market already past its ceiling then is held, not cut, until the economy catches up
+  era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
+  gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
+    north_america: 0.040
+    europe: 0.035
+    east_asia: 0.040
+    south_southeast_asia: 0.065
+    latin_america: 0.050
+    africa: 0.060
+    oceania: 0.045
+  mature_start_year: 2030 # M43a: 2026 (tried for 54.4 target 1 with 10x ceilings) cut startups after 2020 (V5.cats); 2030 with the 5x ceilings: year from which base growth decays toward mature_gdp_growth + mature_premium (54.1)
+  mature_half_life_years: 4 # years for the gap to halve (A: PCs and smartphones slowed over about a decade)
+  mature_gdp_growth: 0.04 # fraction a year: the world economy's nominal growth (A, gdp_growth's mean)
+  mature_premium: # fraction a year a category grows above the economy in the 2030s (A)
+    default: 0.01
+    ai_models: 0.04
+    cloud_hosting: 0.02
+    chips_ai_accelerator: 0.03
+    cybersecurity: 0.02
+  tech_share_max: 0.15 # 54.4 target 1: the technology categories' sum at most this share of world GDP
+  non_tech: [vehicles, medical] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending)
 
 # --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
 geo:
@@ -2907,11 +2963,14 @@ dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here r
     slowdown: 0.85 # x every domain's baseline points a year for each decade from start_year (A)
     cost_growth: 0.03 # research budgets per researcher x (1 + this) a year from start_year (A)
   markets: # 52.2: category growth decays toward a mature rate unless an era renews it
-    mature_growth: # fraction a year (A: PCs after 2011 and smartphones after 2016 grew 0-5% a year; M37 tuning down from 0.03-0.05: the largest incumbents' books must fit SQLite's int64 cents to 2069; AI models' leader books about $230T a year by 2040 on main's curves)
-      default: 0.01
-      ai_models: 0.015
-      cloud_hosting: 0.015
-      chips_ai_accelerator: 0.015
+    mature_growth: # fraction a year (A: PCs after 2011 and smartphones after 2016 grew 0-5% a year; M37 tuning down from 0.03-0.05: the largest incumbents' books must fit SQLite's int64 cents to 2069; M43a back up from 0.01 / 0.015: 54.1's ceilings now bound the books (largest balance 1.5e16 cents by 2069, seeds 1-4) and 54.4 target 3 asks 1% a year through the 2060s with cycles and saturation on top)
+      default: 0.02
+      ai_models: 0.025
+      cloud_hosting: 0.025
+      chips_ai_accelerator: 0.025
+      dev_tools: 0.03 # M43a: its ceiling binds from before 2026 (54.2), so it needs more base to grow 1% (54.4 target 3)
+      devices: 0.025 # M43a: mobile chips follow devices' growth, under their own ceiling (target 3)
+      fintech: 0.025 # M43a: 0.98% a year in the 2060s at 0.02 with the decay from 2030 (54.4 target 3)
       vehicles: 0.01
     half_life_years: 3 # years for the gap between a category's base growth and its mature rate to halve (A; M37 tuning from 6: AI models' 25% of 2039 kept the largest incumbents compounding past int64 cents of revenue by the 2050s)
   carbon: # 52.2: carbon policy's steps stop; a priced region's carbon reverts to a seeded long-run level
@@ -3111,7 +3170,7 @@ space:
     subs_per_gbps: 2000 # D2D subscribers a Gbps serves (A: texting and light data)
     cost_mult: 1.3 # a D2D-capable satellite's cost x this (A: Starlink's DtC bus 970 kg against V2 mini's about 800, List of Starlink and Starshield launches, S)
   broadband_churn_mult: 0.3 # a broadband line's base churn x this, from space.start (D: satellite ISPs lose about 1.5-2% of subscribers a month, R, against the consumer segment's 6%; the terminal is a sunk cost)
-  history_split: { consumer: 0.80, enterprise: 0.08, aviation_maritime: 0.04, government: 0.08, direct_to_device: 0.0 } # an operator's subscribers by segment to 2025 (A); SES and OneWeb sell no consumer plans (their lines have no consumer segment)
+  history_split: { consumer: 0.93, enterprise: 0.05, aviation_maritime: 0.01, government: 0.01, direct_to_device: 0.0 } # an operator's subscribers by segment to 2025 (A; M40 decision 18 from 0.80/0.08/0.04/0.08, which put 2025's served revenue at 2.2x Starlink's $11.4B, M43a's 54.4 target 2: about 89,000 ships and aircraft and 89,000 government sites of 8.9 million); SES and OneWeb sell no consumer plans (their lines have no consumer segment)
   history_share: { Maxar: 0.35, Planet Labs: 0.15 } # EO operators' shares to 2025 (A: DigitalGlobe/Maxar the largest seller of commercial imagery; Planet's US$191.3M revenue in 2022, Planet Labs, S)
   rival_growth: [0.0, 0.10] # rivals' launches and satellites a year after 2025, drawn each year (A)
   rival_cash_cents: 20000000000 # $200M opening capital for each space company's space business (A: as robotics.rival_cash_cents)

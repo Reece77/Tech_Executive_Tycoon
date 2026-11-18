@@ -128,7 +128,14 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
     )
     cap2 = V2_MAX_WINS * seeds / 10
     rows.append(
-        Row("V2", "research_heavy wins", f"{rh_wins}/{seeds}", f"<= {cap2:g}", rh_wins <= cap2)
+        Row(
+            "V2.wins",
+            "research_heavy wins",
+            f"{rh_wins}/{seeds}",
+            f"<= {cap2:g}",
+            rh_wins <= cap2,
+            score=rh_wins * 10 / seeds,  # wins out of 10 (known_misses)
+        )
     )
     for arm, base, band in (
         ("integrator", BASE, (V3_SOFTWARE_GAP, 1.0)),
@@ -145,7 +152,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
         )
         rows.append(
             Row(
-                "V3" if arm == "integrator" else "V3.ai",
+                "V3.margin" if arm == "integrator" else "V3.ai",
                 f"{arm} - {base} operating margin",
                 f"{gap * 100:+.1f} pts ({mi:.1%} vs {mb:.1%})",
                 shown,

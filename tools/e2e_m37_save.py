@@ -78,6 +78,23 @@ def era(save_dir: Path, name: str, data: LoadedData) -> Path:
     return path
 
 
+def _refill_cto(game) -> None:  # type: ignore[no-untyped-def]
+    from tst.sim.actions import AppointExecutive
+    from tst.sim.actions.scaleup import appoint_problem
+
+    state, b = game.state, game.loaded.balance
+    if state.seat_holder(1, "cto") is not None:
+        return
+    engineers = [
+        e.person_id
+        for e in state.staff(1)
+        if state.person(e.person_id).role == "software_engineer"
+        and appoint_problem(state, 1, "cto", e.person_id, b) is None
+    ]
+    if engineers:
+        game.act(AppointExecutive(game.founder_id, "cto", engineers[0]))
+
+
 def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     """pt-dynasty (see the module docstring)."""
     import e2e_m12a_save as cloud
@@ -124,6 +141,13 @@ def practice(save_dir: Path, name: str, data: LoadedData) -> Path:
     )
     game = Game(data, state, apply_entries({}, entries))
     script = V3["full_integrator"]
+    while game.state.turn < JAN_2040 - 1 and not game.state.ended:
+        script(game)
+        game.turn()
+    # M43a: the CTO can leave in the campaign's last months; a player refills the seat from its
+    # own engineers before December 2039 closes it (fixtures.finish's CTO comes after the end,
+    # when the engine refuses appointments)
+    _refill_cto(game)
     while game.state.turn < JAN_2040 and not game.state.ended:
         script(game)
         game.turn()
