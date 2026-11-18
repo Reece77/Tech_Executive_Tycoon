@@ -22,12 +22,15 @@ jobs:
       matrix:
         include:
           - save: v6
+            months: ""
             build: "--strategy research_heavy"
             test: "TST_V6_SAVE=/tmp/tst-v6/v6.tst.sqlite TST_M30_MEDIAN_MS=100000 uv run pytest -q -n 0 -s -m weekly tests/integration/test_m30_perf.py"
           - save: v6i
+            months: ""
             build: "--strategy full_integrator"
             test: "TST_V6_SAVE=/tmp/tst-v6/v6i.tst.sqlite TST_M30_MEDIAN_MS=100000 uv run pytest -q -n 0 -s -m weekly tests/integration/test_m30_perf.py"
           - save: m37
+            months: "--warm-up 1 --timed 6 --profiled 4"
             build: "--strategy full_integrator --turns 708 --length dynasty --children 2,5"
             test: "TST_M37_SAVE=/tmp/tst-v6/m37.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m37_perf.py"
     steps:
@@ -54,7 +57,7 @@ jobs:
       - name: Profile six months
         run: |
           ls -la /tmp/tst-v6
-          uv run --project backend python tools/m30_profile.py /tmp/tst-v6/${{ matrix.save }}.tst.sqlite /tmp/m45-profile/${{ matrix.save }}
+          uv run --project backend python tools/m30_profile.py /tmp/tst-v6/${{ matrix.save }}.tst.sqlite /tmp/m45-profile/${{ matrix.save }} ${{ matrix.months }}
           head -n 70 /tmp/m45-profile/${{ matrix.save }}/cumulative.txt
           head -n 60 /tmp/m45-profile/${{ matrix.save }}/own.txt
 

@@ -217,6 +217,10 @@ _PERSON_ID = attrgetter("person_id")
 _KEY = attrgetter("key")
 _MARKET_KEY = attrgetter("category", "segment")
 _REGIONAL_KEY = attrgetter("category", "segment", "region")
+_COMPANY_ID = attrgetter("company_id")  # M45: the indexed lookups' keys
+_PRODUCT_ID = attrgetter("product_id")
+_PRODUCT_SEGMENT = attrgetter("product_id", "segment")
+_PRODUCT_REGION = attrgetter("product_id", "region")
 
 
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
@@ -737,29 +741,43 @@ class GameState:
     def live_plans(self, company_id: int) -> tuple[HiringPlan, ...]:
         return tuple(p for p in self.plans if p.company_id == company_id and p.status != "closed")
 
+    # M45: these lookups read indexes built once per tuple (`from_inputs`), in the tuple's
+    # order, so they answer what a scan did: the first match, or the matches in order.
+
     def product(self, product_id: int) -> Product | None:
-        for p in self.products:
-            if p.id == product_id:
-                return p
-        return None
+        products = self.products
+        by_id: dict[int, Product] = from_inputs(
+            products, "product_by_id", lambda: _first_by(products, _ID)
+        )
+        return by_id.get(product_id)
 
     def company_products(self, company_id: int) -> tuple[Product, ...]:
-        return tuple(p for p in self.products if p.company_id == company_id)
+        products = self.products
+        grouped: dict[int, tuple[Product, ...]] = from_inputs(
+            products, "products_by_company", lambda: _grouped(products, _COMPANY_ID)
+        )
+        return grouped.get(company_id, ())
 
     def segments_of(self, product_id: int) -> tuple[ProductSegment, ...]:
-        return tuple(s for s in self.product_segments if s.product_id == product_id)
+        segments = self.product_segments
+        grouped: dict[int, tuple[ProductSegment, ...]] = from_inputs(
+            segments, "segments_by_product", lambda: _grouped(segments, _PRODUCT_ID)
+        )
+        return grouped.get(product_id, ())
 
     def product_segment(self, product_id: int, segment: str) -> ProductSegment | None:
-        for s in self.product_segments:
-            if s.product_id == product_id and s.segment == segment:
-                return s
-        return None
+        segments = self.product_segments
+        by_key: dict[tuple[int, str], ProductSegment] = from_inputs(
+            segments, "segment_by_key", lambda: _first_by(segments, _PRODUCT_SEGMENT)
+        )
+        return by_key.get((product_id, segment))
 
     def market(self, category: str, segment: str) -> MarketSegment | None:
-        for m in self.markets:
-            if m.category == category and m.segment == segment:
-                return m
-        return None
+        markets = self.markets
+        by_key: dict[tuple[str, str], MarketSegment] = from_inputs(
+            markets, "market_by_key", lambda: _first_by(markets, _MARKET_KEY)
+        )
+        return by_key.get((category, segment))
 
     # --- Finance (M4) ----------------------------------------------------------------------
 
@@ -924,28 +942,37 @@ class GameState:
         return tuple(o for o in self.offices if o.company_id == company_id and o.status == "open")
 
     def regional_market(self, category: str, segment: str, region: str) -> RegionalMarket | None:
-        for m in self.regional_markets:
-            if (m.category, m.segment, m.region) == (category, segment, region):
-                return m
-        return None
+        markets = self.regional_markets
+        by_key: dict[tuple[str, str, str], RegionalMarket] = from_inputs(
+            markets, "regional_market_by_key", lambda: _first_by(markets, _REGIONAL_KEY)
+        )
+        return by_key.get((category, segment, region))
 
     def regions_of(self, product_id: int) -> tuple[ProductRegion, ...]:
-        return tuple(r for r in self.product_regions if r.product_id == product_id)
+        regions = self.product_regions
+        grouped: dict[int, tuple[ProductRegion, ...]] = from_inputs(
+            regions, "regions_by_product", lambda: _grouped(regions, _PRODUCT_ID)
+        )
+        return grouped.get(product_id, ())
 
     def product_region(self, product_id: int, region: str) -> ProductRegion | None:
-        for r in self.product_regions:
-            if r.product_id == product_id and r.region == region:
-                return r
-        return None
+        regions = self.product_regions
+        by_key: dict[tuple[int, str], ProductRegion] = from_inputs(
+            regions, "region_by_key", lambda: _first_by(regions, _PRODUCT_REGION)
+        )
+        return by_key.get((product_id, region))
 
     def regional_segments_of(
         self, product_id: int, region: str | None = None
     ) -> tuple[RegionalSegment, ...]:
-        return tuple(
-            s
-            for s in self.regional_segments
-            if s.product_id == product_id and (region is None or s.region == region)
+        segments = self.regional_segments
+        grouped: dict[int, tuple[RegionalSegment, ...]] = from_inputs(
+            segments, "regional_segments_by_product", lambda: _grouped(segments, _PRODUCT_ID)
         )
+        mine = grouped.get(product_id, ())
+        if region is None:
+            return mine
+        return tuple(s for s in mine if s.region == region)
 
     # --- Facilities (M12a) ------------------------------------------------------------------
 
@@ -1084,6 +1111,14 @@ def _first_by[T, K](items: tuple[T, ...], key: Callable[[T], K]) -> dict[K, T]:
     for x in items:
         out.setdefault(key(x), x)  # the first, as a scan finds it
     return out
+
+
+def _grouped[T, K](items: tuple[T, ...], key: Callable[[T], K]) -> dict[K, tuple[T, ...]]:
+    """Items by key, each group in the items' order (M45: what a filtering scan returns)."""
+    out: dict[K, list[T]] = {}
+    for x in items:
+        out.setdefault(key(x), []).append(x)
+    return {k: tuple(v) for k, v in out.items()}
 
 
 def _staff_by_company(employments: tuple[Employment, ...]) -> dict[int, tuple[Employment, ...]]:

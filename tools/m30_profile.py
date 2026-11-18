@@ -35,6 +35,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("save", type=Path)
     parser.add_argument("out", type=Path)
+    # M45: a January 2069 save has 12 months left before the dynasty ends
+    parser.add_argument("--warm-up", type=int, default=WARM_UP)
+    parser.add_argument("--timed", type=int, default=TIMED)
+    parser.add_argument("--profiled", type=int, default=PROFILED)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     path = args.out / "copy" / args.save.name
@@ -46,17 +50,17 @@ def main() -> int:
     with open_session(path) as session:
         state = load_state(session)
     turn, staff = state.turn, len(state.staff(state.player.id))
-    for _ in range(WARM_UP):
+    for _ in range(args.warm_up):
         answer_critical(path, data)
         run_turn(path, data)
     months = []
-    for _ in range(TIMED):
+    for _ in range(args.timed):
         answer_critical(path, data)
         start = time.perf_counter()
         run_turn(path, data)
         months.append(round((time.perf_counter() - start) * 1000))
     profile = cProfile.Profile()
-    for _ in range(PROFILED):
+    for _ in range(args.profiled):
         answer_critical(path, data)
         profile.enable()
         run_turn(path, data)
@@ -72,7 +76,7 @@ def main() -> int:
         "months_ms": months,
         "median_ms": statistics.median(months),
         "max_ms": max(months),
-        "profiled_months": PROFILED,
+        "profiled_months": args.profiled,
     }
     (args.out / "timings.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     print(json.dumps(report))

@@ -387,11 +387,24 @@ def _monthly_cost_lines(
 def monthly_costs(
     state: GameState, company_id: int, balance: Balance, data: GameData
 ) -> tuple[tuple[str, AccountCode, Cents], ...]:
-    """(memo label, account, amount) of one company's phase-6 costs, summed over divisions."""
-    totals: dict[tuple[str, AccountCode], Cents] = {}
-    for memo, account, amount, _ in monthly_cost_lines(state, company_id, balance, data):
-        totals[(memo, account)] = totals.get((memo, account), 0) + amount
-    return tuple((memo, account, amount) for (memo, account), amount in totals.items())
+    """(memo label, account, amount) of one company's phase-6 costs, summed over divisions.
+    Kept once per state, company and rules (M45: rivals' cash months, the CEO and payroll ask
+    for the same company's costs several times a month)."""
+
+    def compute() -> tuple[tuple[str, AccountCode, Cents], ...]:
+        totals: dict[tuple[str, AccountCode], Cents] = {}
+        for memo, account, amount, _ in monthly_cost_lines(state, company_id, balance, data):
+            totals[(memo, account)] = totals.get((memo, account), 0) + amount
+        return tuple((memo, account, amount) for (memo, account), amount in totals.items())
+
+    kept: tuple[Balance, GameData, tuple[tuple[str, AccountCode, Cents], ...]] = derived(
+        state,
+        ("monthly_costs", company_id, id(balance), id(data)),
+        lambda: (balance, data, compute()),
+    )
+    if kept[0] is balance and kept[1] is data:
+        return kept[2]
+    return compute()
 
 
 def _mid_region(balance: Balance, data: GameData) -> int:

@@ -88,14 +88,25 @@ def region_unserved(
             demand += rmarket.addressable if rmarket is not None else 0.0
             served += sum(
                 r.customers
-                for r in state.regional_segments
-                if r.region == region
-                and r.segment == seg
-                and (p := state.product(r.product_id)) is not None
+                for r in _regional_in(state, region, seg)
+                if (p := state.product(r.product_id)) is not None
                 and p.category == category
                 and p.status == "live"
             )
     return max(0.0, demand - served) / demand if demand > 0 else 0.0
+
+
+def _regional_in(state: GameState, region: str, segment: str) -> tuple[RegionalSegment, ...]:
+    """The state's regional segments in `region` and `segment`, in the state's order, from an
+    index built once per state (M45: every enter_region candidate scanned them all)."""
+
+    def index() -> dict[tuple[str, str], tuple[RegionalSegment, ...]]:
+        out: dict[tuple[str, str], list[RegionalSegment]] = {}
+        for r in state.regional_segments:
+            out.setdefault((r.region, r.segment), []).append(r)
+        return {k: tuple(v) for k, v in out.items()}
+
+    return derived(state, "regional_segments_by_region", index).get((region, segment), ())
 
 
 def region_candidates(
@@ -220,15 +231,21 @@ def _appeal(product: Product, seg: ProductSegment, data: GameData, turn: int) ->
 
 def _rivals_in(
     state: GameState, category: str, segment: str
-) -> list[tuple[Product, ProductSegment]]:
-    out = []
-    for product in state.products:
-        if product.category != category or product.status != "live":
-            continue
-        for seg in state.segments_of(product.id):
-            if seg.segment == segment and seg.price_cents is not None:
-                out.append((product, seg))
-    return out
+) -> tuple[tuple[Product, ProductSegment], ...]:
+    """Live products priced in the category's segment, in the state's product order, from an
+    index built once per state (M45: each rival's candidates scanned every product)."""
+
+    def index() -> dict[tuple[str, str], tuple[tuple[Product, ProductSegment], ...]]:
+        out: dict[tuple[str, str], list[tuple[Product, ProductSegment]]] = {}
+        for product in state.products:
+            if product.status != "live":
+                continue
+            for seg in state.segments_of(product.id):
+                if seg.price_cents is not None:
+                    out.setdefault((product.category, seg.segment), []).append((product, seg))
+        return {k: tuple(v) for k, v in out.items()}
+
+    return derived(state, "live_priced_by_segment", index).get((category, segment), ())
 
 
 def player_target(
