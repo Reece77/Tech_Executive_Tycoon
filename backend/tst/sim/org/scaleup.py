@@ -75,8 +75,9 @@ def modifiers(
         ("scaleup_modifiers", view.company_id, estimate, id(view), id(balance), id(data)),
         lambda: (view, balance, data, _modifiers(state, view, balance, data, estimate=estimate)),
     )
-    if kept[0] is view and kept[1] is balance and kept[2] is data:
-        return kept[3]
+    held_view, held_balance, held_data, value = kept
+    if held_view is view and held_balance is balance and held_data is data:
+        return value
     return _modifiers(state, view, balance, data, estimate=estimate)
 
 
