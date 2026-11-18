@@ -834,7 +834,7 @@ markets:
     latin_america: 0.050
     africa: 0.060
     oceania: 0.045
-  mature_start_year: 2030 # year from which base growth decays toward mature_gdp_growth + mature_premium (54.1)
+  mature_start_year: 2026 # M43a tuning from 2030 (54.4 target 1 with the 10x ceilings: technology 16.6% of world GDP in the 2040s): year from which base growth decays toward mature_gdp_growth + mature_premium (54.1)
   mature_half_life_years: 4 # years for the gap to halve (A: PCs and smartphones slowed over about a decade)
   mature_gdp_growth: 0.04 # fraction a year: the world economy's nominal growth (A, gdp_growth's mean)
   mature_premium: # fraction a year a category grows above the economy in the 2030s (A)

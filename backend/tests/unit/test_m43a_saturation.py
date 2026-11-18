@@ -109,21 +109,27 @@ def test_growth_fades_near_the_ceiling(loaded: LoadedData) -> None:
     assert grown.addressable / (m.addressable * scale) == pytest.approx((1 + g * 0.5) ** (1 / 12))
 
 
-def test_long_run_decays_after_2030(loaded: LoadedData) -> None:
-    """54.1: AI models' base growth from 2030 halves its gap to the economy's growth plus its
+def test_long_run_decays_after_its_start(loaded: LoadedData) -> None:
+    """54.1: AI models' base growth from markets.mature_start_year halves its gap to the economy's growth plus its
     premium every half-life, then M37's maturity takes over in 2040."""
     data, balance = loaded.game_data, loaded.balance
     mb = balance.markets
     table = data.eras.base_growth["ai_models"]
     target = mb.mature_gdp_growth + mb.premium_of("ai_models")
-    g0 = table[2030]
-    for y in (2031, 2035, 2039):
-        want = target + (g0 - target) * 0.5 ** ((y - 2030) / mb.mature_half_life_years)
+    start = mb.mature_start_year
+    g0 = table[start]
+    assert g0 == pytest.approx(0.50)  # eras.yaml's 2025 rate carried to the start
+    for y in (start + 1, start + 5, 2039):
+        want = target + (g0 - target) * 0.5 ** ((y - start) / mb.mature_half_life_years)
         assert table[y] == pytest.approx(want)
     # a rate at or below its target, or a table with its own later years, is unchanged
     low = mb.model_copy(update={"mature_gdp_growth": 5.0})
     assert _path({2010: 0.2}, 0.2, "b2b_saas", low, 2039) is None
-    assert _path({2010: 0.2, 2035: 0.1}, 0.2, "b2b_saas", mb, 2039) is None
+    replaced = _path({2010: 0.2, 2035: 0.1}, 0.2, "b2b_saas", mb, 2039)
+    floor = mb.mature_gdp_growth + mb.premium_of("b2b_saas")
+    hl, start = mb.mature_half_life_years, mb.mature_start_year
+    assert replaced is not None  # a rate listed after the start gives way to the decay
+    assert replaced[2035] == pytest.approx(floor + (0.2 - floor) * 0.5 ** ((2035 - start) / hl))
     assert _path({2010: 0.2}, 0.2, "b2b_saas", mb, 2039) is not None
     assert with_long_run(data.categories, data.eras, low, 2039)[0] == data.categories
 
