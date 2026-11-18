@@ -1435,6 +1435,13 @@ def with_company(state: GameState, company: CompanyState) -> GameState:
     return replace(state, companies=_upsert(state.companies, company, lambda c: c.id))
 
 
+def with_companies(state: GameState, companies: list[CompanyState]) -> GameState:
+    """Many companies in one state update (M45: month-end histories wrote one at a time)."""
+    if not companies:
+        return state
+    return replace(state, companies=_upsert_many(state.companies, companies, lambda c: c.id))
+
+
 def with_employment(state: GameState, employment: Employment) -> GameState:
     return replace(state, employments=_upsert(state.employments, employment, lambda e: e.id))
 
@@ -1651,6 +1658,18 @@ def with_segment_share(state: GameState, share: SegmentShare) -> GameState:
     return replace(
         state,
         segment_shares=_upsert(state.segment_shares, share, lambda s: (s.product_id, s.segment)),
+    )
+
+
+def with_segment_shares(state: GameState, shares: list[SegmentShare]) -> GameState:
+    """Many segment shares in one state update (M45: phase 11 wrote one at a time)."""
+    if not shares:
+        return state
+    return replace(
+        state,
+        segment_shares=_upsert_many(
+            state.segment_shares, shares, lambda s: (s.product_id, s.segment)
+        ),
     )
 
 

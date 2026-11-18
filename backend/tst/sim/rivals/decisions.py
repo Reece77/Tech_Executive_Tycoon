@@ -47,7 +47,7 @@ from tst.sim.state import (
     with_regional_segment,
     with_rival_effect,
     with_rival_move,
-    with_segment_share,
+    with_segment_shares,
 )
 
 PUSHES = ("feature_push", "quality_push", "brand_push")
@@ -173,11 +173,12 @@ def remember_shares(state: GameState, balance: Balance) -> GameState:
     """Append this month's share to each product-segment's history (window + 1 kept)."""
     keep = balance.rivals.window_turns + 1
     known = {(s.product_id, s.segment): s for s in state.segment_shares}
+    shares = []
     for key, share in served_shares(state).items():
         old = known.get(key)
         history = (*(old.history if old else ()), share)[-keep:]
-        state = with_segment_share(state, SegmentShare(key[0], key[1], history))
-    return state
+        shares.append(SegmentShare(key[0], key[1], history))
+    return with_segment_shares(state, shares)  # M45: one state update for them all
 
 
 def share_change(state: GameState, product_id: int, segment: str, window: int) -> float | None:
