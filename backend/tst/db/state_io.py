@@ -188,11 +188,11 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.db.modes_io import load_modes, sync_modes
+from tst.db.pharma_io import load_pharma, sync_pharma
 from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.power_io import load_power, sync_power
 from tst.db.refining_io import load_refining, sync_refining
 from tst.db.regulation_io import load_regulation, sync_regulation
-from tst.db.pharma_io import load_pharma, sync_pharma
 from tst.db.robotics_io import load_robotics, sync_robotics
 from tst.db.vehicle_io import load_vehicles, sync_vehicles
 from tst.db.world_io import load_world, sync_world

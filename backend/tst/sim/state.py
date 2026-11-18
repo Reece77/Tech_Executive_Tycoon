@@ -110,7 +110,6 @@ from tst.sim.medical.models import (
     Submission,
 )
 from tst.sim.mining.models import Mine, MineDeal, RivalBid
-from tst.sim.pharma import models as pharma
 from tst.sim.mna.models import AcquiredPerson, Acquisition, Deal, RivalListing, TargetFile
 from tst.sim.modes.models import CompanyScore, GameMode, QuarterMark, Ranking, Venture
 from tst.sim.money import Cents
@@ -127,6 +126,7 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.pharma import models as pharma
 from tst.sim.platforms.models import (
     DeviceRun,
     OpenSource,

@@ -74,6 +74,7 @@ from tst.sim.modes.config import (
 )
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.org.voice_data import Voice
+from tst.sim.pharma.config import PharmaBalance, PharmaFile
 from tst.sim.platforms.config import PlatformsBalance, PlatformsFile
 from tst.sim.power.config import PowerFile
 from tst.sim.press.config import (
@@ -85,7 +86,6 @@ from tst.sim.press.config import (
 from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
-from tst.sim.pharma.config import PharmaBalance, PharmaFile
 from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
@@ -1704,7 +1704,7 @@ class CategoryDef(_Frozen):
 
     @property
     def pharma(self) -> bool:
-        """M42 (55.1): a pharmaceutical therapeutic area (a pseudo-category: drugs are programmes)."""
+        """M42 (55.1): a pharmaceutical therapeutic area (pseudo: drugs are programmes)."""
         return self.family == "pharma"
 
     @property
