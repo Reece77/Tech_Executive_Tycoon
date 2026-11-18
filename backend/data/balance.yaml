@@ -2930,6 +2930,7 @@ dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here r
       chips_ai_accelerator: 0.025
       dev_tools: 0.03 # M43a: its ceiling binds from before 2026 (54.2), so it needs more base to grow 1% (54.4 target 3)
       devices: 0.025 # M43a: mobile chips follow devices' growth, under their own ceiling (target 3)
+      fintech: 0.025 # M43a: 0.98% a year in the 2060s at 0.02 with the decay from 2030 (54.4 target 3)
       vehicles: 0.01
     half_life_years: 3 # years for the gap between a category's base growth and its mature rate to halve (A; M37 tuning from 6: AI models' 25% of 2039 kept the largest incumbents compounding past int64 cents of revenue by the 2050s)
   carbon: # 52.2: carbon policy's steps stop; a priced region's carbon reverts to a seeded long-run level
