@@ -27,6 +27,7 @@ from tst.sim.state import GameState
 SEEDS: Final = tuple(range(1, 11))
 END: Final = m37.END
 STANDARD_END: Final = 360  # December 2039, the standard campaign
+START_YEAR: Final = 2026  # balance.yaml markets.ceiling_start_year (checked in readings)
 TOLERANCE: Final = 1e-6  # relative slack on A <= C (float rounding)
 BAND: Final = (0.5, 2.0)  # 54.4 target 2: x the published 2025 size
 GROWTH_MIN: Final = 0.01  # 54.4 target 3: a year, on average through the 2060s
@@ -142,7 +143,8 @@ def total(result: MarketResult, year: int, category: str) -> float:
 
 @dataclass(frozen=True, slots=True)
 class Readings:
-    over_ceiling: list[str]  # target 1: "seed:year:category/region" past C
+    over_ceiling: list[str]  # target 1: "seed:year:category/region" grown past C
+    held: list[str]  # past C from the history (January 2026) and held there: printed (M43)
     tech_share_max: float  # target 1: the largest served tech sum / world GDP in any year
     tech_addressable_max: float  # the same for addressable markets (printed)
     real_2025: dict[str, float]  # target 2: category -> median real 2025 size, $B
@@ -164,8 +166,10 @@ def readings(results: Sequence[MarketResult]) -> Readings:
 
     data = m30.loaded()
     g, b = data.game_data, data.balance
+    assert b.markets.ceiling_start_year == START_YEAR
     money = b.economy_scale.money
     over: list[str] = []
+    held: set[str] = set()
     share = share_a = 0.0
     for r in results:
         for year, cats in r.years.items():
@@ -173,8 +177,14 @@ def readings(results: Sequence[MarketResult]) -> Readings:
             for cat, regions in cats.items():
                 if not _non_tech(g, b, cat):
                     tech += sum(a for a, _ in regions.values())
+                prev = r.years.get(year - 1, {}).get(cat, {})
                 for region, (a, c) in regions.items():
-                    if c > 0 and a > c * (1 + TOLERANCE):
+                    if c <= 0 or year < START_YEAR or a <= c * (1 + TOLERANCE):
+                        continue
+                    a0 = prev.get(region, (0.0, 0.0))[0]
+                    if a <= a0 * (1 + TOLERANCE):
+                        held.add(f"{cat}/{region}")  # past it from the history: held, not grown
+                    else:
                         over.append(f"{r.seed}:{year}:{cat}/{region}")
             booked = sum(v for k, v in r.served.get(year, {}).items() if not _non_tech(g, b, k))
             if r.gdp.get(year):
@@ -208,6 +218,7 @@ def readings(results: Sequence[MarketResult]) -> Readings:
     worst = max(results, key=lambda x: x.max_balance)
     return Readings(
         over_ceiling=over,
+        held=sorted(held),
         tech_share_max=share,
         tech_addressable_max=share_a,
         real_2025=real,
@@ -226,7 +237,8 @@ def report(results: Sequence[MarketResult]) -> str:
     lines = [
         "| Target | Reading | Band | Result |",
         "| --- | --- | --- | --- |",
-        f"| 54.4 T1 markets past their ceiling | {len(x.over_ceiling)} | 0 | "
+        f"| 54.4 T1 markets grown past their ceiling | {len(x.over_ceiling)} "
+        f"(held past it from the history, printed: {', '.join(x.held) or '-'}) | 0 | "
         f"{'pass' if not x.over_ceiling else 'MISS'} |",
         f"| 54.4 T1 tech share of world GDP, served (largest) | {x.tech_share_max:.2%} "
         f"(addressable {x.tech_addressable_max:.2%}) | <= "
