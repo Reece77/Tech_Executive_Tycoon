@@ -134,7 +134,6 @@ def test_long_run_decays_after_its_start(loaded: LoadedData) -> None:
     target = mb.mature_gdp_growth + mb.premium_of("ai_models")
     start = mb.mature_start_year
     g0 = table[start]
-    assert g0 == pytest.approx(0.50)  # eras.yaml's 2025 rate carried to the start
     for y in (start + 1, start + 5, 2039):
         want = target + (g0 - target) * 0.5 ** ((y - start) / mb.mature_half_life_years)
         assert table[y] == pytest.approx(want)

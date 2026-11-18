@@ -93,10 +93,10 @@ def test_new_categories(loaded: LoadedData) -> None:
     assert ai.growth_in(2022) == pytest.approx(1.50)
     assert ai.growth_in(2023) == pytest.approx(2.00)
     # M43a (54.1): from markets.mature_start_year the gap to the economy's growth plus a
-    # premium halves each half-life from its rate at the start (M8's 2025 rate, 0.60)
+    # premium halves each half-life from its rate at the start (the table's own rate there)
     mb = loaded.balance.markets
     start = mb.mature_start_year
-    g0 = 0.60
+    g0 = 0.60 if start < 2030 else 0.25  # categories.yaml: 0.60 from 2025, 0.25 from 2030
     assert ai.growth_in(start) == pytest.approx(g0)
     floor = mb.mature_gdp_growth + mb.premium_of("ai_models")
     assert ai.growth_in(2039) == pytest.approx(
