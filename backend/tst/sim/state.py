@@ -1209,8 +1209,9 @@ def ownership_history(state: GameState, company_id: int) -> tuple[Ownership, ...
     """Every holding of `company_id`, oldest first (31.1). A company with a parent but no
     recorded history (a save or fixture from before M16) is held by its parent from its
     latest closing, or from turn 0 without one."""
-    by_company: dict[int, tuple[Ownership, ...]] = derived(
-        state, "ownerships_by_company", lambda: _ownerships_by_company(state.ownerships)
+    ownerships = state.ownerships  # M45: kept with the tuple
+    by_company: dict[int, tuple[Ownership, ...]] = from_inputs(
+        ownerships, "ownerships_by_company", lambda: _ownerships_by_company(ownerships)
     )
     found = by_company.get(company_id)
     if found:
@@ -1265,8 +1266,13 @@ def ultimate_owner(state: GameState, company_id: int) -> int:
 
 
 def group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
-    """`_group_members`, computed once per state and root (M30)."""
-    return derived(state, ("group_members", root_id), lambda: _group_members(state, root_id))
+    """`_group_members`, kept with the companies, holdings and acquisitions it reads (M30:
+    once per state; M45: a month makes hundreds of states that keep those three)."""
+    return from_all(
+        (state.companies, state.ownerships, state.acquisitions),
+        ("group_members", root_id),
+        lambda: _group_members(state, root_id),
+    )
 
 
 def _group_members(state: GameState, root_id: int) -> tuple[GroupMember, ...]:
