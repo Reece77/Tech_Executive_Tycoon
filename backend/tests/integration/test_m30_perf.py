@@ -31,7 +31,7 @@ pytestmark = [
     ),
 ]
 
-MEDIAN_S = 0.4  # the brief's 2039 median
+MEDIAN_S = 0.4  # the brief's 2039 median (M45: both V6 saves set 400 ms, runner-adjusted)
 # The full_integrator save (weekly-v6-integrator) missed it on CI at 439 ms; the PM's ruling
 # (2026-11-15) hands the 400 ms to M35 and guards that save at 500 ms meanwhile, so the
 # Makefile sets TST_M30_MEDIAN_MS=500 for it. M38 (2026-11-17) set the same for the plain V6
