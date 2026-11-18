@@ -232,12 +232,16 @@ def openings(
     ib = balance.regulation.investigation
     logs: list[LogItem] = []
     owners = sorted({owner_of(state, c.id) for c in state.ledger_companies()})
+    # money-exact: ratio (as in chance(), whose 0 below the floor this check gives first)
+    floor = ib.min_revenue_cents * balance.economy_scale.money
     for i, reg in enumerate(rdata.file(data).regulators):
         for owner in owners:
             if open_case(state, owner, reg.key) is not None:
                 continue
             last = _closed_turns(state, owner, reg.key)
             if last and max(last) > state.turn - ib.cooldown_months:
+                continue
+            if v.region_year(owner, reg.region) < floor:  # M45: chance() is 0; skip causes()
                 continue
             found = causes(state, owner, reg, v, balance, data)
             c = chance(state, owner, reg, v, balance, data, found)
