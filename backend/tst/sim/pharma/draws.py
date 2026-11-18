@@ -28,4 +28,4 @@ STREAM: Final = "pharma"
 
 
 def gen(rng: RngFactory, turn: int, family: int, *key: int) -> np.random.Generator:
-    return rng.stream(turn, STREAM, family, *key)
+    return rng.stream(turn, "pharma", family, *key)

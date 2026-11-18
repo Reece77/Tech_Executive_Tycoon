@@ -106,6 +106,7 @@ def seeded_b(s: SeededDrug, turn: int, balance: Balance, data: GameData) -> floa
     if turn < s.approved_turn:
         return 0.0
     years = (turn - s.approved_turn) / pd.MONTHS
+    # money-exact: rate: cents a year on the ramp, rounded once where posted
     value = s.peak_cents * min(1.0, years / balance.pharma.rivals.ramp_years)
     if turn >= s.loe_turn:
         value *= pd.retained(pd.modality(data, s.modality), turn - s.loe_turn)
@@ -193,6 +194,7 @@ def month(
     entries: list[LedgerEntry] = []
     revenue: dict[int, int] = {}
     turn = state.turn
+    # money-exact: rate: the month's float pool, rounded once where posted
     pool = (generic_cents + rival_generic_pool(state, balance, data)) * rb_share(balance)
     rb = balance.pharma.rivals
     for cid, r in sorted(companies(state, data).items()):

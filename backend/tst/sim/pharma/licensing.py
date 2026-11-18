@@ -23,6 +23,7 @@ from typing import Final
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, LICENSE_REVENUE, RESEARCH, ROYALTIES, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.pharma import data as pd
 from tst.sim.pharma import draws
 from tst.sim.pharma import pipeline as pl
@@ -136,7 +137,7 @@ def take_asset(
         ind_turn=state.turn if a.stage in ("phase2", "phase3") else None,
     )
     mult = pd.file(data).licensing.acquire_mult
-    upfront = round((a.upfront_cents + a.milestones_cents) * mult) if acquire else a.upfront_cents
+    upfront = times(a.upfront_cents + a.milestones_cents, mult) if acquire else a.upfront_cents
     deal = Deal(
         id=_deal_id(state),
         kind="acquire" if acquire else "in_license",
@@ -254,6 +255,7 @@ def platform(
         counterparty_id=rival_id,
         counterparty=rival.name,
         turn=state.turn,
+        # money-exact: rate: real cents to dollars, scaled and rounded once
         fee_cents=pd.cents(ab.platform_fee_cents / pd.CENTS, balance),
         until_turn=state.turn + ab.platform_months,
     )

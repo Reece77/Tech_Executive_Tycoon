@@ -85,6 +85,7 @@ def weight(
     w *= db.support_floor + (1 - db.support_floor) * min(1.0, drug.support)
     if region == pd.US_REGION:
         ref = ind.price_year * pd.CENTS
+        # money-exact: ratio: a price against its reference
         w *= dmath.pow(ref / max(1, drug.list_cents), db.price_elasticity)
     return w
 
@@ -190,6 +191,7 @@ def month(
                 if lost > 0:
                     e = pd.modality(data, p.modality).erosion
                     generic_cents += (
+                        # money-exact: rate: float cents accumulated, rounded once where posted
                         lost * net_cents_year(state, p, drug, region, data) * e.price_share
                     )
                 brand.setdefault(p.id, {})[region] = n * kept
@@ -222,6 +224,7 @@ def month(
                 for region, n in sorted(brand[p.id].items()):
                     n *= cut
                     patients += n
+                    # money-exact: rate: float cents accumulated, rounded once where posted
                     c = n * net_cents_year(state, p, drug, region, data) * scale / pd.MONTHS
                     cents += c
                     if region == pd.US_REGION:
@@ -270,6 +273,7 @@ def month(
     keep = turn - balance.pharma.history_months
     recent = tuple(m for m in state.pharma_months if m.turn > keep)
     state = replace(state, pharma_months=(*recent, *months))
+    # money-exact: rate: the month's pool, rounded once here
     out.generic_cents = round(generic_cents * scale / pd.MONTHS)
     return state, entries, out
 
@@ -280,6 +284,7 @@ def _support_cents(
     if drug.support <= 0:
         return 0
     regions = sum(1 for r in data.region_keys if pd.access(state, p.id, r, data) > 0)
+    # money-exact: rate: real cents a month, scaled and rounded once below
     real = drug.support * pd.area(data, p.area).sales_cents * regions
     return round(real * balance.pharma.scale)
 

@@ -124,6 +124,7 @@ def explain(p: Programme, balance: Balance, data: GameData) -> Value:
         spend = 0.0
         for s, step in zip(stages, steps, strict=False):
             n = pl.stage_patients(s, "standard", data) if s in TRIALS else 0
+            # money-exact: estimate: rNPV, shown as a range, never posted
             spend += reach * pl.stage_cost_cents(
                 p, s, n, pl.stage_months(p, s, "standard", balance, data), balance, data
             )

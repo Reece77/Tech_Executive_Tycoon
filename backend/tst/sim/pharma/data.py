@@ -162,6 +162,7 @@ def treated(data: GameData, ind: IndicationDef, region: str, turn: int) -> float
 def net_price(data: GameData, ind: IndicationDef, list_cents: int, region: str) -> float:
     """Real USD a patient-year a drug listed at `list_cents` nets in a region (before the IRA)."""
     a = area(data, ind.area)
+    # money-exact: rate: real dollars a patient-year, a unit price
     return list_cents / CENTS * (1 - a.gross_to_net) * price_index(data, region)
 
 
