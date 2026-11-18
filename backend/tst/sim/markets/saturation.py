@@ -106,6 +106,7 @@ def segment_value(data: GameData, category: str, segment: str, region: str, home
     cat = data.category(category)
     m = cat.market(segment)
     index = 1.0 if region == home else float(price_ratio(region, home, data))
+    # money-exact: ratio (a market's size against its ceiling, never booked)
     monthly = m.reference_price_cents * sale_rate(cat, segment)
     if cat.medical:
         monthly += m.units_per_customer * _consumables(data, category)

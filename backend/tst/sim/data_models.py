@@ -1277,16 +1277,16 @@ class RegionalMarketsBalance(_Frozen):
     neighbour_sellers: float = Field(ge=0, le=1)
     cross_region_step: float = Field(ge=0)
     cross_region_floor: float = Field(ge=0, le=1)
-    # M43a (54.1): market ceilings and long-run growth; an empty ceiling_share disables both
-    ceiling_share: dict[str, float] = Field(default_factory=dict)  # category|default -> of GDP
-    era_ceiling_lift: float = Field(default=0.0, ge=0)  # ceiling x (1 + this x eras arrived)
-    gdp_growth: dict[str, float] = Field(default_factory=dict)  # region -> a year after history
-    mature_start_year: int = 2030
-    mature_half_life_years: float = Field(default=3.0, gt=0)
-    mature_gdp_growth: float = Field(default=0.0, ge=0)
-    mature_premium: dict[str, float] = Field(default_factory=dict)  # category|default -> a year
-    tech_share_max: float = Field(default=0.15, gt=0)  # 54.4 target 1
-    non_tech: tuple[str, ...] = ()  # category keys or families outside target 1's sum
+    # M43a (54.1): market ceilings and long-run growth
+    ceiling_share: dict[str, float]  # category|default -> share of a region's GDP
+    era_ceiling_lift: float = Field(ge=0)  # ceiling x (1 + this x eras arrived)
+    gdp_growth: dict[str, float]  # region -> nominal growth a year after macro history
+    mature_start_year: int
+    mature_half_life_years: float = Field(gt=0)
+    mature_gdp_growth: float = Field(ge=0)
+    mature_premium: dict[str, float]  # category|default -> fraction a year above the economy
+    tech_share_max: float = Field(gt=0)  # 54.4 target 1
+    non_tech: tuple[str, ...]  # category keys or families outside target 1's sum
 
     @model_validator(mode="after")
     def _ceilings(self) -> RegionalMarketsBalance:
