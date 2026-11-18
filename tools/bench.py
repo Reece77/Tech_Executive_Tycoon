@@ -9,7 +9,11 @@ goes through `repository`, as tools/v6_save.py):
   centres), over the same years (acquirer, which buys companies, ends its game before 2039);
 - world: a do-nothing player with $50B of cash moved to January 2026 (as tst.balance.m28_world)
   and played to January 2039 in the living world: every M28 chain company and 13 years of its
-  facilities, deals and news.
+  facilities, deals and news;
+- v6, v6i (M45): the two saves M30's 2039 guard times (tools/v6_save.py; research_heavy and
+  full_integrator), January 2010 to January 2039;
+- dynasty (M45): M37's save, full_integrator in dynasty mode with a family (children 2 and 5),
+  January 2010 to January 2069 (708 months; the weekly-m37 job's save).
 
 `run` copies each save and measures, on the copy:
 
@@ -47,9 +51,19 @@ from typing import Any, Final
 ROOT: Final = Path(__file__).resolve().parent.parent
 BACKEND: Final = ROOT / "backend"
 PERF_DIR: Final = ROOT / "docs" / "perf"
-SAVES: Final = ("integrator", "software", "world")
-STRATEGY: Final = {"integrator": "full_integrator", "software": "integrator"}
+SAVES: Final = ("integrator", "software", "world", "v6", "v6i", "dynasty")
+STRATEGY: Final = {
+    "integrator": "full_integrator",
+    "software": "integrator",
+    "v6": "research_heavy",
+    "v6i": "full_integrator",
+    "dynasty": "full_integrator",
+}
 JANUARY_2039: Final = 348
+# M45: the saves M30's and M37's guards time, built as the weekly jobs build them (Makefile)
+TURNS: Final = {"v6": 360, "v6i": 360, "dynasty": 708}
+LENGTH: Final = {"dynasty": "dynasty"}
+CHILDREN: Final = {"dynasty": (2, 5)}
 WORLD_FROM: Final = 192  # January 2026
 WORLD_CASH: Final = 5_000_000_000_000  # $50B, as tst.balance.m28_world
 SEED: Final = 1
@@ -123,7 +137,15 @@ def build(save_dir: Path, names: tuple[str, ...]) -> None:
         if name == "world":
             _world(save_dir, data)
         else:
-            build_v6(save_dir, name, JANUARY_2039, SEED, STRATEGY[name])
+            build_v6(
+                save_dir,
+                name,
+                TURNS.get(name, JANUARY_2039),
+                SEED,
+                STRATEGY[name],
+                LENGTH.get(name, "standard"),
+                CHILDREN.get(name, ()),
+            )
         print(f"built {save_path(save_dir, name)}", flush=True)
 
 
