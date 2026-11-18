@@ -802,29 +802,29 @@ markets:
   # category's real spending share. Calibrated (Reece, 2026-11-17: 54.4 target 2 judges served revenue)
   # so that 2025's served revenue sits within 0.5-2x the published size (docs/v5-research/market-sizes-
   # dossier.md) and, where it already did, a ceiling barely binds in the developed regions before 2026
-  # (A: about 5x North America's 2025 addressable share on main's curves) and binds where addressable
+  # (A: about 10x North America's 2025 addressable share on main's curves; M43a tuning from 5x for earlier guards, decision 10) and binds where addressable
   # demand had run past the economy (Asia and Africa: AI models at 90-105% of their GDP in 2025). R for
   # scale: Gartner IT spending 2025 $5.44T, about 4.6% of world GDP ($117T); software $1.23T (1.05%).
   ceiling_share:
-    default: 0.01 # A
-    b2b_saas: 0.08 # served 2025 in band on main (0.64x Gartner SaaS $299B); A 0.63% of North America's GDP
+    default: 0.02 # A
+    b2b_saas: 0.15 # served 2025 in band on main (0.64x Gartner SaaS $299B); A 0.63% of North America's GDP
     dev_tools: 0.002 # binds: main's served 2025 was 3.7x the published $25B; A 0.44% of North America's GDP
-    consumer_apps: 0.026 # in band on main (1.7x Sensor Tower $167B); A 0.53%
-    cybersecurity: 0.024 # in band on main (0.72x Gartner $213B); A 0.49%
-    fintech: 0.07 # in band on main (1.0x BCG/QED $378B); A 1.37%
+    consumer_apps: 0.06 # in band on main (1.7x Sensor Tower $167B); A 0.53%
+    cybersecurity: 0.05 # in band on main (0.72x Gartner $213B); A 0.49%
+    fintech: 0.15 # in band on main (1.0x BCG/QED $378B); A 1.37%
     ai_models: 0.015 # binds: main's served 2025 was 8x the published $186B; A 8.8% of North America's GDP, 105% of Africa's
     cloud_hosting: 0.012 # binds: main's served 2025 was 3.5x Synergy's $419B; A 6.6%
-    devices: 0.05 # in band on main (0.91x IDC phones + PCs $750B); A 1.04%
-    servers: 0.06 # A about 0.9% after its recalibration (categories.yaml)
-    chips_mobile_soc: 0.004 # in band on main (1.04x about $45B); A 0.08%
-    chips_server_cpu: 0.012 # in band on main (1.13x about $27B); A 0.25%
-    chips_ai_accelerator: 0.30 # in band on main (1.11x $170-290B); A 4.4% of North America's GDP, 54-65% of South Asia's and Africa's
-    contract_manufacturing: 0.003 # a spare-capacity market by design (economy-scale audit 4); A 0.05%
-    wearables_diagnostics: 0.002 # M41's sizes (2024 real); A 0.03%
-    imaging: 0.005 # A 0.09%
-    surgical_robotics: 0.0015 # A 0.02%
-    implantables: 0.004 # A 0.06%
-    samd: 0.0005 # A 0.005%
+    devices: 0.10 # in band on main (0.91x IDC phones + PCs $750B); A 1.04%
+    servers: 0.12 # A about 0.9% after its recalibration (categories.yaml)
+    chips_mobile_soc: 0.008 # in band on main (1.04x about $45B); A 0.08%
+    chips_server_cpu: 0.025 # in band on main (1.13x about $27B); A 0.25%
+    chips_ai_accelerator: 0.50 # in band on main (1.11x $170-290B); A 4.4% of North America's GDP, 54-65% of South Asia's and Africa's
+    contract_manufacturing: 0.006 # a spare-capacity market by design (economy-scale audit 4); A 0.05%
+    wearables_diagnostics: 0.004 # M41's sizes (2024 real); A 0.03%
+    imaging: 0.01 # A 0.09%
+    surgical_robotics: 0.003 # A 0.02%
+    implantables: 0.008 # A 0.06%
+    samd: 0.001 # A 0.005%
   era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
   gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
     north_america: 0.040
