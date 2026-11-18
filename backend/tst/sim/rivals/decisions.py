@@ -674,6 +674,10 @@ def rival_month(
             continue
         if robot_holds(state, company, balance, data):  # M39 (53.1): robot makers likewise
             continue
+        from tst.sim.pharma.rivals import holds as pharma_holds
+
+        if pharma_holds(state, company, balance, data):  # M42 (55.5): drug makers likewise
+            continue
         gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)
         if company.is_startup:
