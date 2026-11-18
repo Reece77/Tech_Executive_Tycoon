@@ -55,6 +55,8 @@ jobs:
         run: |
           ls -la /tmp/tst-v6
           uv run --project backend python tools/m30_profile.py /tmp/tst-v6/${{ matrix.save }}.tst.sqlite /tmp/m45-profile/${{ matrix.save }}
+          head -n 70 /tmp/m45-profile/${{ matrix.save }}/cumulative.txt
+          head -n 60 /tmp/m45-profile/${{ matrix.save }}/own.txt
 
       - name: Upload the profile
         if: always()
