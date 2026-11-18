@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-import yaml
 from pydantic import BaseModel, create_model
 
 from tst import loader
@@ -248,7 +247,7 @@ def editor_file(data_dir: Path, file: str, spoilers: bool = False) -> EditorFile
     are left out unless the player turned on "Show spoiler fields" (`spoilers`; PM ruling
     2026-11-08): the editor reads data files only, never a save."""
     text = (data_dir / file).read_text(encoding="utf-8")
-    base = yaml.safe_load(text)
+    base = loader.safe_load(text)
     if spoilers:
         return EditorFile(file, label(file), file_spec(file, base), base, comments(text))
     notes = {
