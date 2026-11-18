@@ -84,6 +84,22 @@ M37 found the AI-models market at about $1.2–1.6T a year in 2025 (real-dollar 
 8. **Target 3 prints, not judges, data-set markets:** vehicles' demand is car sales x an EV share at its S-curve cap (M38's `vehicles.yaml`, M37's continuation), with no growth rate for 54.1 to act on: 0.21% a year in the 2060s, carried as M38's.
 9. **§54.4 readings (seeds 1-4, dynasty to 2069, `tools/m43a_targets.py`):** T1 no market past its ceiling in any year, technology served revenue at most 11.6% of world GDP (2039; addressable 49.9%): met. T2 met (decision 3). T3 every growing category at least 1% a year through the 2060s: met. T4 largest balance 1.48e16 cents (Other East Asia power generators' commodity revenue; IBM's was 6.07e18): met, `M37.money` closed. T5-T6: decision 10.
 
+10. **Earlier guards (sub-task 4), open: stopped for the PM (CLAUDE.md §9, a guard rules 1-4 can't resolve).** CI on this branch, against main's own runs (main's nightly at `m41-done` fails only M32's stale fixture; main's weekly at `m37-done` fails only M30's turn-time guard, 587 ms):
+
+    | Guard | Main | 5x ceilings, decay from 2030 (3516fd1) | 10x ceilings, decay from 2030 (22eb72e) |
+    | --- | --- | --- | --- |
+    | M13 §25.9 T2 (IPOs, >= 4 of 10 a strategy) | pass | steady 3 | blitzscale 1 |
+    | M14b §29.7 T4 (rivalries 5-9) | pass | 10 | pass |
+    | M22 §39.4 T2 (variant loss 5-15%) | pass | miss | miss |
+    | M24 §32.7 T3 (blitzscale real >= 6) | pass | pass | 5 |
+    | M36 §45.8 (an heir within 80% of the CEO arm) | pass | miss | miss |
+    | V2 research_heavy wins <= 4 (weekly) | pass | 5 | not run |
+    | V4.T1.1 platform_owner / devices_regions 0.90-1.40x (weekly) | pass | 0.88-0.89x | not run |
+    | founder value: litho_bet wins <= 4 (weekly) | pass | 6 | not run |
+    | M30 2039 month <= 500 ms (weekly) | 587 ms (miss) | 651 ms (6.6 workloads against 6.1) | not run |
+
+    Loosening the ceilings (my keys, rule 2) moved the misses rather than closing them: every category's demand changes from 2010, so strategy outcomes that depend on absolute market sizes (IPO counts, wins, ratios between strategies selling to different markets) shift. With the 10x ceilings, target 1 needed the long-run decay to start in 2026 (cee9786: 13.8% of world GDP at most, all of targets 1-4 met); the guards have not been re-run on cee9786. Fixtures (golden, M30, M28, M32, M37 legacy) are recorded for 3516fd1 and stale since.
+
 ## Follow-ups
 
 (filled in by the agent)
