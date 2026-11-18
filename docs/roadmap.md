@@ -72,9 +72,9 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | M37, dynasty mode (the second 30 years) | now, lane E; merges after M38 and M41 (brief `docs/tasks/M37-dynasty-mode.md`, formulas §52) |
 | M38, electric vehicles | now, lane C beside M35; merges after `m35b-done` (brief `docs/tasks/M38-electric-vehicles.md`, formulas §49) |
 | M39, robotics and robotaxis | now, lane F; merges after M41 and M37 (brief `docs/tasks/M39-robotics-and-robotaxis.md`, formulas §53) |
-| M40, space and satellites | after M32 |
+| M40, space and satellites | lane I after M39 merges; merges after M43a and M42 (brief `docs/tasks/M40-space-and-satellites.md`, formulas §56) |
 | M41, medical devices | now, lane D; merges after `m35b-done` and M38 (brief `docs/tasks/M41-medical-devices.md`, formulas §50) |
-| M42, pharmaceuticals | after M41 |
+| M42, pharmaceuticals | lane H after M39 merges; merges after M43a (brief `docs/tasks/M42-pharmaceuticals.md`, formulas §55) |
 | M44, defence and government contracts | after M40 |
 | M43a, market sizes and saturation | now, lane G; merges after M39 (brief `docs/tasks/M43a-market-sizes-and-saturation.md`, formulas §54): closes M37's runaway economy |
 | M45, performance at scale, part two | after M37: rival decisions and per-turn saving proportional; both 2039 saves back to 400 ms; a 2069 turn under 500 ms |
