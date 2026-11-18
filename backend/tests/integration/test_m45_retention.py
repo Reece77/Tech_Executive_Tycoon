@@ -67,8 +67,8 @@ def test_closed_candidates_lose_their_records_and_the_state_is_unchanged(
         assert gone, "the save has closed candidates outside the state"
         assert all(_skills(session, p) for p in gone)
         window = loaded.balance.retention  # 120 months: nothing has closed that long ago
-        assert history.prune_candidates(session, 23, window, live) == 0
-        pruned = history.prune_candidates(session, 23, keep, live)  # December 2011
+        assert history.prune_candidates(session, 17, window, live) == 0
+        pruned = history.prune_candidates(session, 17, keep, live)  # June 2011
         assert pruned == len(gone)
         assert not any(_skills(session, p) for p in gone)
         names = set(session.scalars(select(PersonRow.id).where(PersonRow.id.in_(gone))))
@@ -80,8 +80,8 @@ def test_closed_candidates_lose_their_records_and_the_state_is_unchanged(
             .where(PersonRevealRow.person_id.in_(gone))
         )
         assert Digester().digest(load_state(session)) == before
-        assert history.prune_candidates(session, 35, keep, live) == 0  # already pruned
-        assert history.prune_candidates(session, 30, keep, live) == 0  # not a December
+        assert history.prune_candidates(session, 29, keep, live) == 0  # already pruned
+        assert history.prune_candidates(session, 30, keep, live) == 0  # not a June
 
 
 def test_a_candidate_another_row_names_keeps_their_records(
@@ -99,6 +99,6 @@ def test_a_candidate_another_row_names_keeps_their_records(
             .where(CandidateRow.person_id == staff)
             .values(status="hired", resolved_turn=0)
         )
-        history.prune_candidates(session, 23, keep, live - {staff})  # not passed as live
+        history.prune_candidates(session, 17, keep, live - {staff})  # not passed as live
         assert _skills(session, staff)
         assert all(_skills(session, p) for p in live if p != staff)

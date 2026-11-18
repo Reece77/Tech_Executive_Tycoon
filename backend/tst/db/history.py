@@ -13,7 +13,7 @@ in the turn's transaction), for the months that just left the window:
 - **World news** leaves the state after `world.news_months` (the engine's window, unchanged);
   the items of the `major_news` kinds go to `world_news_archive` as they leave, and the World
   news screen shows them after the state's.
-- **Candidates' records** (M45, for 60-year dynasty saves): each December, a person who was
+- **Candidates' records** (M45, for 60-year dynasty saves): each June, a person who was
   only ever a candidate, whose candidacy closed more than `candidate_people_months` ago, who
   is not in the state and whom no other row names, keeps their `person` row (the Timeline
   names them) but loses the rows nothing reads once they are gone: skills, personality,
@@ -61,11 +61,14 @@ CANDIDATE_RECORDS: Final = (
     "person_city",
     "candidate_relocation",
 )
-# at most this many people a December, the longest-closed first: an older save's backlog of
+# at most this many people a June, the longest-closed first: an older save's backlog of
 # decades is worked off over a few years, not in one month (M45: 42,000 people took 2.6 s)
 PRUNE_BATCH: Final = 3000  # tunable-exempt: a bound on one month's work, not a game rule
 # references to a person that a closed candidate has as a candidate (kept with them)
 CANDIDATE_OWN: Final = frozenset({("candidate", "person_id"), ("offer", "candidate_id")})
+# June, half a year from the periodic backup that follows each December's commit: on a slow
+# disk the year's deletes and the backup's copy of the save, together, made one month 2x slow
+PRUNE_MONTH: Final = 5  # tunable-exempt: month index in the year (0 = January); not a game rule
 PEAK_KEYS: Final = ("arr_cents", "headcount")  # the Hall of Fame's peaks (history_views)
 QUARTER_END: Final = 2  # tunable-exempt: month index within a quarter that is kept (Mar, Jun..)
 FIRST_YEAR: Final = 12  # tunable-exempt: months of a company's first year, all kept
@@ -105,11 +108,11 @@ def prune(session: Session, played: int, keep: RetentionBalance) -> None:
 def prune_candidates(
     session: Session, played: int, keep: RetentionBalance, live: Iterable[int]
 ) -> int:
-    """Each December (the month `played` closes the year), drop the records of people who
+    """Each June (`PRUNE_MONTH`, the month `played`), drop the records of people who
     were only ever candidates and closed more than `candidate_people_months` ago (module
     docstring). `live`: the people in the state, never touched. Returns how many people
     lost their records."""
-    if played % MONTHS_PER_YEAR != MONTHS_PER_YEAR - 1:
+    if played % MONTHS_PER_YEAR != PRUNE_MONTH:
         return 0
     cutoff = played - keep.candidate_people_months
     if cutoff < 0:
