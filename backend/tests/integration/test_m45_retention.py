@@ -9,14 +9,13 @@ from pathlib import Path
 
 from sqlalchemy import func, select, update
 
+from tests.helpers import answer_critical
 from tst.balance.m30 import Digester
 from tst.db import history
 from tst.db.models import CandidateRow, PersonRevealRow, PersonRow, PersonSkillRow
 from tst.db.repository import create_save, load_state, open_session, run_action, run_turn
 from tst.loader import LoadedData
 from tst.sim.actions import OpenSearch
-
-from tests.helpers import answer_critical
 
 
 def _played(tmp_path: Path, loaded: LoadedData, months: int = 4) -> Path:
@@ -33,9 +32,9 @@ def _played(tmp_path: Path, loaded: LoadedData, months: int = 4) -> Path:
 def _skills(session: object, person_id: int) -> int:
     return int(
         session.scalar(  # type: ignore[attr-defined]
-            select(func.count()).select_from(PersonSkillRow).where(
-                PersonSkillRow.person_id == person_id
-            )
+            select(func.count())
+            .select_from(PersonSkillRow)
+            .where(PersonSkillRow.person_id == person_id)
         )
     )
 
@@ -100,7 +99,6 @@ def test_a_candidate_another_row_names_keeps_their_records(
             .where(CandidateRow.person_id == staff)
             .values(status="hired", resolved_turn=0)
         )
-        assert session.scalar(select(func.count()).where(CandidateRow.person_id == staff)) or True
         history.prune_candidates(session, 23, keep, live - {staff})  # not passed as live
         assert _skills(session, staff)
         assert all(_skills(session, p) for p in live if p != staff)
