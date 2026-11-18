@@ -366,6 +366,18 @@ from tst.sim.regulation.actions import (
     apply_regulation,
 )
 from tst.sim.rng import RngFactory
+from tst.sim.robotics.actions import ACTION_TYPES as ROBOTICS_ACTION_TYPES
+from tst.sim.robotics.actions import (
+    AddRobotaxis,
+    BuildDepot,
+    CloseZone,
+    InstallRobots,
+    OpenZone,
+    RoboticsAction,
+    SetHumanoidSpec,
+    SetRidePrice,
+    apply_robotics,
+)
 from tst.sim.state import GameState
 from tst.sim.vehicles.actions import ACTION_TYPES as VEHICLE_ACTION_TYPES
 from tst.sim.vehicles.actions import (
@@ -422,6 +434,7 @@ type Action = (
     | EquipmentAction  # M33
     | VehicleAction  # M38
     | MedicalAction  # M41
+    | RoboticsAction  # M39
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -442,6 +455,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **EQUIPMENT_ACTION_TYPES,  # M33 (47)
     **VEHICLE_ACTION_TYPES,  # M38 (49)
     **MEDICAL_ACTION_TYPES,  # M41 (50)
+    **ROBOTICS_ACTION_TYPES,  # M39 (53)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -979,6 +993,16 @@ def apply_action(
             out = apply_power(state, action, ledger_balances, balance, data)
         case SetVehicleSpec() | BuildCellPlant() | BuildChargingNetwork() | SetChargingAccess():
             out = apply_vehicles(state, action, ledger_balances, balance, data)  # M38 (49)
+        case (
+            InstallRobots()
+            | SetHumanoidSpec()
+            | OpenZone()
+            | AddRobotaxis()
+            | BuildDepot()
+            | SetRidePrice()
+            | CloseZone()
+        ):
+            out = apply_robotics(state, action, ledger_balances, balance, data)  # M39 (53)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():

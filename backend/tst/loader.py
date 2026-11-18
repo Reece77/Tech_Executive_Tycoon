@@ -76,10 +76,12 @@ from tst.sim.platforms.config import PlatformsFile
 from tst.sim.power.config import PowerFile
 from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
+from tst.sim.robotics.config import HUMANOID_SEGMENTS, INDUSTRIAL_SEGMENTS, RoboticsFile
 from tst.sim.vehicles.config import LEVELS, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile
 
 POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
+SHARE_TOLERANCE = 1e-6  # tunable-exempt: shares that split 1
 FIRST_HISTORY_YEAR = 2010  # tunable-exempt: the game's first year
 LAST_HISTORY_YEAR = 2025  # tunable-exempt: history holds to December 2025
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -127,6 +129,7 @@ REGULATION_FILE = "regulation.yaml"  # M34 (formulas.md 48)
 MEDICAL_FILE = "medical.yaml"  # M41 (formulas.md 50)
 EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
+ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -151,6 +154,7 @@ DATA_FILES = (
     PLATFORMS_FILE,
     POWER_FILE,
     VEHICLES_FILE,
+    ROBOTICS_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -395,6 +399,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             and kind.output_good != balance.hardware.output_good
             and kind.output_good not in refined  # M20: a refinery makes its recipe's good
             and key not in vehicle_kinds(balance)  # M38: cells and charging are 49's
+            and key != balance.robotics.depot_kind  # M39: a depot serves robotaxis (53.3)
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -1106,6 +1111,7 @@ def load_all(
     regulation = _validate(RegulationFile, parsed[REGULATION_FILE], REGULATION_FILE)
     equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
     vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
+    robotics = _validate(RoboticsFile, parsed[ROBOTICS_FILE], ROBOTICS_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1165,6 +1171,7 @@ def load_all(
             "equipment": equipment,
             "vehicles": vehicles,
             "medical": medical,
+            "robotics": robotics,
         },
         "seed data cross-check",
     )
@@ -1194,6 +1201,8 @@ def load_all(
         raise DataLoadError(f"{EQUIPMENT_FILE}, {BALANCE_FILE} equipment: " + "; ".join(problems))
     if problems := vehicles_problems(balance, game_data):
         raise DataLoadError(f"{VEHICLES_FILE}, {BALANCE_FILE} vehicles: " + "; ".join(problems))
+    if problems := robotics_problems(balance, game_data):
+        raise DataLoadError(f"{ROBOTICS_FILE}, {BALANCE_FILE} robotics: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1345,3 +1354,95 @@ def vehicle_kinds(balance: Balance) -> tuple[str, ...]:
     """M38 (49.2, 49.5): the facility kinds whose output tst.sim.vehicles runs on the generic
     lifecycle (cell plants and charging networks)."""
     return (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind)
+
+
+def robotics_problems(balance: Balance, data: GameData) -> list[str]:
+    """M39 (53): robotics.yaml covers every region in order, splits installations over the
+    industrial segments, reaches 2025, names known incumbents, countries, eras, cities and
+    operators; balance.yaml's robotics keys agree with categories.yaml."""
+    r = data.robotics
+    rb = balance.robotics
+    out: list[str] = []
+    if r is None:
+        return ["robotics.yaml is required"]
+    if [x.key for x in r.regions] != list(data.region_keys):
+        out.append("regions must list every regions.yaml region in its order")
+    cats = {c.key: c for c in (*data.categories, *data.pseudo_categories)}
+    ind, hum, mob = cats.get(rb.industrial), cats.get(rb.humanoid), cats.get(rb.mobility)
+    if ind is None or not ind.sells_units:
+        out.append(f"robotics.industrial {rb.industrial!r} must be a unit-sale category")
+    elif tuple(ind.segment_keys) != INDUSTRIAL_SEGMENTS:
+        out.append(f"{rb.industrial} must sell to {list(INDUSTRIAL_SEGMENTS)}")
+    else:
+        for m in ind.markets:
+            if rb.replacement_months.get(m.segment) != m.replacement_months:
+                out.append(f"replacement_months for {m.segment} differ from categories.yaml")
+            if rb.units_per_customer.get(m.segment) != m.units_per_customer:
+                out.append(f"units_per_customer for {m.segment} differ from categories.yaml")
+    if hum is None or not hum.sells_units or tuple(hum.segment_keys) != HUMANOID_SEGMENTS:
+        out.append(
+            f"robotics.humanoid {rb.humanoid!r} must sell units to {list(HUMANOID_SEGMENTS)}"
+        )
+    if mob is None or not mob.pseudo:
+        out.append(f"robotics.mobility {rb.mobility!r} must be a pseudo-category")
+    for key in (rb.industrial, rb.humanoid):
+        if key not in balance.hardware.bom:
+            out.append(f"hardware.bom needs {key}")
+    if rb.depot_kind not in balance.facility.kinds:
+        out.append(f"robotics.depot_kind {rb.depot_kind!r} is not a facility kind")
+    for kind in rb.automation.plant_kinds:
+        if kind not in balance.facility.kinds:
+            out.append(f"automation.plant_kinds: unknown facility kind {kind!r}")
+        if kind not in rb.automation.workers_per_unit or kind not in rb.automation.labour_share:
+            out.append(f"automation: {kind} needs workers_per_unit and labour_share")
+    for row in r.regions:
+        if set(row.segments) != set(INDUSTRIAL_SEGMENTS) or (
+            abs(sum(row.segments.values()) - 1) > SHARE_TOLERANCE
+        ):
+            out.append(f"{row.key}: segments must split 1 over {list(INDUSTRIAL_SEGMENTS)}")
+        if max(row.installations) < LAST_HISTORY_YEAR:
+            out.append(f"{row.key}: installations must reach {LAST_HISTORY_YEAR}")
+    names = {c.name for c in data.incumbents}
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    for maker in r.makers:
+        if maker.company not in names:
+            out.append(f"maker {maker.company!r} is not in incumbents.yaml")
+        if countries and maker.origin not in countries:
+            out.append(f"maker {maker.company!r}: unknown country {maker.origin!r}")
+        if bad := set(maker.share_points) - set(data.region_keys):
+            out.append(f"maker {maker.company!r}: unknown regions {sorted(bad)}")
+    for key in data.region_keys:
+        for year in range(FIRST_HISTORY_YEAR, LAST_HISTORY_YEAR + 1):
+            total = sum(maker.share_at(key, year) for maker in r.makers)
+            if total > 1 + POLY_TOLERANCE:
+                out.append(f"makers' shares in {key} {year} sum over 1 ({total:.3f})")
+    for hm in r.humanoids.makers:
+        if hm.company not in names:
+            out.append(f"humanoid maker {hm.company!r} is not in incumbents.yaml")
+    for a in r.humanoids.announcements:
+        if r.humanoid_maker(a.company) is None:
+            out.append(f"announcement by unknown humanoid maker {a.company!r}")
+    if r.humanoids.era not in {e.key for e in data.eras.eras}:
+        out.append(f"humanoids.era {r.humanoids.era!r} is not in eras.yaml")
+    if set(r.humanoids.workers) != set(data.region_keys):
+        out.append("humanoids.workers must cover every region")
+    city_keys = {c.key for c in r.robotaxi.cities}
+    for c in r.robotaxi.cities:
+        if c.region not in data.region_keys:
+            out.append(f"city {c.key}: unknown region {c.region!r}")
+        if countries and c.country not in countries:
+            out.append(f"city {c.key}: unknown country {c.country!r}")
+    for op in r.robotaxi.operators:
+        if op.company is not None and op.company not in names:
+            out.append(f"operator {op.key}: {op.company!r} is not in incumbents.yaml")
+        for svc in op.services:
+            if svc.city not in city_keys:
+                out.append(f"operator {op.key}: unknown city {svc.city!r}")
+    ops = {op.key for op in r.robotaxi.operators}
+    for inc in r.robotaxi.incidents:
+        if inc.operator not in ops or inc.city not in city_keys:
+            out.append(f"incident {inc.label!r}: unknown operator or city")
+    for size in rb.robotaxi.zone_sizes:
+        if size not in ("small", "medium", "large"):
+            out.append(f"robotaxi.zone_sizes: unknown size {size!r}")
+    return out

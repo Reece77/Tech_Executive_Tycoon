@@ -96,6 +96,8 @@ def build_facility(
         raise FacilityRuleError("order a power plant with build_plant")
     if action.facility_kind in (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind):
         raise FacilityRuleError("order a cell plant or charging network from Vehicles")  # M38
+    if action.facility_kind == balance.robotics.depot_kind:
+        raise FacilityRuleError("order a robotaxi depot from Mobility")  # M39 (53.3)
     kind = fb.kinds[action.facility_kind]
     allowed = kind.sizes or fb.sizes  # M12b: plants have their own sizes
     if action.capacity not in allowed:

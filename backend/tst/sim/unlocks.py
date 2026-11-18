@@ -74,6 +74,8 @@ SYSTEMS: tuple[System, ...] = (
     System(27, "power", "Power", "chain"),  # tunable-exempt: stable id (M32)
     System(28, "vehicles", "Vehicles", "products"),  # tunable-exempt: stable id (M38)
     System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
+    System(30, "robotics", "Robotics", "products"),  # tunable-exempt: stable id (M39; 29 is M41's)
+    System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -234,6 +236,38 @@ def _vehicles(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     return None
 
 
+def _robotics(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M39 (53.1-53.2): a robot line, an own assembly or vehicle plant, or the robotics year
+    (robotics.unlock_year) for a stage-3 company."""
+    if d.robotics is None:
+        return None
+    rb = b.robotics
+    if any(
+        p.category in (rb.industrial, rb.humanoid) for p in state.products if p.company_id in ids
+    ):
+        return "the company makes robots"
+    if any(f.kind in rb.automation.plant_kinds for f in state.facilities if f.company_id in ids):
+        return "the group runs a plant robots can automate"
+    if turn_to_ym(state.turn)[0] >= rb.unlock_year and _stage(state) >= STAGE_GROWTH:
+        return f"industrial robots are open to a stage-3 company ({rb.unlock_year})"
+    return None
+
+
+def _mobility(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M39 (53.3): a robotaxi service, or a car line of the group once a region has approved
+    driverless (L4) service."""
+    if d.robotics is None:
+        return None
+    if any(p.category == b.robotics.mobility for p in state.products if p.company_id in ids):
+        return "the company runs a robotaxi service"
+    from tst.sim.vehicles import spec as vs
+
+    cars = any(p.category == b.vehicles.category for p in state.products if p.company_id in ids)
+    if cars and any(vs.approved(state, r, "l4", b, d) for r in d.region_keys):
+        return "driverless service is approved and the group makes cars"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -326,6 +360,8 @@ CHECKS: dict[str, Check] = {
     "regulation": _regulation,  # M34
     "vehicles": _vehicles,  # M38 (49)
     "medical": _medical,  # M41 (50)
+    "robotics": _robotics,  # M39 (53.1-53.2)
+    "mobility": _mobility,  # M39 (53.3)
 }
 
 

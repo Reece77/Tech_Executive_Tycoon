@@ -101,6 +101,53 @@ segments:
     adoption: 0.015
     reach: sales
 
+  # M39 (formulas.md 53.1-53.2): robot buyers by industry, all sales-led. Industrial robots sell to
+  # car and parts makers (automotive), electronics makers and the rest of industry (metal, plastics,
+  # food, general); humanoids to logistics, retail and manufacturing, and to homes (the consumer
+  # segment) from a seeded window. Base churn is the market's replacement cycle (A weights: car
+  # makers weigh quality and reliability, electronics price and speed, general industry price).
+  - key: automotive
+    label: Automotive
+    weights: { quality: 0.40, price: 0.25, brand: 0.15, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.012 # robotics uses replacement_months
+    adoption: 0.01
+    reach: sales
+  - key: electronics
+    label: Electronics
+    weights: { quality: 0.30, price: 0.35, brand: 0.10, features: 0.25 }
+    outside_option: 45
+    base_churn: 0.017
+    adoption: 0.01
+    reach: sales
+  - key: general_industry
+    label: General industry
+    weights: { quality: 0.30, price: 0.40, brand: 0.10, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.010
+    adoption: 0.008
+    reach: sales
+  - key: logistics
+    label: Logistics
+    weights: { quality: 0.30, price: 0.35, brand: 0.10, features: 0.25 }
+    outside_option: 45
+    base_churn: 0.017 # humanoids use replacement_months
+    adoption: 0.01
+    reach: sales
+  - key: retail
+    label: Retail
+    weights: { quality: 0.30, price: 0.35, brand: 0.15, features: 0.20 }
+    outside_option: 45
+    base_churn: 0.017
+    adoption: 0.01
+    reach: sales
+  - key: manufacturing
+    label: Manufacturing
+    weights: { quality: 0.35, price: 0.30, brand: 0.10, features: 0.25 }
+    outside_option: 45
+    base_churn: 0.017
+    adoption: 0.01
+    reach: sales
 categories:
   - key: b2b_saas
     label: B2B SaaS
@@ -434,3 +481,72 @@ categories:
     dev_weights: { ml_research: 0.40, software_engineering: 0.25, data: 0.25, security: 0.10 }
     markets:
       - { segment: enterprise, addressable: 28, reference_price_cents: 800000, hosting_cents: 120000 } # a hospital's $8,000 a month for diagnostic AI: $96k a year
+
+  # M39 (formulas.md 53.1): industrial robots. A unit-sale market whose addressable customers are
+  # set each month from robotics.yaml (not grown here): a region's installations a year (IFR,
+  # real) x the segment's share x robotics.scale (0.085, the game's economy scale) x
+  # replacement_months / 12 / units_per_customer, so a month's replacements are about a month's
+  # installations at the game's scale. The D0 below is North America's January 2010 value of that
+  # formula (D: 16.0k installations in 2010 x segment share x 0.085 x months / 12 / units:
+  # automotive 16.0k x 0.50 x 0.085 x 7 / 20 = 238; electronics 16.0k x 0.12 x 0.085 x 5 / 8 = 102;
+  # general industry 16.0k x 0.38 x 0.085 x 8 / 3 = 1,378). Prices a robot in 2010 dollars (D from
+  # robotics.yaml prices: IFR's average value a robot about $46,000 in 2010 dollars in 2011): a large
+  # six-axis robot for car lines $45,000, small and SCARA robots for electronics $28,000, general
+  # industry $35,000; hosting_cents is a rival's cost of goods (60% of the price: A, robot makers'
+  # gross margins 35-45%, R). Development needs the existing hardware skills (no new skills, 53.1).
+  - key: industrial_robots
+    label: Industrial robots
+    growth: 0.0 # demand comes from robotics.yaml each month (53.1), not growth
+    features_at_start: 50
+    features_per_month: 3.0 # robots age slowly (26.1's 8 for devices)
+    scope: 8
+    brand_constant: 150
+    launch_quality: 40 # safety certification (ISO 10218, A)
+    revenue_model: units
+    rival_cost_share: 0.60 # a rival's cost of goods a robot: 60% of its own price (A: FANUC's and Yaskawa's gross margins about 35-40%, R)
+    dev_weights: { hardware_design: 0.35, manufacturing: 0.25, software_engineering: 0.25, chip_design: 0.15 }
+    markets:
+      - { segment: automotive, addressable: 238, reference_price_cents: 4500000, hosting_cents: 2700000, units_per_customer: 20, replacement_months: 84 }
+      - { segment: electronics, addressable: 102, reference_price_cents: 2800000, hosting_cents: 1680000, units_per_customer: 8, replacement_months: 60 }
+      - { segment: general_industry, addressable: 1378, reference_price_cents: 3500000, hosting_cents: 2100000, units_per_customer: 3, replacement_months: 96 }
+
+  # M39 (formulas.md 53.2): humanoid robots, general-purpose robots for businesses, and for homes
+  # from a seeded window. Closed until the humanoid_robotics era arrives (eras.yaml, 21.4): its
+  # addressable customers are 0 before, then a region's workers in the segment (robotics.yaml,
+  # millions) x the region's adoption share (balance.yaml robotics.humanoid) x robotics.scale x
+  # replacement_months / 12. D0 is the formula's minimum (the validator needs D0 > 0; demand is
+  # set each month). Price a humanoid in 2010 dollars: $40,000 for business, $25,000 for homes (A:
+  # Figure and Agility's business pricing guidance about $50,000-150,000 in 2024, Unitree's G1
+  # $16,000, robotics.yaml; falling toward Tesla's stated $20,000-30,000 target). hosting_cents is a
+  # rival's cost of goods (65%).
+  - key: humanoid_robots
+    label: Humanoid robots
+    growth: 0.0 # demand comes from the era and robotics.yaml (53.2), not growth
+    features_at_start: 50
+    features_per_month: 6.0 # a young category moves fast
+    scope: 8
+    brand_constant: 150
+    launch_quality: 45 # safety certification for work beside people (A)
+    revenue_model: units
+    rival_cost_share: 0.65 # A
+    dev_weights: { hardware_design: 0.35, software_engineering: 0.25, manufacturing: 0.20, chip_design: 0.10, design: 0.10 }
+    markets:
+      - { segment: logistics, addressable: 1, reference_price_cents: 4000000, hosting_cents: 2600000, replacement_months: 60 }
+      - { segment: retail, addressable: 1, reference_price_cents: 4000000, hosting_cents: 2600000, replacement_months: 60 }
+      - { segment: manufacturing, addressable: 1, reference_price_cents: 4000000, hosting_cents: 2600000, replacement_months: 60 }
+      - { segment: consumer, addressable: 1, reference_price_cents: 2500000, hosting_cents: 1625000, replacement_months: 60 }
+
+  # M39 (formulas.md 53.3): robotaxi services. A pseudo-category like `os`: no market segments of
+  # its own. A service is built like a product (its driving, dispatch and remote-assistance
+  # software), launched, and then run by tst.sim.robotics in zones of robotics.yaml's cities:
+  # revenue a ride, costs a car and a ride (balance.yaml robotics.robotaxi).
+  - key: mobility
+    label: Robotaxi services
+    pseudo: true
+    growth: 0.0
+    features_at_start: 50
+    features_per_month: 4.0
+    scope: 8
+    brand_constant: 150
+    launch_quality: 50 # safety case for driverless operation (A)
+    dev_weights: { software_engineering: 0.40, infrastructure: 0.20, security: 0.15, operations: 0.15, product: 0.10 }

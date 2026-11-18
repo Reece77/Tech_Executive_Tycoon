@@ -24,6 +24,12 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "device_oems",  # M12b
         "fleet",  # M38 (49.1)
         "commercial",  # M38
+        "automotive",  # M39 (53.1)
+        "electronics",
+        "general_industry",
+        "logistics",  # M39 (53.2)
+        "retail",
+        "manufacturing",
     ]
     b2b = data.category(B2B)
     assert b2b.market("smb").addressable == 400_000
@@ -41,6 +47,12 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "device_oems",
         "fleet",
         "commercial",
+        "automotive",  # M39
+        "electronics",
+        "general_industry",
+        "logistics",
+        "retail",
+        "manufacturing",
     ]
     assert data.segment("smb").weights.price == 0.35
 

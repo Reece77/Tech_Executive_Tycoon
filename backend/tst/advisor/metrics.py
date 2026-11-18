@@ -109,6 +109,9 @@ METRICS: dict[str, MetricDef] = {
         # v5 (M38): a car's unit cost and the battery price
         _m("car_unit_cost", "Unit cost", "cents", "product", "A car's materials and assembly"),
         _m("battery_price", "Battery price", "cents", "company", "A kWh of EV cells this month"),
+        # v5 (M39): a plant's automation saving and a robotaxi zone's contribution a ride
+        _m("automation_saving", "Automation saving", "cents", "plant", "Robots' saving a unit"),
+        _m("ride_contribution", "Contribution a ride", "cents", "zone", "A ride's fare less costs"),
         # v4 (M34): regulators' fines and the designation thresholds
         _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
         _m(

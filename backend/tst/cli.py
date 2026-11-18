@@ -4613,3 +4613,100 @@ def medical_cmd(
     if rivals:
         for rv in m.rivals:
             typer.echo(f"rival {rv.company} {rv.product} ({rv.category}): {rv.share:.0%}")
+
+
+@app.command("robotics")
+def robotics_cmd(
+    save: SaveOpt,
+    region: Annotated[str | None, typer.Option(help="One region key; default every region")] = None,
+) -> None:
+    """Robotics (M39, 53.1-53.2): robot installations, labour costs and makers' shares by region;
+    the humanoid market; your robot lines and plant automation."""
+    from tst.api import robotics_views
+
+    _, data, state = _game(save)
+    r = robotics_views.robotics_out(state, data)
+    typer.echo(
+        f"{r.month}: a robot {format_money(round(r.options.robot_cents))}, installed"
+        f" {format_money(round(r.options.system_cents))} (2010 dollars)"
+    )
+    typer.echo(f"  {r.scale_basis}")
+    for g in r.regions:
+        if region and g.region != region:
+            continue
+        typer.echo(
+            f"{g.label}: {g.installations_year:,.0f} robots a year"
+            f" ({g.game_installations_year:,.0f} in the game), labour"
+            f" {format_money(round(g.labour_cents_hour))}/h"
+            + (f", density {g.density:,.0f}" if g.density is not None else "")
+            + (f", humanoid adoption {g.humanoid_adoption:.2%}" if g.humanoid_adoption else "")
+        )
+        for m in r.makers:
+            for sh in m.shares:
+                if sh.region == g.region and sh.share >= 0.01:
+                    typer.echo(f"  {m.company} ({m.product}): {sh.share:.0%}")
+    h = r.humanoids
+    typer.echo(
+        f"humanoids: {h.era} era ({h.window}), "
+        + (f"arrived {h.arrived}" if h.arrived else "not yet arrived")
+        + f"; actuators {format_money(round(h.actuator_cents))} (index {h.actuator_index:.2f})"
+    )
+    for a in h.announcements:
+        typer.echo(f"  {a.month} {a.company}: {a.label}")
+    for line in r.lines:
+        cap = f", capability {line.capability:.0f}" if line.capability is not None else ""
+        typer.echo(
+            f"line {line.name} ({line.category}, {line.status}): quality {line.quality:.0f}{cap},"
+            f" {line.customers:,.0f} customers, unit cost"
+            f" {format_money(round(line.unit_cost_cents))}"
+        )
+    for p in r.plants:
+        typer.echo(
+            f"plant {p.name} ({p.kind}, {p.region}): {p.robots:,} robots of {p.max_robots:,},"
+            f" automation {p.level:.0%}, saves {format_money(round(p.saving_cents))} a unit;"
+            f" conversion cost {format_money(round(p.cost_without.total_cents))} ->"
+            f" {format_money(round(p.cost_with.total_cents))} a unit"
+        )
+
+
+@app.command("mobility")
+def mobility_cmd(save: SaveOpt) -> None:
+    """Robotaxis (M39, 53.3): cities and rival services, your zones, fleets, rides, utilisation
+    and incidents."""
+    from tst.api import robotics_views
+
+    _, data, state = _game(save)
+    m = robotics_views.mobility_out(state, data)
+    typer.echo(
+        f"{m.month}: L4 {'reachable' if m.options.can_drive_l4 else 'not yet reachable'}"
+        f" (lead {m.options.l4_lead:g}, AI quality {m.options.l4_ai_quality:g}); a bought"
+        f" robotaxi {format_money(round(m.options.robotaxi_cents))}"
+    )
+    for c in m.cities:
+        typer.echo(
+            f"{c.label}: {'L4 approved' if c.l4_approved else 'no L4 approval'},"
+            f" {c.trips_month:,.0f} trips a month in the game, fare"
+            f" {format_money(round(c.fare_cents))}, acceptance {c.acceptance:.0%},"
+            f" rival cars {c.rival_fleet:,.0f}"
+        )
+    for r in m.rivals:
+        state_word = "running" if r.running else "stopped"
+        typer.echo(
+            f"  {r.operator} in {r.city} since {r.since} ({state_word}): {r.fleet:,.0f} cars,"
+            f" {r.rides_week:,.0f} rides a week"
+        )
+    for z in m.zones:
+        line = (
+            f"zone {z.zone_id} {z.service} in {z.city_label} ({z.size}, {z.status}):"
+            f" {z.cars:,} cars, fare {format_money(z.price_cents)}, break-even"
+            f" {z.breakeven_rides:.1f} rides a car a day"
+        )
+        if z.month is not None:
+            line += (
+                f"; {z.month.rides:,.0f} rides, utilisation {z.month.utilisation:.0%},"
+                f" contribution {format_money(z.month.contribution_cents)}"
+            )
+        typer.echo(line)
+    for i in m.incidents:
+        kind = "serious" if i.serious else "minor"
+        typer.echo(f"incident {i.month}: {kind} in {i.city}, {format_money(i.cost_cents)}")

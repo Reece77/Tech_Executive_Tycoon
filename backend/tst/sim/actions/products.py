@@ -195,6 +195,7 @@ def launch_problems(
     min_feature = (
         balance.platforms.os_build_features
         if data.category(product.category).pseudo
+        and product.category != balance.robotics.mobility  # M39 (53.3): a robotaxi service
         else pb.launch_min_feature
     )
     if feature < min_feature:
@@ -238,7 +239,7 @@ def create_product(
             f"{category.label} sells spare assembly-plant capacity: start it from Hardware"
         )
     if category.pseudo and action.segments:
-        raise ProductRuleError(f"{category.label} sells through devices: it has no segments")
+        raise ProductRuleError(f"{category.label} has no market segments")
     if not action.segments and not category.pseudo:
         raise ProductRuleError("a product needs at least one segment")
     if len(set(action.segments)) != len(action.segments):
