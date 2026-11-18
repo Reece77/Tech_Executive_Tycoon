@@ -313,3 +313,52 @@ def report(results: Sequence[SeedResult]) -> str:
         Row("6", "turn time", "make check-timing", "within guards", True),
     ]
     return table(rows)
+
+
+# --- target 1: history holds for every earlier company ------------------------------------------
+
+
+def pharma_rivals(state: GameState, data: LoadedData) -> frozenset[int]:
+    """M42's incumbents: the companies pharma.yaml names as rivals."""
+    pf = pd.file(data.game_data)
+    return frozenset(c.id for c in state.companies if pf.rival(c.name) is not None)
+
+
+def history_without_pharma(seed: int) -> dict[str, dict[str, str]]:
+    """M28's history fingerprint (41.8 target 1) with M42's own rivals' lines left out and later
+    companies' ids as main numbers them (M41's normalisation): equal to the recorded fingerprint
+    when every earlier company's books, events, prices and capacities to December 2025 are
+    unchanged (tools/m42_history_diff.py)."""
+    import hashlib
+
+    from tst.balance import m28
+    from tst.balance.game import start_game
+    from tst.balance.m41 import _normalise
+    from tst.sim.calendar import MONTHS_PER_YEAR
+
+    data = loaded()
+    game = start_game(data, seed)
+    mine = pharma_rivals(game.state, data)
+    names = tuple(c.name for c in game.state.companies if c.id in mine)
+    first = max(mine) + 1
+    hashes: dict[str, dict[int, hashlib._Hash]] = {s: {} for s in m28.SERIES}
+    while game.state.turn <= m28.LAST_HISTORY_TURN:
+        turn = game.state.turn
+        game.turn()
+        result = game.last_result
+        assert result is not None
+        kept = replace(
+            result,
+            ledger_entries=tuple(e for e in result.ledger_entries if e.company_id not in mine),
+            log_items=tuple(i for i in result.log_items if i.company_id not in mine),
+            event_requests=tuple(r for r in result.event_requests if r.company_id not in mine),
+        )
+        year = m28.FIRST_YEAR + turn // MONTHS_PER_YEAR
+        for series, lines in m28._month_lines(game, kept, turn).items():
+            h = hashes[series].setdefault(year, hashlib.sha256())
+            for line in lines:
+                if series in ("books", "events") and "|" in line and line.split("|")[0].isdigit():
+                    line = _normalise(line, series, names, len(mine), first)
+                h.update(line.encode())
+                h.update(b"\n")
+    return {s: {str(y): h.hexdigest() for y, h in sorted(ys.items())} for s, ys in hashes.items()}
