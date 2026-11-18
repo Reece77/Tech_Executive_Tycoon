@@ -22,6 +22,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
     derived,
+    from_inputs,
     player_companies,
     with_era_arrival,
     with_era_window,
@@ -86,17 +87,28 @@ def annual_growth(
 
 
 def adoption_factor(state: GameState, data: GameData, category: str, segment: str) -> float:
-    """The product of the running eras' adoption multipliers for a segment (21.4)."""
-    factor = 1.0
-    for era, arrival in arrived(state, data):
-        for b in era.boosts:
-            if (
-                b.adoption != 1
-                and b.covers(category, segment)
-                and _active(arrival, b.months, state.turn)
-            ):
-                factor *= b.adoption
-    return factor
+    """The product of the running eras' adoption multipliers for a segment (21.4). A function
+    of the arrivals, the month and the data alone, so kept with the arrivals (M45: every
+    market segment asked for it after each segment's state update)."""
+
+    def compute() -> float:
+        factor = 1.0
+        for era, arrival in arrived(state, data):
+            for b in era.boosts:
+                if (
+                    b.adoption != 1
+                    and b.covers(category, segment)
+                    and _active(arrival, b.months, state.turn)
+                ):
+                    factor *= b.adoption
+        return factor
+
+    kept: tuple[GameData, float] = from_inputs(
+        state.era_arrivals,
+        ("adoption_factor", id(data), state.turn, category, segment),
+        lambda: (data, compute()),
+    )
+    return kept[1] if kept[0] is data else compute()
 
 
 def causer(

@@ -128,6 +128,8 @@ class RetentionBalance(_Frozen):
     snapshot_months: int = Field(gt=0)
     log_months: int = Field(gt=0)
     major_news: tuple[str, ...]
+    # M45: months after a candidate closed before the records nothing reads leave the save
+    candidate_people_months: int = Field(gt=0)
 
 
 class InboxBalance(_Frozen):
