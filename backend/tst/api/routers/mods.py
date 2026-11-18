@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import yaml
 from fastapi import APIRouter, status
 
 from tst.api.deps import SettingsDep
@@ -18,6 +17,7 @@ from tst.api.schemas.mods import (
     ModOut,
 )
 from tst.config import Settings
+from tst.loader import safe_load
 from tst.mods import schema, store
 from tst.mods.hidden import path_withheld, strip
 from tst.mods.overlay import OverlayError, changes_of, merge, overlay_of
@@ -32,7 +32,7 @@ class UnknownDataFileError(NotFoundError):
 
 def _base(settings: Settings) -> dict[str, Any]:
     return {
-        f: yaml.safe_load((settings.data_dir / f).read_text(encoding="utf-8"))
+        f: safe_load((settings.data_dir / f).read_text(encoding="utf-8"))
         for f in schema.editable_files()
     }
 
@@ -78,7 +78,7 @@ def get_file(
     if mod:
         overlay = store.read_mod(settings.resolved_save_dir(), mod).files.get(file)
         if overlay is not None:
-            raw = yaml.safe_load((settings.data_dir / file).read_text(encoding="utf-8"))
+            raw = safe_load((settings.data_dir / file).read_text(encoding="utf-8"))
             merged = merge(raw, overlay)
             value = merged if spoilers else strip(merged)
     return EditorFileOut(
