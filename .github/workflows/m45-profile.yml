@@ -1,0 +1,65 @@
+# M45 (docs/tasks/M45-performance-at-scale-part-two.md sub-task 1): a TEMPORARY profile of the
+# three saves M45 must speed up, on the CI runner. It builds each save (tools/v6_save.py), times
+# its months with the guard's own test, profiles six more (tools/m30_profile.py) and uploads the
+# profile. Removed before M45 merges.
+name: m45-profile
+
+on:
+  push:
+    branches: [m45-performance]
+    paths: [".github/workflows/m45-profile.yml", "docs/perf/m45-profile-trigger.txt"]
+
+permissions:
+  contents: read
+
+jobs:
+  profile:
+    name: m45-profile (${{ matrix.save }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - save: v6
+            build: "--strategy research_heavy"
+            test: "TST_V6_SAVE=/tmp/tst-v6/v6.tst.sqlite TST_M30_MEDIAN_MS=100000 uv run pytest -q -n 0 -s -m weekly tests/integration/test_m30_perf.py"
+          - save: v6i
+            build: "--strategy full_integrator"
+            test: "TST_V6_SAVE=/tmp/tst-v6/v6i.tst.sqlite TST_M30_MEDIAN_MS=100000 uv run pytest -q -n 0 -s -m weekly tests/integration/test_m30_perf.py"
+          - save: m37
+            build: "--strategy full_integrator --turns 708 --length dynasty --children 2,5"
+            test: "TST_M37_SAVE=/tmp/tst-v6/m37.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m37_perf.py"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: Build the save
+        run: uv run --project backend python tools/v6_save.py /tmp/tst-v6 ${{ matrix.save }} ${{ matrix.build }}
+
+      - name: Time the months (the guard's test)
+        run: cd backend && ${{ matrix.test }} || true
+
+      - name: Profile six months
+        run: |
+          ls -la /tmp/tst-v6
+          uv run --project backend python tools/m30_profile.py /tmp/tst-v6/${{ matrix.save }}.tst.sqlite /tmp/m45-profile/${{ matrix.save }}
+
+      - name: Upload the profile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m45-profile-${{ matrix.save }}
+          path: /tmp/m45-profile/${{ matrix.save }}
+          if-no-files-found: ignore

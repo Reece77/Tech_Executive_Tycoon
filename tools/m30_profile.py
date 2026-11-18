@@ -27,7 +27,7 @@ PROFILED = 6
 
 
 def main() -> int:
-    from tests.helpers import answer_critical
+    from tests.helpers import answer_critical, continue_at_end
     from tst.db import migrate
     from tst.db.repository import load_state, open_session, run_turn
     from tst.loader import load_all
@@ -42,6 +42,7 @@ def main() -> int:
     shutil.copy(args.save, path)
     migrate.ensure_current(path)
     data = load_all(BACKEND / "data")
+    continue_at_end(path, data)  # M37 (52.1): a 2039 save plays on in dynasty mode
     with open_session(path) as session:
         state = load_state(session)
     turn, staff = state.turn, len(state.staff(state.player.id))
