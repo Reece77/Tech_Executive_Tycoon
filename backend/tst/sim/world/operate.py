@@ -28,7 +28,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import replace
 from fractions import Fraction
-from typing import Final
+from typing import Any, Final
 
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
@@ -210,13 +210,14 @@ def operate(
     depreciation: dict[int, int] = {}
     ran: list[WorldFacility] = []
     factors = {g: wq.factor(state, g) for g in wd.all_goods(data)}  # last month's
-    to_mothball, to_restart = _turning(state, facilities, alive, prices, factors, balance, data)
+    costs = _Costs(state, balance, data)
+    to_mothball, to_restart = _turning(facilities, alive, prices, factors, costs, wb)
     for f in facilities:
         if f.status in ("building", "closed") or f.company_id not in alive:
             ran.append(f)
             continue
-        lr = wq.long_run_usd(state, f.good, balance, data)
-        cash_cost = wq.cash_cost_usd(state, f, balance, data)
+        lr = costs.long_run(f.good)
+        cash_cost = costs.cash_cost(f)
         spot = prices[f.good]
         share = 1.0 if f.status == "live" else wb.mothball_fixed
         fixed[f.company_id] = fixed.get(f.company_id, 0.0) + f.capacity * lr * wb.fixed_share * (
@@ -226,29 +227,35 @@ def operate(
             f.capex_cents - f.depreciated_cents,
             round(Fraction(f.capex_cents, wb.life_years * MONTHS)),
         )
+        changes: dict[str, Any] = {}  # M45: one replace a facility, the same new values
         if dep > 0:
             depreciation[f.company_id] = depreciation.get(f.company_id, 0) + dep
-            f = replace(f, depreciated_cents=f.depreciated_cents + dep)
+            changes["depreciated_cents"] = f.depreciated_cents + dep
         if f.status == "live":
             output = f.capacity * utilisation[f.good] / MONTHS
             revenue[f.company_id] = revenue.get(f.company_id, 0.0) + output * spot
             cogs[f.company_id] = cogs.get(f.company_id, 0.0) + output * cash_cost
             below = f.below_months + 1 if losing(spot, cash_cost, factors[f.good], wb) else 0
-            f = replace(f, output=output, below_months=below)
+            changes.update(output=output, below_months=below)
             if below >= wb.mothball_months and f.id in to_mothball:
-                f = replace(f, status="mothballed", mothballed_turn=turn, output=0.0)
-                f = replace(f, below_months=0, above_months=0)
+                changes.update(
+                    status="mothballed",
+                    mothballed_turn=turn,
+                    output=0.0,
+                    below_months=0,
+                    above_months=0,
+                )
                 news.append(_move("mothball", names[f.company_id], f, data, "mothballs"))
         else:  # mothballed
             above = f.above_months + 1 if winning(spot, cash_cost, factors[f.good], wb) else 0
-            f = replace(f, above_months=above)
+            changes["above_months"] = above
             if above >= wb.restart_months and f.id in to_restart:
-                f = replace(f, status="live", mothballed_turn=None, above_months=0)
+                changes.update(status="live", mothballed_turn=None, above_months=0)
                 news.append(_move("restart", names[f.company_id], f, data, "restarts"))
             elif f.mothballed_turn is not None and turn - f.mothballed_turn >= wb.close_months:
-                f = replace(f, status="closed", closed_turn=turn)
+                changes.update(status="closed", closed_turn=turn)
                 news.append(_move("close", names[f.company_id], f, data, "closes"))
-        ran.append(f)
+        ran.append(replace(f, **changes) if changes else f)
 
     state = replace(state, world_facilities=tuple(ran), world_goods=tuple(goods_out))
     state, entries, failed = _books(
@@ -256,6 +263,31 @@ def operate(
     )
     news += failed
     return state, entries, news
+
+
+class _Costs:
+    """`wq.long_run_usd` and `wq.cash_cost_usd` for one month's state, the long run once a
+    good and the power index once a region (M45: asked three times for each of 800+
+    facilities a month; the same functions of the state, so the same values)."""
+
+    def __init__(self, state: GameState, balance: Balance, data: GameData) -> None:
+        self._state, self._balance, self._data = state, balance, data
+        self._long_run: dict[str, float] = {}
+        self._power: dict[str, float] = {}
+
+    def long_run(self, good: str) -> float:
+        lr = self._long_run.get(good)
+        if lr is None:
+            lr = self._long_run[good] = wq.long_run_usd(
+                self._state, good, self._balance, self._data
+            )
+        return lr
+
+    def cash_cost(self, f: WorldFacility) -> float:
+        index = self._power.get(f.region)
+        if index is None:
+            index = self._power[f.region] = wq.power_index(self._state, f.region, self._data)
+        return wf.unit_cash_cost(self.long_run(f.good), f.cost, index, self._balance.world)
 
 
 def losing(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> bool:
@@ -272,25 +304,23 @@ def winning(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> b
 
 
 def _turning(
-    state: GameState,
     facilities: list[WorldFacility],
     alive: set[int],
     prices: Mapping[str, float],
     factors: Mapping[str, float],
-    balance: Balance,
-    data: GameData,
+    costs: _Costs,
+    wb: WorldBalance,
 ) -> tuple[set[int], set[int]]:
     """The one facility a good that mothballs this month (the dearest of those past
     `mothball_months` under cost) and the one that restarts (the cheapest past
     `restart_months` over cost x (1 + hurdle)): a market turns plant by plant (M28 decision),
     not all at once."""
-    wb = balance.world
     down: dict[str, WorldFacility] = {}
     up: dict[str, WorldFacility] = {}
     for f in facilities:
         if f.company_id not in alive or f.status not in ("live", "mothballed"):
             continue
-        cost = wq.cash_cost_usd(state, f, balance, data)
+        cost = costs.cash_cost(f)
         spot = prices[f.good]
         factor = factors[f.good]
         if (

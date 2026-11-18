@@ -55,7 +55,7 @@ from tst.sim.regulation.measure import View, turnover_year
 from tst.sim.regulation.models import Case, CaseOutcome, CaseStage
 from tst.sim.rivals.models import stream_key
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, owner_of, owners_now, with_queued
+from tst.sim.state import GameState, derived, from_inputs, owner_of, owners_now, with_queued
 
 INQUIRY: Final = "regulation_inquiry"  # template ids (data/events/regulation.yaml)
 OBJECTIONS: Final = "regulation_objections"
@@ -81,14 +81,44 @@ def stable(state: GameState, company_id: int) -> tuple[int, ...]:
 
 
 def open_case(state: GameState, company_id: int, regulator: str) -> Case | None:
-    return next(
-        (
-            c
-            for c in state.reg_cases
-            if c.company_id == company_id and c.regulator == regulator and c.stage != "closed"
-        ),
-        None,
-    )
+    """The first case not closed for the company and regulator, from an index kept with the
+    cases (M45: every regulator and group of a month scanned every case)."""
+    cases = state.reg_cases
+
+    def index() -> dict[tuple[int, str], Case]:
+        out: dict[tuple[int, str], Case] = {}
+        for c in cases:
+            if c.stage != "closed":
+                out.setdefault((c.company_id, c.regulator), c)
+        return out
+
+    return from_inputs(cases, "open_case_by_key", index).get((company_id, regulator))
+
+
+def _closed_turns(state: GameState, company_id: int, regulator: str) -> tuple[int, ...]:
+    """The closed turns of the company's cases with the regulator, in the cases' order."""
+    cases = state.reg_cases
+
+    def index() -> dict[tuple[int, str], tuple[int, ...]]:
+        out: dict[tuple[int, str], list[int]] = {}
+        for c in cases:
+            if c.closed_turn is not None:
+                out.setdefault((c.company_id, c.regulator), []).append(c.closed_turn)
+        return {k: tuple(v) for k, v in out.items()}
+
+    return from_inputs(cases, "closed_turns_by_key", index).get((company_id, regulator), ())
+
+
+def _group_of(state: GameState, owner: int) -> frozenset[int]:
+    """The companies whose ultimate owner is `owner` now, from `owners_now` once per state."""
+
+    def index() -> dict[int, frozenset[int]]:
+        out: dict[int, set[int]] = {}
+        for cid, top in owners_now(state).items():
+            out.setdefault(top, set()).add(cid)
+        return {k: frozenset(v) for k, v in out.items()}
+
+    return derived(state, "groups_by_owner", index).get(owner, frozenset())
 
 
 def next_case_id(state: GameState) -> int:
@@ -123,8 +153,8 @@ def causes(
         out["self_preferencing"] = pref
     ids = {p.id for p in owned}
     year_ago = state.turn - MONTHS_PER_YEAR
-    group = {cid for cid, top in owners_now(state).items() if top == owner}
-    if any(
+    group = _group_of(state, owner)
+    if ids and any(  # M45: no platforms, no listings of them (the scan found none)
         x.platform_id in ids and x.status == "removed" and x.since_turn > year_ago
         and (prod := state.product(x.product_id)) is not None and prod.company_id not in group
         for x in state.platform_listings
@@ -133,7 +163,7 @@ def causes(
     if breaches(state, owner, reg):
         out["noncompliance"] = ib.noncompliance
     complaint_from = state.turn - ib.complaint_months
-    if any(
+    if ids and any(
         x.platform_id in ids and x.status == "regulators" and x.since_turn > complaint_from
         and x.region == region
         for x in state.platform_listings
@@ -202,16 +232,16 @@ def openings(
     ib = balance.regulation.investigation
     logs: list[LogItem] = []
     owners = sorted({owner_of(state, c.id) for c in state.ledger_companies()})
+    # money-exact: ratio (as in chance(), whose 0 below the floor this check gives first)
+    floor = ib.min_revenue_cents * balance.economy_scale.money
     for i, reg in enumerate(rdata.file(data).regulators):
         for owner in owners:
             if open_case(state, owner, reg.key) is not None:
                 continue
-            last = [
-                c.closed_turn
-                for c in state.reg_cases
-                if c.company_id == owner and c.regulator == reg.key and c.closed_turn is not None
-            ]
+            last = _closed_turns(state, owner, reg.key)
             if last and max(last) > state.turn - ib.cooldown_months:
+                continue
+            if v.region_year(owner, reg.region) < floor:  # M45: chance() is 0; skip causes()
                 continue
             found = causes(state, owner, reg, v, balance, data)
             c = chance(state, owner, reg, v, balance, data, found)

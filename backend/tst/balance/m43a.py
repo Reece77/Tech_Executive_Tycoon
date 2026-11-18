@@ -59,7 +59,7 @@ PUBLISHED: Final[dict[str, tuple[float, str]]] = {
     "samd": (1.5, "M41: AI imaging and diagnostic software about $1-2B, 2024"),
     "launch": (15.0, "M40: launch services about $9-15B, 2024 (SIA, space.yaml)"),
     "satellite_broadband": (11.4, "M40: Starlink revenue 2025 (space.yaml; the largest operator)"),
-    "earth_observation": (4.5, "M40: EO data and services about $4-5B, 2023 (Euroconsult, space.yaml)"),
+    "earth_observation": (4.5, "M40: EO data and services $4-5B, 2023 (Euroconsult)"),
 }
 # categories reported, not judged, by target 2 (decisions in the M43a brief)
 BY_DESIGN: Final[dict[str, str]] = {

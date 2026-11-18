@@ -13,6 +13,12 @@ in the turn's transaction), for the months that just left the window:
 - **World news** leaves the state after `world.news_months` (the engine's window, unchanged);
   the items of the `major_news` kinds go to `world_news_archive` as they leave, and the World
   news screen shows them after the state's.
+- **Candidates' records** (M45, for 60-year dynasty saves): each June, a person who was
+  only ever a candidate, whose candidacy closed more than `candidate_people_months` ago, who
+  is not in the state and whom no other row names, keeps their `person` row (the Timeline
+  names them) but loses the rows nothing reads once they are gone: skills, personality,
+  hidden traits, interests, tags, city, records of what an observer knew, their state and
+  relocation (`CANDIDATE_RECORDS`). The engine loads people in the state only.
 
 The engine never reads these rows back (the turn reads the last month's snapshot at most), so
 results are unchanged. `save_meta.history_pruned_through` is the last month already thinned.
@@ -24,10 +30,11 @@ from collections.abc import Iterable
 from dataclasses import asdict
 from typing import Final
 
-from sqlalchemy import Table, delete, func, insert, select
+from sqlalchemy import Table, delete, func, insert, select, text
 from sqlalchemy.orm import Session
 
 from tst.db.models import (
+    Base,
     CompanyRow,
     SaveMetaRow,
     TurnLogRow,
@@ -39,6 +46,29 @@ from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import RetentionBalance
 from tst.sim.world.models import WorldNews
 
+# M45: a closed candidate's rows that only describe them (nothing reads them once they have
+# left the state); the person row stays, and so do their candidate and offer rows
+CANDIDATE_RECORDS: Final = (
+    "person_skill",
+    "person_personality",
+    "person_hidden",
+    "person_interest",
+    "person_tag",
+    "person_tag_reveal",
+    "person_reveal",
+    "person_profile_reveal",
+    "person_state",
+    "person_city",
+    "candidate_relocation",
+)
+# at most this many people a June, the longest-closed first: an older save's backlog of
+# decades is worked off over a few years, not in one month (M45: 42,000 people took 2.6 s)
+PRUNE_BATCH: Final = 3000  # tunable-exempt: a bound on one month's work, not a game rule
+# references to a person that a closed candidate has as a candidate (kept with them)
+CANDIDATE_OWN: Final = frozenset({("candidate", "person_id"), ("offer", "candidate_id")})
+# June, half a year from the periodic backup that follows each December's commit: on a slow
+# disk the year's deletes and the backup's copy of the save, together, made one month 2x slow
+PRUNE_MONTH: Final = 5  # tunable-exempt: month index in the year (0 = January); not a game rule
 PEAK_KEYS: Final = ("arr_cents", "headcount")  # the Hall of Fame's peaks (history_views)
 QUARTER_END: Final = 2  # tunable-exempt: month index within a quarter that is kept (Mar, Jun..)
 FIRST_YEAR: Final = 12  # tunable-exempt: months of a company's first year, all kept
@@ -73,6 +103,75 @@ def prune(session: Session, played: int, keep: RetentionBalance) -> None:
             _summarise_log_year(session, month // MONTHS_PER_YEAR)
     meta.history_pruned_through = last
     _PEAKS[where] = (meta.master_seed, last, peaks)  # a rolled-back turn leaves `done` behind
+
+
+def prune_candidates(
+    session: Session, played: int, keep: RetentionBalance, live: Iterable[int]
+) -> int:
+    """Each June (`PRUNE_MONTH`, the month `played`), drop the records of people who
+    were only ever candidates and closed more than `candidate_people_months` ago (module
+    docstring). `live`: the people in the state, never touched. Returns how many people
+    lost their records."""
+    if played % MONTHS_PER_YEAR != PRUNE_MONTH:
+        return 0
+    cutoff = played - keep.candidate_people_months
+    if cutoff < 0:
+        return 0
+    tables = {
+        name
+        for (name,) in session.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+    }
+    session.flush()
+    session.execute(text("DROP TABLE IF EXISTS temp.m45_gone"))
+    session.execute(text("CREATE TEMP TABLE m45_gone (id INTEGER PRIMARY KEY, closed INTEGER)"))
+    # closed candidates past the window that still have records (a pruned person has none)
+    session.execute(
+        text(
+            "INSERT INTO temp.m45_gone (id, closed) "
+            "SELECT c.person_id, COALESCE(c.resolved_turn, c.expires_turn) FROM candidate c "
+            "JOIN person p ON p.id = c.person_id "
+            "WHERE c.status != 'open' AND COALESCE(c.resolved_turn, c.expires_turn) <= :cutoff "
+            "AND NOT p.is_founder "
+            "AND EXISTS (SELECT 1 FROM person_skill s WHERE s.person_id = c.person_id)"
+        ),
+        {"cutoff": cutoff},
+    )
+    live_rows = [{"id": i} for i in live]
+    if live_rows:
+        session.execute(text("DELETE FROM temp.m45_gone WHERE id = :id"), live_rows)
+    # anyone another row names is not only a candidate: every foreign key to person.id
+    # (tables added later included) but their own records and candidacy
+    for table in Base.metadata.sorted_tables:
+        if table.name in CANDIDATE_RECORDS or table.name not in tables:
+            continue
+        for fk in table.foreign_keys:
+            target = fk.column
+            if target.table.name != "person" or target.name != "id":
+                continue
+            if (table.name, fk.parent.name) in CANDIDATE_OWN:
+                continue
+            session.execute(
+                text(
+                    f'DELETE FROM temp.m45_gone WHERE id IN (SELECT "{fk.parent.name}" '
+                    f'FROM "{table.name}" WHERE "{fk.parent.name}" IS NOT NULL)'
+                )
+            )
+    session.execute(  # the longest-closed first, at most PRUNE_BATCH of them
+        text(
+            "DELETE FROM temp.m45_gone WHERE id NOT IN (SELECT id FROM temp.m45_gone "
+            "ORDER BY closed, id LIMIT :batch)"
+        ),
+        {"batch": PRUNE_BATCH},
+    )
+    gone = int(session.scalar(text("SELECT count(*) FROM temp.m45_gone")) or 0)
+    if gone:
+        for name in CANDIDATE_RECORDS:
+            if name in tables:
+                session.execute(
+                    text(f'DELETE FROM "{name}" WHERE person_id IN (SELECT id FROM temp.m45_gone)')
+                )
+    session.execute(text("DROP TABLE temp.m45_gone"))
+    return gone
 
 
 def _peaks_through(session: Session, month: int) -> Peaks:
