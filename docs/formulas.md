@@ -4015,3 +4015,82 @@ M37's diagnosis (2026-11-17, decision 22) found the game's economy running away:
 4. **Headroom:** no money value in a dynasty run passes 1.0e18 cents (M37's `M37.money` guard closes as met).
 5. **Ratios hold:** v1–v4 strategy ratios (V1–V6, M23b's and M35b's targets) stay in their bands, or are reported under rules 1–4.
 6. **Turn time** within the guards.
+
+## 55. Pharmaceuticals (M42; v5)
+
+Reece (2026-11-14): **pharmaceuticals**, as realistic as medical devices, reusing M41's machinery (health regulators, studies with unknown readouts, coverage, quality and recalls), which Reece approved as built (2026-11-17). **History holds to 2025** where M43a has set it: market sizes, approval rates, dated rules and rivals follow `pharma.yaml` (research `docs/v5-research/pharma-dossier.md`); seeded after. Markets and money at the game's scale (§54).
+
+### 55.1 Molecules and the pipeline
+
+- A **programme** is a molecule aimed at an **indication** in a **therapeutic area** (`oncology`, `metabolic`, `immunology`, `neuroscience`, `infectious_disease`, `cardiovascular`, `rare_disease`), of a **modality** (`small_molecule`, `biologic`, `cell_and_gene`), with a hidden true efficacy and safety (never shown; ranges narrow with evidence, CLAUDE.md §8).
+- **Stages:** discovery, preclinical, Phase I, Phase II, Phase III, submission, approval, then post-marketing (Phase IV). Each stage has a duration range, a cost (patients × cost per patient by area and modality, plus fixed), and a **transition chance** from published rates by area and stage (for example, from Phase I to approval roughly 8% overall, with oncology lowest and haematology and rare diseases highest *(verify)*). Each readout is drawn (stream `pharma`) from the molecule's hidden values and the trial's design; the chance shown is a range.
+- **Research staff** use existing skills (`research`, `data`, `ml_research`, `science` where present; no new skills); the R&D tree (§21) gains a `drug_discovery` domain whose level raises discovery throughput and the hidden efficacy distribution's mean.
+
+### 55.2 AI-driven discovery
+
+- A company with `ai_models` products of sufficient quality (and `drug_discovery` level) can run **AI discovery**: more candidates per year from discovery, a shorter preclinical stage (`pharma.ai_preclinical_cut`), and a modest lift to Phase I and II transition chances (`pharma.ai_transition_lift`, small: historical evidence is early). Licensing an AI discovery platform to others is a product (`dev_tools`-like revenue).
+
+### 55.3 Approval, regulators and rules
+
+- Submissions (NDA or BLA in the US, MAA in the EU, and the others by data) go through M41's health regulators with pharma-specific review times (standard and priority review, accelerated approval, breakthrough designation, orphan designation) and outcomes from the data, including advisory committees and complete response letters.
+- **Exclusivity:** patents (20 years from filing, with term extension), US data exclusivity (5 years for small molecules, 12 for biologics), the EU's 8+2+1, orphan exclusivity (7 years US, 10 EU) *(verify)*.
+
+### 55.4 Revenue, pricing and the cliff
+
+- A drug's demand is its indication's patient population (by region, data) × diagnosis and treatment rates × share (efficacy and safety relative to the standard of care, class competition, the company's medical affairs and sales force).
+- **Pricing and reimbursement** by region: the US list price with net discounts, Medicare negotiation under the 2022 Inflation Reduction Act from its dates (first negotiated prices from 2026) *(verify)*; elsewhere a health-technology-assessment price. Coverage reuses §50.4.
+- **The generics cliff:** at loss of exclusivity, generics enter (small molecules: price −80–90% within a year with several entrants *(verify)*), biosimilars more slowly and less deeply. Rivals' generic makers (Teva, Sandoz, Viatris, Sun) and biosimilar makers enter by data and seeded rules.
+
+### 55.5 Manufacturing, licensing and rivals
+
+- **Plants:** a small-molecule API plant and a **biologics** plant (bioreactor capacity, long build, high quality demands), or contract manufacturers (Lonza, Samsung Biologics, WuXi Biologics, Catalent) as chain companies. Quality, inspections and recalls reuse §50.5.
+- **Licensing and partnering:** in-license or out-license a programme at any stage (upfront, milestones, royalties), co-development with a partner (shared cost and revenue); acquisitions of biotechs through §28.
+- **Rivals** with portfolios, pipelines and patent cliffs from the data: Pfizer, Johnson & Johnson, Roche, Merck & Co., AbbVie, Novartis, AstraZeneca, Novo Nordisk, Eli Lilly, Bristol Myers Squibb, Sanofi, GSK; biotechs and entrants from seeded rules.
+
+### 55.6 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company without pharma plays exactly as before).
+2. **Attrition is real:** across seeds, the share of Phase I programmes reaching approval is 6–12% (median), with oncology at least 30% below the average.
+3. **It takes a decade:** median time from Phase I start to approval 7–11 years.
+4. **The cliff bites:** a small-molecule blockbuster loses at least 70% of its revenue within 24 months of exclusivity ending.
+5. **AI helps, modestly:** AI discovery raises a portfolio's approvals per dollar by 10–40% (median), not more.
+6. **Turn time** within the guards.
+
+### 55.7 What the API may show
+
+Programmes, stages, designs, readouts once read out, efficacy and safety as ranges, submissions and stages, approvals, exclusivity dates, prices, rivals' public pipelines and approvals. Never a molecule's true efficacy or safety, a readout draw before readout, or seeded future rules before they happen.
+
+## 56. Space and satellites (M40; v5)
+
+Reece (2026-11-14): **space** after EVs and robotics. Launch, satellites and constellations, and connectivity sold like cloud: capital-heavy and failure-prone. **History holds to 2025** where M43a set it (`space.yaml`, research `docs/v5-research/space-dossier.md`); markets and money at the game's scale (§54).
+
+### 56.1 Launch
+
+- **Launch vehicles** are products in a new category `launch` (customers: satellite operators, governments, the player's own constellations): payload to orbit, price per launch, reliability and cadence. **Reusability** is an R&D path (`reusability` domain in §21): first-stage recovery, then full reuse, each cutting the cost per kg and raising cadence.
+- **Cost per kg to low Earth orbit** follows history to 2025 (about $54,500 on the Space Shuttle, about $2,700 on Falcon 9 *(verify)*), then each vehicle's own cost from its build cost, reuse and cadence.
+- **Launches** can fail (stream `space`, chance from the vehicle's maturity and reliability): a failure loses the payload (insurance pays part), grounds the vehicle for an investigation (2–9 months), and hurts brand. A failure with the player's own satellites aboard is a critical event.
+- **Launch sites** are facilities (licences by region, range availability).
+
+### 56.2 Satellites and constellations
+
+- **Satellites** are built in a satellite plant (a facility kind) or bought, with mass, capacity (Gbps), life (5–15 years) and cost; chips from the player's fabs.
+- A **constellation** (a facility-like record): shells of satellites, coverage by region (once enough satellites are up), capacity, ground stations, and replacement launches. Deorbiting and debris rules by data and seeded policy.
+
+### 56.3 Connectivity and services
+
+- **`satellite_broadband`**, a subscription category (consumer, enterprise, aviation and maritime, government): subscribers in a region need coverage, a user terminal (a device product with its own cost and subsidy), and licences (spectrum and landing rights by country, M22's geopolitics). Capacity limits subscribers per region; congestion lowers quality.
+- **Direct-to-device** (phones connecting to satellites) from its seeded era, partnering with or competing against mobile carriers.
+- **Earth observation and government services** as smaller categories; defence demand comes in M44.
+- **Rivals** from the data: SpaceX (Falcon, Starship, Starlink), Blue Origin, ULA, Arianespace, Rocket Lab, CASC, ISRO, Eutelsat OneWeb, Amazon Kuiper, SES, Viasat; entrants from seeded rules.
+
+### 56.4 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company without space plays exactly as before).
+2. **Reuse changes everything:** a fully reusable vehicle reaches a cost per kg at least 5× below an expendable one of the same era, at least 6 years after starting the domain.
+3. **Constellations are capital-heavy:** a broadband constellation needs at least 8 years to positive cumulative cash flow (median), and 20%+ of runs that start one by 2030 never reach it.
+4. **Launches fail:** a new vehicle's failure rate in its first 10 flights is at least 3× its rate after 50.
+5. **Turn time** within the guards.
+
+### 56.5 What the API may show
+
+Vehicles, launches and their outcomes, cost per kg, satellites, constellations and coverage, subscribers, licences, rivals' public launches and constellations. Never launch-failure draws, seeded policy before it happens, or rivals' plans.
