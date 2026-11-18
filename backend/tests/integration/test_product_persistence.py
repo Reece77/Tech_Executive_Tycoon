@@ -9,7 +9,13 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, text
 
-from tests.helpers import FIRST_PRODUCT, INCUMBENTS, MEDICAL_INCUMBENTS, ROBOT_INCUMBENTS
+from tests.helpers import (
+    FIRST_PRODUCT,
+    INCUMBENTS,
+    MEDICAL_INCUMBENTS,
+    ROBOT_INCUMBENTS,
+    SPACE_INCUMBENTS,
+)
 from tst.db import migrate
 from tst.db.models import SCHEMA_VERSION, CompanyRow
 from tst.db.repository import create_save, load_state, open_session, run_turn
@@ -34,7 +40,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     names = [c.name for c in state.companies if not c.is_player]
     assert names == [c.name for c in loaded.game_data.incumbents]
     assert [c.id for c in state.companies] == list(
-        range(1, INCUMBENTS + MEDICAL_INCUMBENTS + ROBOT_INCUMBENTS + 2)
+        range(1, INCUMBENTS + MEDICAL_INCUMBENTS + ROBOT_INCUMBENTS + SPACE_INCUMBENTS + 2)
     )
     incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
     assert len(state.products) == incumbent_products and all(

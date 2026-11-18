@@ -198,6 +198,36 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "staff_needed": _CAPACITY,
     },
     # v5 (M39): the Robotics and Mobility screens (53.5)
+    # v5 (M40): the Space screen (56.5)
+    "space.FlightCostOut": {
+        "build_cents": "launch_price",
+        "reused_share": _RULE,
+        "flights_per_vehicle": _RULE,
+        "refurb_share": _RULE,
+        "operations_cents": "launch_price",
+        "flight_cents": "launch_price",
+        "payload_kg": _INPUT,
+        "cost_per_kg_cents": "launch_price",
+        "expendable_per_kg_cents": "launch_price",
+    },
+    "space.VehicleOut": {
+        "quality": exempt("a product's quality, explained on its product page"),
+        "payload_kg": _INPUT,
+        "price_cents": _INPUT,
+        "flights": _COUNT,
+        "failures": _COUNT,
+        "reliability": exempt("successful flights over flights, from the launches listed"),
+        "failure_rate_lo": exempt("the failure model's range for the next flight, in the glossary"),
+        "failure_rate_hi": exempt("the failure model's range for the next flight, in the glossary"),
+        "pads": _CAPACITY,
+        "cadence": exempt("launch-site pads x the reuse level's launches a month, in the glossary"),
+    },
+    "space.PaybackOut": {
+        "capex_cents": "constellation_payback",
+        "cash_cents": "constellation_payback",
+        "last_year_cash_cents": "constellation_payback",
+        "months_to_payback": "constellation_payback",
+    },
     "robotics.PlantAutomationOut": {
         "units_month": _CAPACITY,
         "robots": _INPUT,

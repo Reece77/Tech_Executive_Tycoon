@@ -80,6 +80,7 @@ def test_research_screen_and_a_project(api: tuple[Client, Path], loaded: LoadedD
         "process",  # M20 (36.3)
         "lithography",  # M33 (47.4)
         "autonomy",  # M38 (49.4)
+        "reusability",  # M40 (56.1)
     ]
     ai = next(d for d in out["domains"] if d["key"] == "ai")
     assert (ai["baseline"], ai["lead"], ai["next_era"]) == (10.0, 0.0, "Deep learning")

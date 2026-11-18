@@ -225,6 +225,15 @@ export const GUIDES: Record<string, Guide> = {
       'Utilisation decides the economics: above the break-even rides a car a day a fleet earns; a serious incident suspends the zone.',
     ],
   },
+  space: {
+    title: 'Space',
+    path: 'products/space',
+    what: "Launch vehicles and reusability, launches and failures, cost a kg, your constellations (shells, coverage, capacity, payback), broadband subscribers and licences by region, and rivals' public launches and constellations.",
+    start: [
+      'A launch vehicle is a product (Launch services): set its design here and fly it from a launch site. Reusability research cuts its cost a kg; full reuse takes years.',
+      'A constellation serves a Satellite broadband line: a region opens once a shell is complete over it and you hold a licence there. It is capital-heavy: expect most of a decade to pay back.',
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',
