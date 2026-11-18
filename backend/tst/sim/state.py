@@ -180,6 +180,15 @@ from tst.sim.rivals.models import (
     SegmentShare,
     WorkforcePool,
 )
+from tst.sim.robotics.models import (
+    Depot,
+    HumanoidSpec,
+    PlantAutomation,
+    RoboIncident,
+    RoboticsWorld,
+    Zone,
+    ZoneMonth,
+)
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -555,6 +564,16 @@ class GameState:
     # M37 (52.3-52.4): rival leaders' successions, deaths and relaunched brands from January
     # 2040; None in every game before then (52.5 target 1)
     dynasty: DynastyState | None = None
+    # M39 (53): robots in the player's plants by facility id, humanoid designs by product id,
+    # robotaxi zones and depots, zone months (robotics.history_months), incidents that happened,
+    # and the game-wide installations' growth, humanoid adoption and rival operators' cities.
+    plant_automations: tuple[PlantAutomation, ...] = ()
+    humanoid_specs: tuple[HumanoidSpec, ...] = ()
+    zones: tuple[Zone, ...] = ()
+    depots: tuple[Depot, ...] = ()
+    zone_months: tuple[ZoneMonth, ...] = ()
+    robo_incidents: tuple[RoboIncident, ...] = ()
+    robotics_world: RoboticsWorld = field(default_factory=RoboticsWorld)
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).
@@ -564,6 +583,15 @@ class GameState:
 
     def vehicle_spec(self, product_id: int) -> VehicleSpec | None:  # M38 (49.1)
         return next((v for v in self.vehicle_specs if v.product_id == product_id), None)
+
+    def plant_automation(self, facility_id: int) -> PlantAutomation | None:  # M39 (53.1)
+        return next((a for a in self.plant_automations if a.facility_id == facility_id), None)
+
+    def zone(self, zone_id: int) -> Zone | None:  # M39 (53.3)
+        return next((z for z in self.zones if z.id == zone_id), None)
+
+    def humanoid_spec(self, product_id: int) -> HumanoidSpec | None:  # M39 (53.2)
+        return next((h for h in self.humanoid_specs if h.product_id == product_id), None)
 
     def cell_plant(self, facility_id: int) -> CellPlant | None:  # M38 (49.2)
         return next((c for c in self.cell_plants if c.facility_id == facility_id), None)

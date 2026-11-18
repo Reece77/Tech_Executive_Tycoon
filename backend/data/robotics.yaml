@@ -1,0 +1,362 @@
+# Robotics and robotaxis (docs/formulas.md 53, M39, v5 lane F). Research: M39 sub-task 1 (2026-11-17)
+# from docs/v5-research/robotics-dossier.md. History holds to December 2025; seeded after (balance.yaml
+# robotics.*). Every value carries a tag and a source:
+#   S  a sourced figure, quoted from the named source; "(search)" marks a search engine's excerpt of
+#      the source's page (this session could open only en.wikipedia.org: ifr.org, bls.gov and
+#      ark-invest.com did not resolve),
+#   D  derived from sourced figures (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session,
+#   A  an assumption for gameplay where no public series was found (the basis is given).
+# Money is [value, dollar year, tag] under keys ending _usd, converted to the game's 2010 dollars with
+# `cpi` at load. Re-check the R and A rows against IFR's World Robotics tables and BLS when those
+# hosts are reachable (M39 follow-up).
+#
+# Scale (Reece, 2026-11-15: "markets and money at the game's scale"): robots, workers and trips here
+# are real-world counts; the game multiplies them by balance.yaml robotics.scale (0.085, the game's
+# economy scale, as vehicles.scale), at real prices.
+#
+# Corrections to the dossier (M39 brief, Decisions made): 2010 installations were first published as
+# about 118,000 (120,585 is IFR's later revision); China's own makers held over half their home
+# market by 2024 (57%, IFR), not ">40%"; Midea completed its KUKA bid in January 2017 (94.55%); the
+# Unitree G1's price was announced in May 2024 and mass production began in August 2024; IFR's 2026
+# edition adds 2025 (about 603,000 installations, China 59%).
+#
+# Sources:
+#   WIR     Wikipedia, Industrial robot (IFR's yearly installations, stock and value):
+#           https://en.wikipedia.org/wiki/Industrial_robot
+#   IFR     IFR World Robotics press releases and executive summaries, editions 2011-2026 (e.g.
+#           https://ifr.org/img/worldrobotics/Executive_Summary_WR_2024_Industrial_Robots.pdf ,
+#           https://ifr.org/ifr-press-releases/news/robot-investment-reaches-record-16.5-billion-usd ,
+#           https://thenextweb.com/news/industrial-robots-world-robotics-2026-china-59-eu-falls ,
+#           evertiq and computer-automation.de syndications), S (search)
+#   IFRD    IFR robot density releases (Nov 2024, via mmh.com and robotics247), S (search)
+#   ARK     EY citing ARK Invest, robot cost per unit ~$47k (2011) to ~$23k (2022):
+#           https://www.ey.com/en_kr/innovation/three-tailwinds-for-robotics-adoption-in-2024-and-beyond
+#   IA      Interact Analysis via automation.com, average revenue a robot $31,100 (2018) -> $25,600 (2024)
+#   VEND    integrator and vendor price guides (standardbots.com, automate.org's ROI guide), S (search)
+#   MIR     MIR Databank via Yicai (China's domestic brands 51.6% Q1-Q3 2024), and Macquarie's 2024
+#           China shares by supplier (FANUC 10.1%, Estun 9.9%, Inovance 8.9%), S (search)
+#   MAKERS  ABB Robotics 2024 revenue ~$2.3bn (techrepublic, heise); FANUC IR reference202412_e.pdf;
+#           KUKA (https://en.wikipedia.org/wiki/KUKA); Universal Robots
+#           (https://en.wikipedia.org/wiki/Universal_Robots)
+#   BLS     BLS International Labor Comparisons, hourly compensation in manufacturing 2012
+#           (https://www.bls.gov/fls/ichccindustryreport.htm, US S (search), others R); Destatis 2023
+#           (Germany EUR 46.00/h, S (search)); Eurostat 2023 (euro area industry EUR 38/h, S (search));
+#           Supplyframe 2023 (China CNY 43.26/h, S (search)); INEGI via Trading Economics (Mexico)
+#   HUM     Wikipedia: Optimus (robot), Figure AI, Agility Robotics, Unitree Robotics; UBTech order
+#           releases (technode, Kyodo); IDC, Counterpoint and BofA 2025 shipments, S (search)
+#   WAYMO   https://en.wikipedia.org/wiki/Waymo ; Engadget, TechCrunch, CNBC ride counts, S (search)
+#   CRUISE  https://en.wikipedia.org/wiki/Cruise_(autonomous_vehicle)
+#   APOLLO  https://en.wikipedia.org/wiki/Apollo_Go ; Baidu quarterly results (gasgoo), S (search)
+#   PONY    Pony.ai and WeRide IPO coverage (ChinaTalk, TechCrunch), S (search)
+#   ZOOX    https://en.wikipedia.org/wiki/Zoox_(company)
+#   OBI     Obi ride-hail price studies via TechCrunch (2025-06-12, 2026-01-27), S (search)
+#   SFCTA   SFCTA, "TNCs Today" (2016): https://www.sfcta.org/projects/tncs-today , S (search)
+#   UBER    Uber FY2024 release (11,273M trips; 2023 9,448M), investor.uber.com, S (search)
+#   CPI     US BLS CPI-U annual averages (R; 2025 A, preliminary), as vehicles.yaml's
+
+cpi: # R (CPI), as vehicles.yaml
+  2010: 218.056
+  2012: 229.594
+  2015: 237.017
+  2016: 240.007
+  2019: 255.657
+  2020: 258.811
+  2021: 270.970
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.0
+
+# --- Industrial robots by region (53.1) ---------------------------------------------------------------
+# installations: thousands of industrial robots installed a year in the game region, real world (IFR).
+#   north_america = US + Canada + Mexico: 2010 about 16k (R, IFR "North America"); US 27.5k (2015),
+#   40.4k (2018), 35.0k (2021), 39.6k (2022), 37.6k (2023), 34.2k (2024), about 38k (2025) (IFR, S
+#   (search)) plus Canada and Mexico about 8-15k (R). europe: Germany 14.1k (2010), 26.7k (2018),
+#   23.8k (2021), 25.6k (2022), 27.0k (2024) is about a third of Europe's (IFR, S (search) and R); 2025
+#   EU -11% (IFR 2026, S (search)). east_asia = China + Japan + Korea + Taiwan: China 15.0k / 68.6k /
+#   154.0k / 268.2k / 290.3k / 276.3k / 295k / 354k (2010 / 2015 / 2018 / 2021-2025), Japan 21.9k /
+#   ~35k / 55.2k / 47.2k / 50.4k / ~46.1k / 44.5k / ~36.2k, Korea 23.5k / 38.3k / 37.8k / 31.1k /
+#   31.7k / 31.4k / 30.6k / ~30.2k (IFR, S (search)), Taiwan 7-11k (R). The rest: IFR's "rest of
+#   Asia" about 37k in 2024 (D: world less the named), split A by their manufacturing (India about
+#   9k, Thailand and Vietnam about 7k); Latin America without Mexico (Brazil about 2k), Africa and
+#   Oceania about 1k each (R). Sums: 2010 about 122k (world 118-121k, WIR S), 2024 about 537k (world
+#   542,076, WIR S), 2025 about 592k (world about 603k, IFR 2026 S (search)).
+# segments: buyer industry shares (A by region, matching IFR's world split: automotive 23% and
+#   electronics 24% in 2024, automotive 30% and electronics 25% in 2018; S (search) and WIR S): North
+#   America's and Latin America's are car plants, East Asia's electronics.
+# labour_usd: hourly compensation in manufacturing, the region's typical plant (dollars of the year):
+#   north_america US-weighted with Mexico (US $35.67 in 2012, BLS S (search); Mexico $5-6, R), europe
+#   EU-weighted (euro area industry EUR 38 in 2023, S (search); Germany $45.79 in 2012, R), east_asia
+#   China-weighted where most of the region's robots go (China $1.74 in 2009, BLS R; CNY 43.26 = $6.29
+#   in 2023, S (search); Japan $35.34 and Korea $20.72 in 2012, R), south_southeast_asia (India and
+#   ASEAN, $1.5-3, A from BLS's Philippines $2.10 in 2012, R), latin_america (Brazil $11.20 in 2012,
+#   R, falling with the real), africa and oceania (A).
+# density: robots per 10,000 manufacturing workers, the region's leading country (IFRD 2023 S
+#   (search); 2010 and 2015 R): shown on the Robotics screen.
+regions:
+  north_america:
+    installations: { 2010: [16.0, R], 2015: [38.0, D], 2018: [55.0, D], 2021: [46.0, D], 2022: [52.0, D], 2023: [50.0, D], 2024: [46.0, D], 2025: [49.0, D] }
+    segments: { automotive: [0.50, A], electronics: [0.12, A], general_industry: [0.38, A] }
+    labour_usd: { 2010: [30.0, 2010, D], 2012: [31.0, 2012, D], 2023: [39.0, 2023, D] }
+    density: { 2010: [135, R], 2015: [176, R], 2023: [295, S] }
+  europe:
+    installations: { 2010: [31.0, R], 2015: [50.1, R], 2018: [75.5, R], 2021: [84.3, R], 2022: [84.0, R], 2023: [92.4, R], 2024: [85.0, D], 2025: [76.0, D] }
+    segments: { automotive: [0.35, A], electronics: [0.08, A], general_industry: [0.57, A] }
+    labour_usd: { 2010: [36.0, 2010, R], 2012: [37.0, 2012, R], 2023: [41.0, 2023, D] }
+    density: { 2010: [261, R], 2015: [301, R], 2023: [429, S] }
+  east_asia:
+    installations: { 2010: [67.3, D], 2015: [149.1, D], 2018: [257.9, D], 2021: [356.1, D], 2022: [380.0, D], 2023: [361.8, D], 2024: [377.1, D], 2025: [427.4, D] }
+    segments: { automotive: [0.22, A], electronics: [0.33, A], general_industry: [0.45, A] }
+    labour_usd: { 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2023: [9.0, 2023, D] }
+    density: { 2010: [347, R], 2015: [531, R], 2023: [1012, S] }
+  south_southeast_asia:
+    installations: { 2010: [6.0, A], 2015: [10.0, A], 2018: [14.5, A], 2021: [16.0, A], 2022: [18.5, A], 2023: [19.0, A], 2024: [21.0, D], 2025: [24.0, A] }
+    segments: { automotive: [0.30, A], electronics: [0.25, A], general_industry: [0.45, A] }
+    labour_usd: { 2010: [1.5, 2010, A], 2023: [3.0, 2023, D] }
+    density: { 2010: [20, A], 2015: [398, R], 2023: [770, S] }
+  latin_america:
+    installations: { 2010: [1.5, R], 2015: [1.9, R], 2018: [2.5, R], 2021: [2.2, R], 2022: [2.5, R], 2023: [2.6, R], 2024: [2.5, A], 2025: [2.6, A] }
+    segments: { automotive: [0.55, A], electronics: [0.10, A], general_industry: [0.35, A] }
+    labour_usd: { 2010: [10.0, 2010, R], 2012: [11.2, 2012, R], 2023: [8.0, 2023, A] }
+    density: { 2023: [20, A] }
+  africa:
+    installations: { 2010: [0.5, A], 2018: [0.9, A], 2024: [1.0, A], 2025: [1.0, A] }
+    segments: { automotive: [0.50, A], electronics: [0.05, A], general_industry: [0.45, A] }
+    labour_usd: { 2010: [2.0, 2010, A], 2023: [2.5, 2023, A] }
+    density: { 2023: [10, A] }
+  oceania:
+    installations: { 2010: [0.6, A], 2018: [0.9, A], 2024: [0.8, A], 2025: [0.8, A] }
+    segments: { automotive: [0.15, A], electronics: [0.05, A], general_industry: [0.80, A] }
+    labour_usd: { 2010: [30.0, 2010, A], 2023: [34.0, 2023, A] }
+    density: { 2023: [170, A] }
+
+# --- Prices (53.1) --------------------------------------------------------------------------------------
+# robot_usd: a robot's average value (arm and controller): ~$47k (2011) and ~$23k (2022) (ARK via EY, S
+#   (search)); IFR's $16.5bn for 422,271 robots in 2018 is ~$39k (D, WIR S); $16.7bn in 2024 for
+#   542,076 is ~$30.8k (D, WIR S; IA's average revenue a robot $25,600, S (search)).
+# cobot_usd: a collaborative arm, $15-35k (VEND, S (search)): $35k (2015, A), $25k (2024, A midpoint).
+# system_mult: IFR's robot systems ($48.0bn with software, peripherals and engineering) over robot
+#   sales ($16.5bn) in 2018 = 2.9 (D, WIR S).
+# service_share: annual maintenance 5-8% of the purchase price (VEND, S (search)).
+prices:
+  robot_usd: { 2011: [47000, 2011, S], 2018: [39000, 2018, D], 2022: [23000, 2022, S], 2024: [30800, 2024, D] }
+  cobot_usd: { 2015: [35000, 2015, A], 2024: [25000, 2024, A] }
+  system_mult: [2.9, D]
+  service_share: [0.07, S]
+
+# --- Makers (53.1) --------------------------------------------------------------------------------------
+# shares: of the region's installations by year (A from these anchors, no public table by region was
+# reachable): the big four (FANUC, ABB, Yaskawa, KUKA) about half of the world's units through the
+# 2010s (R); in China FANUC 10.1% and Estun 9.9% in 2024 (MIR, S (search)) and the big four from
+# about 70% to about 40% (Yicai, S (search)); domestic brands 28-30% in 2015-2020 and 57% in 2024 (IFR,
+# S (search)). Estun stands for the Chinese makers here (Estun, Inovance, Efort, Siasun: one rival keeps
+# the turn inside its budget; M39 decision). Kawasaki, Epson, Nachi, Denso, Mitsubishi and the rest are
+# not in the game: their share is the market no rival serves. ABB Robotics' revenue ~$2.3bn in 2024
+# (S (search)); KUKA EUR 3.9bn in 2025 (S); Midea owns KUKA from January 2017 (S); Teradyne bought
+# Universal Robots in 2015 for $285m (S).
+makers:
+  - company: FANUC
+    origin: japan
+    shares:
+      north_america: { 2010: [0.25, A], 2025: [0.24, A] }
+      europe: { 2010: [0.12, A], 2025: [0.13, A] }
+      east_asia: { 2010: [0.18, A], 2018: [0.15, A], 2024: [0.10, D], 2025: [0.10, A] }
+      south_southeast_asia: { 2010: [0.20, A], 2025: [0.18, A] }
+      latin_america: { 2010: [0.20, A], 2025: [0.20, A] }
+      africa: { 2010: [0.15, A], 2025: [0.15, A] }
+      oceania: { 2010: [0.20, A], 2025: [0.20, A] }
+  - company: ABB Robotics
+    origin: rest_of_eu
+    owner: ABB (SoftBank agreed to buy it in October 2025)
+    shares:
+      north_america: { 2010: [0.12, A], 2025: [0.11, A] }
+      europe: { 2010: [0.20, A], 2025: [0.18, A] }
+      east_asia: { 2010: [0.10, A], 2018: [0.09, A], 2025: [0.06, A] }
+      south_southeast_asia: { 2010: [0.15, A], 2025: [0.14, A] }
+      latin_america: { 2010: [0.15, A], 2025: [0.15, A] }
+      africa: { 2010: [0.20, A], 2025: [0.20, A] }
+      oceania: { 2010: [0.15, A], 2025: [0.15, A] }
+  - company: Yaskawa
+    origin: japan
+    shares:
+      north_america: { 2010: [0.15, A], 2025: [0.13, A] }
+      europe: { 2010: [0.08, A], 2025: [0.08, A] }
+      east_asia: { 2010: [0.15, A], 2018: [0.12, A], 2025: [0.08, A] }
+      south_southeast_asia: { 2010: [0.12, A], 2025: [0.11, A] }
+      latin_america: { 2010: [0.10, A], 2025: [0.10, A] }
+      oceania: { 2010: [0.10, A], 2025: [0.10, A] }
+  - company: KUKA
+    origin: germany
+    owner: Midea (from January 2017)
+    shares:
+      north_america: { 2010: [0.12, A], 2025: [0.10, A] }
+      europe: { 2010: [0.25, A], 2025: [0.22, A] }
+      east_asia: { 2010: [0.06, A], 2017: [0.06, A], 2021: [0.08, A], 2025: [0.07, A] }
+      south_southeast_asia: { 2010: [0.05, A], 2025: [0.06, A] }
+      latin_america: { 2010: [0.10, A], 2025: [0.10, A] }
+      africa: { 2010: [0.10, A], 2025: [0.10, A] }
+  - company: Universal Robots
+    origin: rest_of_eu
+    owner: Teradyne (from 2015)
+    shares: # cobots: ~12% of 2024's installations, >64,500 (S (search)); UR the largest cobot maker (R)
+      north_america: { 2010: [0.002, A], 2015: [0.02, A], 2020: [0.04, A], 2025: [0.05, A] }
+      europe: { 2010: [0.004, A], 2015: [0.03, A], 2020: [0.05, A], 2025: [0.06, A] }
+      east_asia: { 2012: [0.002, A], 2018: [0.015, A], 2025: [0.02, A] }
+      south_southeast_asia: { 2014: [0.005, A], 2025: [0.03, A] }
+      oceania: { 2014: [0.01, A], 2025: [0.05, A] }
+  - company: Estun
+    origin: china
+    shares: # the Chinese makers' share of East Asia: about 28% of China's 2015-2020 installations x China's share of the region, rising to 57% x 78% (D, IFR S (search)) less the foreign-brand Chinese plants (A)
+      east_asia: { 2010: [0.02, A], 2015: [0.10, D], 2018: [0.13, D], 2021: [0.18, D], 2023: [0.22, D], 2024: [0.30, D], 2025: [0.32, D] }
+      south_southeast_asia: { 2018: [0.01, A], 2025: [0.05, A] }
+      latin_america: { 2020: [0.01, A], 2025: [0.03, A] }
+      africa: { 2020: [0.02, A], 2025: [0.05, A] }
+
+# --- Humanoids (53.2) ------------------------------------------------------------------------------------
+# The market opens with the humanoid_robotics era (eras.yaml: window 2030-2035); before it these are
+# announcements and pilots (shown as history), not sales. Shipments were ~3,000 in 2024 and 13,000-20,000
+# in 2025 (BofA, IDC, Counterpoint, S (search)).
+# price_usd: a business humanoid at the era's arrival: $50,000 in 2025 dollars (A: Tesla's stated
+#   $20,000-30,000 target (October 2024, HUM S); Unitree G1 $16,000 (S (search)); Agility's
+#   robots-as-a-service about $8,500 a month (S (search), weak); Unitree H1 about $90,000 (S (search),
+#   weak)).
+# actuator_usd: a humanoid's actuators (about 28-40 joints) in its first year: $20,000 in 2025 dollars
+#   (A: about 40% of a $50,000 robot's cost of goods, as analysts' teardowns of Optimus, R).
+# other_usd: frame, battery, sensors and wiring: $6,000 in 2025 dollars (A).
+# workers: millions of workers in logistics (transport and warehousing), retail and manufacturing, by
+#   region (A from national labour statistics recalled: US transport and warehousing about 6.5M, retail
+#   about 15.6M, manufacturing about 12.9M (BLS, R); EU manufacturing about 30M (Eurostat, R); China
+#   manufacturing over 100M (NBS, R)).
+humanoids:
+  era: humanoid_robotics
+  makers:
+    - { company: Tesla Optimus, origin: us, owner: Tesla }
+    - { company: Figure AI, origin: us }
+    - { company: Agility Robotics, origin: us }
+    - { company: Unitree, origin: china }
+    - { company: UBTech, origin: china }
+    - { company: Boston Dynamics, origin: us, owner: Hyundai (from June 2021) }
+  announcements:
+    - { company: Tesla Optimus, month: "2021-08", label: "Tesla announces Optimus at AI Day (19 August 2021)" } # HUM S
+    - { company: Tesla Optimus, month: "2022-09", label: "First Optimus prototypes walk on stage at AI Day 2" } # HUM S (30 September, R)
+    - { company: Agility Robotics, month: "2023-10", label: "Amazon starts testing Digit in a warehouse" } # HUM S
+    - { company: Figure AI, month: "2024-01", label: "Figure signs a deal with BMW for its Spartanburg plant" } # HUM S (Spartanburg R)
+    - { company: Boston Dynamics, month: "2024-04", label: "Boston Dynamics retires the hydraulic Atlas and unveils an electric one" } # HUM S (search)
+    - { company: Unitree, month: "2024-05", label: "Unitree announces the G1 at $16,000", price_usd: [16000, 2024, S] } # HUM S (search); mass production from August 2024 (S)
+    - { company: Agility Robotics, month: "2024-06", label: "GXO signs the first humanoid robots-as-a-service contract for Digit" } # HUM R
+    - { company: Tesla Optimus, month: "2024-10", label: "Tesla targets a $20,000-30,000 price for Optimus" } # HUM S
+    - { company: UBTech, month: "2025-11", label: "UBTech begins mass delivery of Walker S2 to car plants, orders over RMB 800M" } # HUM S (search)
+  price_usd: [50000, 2025, A]
+  actuator_usd: [20000, 2025, A]
+  other_usd: [6000, 2025, A]
+  workers:
+    north_america: { logistics: [7.5, A], retail: [18.0, A], manufacturing: [23.0, A] }
+    europe: { logistics: [11.0, A], retail: [30.0, A], manufacturing: [32.0, A] }
+    east_asia: { logistics: [30.0, A], retail: [60.0, A], manufacturing: [130.0, A] }
+    south_southeast_asia: { logistics: [20.0, A], retail: [60.0, A], manufacturing: [80.0, A] }
+    latin_america: { logistics: [6.0, A], retail: [20.0, A], manufacturing: [15.0, A] }
+    africa: { logistics: [5.0, A], retail: [25.0, A], manufacturing: [15.0, A] }
+    oceania: { logistics: [0.7, A], retail: [1.5, A], manufacturing: [1.0, A] }
+
+# --- Robotaxis (53.3) ----------------------------------------------------------------------------------------
+# trips_index: ride-hailing trips a year over 2025's, world (D from Uber's trips: about 1.1bn in 2015, 6.9bn
+#   in 2019, 5.0bn in 2020, 7.6bn in 2022, 11.27bn in 2024 (UBER S (search); earlier years R), 2025 about
+#   12.5bn (A)); held flat after 2025 (robotaxi acceptance grows instead).
+# vehicle_usd: a robotaxi with its sensors and compute: Waymo's Jaguar over $120,000 (Morgan Stanley,
+#   October 2024) or about $150,000, "over $100,000" by June 2025 (WAYMO S); $200,000 in 2018 (A);
+#   Baidu's RT6 about $28,000 in 2024 (S (search)) is China's, not used for the game's one price.
+# sensor_usd: the lidar, radar, camera and compute kit fitted to an own L4 car (A: falling with lidar
+#   prices, about $100,000 in 2015 to $30,000 in 2025).
+robotaxi:
+  trips_index: { 2012: [0.01, A], 2015: [0.09, D], 2019: [0.55, D], 2020: [0.40, D], 2022: [0.61, D], 2024: [0.90, D], 2025: [1.0, A] }
+  vehicle_usd: { 2018: [200000, 2018, A], 2024: [150000, 2024, S], 2025: [100000, 2025, S] }
+  sensor_usd: { 2015: [100000, 2015, A], 2020: [60000, 2020, A], 2025: [30000, 2025, A] }
+  # cities: trips = millions of ride-hailing trips a week in 2025 (real). San Francisco from SFCTA's
+  #   170,000+ intra-city trips a weekday in 2016 (S (search)) grown with the index, and Waymo's 27% of the
+  #   city's bookings in 2025 (YipitData via Bloomberg, S (search)) at its ~120,000 rides a week (D);
+  #   New York's high-volume for-hire trips about 650,000 a day (R); the rest A by the research's rule
+  #   (trips a day about 0.05-0.1 x metro population in dense cores, 0.01-0.03 in sprawling metros; China
+  #   with Didi's ~29M rides a day in 2023, S (search)). fare_usd = a human ride-hail trip, 2025 dollars:
+  #   San Francisco's Uber $15.58 (OBI, S (search)); the rest A. km_per_trip A (US ride-hail trips about
+  #   10-13 km, Chinese cities' shorter).
+  cities:
+    - { key: phoenix, label: Phoenix, region: north_america, country: us, trips: [0.50, A], fare_usd: [16.0, 2025, A], km_per_trip: [12, A] }
+    - { key: san_francisco, label: San Francisco, region: north_america, country: us, trips: [1.20, D], fare_usd: [15.58, 2025, S], km_per_trip: [8, A] }
+    - { key: los_angeles, label: Los Angeles, region: north_america, country: us, trips: [1.80, A], fare_usd: [17.0, 2025, A], km_per_trip: [13, A] }
+    - { key: austin, label: Austin, region: north_america, country: us, trips: [0.34, A], fare_usd: [14.0, 2025, A], km_per_trip: [11, A] }
+    - { key: atlanta, label: Atlanta, region: north_america, country: us, trips: [0.66, A], fare_usd: [15.0, 2025, A], km_per_trip: [13, A] }
+    - { key: las_vegas, label: Las Vegas, region: north_america, country: us, trips: [0.48, A], fare_usd: [15.0, 2025, A], km_per_trip: [9, A] }
+    - { key: new_york, label: New York, region: north_america, country: us, trips: [4.50, R], fare_usd: [24.0, 2025, A], km_per_trip: [9, A] }
+    - { key: wuhan, label: Wuhan, region: east_asia, country: china, trips: [1.80, A], fare_usd: [3.0, 2025, A], km_per_trip: [8, A] } # Apollo Go RMB 7.5 against Didi's RMB 11-15 for 5 km (S (search))
+    - { key: beijing, label: Beijing, region: east_asia, country: china, trips: [4.60, A], fare_usd: [4.0, 2025, A], km_per_trip: [9, A] }
+    - { key: guangzhou, label: Guangzhou, region: east_asia, country: china, trips: [4.00, A], fare_usd: [3.5, 2025, A], km_per_trip: [8, A] }
+    - { key: shenzhen, label: Shenzhen, region: east_asia, country: china, trips: [3.80, A], fare_usd: [3.5, 2025, A], km_per_trip: [8, A] }
+    - { key: tokyo, label: Tokyo, region: east_asia, country: japan, trips: [1.00, A], fare_usd: [20.0, 2025, A], km_per_trip: [7, A] }
+    - { key: london, label: London, region: europe, country: uk, trips: [1.90, A], fare_usd: [18.0, 2025, A], km_per_trip: [9, A] }
+    - { key: berlin, label: Berlin, region: europe, country: germany, trips: [0.26, A], fare_usd: [15.0, 2025, A], km_per_trip: [8, A] }
+    - { key: singapore, label: Singapore, region: south_southeast_asia, country: singapore, trips: [1.26, A], fare_usd: [10.0, 2025, A], km_per_trip: [10, A] }
+    - { key: sao_paulo, label: São Paulo, region: latin_america, country: brazil, trips: [2.50, A], fare_usd: [5.0, 2025, A], km_per_trip: [10, A] }
+    - { key: sydney, label: Sydney, region: oceania, country: australia, trips: [0.74, A], fare_usd: [15.0, 2025, A], km_per_trip: [11, A] }
+  # operators: each service's first public driverless rides (driverless), its end, its fleet (cars) and
+  #   paid rides a week (thousands) by year (a year's value sits at its middle). Waymo: Phoenix October
+  #   2020, San Francisco's CPUC permit 10 August 2023 (open to all 25 June 2024), Los Angeles 12 November
+  #   2024, Austin 4 March 2025 and Atlanta 24 June 2025 with Uber (WAYMO S); all cities' paid rides about
+  #   10,000 a week early 2023, 50,000 (May 2024), 100,000 (August 2024), 200,000 (February 2025), 250,000
+  #   (April 2025), ~450,000 (December 2025) (S (search)); fleet ~1,500 (May 2025, S (search)); the split
+  #   by city is A (San Francisco's from its 27% of bookings, D). Cruise: paid driverless rides in San
+  #   Francisco from June 2022, suspended by the California DMV on 24 October 2023 after the 2 October
+  #   pedestrian incident; GM ended the programme on 10 December 2024 (CRUISE S); its 950-car recall (S)
+  #   bounds its fleet. Baidu Apollo Go: Wuhan's commercial driverless service from 8 August 2022 (APOLLO
+  #   S); rides 988,000 (Q3 2024, R) and 2.2M (Q2 2025, S (search)) a quarter, so ~76,000 and ~169,000 a
+  #   week (D), about 80% in Wuhan (A); Wuhan's fleet "over 500" in 2024 (S (search)). Pony.ai about 250
+  #   robotaxis at its IPO (November 2024, S (search)); WeRide about 700 robotaxis (October 2025, S
+  #   (search)); their Guangzhou start months A. Tesla: Austin, 22 June 2025, with safety monitors (S
+  #   (search)). Zoox: Las Vegas, 10 September 2025, about 50 robotaxis by January 2026 (ZOOX S).
+  operators:
+    - key: waymo
+      label: Waymo (Alphabet)
+      origin: us
+      services:
+        - { city: phoenix, driverless: "2020-10", fleet: { 2020: [300, A], 2024: [300, A], 2025: [400, A] }, rides: { 2020: [1, A], 2022: [5, A], 2023: [8, D], 2024: [30, D], 2025: [80, D] } }
+        - { city: san_francisco, driverless: "2023-08", fleet: { 2023: [200, A], 2024: [300, A], 2025: [500, A] }, rides: { 2023: [2, A], 2024: [35, D], 2025: [120, D] } }
+        - { city: los_angeles, driverless: "2024-11", fleet: { 2024: [100, A], 2025: [400, A] }, rides: { 2024: [5, A], 2025: [80, D] } }
+        - { city: austin, driverless: "2025-03", fleet: { 2025: [100, A] }, rides: { 2025: [25, A] } }
+        - { city: atlanta, driverless: "2025-06", fleet: { 2025: [100, A] }, rides: { 2025: [15, A] } }
+    - key: cruise
+      label: Cruise (General Motors)
+      company: General Motors
+      origin: us
+      ended: "2024-12"
+      services:
+        - { city: san_francisco, driverless: "2022-06", end: "2023-10", fleet: { 2022: [100, S], 2023: [400, A] }, rides: { 2022: [1, A], 2023: [10, A] } }
+    - key: apollo_go
+      label: Apollo Go (Baidu)
+      company: Baidu
+      origin: china
+      services:
+        - { city: wuhan, driverless: "2022-08", fleet: { 2022: [100, A], 2024: [500, S], 2025: [1000, A] }, rides: { 2022: [5, A], 2023: [20, A], 2024: [60, D], 2025: [135, D] } }
+        - { city: beijing, driverless: "2023-03", fleet: { 2023: [100, A], 2025: [300, A] }, rides: { 2023: [3, A], 2024: [15, D], 2025: [34, D] } }
+    - key: pony
+      label: Pony.ai
+      origin: china
+      services:
+        - { city: guangzhou, driverless: "2023-03", fleet: { 2023: [100, A], 2024: [250, S], 2025: [700, A] }, rides: { 2023: [3, A], 2024: [10, A], 2025: [25, A] } }
+    - key: weride
+      label: WeRide
+      origin: china
+      services:
+        - { city: guangzhou, driverless: "2024-07", fleet: { 2024: [200, A], 2025: [700, S] }, rides: { 2024: [3, A], 2025: [15, A] } }
+    - key: tesla
+      label: Tesla Robotaxi
+      company: Tesla
+      origin: us
+      services:
+        - { city: austin, driverless: "2025-06", fleet: { 2025: [30, A] }, rides: { 2025: [1, A] } }
+    - key: zoox
+      label: Zoox (Amazon)
+      origin: us
+      services:
+        - { city: las_vegas, driverless: "2025-09", fleet: { 2025: [50, S] }, rides: { 2025: [2, A] } }
+  incidents:
+    - { operator: cruise, city: san_francisco, month: "2023-10", label: "A Cruise robotaxi dragged a pedestrian; the California DMV suspended its driverless permits", suspended_months: 14 } # CRUISE S: 2 and 24 October 2023; never lifted before GM's end (D)

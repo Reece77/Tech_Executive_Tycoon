@@ -111,6 +111,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "vehicles": 63,
         "medical": 64,
         "dynasty": 65,  # M37 (52)
+        "robotics": 66,
         "misc": 99,
     }
 

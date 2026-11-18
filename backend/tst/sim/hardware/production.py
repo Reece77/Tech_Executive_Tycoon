@@ -322,6 +322,10 @@ def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: G
         return vehicle_spec.unit_cost(state, product, balance, data).total
     bom = balance.hardware.bom[product.category]
     cents = hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
+    if product.category == balance.robotics.humanoid and data.robotics is not None:
+        from tst.sim.robotics import humanoids  # M39 (53.2): the actuators' learning curve
+
+        cents += humanoids.unit_extra_cents(state, product, balance, data)
     # M22 (39.3): the premium on its commodities bought from a restricting actor
     return cents + geo_supply.surcharge_cents(
         state, product.company_id, bom.good, bom.base_cents, balance, data
@@ -329,8 +333,25 @@ def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: G
 
 
 def plant_unit_cents(state: GameState, plant: Facility, balance: Balance) -> float:
-    """A plant's cost per unit run that posts at sale (26.2): its variable cost."""
-    return float(balance.facility.kinds[plant.kind].variable_cents)
+    """A plant's cost per unit run that posts at sale (26.2): its variable cost, less the line
+    labour its robots save (M39, 53.1: a read of the plant's automation)."""
+    cents = float(balance.facility.kinds[plant.kind].variable_cents)
+    if state.plant_automations:
+        from tst.sim.robotics.automation import unit_saving_cents
+
+        cents -= unit_saving_cents(state, plant.id)
+    return cents
+
+
+def _mean_saving(state: GameState, plan: ProductionPlan, company: int, product_id: int) -> float:
+    """The run-weighted saving a unit run of the product's plants this month (M39, 53.1)."""
+    from tst.sim.robotics.automation import unit_saving_cents
+
+    ids = plan._plants(product_id, company)
+    run = sum(plan.plant_run.get(f, 0.0) for f in ids)
+    if run <= 0:
+        return 0.0
+    return sum(plan.plant_run.get(f, 0.0) * unit_saving_cents(state, f) for f in ids) / run
 
 
 def _entry(
@@ -417,6 +438,8 @@ def settle(
             variable = (
                 exact(run) * balance.facility.kinds[plant_kind(product, balance)].variable_cents
             )
+            if run and state.plant_automations:  # M39 (53.1): robots' saving on line labour
+                variable -= exact(run) * exact(_mean_saving(state, plan, product.company_id, pid))
             assembly = round(fees + variable)
             rows.append(
                 ProductionMonth(

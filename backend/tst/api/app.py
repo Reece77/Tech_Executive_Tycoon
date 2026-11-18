@@ -53,6 +53,7 @@ from tst.api.routers import (
     regulation,
     research,
     rivals,
+    robotics,
     saves,
     scaleup,
     vehicles,
@@ -144,6 +145,7 @@ def create_app() -> FastAPI:
     app.include_router(power.router)  # M32
     app.include_router(vehicles.router)  # M38
     app.include_router(campaign.router)  # M37
+    app.include_router(robotics.router)  # M39
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41
     app.include_router(equipment.router)  # M33

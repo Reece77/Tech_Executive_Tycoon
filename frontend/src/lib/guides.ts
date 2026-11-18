@@ -207,6 +207,24 @@ export const GUIDES: Record<string, Guide> = {
       'Evidence from studies shortens coverage decisions and speeds adoption; a better quality system means fewer recalls.',
     ],
   },
+  robotics: {
+    title: 'Robotics',
+    path: 'products/robotics',
+    what: 'Industrial robots and humanoids: installations, labour costs and makers by region, the humanoid era and its announcements, your robot lines, and robots in your own assembly and vehicle plants.',
+    start: [
+      'Robots in your own plants cut the line labour a unit: worth it where labour is dear (North America, Europe), barely in South and Southeast Asia.',
+      'Humanoids sell only once their era arrives; your own AI model and accelerators lift their capability.',
+    ],
+  },
+  mobility: {
+    title: 'Mobility',
+    path: 'products/mobility',
+    what: 'Robotaxis: cities where driverless service is approved, rival operators, and your own zones, fleets, depots, rides and incidents.',
+    start: [
+      'A robotaxi service is a product (Robotaxi services). Launch it, apply for a zone in an approved city, add L4 cars and a depot.',
+      'Utilisation decides the economics: above the break-even rides a car a day a fleet earns; a serious incident suspends the zone.',
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',
