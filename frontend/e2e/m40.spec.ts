@@ -64,7 +64,8 @@ test('(b) a launch failure with own satellites aboard is a critical event', asyn
   tool('failure', save);
   tool('advance', save, '1');
   await page.goto(`/game/${save}/events`);
-  await expect(page.getByText(/satellites/i).first()).toBeVisible();
+  // the event's own title (data/events/space.yaml), the upper-stage template for constellation 1
+  await expect(page.getByText(/Halcyon('s satellites| launch fails)/).first()).toBeVisible();
   await page.goto(`/game/${save}/products/space`);
   await expect(page.getByTestId('launch-row').first()).toContainText('Failure');
 });
