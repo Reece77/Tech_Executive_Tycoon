@@ -668,6 +668,15 @@ class GameState:
         return by_person.get(person_id)
 
     def founder_of(self, company_id: int) -> Person | None:
+        """Kept with the holdings, employments and people it reads (M45: morale, persona and
+        foundation effects asked it of every employee's company, scanning the staff)."""
+        return from_all(
+            (self.holdings, self.employments, self.people),
+            ("founder_of", company_id),
+            lambda: self._founder_of(company_id),
+        )
+
+    def _founder_of(self, company_id: int) -> Person | None:
         for h in self.holdings:  # M16 (31.2): a holding company's founder is its Chair
             if h.company_id == company_id:
                 return self.person(h.chair_id)
