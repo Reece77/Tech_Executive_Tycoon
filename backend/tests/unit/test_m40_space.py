@@ -390,6 +390,25 @@ def test_rivals_hold_until_the_history_ends(loaded: LoadedData) -> None:
     assert not rivals.holds(replace(state, turn=T2026), spacex, b, d)
 
 
+def test_space_companies_are_not_ranked_while_they_hold(
+    loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """56.4 target 1: before space.start the space companies are out of the Top 50 and the other
+    lists, so the January profile stories to 2025 are main's; from 2026 they are ranked."""
+    from tst.sim.modes import rankings
+    from tst.sim.space.data import is_space_rival
+
+    b, d = loaded.balance, loaded.game_data
+    monkeypatch.setattr(rankings, "_revenue", lambda state, cid: 10**12 + cid)
+    state = _state(loaded, ym_to_turn(2015, 1))
+    space = {c.id for c in state.companies if is_space_rival(c, d)}
+    assert space
+    for listed in rankings.lists(state, b, d).values():
+        assert not {cid for cid, _ in listed} & space
+    later = rankings.lists(replace(state, turn=T2026), b, d)["revenue"]
+    assert {cid for cid, _ in later} & space
+
+
 def test_a_company_without_space_plays_as_before(loaded: LoadedData) -> None:
     """56.4 target 1: no space records, no space lines: the phases leave the state as it was and
     add no effects for the player's lines."""

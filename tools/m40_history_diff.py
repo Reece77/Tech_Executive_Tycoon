@@ -27,7 +27,11 @@ def main() -> None:
     for seed in seeds:
         want = recorded[str(seed)]
         diffs = [
-            f"{s} {y}" for s in m28.SERIES for y in want[s] if want[s][y] != got[seed][s].get(y)
+            f"{s} {y}"
+            for s in m28.SERIES
+            if s != m28.SPACE
+            for y in want[s]
+            if want[s][y] != got[seed][s].get(y)
         ]
         bad += len(diffs)
         print(f"seed {seed}: {'identical' if not diffs else ', '.join(diffs)}")

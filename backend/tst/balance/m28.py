@@ -6,13 +6,17 @@ capacities, the rival miners' capacities, every log item (the dated events and t
 every ledger entry of every company. `tests/fixtures/m28_history.json` holds main's
 fingerprint from before M28 (`tools/m28_targets.py --write-history` on a checkout of main);
 the guard compares the branch's against it.
+
+M40's space companies (appended incumbents, held to the history before 2026) write their own
+events and books to a series of their own, `space`, and later companies' ids are numbered as
+main numbers them, so the five earlier series still equal main's (56.4 target 1).
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from functools import cache
 from pathlib import Path
@@ -34,9 +38,11 @@ HISTORY_FILE: Final = (
 )
 FIRST_YEAR: Final = 2010
 LAST_HISTORY_TURN: Final = 191  # December 2025
-SERIES: Final = ("prices", "wafer", "capacity", "events", "books")
+SPACE: Final = "space"  # M40: the space companies' own events and books
+SERIES: Final = ("prices", "wafer", "capacity", "events", "books", SPACE)
 
 type Fingerprint = dict[str, dict[str, str]]  # series -> year -> sha256
+type Normalise = Callable[[str, str, tuple[str, ...], int, int], str]
 
 
 @cache
@@ -91,9 +97,44 @@ def _month_lines(game: Game, result: TurnResult, turn: int) -> dict[str, list[st
     return out
 
 
+def _space_ids(game: Game) -> frozenset[int]:
+    from tst.sim.space.data import is_space_rival
+
+    data = game.loaded.game_data
+    return frozenset(c.id for c in game.state.companies if is_space_rival(c, data))
+
+
+def _owner(line: str, series: str) -> int | None:
+    """The company id an events or books line belongs to (None for another series)."""
+    parts = line.split("|")
+    if series == "books":
+        return int(parts[0])
+    if series == "events" and len(parts) > 1 and parts[1].isdigit():
+        return int(parts[1])  # a log item (turn|company|...) or an event request (template|company)
+    return None
+
+
+def _numbered(
+    line: str, series: str, names: tuple[str, ...], shift: int, first: int, normalise: Normalise
+) -> str:
+    """A line with later companies' ids as main numbers them: M41's normalisation for log items
+    and books; an event request (template|company) has only the company to move."""
+    parts = line.split("|")
+    if series == "events" and len(parts) == 2:
+        n = int(parts[1])
+        return f"{parts[0]}|{n - shift if n >= first else n}"
+    return normalise(line, series, names, shift, first)
+
+
 def history_fingerprint(seed: int, last_turn: int = LAST_HISTORY_TURN) -> Fingerprint:
-    """41.8 target 1: a do-nothing game's series to `last_turn`, hashed by year."""
+    """41.8 target 1: a do-nothing game's series to `last_turn`, hashed by year (module
+    docstring for M40's space companies)."""
+    from tst.balance.m41 import _normalise
+
     game = start_game(loaded(), seed)
+    space = _space_ids(game)
+    names = tuple(c.name for c in game.state.companies if c.id in space)
+    first = max(space) + 1 if space else 0
     hashes: dict[str, dict[int, hashlib._Hash]] = {s: {} for s in SERIES}
     while game.state.turn <= last_turn:
         turn = game.state.turn
@@ -102,7 +143,15 @@ def history_fingerprint(seed: int, last_turn: int = LAST_HISTORY_TURN) -> Finger
         year = FIRST_YEAR + turn // MONTHS_PER_YEAR
         for series, lines in _month_lines(game, game.last_result, turn).items():
             h = hashes[series].setdefault(year, hashlib.sha256())
+            hs = hashes[SPACE].setdefault(year, hashlib.sha256())
             for line in lines:
+                owner = _owner(line, series)
+                if owner in space:
+                    hs.update(f"{series}|{line}".encode())
+                    hs.update(b"\n")
+                    continue
+                if space and owner is not None:
+                    line = _numbered(line, series, names, len(space), first, _normalise)
                 h.update(line.encode())
                 h.update(b"\n")
     return {s: {str(y): h.hexdigest() for y, h in sorted(ys.items())} for s, ys in hashes.items()}

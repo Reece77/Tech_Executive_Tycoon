@@ -92,9 +92,19 @@ def lists(
     """Each list's (company id, measure), best first; ties by revenue, then by the stable
     rival key, the player after any rival it ties with (M15a fix: ties went to the lowest
     company id, the player's, so it won a sparse Most innovative list most years)."""
+    from tst.sim.space.rivals import holds as space_holds
+
     rb = balance.rank
     held = {h.company_id for h in state.holdings}  # M16: the group's revenue is not a company's
-    alive = [c for c in state.ledger_companies() if c.alive and c.id not in held]
+    alive = [
+        c
+        for c in state.ledger_companies()
+        if c.alive
+        and c.id not in held
+        # M40 (56.3): space companies held to the history before space.start are not ranked, so
+        # the lists, and the Top 50 profile stories they drive, to 2025 are main's (target 1)
+        and not space_holds(state, c, balance, data)
+    ]
     revenue_of = {c.id: _revenue(state, c.id) for c in alive}
     stable = {c.id: (c.is_player, c.rival_key, c.id) for c in alive}
 
