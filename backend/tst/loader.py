@@ -65,6 +65,7 @@ from tst.sim.geopolitics.config import (
     TariffSchedule,
     TariffsFile,
 )
+from tst.sim.government.config import GovernmentFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets.longrun import with_long_run
 from tst.sim.markets_public.config import BanksFile
@@ -130,6 +131,7 @@ MEDICAL_FILE = "medical.yaml"  # M41 (formulas.md 50)
 EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
 ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
+GOVERNMENT_FILE = "government.yaml"  # M44 (formulas.md 57)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -155,6 +157,7 @@ DATA_FILES = (
     POWER_FILE,
     VEHICLES_FILE,
     ROBOTICS_FILE,
+    GOVERNMENT_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -1123,6 +1126,7 @@ def load_all(
     equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
     vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
     robotics = _validate(RoboticsFile, parsed[ROBOTICS_FILE], ROBOTICS_FILE)
+    government = _validate(GovernmentFile, parsed[GOVERNMENT_FILE], GOVERNMENT_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1183,6 +1187,7 @@ def load_all(
             "vehicles": vehicles,
             "medical": medical,
             "robotics": robotics,
+            "government": government,
         },
         "seed data cross-check",
     )
@@ -1214,6 +1219,8 @@ def load_all(
         raise DataLoadError(f"{VEHICLES_FILE}, {BALANCE_FILE} vehicles: " + "; ".join(problems))
     if problems := robotics_problems(balance, game_data):
         raise DataLoadError(f"{ROBOTICS_FILE}, {BALANCE_FILE} robotics: " + "; ".join(problems))
+    if problems := government_problems(balance, game_data):
+        raise DataLoadError(f"{GOVERNMENT_FILE}, {BALANCE_FILE} government: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1365,6 +1372,63 @@ def vehicle_kinds(balance: Balance) -> tuple[str, ...]:
     """M38 (49.2, 49.5): the facility kinds whose output tst.sim.vehicles runs on the generic
     lifecycle (cell plants and charging networks)."""
     return (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind)
+
+
+def government_problems(balance: Balance, data: GameData) -> list[str]:
+    """M44 (57): government.yaml's governments, areas' categories, named tenders' winners, rules
+    and bidders name things the game knows; balance.yaml's government keys agree with it.
+    Categories a later milestone adds (M40's space) may be absent until it merges."""
+    g = data.government
+    gb = balance.government
+    if g is None:
+        return ["government.yaml is required"]
+    out: list[str] = []
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    blocs = {"us_aligned", "china", "non_aligned"}
+    keys = {x.key for x in g.governments}
+    for gov in g.governments:
+        if gov.country not in countries:
+            out.append(f"{gov.key}: unknown country {gov.country!r}")
+        if bad := sorted((set(gov.open_to) | set(gov.refuses)) - blocs):
+            out.append(f"{gov.key}: unknown blocs {bad}")
+        if max(gov.defence_cents) < LAST_HISTORY_YEAR - 1:
+            out.append(f"{gov.key}: defence budgets must reach {LAST_HISTORY_YEAR - 1}")
+    if set(gb.tenders.per_year) != keys:
+        out.append("government.tenders.per_year must list every government")
+    known = {c.key for c in data.categories}
+    if not any(c in known for a in g.areas.values() for c in a.categories):
+        out.append("no area names a known category")
+    for area in ("cloud", "ai", "chips", "devices", "cyber"):
+        if bad := [c for c in g.areas[area].categories if c not in known]:
+            out.append(f"area {area}: unknown categories {bad}")
+    bidders = {p.name for p in g.primes} | {c.name for c in g.company_bidders}
+    names = {c.name for c in data.incumbents} | {e.name for e in data.entrants}
+    for c in g.company_bidders:
+        if c.name not in names:
+            out.append(f"company bidder {c.name!r} is not in incumbents.yaml or entrants.yaml")
+    for p in g.primes:
+        if p.country not in countries:
+            out.append(f"prime {p.name}: unknown country {p.country!r}")
+    for t in g.tenders:
+        if bad := [w for w in t.winners if w not in bidders]:
+            out.append(f"tender {t.key}: winners {bad} are not bidders")
+        if len(t.winners) != t.awards:
+            out.append(f"tender {t.key}: {t.awards} awards but {len(t.winners)} winners")
+    for rule in g.bans:
+        if bad := sorted((set(rule.governments) - keys) | (set(rule.countries) - countries)):
+            out.append(f"ban {rule.key}: unknown {bad}")
+    for cat in gb.reputation.consumer_categories:
+        if cat not in known:
+            out.append(f"reputation.consumer_categories: unknown {cat!r}")
+    interests = {i.key for i in data.interests}
+    if bad := sorted(set(gb.reputation.objector_interests) - interests):
+        out.append(f"reputation.objector_interests: unknown {bad}")
+    skills = {s.key for s in data.skills}
+    if bad := sorted(set(gb.bids.capture_skills) - skills):
+        out.append(f"bids.capture_skills: unknown {bad}")
+    if set(gb.itar_keep) != blocs:
+        out.append(f"itar_keep needs {sorted(blocs)}")
+    return out
 
 
 def robotics_problems(balance: Balance, data: GameData) -> list[str]:

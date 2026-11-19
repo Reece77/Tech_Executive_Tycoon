@@ -21,6 +21,7 @@ CATEGORY_SCREENS: dict[str, tuple[str, str]] = {
     "mining": ("products/mines", "Mines"),
     "refining": ("products/refineries", "Refineries"),
     "robotics": ("products/mobility", "Mobility"),
+    "government": ("government", "Government"),
     "exploration": ("products/exploration", "Exploration"),
     "geopolitics": ("competitors/world", "World"),
     "group": ("finance/group", "Group"),

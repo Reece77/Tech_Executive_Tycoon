@@ -139,6 +139,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return MEDICAL_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "robotics_step":  # M39 (53.3)
             return ROBOTICS_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "government_step":  # M44 (57.4)
+            return GOVERNMENT_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -167,6 +169,11 @@ REGULATION_STEP_TEXT: dict[str, str] = {  # M34 (48.3-48.4): never a draw or a c
     "spin_off": "spin the unit off to your shareholders (a subsidiary of a listed holding company)",
     "sell": "sell the unit to the largest rival in its market",
     "wait": "do nothing yet; after the deadline, penalties every month",
+}
+GOVERNMENT_STEP_TEXT: dict[str, str] = {  # M44 (57.4): never a draw or a chance
+    "carry_on": "keep the contract: some of the objectors resign",
+    "withdraw": "withdraw from the contract: consumer brands recover a little",
+    "ethics_board": "keep the contract and set up an ethics board, at a cost",
 }
 ROBOTICS_STEP_TEXT: dict[str, str] = {  # M39 (53.3): never a draw or a chance
     "cooperate": "share the logs with the regulator: the suspension is halved, at a legal cost",

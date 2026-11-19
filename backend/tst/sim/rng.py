@@ -129,6 +129,11 @@ STREAM_IDS: Final = MappingProxyType(
         # (0, n_regions) the home humanoid window; (1, zone_id, city_index) a zone's incidents;
         # (2, region_index, zone_id) a zone's permit decision; (3, operator_index) rival entries
         "robotics": 66,
+        # M44 (formulas.md 57): (0, government_index, year) seeded budgets and tenders; (1,
+        # tender_id, round) rivals' bids, award tie-breaks and protests; (2, person_id) a staff
+        # clearance, (2, 0, facility_id) a facility's; (3, contract_id, month) overruns and task
+        # orders; (4, company_id, turn) staff reactions
+        "defence": 69,
         "misc": 99,
     }
 )

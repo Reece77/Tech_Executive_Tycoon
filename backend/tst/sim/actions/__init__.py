@@ -288,6 +288,16 @@ from tst.sim.geopolitics.actions import (
 from tst.sim.geopolitics.fabs import RequestToolLicence, request_tool_licence
 from tst.sim.geopolitics.fabs import check_order as geo_check_order
 from tst.sim.geopolitics.fabs import fab_country as geo_fab_country
+from tst.sim.government.actions import ACTION_TYPES as GOVERNMENT_ACTION_TYPES
+from tst.sim.government.actions import (
+    GovernmentAction,
+    PlaceBid,
+    ProtestAward,
+    RequestClearance,
+    SponsorFacilityClearance,
+    WithdrawBid,
+    apply_government,
+)
 from tst.sim.group.actions import (
     AnswerGroupPitch,
     BuyOutMinorities,
@@ -435,6 +445,7 @@ type Action = (
     | VehicleAction  # M38
     | MedicalAction  # M41
     | RoboticsAction  # M39
+    | GovernmentAction  # M44
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -456,6 +467,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **VEHICLE_ACTION_TYPES,  # M38 (49)
     **MEDICAL_ACTION_TYPES,  # M41 (50)
     **ROBOTICS_ACTION_TYPES,  # M39 (53)
+    **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -1003,6 +1015,14 @@ def apply_action(
             | CloseZone()
         ):
             out = apply_robotics(state, action, ledger_balances, balance, data)  # M39 (53)
+        case (
+            PlaceBid()
+            | WithdrawBid()
+            | ProtestAward()
+            | RequestClearance()
+            | SponsorFacilityClearance()
+        ):
+            out = apply_government(state, action, rng, ledger_balances, balance, data)  # M44 (57)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():

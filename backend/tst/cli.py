@@ -4710,3 +4710,71 @@ def mobility_cmd(save: SaveOpt) -> None:
     for i in m.incidents:
         kind = "serious" if i.serious else "minor"
         typer.echo(f"incident {i.month}: {kind} in {i.city}, {format_money(i.cost_cents)}")
+
+
+@app.command("government")
+def government_cmd(
+    save: SaveOpt,
+    area: Annotated[str | None, typer.Option(help="One area (cloud, ai, space, ...)")] = None,
+    all_tenders: Annotated[bool, typer.Option("--all", help="Closed tenders too")] = False,
+) -> None:
+    """Government (M44, 57): open tenders and their requirements, your bids with score bands,
+    awards and protests, contracts, clearances and rivals' published awards."""
+    from tst.api import government_views
+
+    _, data, state = _game(save)
+    g = government_views.government_out(state, data)
+    if not g.enabled:
+        typer.echo("This game has no government tenders.")
+        return
+    rec = g.record
+    typer.echo(
+        f"{g.month}: {rec.awards} defence awards, past performance {rec.past_performance:.0f},"
+        f" {rec.reactions} staff letters, brand lost {rec.brand_lost:.1f}"
+        + (f"; controlled: {', '.join(rec.controlled_products)}" if rec.controlled_products else "")
+    )
+    for t in g.tenders:
+        if area and t.area != area:
+            continue
+        if (
+            not all_tenders
+            and t.status not in ("open", "evaluating", "protested")
+            and t.my_bid is None
+        ):
+            continue
+        typer.echo(
+            f"[{t.id}] {t.title}: {format_money(t.value_cents)} over {t.term_months} months,"
+            f" {t.contract}, clearance {t.clearance}, {t.status}"
+            f" (closes {t.closes}, award {t.award_month})"
+        )
+        if t.winners:
+            band = f" (band {t.winning_band})" if t.winning_band else ""
+            typer.echo(f"    awarded to {', '.join(t.winners)}{band}")
+        if t.protest_by:
+            typer.echo(f"    protested by {t.protest_by}")
+        if t.status == "open":
+            typer.echo(f"    requires: {'; '.join(t.requirements)}")
+        for o in t.options:
+            typer.echo(
+                f"    you could bid {o.product} (quality {o.quality:.0f})"
+                + (f": unmet {'; '.join(o.unmet)}" if o.unmet else ": meets every requirement")
+            )
+        if t.my_bid is not None:
+            b = t.my_bid
+            band = f", score {b.band.total}" if b.band is not None else ""
+            typer.echo(f"    your bid: {format_money(b.price_cents)}, {b.status}{band}")
+            for reason in b.reasons:
+                typer.echo(f"      - {reason}")
+    for c in g.contracts:
+        typer.echo(
+            f"contract {c.id} {c.title} ({c.status}, options {c.options}): performance"
+            f" {c.performance:.0f}, revenue {format_money(c.revenue_cents)},"
+            f" cost {format_money(c.cost_cents)}"
+        )
+    for cl in g.clearances:
+        decided = f", decided {cl.decided}" if cl.decided else ""
+        typer.echo(
+            f"clearance {cl.name}: {cl.level} {cl.status} (requested {cl.requested}{decided})"
+        )
+    for r in g.rivals[:10]:
+        typer.echo(f"rival {r.name}: {r.awards} awards, {format_money(r.value_cents)}")
