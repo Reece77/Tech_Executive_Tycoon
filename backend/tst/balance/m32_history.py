@@ -22,6 +22,7 @@ from functools import cache
 from pathlib import Path
 from typing import Final
 
+from tst.balance import m28
 from tst.balance.game import Game, start_game
 from tst.balance.strategies_v2 import STRATEGIES as V2
 from tst.balance.strategies_v3 import V3
@@ -84,6 +85,10 @@ def history_run(key: tuple[str, int]) -> Run:
     step = _strategy(name)
     years: dict[int, dict[str, int]] = {}
     books: dict[int, hashlib._Hash] = {}
+    # M40: the space companies' own books are left out and later companies numbered as main
+    # numbers them (as M28's fingerprint does, its `space` series), so main's books still hold
+    space = m28._space_ids(game)
+    first = max(space) + 1 if space else 0
     while game.state.turn <= LAST_HISTORY_TURN and not game.state.ended:
         turn = game.state.turn
         step(game)  # type: ignore[operator]
@@ -95,9 +100,10 @@ def history_run(key: tuple[str, int]) -> Run:
             totals[k] += v
         h = books.setdefault(year, hashlib.sha256())
         for e in game.last_result.ledger_entries:
-            line = f"{e.company_id}|{e.memo}|" + ",".join(
-                f"{x.account}:{x.amount}" for x in e.lines
-            )
+            if e.company_id in space:
+                continue
+            cid = e.company_id - len(space) if space and e.company_id >= first else e.company_id
+            line = f"{cid}|{e.memo}|" + ",".join(f"{x.account}:{x.amount}" for x in e.lines)
             h.update(line.encode())
             h.update(b"\n")
     return {str(y): {**years[y], "books": books[y].hexdigest()} for y in sorted(years)}

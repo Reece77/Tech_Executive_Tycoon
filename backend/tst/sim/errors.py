@@ -413,6 +413,13 @@ class RoboticsRuleError(SimError):
     code = "robotics_rule"
 
 
+class SpaceRuleError(SimError):
+    """A space action the rules do not allow (M40, formulas.md 56). The message never names a
+    licence's decision month, a failure chance's draw or a seeded rule."""
+
+    code = "space_rule"
+
+
 class GovernmentRuleError(SimError):
     """A bid, protest or clearance the rules do not allow (M44, formulas.md 57). The message
     never names a rival's bid, a draw or a pending clearance's month."""

@@ -272,6 +272,8 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
             continue
         if cat.medical:  # M41 (50.1): a medical device needs a deliberate entry
             continue
+        if cat.space:  # M40 (56): a space line needs vehicles or satellites
+            continue
         if allowed and cat.key not in allowed:
             continue
         best: tuple[float, str, float, int] | None = None

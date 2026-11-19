@@ -2,7 +2,7 @@
 historical, announced or not), the player's bids, protests, contracts, staff and facility
 clearances, controlled (ITAR-style) products, each company's defence record (reputation), staff
 reactions, and the game-wide `GovernmentWorld` (budgets' seeded growth after 2025). Persisted in
-`government_record` (migration 0063_m44), one row a record.
+`government_record` (migration 0064_m44), one row a record.
 
 Hidden values (57.7): a tender before its announcement month (`announce_turn > turn`), a pending
 clearance's `due_turn` and `outcome`, a pending facility clearance's `due_turn`, a bid's exact

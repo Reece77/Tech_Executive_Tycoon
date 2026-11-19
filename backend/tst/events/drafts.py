@@ -137,8 +137,9 @@ def template_draft(
                 "platform_step",
                 "regulation_step",
                 "robotics_step",
+                "space_step",
                 "government_step",
-            ):  # M16, M18, M19, M20, M31, M34, M39, M44 too
+            ):  # M16, M18, M19, M20, M31, M34, M39, M40, M44 too
                 effect |= {"stat": spec.stat}
             effects.append(effect)
         choices.append(

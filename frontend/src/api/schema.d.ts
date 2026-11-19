@@ -5993,6 +5993,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/space": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Space
+         * @description Vehicles and launches, cost a kg, constellations and coverage, subscribers by region,
+         *     licences and rivals' public launches and constellations.
+         */
+        get: operations["getSpace"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/vehicles/{product_id}/spec": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Launch Spec */
+        post: operations["setLaunchSpec"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/constellations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Plan Constellation */
+        post: operations["planConstellation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/constellations/{constellation_id}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Constellation Plan */
+        post: operations["setConstellationPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/licences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Licence */
+        post: operations["applyLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/broadband/{product_id}/terminal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Terminal Price */
+        post: operations["setTerminalPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/space/broadband/{product_id}/d2d": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set D2D Partner */
+        post: operations["setD2dPartner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/government": {
         parameters: {
             query?: never;
@@ -7809,6 +7932,28 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** BroadbandLineOut */
+        BroadbandLineOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Terminal Price Cents */
+            terminal_price_cents: number;
+            /**
+             * Terminal Cost Cents
+             * @description A terminal's cost to make this month
+             */
+            terminal_cost_cents: number;
+            /** D2D Partner */
+            d2d_partner: boolean;
+            /** D2D Capable */
+            d2d_capable: boolean;
+            /** Regions */
+            regions: components["schemas"]["RegionServiceOut"][];
+        };
         /** BuildCellPlantIn */
         BuildCellPlantIn: {
             /** Region */
@@ -9498,6 +9643,115 @@ export interface components {
              */
             history: components["schemas"]["tst__api__schemas__facilities__IndexPointOut"][];
         };
+        /** ConstellationIn */
+        ConstellationIn: {
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Product Id */
+            product_id: number;
+            /** Shells */
+            shells: number;
+            /** Mass Kg */
+            mass_kg: number;
+            /** Life Months */
+            life_months: number;
+            /** Build Per Month */
+            build_per_month: number;
+            /** Launches Per Month */
+            launches_per_month: number;
+            /** Vehicle Product Id */
+            vehicle_product_id?: number | null;
+            /**
+             * D2D
+             * @default false
+             */
+            d2d?: boolean;
+            /**
+             * Insured
+             * @default true
+             */
+            insured?: boolean;
+        };
+        /** ConstellationMonthOut */
+        ConstellationMonthOut: {
+            /** Month */
+            month: string;
+            /** In Orbit */
+            in_orbit: number;
+            /** Subscribers */
+            subscribers: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Spend Cents */
+            spend_cents: number;
+        };
+        /** ConstellationOut */
+        ConstellationOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Product Id */
+            product_id: number | null;
+            /** Product */
+            product: string | null;
+            /** Shells */
+            shells: components["schemas"]["ShellOut"][];
+            /** In Orbit */
+            in_orbit: number;
+            /** Ground */
+            ground: number;
+            /** Planned */
+            planned: number;
+            /** Lost */
+            lost: number;
+            /** Mass Kg */
+            mass_kg: number;
+            /** Life Months */
+            life_months: number;
+            /** D2D */
+            d2d: boolean;
+            /** Insured */
+            insured: boolean;
+            /** Build Per Month */
+            build_per_month: number;
+            /** Launches Per Month */
+            launches_per_month: number;
+            /** Vehicle Product Id */
+            vehicle_product_id: number | null;
+            /**
+             * Satellite Cents
+             * @description A satellite's made cost this month
+             */
+            satellite_cents: number;
+            /** Covered */
+            covered: string[];
+            /** Capacity Gbps */
+            capacity_gbps: number;
+            payback: components["schemas"]["PaybackOut"];
+            /** History */
+            history: components["schemas"]["ConstellationMonthOut"][];
+        };
+        /** ConstellationPlanIn */
+        ConstellationPlanIn: {
+            /** Shells */
+            shells: number;
+            /** Build Per Month */
+            build_per_month: number;
+            /** Launches Per Month */
+            launches_per_month: number;
+            /** Vehicle Product Id */
+            vehicle_product_id?: number | null;
+            /**
+             * Insured
+             * @default true
+             */
+            insured?: boolean;
+        };
         /**
          * ContinueUntilOut
          * @description Continue until something needs me (30.5).
@@ -9639,6 +9893,23 @@ export interface components {
         CooQuestionIn: {
             /** Question */
             question: string;
+        };
+        /** CostPerKgOut */
+        CostPerKgOut: {
+            /** Vehicle */
+            vehicle: string;
+            /** Company */
+            company: string;
+            /**
+             * Cost Per Kg Cents
+             * @description Its list price over its payload, 2010 cents
+             */
+            cost_per_kg_cents: number;
+            /**
+             * Target
+             * @description A stated aspiration, not a flown price
+             */
+            target: boolean;
         };
         /** CounterIn */
         CounterIn: {
@@ -9785,6 +10056,11 @@ export interface components {
              * @description The move that removes the factor
              */
             fix: string;
+        };
+        /** D2dPartnerIn */
+        D2dPartnerIn: {
+            /** Partner */
+            partner: boolean;
         };
         /** DatedRuleOut */
         DatedRuleOut: {
@@ -11056,7 +11332,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "bid";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid";
             /** Entity */
             entity?: string | null;
             /**
@@ -12092,6 +12368,44 @@ export interface components {
             date_label: string | null;
             /** Detail */
             detail: string | null;
+        };
+        /**
+         * FlightCostOut
+         * @description Explain: a launch's cost (56.1).
+         */
+        FlightCostOut: {
+            /** Level */
+            level: string;
+            /**
+             * Build Cents
+             * @description The whole vehicle, built new
+             */
+            build_cents: number;
+            /** Reused Share */
+            reused_share: number;
+            /** Flights Per Vehicle */
+            flights_per_vehicle: number;
+            /** Refurb Share */
+            refurb_share: number;
+            /** Operations Cents */
+            operations_cents: number;
+            /**
+             * Flight Cents
+             * @description A flight: the expendable part, the reused part's share, refurbishment and operations
+             */
+            flight_cents: number;
+            /**
+             * Payload Kg
+             * @description Payload flown at the level
+             */
+            payload_kg: number;
+            /** Cost Per Kg Cents */
+            cost_per_kg_cents: number;
+            /**
+             * Expendable Per Kg Cents
+             * @description The same design flown expendable
+             */
+            expendable_per_kg_cents: number;
         };
         /** FlowOut */
         FlowOut: {
@@ -14301,6 +14615,23 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** LaunchOut */
+        LaunchOut: {
+            /** Month */
+            month: string;
+            /** Vehicle */
+            vehicle: string;
+            /** Purpose */
+            purpose: string;
+            /** Constellation */
+            constellation: string | null;
+            /** Satellites */
+            satellites: number;
+            /** Ok */
+            ok: boolean;
+            /** Insured Cents */
+            insured_cents: number;
+        };
         /** LaunchReadinessOut */
         LaunchReadinessOut: {
             /** Ready */
@@ -14315,6 +14646,13 @@ export interface components {
         LaunchRegionIn: {
             /** Region */
             region: string;
+        };
+        /** LaunchSpecIn */
+        LaunchSpecIn: {
+            /** Payload Kg */
+            payload_kg: number;
+            /** Reuse */
+            reuse: string;
         };
         /** LeaderChangeOut */
         LeaderChangeOut: {
@@ -14538,6 +14876,13 @@ export interface components {
             royalty_months_left: number;
             /** Signed */
             signed: string;
+        };
+        /** LineOptionOut */
+        LineOptionOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
         };
         /** ListedOut */
         ListedOut: {
@@ -15237,6 +15582,13 @@ export interface components {
             title: string;
             /** Detail */
             detail: string;
+        };
+        /** MilestoneOut */
+        MilestoneOut: {
+            /** Month */
+            month: string;
+            /** Label */
+            label: string;
         };
         /** MineDealOut */
         MineDealOut: {
@@ -17030,6 +17382,34 @@ export interface components {
              * @description One-off morale points (formulas.md 13.8)
              */
             morale_change: number;
+        };
+        /**
+         * PaybackOut
+         * @description Explain: a constellation's payback (56.4 target 3).
+         */
+        PaybackOut: {
+            /**
+             * Capex Cents
+             * @description Satellites and launches capitalized and in service or waiting
+             */
+            capex_cents: number;
+            /**
+             * Cash Cents
+             * @description Cumulative cash flow since it was planned
+             */
+            cash_cents: number;
+            /**
+             * Last Year Cash Cents
+             * @description Cash flow over the last 12 months
+             */
+            last_year_cash_cents: number;
+            /**
+             * Months To Payback
+             * @description At the last 12 months' rate; None if not earning
+             */
+            months_to_payback: number | null;
+            /** Paid Back */
+            paid_back: string | null;
         };
         /** PaymentOut */
         PaymentOut: {
@@ -19266,6 +19646,18 @@ export interface components {
              */
             status: string;
         };
+        /** ProviderOut */
+        ProviderOut: {
+            /** Company Id */
+            company_id: number | null;
+            /** Company */
+            company: string;
+            /**
+             * Launches Year
+             * @description Orbital launches a year (public), real world
+             */
+            launches_year: number;
+        };
         /** PublicActionOut */
         PublicActionOut: {
             public: components["schemas"]["PublicOut"];
@@ -19990,6 +20382,29 @@ export interface components {
             /** Mrr Cents */
             mrr_cents: number;
         };
+        /** RegionServiceOut */
+        RegionServiceOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Covered */
+            covered: boolean;
+            /**
+             * Licence
+             * @description applied, granted or refused; None if never applied
+             */
+            licence: string | null;
+            /** Subscribers */
+            subscribers: number;
+            /**
+             * Serviceable
+             * @description Subscribers its constellations can serve there
+             */
+            serviceable: number;
+            /** D2D Subscribers */
+            d2d_subscribers: number;
+        };
         /** RegionSizeOut */
         RegionSizeOut: {
             /** Region */
@@ -20242,6 +20657,25 @@ export interface components {
             /** License Energy */
             license_energy: number;
         };
+        /** ReuseLevelOut */
+        ReuseLevelOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Lead
+             * @description Reusability lead points it needs
+             */
+            lead: number;
+            /**
+             * Min Months
+             * @description Months of the programme it needs
+             */
+            min_months: number;
+            /** Reached */
+            reached: boolean;
+        };
         /** RidePriceIn */
         RidePriceIn: {
             /** Price Cents */
@@ -20294,6 +20728,25 @@ export interface components {
             launched: boolean;
             /** Shares */
             shares: components["schemas"]["RivalShareOut"][];
+        };
+        /** RivalConstellationOut */
+        RivalConstellationOut: {
+            /** Name */
+            name: string;
+            /** Company */
+            company: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Satellites
+             * @description In orbit now (public), real world
+             */
+            satellites: number;
+            /**
+             * Subscribers
+             * @description Thousands (public, to 2025), real world
+             */
+            subscribers: number | null;
         };
         /** RivalLeadOut */
         RivalLeadOut: {
@@ -22274,6 +22727,21 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** ShellOut */
+        ShellOut: {
+            /** Index */
+            index: number;
+            /** Label */
+            label: string;
+            /** Satellites */
+            satellites: number;
+            /** Size */
+            size: number;
+            /** Complete */
+            complete: boolean;
+            /** Regions */
+            regions: string[];
+        };
         /** SignPpaIn */
         SignPpaIn: {
             /** Region */
@@ -22402,6 +22870,96 @@ export interface components {
              * @description Units it could make last month
              */
             available: number;
+        };
+        /** SpaceActionOut */
+        SpaceActionOut: {
+            space: components["schemas"]["SpaceScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** SpaceLicenceIn */
+        SpaceLicenceIn: {
+            /** Region */
+            region: string;
+        };
+        /** SpaceLicenceOut */
+        SpaceLicenceOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Status */
+            status: string;
+            /** Applied */
+            applied: string;
+            /** Granted */
+            granted: string | null;
+        };
+        /** SpaceScreenOut */
+        SpaceScreenOut: {
+            /** Month */
+            month: string;
+            /**
+             * Open
+             * @description Whether this game has space markets
+             */
+            open: boolean;
+            /** Reusability Lead */
+            reusability_lead: number;
+            /** Programme Started */
+            programme_started: string | null;
+            /** Reuse Levels */
+            reuse_levels: components["schemas"]["ReuseLevelOut"][];
+            /** Vehicles */
+            vehicles: components["schemas"]["VehicleOut"][];
+            /**
+             * Undesigned
+             * @description Your launch lines with no design yet
+             */
+            undesigned: components["schemas"]["LineOptionOut"][];
+            /**
+             * Eo Lines
+             * @description Your Earth-observation lines
+             */
+            eo_lines: components["schemas"]["LineOptionOut"][];
+            /** Launches */
+            launches: components["schemas"]["LaunchOut"][];
+            /** Cost Per Kg */
+            cost_per_kg: components["schemas"]["CostPerKgOut"][];
+            /** World Launches */
+            world_launches: components["schemas"]["WorldLaunchesOut"][];
+            /** Providers */
+            providers: components["schemas"]["ProviderOut"][];
+            /** Milestones */
+            milestones: components["schemas"]["MilestoneOut"][];
+            /** Constellations */
+            constellations: components["schemas"]["ConstellationOut"][];
+            /** Broadband */
+            broadband: components["schemas"]["BroadbandLineOut"][];
+            /** Licences */
+            licences: components["schemas"]["SpaceLicenceOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RivalConstellationOut"][];
+            /**
+             * D2D Open
+             * @description The month direct-to-device service opened, once it has
+             */
+            d2d_open: string | null;
+            /**
+             * Debris Rule
+             * @description The month the tighter debris rule came, once it has
+             */
+            debris_rule: string | null;
+            /** Site Regions */
+            site_regions: string[];
+            /**
+             * Bought Launch Cents
+             * @description A bought launch's price this month
+             */
+            bought_launch_cents: number;
+            /** Bought Payload Kg */
+            bought_payload_kg: number;
         };
         /** SpinOffIn */
         SpinOffIn: {
@@ -23572,6 +24130,11 @@ export interface components {
              */
             founder_fraction_after?: number | null;
         };
+        /** TerminalPriceIn */
+        TerminalPriceIn: {
+            /** Price Cents */
+            price_cents: number;
+        };
         /** TerminateIn */
         TerminateIn: {
             /**
@@ -24203,6 +24766,63 @@ export interface components {
              */
             autonomy_lead: number;
         };
+        /** VehicleOut */
+        VehicleOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Payload Kg */
+            payload_kg: number;
+            /** Aim */
+            aim: string;
+            /**
+             * Level
+             * @description The reuse level it flies at now
+             */
+            level: string;
+            cost: components["schemas"]["FlightCostOut"];
+            /**
+             * Price Cents
+             * @description Its price to commercial operators
+             */
+            price_cents: number | null;
+            /** Flights */
+            flights: number;
+            /** Failures */
+            failures: number;
+            /**
+             * Reliability
+             * @description Successful flights over flights, None before its first
+             */
+            reliability: number | null;
+            /**
+             * Failure Rate Lo
+             * @description The model's failure chance range for its next flight
+             */
+            failure_rate_lo: number;
+            /** Failure Rate Hi */
+            failure_rate_hi: number;
+            /**
+             * Grounded Until
+             * @description The month an investigation ends, if grounded
+             */
+            grounded_until: string | null;
+            /**
+             * Pads
+             * @description Launch-site pad units live
+             */
+            pads: number;
+            /**
+             * Cadence
+             * @description Launches a month its sites can fly
+             */
+            cadence: number;
+        };
         /** VehiclePlantOut */
         VehiclePlantOut: {
             /** Facility Id */
@@ -24508,6 +25128,13 @@ export interface components {
              * @description An announced build's month
              */
             ready_label: string | null;
+        };
+        /** WorldLaunchesOut */
+        WorldLaunchesOut: {
+            /** Year */
+            year: number;
+            /** Launches */
+            launches: number;
         };
         /** WorldNewsItemOut */
         WorldNewsItemOut: {
@@ -44425,6 +45052,440 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getSpace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setLaunchSpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaunchSpecIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    planConstellation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConstellationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setConstellationPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                constellation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConstellationPlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    applyLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpaceLicenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setTerminalPrice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerminalPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setD2dPartner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["D2dPartnerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceActionOut"];
                 };
             };
             /** @description Bad Request */

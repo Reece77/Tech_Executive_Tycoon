@@ -88,6 +88,7 @@ from tst.sim.refining.config import RefiningBalance
 from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
 from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
+from tst.sim.space.config import SpaceBalance, SpaceFile
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1425,6 +1426,7 @@ class Balance(_Frozen):
     dynasty: DynastyBalance  # M37 (formulas.md 52): dynasty mode, 2040-2069
     robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
+    space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
 
     @model_validator(mode="after")
@@ -1724,7 +1726,9 @@ class CategoryDef(_Frozen):
     capacity_market: bool = False  # M12a (22.3): sells spare data-centre capacity
     # M12b (26.1-26.3): `units` sells units once per customer in play (subscription: monthly)
     revenue_model: RevenueModel = "subscription"
-    family: str | None = None  # "chips" for the chip categories (one per chip type); M41 "medical"
+    family: str | None = (
+        None  # "chips" for the chip categories (one per chip type); M41 "medical"; M40 "space"
+    )
     chip_type: str | None = None  # chips.types key a chip category's products are
     # segment -> categories whose demand growth this segment's demand follows (26.3)
     growth_follows: dict[str, tuple[str, ...]] | None = None
@@ -1742,6 +1746,12 @@ class CategoryDef(_Frozen):
     def medical(self) -> bool:
         """M41 (50.1): a medical-device sub-category (scheduled rivals only; regulated sales)."""
         return self.family == "medical"
+
+    @property
+    def space(self) -> bool:
+        """M40 (56): launch, satellite broadband or Earth observation (scheduled rivals only;
+        a line sells only with vehicles or satellites)."""
+        return self.family == "space"
 
     @property
     def sells_units(self) -> bool:
@@ -2166,6 +2176,7 @@ class GameData(_Frozen):
     medical: MedicalFile | None = None  # M41 (50); None = no medical rules
     robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
+    space: SpaceFile | None = None  # M40 (56); None = no space markets' history
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:

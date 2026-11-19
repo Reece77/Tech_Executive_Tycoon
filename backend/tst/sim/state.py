@@ -201,6 +201,7 @@ from tst.sim.robotics.models import (
     Zone,
     ZoneMonth,
 )
+from tst.sim.space.models import SpaceState
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -612,6 +613,9 @@ class GameState:
     pharma_assets: tuple[pharma.Asset, ...] = ()
     pharma_deals: tuple[pharma.Deal, ...] = ()
     pharma_markets: tuple[pharma.MarketLevel, ...] = ()  # M43a's ceilings from 2026
+    # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
+    # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
+    space: SpaceState = field(default_factory=SpaceState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

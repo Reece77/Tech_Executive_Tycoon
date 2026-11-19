@@ -894,6 +894,18 @@ class Builder:
 
         return v5_robotics.ride_contribution(self, m, entity)
 
+    # --- v5 (M40): space ----------------------------------------------------------------------
+
+    def launch_price(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_space
+
+        return v5_space.launch_price(self, m, entity)
+
+    def constellation_payback(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_space
+
+        return v5_space.constellation_payback(self, m, entity)
+
     # --- v5 (M44): government ------------------------------------------------------------------
 
     def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:

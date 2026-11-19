@@ -4770,6 +4770,62 @@ def mobility_cmd(save: SaveOpt) -> None:
         typer.echo(f"incident {i.month}: {kind} in {i.city}, {format_money(i.cost_cents)}")
 
 
+@app.command("space")
+def space_cmd(save: SaveOpt) -> None:
+    """Space (M40, 56): your reusability programme, launch vehicles, launches, constellations and
+    coverage, subscribers and licences by region, cost a kg and rivals' public constellations."""
+    from tst.api import space_views
+
+    _, data, state = _game(save)
+    s = space_views.space_out(state, data)
+    if not s.open:
+        typer.echo("this game has no space markets")
+        return
+    typer.echo(
+        f"{s.month}: reusability lead {s.reusability_lead:.1f}"
+        + (f", programme since {s.programme_started}" if s.programme_started else "")
+        + f"; a bought launch {format_money(s.bought_launch_cents)} for"
+        f" {s.bought_payload_kg:,.0f} kg"
+    )
+    for v in s.vehicles:
+        grounded = f", grounded until {v.grounded_until}" if v.grounded_until else ""
+        typer.echo(
+            f"vehicle {v.name} ({v.level}, aims {v.aim}): {v.payload_kg:,.0f} kg,"
+            f" {format_money(v.cost.flight_cents)} a flight,"
+            f" {format_money(round(v.cost.cost_per_kg_cents))} a kg (expendable"
+            f" {format_money(round(v.cost.expendable_per_kg_cents))}); {v.flights} flights,"
+            f" {v.failures} failed; {v.cadence:.1f} launches a month{grounded}"
+        )
+    for c in s.constellations:
+        typer.echo(
+            f"constellation {c.name} ({c.kind}): {c.in_orbit:,} of {c.planned:,} in orbit,"
+            f" {c.ground} waiting, {c.lost} lost; covers {', '.join(c.covered) or 'nothing'};"
+            f" cash flow {format_money(c.payback.cash_cents)}"
+            + (f", paid back {c.payback.paid_back}" if c.payback.paid_back else "")
+        )
+    for b in s.broadband:
+        for r in b.regions:
+            if r.covered or r.licence or r.subscribers:
+                typer.echo(
+                    f"  {b.name} in {r.label}: {'covered' if r.covered else 'not covered'},"
+                    f" licence {r.licence or 'none'}, {r.subscribers:,.0f} subscribers of"
+                    f" {r.serviceable:,.0f} serviceable"
+                )
+    for launch in s.launches[:10]:
+        typer.echo(
+            f"launch {launch.month} {launch.vehicle} ({launch.purpose}): "
+            + ("success" if launch.ok else "FAILURE")
+            + (f", {launch.satellites} satellites" if launch.satellites else "")
+        )
+    for rv in s.rivals:
+        typer.echo(f"rival {rv.name} ({rv.company}): {rv.satellites:,.0f} satellites")
+    for k in s.cost_per_kg:
+        typer.echo(
+            f"cost a kg: {k.vehicle} {format_money(round(k.cost_per_kg_cents))}"
+            + (" (target)" if k.target else "")
+        )
+
+
 @app.command("government")
 def government_cmd(
     save: SaveOpt,

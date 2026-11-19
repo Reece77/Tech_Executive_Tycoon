@@ -106,6 +106,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.robotics import phase as robotics_phase
 from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
+from tst.sim.space import phase as space_phase
 from tst.sim.state import (
     GameState,
     from_inputs,
@@ -341,6 +342,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     platform_effects = vehicles_sales.with_effects(platform_effects, state, ctx.balance, ctx.data)
     # M39 (53.2): the player's humanoids' capability points
     platform_effects = robotics_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
+    # M40 (56.1-56.3): the player's space lines' gates (designs, coverage, licences, capacity)
+    platform_effects = space_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -359,6 +362,11 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*robot_entries).log(*robot_logs)
+    # M40 (56.1-56.3): launches, terminals, constellations, failures, licences
+    state, space_entries, space_logs = space_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.flows
+    )
+    ctx = replace(ctx, state=state).post(*space_entries).log(*space_logs)
     # M44 (57): tenders, awards, protests, government contracts' delivery, clearances
     state, gov_entries, gov_logs = government_phase.month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*gov_entries).log(*gov_logs)
@@ -510,6 +518,7 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state = products.brand_and_demand(ctx.state, ctx.balance, ctx.data)
     state, car_logs = vehicles_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M38
     state = robotics_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M39 (53)
+    state, space_logs = space_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M40 (56)
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
@@ -519,7 +528,7 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state, entering, entered = dynasty_rivals.entrants_month(state, ctx.rng, ctx.balance, ctx.data)
     moves = ctx.rival_moves + launched + arrived + founded + entered
     ctx = replace(ctx, state=state, rival_moves=moves).post(*arriving, *founding, *entering)
-    return ctx.log(*going_live, *car_logs, *successions)
+    return ctx.log(*going_live, *car_logs, *space_logs, *successions)
 
 
 def stage_checks(ctx: TurnContext) -> TurnContext:

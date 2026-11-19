@@ -58,6 +58,11 @@ domains:
     baseline: { start: 20, per_year: { 2010: 1.0, 2021: 2.0 } } # A: the world's diffused medicinal chemistry and biology; faster after AlphaFold 2 (2021)
     research_skill: { data: 0.45, ml_research: 0.35, manufacturing: 0.20 } # A: assays and biology data, computational models, process chemistry and CMC (no research or science skill exists: skills.yaml)
     budget_cents: 1500000 # A: $15,000 a researcher a month (wet labs, assays and compute)
+  - key: reusability # M40 (56.1): recovering and reflying launch vehicles; reuse levels need lead points over this baseline (space.reuse)
+    label: Reusability
+    baseline: { start: 0, per_year: { 2010: 0.5, 2016: 1.5 } } # A: little diffused know-how before Falcon 9's first landing (December 2015, S), then faster as others followed (New Glenn's first landing 2025, S)
+    research_skill: { hardware_design: 0.45, manufacturing: 0.30, software_engineering: 0.25 } # A: propulsion and structures, refurbishment, guidance and landing software
+    budget_cents: 2000000 # A: $20,000 a researcher a month (test stands, landing trials)
 
 # Which domains count for a category, and how much (21.1): a company's lead for a category is
 # sum of weight x its lead in each domain. Weights sum to 1. A category not listed has no lead.
@@ -75,3 +80,4 @@ tech_weights:
   chips_server_cpu: { chip_design: 1.0 }
   chips_ai_accelerator: { chip_design: 1.0 }
   vehicles: { devices: 0.6, autonomy: 0.4 } # M38 (49.1, 49.4): hardware and the driving stack
+  launch: { reusability: 0.6, devices: 0.4 } # M40 (56.1): reuse and the vehicle's hardware

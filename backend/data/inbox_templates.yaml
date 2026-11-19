@@ -984,6 +984,28 @@ templates:
   family_member_died:
     title: "{name} has died, aged {age}"
     body: "Your family mourns {name}."
+  # M40 (56): space and satellites
+  space_region_covered:
+    title: "{constellation} now covers {region}"
+    body: "A shell is complete over {region}. Subscribers can sign up there wherever you hold a licence."
+  space_launch_failed:
+    title: "Launch failure: {vehicle}"
+    body: "The vehicle is grounded for the investigation until turn {until}. Its owed launches wait."
+  space_licence_applied:
+    title: "Licence applied for: {region}"
+    body: "The regulators are reviewing your spectrum and landing-rights application."
+  space_licence_granted:
+    title: "Licence granted: {region}"
+    body: "Your satellite service may sign up subscribers in {region} once a shell covers it."
+  space_licence_refused:
+    title: "Licence refused: {region}"
+    body: "The regulators turned the application down. You may apply again."
+  space_debris_rule:
+    title: "Tighter debris rules"
+    body: "Regulators now charge for satellites in orbit and require faster, costlier disposal at end of life."
+  space_failure_answered:
+    title: "Launch failure: {constellation}"
+    body: "Your answer ({step}) has been carried out."
 
   # M44 (57): defence and government contracts
   bid_placed:

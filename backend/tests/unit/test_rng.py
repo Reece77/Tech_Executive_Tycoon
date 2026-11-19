@@ -113,6 +113,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "dynasty": 65,  # M37 (52)
         "robotics": 66,
         "pharma": 67,  # M42 (55)
+        "space": 68,  # M40 (56)
         "defence": 69,
         "misc": 99,
     }

@@ -390,6 +390,17 @@ from tst.sim.robotics.actions import (
     SetRidePrice,
     apply_robotics,
 )
+from tst.sim.space.actions import ACTION_TYPES as SPACE_ACTION_TYPES
+from tst.sim.space.actions import (
+    ApplyLicence,
+    PlanConstellation,
+    SetConstellationPlan,
+    SetD2dPartner,
+    SetLaunchSpec,
+    SetTerminalPrice,
+    SpaceAction,
+    apply_space,
+)
 from tst.sim.state import GameState
 from tst.sim.vehicles.actions import ACTION_TYPES as VEHICLE_ACTION_TYPES
 from tst.sim.vehicles.actions import (
@@ -448,6 +459,7 @@ type Action = (
     | MedicalAction  # M41
     | RoboticsAction  # M39
     | PharmaAction  # M42
+    | SpaceAction  # M40
     | GovernmentAction  # M44
 )
 
@@ -471,6 +483,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **MEDICAL_ACTION_TYPES,  # M41 (50)
     **ROBOTICS_ACTION_TYPES,  # M39 (53)
     **PHARMA_ACTION_TYPES,  # M42 (55)
+    **SPACE_ACTION_TYPES,  # M40 (56)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -1019,6 +1032,15 @@ def apply_action(
             | CloseZone()
         ):
             out = apply_robotics(state, action, ledger_balances, balance, data)  # M39 (53)
+        case (
+            SetLaunchSpec()
+            | PlanConstellation()
+            | SetConstellationPlan()
+            | ApplyLicence()
+            | SetTerminalPrice()
+            | SetD2dPartner()
+        ):
+            out = apply_space(state, action, ledger_balances, balance, data)  # M40 (56)
         case (
             PlaceBid()
             | WithdrawBid()

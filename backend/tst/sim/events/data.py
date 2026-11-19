@@ -38,6 +38,7 @@ CATEGORIES: Final = (
     "regulation",  # M34: investigations' stages and structural orders (48), queued by the engine
     "medical",  # M41: class I recalls (50.5), queued by the engine
     "robotics",  # M39: serious robotaxi incidents (53.3), queued by the engine
+    "space",  # M40: launch failures with the player's satellites aboard (56.1), queued
     "government",  # M44: staff open letters after defence awards (57.4), queued by the engine
 )
 # Templates a company with no employees may draw (16.1: founder, market and finance).
@@ -102,6 +103,8 @@ REGULATION_TRIGGER: Final = "regulation"
 MEDICAL_TRIGGER: Final = "medical"
 # M39 (53.3): a serious robotaxi incident, queued by the engine by template id.
 ROBOTICS_TRIGGER: Final = "robotics"
+# M40 (56.1): a launch failure with the player's satellites aboard, queued by template id.
+SPACE_TRIGGER: Final = "space"
 # M44 (57.4): a staff open letter after a defence award, queued by the engine by template id.
 GOVERNMENT_TRIGGER: Final = "government"
 SCHEDULED: Final = (
@@ -120,6 +123,7 @@ SCHEDULED: Final = (
     REGULATION_TRIGGER,
     MEDICAL_TRIGGER,
     ROBOTICS_TRIGGER,
+    SPACE_TRIGGER,
     GOVERNMENT_TRIGGER,
 )
 # M10b (23.3): crises checked in phase 12 apart from the drawn triggers. Each brings its
@@ -143,6 +147,7 @@ CRITICAL_TRIGGERS: Final = (
     REGULATION_TRIGGER,
     MEDICAL_TRIGGER,
     ROBOTICS_TRIGGER,
+    SPACE_TRIGGER,
     GOVERNMENT_TRIGGER,
 )  # 16.2; 20.3; 23.3; 22.5; 25; 32; 31.6; 34.3; 35.4; 36.4; 39.3; 44.5; 48; 50.5; 53.3
 
@@ -194,6 +199,8 @@ EFFECT_TYPES: Final = (
     "medical_step",
     # M39 (53.3): a serious robotaxi incident's answer (ROBOTICS_STEPS), applied by the engine.
     "robotics_step",
+    # M40 (56.1): a launch failure's answer (SPACE_STEPS), applied by the engine.
+    "space_step",
     # M44 (57.4): an open letter's answer (GOVERNMENT_STEPS), applied by the engine.
     "government_step",
 )
@@ -227,6 +234,7 @@ GEOPOLITICS_STEPS: Final = (  # M22 (39.3): export rules, supply cuts and listin
 PLATFORM_STEPS: Final = ("comply", "appeal", "regulators")  # M31 (44.5): a removal
 MEDICAL_STEPS: Final = ("full", "correct", "dispute")  # M41 (50.5): a class I recall
 ROBOTICS_STEPS: Final = ("cooperate", "compensate", "contest")  # M39 (53.3): a robotaxi incident
+SPACE_STEPS: Final = ("review", "rebuild", "claim")  # M40 (56.1): a launch failure
 GOVERNMENT_STEPS: Final = ("carry_on", "withdraw", "ethics_board")  # M44 (57.4): an open letter
 REGULATION_STEPS: Final = (  # M34 (48.3-48.4): an investigation's stage, a structural order
     "cooperate",
@@ -295,6 +303,7 @@ VALUELESS: Final = (
     "regulation_step",
     "medical_step",
     "robotics_step",
+    "space_step",
     "government_step",
 )  # no size: happen or not
 NON_NEGATIVE: Final = ("growth_boost", "salary_change", *LOAN_EFFECTS)  # never a cut
@@ -331,6 +340,7 @@ EFFECT_TARGETS: Final[dict[str, tuple[str, ...]]] = {
     "regulation_step": ("company",),
     "medical_step": ("product",),
     "robotics_step": ("company",),
+    "space_step": ("company",),
     "government_step": ("company",),
 }
 
@@ -406,6 +416,7 @@ TRIGGER_SUPPLIES: Final[dict[str, frozenset[str]]] = {
     REGULATION_TRIGGER: frozenset({"regulator", "case", "market", "fine", "odds", "unit"}),  # M34
     MEDICAL_TRIGGER: frozenset({"product", "units", "cost"}),  # M41 (50.5): the recall
     ROBOTICS_TRIGGER: frozenset(),  # M39 (53.3): company and founder only
+    SPACE_TRIGGER: frozenset(),  # M40 (56.1): company and founder only
     GOVERNMENT_TRIGGER: frozenset(),  # M44 (57.4): company and founder only
 }
 PLACEHOLDER_RE: Final = re.compile(r"\{([a-z_]+)\}")
@@ -506,6 +517,9 @@ class EffectSpec(_Frozen):
         elif self.type == "robotics_step":
             if self.stat not in ROBOTICS_STEPS or self.months is not None:
                 raise ValueError(f"a robotics_step needs a stat in {list(ROBOTICS_STEPS)}")
+        elif self.type == "space_step":
+            if self.stat not in SPACE_STEPS or self.months is not None:
+                raise ValueError(f"a space_step needs a stat in {list(SPACE_STEPS)}")
         elif self.type == "government_step":
             if self.stat not in GOVERNMENT_STEPS or self.months is not None:
                 raise ValueError(f"a government_step needs a stat in {list(GOVERNMENT_STEPS)}")
@@ -678,6 +692,7 @@ def template_problems(templates: tuple[EventTemplate, ...]) -> list[str]:
             REGULATION_TRIGGER,
             MEDICAL_TRIGGER,
             ROBOTICS_TRIGGER,
+            SPACE_TRIGGER,
             GOVERNMENT_TRIGGER,
         ):
             missing = sorted(t.needs() - ALWAYS - TRIGGER_SUPPLIES[t.trigger])
