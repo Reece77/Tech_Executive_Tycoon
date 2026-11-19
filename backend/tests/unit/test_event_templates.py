@@ -45,6 +45,7 @@ def test_the_library(loaded: LoadedData) -> None:
         "regulation": 4,  # M34: an inquiry, charges, a ruling and a structural order (48)
         "medical": 1,  # M41: a class I recall (50.5)
         "robotics": 2,  # M39: a robotaxi collision and a pedestrian struck (53.3)
+        "government": 1,  # M44: staff's open letter against defence work (57.4)
     }
     for trigger in TRIGGERS:
         assert any(t.trigger == trigger and "minor" in t.severities for t in templates), trigger

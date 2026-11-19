@@ -17,14 +17,15 @@ A tender is hidden until its announcement month (57.7)."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geopolitics.tension import tension_at
+from tst.sim.geopolitics.world import enabled as world_enabled
 from tst.sim.government import draws
 from tst.sim.government.config import AREAS, CONTRACT_TYPES, LEVELS, GovernmentDef
 from tst.sim.government.data import MONTHS, budget_cents, file, january, scale, year_of
@@ -65,6 +66,7 @@ def add_history(state: GameState, balance: Balance, data: GameData) -> GameState
                 announce_turn=h.announce_turn,
                 close_turn=h.close_turn,
                 award_turn=h.award_turn,
+                # money-exact: rate (government.yaml's real cents at the game's scale, at load)
                 value_cents=round(h.value_cents * m),
                 term_months=term,
                 base_months=max(1, round(term * (1 - balance.government.tenders.option_share))),
@@ -109,7 +111,7 @@ def draw_year(state: GameState, rng: RngFactory, balance: Balance, data: GameDat
     growth = list(world.growth)
     tenders: list[Tender] = []
     next_id = world.next_tender
-    tension = tension_at(state, data)
+    tension = tension_at(state, data) if world_enabled(data) else HALF
     for i, gov in enumerate(f.governments):
         g = draws.gen(rng, january(year), draws.BUDGET, i, year)
         if january(year) >= gb.start_turn:
@@ -167,7 +169,7 @@ def _tenders_for(
             if u < acc:
                 area, buyer = a, b
                 break
-        value = mean * math.exp(sigma * float(g.normal()) - sigma * sigma / 2)
+        value = mean * dmath.exp(sigma * float(g.normal()) - sigma * sigma / 2)
         years = int(g.integers(round(tb.term_years.lo), round(tb.term_years.hi) + 1))
         contract = _pick(g, tb.contract_mix, CONTRACT_TYPES)
         level = _pick(g, tb.clearance_mix[buyer], LEVELS)

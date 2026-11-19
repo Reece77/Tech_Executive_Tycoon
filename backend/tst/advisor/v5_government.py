@@ -57,4 +57,4 @@ def bid_score(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
         " lowest winner's band."
         + (f" Winning band: {won}-{won + width}." if won is not None else "")
     )
-    return b._out(m, entity, band(t.total), items, note, (), [], title)
+    return b._out(m, entity, band(t.weighted), items, note, (), [], title)

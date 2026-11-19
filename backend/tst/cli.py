@@ -4743,7 +4743,7 @@ def government_cmd(
         ):
             continue
         typer.echo(
-            f"[{t.id}] {t.title}: {format_money(t.value_cents)} over {t.term_months} months,"
+            f"[{t.id}] {t.title}: {format_money(t.ceiling_cents)} over {t.term_months} months,"
             f" {t.contract}, clearance {t.clearance}, {t.status}"
             f" (closes {t.closes}, award {t.award_month})"
         )
@@ -4777,4 +4777,4 @@ def government_cmd(
             f"clearance {cl.name}: {cl.level} {cl.status} (requested {cl.requested}{decided})"
         )
     for r in g.rivals[:10]:
-        typer.echo(f"rival {r.name}: {r.awards} awards, {format_money(r.value_cents)}")
+        typer.echo(f"rival {r.name}: {r.awards} awards, {format_money(r.awarded_cents)}")

@@ -915,3 +915,50 @@ templates:
   family_member_died:
     title: "{name} has died, aged {age}"
     body: "Your family mourns {name}."
+
+  # M44 (57): defence and government contracts
+  bid_placed:
+    title: "Bid placed: {tender}"
+    body: "Your bid of {price_cents} is in. Requirements are checked again at the award; the Government screen shows its status."
+  tender_awarded:
+    title: "Award: {tender}"
+    body: "Your bid was {outcome}. Awarded to {winners}."
+  contract_won:
+    title: "Contract won: {tender}"
+    body: "The award stands. Delivery starts next month; the Government screen shows its revenue, cost and performance."
+  award_protested:
+    title: "Your award is protested: {tender}"
+    body: "{by} protested the award. It is held until the protest is decided, and a sustained protest re-competes the tender."
+  protest_filed:
+    title: "Protest filed: {tender}"
+    body: "Your protest holds the award until month {until}."
+  protest_decided:
+    title: "Protest {outcome}: {tender}"
+    body: "A sustained protest re-competes the tender; a denied one lets the award stand."
+  contract_completed:
+    title: "Contract {contract} completed"
+    body: "Its performance joins your past performance."
+  contract_options_declined:
+    title: "Options declined on contract {contract}"
+    body: "Performance was below what the government needed to exercise the option years; the contract ends with its base term."
+  contract_defaulted:
+    title: "Contract {contract} terminated for default"
+    body: "Months without delivery (the product gone, or clearances lapsed) ended it. It counts against your past performance."
+  clearances_requested:
+    title: "Clearances requested: {people} at {level}"
+    body: "Investigations take months, and some candidates never clear. The Government screen shows each one's status."
+  clearance_decided:
+    title: "Clearance {outcome}: {name}"
+    body: "The investigation is decided."
+  facility_clearance_requested:
+    title: "Facility clearance sponsored"
+    body: "Facility {facility}'s clearance takes 6-12 months."
+  facility_cleared:
+    title: "Facility cleared"
+    body: "Facility {facility} may now hold classified work."
+  defence_award_reaction:
+    title: "Defence work for {government}"
+    body: "{objectors} staff object to the work, and consumer brands lost {brand} points."
+  defence_letter_answered:
+    title: "The open letter: you chose to {step}"
+    body: "The Government screen shows the contract's status."

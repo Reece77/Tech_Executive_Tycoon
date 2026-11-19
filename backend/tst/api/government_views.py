@@ -58,7 +58,7 @@ def _bid_out(state: GameState, bid: Bid, tender: Tender, data: LoadedData) -> My
     band = None
     if bid.terms is not None and bid.status in ("won", "lost"):
         band = ScoreBandOut(
-            total=_band(bid.terms.total, width),
+            total=_band(bid.terms.weighted, width),
             price=_band(bid.terms.price, width),
             technical=_band(bid.terms.technical, width),
             past_performance=_band(bid.terms.past_performance, width),
@@ -81,7 +81,7 @@ def _bid_out(state: GameState, bid: Bid, tender: Tender, data: LoadedData) -> My
         status=bid.status,
         band=band,
         score_floor=(
-            int(min(PCT - width, max(0.0, bid.terms.total)) // width * width)
+            int(min(PCT - width, max(0.0, bid.terms.weighted)) // width * width)
             if band is not None and bid.terms is not None
             else None
         ),
@@ -166,7 +166,7 @@ def _tender_out(state: GameState, tender: Tender, data: LoadedData) -> TenderOut
         buyer=tender.buyer,
         contract=tender.contract,
         clearance=tender.clearance,
-        value_cents=tender.value_cents,
+        ceiling_cents=tender.value_cents,
         term_months=tender.term_months,
         base_months=tender.base_months,
         awards=tender.awards,
@@ -256,7 +256,7 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
                 buyer=c.buyer,
                 contract=c.contract,
                 product=product.name if product is not None else "",
-                value_cents=c.value_cents,
+                award_cents=c.value_cents,
                 start=format_turn(c.start_turn),
                 base_end=format_turn(c.base_end_turn),
                 end=format_turn(c.end_turn),
@@ -325,12 +325,12 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
         for name in t.winners:
             if name == player.name:
                 continue
-            r = rivals.get(name) or RivalAwardOut(name=name, awards=0, value_cents=0, areas=[])
+            r = rivals.get(name) or RivalAwardOut(name=name, awards=0, awarded_cents=0, areas=[])
             areas = r.areas if t.area in r.areas else [*r.areas, t.area]
             rivals[name] = RivalAwardOut(
                 name=name,
                 awards=r.awards + 1,
-                value_cents=r.value_cents + t.value_cents // max(1, t.awards),
+                awarded_cents=r.awarded_cents + t.value_cents // max(1, t.awards),
                 areas=areas,
             )
     record = state.defence_record(player.id)
@@ -350,7 +350,7 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
         facility_clearances=fcs,
         staff=staff,
         facilities=facility_options,
-        rivals=sorted(rivals.values(), key=lambda r: -r.value_cents),
+        rivals=sorted(rivals.values(), key=lambda r: -r.awarded_cents),
         record=DefenceRecordOut(
             awards=record.awards if record is not None else 0,
             blocs=list(record.blocs) if record is not None else [],

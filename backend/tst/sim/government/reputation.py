@@ -75,6 +75,21 @@ def _with_record(state: GameState, record: DefenceRecord) -> GameState:
     )
 
 
+def queue_letter(state: GameState, company_id: int) -> GameState:
+    """The open letter's critical event, next month (one at a time)."""
+    qid, ids = state.next_ids.take("queued")
+    return with_queued(
+        replace(state, next_ids=ids),
+        QueuedEvent(
+            id=qid,
+            company_id=company_id,
+            template_id=LETTER_TEMPLATE,
+            due_turn=state.turn + 1,
+            source_event_id=None,
+        ),
+    )
+
+
 def on_defence_award(
     state: GameState, contract: Contract, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, list[LogItem]]:
@@ -147,20 +162,9 @@ def on_defence_award(
         )
     ]
     if letter:
-        due = turn + 1
-        qid, ids = state.next_ids.take("queued")
-        state = with_queued(
-            replace(state, next_ids=ids),
-            QueuedEvent(
-                id=qid,
-                company_id=cid,
-                template_id=LETTER_TEMPLATE,
-                due_turn=due,
-                source_event_id=None,
-            ),
-        )
         reactions = (*reactions, turn)
-        letter_turn = due
+        letter_turn = turn + 1
+        state = queue_letter(state, cid)
     state = _with_record(
         state,
         replace(

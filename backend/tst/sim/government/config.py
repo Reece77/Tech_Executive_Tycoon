@@ -24,6 +24,7 @@ BASE_YEAR: Final = 2010  # tunable-exempt: the game's money is in 2010 dollars
 CENTS: Final = 100  # tunable-exempt: unit conversion
 MILLION: Final = 1_000_000  # tunable-exempt: unit conversion
 BILLION: Final = 1_000_000_000  # tunable-exempt: unit conversion
+SHOWN: Final = 10  # tunable-exempt: problems an error message lists
 PAIR: Final = 2  # tunable-exempt: a [value, tag] pair
 TRIPLE: Final = 3  # tunable-exempt: a [value, dollar year, tag] triple
 TAG_RE: Final = re.compile(r"^(S|D|R|A):([a-z0-9_]+)$")
@@ -181,7 +182,7 @@ class HistoricalTenderDef(_Frozen):
     closes: str
     awarded: str
     value_cents: float  # ceiling, 2010 cents (real)
-    term_years: int = Field(ge=1, le=15)
+    term_years: int = Field(ge=1, le=15)  # tunable-exempt: a validation bound
     contract: ContractType
     awards: int = Field(default=1, ge=1)
     clearance: Level = "none"
@@ -287,7 +288,7 @@ class PrimeDef(_Frozen):
     country: str
     areas: dict[str, float]  # area -> technical merit 0-100
     past_performance: float = Field(ge=0, le=100)
-    from_year: int = 2010
+    from_year: int = BASE_YEAR
     revenue_cents: dict[int, float] = Field(default_factory=dict)  # shown (real, 2010 cents)
 
 
@@ -298,7 +299,7 @@ class CompanyBidderDef(_Frozen):
     name: str
     areas: tuple[str, ...]
     past_performance: float = Field(ge=0, le=100)
-    from_year: int = 2010
+    from_year: int = BASE_YEAR
 
 
 class GovernmentFile(_Frozen):
@@ -333,7 +334,7 @@ class GovernmentFile(_Frozen):
             if not re.match(r"^[a-z0-9_]+$", str(key)):
                 raise ValueError(f"source key {key!r}")
         if problems := tag_problems(raw, set(sources)):
-            raise ValueError("uncited values: " + "; ".join(problems[:10]))
+            raise ValueError("uncited values: " + "; ".join(problems[:SHOWN]))
         cpi = {int(y): float(v[0] if isinstance(v, list) else v) for y, v in raw["cpi"].items()}
         body = convert({k: v for k, v in raw.items() if k != "cpi"}, cpi)
         body["cpi"] = cpi

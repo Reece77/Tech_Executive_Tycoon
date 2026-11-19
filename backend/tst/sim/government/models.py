@@ -58,7 +58,7 @@ class ScoreTerms:
     price: float
     technical: float
     past_performance: float
-    total: float
+    weighted: float
 
 
 @dataclass(frozen=True, slots=True)

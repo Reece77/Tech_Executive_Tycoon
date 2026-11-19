@@ -76,8 +76,7 @@ SYSTEMS: tuple[System, ...] = (
     System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
     System(30, "robotics", "Robotics", "products"),  # tunable-exempt: stable id (M39; 29 is M41's)
     System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
-    # tunable-exempt: stable id (M44; 32 and 33 are M42's and M40's)
-    System(34, "government", "Government", "markets"),
+    System(34, "government", "Government", "markets"),  # tunable-exempt: stable id (M44)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}

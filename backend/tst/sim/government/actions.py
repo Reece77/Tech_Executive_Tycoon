@@ -132,7 +132,8 @@ def place_bid(
         raise GovernmentRuleError(
             f"{product.name} does not serve this tender's area ({tender.area})"
         )
-    lo, hi = round(tender.value_cents * b.price_floor), round(tender.value_cents * b.price_cap)
+    lo = round(exact(tender.value_cents) * exact(b.price_floor))
+    hi = round(exact(tender.value_cents) * exact(b.price_cap))
     if not lo <= action.price_cents <= hi:
         raise GovernmentRuleError(
             f"the price must be {format_money(lo)} to {format_money(hi)} over the term"

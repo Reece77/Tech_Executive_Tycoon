@@ -69,16 +69,25 @@ def is_large(tender: Tender, balance: Balance) -> bool:
     return tender.value_cents >= balance.government.tenders.large_cents
 
 
+NO_BLOCS: Final = "us_aligned"  # tunable-exempt: every company's bloc in a game without M22's data
+
+
 def company_bloc(state: GameState, company: CompanyState, balance: Balance, data: GameData) -> str:
+    if not world.enabled(data):
+        return NO_BLOCS
     country = world.company_country(state, company, balance, data)
     return world.bloc_of(data, country, state.turn)
 
 
 def gov_bloc(gov: GovernmentDef, data: GameData, turn: int) -> str:
+    if not world.enabled(data):
+        return NO_BLOCS
     return world.bloc_of(data, gov.country, turn)
 
 
 def gov_region(gov: GovernmentDef, data: GameData) -> str:
+    if data.countries is None:
+        return data.region_keys[0]
     return world.countries_of(data).country(gov.country).region
 
 

@@ -62,7 +62,7 @@ class Candidate:
     merit: float
     pp: float
     ratio: float
-    total: float = 0.0
+    score: float = 0.0
     player: bool = False
 
 
@@ -116,6 +116,7 @@ def player_candidate(state: GameState, bid: Bid, tender: Tender, balance: Balanc
         company_id=bid.company_id,
         merit=merit,
         pp=past_performance(state, bid.company_id, balance),
+        # money-exact: rate (a price ratio scored as a float, never posted)
         ratio=bid.price_cents / max(1, tender.value_cents),
         player=True,
     )
@@ -209,7 +210,7 @@ def score_all(
     for c in candidates:
         price = PCT * low / c.ratio if c.ratio > 0 else PCT
         total = w.price * price + w.technical * c.merit + w.past_performance * c.pp
-        out.append(replace(c, total=total + TIE * float(g.random())))
+        out.append(replace(c, score=total + TIE * float(g.random())))
     return out
 
 
@@ -217,7 +218,7 @@ def terms_of(c: Candidate, low: float, tender: Tender, balance: Balance) -> Scor
     w = weights(tender, balance)
     price = PCT * low / c.ratio if c.ratio > 0 else PCT
     total = w.price * price + w.technical * c.merit + w.past_performance * c.pp
-    return ScoreTerms(price=price, technical=c.merit, past_performance=c.pp, total=total)
+    return ScoreTerms(price=price, technical=c.merit, past_performance=c.pp, weighted=total)
 
 
 @dataclass(frozen=True, slots=True)
@@ -261,15 +262,15 @@ def award(
         mine = next((c for c in scored if c.player), None)
         winners = list(record)
         if mine is not None and record:
-            lowest = min(record, key=lambda c: c.total)
-            if mine.total > lowest.total:
+            lowest = min(record, key=lambda c: c.score)
+            if mine.score > lowest.score:
                 winners = [mine if c is lowest else c for c in record]
     else:
-        winners = sorted(scored, key=lambda c: -c.total)[: tender.awards]
+        winners = sorted(scored, key=lambda c: -c.score)[: tender.awards]
     player_won = any(c.player for c in winners)
     band = (
-        band_of(min(c.total for c in winners), balance)
-        if winners and any(c.total for c in winners)
+        band_of(min(c.score for c in winners), balance)
+        if winners and any(c.score for c in winners)
         else None
     )
     low = min((c.ratio for c in pool), default=1.0)

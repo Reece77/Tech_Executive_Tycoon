@@ -164,7 +164,7 @@ function TenderTable({ tenders, onSelect }: { tenders: Tender[]; onSelect: (id: 
         }),
         tenderHelper.accessor('government_label', { header: 'Government' }),
         tenderHelper.accessor('area', { header: 'Area' }),
-        tenderHelper.accessor('value_cents', {
+        tenderHelper.accessor('ceiling_cents', {
           header: 'Value',
           cell: (c) => formatMoneyShort(c.getValue()),
         }),
@@ -213,13 +213,13 @@ function TenderPanel({ saveId, g, t }: { saveId: string; g: Government; t: Tende
   const [product, setProduct] = useState<string>(
     t.options[0] ? String(t.options[0].product_id) : '',
   );
-  const [price, setPrice] = useState<number>(Math.round((t.value_cents * 0.9) / 100));
+  const [price, setPrice] = useState<number>(Math.round(t.ceiling_cents / 100));
   const [team, setTeam] = useState<string[]>([]);
   const mine = t.my_bid;
   return (
     <Panel title={t.title} testId="tender-detail">
       <p style={{ margin: '0 0 6px' }}>
-        {t.government_label}, {t.buyer} · {formatMoney(t.value_cents)} over {t.term_months} months
+        {t.government_label}, {t.buyer} · {formatMoney(t.ceiling_cents)} over {t.term_months} months
         (base {t.base_months}) · {CONTRACT[t.contract]} · {t.awards} award{t.awards > 1 ? 's' : ''}{' '}
         · announced {t.announced}, bids close {t.closes}, award {t.award_month}
         {t.large ? ' · large' : ''}
@@ -375,7 +375,7 @@ function ContractTable({ g }: { g: Government }) {
           meta: { term: 'government.cost_plus' },
           cell: (c) => CONTRACT[c.getValue()] ?? c.getValue(),
         }),
-        contractHelper.accessor('value_cents', {
+        contractHelper.accessor('award_cents', {
           header: 'Value',
           cell: (c) => formatMoneyShort(c.getValue()),
         }),
@@ -513,7 +513,7 @@ function RivalTable({ g }: { g: Government }) {
       rivalHelper.columns([
         rivalHelper.accessor('name', { header: 'Company' }),
         rivalHelper.accessor('awards', { header: 'Awards' }),
-        rivalHelper.accessor('value_cents', {
+        rivalHelper.accessor('awarded_cents', {
           header: 'Value',
           cell: (c) => formatMoneyShort(c.getValue()),
         }),

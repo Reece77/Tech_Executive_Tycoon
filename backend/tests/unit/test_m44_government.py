@@ -249,7 +249,7 @@ def test_award_is_seeded_and_never_stores_rival_bids(loaded: LoadedData) -> None
 
 
 def test_withdraw_before_close(loaded: LoadedData) -> None:
-    state, pid, seller = _setup(loaded)
+    state, pid, _seller = _setup(loaded)
     t = _tender(state)
     state = replace(state, tenders=(t,))
     state, _ = _act(state, PlaceBid(_founder(state), t.id, pid, t.value_cents // 2, ()), loaded)
@@ -350,7 +350,9 @@ def test_options_exercised_or_declined(loaded: LoadedData) -> None:
 def test_clearances_seeded_hidden_and_decided(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     state, _, seller = _setup(loaded, year=2027)
-    state, entries = _act(state, RequestClearance(_founder(state), (seller,), "top_secret"), loaded)
+    state, _entries = _act(
+        state, RequestClearance(_founder(state), (seller,), "top_secret"), loaded
+    )
     c = state.clearances[0]
     assert c.status == "pending" and c.due_turn > state.turn
     again = clearances.draw_clearance(
@@ -395,7 +397,7 @@ def test_requirements_name_what_is_missing(
     loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     b, d = loaded.balance, loaded.game_data
-    state, pid, seller = _setup(loaded, year=2021)
+    state, pid, _seller = _setup(loaded, year=2021)
     t = _tender(state, clearance="top_secret", buyer="defence")
     reasons = sourcing.requirements(state, state.player, state.product(pid), t, b, d)
     assert any("Top Secret" in r for r in reasons) and any("cleared facility" in r for r in reasons)
@@ -499,7 +501,7 @@ def _consumer(loaded: LoadedData) -> tuple[GameState, int, Contract]:
 def test_defence_award_costs_brand_moves_persona_and_influence(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
     state, app, c = _consumer(loaded)
-    out, logs = reputation.on_defence_award(state, c, RngFactory(5), b, d)
+    out, _logs = reputation.on_defence_award(state, c, RngFactory(5), b, d)
     assert state.product(app).brand - out.product(app).brand == pytest.approx(
         b.government.reputation.brand_first
     )  # type: ignore[union-attr]
@@ -524,7 +526,7 @@ def test_defence_award_costs_brand_moves_persona_and_influence(loaded: LoadedDat
 
 def test_open_letter_answers(loaded: LoadedData) -> None:
     b, d = loaded.balance, loaded.game_data
-    state, app, c = _consumer(loaded)
+    state, _app, c = _consumer(loaded)
     for seed in range(1, 40):
         out, _ = reputation.on_defence_award(state, c, RngFactory(seed), b, d)
         rec = out.defence_record(PLAYER)
@@ -543,7 +545,7 @@ def test_open_letter_answers(loaded: LoadedData) -> None:
         trigger="government",
         strength=1.0,
     )
-    carried, _, logs = government_step(out, ev, "carry_on", b, d)
+    carried, _, _logs = government_step(out, ev, "carry_on", b, d)
     assert sum(1 for e in carried.employments if e.status == "notice") >= 1
     withdrawn, _, _ = government_step(out, ev, "withdraw", b, d)
     assert withdrawn.gov_contracts[0].status == "terminated"

@@ -14,10 +14,10 @@ clears. Classified work needs both (sourcing.requirements)."""
 
 from __future__ import annotations
 
-import math
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.government import draws
 from tst.sim.government.config import Level
@@ -45,7 +45,7 @@ def draw_clearance(
     spec = file(data).clearances[level]
     g = draws.gen(rng, state.turn, draws.CLEARANCE, person_id)
     median = cb.sponsor_months + cb.median_of_p90 * spec.p90_at(year_of(state.turn)) / DAYS_A_MONTH
-    months = median * math.exp(cb.sigma * float(g.normal()))
+    months = median * dmath.exp(cb.sigma * float(g.normal()))
     person = state.person(person_id)
     integrity = person.personality.as_dict().get("integrity", INTEGRITY_MID)
     never = spec.never_share * (1 + cb.integrity_mult * (INTEGRITY_MID - integrity) / INTEGRITY_MID)

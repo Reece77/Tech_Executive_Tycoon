@@ -51,7 +51,7 @@ class TenderOut(BaseModel):
     buyer: str = Field(description="defence or civil")
     contract: str = Field(description="fixed_price, cost_plus or idiq")
     clearance: str = Field(description="none, secret or top_secret")
-    value_cents: int = Field(description="The ceiling over the whole term (game scale)")
+    ceiling_cents: int = Field(description="The ceiling over the whole term (game scale)")
     term_months: int
     base_months: int
     awards: int = Field(description="Awardees (an IDIQ vehicle may have several)")
@@ -78,7 +78,7 @@ class GovContractOut(BaseModel):
     buyer: str
     contract: str
     product: str
-    value_cents: int
+    award_cents: int = Field(description="The awarded price over the whole term")
     start: str
     base_end: str
     end: str
@@ -135,7 +135,7 @@ class GovBuyerOut(BaseModel):
 class RivalAwardOut(BaseModel):
     name: str
     awards: int
-    value_cents: int = Field(description="Published awards' value over the last 36 months")
+    awarded_cents: int = Field(description="Published awards' value over the last 36 months")
     areas: list[str]
 
 
