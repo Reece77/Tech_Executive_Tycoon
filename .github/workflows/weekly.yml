@@ -6,6 +6,8 @@
 # years of the founder-played strategies, the v3 scripts to 2039, and V6 on a full_integrator save.
 # M27b adds its chain targets (full_integrator automated from 2025 to 2039). M35b adds the v4
 # targets (tst.balance.v4) in three seed shards, each uploading its runs, and M31-M34's targets.
+# M43 adds the v5 targets (tst.balance.v5): every strategy to 2039 in three seed shards and the
+# v5 strategies to 2069 with a family, each uploading its runs.
 name: weekly
 
 on:
@@ -29,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m37", "weekly-m45", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems"]') }}
+        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m37", "weekly-m45", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems", "weekly-m43-a", "weekly-m43-b", "weekly-m43-c", "weekly-m43-dynasty"]') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,4 +56,12 @@ jobs:
         with:
           name: ${{ matrix.part }}
           path: /tmp/tst-v4/*.json
+          if-no-files-found: ignore
+
+      - name: Upload the v5 runs (M43)
+        if: always() && startsWith(matrix.part, 'weekly-m43-')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.part }}
+          path: /tmp/tst-v5/*.json
           if-no-files-found: ignore

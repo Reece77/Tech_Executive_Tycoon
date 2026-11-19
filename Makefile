@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a weekly-m43-b weekly-m43-c weekly-m43-dynasty weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -87,6 +87,19 @@ weekly-v4-systems:
 	uv run --project backend python tools/m32_targets.py
 	uv run --project backend python tools/m33_targets.py
 	uv run --project backend python tools/m34_targets.py
+
+# M43's v5 targets (tst.balance.v5; CI: weekly.yml): every strategy since v1 played to December
+# 2039 in three seed shards, and the v5 strategies with a family to December 2069; each saves
+# its runs (tools/v5_targets.py --load combines them).
+V5_OUT ?= /tmp/tst-v5
+weekly-m43-a:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=1-10 TST_V5_SAVE=$(V5_OUT)/v5-1-10.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-b:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=11-20 TST_V5_SAVE=$(V5_OUT)/v5-11-20.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-c:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=21-30 TST_V5_SAVE=$(V5_OUT)/v5-21-30.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-dynasty:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=1-10 TST_V5_DYNASTY=1 TST_V5_SAVE=$(V5_OUT)/v5-dynasty-1-10.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
