@@ -39,8 +39,9 @@ def new_reveal_state(
     keys = [*data.skill_keys, *data.personality_keys, PA_KEY]
     skill_keys = set(data.skill_keys)
     records = []
-    for key in keys:
-        offset = float(gen.uniform(OFFSET_LOW, OFFSET_HIGH))
+    # one draw of len(keys) values: the same numbers, in order, as one draw a key (M45)
+    offsets: list[float] = gen.uniform(OFFSET_LOW, OFFSET_HIGH, size=len(keys)).tolist()
+    for key, offset in zip(keys, offsets, strict=True):
         if key == PA_KEY:  # the founding company reads its own founder's potential better (M2b)
             hw = balance.reveal.founder_pa_hw if knows_exactly else initial.pa
         elif knows_exactly:

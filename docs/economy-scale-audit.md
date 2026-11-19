@@ -128,3 +128,11 @@ A fourth idea, applying C only from January 2026 so history holds, creates an un
 - Real-world comparators marked W are from memory, not re-verified; 2010 sizes for developer tools, public IaaS and fintech are low confidence.
 - The split of game Apple's $39.6B between device sales and platform fees (M31) was not established.
 - Whether a game-scale player can actually finance a 5 nm fab (debt limits, chain-company leverage rules applied to the player) was not tested.
+
+## 9. M43a note (2026-11-17)
+
+M43a (formulas §54) gave every market a ceiling tied to its region's GDP and recalibrated 2025 on **served revenue** (Reece's ruling). What changed for this audit:
+
+- **The runaway is closed.** The AI-models market's served revenue is about $270B real-dollar equivalent in 2025 (was $1.2-1.6T) and the largest money value in a dynasty run to 2069 is 1.48e16 cents (was 6.07e18). Technology served revenue peaks at 11.6% of world GDP (2039).
+- **The two economies remain.** Tech revenues stay at `economy_scale.money` 0.0849 of real (the game's served sizes sit at 0.6-1.8x published once divided by it; servers moved up 7x, so game Dell and HP now book real-scale-equivalent server revenue). Heavy industry is untouched. The seam of §5 is unchanged: a leading-edge fab is still 9-11x dearer against the largest tech revenues than in reality.
+- **Option C is still needed** if the integrator path should be affordable at real proportions: M43a made market sizes believable at the game's scale, it did not raise that scale. `economy_scale.money` was not re-derived (M34's key; Microsoft's Azure book moves with cloud's ceiling, so a re-derivation would now read lower than 0.0849; not measured).

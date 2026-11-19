@@ -107,9 +107,11 @@ from tst.sim.score import snapshot_scores
 from tst.sim.snapshot import CompanySnapshot, DivisionMonth, TurnSnapshot
 from tst.sim.state import (
     GameState,
+    from_inputs,
     group_companies,
     holding_of,
     player_companies,
+    with_companies,
     with_company,
     with_person_state,
     with_proposal,
@@ -537,12 +539,7 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     for company in ctx.state.ledger_companies():  # incumbents have no books until M5
         closing = account_balance(ctx.balances, company.id, CASH)
         # Burn: net cash used before financing over the month (14.1; M8r finding 7).
-        lines = [
-            (e.turn, line.account, line.amount)
-            for e in ctx.entries
-            if e.company_id == company.id
-            for line in e.lines
-        ]
+        lines = _company_lines(ctx, company.id)
         flow = ctx.prior_flow.get(company.id, 0) + cash_before_financing(lines, types)
         morale = [
             ctx.state.person_state(e.person_id).morale
@@ -580,9 +577,13 @@ def snapshot_and_month_end_report(ctx: TurnContext) -> TurnContext:
     if held is not None:  # M16 (31.2): the holding company's revenue is its group's
         group = group_companies(state, held.company_id)
         revenue[held.company_id] = sum(ctx.revenue.get(c.id, 0) for c in group)
-    for company in state.ledger_companies():
-        history = (*company.mrr_history, revenue.get(company.id, 0))[-keep:]
-        state = with_company(state, replace(company, mrr_history=history))
+    state = with_companies(  # M45: one state update for every company's MRR
+        state,
+        [
+            replace(company, mrr_history=(*company.mrr_history, revenue.get(company.id, 0))[-keep:])
+            for company in state.ledger_companies()
+        ],
+    )
     state = _rival_op_history(state, ctx, types)  # M14 (28.1): rivals' V_f margin
     state = _debt_history(state, ctx, types)  # M10 (20.3): covenants read completed months
     state = _holding_history(state, ctx, types)  # M16 (31.2): the listed group's margin
@@ -613,23 +614,37 @@ def _rival_op_history(
     """Rivals' operating result for the month just ended (M14, 28.1): V_f's trailing margin.
     The player's is `_debt_history`'s."""
     keep = ctx.balance.ipo.trailing_months + 1
-    for company in state.rivals():
-        result = _month_operating(ctx, company.id, types)
-        state = with_company(
-            state, replace(company, op_history=(*company.op_history, result)[-keep:])
-        )
-    return state
+    return with_companies(  # M45: one state update for every rival
+        state,
+        [
+            replace(
+                company,
+                op_history=(*company.op_history, _month_operating(ctx, company.id, types))[-keep:],
+            )
+            for company in state.rivals()
+        ],
+    )
+
+
+def _company_lines(ctx: TurnContext, company_id: int) -> list[tuple[int, AccountCode, Cents]]:
+    """(turn, account, amount) of the company's lines in the turn's entries, in order, from an
+    index kept with the entries (M45: each company's figures scanned every entry)."""
+    entries = ctx.entries
+
+    def index() -> dict[int, tuple[tuple[int, AccountCode, Cents], ...]]:
+        out: dict[int, list[tuple[int, AccountCode, Cents]]] = {}
+        for e in entries:
+            mine = out.setdefault(e.company_id, [])
+            mine.extend((e.turn, line.account, line.amount) for line in e.lines)
+        return {k: tuple(v) for k, v in out.items()}
+
+    return list(from_inputs(entries, "lines_by_company", index).get(company_id, ()))
 
 
 def _month_operating(ctx: TurnContext, company_id: int, types: Mapping[str, AccountType]) -> int:
     """The month's operating result so far: the turn's entries plus actions before Continue
     (as `_debt_history`)."""
-    lines = [
-        (e.turn, line.account, line.amount)
-        for e in ctx.entries
-        if e.company_id == company_id
-        for line in e.lines
-    ]
+    lines = _company_lines(ctx, company_id)
     prior = ctx.prior_operating.get(company_id, 0)
     return profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
 
@@ -656,12 +671,7 @@ def _debt_history(
     the whole month's ledger by account (14.1: interest sits below it; M10r finding 1); burn
     is cash before financing (M8r finding 7)."""
     company = state.player
-    lines = [
-        (e.turn, line.account, line.amount)
-        for e in ctx.entries
-        if e.company_id == company.id
-        for line in e.lines
-    ]
+    lines = _company_lines(ctx, company.id)
     prior = ctx.prior_operating.get(company.id, 0)
     result = profit_and_loss(lines, types, ctx.turn, ctx.turn).operating_result + prior
     burn = max(-(ctx.prior_flow.get(company.id, 0) + cash_before_financing(lines, types)), 0)

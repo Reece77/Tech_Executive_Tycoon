@@ -814,6 +814,9 @@ def apply_turn_result(
         keep = data.balance.retention
         history.archive_news(session, before.world_news, result.new_state.world_news, keep)
         history.prune(session, played, keep)
+        history.prune_candidates(  # M45: closed candidates' unread records, each December
+            session, played, keep, (p.id for p in result.new_state.people)
+        )
     meta.current_turn = result.new_state.turn
     session.flush()
 

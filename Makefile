@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -44,7 +44,7 @@ weekly-v5:
 	uv run --project backend python tools/v2_targets.py --long --runs
 weekly-v6:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite TST_M30_MEDIAN_MS=500 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 500 ms guard on this save from M38 until the v5 performance milestone after M37 (PM, 2026-11-17); the 1,000 ms budget stays
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), restored by M45; the 1,000 ms raw budget stays
 
 # M23b's v3 targets (tst.balance.v3; CI: weekly.yml): the chain's shocks, 20 years of the v2
 # and v3 founder-played strategies (integration pays), the v3 scripts to December 2039, and V6
@@ -59,10 +59,15 @@ weekly-m27b:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_m27b_balance.py
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=500 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 500 ms guard on this save until M35 (PM, 2026-11-15)
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), reached in M45; the 1,000 ms raw budget stays
+
+# M45 (sub-task 1): M37's dynasty game on seeds 1-3 for 720 months, every month's full-state
+# digest against the one recorded before any M45 change (tests/fixtures/m45_dynasty_hashes.json).
+weekly-m45:
+	cd backend && uv run pytest -q -n 3 -s -m weekly tests/balance/test_m45_state_cache.py
 
 # M37 (52.5 target 5): a full_integrator dynasty save with a family to January 2069 (708
-# months), then its 2069 months against M30's 500 ms guard and the save under 400 MB.
+# months), then its 2069 months against a 500 ms runner-adjusted median (M45) and the save under 400 MB.
 weekly-m37:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) m37 --strategy full_integrator --turns 708 --length dynasty --children 2,5
 	cd backend && TST_M37_SAVE=$(V6_SAVE_DIR)/m37.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m37_perf.py
