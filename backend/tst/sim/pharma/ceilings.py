@@ -54,6 +54,7 @@ def value_cents(
 ) -> float:
     """A: the area's sales value in the region this month, with its level."""
     lvl = level(state, area.category, region)
+    # money-exact: ratio (a market's size against its ceiling, never booked)
     return _uncapped_cents(data, balance, area, region, state.turn) * lvl
 
 
