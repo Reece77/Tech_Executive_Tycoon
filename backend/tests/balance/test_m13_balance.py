@@ -24,8 +24,9 @@ def test_25_9_targets() -> None:
     assert m13.t3_miss_share(r) >= 0.60  # target 3
     assert m13.t3_price_ratio(r) <= 0.85
     m = r.t4  # target 4
-    assert 4 <= m.early <= 15 and 8 <= m.late <= 25
-    assert m.dec_2022 <= 0.70 * m.jan_2022
+    assert m13.T4_EARLY[0] <= m.early <= m13.T4_EARLY[1]  # re-banded by Reece, M43
+    assert m13.T4_LATE[0] <= m.late <= m13.T4_LATE[1]
+    assert m.dec_2022 <= (1 - m13.T4_FALL) * m.jan_2022
     assert 0.85 <= m13.t5_arr_ratio(r) <= 1.15  # target 5
     assert m13.t5_spent(r) <= 0.40
     _known(known)

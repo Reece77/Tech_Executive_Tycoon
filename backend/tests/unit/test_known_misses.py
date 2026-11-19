@@ -98,16 +98,15 @@ def test_m43a_misses_are_known_to_m43_within_the_pms_bounds() -> None:
     from tst.balance.known_misses import Reading
     from tst.balance.report import Row
 
-    for target in ("M13.T2.blitzscale", "M13b.T1", "M22.T2.variant", "V2.wins", "V3.margin"):
+    for target in ("M13b.T1", "M22.T2.variant", "V2.wins", "V3.margin"):
         assert known_miss(target).owner == "M43"  # type: ignore[union-attr]
+    # closed by M43 sub-task 3 (25.1's floor at the game's economy): 10/10 listed
 
     def reading(target: str, score: float) -> str:
         return verdict(Reading(target, False, score))
 
-    assert (
-        reading("M13.T2.blitzscale", -1.0) == "known"
-        and reading("M13.T2.blitzscale", 0.0) == "fail"
-    )
+    assert known_miss("M13.T2.blitzscale") is None
+    assert reading("M13.T2.blitzscale", -1.0) == "fail"
     assert verdict(Reading("M13.T2.steady", False, -3.0)) == "fail"  # steady is not covered
     assert reading("M13b.T1", -6.0) == "known" and reading("M13b.T1", -5.0) == "fail"
     assert reading("M22.T2.variant", 0.22) == "known" and reading("M22.T2.variant", 0.23) == "fail"

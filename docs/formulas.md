@@ -2041,7 +2041,7 @@ Reece's decisions (2026-10-31, ADR-0019 §10–§12): the IPO is an event chain;
 
 ### 25.1 Eligibility
 
-- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
+- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars, real-world scale: read × `economy_scale.money` as §48.1's thresholds are, about $6.8M in the game's economy; M43), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
 - **Board approval:** average director confidence ≥ 50 at the decision.
 
 ### 25.2 The IPO chain (an event chain; templates and LLM within §16)
@@ -2107,7 +2107,7 @@ The IPO chain's status and choices; the price range and book demand as words ("s
 1. All earlier targets pass as before (no new xfails).
 2. **IPOs happen.** blitzscale and steady reach an IPO on at least 4 of 10 seeds each by turn 180 (15 years), with median first-day return 0–30%.
 3. **Guidance matters.** A company that guides 10% above trend misses in at least 60% of quarters, and its median share price after 3 years is at least 15% below a company that guides at trend.
-4. **Prices are believable.** The median price-to-sales multiple at listing is 4–15× in 2012–2019 and 8–25× in 2020–2021, falling at least 30% between Jan 2022 and Dec 2022.
+4. **Prices are believable.** The median price-to-sales multiple at listing is 15–30× in 2012–2019 and 25–45× in 2020–2021, falling at least 25% between Jan 2022 and Dec 2022. (Re-banded by Reece, 2026-11-19, M43 sub-task 3: with 25.1's ARR floor read at the game's economy, companies list young, about $7M of game ARR growing about 100% a year; was 4–15×, 8–25× and 30%.)
 5. **The CEO runs things.** A CEO with score 14 and full authority keeps a stage-4 company within 15% of the scripted strategy's median ARR over 36 months, with the founder spending at most 40% of the Chair's energy.
 
 ### 25.10 Worked examples

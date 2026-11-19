@@ -56,7 +56,6 @@ A known miss is a target that misses on `main` with a recorded owner and a bound
 | V5.cells (≥ 75% of run × startup category × decade-after-2020 cells with a rival launch) | M43 (M43 sub-task 1: from the finished M28, earlier M23) | more than 40% of cells empty | 77% (steady_regions), 68% (research_heavy): about 11 startups a decade over 6 categories is about 1.8 launches per category-decade, e^-1.8 ≈ 17–20% empty by chance, and long-lived startups hold the 8 places (found_rate 0.05 with 12 places fell to 63%) |
 | V5.cats (no category misses a decade in more than 2 of 10 runs) | M43 (M43 sub-task 1: from the finished M28, earlier M23) | a category-decade empty in more than 7 of 10 runs | as V5.cells |
 | I1 (formulas §43: full_integrator margin − devices_regions at year 30, +3 to +10 points) | M43 (M43 sub-task 1: from the finished M28, earlier M23) | the gap below −2.0 points (the year-30 reading minus 2) | −0.0 points in M23b on the combined code (weekly 43381860624): subscriptions are 100% of both groups' 2039 revenue and cost of goods 0.2–0.3% (8–17% at year 20), so an own fab 23–24% cheaper a chip cannot move the margin; M28's supply-driven prices from 2026 change the fab's economics (product manager, 2026-11-12) |
-| M13.T2.blitzscale (§25.9 T2, blitzscale listed by turn 180, >= 4 of 10) | M43 | fewer than 1 of 10 | 1/10 on M43a (main 4/10): blitzscale's second product is developer tools, recalibrated by M43a (PM, 2026-11-18; M43a brief, decision 10) |
 | M13b.T1 (§27.5 T1, new product and region, >= 7 of 10) | M43 | fewer than 6 of 10 | 6/10 (main 7/10): AI models' D0 x0.19 |
 | M22.T2.variant (§39.4 T2, revenue lost with a variant 5-15%) | M43 | over 22% on any seed | 10.5-20.8% (main 10.5-10.8%): the chip markets follow cloud and servers |
 | V2.wins (§30.7 V2, research_heavy wins <= 4 of 10) | M43 | more than 5 of 10 | 5/10 (main <= 4): before 2026, M43a's recalibrations |
@@ -350,7 +349,7 @@ M13's own §25.9 targets (`tools/m13_targets.py`, nightly), 10 seeds:
 | T2 median first-day return | +6.6% | 0–30% | pass |
 | T3 guiding 10% above trend: quarters missed | 100% | ≥ 60% | pass |
 | T3 median price after 3 years, above / at trend | 0.51 | ≤ 0.85 | pass |
-| T4 reference listing P/S (growth 27%, margin +38%): 2012–2019 / 2020–2021 | 11.6× / 18.1× | 4–15 / 8–25 | pass |
+| T4 reference listing P/S (growth 107%, margin −47%; M43: the IPO floor at the game's economy): 2012–2019 / 2020–2021 | 23.3× / 33.7× (2022 fall 28%) | 15–30 / 25–45, fall ≥ 25% (re-banded by Reece, 2026-11-19; was 4–15 / 8–25, ≥ 30%) | pass |
 | T4 Jan → Dec 2022 | 10.4× → 5.0× (−52%) | ≥ 30% fall | pass |
 | T5 CEO (score 14, full authority) / steady script, median ARR over 36 months | 1.01 | 0.85–1.15 | pass |
 | T5 the Chair's energy spent | 0% | ≤ 40% | pass |

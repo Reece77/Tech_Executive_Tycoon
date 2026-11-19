@@ -74,15 +74,6 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "before 2032, so both scripts' capacity goes live together; +12 over seeds 1-30",
     ),
     KnownMiss(
-        target="M13.T2.blitzscale",  # formulas 25.9 T2: listed by turn 180 on >= 4 of 10 seeds
-        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10): v5's balance pass
-        # score: minus the seeds listed; known while at least 1 of 10 lists
-        worse_than=-1.0,
-        reason="1/10 on M43a (main 4/10): blitzscale's second product is developer tools, whose "
-        "base growth M43a cut x0.66 (2025 within 2x of published), so its 2020 market is about "
-        "63% of main's; M43 first checks whether the IPO thresholds need economy_scale",
-    ),
-    KnownMiss(
         target="M13b.T1",  # formulas 27.5 T1: a new product and region on >= 7 of 10 seeds
         owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
         # score: minus the seeds; known while at least 6 of 10
