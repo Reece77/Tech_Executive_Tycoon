@@ -4107,3 +4107,45 @@ Vehicles, launches and their outcomes, cost per kg, satellites, constellations a
 - **Constellations:** built in satellite plants (or bought x1.6), capitalized, launched on an own line (pads left after customer launches) or bought (Falcon 9's price and payload), insured at 7% (90% paid on a loss), cohorts depreciated over their life, replaced `replace_ahead_months` (9) ahead into the shell that will be shortest; a shell (135 satellites) opens its regions at 90%. The cash flow (target 3) is the line's revenue in every region less its subscribers' hosting, satellites, launches, premiums, ground stations ($500,000 a covered region a month), disposal, debris fees and terminals, plus terminal sales and insurance.
 - **Services** gate through M31's `Effects`: no appeal outside coverage and granted licences; congestion `(capacity / subscribers) ** 1.5` over capacity (Gbps x 20 subscribers), trimmed in phase 9; `Effects.segment_appeal` closes direct-to-device without D2D satellites or before July 2025; broadband churn x0.3 from 2026; EO sells from 10 satellites up.
 - **History** to 2025: launch providers hold their share of the world's launches, operators their subscribers x 0.085; no price before a first launch, a service or D2D's opening. Space companies do not decide before 2026; the three categories are `family: space` (no startups, pitches or angel starts).
+
+## 57. Defence and government contracts (M44; v5)
+
+Reece (2026-11-15): **defence and government contracts**, with governments buying the player's chips, satellites, AI, cloud and devices. **History holds to 2025** where M43a set it (`government.yaml`, research `docs/v5-research/defence-dossier.md`); markets at the game's scale (§54).
+
+### 57.1 Governments as customers
+
+- Each region's governments have **budgets** for defence and civil technology by year (data to 2025, then seeded with geopolitics, §39: tension raises defence budgets), split into programme areas: `cloud` (sovereign and classified cloud), `ai`, `space` (launch, satellites, Earth observation), `chips` (trusted supply), `devices` (rugged and secure devices), `cyber`.
+- Government demand arrives as **tenders**, not as market share: each tender has a programme area, a value, a term (1–10 years, often a base and options), a contract type (`fixed_price`, `cost_plus`, or an indefinite-delivery `idiq` vehicle with task orders) and requirements (clearances, domestic content, past performance, certifications).
+
+### 57.2 Bidding and awards
+
+- The player bids (a one-off when above the automation limit, §40.2): a price and a technical proposal (a product's quality and features), staffed by a capture team (existing skills: `sales`, `negotiation`, `strategy`, plus the products' domain).
+- **Awards** score price, technical merit, past performance (a record of delivered contracts) and requirements met; rivals bid by personality (stream `defence`). The score bands are shown; the rivals' bids are not.
+- **Protests:** a loser may protest (the player too), delaying the award by 3–6 months, with a chance of re-competition (the 2019–2021 JEDI history is the reference).
+- **Delivery:** cost-plus contracts pay costs plus a fee; fixed-price ones risk overruns (as §35's mines); performance affects past performance and option exercise.
+
+### 57.3 Clearances, rules and sourcing
+
+- **Security clearances** for staff (a person's status: none, pending, cleared; months to clear; some people never clear) and **facility clearances** for sites. Classified work needs both.
+- **Export rules** (§39) and **ITAR-style controls** on defence items: a product built for defence becomes controlled, limiting its sales abroad.
+- **Domestic sourcing:** bans on components from named countries (Section 889-style rules from their dates), domestic-content shares, and trusted-foundry requirements for chips: they read the product's bill of materials and the chain's countries (M23a).
+
+### 57.4 Reputation and politics
+
+- Defence work moves the persona (§32.4) and brand by category: consumer brands lose a little; staff with matching interests or low tolerance react (morale, and a chance of an open letter or resignations, the 2018 Project Maven history as reference); political influence (§32.5) rises with the government. Some regions' governments won't buy from a company that sells to their rivals' militaries.
+
+### 57.5 Rivals
+
+- Defence primes (Lockheed Martin, RTX, Northrop Grumman, General Dynamics, Boeing Defense, L3Harris, BAE Systems) and newer entrants (Palantir, Anduril, SpaceX for launch), and the hyperscalers for cloud (AWS, Microsoft, Google, Oracle under JWCC-style vehicles), with histories from the data.
+
+### 57.6 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company that never bids plays exactly as before).
+2. **Government is a real but slow customer:** a company with cleared staff and past performance wins at least 25% of the tenders it bids for in its areas (median); a company without past performance wins at most 10% of large tenders.
+3. **Clearances take time:** median staff clearance 6–15 months; at least 5% of candidates never clear.
+4. **It costs something:** a consumer-heavy company that takes defence work loses 1–3 brand points and sees at least one staff reaction on 5 of 10 seeds.
+5. **Turn time** within the guards.
+
+### 57.7 What the API may show
+
+Tenders, requirements, the player's bids and awards, score bands, protests, contracts and their performance, clearance statuses, rivals' published awards. Never rivals' bids, award draws, clearance draws, or seeded budgets and tenders before they are announced.

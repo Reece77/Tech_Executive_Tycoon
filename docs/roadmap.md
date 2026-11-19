@@ -75,10 +75,10 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | M40, space and satellites | lane I after M39 merges; merges after M43a and M42 (brief `docs/tasks/M40-space-and-satellites.md`, formulas §56) |
 | M41, medical devices | now, lane D; merges after `m35b-done` and M38 (brief `docs/tasks/M41-medical-devices.md`, formulas §50) |
 | M42, pharmaceuticals | lane H after M39 merges; merges after M43a (brief `docs/tasks/M42-pharmaceuticals.md`, formulas §55) |
-| M44, defence and government contracts | after M40 |
+| M44, defence and government contracts | lane K now; merges after `m40-done` (brief `docs/tasks/M44-defence-and-government.md`, formulas §57) |
 | M43a, market sizes and saturation | now, lane G; merges after M39 (brief `docs/tasks/M43a-market-sizes-and-saturation.md`, formulas §54): closes M37's runaway economy |
 | M45, performance at scale, part two | lane J after `m43a-done` (brief `docs/tasks/M45-performance-at-scale-part-two.md`): rival decisions and per-turn saving proportional; both 2039 saves back to 400 ms; a 2069 turn under 500 ms |
-| M43, v5 balance and polish, with the conglomerate view | last; closes v5 |
+| M43, v5 balance and the conglomerate view | lane L now (measurement and the view); tunes and merges after M42, M40 and M44; closes v5 (brief `docs/tasks/M43-v5-balance-and-conglomerate-view.md`) |
 
 ## Process
 
