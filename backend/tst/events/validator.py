@@ -16,6 +16,7 @@ from tst.sim.events.data import (
     EXPLORATION_STEPS,
     FOUNDER_STEPS,
     GEOPOLITICS_STEPS,
+    GOVERNMENT_STEPS,
     GROUP_STEPS,
     MEDICAL_STEPS,
     MINING_STEPS,
@@ -97,6 +98,8 @@ def allowed_effects(
             continue  # M39 (53.3): only a robotaxi incident template's own answers
         if effect == "space_step" and "space_step" not in template_types:
             continue  # M40 (56.1): only a launch failure template's own answers
+        if effect == "government_step" and "government_step" not in template_types:
+            continue  # M44 (57.4): only an open letter template's own answers
         if effect == "public_step" and "public_step" not in template_types:
             continue  # M13 (25): only a public template's own steps
         words = {TARGET_KIND.get(w, w) for w in EFFECT_TARGETS[effect]}
@@ -191,6 +194,7 @@ def validate_event(
                 "medical_step",
                 "robotics_step",
                 "space_step",
+                "government_step",
             ):  # engine steps
                 stat = item.get("stat")
                 steps = {
@@ -207,6 +211,7 @@ def validate_event(
                     "medical_step": MEDICAL_STEPS,
                     "robotics_step": ROBOTICS_STEPS,
                     "space_step": SPACE_STEPS,
+                    "government_step": GOVERNMENT_STEPS,
                 }[kind]
                 if stat not in steps:
                     dropped += 1

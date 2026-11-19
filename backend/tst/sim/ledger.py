@@ -71,6 +71,9 @@ DRUG_SALES: Final = "4060_revenue_drugs"  # marketed drugs' net sales (M42, 55.4
 MEDICAL_RECURRING: Final = "4050_revenue_consumables"  # instruments, sensors, service (M41, 50.1)
 RECALLS: Final = "6980_recalls"  # field actions and recall lawsuits (M41, 50.5)
 QUALITY_REGULATORY: Final = "6985_quality_regulatory"  # quality systems, surveillance, fees (M41)
+GOVERNMENT_REVENUE: Final = "4070_revenue_government"  # government contracts (M44, 57.2)
+CONTRACT_COSTS: Final = "5300_contract_costs"  # their delivery cost (M44, 57.2)
+BIDS_CLEARANCES: Final = "6990_bids_clearances"  # proposals, protests, clearances (M44, 57.2-57.4)
 ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
@@ -127,6 +130,9 @@ ENGINE_ACCOUNTS: Final = (
     MEDICAL_RECURRING,
     RECALLS,
     QUALITY_REGULATORY,
+    GOVERNMENT_REVENUE,
+    CONTRACT_COSTS,
+    BIDS_CLEARANCES,
 )
 
 

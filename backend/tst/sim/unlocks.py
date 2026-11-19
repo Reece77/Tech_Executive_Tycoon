@@ -78,6 +78,7 @@ SYSTEMS: tuple[System, ...] = (
     System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
     System(32, "pharma", "Pharma", "products"),  # tunable-exempt: stable id (M42; 31 is M39's)
     System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
+    System(34, "government", "Government", "markets"),  # tunable-exempt: stable id (M44)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -255,6 +256,26 @@ def _robotics(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     return None
 
 
+def _government(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M44 (57): a bid or contract of the group, or the government year
+    (government.unlock_year) for a stage-3 company with a product in a programme area."""
+    if d.government is None:
+        return None
+    if any(x.company_id in ids for x in state.gov_bids) or any(
+        c.company_id in ids for c in state.gov_contracts
+    ):
+        return "the company bids for government work"
+    from tst.sim.government.data import area_of
+
+    if (
+        turn_to_ym(state.turn)[0] >= b.government.unlock_year
+        and _stage(state) >= STAGE_GROWTH
+        and any(p.company_id in ids and area_of(p, d) is not None for p in state.products)
+    ):
+        return f"governments tender for what the company makes ({b.government.unlock_year})"
+    return None
+
+
 def _mobility(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
     """M39 (53.3): a robotaxi service, or a car line of the group once a region has approved
     driverless (L4) service."""
@@ -401,6 +422,7 @@ CHECKS: dict[str, Check] = {
     "pharma": _pharma,  # M42 (55)
     "mobility": _mobility,  # M39 (53.3)
     "space": _space,  # M40 (56)
+    "government": _government,  # M44 (57)
 }
 
 

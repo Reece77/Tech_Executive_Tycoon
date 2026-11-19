@@ -30,6 +30,7 @@ accounts:
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
   - { code: 4050_revenue_consumables, name: Consumables and service revenue, type: revenue } # M41 (50.1): medical devices' recurring revenue a month per installed unit (robotic instruments and service, sensors, service contracts)
   - { code: 4060_revenue_drugs, name: Drug sales, type: revenue } # M42 (55.4): marketed drugs' net sales by region, and generic makers' sales of off-patent molecules
+  - { code: 4070_revenue_government, name: Government contracts, type: revenue } # M44 (57.2): government contracts' revenue: fixed-price and IDIQ task orders as delivered, cost-plus as cost plus the fee
   - { code: 4150_platform_fees, name: Platform fees, type: revenue } # M31 (44.4): a platform owner's fees on other companies' app sales through its store (a group company's go to 4300)
   - { code: 4400_revenue_commodities, name: Commodity sales, type: revenue } # M19 (35.3): a mine's output sold at spot, into contracts and offtakes
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it
@@ -49,6 +50,7 @@ accounts:
   - { code: 5110_local_partner_share, name: Local partner's share, type: expense } # M22 (39.3): a local partner's share of the revenue from a partner market (cloud in China); cost of revenue
   - { code: 5150_platform_fees, name: Platform fees and licences, type: expense } # M31 (44.4, 44.1): store fees on app sales and per-unit platform licences on devices; cost of revenue (a group store's go to 5900)
   - { code: 5950_energy, name: Energy (plants and contracts), type: expense } # M32 (46.2, ADR-0022 3): the month's power settlement, cost of revenue: own plants' fuel, operating cost, carbon and grid charges and PPAs' payments, less the grid energy they replaced (facilities post that at the grid price); negative when owning saves
+  - { code: 5300_contract_costs, name: Government contract costs, type: expense } # M44 (57.2): delivering government contracts, overruns included; cost of revenue
   - { code: 5200_tool_cost, name: Cost of tools sold, type: expense } # M33 (47.4): the made cost of own tools sold; cost of revenue
   - { code: 5900_intercompany_purchases, name: Intercompany purchases, type: expense } # M16 (31.6): what a group company pays another at the transfer price; consolidation removes it
   - { code: 6000_salaries, name: Salaries, type: expense }
@@ -66,6 +68,7 @@ accounts:
   - { code: 6970_fines, name: Fines and penalties, type: expense } # M34 (48.3, 48.4): regulators' fines and periodic penalties (an annulled fine returns here)
   - { code: 6980_recalls, name: Recalls, type: expense } # M41 (50.5): recall field actions and class I recall lawsuits
   - { code: 6985_quality_regulatory, name: Quality and regulatory, type: expense } # M41 (50.2, 50.5): plants' quality systems, post-market surveillance and regulators' review fees
+  - { code: 6990_bids_clearances, name: "Bids, protests and clearances", type: expense } # M44 (57.2-57.4): proposals, the player's protests, staff and facility clearances, an ethics board
   - { code: 6960_royalties, name: Royalties and state shares, type: expense } # M19 (35.3, 35.4): host governments' royalties on mines' revenue, and a state partner's share of a mine's cash margin
   - { code: 7000_interest, name: Interest expense, type: expense }
   - { code: 8000_income_tax, name: Income tax, type: expense }

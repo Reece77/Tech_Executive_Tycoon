@@ -58,6 +58,7 @@ from tst.sim.geopolitics.config import (
     PlacesFile,
     TariffsFile,
 )
+from tst.sim.government.config import GovernmentBalance, GovernmentFile
 from tst.sim.group.config import GroupBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
@@ -1426,6 +1427,7 @@ class Balance(_Frozen):
     robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
+    government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:
@@ -2175,6 +2177,7 @@ class GameData(_Frozen):
     robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
     space: SpaceFile | None = None  # M40 (56); None = no space markets' history
+    government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:
         for bank in self.banks:

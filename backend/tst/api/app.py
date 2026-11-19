@@ -29,6 +29,7 @@ from tst.api.routers import (
     game,
     geo,
     geopolitics,
+    government,
     group,
     hardware,
     history,
@@ -149,6 +150,7 @@ def create_app() -> FastAPI:
     app.include_router(campaign.router)  # M37
     app.include_router(robotics.router)  # M39
     app.include_router(space.router)  # M40
+    app.include_router(government.router)  # M44
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41
     app.include_router(pharma.router)  # M42

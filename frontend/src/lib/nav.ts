@@ -235,6 +235,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'finance',
   },
   {
+    path: 'products/government',
+    label: 'Government',
+    group: 'markets',
+    unlock: 'government',
+    side: true,
+    parent: 'products',
+  }, // M44
+  {
     path: 'competitors/platforms',
     label: 'Platforms',
     group: 'markets',

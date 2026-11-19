@@ -230,6 +230,11 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "staff": _CAPACITY,
         "staff_needed": _CAPACITY,
     },
+    # v5 (M44): the Government screen (57.7)
+    "government.MyBidOut": {
+        "price_cents": _INPUT,
+        "score_floor": "bid_score",
+    },
     # v5 (M39): the Robotics and Mobility screens (53.5)
     # v5 (M40): the Space screen (56.5)
     "space.FlightCostOut": {

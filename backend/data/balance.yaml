@@ -3288,3 +3288,84 @@ space:
     rebuild_cents: 40000000 # $400,000 a lost satellite rebuilt in a rush (A: about twice a 300 kg satellite's made cost in 2025)
     claim_chance: 0.4 # chance the insurer pays the uninsured part (stream space (3, constellation_id, lost))
     claim_cents: 20000000 # $200,000 of legal costs
+government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
+  start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)
+  tenders:
+    per_year: { us: 24, uk: 4, france: 3, germany: 3, rest_of_eu: 5, israel: 2, japan: 3, south_korea: 2, australia: 2, india: 3, brazil: 1, china: 6 } # seeded tenders a government announces a year (A: fewer, larger competitions standing for many)
+    tendered_share: 0.25 # of an area's budget openly competed (A: much is sole-source or held by incumbents' running contracts)
+    bid_months: 3 # an announced tender takes bids this long (A: 30-90 days for proposals, plus questions)
+    evaluation_months: 2 # then the award (A)
+    term_years: [2, 8] # a seeded tender's term, uniform (A: IDIQ vehicles 5-10 years, products 2-5)
+    option_share: 0.4 # of a term that is option years after the base (A: JWCC 3 + 2.5, JEDI 2 + 8)
+    large_cents: 15000000000 # $150M at the game's scale (about $1.8B real): a large tender (57.6 target 2)
+    contract_mix: { fixed_price: 0.45, cost_plus: 0.2, idiq: 0.35 } # A: DoD obligations are mostly fixed price; IDIQ vehicles carry much IT
+    clearance_mix: # who needs cleared staff (57.3), A
+      defence: { none: 0.4, secret: 0.4, top_secret: 0.2 }
+      civil: { none: 0.9, secret: 0.1, top_secret: 0.0 }
+    value_sigma: 0.8 # lognormal spread of a seeded tender's value around the mean
+    idiq_awards: [1, 4] # awardees of a seeded IDIQ vehicle, uniform (JWCC 4, NSSL 2-3)
+    history_months: 36 # closed tenders kept on the screen this long
+  budgets: # after 2025 (57.1): growth = trend + tension x (T - 50) / 50 + noise x N(0, 1), drawn a government a year
+    trend: 0.03 # A: nominal defence growth of 2-4% a year in calm years
+    tension: 0.04 # A: 2022-2024's rearmament (Germany +57%, Poland x2.5) at high tension
+    noise: 0.02
+  bids:
+    weights: { price: 0.35, technical: 0.4, past_performance: 0.25 } # best value (57.2, A)
+    large_weights: { price: 0.25, technical: 0.3, past_performance: 0.45 } # large tenders weigh a record more (57.6 target 2; M44 tuned from 0.3 / 0.35 / 0.35)
+    capture_skills: [sales, negotiation, strategy] # the capture team's skills (57.2)
+    capture_weight: 0.3 # of technical merit from the capture team; the rest the product's quality
+    capture_max: 6 # people on a capture team
+    cost_bp: 50 # a proposal costs 0.5% of the bid's first-year price (A: bid and proposal costs of 0.5-2%)
+    min_cost_cents: 5000000 # $50,000 at least
+    price_floor: 0.5 # a bid's price over the tender's value, at least
+    price_cap: 1.2 # and at most (over the ceiling is not compliant beyond a margin)
+    band: 10 # score bands are 10 points wide (the API shows bands, never scores)
+    rival_bid_chance: 0.35 # an eligible bidder bids on a tender (A: about 3-4 rival bids a tender, as DoD competitions draw a few offers; M44 tuned from 0.6 for 57.6 target 2)
+    large_bid_chance: 0.8 # and on a large tender (A: large programmes draw the established bidders; M44, 57.6 target 2)
+    rival_price: [0.8, 1.05] # a rival's price over the value, uniform (A)
+    rival_merit_sd: 6 # spread of a rival's technical merit around its strength
+    history_bonus: 15 # a named tender's historical winner's merit lift, so the record holds without a player bid
+    pp_full: 3 # delivered contracts for full past-performance credit
+    newcomer_pp: 20 # a company with no record ("neutral" past performance scores low here, A)
+  protests:
+    rival_chance: 0.15 # a losing rival protests the player's award (A: about 2,000 GAO cases a year)
+    large_mult: 3 # large awards are protested more (JEDI, NSSL)
+    delay_months: [3, 6] # a protest holds the award this long (57.2; GAO decides in 100 days)
+    cost_cents: 50000000 # $500,000 of legal fees for the player's protest (A)
+    window_months: 1 # the player may protest a loss within this many months of the award
+  delivery:
+    cost_share: { cloud: 0.7, ai: 0.65, space: 0.82, chips: 0.75, devices: 0.8, cyber: 0.7 } # delivery cost over revenue (A: primes' operating margins about 10%; cloud and software higher)
+    cost_plus_fee: 0.08 # cost-plus fee over allowable cost (A: FAR caps fixed fees at 10-15%, typical 7-8%)
+    idiq_orders: [0.4, 0.9] # a month's task orders over the vehicle's monthly ceiling share (A: JWCC's ceiling is not a minimum)
+    overrun_sd: { fixed_price: 0.08, cost_plus: 0.06, idiq: 0.05 } # a month's cost overrun spread (as 35's mines, A)
+    overrun_mean: 0.02 # a month's mean overrun (A: programmes run over more than under)
+    perf_per_overrun: 2.0 # performance points lost per 1% of overrun in a month
+    option_threshold: 70 # performance at or above this has the options exercised
+    lapse_months: 3 # months unable to deliver (product gone, clearances lost) before default
+  clearances:
+    median_of_p90: 0.75 # a case's median days over the fastest-90% days (A: a right-skewed distribution)
+    sponsor_months: 3 # sponsorship, the forms and onboarding before the investigation (A)
+    sigma: 0.45 # lognormal spread of months to a decision
+    integrity_mult: 0.5 # never-clear share x (1 + this x (10 - integrity) / 10): lower integrity clears less
+    facility_cost_cents: 2500000 # $25,000 to prepare a facility clearance (A: security officer, safes, accreditation)
+    required: { none: 0, secret: 3, top_secret: 5 } # cleared staff a classified bid needs at its level
+  reputation:
+    consumer_categories: [consumer_apps, devices, wearables_diagnostics] # whose brand defence work costs (57.4)
+    brand_first: 2.0 # brand points the first defence award costs a consumer line (57.6 target 4: 1-3)
+    brand_next: 0.5 # each later one
+    brand_year_cap: 3.0 # at most this a trailing 12 months
+    persona: { ruthless: 3, beloved: -2 } # the founder's persona a defence award moves (32.4)
+    influence: 4 # influence points a defence award adds in its government's region (32.5)
+    objector_interests: [open_source, climate, consumer, design] # staff interests that object to defence work (A)
+    low_tolerance: 6 # adaptability at or below this objects too (A)
+    morale_pct: -8 # objectors' morale target for morale_months (an event modifier, 23.2)
+    morale_months: 6
+    letter_base: 0.25 # chance of an open letter (the Maven reference) after a defence award
+    letter_slope: 1.2 # x the share of staff who object
+    letter_max: 0.85
+    resign_share: [0.05, 0.15] # of objectors who resign when the company carries on (Maven: about a dozen of about 4,000)
+    withdraw_brand: 1.0 # brand points back on consumer lines when the company withdraws
+    board_cents: 100000000 # $1M a year for an ethics board (A)
+  itar_keep: { us_aligned: 1.0, non_aligned: 0.7, china: 0.0 } # share of a country's demand a controlled item keeps, by bloc (licences; 126.1 destinations 0)
+  energy: { bid: 4, withdraw: 1, protest: 3, clearance: 1, facility: 3 } # founder energy
+  unlock_year: 2012 # the Government screen opens (M29) from 2012 for a stage-3 company, or with a bid

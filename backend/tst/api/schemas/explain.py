@@ -49,6 +49,7 @@ class ExplainOut(BaseModel):
         "order",  # M33: a tool order in ASML's queue
         "zone",  # M39: a robotaxi zone
         "constellation",  # M40: a satellite constellation
+        "bid",  # M44: a government bid
     ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")

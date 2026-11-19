@@ -243,6 +243,15 @@ export const GUIDES: Record<string, Guide> = {
       'A constellation serves a Satellite broadband line: a region opens once a shell is complete over it and you hold a licence there. It is capital-heavy: expect most of a decade to pay back.',
     ],
   },
+  government: {
+    title: 'Government',
+    path: 'products/government',
+    what: 'Governments as customers: tenders by government and area with their requirements, your bids and their score bands, awards and protests, contracts, and staff and facility clearances.',
+    start: [
+      'Pick a tender in an area you sell in, check its requirements, then bid a price with a capture team of sellers. Classified tenders need cleared staff and a cleared facility: clearances take months.',
+      'Past performance counts, most on large tenders: win small contracts first. Defence work costs consumer brands a little and some staff object.',
+    ],
+  },
   regulation: {
     title: 'Regulation',
     path: 'competitors/regulation',

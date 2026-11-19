@@ -121,6 +121,8 @@ METRICS: dict[str, MetricDef] = {
             "constellation",
             "A constellation's cumulative cash flow",
         ),
+        # v5 (M44): a bid's score band
+        _m("bid_score", "Score band", "points", "bid", "A government bid's weighted score"),
         # v4 (M34): regulators' fines and the designation thresholds
         _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
         _m(

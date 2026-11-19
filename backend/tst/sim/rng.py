@@ -139,6 +139,11 @@ STREAM_IDS: Final = MappingProxyType(
         # flight) a flight's failure, (1, 0, constellation, n) a bought launch's; (2, region_index,
         # company) a licence decision; (3, ...) a grounding's length and an event's answer
         "space": 68,
+        # M44 (formulas.md 57): (0, government_index, year) seeded budgets and tenders; (1,
+        # tender_id, round) rivals' bids, award tie-breaks and protests; (2, person_id) a staff
+        # clearance, (2, 0, facility_id) a facility's; (3, contract_id, month) overruns and task
+        # orders; (4, company_id, turn) staff reactions
+        "defence": 69,
         "misc": 99,
     }
 )

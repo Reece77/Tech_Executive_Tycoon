@@ -73,6 +73,17 @@ from tst.sim.geopolitics.models import (
     TensionMonth,
     Variant,
 )
+from tst.sim.government.models import (
+    Bid,
+    Contract,
+    ControlledProduct,
+    DefenceRecord,
+    FacilityClearance,
+    GovernmentWorld,
+    Protest,
+    Tender,
+)
+from tst.sim.government.models import Clearance as GovClearance
 from tst.sim.group.models import (
     EQUITY_ENDS,
     FULL_STAKE_BP,
@@ -605,6 +616,18 @@ class GameState:
     # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
     # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
     space: SpaceState = field(default_factory=SpaceState)
+    # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
+    # government contracts, staff and facility clearances, controlled (ITAR-style) products,
+    # each company's defence record, and the game-wide budgets' seeded growth and id counters.
+    tenders: tuple[Tender, ...] = ()
+    gov_bids: tuple[Bid, ...] = ()
+    protests: tuple[Protest, ...] = ()
+    gov_contracts: tuple[Contract, ...] = ()
+    clearances: tuple[GovClearance, ...] = ()
+    facility_clearances: tuple[FacilityClearance, ...] = ()
+    controlled_products: tuple[ControlledProduct, ...] = ()
+    defence_records: tuple[DefenceRecord, ...] = ()
+    government_world: GovernmentWorld = field(default_factory=GovernmentWorld)
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).
@@ -614,6 +637,12 @@ class GameState:
 
     def vehicle_spec(self, product_id: int) -> VehicleSpec | None:  # M38 (49.1)
         return next((v for v in self.vehicle_specs if v.product_id == product_id), None)
+
+    def tender(self, tender_id: int) -> Tender | None:  # M44 (57.1)
+        return next((t for t in self.tenders if t.id == tender_id), None)
+
+    def defence_record(self, company_id: int) -> DefenceRecord | None:  # M44 (57.4)
+        return next((r for r in self.defence_records if r.company_id == company_id), None)
 
     def plant_automation(self, facility_id: int) -> PlantAutomation | None:  # M39 (53.1)
         return next((a for a in self.plant_automations if a.facility_id == facility_id), None)

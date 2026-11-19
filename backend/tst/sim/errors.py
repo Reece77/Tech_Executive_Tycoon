@@ -420,6 +420,13 @@ class SpaceRuleError(SimError):
     code = "space_rule"
 
 
+class GovernmentRuleError(SimError):
+    """A bid, protest or clearance the rules do not allow (M44, formulas.md 57). The message
+    never names a rival's bid, a draw or a pending clearance's month."""
+
+    code = "government_rule"
+
+
 class EquipmentRuleError(SimError):
     """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
     formulas.md 47). The message never names an allocation weight or a programme's draws."""

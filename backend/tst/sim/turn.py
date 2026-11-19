@@ -41,6 +41,7 @@ from tst.sim.founder.investing import investing_month
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics import phase as geopolitics
+from tst.sim.government import phase as government_phase
 from tst.sim.group.holding import holding_month
 from tst.sim.group.ownership import disposals
 from tst.sim.group.stakes import stakes_month
@@ -366,6 +367,9 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.flows
     )
     ctx = replace(ctx, state=state).post(*space_entries).log(*space_logs)
+    # M44 (57): tenders, awards, protests, government contracts' delivery, clearances
+    state, gov_entries, gov_logs = government_phase.month(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*gov_entries).log(*gov_logs)
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     ctx = ctx.post(*recurring_month(ctx.state, ctx.balance, ctx.data))  # M41 (50.1)
