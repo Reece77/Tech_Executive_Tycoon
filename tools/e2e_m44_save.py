@@ -89,7 +89,7 @@ def _live_product(game: Game, name: str, category: str, price: int, quality: flo
 
 
 def _device(game: Game, pid: int) -> None:
-    """Assembled by Foxconn in Shenzhen, with this month's production on record."""
+    """Assembled by Foxconn in Shenzhen, with last month's production on record."""
     s = game.state
     cid, ids = s.next_ids.take("production_contract")
     contract = ProductionContract(
@@ -107,7 +107,7 @@ def _device(game: Game, pid: int) -> None:
         delivered=10_000.0,
     )
     month = ProductionMonth(
-        turn=s.turn,
+        turn=s.turn - 1,  # the month just played (load_state reads last month's rows)
         product_id=pid,
         company_id=s.player.id,
         capacity=20_000.0,
