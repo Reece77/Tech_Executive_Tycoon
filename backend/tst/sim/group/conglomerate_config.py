@@ -35,7 +35,7 @@ class ConglomerateBalance(_Frozen):
     risk_years: int = Field(ge=2)  # years of growth whose spread reads as risk
     risk_words: tuple[RiskWord, ...]
     risk_top_word: str  # a spread at or above the last `below`
-    letter_from_year: int = Field(ge=2010)  # the first year a letter covers
+    letter_from_year: int = Field(ge=2010)  # tunable-exempt: the game's first year
 
     @model_validator(mode="after")
     def _check(self) -> ConglomerateBalance:

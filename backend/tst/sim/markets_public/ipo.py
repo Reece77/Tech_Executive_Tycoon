@@ -62,7 +62,7 @@ PRICING_STRONG = "ipo_pricing_strong"
 def min_arr_cents(balance: Balance) -> int:
     """25.1's ARR floor in the game's economy: `ipo.min_arr_cents` is a real-world amount, read
     x `economy_scale.money` as M34's thresholds are (48.1; M43 sub-task 3)."""
-    return round(balance.ipo.min_arr_cents * balance.economy_scale.money)
+    return times(balance.ipo.min_arr_cents, balance.economy_scale.money)
 
 
 def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> str | None:
