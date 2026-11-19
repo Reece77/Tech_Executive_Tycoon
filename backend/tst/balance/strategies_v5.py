@@ -15,7 +15,8 @@ scripts, not the game, so they live here rather than in balance.yaml.
 - **life_sciences** (50): devices_regions and, from 2024 once cash covers it, a wearable
   (arrhythmia detection) and then a radiology triage SaMD, each designed, filed with the FDA and
   the EU at once, given clinical education and post-market surveillance, and asked for coverage
-  as soon as it is cleared; pharma with AI discovery joins it when M42 merges.
+  as soon as it is cleared; from 2026 pharma with AI discovery (pharma_step: M42's sensible
+  company, a programme every six months while fewer than six are in development).
 - **cloud_first** (22, 46): hosting as the main business: from the first month cash covers it,
   the smallest general data centre in the home region; its capacity sold as cloud hosting
   (0.9x the reference price, marketing 5% of the product's revenue, at least $50,000 a month);
@@ -25,7 +26,12 @@ scripts, not the game, so they live here rather than in balance.yaml.
   ratio measures power directly (M35b's follow-up).
 - **dynasty** (52): any of the above played to December 2069 with a family (M37's dynasty runs).
 
-space_and_defence (56, 57) is added when M40 and M44 merge.
+- **space_and_defence** (56, 57): devices_regions (devices and its own SoC), then from 2026 a
+  satellite broadband line, its own satellite plant and a four-shell constellation (M40's: 300 kg
+  satellites, a 5-year life, launches bought, insured), licensed in every region but East Asia;
+  and government bids in devices, chips and space on every announced tender open to it, at 0.9x
+  the tender's value with a capture team, six engineers and the plant asked for Top Secret
+  (M44's bidder).
 """
 
 from __future__ import annotations
@@ -65,13 +71,17 @@ from tst.sim.actions.hardware import SignManufacturingContract
 from tst.sim.actions.research import StartProject
 from tst.sim.calendar import ym_to_turn
 from tst.sim.facilities import compute, lifecycle
+from tst.sim.government.actions import PlaceBid, RequestClearance, SponsorFacilityClearance
 from tst.sim.medical import coverage
 from tst.sim.medical import data as md
 from tst.sim.medical.actions import DesignDevice, RequestCoverage, SetMedicalSupport, SubmitDevice
+from tst.sim.pharma import pipeline
+from tst.sim.pharma.actions import FileDrug, StartProgramme, StartTrial, StopProgramme
 from tst.sim.power import plants, siting
 from tst.sim.power.actions import BuildPlant
 from tst.sim.robotics import robotaxi as rt
 from tst.sim.robotics.actions import AddRobotaxis, BuildDepot, OpenZone, SetHumanoidSpec
+from tst.sim.space.actions import ApplyLicence, PlanConstellation
 from tst.sim.vehicles.actions import BuildCellPlant, SetVehicleSpec
 
 # --- A unit-sale line on a contract (cars, robots, medical devices) ----------------------------
@@ -254,6 +264,10 @@ AUTONOMY_ROLE: Final = "data_scientist"  # ml_research weighs most (tech_frontie
 AUTONOMY_STAFF: Final = 30
 AUTONOMY_FROM: Final = ym_to_turn(2026, 1)
 AI_MODEL: Final = ("Pilot", "ai_models", ("mid_market", "enterprise"))
+AI_RESEARCH_UNIT: Final = "AI research"  # L4 needs an AI model of quality 80 (vehicles.levels)
+AI_RESEARCH_STAFF: Final = 20
+AI_STAGE: Final = 3  # the AI model's team starts at this stage
+AI_CASH_CENTS: Final = 5_000_000_000  # $50M (x2, ready_for), as the device line
 AI_TEAM: Final = "AI team"
 AI_STAFF: Final = 12
 MOBILITY: Final = ("Volta Ride", "mobility", ())
@@ -333,13 +347,19 @@ def _robotaxis(game: Game) -> None:
 
 def robotics_first(game: Game) -> None:
     """devices_regions, then industrial robots from 2026, humanoids once their market opens, and
-    robotaxis once its own autonomy research and AI model reach L4."""
+    robotaxis once its own autonomy research and AI model reach L4. The AI model starts at stage 3
+    once cash covers it: a new model takes years to reach launch quality."""
     devices_regions(game)
+    if game.state.player.stage >= AI_STAGE and (
+        _product(game, AI_MODEL[1]) is not None or ready_for(game, AI_CASH_CENTS)
+    ):
+        _ai_model(game)
     if line_step(game, ROBOT) is None:
         return
     hid = line_step(game, replace(HUMANOID, segments=_segments(game, HUMANOID.category)))
     if game.state.turn >= AUTONOMY_FROM:
         _research(game, AUTONOMY_UNIT, AUTONOMY_ROLE, AUTONOMY_STAFF, "autonomy")
+        _research(game, AI_RESEARCH_UNIT, "data_scientist", AI_RESEARCH_STAFF, "ai")
         ai = _ai_model(game)
         if _live(game, hid) and _live(game, ai) and "humanoid_spec" not in game.notes:
             refill_energy(game)
@@ -422,6 +442,65 @@ def life_sciences(game: Game) -> None:
     staff_unit(game, SAMD_TEAM, "software_engineer", SAMD_STAFF)
     _file(game, sid, use)
     _answer_medical(game)
+    pharma_step(game)
+
+
+PHARMA_FROM: Final = ym_to_turn(2026, 1)  # pharma.start (checked in tests)
+PHARMA_CASH_CENTS: Final = 20_000_000_000  # $200M (x2, ready_for) before each new programme
+PHARMA_ACTIVE: Final = 6  # programmes in development at once
+PHARMA_GAP: Final = 6  # months between new programmes
+INDICATIONS: Final = ("obesity", "type2_diabetes", "lung_cancer", "psoriasis_ibd", "lipids")
+DRUG_REGULATORS: Final = ("fda_drugs", "ema")
+IN_DEVELOPMENT: Final = ("active", "ready", "failed")
+DISCOVERY_UNIT: Final = "Drug discovery"
+DISCOVERY_ROLE: Final = "research_scientist"  # pharma.discovery.roles
+DISCOVERY_STAFF: Final = 12
+
+
+def pharma_step(game: Game) -> None:
+    """Pharma with AI discovery from 2026 (55): a drug discovery research unit and an AI model
+    (AI discovery opens once either is strong enough), a new small-molecule programme every six
+    months while fewer than six are in development and cash covers it; each next trial at the
+    standard design as soon as the last reads out; filed with the FDA and the EMA after Phase
+    III; a failed readout or a second complete response letter stops it (M42's sensible
+    company)."""
+    if game.state.turn < PHARMA_FROM:
+        return
+    f = game.founder_id
+    _research(game, DISCOVERY_UNIT, DISCOVERY_ROLE, DISCOVERY_STAFF, "drug_discovery")
+    _ai_model(game)
+    b, g = game.loaded.balance, game.loaded.game_data
+    ai = pipeline.ai_ready(game.state, PLAYER, b, g)  # the screen shows whether it is open
+    mine = [p for p in game.state.pharma_programmes if p.company_id == PLAYER]
+    developing = [p for p in mine if p.status in IN_DEVELOPMENT]
+    started = game.notes.get("pharma_last", -PHARMA_GAP)
+    if (
+        len(developing) < PHARMA_ACTIVE
+        and game.state.turn - started >= PHARMA_GAP
+        and ready_for(game, PHARMA_CASH_CENTS)
+    ):
+        indication = INDICATIONS[len(mine) % len(INDICATIONS)]
+        refill_energy(game)
+        if game.act(
+            StartProgramme(f, f"Volta-{len(mine) + 1}", indication, "small_molecule", ai)
+        ):
+            game.notes["pharma_last"] = game.state.turn
+            _mark(game, "pharma")
+    for p in developing:
+        reviews = [r for r in game.state.pharma_reviews if r.programme_id == p.id]
+        if any(r.status == "review" for r in reviews):
+            continue
+        refill_energy(game)
+        crls = sum(1 for r in reviews if r.status == "crl")
+        if p.status == "failed" or crls > 1:
+            game.act(StopProgramme(f, p.id))
+        elif p.status == "ready" and pipeline.next_trial(p) is not None:
+            game.act(StartTrial(f, p.id))
+        elif p.status == "ready":
+            for regulator in DRUG_REGULATORS:
+                done = [r for r in reviews if r.regulator == regulator]
+                if not done or (all(r.status == "crl" for r in done) and len(done) < 2):
+                    game.act(FileDrug(f, p.id, regulator))
 
 
 def _answer_medical(game: Game) -> None:
@@ -431,6 +510,133 @@ def _answer_medical(game: Game) -> None:
     for event in game.state.open_events(PLAYER):
         if event.status == "open" and event.template_id == quality.CLASS_I_RECALL:
             game.act(ChooseEvent(game.founder_id, event.id, "A"))
+
+
+# --- space_and_defence -------------------------------------------------------------------------
+
+SPACE_FROM: Final = ym_to_turn(2026, 1)  # space.start (checked in tests)
+SPACE_CASH_CENTS: Final = 100_000_000_000  # $1B (x2, ready_for) before the constellation
+BROADBAND: Final = ("Orbit Broadband", "satellite_broadband")
+BROADBAND_TEAM: Final = "Satellite team"
+SAT_PLANT: Final = 25  # satellites a month (M40's constellation)
+SAT_ROLE: Final = "manufacturing_engineer"
+SHELLS: Final = 4  # M40's constellation: 300 kg satellites, a 5-year life, 25 built and 2
+SAT_KG: Final = 300.0  # launches bought a month, insured
+SAT_LIFE: Final = 60
+SAT_BUILD: Final = 25
+SAT_LAUNCHES: Final = 2
+NO_LICENCE: Final = ("east_asia",)  # M40's script licenses every other region
+CAPTURE_TEAM: Final = "Capture"
+CAPTURE: Final = 3  # sellers on every capture team (M44's bidder)
+CLEARED_TEAM: Final = "Cleared engineers"
+CLEARED: Final = 6  # staff asked for Top Secret (M44's bidder)
+BID_PRICE: Final = 0.9  # x the tender's value (M44's bidder)
+BID_AREAS: Final = ("devices", "chips", "space")
+
+
+def _space(game: Game) -> int | None:
+    """The broadband line, its satellite plant, constellation and licences from 2026."""
+    b, g = game.loaded.balance, game.loaded.game_data
+    pid = _product(game, BROADBAND[1])
+    if pid is None:
+        if game.state.turn < SPACE_FROM or not ready_for(game, SPACE_CASH_CENTS):
+            return None
+        uid = _unit(game, BROADBAND_TEAM)
+        pid = game.state.next_ids.product
+        name, category = BROADBAND
+        segments = tuple(s for s in _segments(game, category) if s != b.space.d2d_segment)
+        refill_energy(game)
+        if uid is None or not game.act(CreateProduct(game.founder_id, name, category, segments)):
+            return None
+        cat = g.category(category)
+        for seg in segments:
+            game.act(SetPrice(game.founder_id, pid, seg, cat.market(seg).reference_price_cents))
+        game.act(AssignUnit(game.founder_id, pid, uid))
+        _mark(game, "broadband")
+    staff_unit(game, BROADBAND_TEAM, "hardware_engineer", 12)
+    kind = b.space.plant_kind
+    home = compute.home_region_of(game.state, b, g)
+    if not _facilities(game, kind):
+        refill_energy(game)
+        if game.act(BuildFacility(game.founder_id, kind, home, SAT_PLANT)):
+            _mark(game, "satellite_plant")
+    _staff_plants(game, kind, SAT_ROLE, "Satellite plant crew")
+    if not any(c.company_id == PLAYER for c in game.state.space.constellations):
+        refill_energy(game)
+        plan = PlanConstellation(
+            game.founder_id,
+            "Orbit",
+            "broadband",
+            pid,
+            SHELLS,
+            SAT_KG,
+            SAT_LIFE,
+            SAT_BUILD,
+            SAT_LAUNCHES,
+        )
+        if game.act(plan):
+            _mark(game, "constellation")
+    held = {x.region for x in game.state.space.licences if x.company_id == PLAYER}
+    for region in g.region_keys:
+        if region not in held and region not in NO_LICENCE:
+            refill_energy(game)
+            game.act(ApplyLicence(game.founder_id, region))
+    return pid
+
+
+def _government(game: Game) -> None:
+    """Bids on every announced tender open to it in its areas, at 0.9x the tender's value with
+    a capture team, and Top Secret asked for six engineers and the satellite plant (M44)."""
+    from tst.sim.government.data import announced, area_of, file
+    from tst.sim.government.sourcing import requirements
+
+    if game.state.turn < SPACE_FROM:
+        return
+    b, g = game.loaded.balance, game.loaded.game_data
+    staff_unit(game, CAPTURE_TEAM, "account_executive", CAPTURE)
+    cleared_uid = staff_unit(game, CLEARED_TEAM, "hardware_engineer", CLEARED)
+    team = tuple(
+        e.person_id for e in game.state.staff(PLAYER) if e.unit_id == _unit(game, CAPTURE_TEAM)
+    )
+    if "clearances" not in game.notes and cleared_uid is not None:
+        people = tuple(e.person_id for e in game.state.staff(PLAYER) if e.unit_id == cleared_uid)
+        if len(people) >= CLEARED:
+            refill_energy(game)
+            if game.act(RequestClearance(game.founder_id, people, "top_secret")):
+                game.notes["clearances"] = game.state.turn
+    plant = next(iter(_facilities(game, game.loaded.balance.space.plant_kind)), None)
+    if plant is not None and "facility_clearance" not in game.notes:
+        refill_energy(game)
+        if game.act(SponsorFacilityClearance(game.founder_id, plant.id)):
+            game.notes["facility_clearance"] = game.state.turn
+    products = {
+        area_of(p, g): p.id
+        for p in game.state.company_products(PLAYER)
+        if p.status == "live" and area_of(p, g) in BID_AREAS
+    }
+    f = file(g)
+    bid_on = {x.tender_id for x in game.state.gov_bids if x.company_id == PLAYER}
+    turn = game.state.turn
+    for t in game.state.tenders:
+        pid = products.get(t.area)
+        if pid is None or t.id in bid_on or t.status != "open" or turn >= t.close_turn:
+            continue
+        if not announced(t, turn) or "us_aligned" not in f.government(t.government).open_to:
+            continue
+        product = game.state.product(pid)
+        if requirements(game.state, game.state.player, product, t, b, g):
+            continue  # the tender's page lists what it needs: cleared staff, a cleared site
+        refill_energy(game)
+        if game.act(PlaceBid(game.founder_id, t.id, pid, round(t.value_cents * BID_PRICE), team)):
+            _mark(game, "bid")
+
+
+def space_and_defence(game: Game) -> None:
+    """devices_regions (its devices and own SoC), then from 2026 a broadband constellation from
+    its own satellite plant, and government bids in devices, chips and space."""
+    devices_regions(game)
+    _space(game)
+    _government(game)
 
 
 # --- cloud_first --------------------------------------------------------------------------------
@@ -548,5 +754,6 @@ V5: Final[dict[str, Strategy]] = {
     "life_sciences": life_sciences,
     "robotics_first": robotics_first,
     "cloud_first": cloud_first,
+    "space_and_defence": space_and_defence,
 }
 V5_ARMS: Final[dict[str, Strategy]] = {"cloud_first_grid": cloud_first_grid}

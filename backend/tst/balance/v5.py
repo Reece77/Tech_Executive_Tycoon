@@ -44,6 +44,7 @@ PAIRS: Final = (
     ("life_sciences", "devices_regions"),
     ("robotics_first", "devices_regions"),
     ("cloud_first", "cloud_first_grid"),
+    ("space_and_defence", "devices_regions"),
 )
 FIELD: Final = (*V4_FIELD, *V5)  # T2's field
 PLAYED: Final = tuple(dict.fromkeys((*FIELD, *(b for _, b in PAIRS))))
