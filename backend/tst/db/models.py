@@ -23,9 +23,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 61  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 62  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 # M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39
+# M42: 0062_m42
 
 
 class Base(DeclarativeBase):
@@ -2344,6 +2345,19 @@ class MedicalRecordRow(Base):
     med_inspections, med_recalls, med_drift) and `data` its fields; rows keep each order."""
 
     __tablename__ = "medical_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PharmaRecordRow(Base):
+    """One pharmaceutical record (55; 0062): `kind` names its GameState collection
+    (pharma_programmes, pharma_readouts, ...; tst.db.pharma_io) and `data` its fields; rows keep
+    each order. A programme's and an asset's `efficacy` and `safety` are hidden values: the save
+    holds them, the API never reads them (CLAUDE.md 8)."""
+
+    __tablename__ = "pharma_record"
 
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)

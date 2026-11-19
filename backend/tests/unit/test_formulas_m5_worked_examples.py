@@ -61,9 +61,9 @@ def test_incumbent_table(loaded: LoadedData) -> None:
     assert rows["Zoho"] == ("cost_leader", 11, 1500, 18)
     assert rows["GitHub"] == ("aggressive", 15, 0, 12)
     assert rows["Check Point"] == ("premium", 14, 3000, 48)
-    assert len(rows) == 76  # M8 added PayPal, Intuit, Fiserv, IBM and Nuance; M9 six regional;
+    assert len(rows) == 92  # M8 added PayPal, Intuit, Fiserv, IBM and Nuance; M9 six regional;
     # M12a four cloud hosts; M12b twelve hardware and chip makers; M38 thirteen car makers;
-    # M41 twelve device makers; M39 twelve robot makers
+    # M41 twelve device makers; M39 twelve robot makers; M42 sixteen pharma rivals
 
 
 def test_needs_and_labels(loaded: LoadedData) -> None:

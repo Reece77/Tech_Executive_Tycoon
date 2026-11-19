@@ -130,5 +130,8 @@ METRICS: dict[str, MetricDef] = {
             "project",
             "A clinical study's cost from its design",
         ),
+        # v5 (M42): a programme's chance to approval and rNPV, and its trial's cost
+        _m("pharma_value", "Expected value", "cents", "project", "Chance to approval and rNPV"),
+        _m("trial_cost", "Trial cost", "cents", "project", "A trial's cost from its design"),
     )
 }

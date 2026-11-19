@@ -1604,3 +1604,187 @@ companies:
           logistics: { price_cents: 5000000, share_bp: 0 }
           retail: { price_cents: 5000000, share_bp: 0 }
           manufacturing: { price_cents: 5000000, share_bp: 0 }
+
+  # --- M42 (formulas.md 55.5): pharmaceutical rivals ----------------------------------------------
+  # Their business is pharma.yaml's: revenue to 2025 from their reported pharmaceutical revenue, key
+  # drugs and cliffs, then seeded approvals (tst.sim.pharma.rivals); no products here, and they make
+  # no generic product decisions (rivals.holds). Johnson & Johnson's medicines arm is its own company
+  # beside M41's MedTech (as M41 split J&J); AbbVie is Abbott's pharmaceutical business to its 1 Jan
+  # 2013 spin-off; Sandoz is Novartis's generics division to its 4 Oct 2023 spin-off; Viatris is Mylan
+  # to its 16 Nov 2020 merger with Pfizer's Upjohn (A: one company each from 2010). listed_from: A
+  # (listed long before 2010, except Sandoz). cash_months: of pharma revenue at the start (A).
+  - name: Pfizer
+    stage: 4
+    founded_year: 1849
+    listed_from: [1944, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Johnson & Johnson Innovative Medicine
+    stage: 4
+    founded_year: 1886
+    listed_from: [1944, 9]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Roche
+    stage: 4
+    founded_year: 1896
+    listed_from: [1955, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Merck & Co.
+    stage: 4
+    founded_year: 1891
+    listed_from: [1946, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: AbbVie
+    stage: 4
+    founded_year: 2013
+    listed_from: [2013, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Novartis
+    stage: 4
+    founded_year: 1996
+    listed_from: [1996, 12]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: AstraZeneca
+    stage: 4
+    founded_year: 1999
+    listed_from: [1999, 4]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Novo Nordisk
+    stage: 4
+    founded_year: 1923
+    listed_from: [1974, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Eli Lilly
+    stage: 4
+    founded_year: 1876
+    listed_from: [1970, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Bristol Myers Squibb
+    stage: 4
+    founded_year: 1887
+    listed_from: [1929, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sanofi
+    stage: 4
+    founded_year: 1973
+    listed_from: [1973, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: GSK
+    stage: 4
+    founded_year: 2000
+    listed_from: [2000, 12]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Teva
+    stage: 4
+    founded_year: 1901
+    listed_from: [1951, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sandoz
+    stage: 4
+    founded_year: 1886
+    listed_from: [2023, 10]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Viatris
+    stage: 4
+    founded_year: 1961
+    listed_from: [1973, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sun Pharma
+    stage: 4
+    founded_year: 1983
+    listed_from: [1994, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []

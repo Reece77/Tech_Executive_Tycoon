@@ -39,6 +39,7 @@ import { PlatformsScreen } from './screens/PlatformsScreen';
 import { PowerPlantScreen, PowerScreen } from './screens/PowerScreen';
 import { VehicleCarScreen, VehiclesScreen } from './screens/VehiclesScreen';
 import { MedicalScreen } from './screens/MedicalScreen';
+import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screens/PharmaScreen';
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
@@ -82,6 +83,12 @@ export default function App() {
           <Route path="products/mobility" element={<MobilityScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
+          <Route path="products/pharma" element={<PharmaScreen />} />
+          <Route
+            path="products/pharma/programme/:programmeId"
+            element={<PharmaProgrammeScreen />}
+          />
+          <Route path="products/pharma/plant/:plantId" element={<PharmaPlantScreen />} />
           <Route path="products/mines" element={<MinesScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />

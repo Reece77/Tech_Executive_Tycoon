@@ -94,6 +94,7 @@ SALES_CLOUD = 900_000  # Salesforce's Sales Cloud: the first incumbent's first p
 INCUMBENTS = 52  # incumbent companies before M41 (ids 2..53; M12b appended twelve, M38 thirteen)
 MEDICAL_INCUMBENTS = 12  # M41 (50.1): appended after M38's, ids 54..65; new games only
 ROBOT_INCUMBENTS = 12  # M39 (53.1-53.2): appended after M41's, ids 66..77; new games only
+PHARMA_INCUMBENTS = 16  # M42 (55.5): appended after M39's, ids 78..93; new games only
 
 
 def move_directors(state: GameState) -> GameState:
