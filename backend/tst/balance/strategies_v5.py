@@ -481,9 +481,7 @@ def pharma_step(game: Game) -> None:
     ):
         indication = INDICATIONS[len(mine) % len(INDICATIONS)]
         refill_energy(game)
-        if game.act(
-            StartProgramme(f, f"Volta-{len(mine) + 1}", indication, "small_molecule", ai)
-        ):
+        if game.act(StartProgramme(f, f"Volta-{len(mine) + 1}", indication, "small_molecule", ai)):
             game.notes["pharma_last"] = game.state.turn
             _mark(game, "pharma")
     for p in developing:
