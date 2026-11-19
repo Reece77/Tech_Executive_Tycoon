@@ -77,8 +77,8 @@ test("(c) loss of exclusivity cuts a drug's revenue", async ({ page }) => {
   const history = page.getByTestId('rx-history-1');
   await history.locator('summary').click();
   const months = history.getByTestId('rx-month');
-  const first = dollars((await months.first().textContent())!.split(':').slice(1).join(':'));
-  const last = dollars((await months.last().textContent())!.split(':').slice(1).join(':'));
+  const first = dollars(((await months.first().textContent()) ?? '').split(':').slice(1).join(':'));
+  const last = dollars(((await months.last().textContent()) ?? '').split(':').slice(1).join(':'));
   expect(first).toBeGreaterThan(0);
   expect(last).toBeLessThan(first * 0.3);
 });
