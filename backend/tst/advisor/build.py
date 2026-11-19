@@ -894,6 +894,25 @@ class Builder:
 
         return v5_robotics.ride_contribution(self, m, entity)
 
+    # --- v5 (M40): space ----------------------------------------------------------------------
+
+    def launch_price(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_space
+
+        return v5_space.launch_price(self, m, entity)
+
+    def constellation_payback(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_space
+
+        return v5_space.constellation_payback(self, m, entity)
+
+    # --- v5 (M44): government ------------------------------------------------------------------
+
+    def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_government
+
+        return v5_government.bid_score(self, m, entity)
+
     # --- v4 (M34): regulation ----------------------------------------------------------------
 
     def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:
@@ -917,6 +936,18 @@ class Builder:
         from tst.advisor import v5_medical
 
         return v5_medical.study_cost(self, m, entity)
+
+    # --- v5 (M42): pharmaceuticals -------------------------------------------------------------
+
+    def pharma_value(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_pharma
+
+        return v5_pharma.pharma_value(self, m, entity)
+
+    def trial_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_pharma
+
+        return v5_pharma.trial_cost(self, m, entity)
 
     # --- v4 (M33): equipment ----------------------------------------------------------------
 

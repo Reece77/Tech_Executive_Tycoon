@@ -69,14 +69,17 @@ def rival_cash(state: GameState, loaded: LoadedData) -> dict[tuple[int, str], in
     from tst.sim.ledger import CASH
     from tst.sim.rivals.setup import opening_cash_cents
     from tst.sim.robotics.data import is_robot_maker
+    from tst.sim.space.data import is_space_rival
     from tst.sim.vehicles.rivals import is_car_maker
 
     capital = loaded.balance.vehicles.rival_cash_cents  # M38: a car maker's opening capital
     robots = loaded.balance.robotics.rival_cash_cents  # M39: a robot maker's
+    space = loaded.balance.space.rival_cash_cents  # M40: a space company's
     return {
         (c.id, CASH): opening_cash_cents(state, c.id, loaded.game_data)
         + (capital if is_car_maker(c, loaded.game_data) else 0)
         + (robots if is_robot_maker(c, loaded.game_data) else 0)
+        + (space if is_space_rival(c, loaded.game_data) else 0)
         for c in state.companies
         if not c.is_player
     }
@@ -94,6 +97,8 @@ SALES_CLOUD = 900_000  # Salesforce's Sales Cloud: the first incumbent's first p
 INCUMBENTS = 52  # incumbent companies before M41 (ids 2..53; M12b appended twelve, M38 thirteen)
 MEDICAL_INCUMBENTS = 12  # M41 (50.1): appended after M38's, ids 54..65; new games only
 ROBOT_INCUMBENTS = 12  # M39 (53.1-53.2): appended after M41's, ids 66..77; new games only
+PHARMA_INCUMBENTS = 16  # M42 (55.5): appended after M39's, ids 78..93; new games only
+SPACE_INCUMBENTS = 13  # M40 (56): appended after M42's, ids 94..106; new games only
 
 
 def move_directors(state: GameState) -> GameState:

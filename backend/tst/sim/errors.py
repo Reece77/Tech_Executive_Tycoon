@@ -382,6 +382,12 @@ class MedicalRuleError(SimError):
     code = "medical_rule"
 
 
+class PharmaRuleError(SimError):
+    """A pharmaceutical action the rules do not allow (M42, formulas.md 55)."""
+
+    code = "pharma_rule"
+
+
 class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 
@@ -405,6 +411,20 @@ class RoboticsRuleError(SimError):
     a permit's decision month or an incident's chance."""
 
     code = "robotics_rule"
+
+
+class SpaceRuleError(SimError):
+    """A space action the rules do not allow (M40, formulas.md 56). The message never names a
+    licence's decision month, a failure chance's draw or a seeded rule."""
+
+    code = "space_rule"
+
+
+class GovernmentRuleError(SimError):
+    """A bid, protest or clearance the rules do not allow (M44, formulas.md 57). The message
+    never names a rival's bid, a draw or a pending clearance's month."""
+
+    code = "government_rule"
 
 
 class EquipmentRuleError(SimError):

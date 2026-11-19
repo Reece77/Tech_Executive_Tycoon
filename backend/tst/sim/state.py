@@ -73,6 +73,17 @@ from tst.sim.geopolitics.models import (
     TensionMonth,
     Variant,
 )
+from tst.sim.government.models import (
+    Bid,
+    Contract,
+    ControlledProduct,
+    DefenceRecord,
+    FacilityClearance,
+    GovernmentWorld,
+    Protest,
+    Tender,
+)
+from tst.sim.government.models import Clearance as GovClearance
 from tst.sim.group.models import (
     EQUITY_ENDS,
     FULL_STAKE_BP,
@@ -126,6 +137,7 @@ from tst.sim.org.models import (
 )
 from tst.sim.people.models import Employment, Person, RevealState
 from tst.sim.people.relationships import Relationship
+from tst.sim.pharma import models as pharma
 from tst.sim.platforms.models import (
     DeviceRun,
     OpenSource,
@@ -189,6 +201,7 @@ from tst.sim.robotics.models import (
     Zone,
     ZoneMonth,
 )
+from tst.sim.space.models import SpaceState
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -578,6 +591,43 @@ class GameState:
     zone_months: tuple[ZoneMonth, ...] = ()
     robo_incidents: tuple[RoboIncident, ...] = ()
     robotics_world: RoboticsWorld = field(default_factory=RoboticsWorld)
+    # M42 (55): pharmaceutical programmes (each molecule's hidden efficacy and safety inside,
+    # never shown), readouts, reviews and authorisations, marketed drugs, HTAs, drug months
+    # (pharma.history_months), rivals' seeded approvals, seeded rules and IRA picks, plants,
+    # contract supply, inspections, recalls, assets listed for licence and deals. Empty for a game
+    # where no company has entered pharmaceuticals (55.6 target 1).
+    pharma_programmes: tuple[pharma.Programme, ...] = ()
+    pharma_readouts: tuple[pharma.Readout, ...] = ()
+    pharma_reviews: tuple[pharma.Review, ...] = ()
+    pharma_authorisations: tuple[pharma.Authorisation, ...] = ()
+    pharma_drugs: tuple[pharma.Drug, ...] = ()
+    pharma_hta: tuple[pharma.Hta, ...] = ()
+    pharma_months: tuple[pharma.DrugMonth, ...] = ()
+    pharma_seeded: tuple[pharma.SeededDrug, ...] = ()
+    pharma_rules: tuple[pharma.Rule, ...] = ()
+    pharma_ira: tuple[pharma.IraPick, ...] = ()
+    pharma_plants: tuple[pharma.Plant, ...] = ()
+    pharma_supply: tuple[pharma.Supply, ...] = ()
+    pharma_inspections: tuple[pharma.Inspection, ...] = ()
+    pharma_recalls: tuple[pharma.Recall, ...] = ()
+    pharma_assets: tuple[pharma.Asset, ...] = ()
+    pharma_deals: tuple[pharma.Deal, ...] = ()
+    pharma_markets: tuple[pharma.MarketLevel, ...] = ()  # M43a's ceilings from 2026
+    # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
+    # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
+    space: SpaceState = field(default_factory=SpaceState)
+    # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
+    # government contracts, staff and facility clearances, controlled (ITAR-style) products,
+    # each company's defence record, and the game-wide budgets' seeded growth and id counters.
+    tenders: tuple[Tender, ...] = ()
+    gov_bids: tuple[Bid, ...] = ()
+    protests: tuple[Protest, ...] = ()
+    gov_contracts: tuple[Contract, ...] = ()
+    clearances: tuple[GovClearance, ...] = ()
+    facility_clearances: tuple[FacilityClearance, ...] = ()
+    controlled_products: tuple[ControlledProduct, ...] = ()
+    defence_records: tuple[DefenceRecord, ...] = ()
+    government_world: GovernmentWorld = field(default_factory=GovernmentWorld)
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).
@@ -587,6 +637,12 @@ class GameState:
 
     def vehicle_spec(self, product_id: int) -> VehicleSpec | None:  # M38 (49.1)
         return next((v for v in self.vehicle_specs if v.product_id == product_id), None)
+
+    def tender(self, tender_id: int) -> Tender | None:  # M44 (57.1)
+        return next((t for t in self.tenders if t.id == tender_id), None)
+
+    def defence_record(self, company_id: int) -> DefenceRecord | None:  # M44 (57.4)
+        return next((r for r in self.defence_records if r.company_id == company_id), None)
 
     def plant_automation(self, facility_id: int) -> PlantAutomation | None:  # M39 (53.1)
         return next((a for a in self.plant_automations if a.facility_id == facility_id), None)

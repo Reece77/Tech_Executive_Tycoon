@@ -39,8 +39,11 @@ import { PlatformsScreen } from './screens/PlatformsScreen';
 import { PowerPlantScreen, PowerScreen } from './screens/PowerScreen';
 import { VehicleCarScreen, VehiclesScreen } from './screens/VehiclesScreen';
 import { MedicalScreen } from './screens/MedicalScreen';
+import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screens/PharmaScreen';
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
+import { SpaceScreen } from './screens/SpaceScreen';
+import { GovernmentScreen } from './screens/GovernmentScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
 
@@ -80,8 +83,16 @@ export default function App() {
           <Route path="products/vehicles/cars/:productId" element={<VehicleCarScreen />} />
           <Route path="products/robotics" element={<RoboticsScreen />} />
           <Route path="products/mobility" element={<MobilityScreen />} />
+          <Route path="products/space" element={<SpaceScreen />} />
+          <Route path="products/government" element={<GovernmentScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
+          <Route path="products/pharma" element={<PharmaScreen />} />
+          <Route
+            path="products/pharma/programme/:programmeId"
+            element={<PharmaProgrammeScreen />}
+          />
+          <Route path="products/pharma/plant/:plantId" element={<PharmaPlantScreen />} />
           <Route path="products/mines" element={<MinesScreen />} />
           <Route path="products/markets/:category" element={<MarketScreen />} />
           <Route path="products/:productId" element={<ProductScreen />} />

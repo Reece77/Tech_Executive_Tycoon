@@ -1,0 +1,29 @@
+# Government event templates (docs/formulas.md 57.4, M44): queued by the engine by template id
+# (trigger government) the month after a defence award whose staff reaction drew an open letter.
+# The reference is Google's Project Maven in 2018 (about 3,100-4,000 signatures, about a dozen
+# resignations, the contract not renewed). The answer is applied by the engine (government_step):
+# carrying on keeps the contract and some objectors resign; withdrawing terminates it and consumer
+# brands recover a little; an ethics board keeps it at a cost and no one resigns. Tone: grounded
+# realism (ADR-0011). The first choice is what happens when it is left unanswered at Continue.
+templates:
+  - id: defence_open_letter
+    category: government
+    trigger: government
+    severities: [critical]
+    weight: 1.0
+    title: "{company} staff sign an open letter against the defence contract"
+    body: >-
+      Hundreds of {company} employees have signed a letter asking the company to drop its new
+      defence work and to promise never to build for the military again. It is circulating on
+      internal forums and has reached the press; several engineers say they will leave if the
+      company carries on.
+    choices:
+      - key: A
+        label: "Keep the contract and explain why the work matters"
+        effects: [{ type: government_step, target: company, stat: carry_on }]
+      - key: B
+        label: "Withdraw from the contract"
+        effects: [{ type: government_step, target: company, stat: withdraw }]
+      - key: C
+        label: "Keep it, under an independent ethics board"
+        effects: [{ type: government_step, target: company, stat: ethics_board }]

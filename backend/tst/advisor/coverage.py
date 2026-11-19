@@ -39,6 +39,11 @@ _PLATFORM = exempt(
 _MEDICAL = exempt(
     "a published medical figure (a fee, an enrolment) from medical.yaml or its design"
 )
+# M42 (55): pharmaceuticals
+_PHARMA = exempt(
+    "a published pharma figure (a price, a market, a term) from pharma.yaml or a design"
+)
+_PHARMA_BOOKS = exempt("a drug's booked month (patients, revenue), itemised on its revenue chart")
 # M32 (46): power
 _POWER = exempt("a published power figure (a price, a rate, a factor) from power.yaml or its path")
 _QUEUE = exempt("the grid queue's wait as a range from the region's median, in its glossary")
@@ -84,6 +89,34 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "cost_cents": "study_cost",
         "spent_cents": exempt("a study's spending to date, itemised in its cost's breakdown"),
         "patients": _MEDICAL,
+    },
+    # M42 (55): the Pharma screen
+    "pharma.RxProgrammeOut": {
+        "patients": _PHARMA,
+        "cost_cents": "trial_cost",
+        "spent_cents": exempt("a stage's spending to date, itemised in its cost's breakdown"),
+        "readouts": _COUNT,
+        "next_cost_cents": "trial_cost",
+        "next_months": "trial_cost",
+        "preclinical_months": _PHARMA,
+        "preclinical_months_without_ai": _PHARMA,
+        "redesign_cost_cents": "trial_cost",
+    },
+    "pharma.RxValueOut": {
+        "rnpv_lo_cents": "pharma_value",
+        "rnpv_hi_cents": "pharma_value",
+        "peak_lo_cents": "pharma_value",
+        "peak_hi_cents": "pharma_value",
+        "cost_left_cents": "pharma_value",
+        "years_to_launch": "pharma_value",
+    },
+    "pharma.RxDrugOut": {
+        "list_cents": _PHARMA,
+        "reference_cents": _PHARMA,
+        "support": _PHARMA,
+        "patients": _PHARMA_BOOKS,
+        "revenue_cents": _PHARMA_BOOKS,
+        "year_cents": _PHARMA_BOOKS,
     },
     # M36 (45.4, 45.6): the Family screen and the founder's Family tab
     "family.ReadinessOut": {
@@ -197,7 +230,42 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "staff": _CAPACITY,
         "staff_needed": _CAPACITY,
     },
+    # v5 (M44): the Government screen (57.7)
+    "government.MyBidOut": {
+        "price_cents": _INPUT,
+        "score_floor": "bid_score",
+    },
     # v5 (M39): the Robotics and Mobility screens (53.5)
+    # v5 (M40): the Space screen (56.5)
+    "space.FlightCostOut": {
+        "build_cents": "launch_price",
+        "reused_share": _RULE,
+        "flights_per_vehicle": _RULE,
+        "refurb_share": _RULE,
+        "operations_cents": "launch_price",
+        "flight_cents": "launch_price",
+        "payload_kg": _INPUT,
+        "cost_per_kg_cents": "launch_price",
+        "expendable_per_kg_cents": "launch_price",
+    },
+    "space.VehicleOut": {
+        "quality": exempt("a product's quality, explained on its product page"),
+        "payload_kg": _INPUT,
+        "price_cents": _INPUT,
+        "flights": _COUNT,
+        "failures": _COUNT,
+        "reliability": exempt("successful flights over flights, from the launches listed"),
+        "failure_rate_lo": exempt("the failure model's range for the next flight, in the glossary"),
+        "failure_rate_hi": exempt("the failure model's range for the next flight, in the glossary"),
+        "pads": _CAPACITY,
+        "cadence": exempt("launch-site pads x the reuse level's launches a month, in the glossary"),
+    },
+    "space.PaybackOut": {
+        "capex_cents": "constellation_payback",
+        "cash_cents": "constellation_payback",
+        "last_year_cash_cents": "constellation_payback",
+        "months_to_payback": "constellation_payback",
+    },
     "robotics.PlantAutomationOut": {
         "units_month": _CAPACITY,
         "robots": _INPUT,

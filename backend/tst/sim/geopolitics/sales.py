@@ -43,6 +43,7 @@ from tst.sim.geopolitics import rules as gr
 from tst.sim.geopolitics import world
 from tst.sim.geopolitics.models import Exit
 from tst.sim.geopolitics.rules import ActiveRule
+from tst.sim.government import sourcing as gov_sourcing
 from tst.sim.products.models import Product
 from tst.sim.state import (
     CompanyState,
@@ -190,11 +191,14 @@ def access(
     restrict = restricting(state, product, balance, data)
     lp = balance.geopolitics.local_partner
     rival = not world.in_group(state, product.company_id)
-    if not restrict and (rival or product.category not in lp.categories):
+    itar = bool(state.controlled_products) and gov_sourcing.controlled(state, product.id)  # M44
+    if not restrict and not itar and (rival or product.category not in lp.categories):
         return OPEN
     blocked = variant = 0.0
     for c in world.countries_of(data).of_region(region):
         allowed, as_variant = country_access(state, product, c.key, restrict, balance, data)
+        if itar:  # M44 (57.3): a controlled item keeps itar_keep of the country's demand
+            allowed *= gov_sourcing.itar_keep(state, product, c.key, balance, data)
         blocked += c.demand_share * (1 - allowed)
         if as_variant:
             variant += c.demand_share * allowed

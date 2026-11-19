@@ -90,6 +90,8 @@ def found_startups(
             continue
         if category.medical:  # M41 (50.1): medical rivals are scheduled only
             continue
+        if category.space:  # M40 (56): space rivals are scheduled only
+            continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
         chance = sb.found_rate * mood * (1 + growth)

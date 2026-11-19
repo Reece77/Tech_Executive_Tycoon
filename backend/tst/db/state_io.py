@@ -45,6 +45,7 @@ from tst.db.family_io import family_people, live_family, load_family, sync_famil
 from tst.db.former import former_rows
 from tst.db.founder_io import load_founder, sync_founder
 from tst.db.geopolitics_io import load_geopolitics, sync_geopolitics
+from tst.db.government_io import load_government, sync_government
 from tst.db.group_io import load_group, sync_group
 from tst.db.investing_io import investing_people, live_investing, load_investing, sync_investing
 from tst.db.mappers import (
@@ -188,11 +189,13 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.db.modes_io import load_modes, sync_modes
+from tst.db.pharma_io import load_pharma, sync_pharma
 from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.power_io import load_power, sync_power
 from tst.db.refining_io import load_refining, sync_refining
 from tst.db.regulation_io import load_regulation, sync_regulation
 from tst.db.robotics_io import load_robotics, sync_robotics
+from tst.db.space_io import load_space, sync_space
 from tst.db.vehicle_io import load_vehicles, sync_vehicles
 from tst.db.world_io import load_world, sync_world
 from tst.sim.errors import SaveNotFoundError
@@ -611,6 +614,9 @@ def load_state(session: Session) -> GameState:
     state = load_vehicles(session, state, has_table)  # M38 (0058_m38)
     state = load_dynasty(session, state, has_table)  # M37 (0060_m37)
     state = load_robotics(session, state, has_table)  # M39 (0061_m39)
+    state = load_pharma(session, state, has_table)  # M42 (0062_m42)
+    state = load_space(session, state, has_table)  # M40 (0063_m40)
+    state = load_government(session, state, has_table)  # M44 (0064_m44)
     state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_medical(session, state, has_table)  # M41 (0058)
     state = load_equipment(session, state, has_table)  # M33 (0056_m33)
@@ -2304,6 +2310,9 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_vehicles(session, old, new, has_table)  # M38 (0058_m38)
     sync_dynasty(session, old, new, has_table)  # M37 (0060_m37)
     sync_robotics(session, old, new, has_table)  # M39 (0061_m39)
+    sync_pharma(session, old, new, has_table)  # M42 (0062_m42)
+    sync_space(session, old, new, has_table)  # M40 (0063_m40)
+    sync_government(session, old, new, has_table)  # M44 (0064_m44)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_medical(session, old, new, has_table)  # M41 (0058)
     sync_equipment(session, old, new, has_table)  # M33 (0056_m33)

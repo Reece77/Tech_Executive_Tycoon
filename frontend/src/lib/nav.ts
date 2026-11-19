@@ -183,6 +183,22 @@ export const SCREENS: readonly Screen[] = [
     parent: 'products',
   }, // M39
   {
+    path: 'products/pharma',
+    label: 'Pharma',
+    group: 'products',
+    unlock: 'pharma',
+    side: true,
+    parent: 'products',
+  }, // M42
+  {
+    path: 'products/space',
+    label: 'Space',
+    group: 'products',
+    unlock: 'space',
+    side: true,
+    parent: 'products',
+  }, // M40
+  {
     path: 'products/equipment',
     label: 'Equipment',
     group: 'chain',
@@ -218,6 +234,14 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'finance',
   },
+  {
+    path: 'products/government',
+    label: 'Government',
+    group: 'markets',
+    unlock: 'government',
+    side: true,
+    parent: 'products',
+  }, // M44
   {
     path: 'competitors/platforms',
     label: 'Platforms',

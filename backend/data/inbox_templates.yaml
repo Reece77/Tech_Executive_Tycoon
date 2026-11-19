@@ -899,6 +899,75 @@ templates:
   medical_recall: # M41 (50.5)
     title: "Class {klass} recall of {product}"
     body: "{units} installed units are affected ({early}). The field action costs {cost_cents}, and new sales stop while it runs."
+  pharma_programme_started: # M42 (55.1)
+    title: "{name} enters discovery: {indication}"
+    body: "Chemists and biologists look for a candidate molecule; discovery is planned to take {months} months. The Pharma screen shows its chance and expected value."
+  pharma_candidate: # M42 (55.1)
+    title: "{name}: a candidate molecule"
+    body: "Discovery found a candidate. Preclinical work (toxicology and pharmacology) starts now, and the composition patent is filed: its 20 years run from today."
+  pharma_readout_success: # M42 (55.1)
+    title: "{name}: the {stage} readout is positive"
+    body: "The data support the programme, and its efficacy estimate narrows. Choose the next trial's design, or file it, from the Pharma screen."
+  pharma_readout_failed: # M42 (55.1)
+    title: "{name}: the {stage} readout failed"
+    body: "The trial missed. Redesign it (run the stage again, at its cost and more) or stop the programme."
+  pharma_filed: # M42 (55.3)
+    title: "{name} filed: {application} with the {regulator}"
+    body: "The review takes the regulator's standard or priority months. An advisory committee may meet half way."
+  pharma_adcom_positive: # M42 (55.3)
+    title: "Advisory committee backs {name}"
+    body: "The {regulator}'s committee voted in favour. Regulators usually follow the vote."
+  pharma_adcom_negative: # M42 (55.3)
+    title: "Advisory committee votes against {name}"
+    body: "The {regulator}'s committee voted against approval. The decision is still the regulator's, but it is now less likely."
+  pharma_approved: # M42 (55.3)
+    title: "{name} approved by the {regulator}"
+    body: "The drug may now be sold where the {regulator} decides. Other regions register it by reliance, and health-technology assessments set prices where they apply."
+  pharma_crl: # M42 (55.3)
+    title: "Complete response letter for {name}"
+    body: "The {regulator} will not approve the application as filed. The company may answer and file again; a resubmission is likelier to fail."
+  pharma_hta_covered: # M42 (55.4)
+    title: "{name} is reimbursed in {region}"
+    body: "The health-technology assessment accepted its price for its benefit: it now reaches every patient there."
+  pharma_hta_refused: # M42 (55.4)
+    title: "{name}: reimbursement refused in {region}"
+    body: "The assessment found the price too high for the benefit. Without reimbursement it reaches few patients there; a lower list price asks again."
+  pharma_confirmed: # M42 (55.3)
+    title: "{name}'s confirmatory trial succeeded"
+    body: "The accelerated approval is confirmed."
+  pharma_withdrawn: # M42 (55.3)
+    title: "{name}'s accelerated approval is withdrawn"
+    body: "The confirmatory Phase III did not confirm the benefit; the US approval is withdrawn."
+  pharma_plant_ordered: # M42 (55.5)
+    title: "{plant} ordered"
+    body: "It will be built and qualified in {months} months; until then contract manufacturers make the company's drugs."
+  pharma_inspection_none: # M42 (55.5, 50.5)
+    title: "The {regulator} inspected the company's drug manufacturing"
+    body: "The inspectors left without findings."
+  pharma_inspection_observations: # M42 (55.5, 50.5)
+    title: "The {regulator}'s GMP inspection ends with observations"
+    body: "Inspectors listed observations for the quality team to put right. No action follows if they are corrected."
+  pharma_inspection_warning_letter: # M42 (55.5, 50.5)
+    title: "A warning letter from the {regulator}"
+    body: "Significant manufacturing failures. The regulator's decisions on the company's filings are held for {months} months."
+  pharma_inspection_import_ban: # M42 (55.5, 50.5)
+    title: "The {regulator} stops the company's drugs at the border"
+    body: "An import alert stops sales in the regulator's market for {months} months."
+  pharma_inspection_consent_decree: # M42 (55.5, 50.5)
+    title: "Consent decree: the {regulator} halts the company's drug sales"
+    body: "Sales there stop for {months} months while manufacturing is rebuilt under supervision, and the company pays {fine_cents}."
+  pharma_recall: # M42 (55.5)
+    title: "Recall of {name}"
+    body: "A quality problem forces a recall: shipments stop for {months} months."
+  pharma_in_licensed: # M42 (55.5)
+    title: "{name} joins the pipeline"
+    body: "The programme is the company's now: milestones and royalties follow its progress where the deal has them."
+  pharma_out_licensed: # M42 (55.5)
+    title: "{name} licensed to {partner}"
+    body: "The partner pays the upfront now and milestones and royalties as the programme succeeds."
+  pharma_ira_selected: # M42 (55.4)
+    title: "{name} selected for Medicare price negotiation"
+    body: "From January its Medicare price is about {discount_pct}% lower (the Inflation Reduction Act)."
   # M37 (formulas.md 52.1-52.4): dynasty years
   rival_succession:
     title: "{rival}: {new} succeeds {old}"
@@ -915,3 +984,72 @@ templates:
   family_member_died:
     title: "{name} has died, aged {age}"
     body: "Your family mourns {name}."
+  # M40 (56): space and satellites
+  space_region_covered:
+    title: "{constellation} now covers {region}"
+    body: "A shell is complete over {region}. Subscribers can sign up there wherever you hold a licence."
+  space_launch_failed:
+    title: "Launch failure: {vehicle}"
+    body: "The vehicle is grounded for the investigation until turn {until}. Its owed launches wait."
+  space_licence_applied:
+    title: "Licence applied for: {region}"
+    body: "The regulators are reviewing your spectrum and landing-rights application."
+  space_licence_granted:
+    title: "Licence granted: {region}"
+    body: "Your satellite service may sign up subscribers in {region} once a shell covers it."
+  space_licence_refused:
+    title: "Licence refused: {region}"
+    body: "The regulators turned the application down. You may apply again."
+  space_debris_rule:
+    title: "Tighter debris rules"
+    body: "Regulators now charge for satellites in orbit and require faster, costlier disposal at end of life."
+  space_failure_answered:
+    title: "Launch failure: {constellation}"
+    body: "Your answer ({step}) has been carried out."
+
+  # M44 (57): defence and government contracts
+  bid_placed:
+    title: "Bid placed: {tender}"
+    body: "Your bid of {price_cents} is in. Requirements are checked again at the award; the Government screen shows its status."
+  tender_awarded:
+    title: "Award: {tender}"
+    body: "Your bid was {outcome}. Awarded to {winners}."
+  contract_won:
+    title: "Contract won: {tender}"
+    body: "The award stands. Delivery starts next month; the Government screen shows its revenue, cost and performance."
+  award_protested:
+    title: "Your award is protested: {tender}"
+    body: "{by} protested the award. It is held until the protest is decided, and a sustained protest re-competes the tender."
+  protest_filed:
+    title: "Protest filed: {tender}"
+    body: "Your protest holds the award until month {until}."
+  protest_decided:
+    title: "Protest {outcome}: {tender}"
+    body: "A sustained protest re-competes the tender; a denied one lets the award stand."
+  contract_completed:
+    title: "Contract {contract} completed"
+    body: "Its performance joins your past performance."
+  contract_options_declined:
+    title: "Options declined on contract {contract}"
+    body: "Performance was below what the government needed to exercise the option years; the contract ends with its base term."
+  contract_defaulted:
+    title: "Contract {contract} terminated for default"
+    body: "Months without delivery (the product gone, or clearances lapsed) ended it. It counts against your past performance."
+  clearances_requested:
+    title: "Clearances requested: {people} at {level}"
+    body: "Investigations take months, and some candidates never clear. The Government screen shows each one's status."
+  clearance_decided:
+    title: "Clearance {outcome}: {name}"
+    body: "The investigation is decided."
+  facility_clearance_requested:
+    title: "Facility clearance sponsored"
+    body: "Facility {facility}'s clearance takes 6-12 months."
+  facility_cleared:
+    title: "Facility cleared"
+    body: "Facility {facility} may now hold classified work."
+  defence_award_reaction:
+    title: "Defence work for {government}"
+    body: "{objectors} staff object to the work, and consumer brands lost {brand} points."
+  defence_letter_answered:
+    title: "The open letter: you chose to {step}"
+    body: "The Government screen shows the contract's status."

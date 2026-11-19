@@ -111,8 +111,10 @@ def initial_market(
     product_id = first_product_id
     incumbents = data.incumbents
     if home is None:  # v1's incumbents: none that list their own regions
-        incumbents = tuple(
-            inc for inc in incumbents if all(p.regions is None for p in inc.products)
+        incumbents = tuple(  # M42: a pharma rival (no products) is a new game's only
+            inc
+            for inc in incumbents
+            if inc.products and all(p.regions is None for p in inc.products)
         )
     for offset, inc in enumerate(incumbents):
         company_id = first_company_id + offset

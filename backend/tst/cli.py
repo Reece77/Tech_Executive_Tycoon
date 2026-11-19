@@ -4566,6 +4566,64 @@ def vehicles_cmd(
         )
 
 
+@app.command("pharma")
+def pharma_cmd(
+    save: SaveOpt,
+    rivals: Annotated[bool, typer.Option(help="Also list the pharma rivals")] = False,
+) -> None:
+    """Pharmaceuticals (M42, 55): your programmes by stage with readouts, efficacy estimates,
+    chances as ranges, filings and exclusivity; drugs' prices and revenue; plants, assets and
+    deals. Hidden values are never shown."""
+    from tst.api import pharma_views
+
+    _path, data, state = _game(save)
+    m = pharma_views.pharma_out(state, data)
+    typer.echo(
+        f"Discovery {m.in_discovery}/{m.discovery_slots} slots, {m.researchers} research staff;"
+        f" AI discovery {'ready' if m.ai_ready else 'not available'}"
+    )
+    if not m.programmes:
+        typer.echo("No programmes: start one with an indication and a modality.")
+    for p in m.programmes:
+        est = f"efficacy {p.efficacy.lo:.2f}-{p.efficacy.hi:.2f}"
+        typer.echo(
+            f"{p.name} [{p.id}] ({p.indication_label}, {p.modality}): {p.stage} {p.status};"
+            f" {est}; planned end {p.planned_end}"
+        )
+        if p.next_stage and p.next_chance:
+            typer.echo(
+                f"  next: {p.next_stage}, chance {p.next_chance.lo:.0%}-{p.next_chance.hi:.0%},"
+                f" {format_money(p.next_cost_cents or 0)}"
+            )
+        for r in p.history:
+            typer.echo(f"  {r.month} {r.stage}: {'success' if r.success else 'failed'}")
+        for v in p.reviews:
+            typer.echo(f"  {v.regulator_name} {v.application}: {v.status}, {v.expected}")
+        if p.value:
+            typer.echo(
+                f"  to approval {p.value.to_approval.lo:.0%}-{p.value.to_approval.hi:.0%};"
+                f" rNPV {format_money(p.value.rnpv_lo_cents)} to"
+                f" {format_money(p.value.rnpv_hi_cents)}"
+            )
+    for d in m.drugs:
+        typer.echo(
+            f"drug {d.name}: list {format_money(d.list_cents)} a year, {d.patients:,.0f} patients,"
+            f" {format_money(d.year_cents)} in 12 months{' (generics)' if d.generic else ''}"
+        )
+    for pl in m.plants:
+        typer.echo(f"plant {pl.id} {pl.label} ({pl.region}): ready {pl.ready}, {pl.quality}")
+    for a in m.assets:
+        typer.echo(
+            f"asset {a.id} {a.name} ({a.indication_label}, {a.stage}): upfront"
+            f" {format_money(a.upfront_cents)}, royalty {a.royalty:.0%}"
+        )
+    for x in m.deals:
+        typer.echo(f"deal {x.kind} with {x.counterparty} ({x.programme or '-'}) {x.signed}")
+    if rivals:
+        for rv in m.rivals:
+            typer.echo(f"rival {rv.name}: {format_money(rv.year_cents)} in 12 months")
+
+
 @app.command("medical")
 def medical_cmd(
     save: SaveOpt,
@@ -4710,3 +4768,127 @@ def mobility_cmd(save: SaveOpt) -> None:
     for i in m.incidents:
         kind = "serious" if i.serious else "minor"
         typer.echo(f"incident {i.month}: {kind} in {i.city}, {format_money(i.cost_cents)}")
+
+
+@app.command("space")
+def space_cmd(save: SaveOpt) -> None:
+    """Space (M40, 56): your reusability programme, launch vehicles, launches, constellations and
+    coverage, subscribers and licences by region, cost a kg and rivals' public constellations."""
+    from tst.api import space_views
+
+    _, data, state = _game(save)
+    s = space_views.space_out(state, data)
+    if not s.open:
+        typer.echo("this game has no space markets")
+        return
+    typer.echo(
+        f"{s.month}: reusability lead {s.reusability_lead:.1f}"
+        + (f", programme since {s.programme_started}" if s.programme_started else "")
+        + f"; a bought launch {format_money(s.bought_launch_cents)} for"
+        f" {s.bought_payload_kg:,.0f} kg"
+    )
+    for v in s.vehicles:
+        grounded = f", grounded until {v.grounded_until}" if v.grounded_until else ""
+        typer.echo(
+            f"vehicle {v.name} ({v.level}, aims {v.aim}): {v.payload_kg:,.0f} kg,"
+            f" {format_money(v.cost.flight_cents)} a flight,"
+            f" {format_money(round(v.cost.cost_per_kg_cents))} a kg (expendable"
+            f" {format_money(round(v.cost.expendable_per_kg_cents))}); {v.flights} flights,"
+            f" {v.failures} failed; {v.cadence:.1f} launches a month{grounded}"
+        )
+    for c in s.constellations:
+        typer.echo(
+            f"constellation {c.name} ({c.kind}): {c.in_orbit:,} of {c.planned:,} in orbit,"
+            f" {c.ground} waiting, {c.lost} lost; covers {', '.join(c.covered) or 'nothing'};"
+            f" cash flow {format_money(c.payback.cash_cents)}"
+            + (f", paid back {c.payback.paid_back}" if c.payback.paid_back else "")
+        )
+    for b in s.broadband:
+        for r in b.regions:
+            if r.covered or r.licence or r.subscribers:
+                typer.echo(
+                    f"  {b.name} in {r.label}: {'covered' if r.covered else 'not covered'},"
+                    f" licence {r.licence or 'none'}, {r.subscribers:,.0f} subscribers of"
+                    f" {r.serviceable:,.0f} serviceable"
+                )
+    for launch in s.launches[:10]:
+        typer.echo(
+            f"launch {launch.month} {launch.vehicle} ({launch.purpose}): "
+            + ("success" if launch.ok else "FAILURE")
+            + (f", {launch.satellites} satellites" if launch.satellites else "")
+        )
+    for rv in s.rivals:
+        typer.echo(f"rival {rv.name} ({rv.company}): {rv.satellites:,.0f} satellites")
+    for k in s.cost_per_kg:
+        typer.echo(
+            f"cost a kg: {k.vehicle} {format_money(round(k.cost_per_kg_cents))}"
+            + (" (target)" if k.target else "")
+        )
+
+
+@app.command("government")
+def government_cmd(
+    save: SaveOpt,
+    area: Annotated[str | None, typer.Option(help="One area (cloud, ai, space, ...)")] = None,
+    all_tenders: Annotated[bool, typer.Option("--all", help="Closed tenders too")] = False,
+) -> None:
+    """Government (M44, 57): open tenders and their requirements, your bids with score bands,
+    awards and protests, contracts, clearances and rivals' published awards."""
+    from tst.api import government_views
+
+    _, data, state = _game(save)
+    g = government_views.government_out(state, data)
+    if not g.enabled:
+        typer.echo("This game has no government tenders.")
+        return
+    rec = g.record
+    typer.echo(
+        f"{g.month}: {rec.awards} defence awards, past performance {rec.past_performance:.0f},"
+        f" {rec.reactions} staff letters, brand lost {rec.brand_lost:.1f}"
+        + (f"; controlled: {', '.join(rec.controlled_products)}" if rec.controlled_products else "")
+    )
+    for t in g.tenders:
+        if area and t.area != area:
+            continue
+        if (
+            not all_tenders
+            and t.status not in ("open", "evaluating", "protested")
+            and t.my_bid is None
+        ):
+            continue
+        typer.echo(
+            f"[{t.id}] {t.title}: {format_money(t.ceiling_cents)} over {t.term_months} months,"
+            f" {t.contract}, clearance {t.clearance}, {t.status}"
+            f" (closes {t.closes}, award {t.award_month})"
+        )
+        if t.winners:
+            band = f" (band {t.winning_band})" if t.winning_band else ""
+            typer.echo(f"    awarded to {', '.join(t.winners)}{band}")
+        if t.protest_by:
+            typer.echo(f"    protested by {t.protest_by}")
+        if t.status == "open":
+            typer.echo(f"    requires: {'; '.join(t.requirements)}")
+        for o in t.options:
+            typer.echo(
+                f"    you could bid {o.product} (quality {o.quality:.0f})"
+                + (f": unmet {'; '.join(o.unmet)}" if o.unmet else ": meets every requirement")
+            )
+        if t.my_bid is not None:
+            b = t.my_bid
+            band = f", score {b.band.total}" if b.band is not None else ""
+            typer.echo(f"    your bid: {format_money(b.price_cents)}, {b.status}{band}")
+            for reason in b.reasons:
+                typer.echo(f"      - {reason}")
+    for c in g.contracts:
+        typer.echo(
+            f"contract {c.id} {c.title} ({c.status}, options {c.options}): performance"
+            f" {c.performance:.0f}, revenue {format_money(c.revenue_cents)},"
+            f" cost {format_money(c.cost_cents)}"
+        )
+    for cl in g.clearances:
+        decided = f", decided {cl.decided}" if cl.decided else ""
+        typer.echo(
+            f"clearance {cl.name}: {cl.level} {cl.status} (requested {cl.requested}{decided})"
+        )
+    for r in g.rivals[:10]:
+        typer.echo(f"rival {r.name}: {r.awards} awards, {format_money(r.awarded_cents)}")

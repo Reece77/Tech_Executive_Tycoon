@@ -76,6 +76,9 @@ SYSTEMS: tuple[System, ...] = (
     System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
     System(30, "robotics", "Robotics", "products"),  # tunable-exempt: stable id (M39; 29 is M41's)
     System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
+    System(32, "pharma", "Pharma", "products"),  # tunable-exempt: stable id (M42; 31 is M39's)
+    System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
+    System(34, "government", "Government", "markets"),  # tunable-exempt: stable id (M44)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -253,6 +256,26 @@ def _robotics(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     return None
 
 
+def _government(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M44 (57): a bid or contract of the group, or the government year
+    (government.unlock_year) for a stage-3 company with a product in a programme area."""
+    if d.government is None:
+        return None
+    if any(x.company_id in ids for x in state.gov_bids) or any(
+        c.company_id in ids for c in state.gov_contracts
+    ):
+        return "the company bids for government work"
+    from tst.sim.government.data import area_of
+
+    if (
+        turn_to_ym(state.turn)[0] >= b.government.unlock_year
+        and _stage(state) >= STAGE_GROWTH
+        and any(p.company_id in ids and area_of(p, d) is not None for p in state.products)
+    ):
+        return f"governments tender for what the company makes ({b.government.unlock_year})"
+    return None
+
+
 def _mobility(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
     """M39 (53.3): a robotaxi service, or a car line of the group once a region has approved
     driverless (L4) service."""
@@ -265,6 +288,23 @@ def _mobility(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     cars = any(p.category == b.vehicles.category for p in state.products if p.company_id in ids)
     if cars and any(vs.approved(state, r, "l4", b, d) for r in d.region_keys):
         return "driverless service is approved and the group makes cars"
+    return None
+
+
+def _space(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M40 (56): a launch, broadband or Earth-observation line, a launch site or satellite plant,
+    or the space year (space.unlock_year) for a stage-3 company that makes chips or devices."""
+    if d.space is None:
+        return None
+    sb = b.space
+    cats = (sb.launch, sb.broadband, sb.eo)
+    if any(p.category in cats for p in state.products if p.company_id in ids):
+        return "the company has a space line"
+    kinds = (sb.site_kind, sb.plant_kind)
+    if any(f.kind in kinds for f in state.facilities if f.company_id in ids):
+        return "the group runs a launch site or satellite plant"
+    if turn_to_ym(state.turn)[0] >= sb.unlock_year and _stage(state) >= STAGE_GROWTH:
+        return f"space is open to a stage-3 company ({sb.unlock_year})"
     return None
 
 
@@ -340,6 +380,24 @@ def _medical(state: GameState, ids: set[int], _b: Balance, data: GameData) -> st
     return None
 
 
+def _pharma(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
+    """M42 (55): a programme, deal or plant of the group's, or an AI or medical product at
+    stage 3 (AI discovery and a health business lead to drugs)."""
+    for programme in state.pharma_programmes:
+        if programme.company_id in ids:
+            return f"{programme.name} is a drug programme"
+    if any(d.company_id in ids for d in state.pharma_deals):
+        return "the company has a pharmaceutical deal"
+    if _stage(state) < STAGE_GROWTH:
+        return None
+    for product in state.products:
+        if product.company_id not in ids or product.status == "retired":
+            continue
+        if product.category == "ai_models" or data.category(product.category).medical:
+            return f"{product.name} can lead to drug discovery, and the company reached stage 3"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -361,7 +419,10 @@ CHECKS: dict[str, Check] = {
     "vehicles": _vehicles,  # M38 (49)
     "medical": _medical,  # M41 (50)
     "robotics": _robotics,  # M39 (53.1-53.2)
+    "pharma": _pharma,  # M42 (55)
     "mobility": _mobility,  # M39 (53.3)
+    "space": _space,  # M40 (56)
+    "government": _government,  # M44 (57)
 }
 
 

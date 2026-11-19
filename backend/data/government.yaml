@@ -1,0 +1,470 @@
+# Defence and government contracts (docs/formulas.md 57, M44). Research: docs/v5-research/defence-dossier.md
+# (its "Verification (M44)" section records what was checked, how, and what stays unverified).
+#
+# Every number is [value, "TAG:source"] (money [value, dollar year, "TAG:source"] under keys ending _usd,
+# _usd_m or _usd_bn; a {year: [value, tag]} money series is in each year's dollars). TAG: S sourced
+# (the figure as the source prints it), D derived from sourced figures (the derivation in a comment),
+# R recalled or read from a secondary report of the source (checked where the comment says), A an
+# assumption for play (its basis in a comment). `source` names a key of `sources`; the loader refuses a
+# number without a tag and a known source. Money is converted to 2010 dollars with `cpi` at load (real
+# scale); the engine applies the game's scale (balance.yaml economy_scale.money, formulas.md 54).
+# History holds to 2025 (budgets, the named tenders, rules and their dates); seeded after.
+
+sources:
+  sipri_milex: { title: "SIPRI Military Expenditure Database, current US$ (release April 2025, data 1949-2024)", url: "https://www.sipri.org/databases/milex" }
+  sipri_fs: { title: "SIPRI Fact Sheets, Trends in world military expenditure (2011-2025 editions)", url: "https://www.sipri.org/sites/default/files/2025-04/2504_fs_milex_2024.pdf" }
+  sipri_top100: { title: "SIPRI Arms Industry Database / Yearbook 2012 table 5A (2010 arms sales)", url: "https://www.sipri.org/databases/armsindustry" }
+  bls_cpi: { title: "US BLS CPI-U, annual averages (as vehicles.yaml and robotics.yaml)", url: "https://www.bls.gov/cpi/" }
+  gao_it_2015: { title: "GAO blog, A closer look at a new high-risk area: management of federal IT projects (17 Feb 2015): about $80 billion a year", url: "https://www.gao.gov/blog/2015/02/17/a-closer-look-at-a-new-high-risk-area-management-of-federal-information-technology-projects" }
+  gao_20_691t: { title: "GAO-20-691T, Information Technology (Aug 2020): over $90 billion a year", url: "https://www.gao.gov/products/gao-20-691t" }
+  gao_24_106693: { title: "GAO-24-106693, IT: agencies' spending (Dec 2023): about $95 billion on the IT Dashboard, more than $100 billion a year", url: "https://www.gao.gov/products/GAO-24-106693" }
+  it_2010: { title: "FY2010 federal IT budget, $76-82 billion by source (OMB Exhibit 53 totals as reported by InformationWeek and FY2012 analyses)", url: "https://www.itdashboard.gov/" }
+  dod_itca: { title: "DoD FY2024 IT and cyberspace activities budget overview (about $58 billion; R, not read directly)", url: "https://comptroller.defense.gov/" }
+  jedi: { title: "JEDI: award to Microsoft 25 Oct 2019 ($10B ceiling, 10 years); AWS protest Nov 2019; cancelled 6 July 2021 (Defense Daily, HPCwire, CIO Dive, 6 July 2021)", url: "https://www.hpcwire.com/2021/07/06/pentagon-cancels-jedi-cloud-contract/" }
+  jwcc: { title: "JWCC: AWS, Google, Microsoft and Oracle, $9B shared ceiling, 7 Dec 2022, ordering to June 2028 (Nextgov)", url: "https://www.nextgov.com/cxo-briefing/2022/12/amazon-google-microsoft-oracle-awarded-9b-pentagon-cloud-contract/380596/" }
+  maven: { title: "Project Maven: Work memo 26 Apr 2017 (C4ISRNet, 27 Jul 2018); about 3,100-4,000 signatories and about a dozen resignations (NYT 4 Apr 2018, Gizmodo via Fortune 14 May 2018); not renewed, announced 1 Jun 2018", url: "https://fortune.com/2018/05/14/google-project-maven-resignations/" }
+  cdao: { title: "CDAO: Deputy Secretary memo 8 Dec 2021; initial operating capability 1 Feb 2022, full 1 Jun 2022 (Defense News, 2 Jun 2022)", url: "https://media.defense.gov/2022/Feb/02/2002931807/-1/-1/1/MEMORANDUM-ON-ESTABLISHMENT-OF-THE-CHIEF-DIGITAL-AND-ARTIFICIAL-INTELLIGENCE-OFFICER.PDF" }
+  nssl2: { title: "NSSL Phase 2: 7 Aug 2020, ULA $337M and SpaceX $316M initial orders, 60/40 of about 34 missions (Defense News)", url: "https://www.defensenews.com/space/2020/08/07/ula-spacex-win-national-security-space-launch-contracts/" }
+  nssl3: { title: "NSSL Phase 3: Lane 1 13 Jun 2024, $5.6B ceiling (SAM.gov, C4ISRNet); Lane 2 4 Apr 2025, about $13.7B: SpaceX $5.9B, ULA $5.4B, Blue Origin $2.4B (Space Force)", url: "https://www.spaceforce.mil/News/Article-Display/Article/4146459/" }
+  sda: { title: "SDA: Tranche 1 Transport 28 Feb 2022, about $1.8B (Lockheed, Northrop, York); Tranche 2 Tracking 16 Jan 2024, about $2.5B (L3Harris, Lockheed, Sierra Space) (SDA, GovConWire)", url: "https://www.sda.mil/" }
+  secure_enclave: { title: "Secure Enclave: Intel, up to $3B under the CHIPS Act, 16 Sep 2024 (Intel newsroom, Reuters)", url: "https://www.intel.com/content/www/us/en/newsroom/news/intel-awarded-secure-enclave.html" }
+  chips_act: { title: "CHIPS and Science Act, signed 9 Aug 2022, $52.7B for semiconductors (CRS R47523)", url: "https://crsreports.congress.gov/product/pdf/R/R47523" }
+  trusted_foundry: { title: "DoD Trusted Foundry Program, from 2004 with IBM, DMEA (GAO-16-185T)", url: "https://www.gao.gov/products/gao-16-185t" }
+  s889: { title: "FY2019 NDAA s.889 (Pub. L. 115-232): part A from 13 Aug 2019 (84 FR 40216), part B from 13 Aug 2020; Huawei, ZTE, Hytera, Hikvision, Dahua", url: "https://www.federalregister.gov/documents/2019/08/13/2019-17201/" }
+  buy_american: { title: "FAR final rule 87 FR 12780 (7 Mar 2022): domestic content 55% to 60% (25 Oct 2022), 65% (2024), 75% (2029); 55% from Jan 2020 under EO 13881, 50% before (R)", url: "https://www.federalregister.gov/documents/2022/03/07/2022-04173/" }
+  itar: { title: "ITAR, 22 CFR 120-130 (DDTC); 126.1 proscribed destinations (China, Russia among them)", url: "https://www.ecfr.gov/current/title-22/chapter-I/subchapter-M/part-126" }
+  pac_2018: { title: "PAC/NBIB timeliness, fastest 90% end to end, Q1-Q2 FY2018: Top Secret 534-543 days, Secret 221-259 days; backlog about 725,000 (Apr 2018) (ClearanceJobs, 13 Mar and 18 Jul 2018)", url: "https://news.clearancejobs.com/2018/07/18/security-clearance-processing-times/" }
+  pac_2024: { title: "PAC quarterly progress, Q4 FY2024, end to end: Top Secret about 249 days, Secret about 138 days (ClearanceJobs; performance.gov)", url: "https://www.performance.gov/pac/" }
+  odni_denials: { title: "ODNI annual report on security clearance determinations FY2014: initial denials NSA 9.2%, CIA 6.5% (C4ISRNet, 28 Apr 2015); DCSA FY2021: 1,810 denials and revocations of 836,461 adjudications", url: "https://www.dni.gov/" }
+  dcsa_prices: { title: "DCSA investigation prices FY2024: Tier 3 (Secret) about $433, Tier 5 (Top Secret) about $5,410 (R, DCSA price list)", url: "https://www.dcsa.mil/" }
+  gao_protests: { title: "GAO bid protest annual reports to Congress: FY2010 (WIFCON table), GAO-16-270SP (FY2015), GAO-21-281SP (FY2020), GAO-24-900541 (FY2023), GAO-25-900611 (FY2024)", url: "https://www.gao.gov/legal/bid-protests/reports" }
+  company_reports: { title: "Annual reports and 10-Ks: Lockheed Martin 2010 $45.67B and 2024 $71.04B; General Dynamics 2010 $32.47B; L3Harris 2024 $21.3B; Palantir 2024 $2.87B", url: "https://www.sec.gov/" }
+  company_recall: { title: "Revenues recalled from annual reports, not re-checked in this session (RTX, Northrop, Boeing BDS, BAE, L-3, Palantir 2020): see the dossier's verification section", url: "https://www.sec.gov/" }
+  anduril: { title: "Anduril revenue about $1B in 2024 (company via TechCrunch; Sacra)", url: "https://techcrunch.com/" }
+  game: { title: "Game assumption (M44): a value set for play where no public figure exists; its basis is in the comment beside it", url: "" }
+
+cpi: # BLS CPI-U annual averages (R, as robotics.yaml); 2025 provisional
+  2010: [218.056, "R:bls_cpi"]
+  2012: [229.594, "R:bls_cpi"]
+  2015: [237.017, "R:bls_cpi"]
+  2016: [240.007, "R:bls_cpi"]
+  2019: [255.657, "R:bls_cpi"]
+  2020: [258.811, "R:bls_cpi"]
+  2021: [270.970, "R:bls_cpi"]
+  2022: [292.655, "R:bls_cpi"]
+  2023: [304.702, "R:bls_cpi"]
+  2024: [313.689, "R:bls_cpi"]
+  2025: [322.0, "R:bls_cpi"]
+
+# --- Governments (57.1) --------------------------------------------------------------------------------
+# defence_usd_bn: SIPRI military expenditure, current US$ billions (SIPRI's April 2025 database; the
+# database revises every year, so 2010 reads 738 for the US where the 2011 fact sheet printed 698). Data to
+# 2024; 2025 holds 2024's value, then seeded (formulas.md 57.1). civil_it_usd_bn: US federal IT spending;
+# other governments' civil technology budgets are civil_ratio x defence (A: the US's ratio, about 0.10-0.12).
+# open_to: blocs (countries.yaml) whose companies may bid; refuses: blocs whose militaries' suppliers it
+# will not buy from (57.4). China's and the US-aligned governments' defence buyers refuse each other's.
+# rest_of_eu = the EU-27 less France and Germany (D: the sum of member states in SIPRI's sheet, less both).
+governments:
+  - key: us
+    label: United States
+    country: us
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [738.0, "S:sipri_milex"], 2012: [725.2, "S:sipri_milex"], 2014: [647.8, "S:sipri_milex"], 2016: [639.9, "S:sipri_milex"], 2018: [682.5, "S:sipri_milex"], 2020: [778.4, "S:sipri_milex"], 2022: [860.7, "S:sipri_milex"], 2024: [997.3, "S:sipri_milex"] }
+    civil_it_usd_bn: { 2010: [78.0, "R:it_2010"], 2015: [80.0, "S:gao_it_2015"], 2020: [90.0, "S:gao_20_691t"], 2024: [95.0, "S:gao_24_106693"] } # IT Dashboard scope: excludes about $37B of DoD national-security IT
+  - key: uk
+    label: United Kingdom
+    country: uk
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [64.0, "S:sipri_milex"], 2012: [65.5, "S:sipri_milex"], 2014: [67.0, "S:sipri_milex"], 2016: [53.3, "S:sipri_milex"], 2018: [55.8, "S:sipri_milex"], 2020: [58.3, "S:sipri_milex"], 2022: [64.1, "S:sipri_milex"], 2024: [81.8, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"] # the US ratio of civil IT to defence (95 / 997 to 78 / 738)
+  - key: france
+    label: France
+    country: france
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [52.0, "S:sipri_milex"], 2012: [50.2, "S:sipri_milex"], 2014: [53.1, "S:sipri_milex"], 2016: [45.7, "S:sipri_milex"], 2018: [51.3, "S:sipri_milex"], 2020: [53.4, "S:sipri_milex"], 2022: [54.7, "S:sipri_milex"], 2024: [64.7, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: germany
+    label: Germany
+    country: germany
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [43.0, "S:sipri_milex"], 2012: [43.8, "S:sipri_milex"], 2014: [44.7, "S:sipri_milex"], 2016: [39.9, "S:sipri_milex"], 2018: [46.5, "S:sipri_milex"], 2020: [53.3, "S:sipri_milex"], 2022: [56.2, "S:sipri_milex"], 2024: [88.5, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: rest_of_eu
+    label: Other EU governments
+    country: rest_of_eu
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [118.7, "D:sipri_milex"], 2012: [111.7, "D:sipri_milex"], 2014: [109.5, "D:sipri_milex"], 2016: [97.0, "D:sipri_milex"], 2018: [117.5, "D:sipri_milex"], 2020: [131.0, "D:sipri_milex"], 2022: [148.1, "D:sipri_milex"], 2024: [215.3, "D:sipri_milex"] } # EU-27 sum 213.7 / 205.7 / 207.3 / 182.6 / 215.3 / 237.7 / 259.0 / 368.5 less France and Germany
+    civil_ratio: [0.11, "A:game"]
+  - key: israel
+    label: Israel
+    country: israel
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [13.9, "S:sipri_milex"], 2012: [14.5, "S:sipri_milex"], 2014: [17.7, "S:sipri_milex"], 2016: [17.4, "S:sipri_milex"], 2018: [19.9, "S:sipri_milex"], 2020: [21.8, "S:sipri_milex"], 2022: [23.4, "S:sipri_milex"], 2024: [46.5, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: japan
+    label: Japan
+    country: japan
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [54.7, "S:sipri_milex"], 2012: [60.0, "S:sipri_milex"], 2014: [46.9, "S:sipri_milex"], 2016: [46.5, "S:sipri_milex"], 2018: [48.5, "S:sipri_milex"], 2020: [51.4, "S:sipri_milex"], 2022: [43.2, "S:sipri_milex"], 2024: [55.3, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: south_korea
+    label: South Korea
+    country: south_korea
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [28.2, "S:sipri_milex"], 2012: [32.0, "S:sipri_milex"], 2014: [37.6, "S:sipri_milex"], 2016: [36.9, "S:sipri_milex"], 2018: [43.1, "S:sipri_milex"], 2020: [46.1, "S:sipri_milex"], 2022: [46.4, "S:sipri_milex"], 2024: [47.6, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: australia
+    label: Australia
+    country: australia
+    open_to: [us_aligned]
+    refuses: [china]
+    defence_usd_bn: { 2010: [23.2, "S:sipri_milex"], 2012: [26.2, "S:sipri_milex"], 2014: [25.8, "S:sipri_milex"], 2016: [26.4, "S:sipri_milex"], 2018: [26.8, "S:sipri_milex"], 2020: [27.3, "S:sipri_milex"], 2022: [32.4, "S:sipri_milex"], 2024: [33.8, "S:sipri_milex"] }
+    civil_ratio: [0.11, "A:game"]
+  - key: india
+    label: India
+    country: india
+    open_to: [us_aligned, non_aligned]
+    defence_usd_bn: { 2010: [46.1, "S:sipri_milex"], 2012: [47.2, "S:sipri_milex"], 2014: [50.9, "S:sipri_milex"], 2016: [56.6, "S:sipri_milex"], 2018: [66.3, "S:sipri_milex"], 2020: [72.9, "S:sipri_milex"], 2022: [80.0, "S:sipri_milex"], 2024: [86.1, "S:sipri_milex"] }
+    civil_ratio: [0.08, "A:game"] # below the US ratio: a lower share of IT in public spending
+  - key: brazil
+    label: Brazil
+    country: brazil
+    open_to: [us_aligned, non_aligned]
+    defence_usd_bn: { 2010: [34.0, "S:sipri_milex"], 2012: [34.0, "S:sipri_milex"], 2014: [32.7, "S:sipri_milex"], 2016: [24.2, "S:sipri_milex"], 2018: [28.2, "S:sipri_milex"], 2020: [19.6, "S:sipri_milex"], 2022: [20.5, "S:sipri_milex"], 2024: [20.9, "S:sipri_milex"] }
+    civil_ratio: [0.08, "A:game"]
+  - key: china
+    label: China
+    country: china
+    open_to: [china]
+    refuses: [us_aligned]
+    defence_usd_bn: { 2010: [105.5, "S:sipri_milex"], 2012: [145.1, "S:sipri_milex"], 2014: [182.1, "S:sipri_milex"], 2016: [198.5, "S:sipri_milex"], 2018: [232.5, "S:sipri_milex"], 2020: [258.0, "S:sipri_milex"], 2022: [292.0, "S:sipri_milex"], 2024: [313.7, "S:sipri_milex"] } # SIPRI estimates
+    civil_ratio: [0.11, "A:game"]
+# World (SIPRI fact sheets, for the screen's context): 1,630 (2010), 1,753 (2012), 1,686 (2016), 1,822 (2018),
+# 1,981 (2020), 2,240 (2022), 2,718 (2024) US$ billions; the US 37% of 2024's. Russia and Saudi Arabia are not
+# buyers (selling to sanctioned states is out of scope; the Gulf is not a game country).
+
+# --- Programme areas (57.1) ----------------------------------------------------------------------------
+# defence_share / civil_share: of a defence / civil technology budget spent in the area on what the game's
+# products sell (A: DoD IT and cyberspace about $58B of about $850B, about 7% (dod_itca, R), split by the
+# game's areas; space about 3.5% (the Space Force's budget, about $30B, A)). controlled: defence work in the
+# area makes the product a controlled (ITAR-style) item (57.3). space's categories are M40's.
+areas:
+  cloud: { categories: [cloud_hosting], defence_share: [0.012, "A:dod_itca"], civil_share: [0.22, "A:gao_24_106693"], controlled: false }
+  ai: { categories: [ai_models], defence_share: [0.006, "A:cdao"], civil_share: [0.04, "A:game"], controlled: true }
+  space: { categories: [launch, satellite_broadband, earth_observation], defence_share: [0.035, "A:game"], civil_share: [0.02, "A:game"], controlled: true }
+  chips: { categories: [chips_mobile_soc, chips_server_cpu, chips_ai_accelerator], defence_share: [0.004, "A:chips_act"], civil_share: [0.0, "A:game"], controlled: true }
+  devices: { categories: [devices, servers], defence_share: [0.012, "A:dod_itca"], civil_share: [0.12, "A:game"], controlled: true }
+  cyber: { categories: [cybersecurity], defence_share: [0.010, "A:dod_itca"], civil_share: [0.12, "A:game"], controlled: false }
+
+# --- Named tenders to 2025 (57.1-57.2) -----------------------------------------------------------------
+# announced / closes: the solicitation's month and its bid deadline (A where the comment says so: the record
+# gives the award). value_usd_m: the ceiling (or the orders the record gives) in the award year's dollars.
+# winners are the record's; without a player bid each is awarded as history. names are primes (below) or
+# game companies (incumbents.yaml, entrants.yaml).
+tenders:
+  - key: maven
+    title: Project Maven (Algorithmic Warfare Cross-Functional Team)
+    government: us
+    area: ai
+    announced: "2017-04" # the Work memo, 26 Apr 2017
+    closes: "2017-07" # A
+    awarded: "2017-09" # A: Google's contract was reported from September 2017
+    value_usd_m: [15, 2017, "A:maven"] # A: reported at $9-15M for the pilot
+    term_years: 2 # ended March 2019, not renewed (announced 1 Jun 2018)
+    contract: fixed_price
+    clearance: secret
+    winners: [Google Cloud]
+    note: "Google's staff protested (about 3,100-4,000 signatures, about a dozen resignations); not renewed"
+  - key: jedi
+    title: Joint Enterprise Defense Infrastructure (JEDI) cloud
+    government: us
+    area: cloud
+    announced: "2018-07"
+    closes: "2018-10" # bids due 12 Oct 2018 (R)
+    awarded: "2019-10"
+    value_usd_m: [10000, 2019, "S:jedi"]
+    term_years: 10
+    contract: idiq
+    clearance: top_secret
+    winners: [Microsoft Azure]
+    protested_by: [Amazon Web Services]
+    cancelled: "2021-07"
+  - key: nssl_phase2
+    title: National Security Space Launch Phase 2
+    government: us
+    area: space
+    announced: "2019-05" # A: the RFP of May 2019
+    closes: "2019-08" # A
+    awarded: "2020-08"
+    value_usd_m: [653, 2020, "S:nssl2"] # the first orders (ULA $337M, SpaceX $316M); about 34 missions in all
+    term_years: 7
+    contract: idiq
+    awards: 2
+    clearance: secret
+    winners: [United Launch Alliance, SpaceX]
+  - key: sda_t1_transport
+    title: SDA Tranche 1 Transport Layer
+    government: us
+    area: space
+    announced: "2021-08" # A
+    closes: "2021-11" # A
+    awarded: "2022-02"
+    value_usd_m: [1800, 2022, "S:sda"]
+    term_years: 4
+    contract: fixed_price
+    awards: 3
+    clearance: secret
+    winners: [Lockheed Martin, Northrop Grumman, York Space Systems]
+  - key: jwcc
+    title: Joint Warfighting Cloud Capability (JWCC)
+    government: us
+    area: cloud
+    announced: "2021-11" # A: solicitations to the four in November 2021
+    closes: "2022-03" # A
+    awarded: "2022-12"
+    value_usd_m: [9000, 2022, "S:jwcc"]
+    term_years: 6 # a 3-year base and options to June 2028
+    contract: idiq
+    awards: 4
+    clearance: top_secret
+    winners: [Amazon Web Services, Google Cloud, Microsoft Azure, Oracle]
+  - key: sda_t2_tracking
+    title: SDA Tranche 2 Tracking Layer
+    government: us
+    area: space
+    announced: "2023-06" # A
+    closes: "2023-09" # A
+    awarded: "2024-01"
+    value_usd_m: [2500, 2024, "S:sda"]
+    term_years: 4
+    contract: fixed_price
+    awards: 3
+    clearance: secret
+    winners: [L3Harris, Lockheed Martin, Sierra Space]
+  - key: nssl_phase3_lane1
+    title: National Security Space Launch Phase 3 Lane 1
+    government: us
+    area: space
+    announced: "2023-10" # A
+    closes: "2024-01" # A
+    awarded: "2024-06"
+    value_usd_m: [5600, 2024, "S:nssl3"]
+    term_years: 5
+    contract: idiq
+    awards: 3
+    clearance: secret
+    winners: [SpaceX, Blue Origin, United Launch Alliance]
+  - key: secure_enclave
+    title: Secure Enclave (trusted leading-edge chips)
+    government: us
+    area: chips
+    announced: "2024-03" # A: funded in the March 2024 appropriation
+    closes: "2024-06" # A
+    awarded: "2024-09"
+    value_usd_m: [3000, 2024, "S:secure_enclave"]
+    term_years: 5
+    contract: cost_plus
+    clearance: top_secret
+    winners: [Intel]
+  - key: nssl_phase3_lane2
+    title: National Security Space Launch Phase 3 Lane 2
+    government: us
+    area: space
+    announced: "2023-10" # A
+    closes: "2024-02" # A
+    awarded: "2025-04"
+    value_usd_m: [13700, 2025, "S:nssl3"]
+    term_years: 5
+    contract: idiq
+    awards: 3
+    clearance: secret
+    winners: [SpaceX, United Launch Alliance, Blue Origin]
+
+# --- Sourcing rules (57.3) -----------------------------------------------------------------------------
+bans:
+  - key: s889
+    label: "Section 889 (FY2019 NDAA): no covered Chinese telecommunications or video equipment"
+    governments: [us]
+    countries: [china] # Huawei, ZTE, Hytera, Hikvision, Dahua: the game bans the country's share of a product
+    start: "2019-08" # part A, 13 Aug 2019; part B (contractors' own use) 13 Aug 2020
+domestic_content:
+  - governments: [us]
+    areas: [devices, chips, space]
+    steps:
+      - { start: "2010-01", share: [0.50, "R:buy_american"] }
+      - { start: "2020-01", share: [0.55, "R:buy_american"] }
+      - { start: "2022-10", share: [0.60, "S:buy_american"] }
+      - { start: "2024-01", share: [0.65, "S:buy_american"] }
+      - { start: "2029-01", share: [0.75, "S:buy_american"] }
+trusted_foundry:
+  governments: [us]
+  start: "2004-01"
+  countries: [us]
+controlled_countries: [china, russia] # 22 CFR 126.1: a controlled item may not be sold there
+
+# --- Clearances (57.3) ---------------------------------------------------------------------------------
+# p90_days: the fastest 90% of initial cases, end to end (PAC); the game's median a case is
+# government.clearances.median_of_p90 x this plus sponsor_months (balance.yaml). never_share: candidates who
+# never clear: denials (0.2% of DCSA adjudications in FY2021; 6.5-9.2% of initial cases at CIA and NSA in
+# FY2014) plus discontinued cases (A: candidates who withdraw or leave before a decision).
+clearances:
+  secret:
+    p90_days: { 2010: [120, "A:pac_2018"], 2016: [200, "A:pac_2018"], 2018: [240, "S:pac_2018"], 2019: [234, "S:pac_2018"], 2024: [138, "S:pac_2024"] } # 2010: before the 2016-2018 backlog (A)
+    never_share: [0.05, "A:odni_denials"]
+    cost_usd: [433, 2024, "R:dcsa_prices"]
+  top_secret:
+    p90_days: { 2010: [300, "A:pac_2018"], 2016: [450, "A:pac_2018"], 2018: [538, "S:pac_2018"], 2019: [468, "S:pac_2018"], 2024: [249, "S:pac_2024"] }
+    never_share: [0.08, "A:odni_denials"]
+    cost_usd: [5410, 2024, "R:dcsa_prices"]
+facility_clearance_months: [[6, "A:game"], [12, "A:game"]] # a facility clearance (FCL) sponsored by a tender: about 6-12 months
+
+# --- Protests (57.2) -----------------------------------------------------------------------------------
+# GAO's statistics: cases filed, the sustain rate of merit decisions and the effectiveness rate (protesters
+# who obtained relief, corrective action included). The game's protest succeeds at the effectiveness rate.
+protests:
+  2010: { filed: [2299, "R:gao_protests"], sustain_rate: [0.19, "S:gao_protests"], effectiveness: [0.42, "R:gao_protests"] }
+  2015: { filed: [2639, "S:gao_protests"], sustain_rate: [0.12, "S:gao_protests"], effectiveness: [0.45, "S:gao_protests"] }
+  2020: { filed: [2149, "S:gao_protests"], sustain_rate: [0.15, "S:gao_protests"], effectiveness: [0.51, "S:gao_protests"] }
+  2023: { filed: [2025, "S:gao_protests"], sustain_rate: [0.31, "S:gao_protests"], effectiveness: [0.57, "S:gao_protests"] }
+  2024: { filed: [1803, "S:gao_protests"], sustain_rate: [0.16, "S:gao_protests"], effectiveness: [0.52, "S:gao_protests"] }
+
+# --- Rivals (57.5) -------------------------------------------------------------------------------------
+# primes: bidders from the data (not game companies; their awards are published records, M44 decision 4).
+# areas: technical merit 0-100 by area (A: ranked from SIPRI's Top 100 and the areas each is known for);
+# past_performance 0-100 (A: decades of delivered programmes for the primes, less for newer entrants).
+# revenue_usd_bn: shown on the screen (S/R as tagged).
+primes:
+  - name: Lockheed Martin
+    country: us
+    areas: { space: [85, "A:sipri_top100"], devices: [70, "A:sipri_top100"], ai: [60, "A:game"], cyber: [65, "A:game"], chips: [30, "A:game"] }
+    past_performance: [92, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [45.67, "S:company_reports"], 2024: [71.04, "S:company_reports"] }
+  - name: RTX
+    country: us
+    areas: { devices: [75, "A:sipri_top100"], cyber: [70, "A:game"], space: [60, "A:game"], ai: [55, "A:game"] }
+    past_performance: [90, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [25.2, "R:company_recall"], 2024: [80.7, "R:company_recall"] } # Raytheon until the 2020 merger
+  - name: Northrop Grumman
+    country: us
+    areas: { space: [85, "A:sipri_top100"], cyber: [75, "A:game"], ai: [60, "A:game"], devices: [65, "A:game"] }
+    past_performance: [90, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [34.8, "R:company_recall"], 2024: [41.0, "R:company_recall"] }
+  - name: General Dynamics
+    country: us
+    areas: { cloud: [70, "A:game"], devices: [70, "A:sipri_top100"], cyber: [70, "A:game"] } # GDIT
+    past_performance: [90, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [32.47, "S:company_reports"], 2024: [47.7, "R:company_recall"] }
+  - name: Boeing Defense
+    country: us
+    areas: { space: [70, "A:sipri_top100"], devices: [55, "A:game"] }
+    past_performance: [85, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [32.0, "R:company_recall"], 2024: [23.9, "R:company_recall"] }
+  - name: L3Harris
+    country: us
+    areas: { space: [75, "A:sda"], devices: [75, "A:game"], cyber: [65, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [15.7, "R:company_recall"], 2024: [21.3, "S:company_reports"] } # L-3 alone in 2010
+  - name: BAE Systems
+    country: uk
+    areas: { devices: [75, "A:sipri_top100"], cyber: [75, "A:game"], ai: [50, "A:game"] }
+    past_performance: [90, "A:sipri_top100"]
+    revenue_usd_bn: { 2010: [32.9, "S:sipri_top100"], 2024: [36.0, "R:company_recall"] } # 2010: SIPRI arms sales
+  - name: Palantir
+    country: us
+    areas: { ai: [80, "A:game"], cloud: [45, "A:game"] }
+    past_performance: [60, "A:game"]
+    revenue_usd_bn: { 2020: [1.09, "R:company_recall"], 2024: [2.87, "S:company_reports"] }
+  - name: Anduril
+    country: us
+    from_year: 2017 # founded 2017
+    areas: { ai: [70, "A:game"], devices: [70, "A:game"], space: [40, "A:game"] }
+    past_performance: [30, "A:game"]
+    revenue_usd_bn: { 2023: [0.42, "R:anduril"], 2024: [1.0, "R:anduril"] }
+  - name: SpaceX
+    country: us
+    areas: { space: [90, "A:nssl3"] }
+    past_performance: [70, "A:nssl2"]
+  - name: United Launch Alliance
+    country: us
+    areas: { space: [80, "A:nssl2"] }
+    past_performance: [95, "A:nssl2"]
+  - name: Blue Origin
+    country: us
+    from_year: 2020
+    areas: { space: [60, "A:nssl3"] }
+    past_performance: [20, "A:game"]
+  - name: York Space Systems
+    country: us
+    from_year: 2018
+    areas: { space: [60, "A:sda"] }
+    past_performance: [30, "A:game"]
+  - name: Sierra Space
+    country: us
+    from_year: 2021
+    areas: { space: [55, "A:sda"] }
+    past_performance: [20, "A:game"]
+  - name: Thales
+    country: france
+    areas: { devices: [75, "A:sipri_top100"], cyber: [75, "A:game"], space: [70, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+  - name: Airbus Defence and Space
+    country: germany
+    areas: { space: [80, "A:sipri_top100"], cyber: [60, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+  - name: Leonardo
+    country: rest_of_eu
+    areas: { devices: [65, "A:sipri_top100"], space: [55, "A:game"], cyber: [60, "A:game"] }
+    past_performance: [85, "A:sipri_top100"]
+  - name: Rheinmetall
+    country: germany
+    areas: { devices: [60, "A:sipri_top100"] }
+    past_performance: [85, "A:sipri_top100"]
+  - name: Mitsubishi Heavy Industries
+    country: japan
+    areas: { space: [70, "A:sipri_top100"], devices: [60, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+  - name: Hanwha Aerospace
+    country: south_korea
+    areas: { space: [50, "A:game"], devices: [60, "A:sipri_top100"] }
+    past_performance: [82, "A:sipri_top100"]
+  - name: Elbit Systems
+    country: israel
+    areas: { devices: [75, "A:sipri_top100"], ai: [60, "A:game"], cyber: [70, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+  - name: Hindustan Aeronautics
+    country: india
+    areas: { devices: [50, "A:sipri_top100"], space: [40, "A:game"] }
+    past_performance: [78, "A:sipri_top100"]
+  - name: Embraer Defense
+    country: brazil
+    areas: { devices: [45, "A:game"] }
+    past_performance: [75, "A:sipri_top100"]
+  - name: CETC
+    country: china
+    areas: { devices: [70, "A:sipri_top100"], ai: [60, "A:game"], cyber: [65, "A:game"], chips: [50, "A:game"] }
+    past_performance: [88, "A:sipri_top100"]
+  - name: CASC
+    country: china
+    areas: { space: [80, "A:sipri_top100"] }
+    past_performance: [88, "A:sipri_top100"]
+
+# company_bidders: game companies that bid (57.5: the hyperscalers under JWCC-style vehicles). Merit is their
+# best live product's quality in the area; past performance as below (A).
+company_bidders:
+  - { name: Amazon Web Services, areas: [cloud, ai], past_performance: [80, "A:jwcc"] } # the CIA's C2S cloud from 2013
+  - { name: Microsoft Azure, areas: [cloud, ai], past_performance: [75, "A:jwcc"] }
+  - { name: Google Cloud, areas: [cloud, ai], past_performance: [55, "A:jwcc"], from_year: 2012 }
+  - { name: Oracle, areas: [cloud], past_performance: [70, "A:jwcc"] }
+  - { name: IBM, areas: [cloud, ai], past_performance: [80, "A:trusted_foundry"] }
+  - { name: Intel, areas: [chips], past_performance: [70, "A:secure_enclave"] }
+  - { name: Microsoft, areas: [devices, cyber], past_performance: [65, "A:game"] } # HoloLens-based IVAS (2021)
+  - { name: Dell, areas: [devices], past_performance: [70, "A:game"] }
+  - { name: HPE, areas: [devices, cloud], past_performance: [70, "A:game"] }

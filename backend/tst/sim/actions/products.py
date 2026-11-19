@@ -230,6 +230,8 @@ def create_product(
     if action.category not in {c.key for c in data.categories} | pseudo:
         raise ProductRuleError(f"unknown category {action.category!r}")
     category = data.category(action.category)
+    if category.pharma:  # M42 (55.1): drugs are programmes
+        raise ProductRuleError(f"{category.label}: start a programme from the Pharma screen")
     if category.capacity_market:  # M12a (22.3)
         raise ProductRuleError(
             f"{category.label} sells spare data-centre capacity: start it from Infrastructure"

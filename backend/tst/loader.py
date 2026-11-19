@@ -65,6 +65,7 @@ from tst.sim.geopolitics.config import (
     TariffSchedule,
     TariffsFile,
 )
+from tst.sim.government.config import GovernmentFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets.longrun import with_long_run
 from tst.sim.markets_public.config import BanksFile
@@ -72,11 +73,13 @@ from tst.sim.medical.config import MedicalFile
 from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
+from tst.sim.pharma.config import PharmaFile
 from tst.sim.platforms.config import PlatformsFile
 from tst.sim.power.config import PowerFile
 from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.robotics.config import HUMANOID_SEGMENTS, INDUSTRIAL_SEGMENTS, RoboticsFile
+from tst.sim.space.config import BROADBAND_SEGMENTS, EO_SEGMENTS, LAUNCH_SEGMENTS, SpaceFile
 from tst.sim.vehicles.config import LEVELS, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -130,6 +133,9 @@ MEDICAL_FILE = "medical.yaml"  # M41 (formulas.md 50)
 EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
 ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
+GOVERNMENT_FILE = "government.yaml"  # M44 (formulas.md 57)
+PHARMA_FILE = "pharma.yaml"  # M42 (formulas.md 55)
+SPACE_FILE = "space.yaml"  # M40 (formulas.md 56)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -155,6 +161,9 @@ DATA_FILES = (
     POWER_FILE,
     VEHICLES_FILE,
     ROBOTICS_FILE,
+    GOVERNMENT_FILE,
+    PHARMA_FILE,
+    SPACE_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -395,7 +404,7 @@ def _check_family(balance: Balance, data: GameData) -> None:
 
 def _check_conglomerate(balance: Balance, data: GameData) -> None:
     """M43: every product category and facility kind is reported in an industry, and every
-    account an industry lists is a revenue account."""
+    account an industry lists is a revenue or expense account."""
     where = f"{BALANCE_FILE}: conglomerate.industries"
     industries = balance.conglomerate.industries
     categories = {c for i in industries for c in i.categories}
@@ -404,9 +413,9 @@ def _check_conglomerate(balance: Balance, data: GameData) -> None:
     kinds = {k for i in industries for k in i.facility_kinds}
     if missing := sorted(set(balance.facility.kinds) - kinds):
         raise DataLoadError(f"{where}: facility kinds {missing} are in no industry")
-    revenue = {a.code for a in data.accounts if a.type == "revenue"}
-    if bad := sorted({a for i in industries for a in i.accounts} - revenue):
-        raise DataLoadError(f"{where}: accounts {bad} are not revenue accounts")
+    pnl = {a.code for a in data.accounts if a.type in ("revenue", "expense")}
+    if bad := sorted({a for i in industries for a in i.accounts} - pnl):
+        raise DataLoadError(f"{where}: accounts {bad} are not revenue or expense accounts")
 
 
 def _check_facilities(balance: Balance, data: GameData) -> None:
@@ -428,6 +437,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             and kind.output_good not in refined  # M20: a refinery makes its recipe's good
             and key not in vehicle_kinds(balance)  # M38: cells and charging are 49's
             and key != balance.robotics.depot_kind  # M39: a depot serves robotaxis (53.3)
+            and key != balance.space.plant_kind  # M40: satellites are tst.sim.space's (56.2)
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -1140,6 +1150,9 @@ def load_all(
     equipment = _validate(EquipmentFile, parsed[EQUIPMENT_FILE], EQUIPMENT_FILE)
     vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
     robotics = _validate(RoboticsFile, parsed[ROBOTICS_FILE], ROBOTICS_FILE)
+    government = _validate(GovernmentFile, parsed[GOVERNMENT_FILE], GOVERNMENT_FILE)
+    pharma = _validate(PharmaFile, parsed[PHARMA_FILE], PHARMA_FILE)
+    space = _validate(SpaceFile, parsed[SPACE_FILE], SPACE_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1200,6 +1213,9 @@ def load_all(
             "vehicles": vehicles,
             "medical": medical,
             "robotics": robotics,
+            "government": government,
+            "pharma": pharma,
+            "space": space,
         },
         "seed data cross-check",
     )
@@ -1231,6 +1247,14 @@ def load_all(
         raise DataLoadError(f"{VEHICLES_FILE}, {BALANCE_FILE} vehicles: " + "; ".join(problems))
     if problems := robotics_problems(balance, game_data):
         raise DataLoadError(f"{ROBOTICS_FILE}, {BALANCE_FILE} robotics: " + "; ".join(problems))
+    if problems := government_problems(balance, game_data):
+        raise DataLoadError(f"{GOVERNMENT_FILE}, {BALANCE_FILE} government: " + "; ".join(problems))
+    if problems := pharma_problems(balance, game_data):
+        raise DataLoadError(
+            f"{PHARMA_FILE}, {REGULATION_FILE}, {BALANCE_FILE} pharma: " + "; ".join(problems)
+        )
+    if problems := space_problems(balance, game_data):
+        raise DataLoadError(f"{SPACE_FILE}, {BALANCE_FILE} space: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1384,6 +1408,109 @@ def vehicle_kinds(balance: Balance) -> tuple[str, ...]:
     return (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind)
 
 
+def pharma_problems(balance: Balance, data: GameData) -> list[str]:
+    """M42 (55): pharma.yaml's areas are categories.yaml's family pharma; its rivals are
+    incumbents.yaml companies (with no products: their business is pharma.yaml's); its reviews
+    are regulation.yaml's drug regulators; the IRA's selected drugs are rivals' drugs; the
+    research roles exist; the regions are regions.yaml's."""
+    pf = data.pharma
+    if pf is None:
+        return ["pharma.yaml is required"]
+    out: list[str] = []
+    pharma = {c.key for c in (*data.categories, *data.pseudo_categories) if c.pharma}
+    if any(c.pharma for c in data.categories):
+        out.append("family pharma categories must be pseudo-categories (no market segments)")
+    areas = {a.category for a in pf.areas}
+    if pharma != areas:
+        out.append(f"family pharma categories {sorted(pharma)} must be the areas' {sorted(areas)}")
+    names = {i.name for i in data.incumbents}
+    for r in pf.rivals:
+        if r.company not in names:
+            out.append(f"rival {r.company!r} is not in incumbents.yaml")
+    for inc in data.incumbents:
+        if not inc.products and pf.rival(inc.name) is None:
+            out.append(f"incumbent {inc.name!r} has no products and is not a pharma rival")
+    rf = data.regulation
+    drug_regs = {r.key for r in rf.drug_regulators} if rf is not None else set()
+    reviewed = {r.regulator for r in pf.approval.reviews}
+    if drug_regs != reviewed:
+        out.append(
+            f"approval reviews {sorted(reviewed)} must be the drug regulators {sorted(drug_regs)}"
+        )
+    drugs = {d.name for r in pf.rivals for d in r.drugs}
+    if missing := sorted(set(pf.ira.selected) - drugs):
+        out.append(f"ira.selected names no rival drug: {missing}")
+    regions = set(data.region_keys)
+    for a in pf.areas:
+        if set(a.region_share) != regions:
+            out.append(f"area {a.key}: region_share must cover every region")
+    if {p.region for p in pf.pricing.regions} != regions:
+        out.append("pricing.regions must cover every region")
+    if bad := sorted({c.region for c in pf.cmos} - regions):
+        out.append(f"cmos in unknown regions {bad}")
+    roles = {r.key for r in data.roles}
+    if bad := sorted(set(balance.pharma.discovery.roles) - roles):
+        out.append(f"pharma.discovery.roles {bad} are not roles.yaml keys")
+    return out
+
+
+def government_problems(balance: Balance, data: GameData) -> list[str]:
+    """M44 (57): government.yaml's governments, areas' categories, named tenders' winners, rules
+    and bidders name things the game knows; balance.yaml's government keys agree with it.
+    Categories a later milestone adds (M40's space) may be absent until it merges."""
+    g = data.government
+    gb = balance.government
+    if g is None:
+        return ["government.yaml is required"]
+    out: list[str] = []
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    blocs = {"us_aligned", "china", "non_aligned"}
+    keys = {x.key for x in g.governments}
+    for gov in g.governments:
+        if gov.country not in countries:
+            out.append(f"{gov.key}: unknown country {gov.country!r}")
+        if bad := sorted((set(gov.open_to) | set(gov.refuses)) - blocs):
+            out.append(f"{gov.key}: unknown blocs {bad}")
+        if max(gov.defence_cents) < LAST_HISTORY_YEAR - 1:
+            out.append(f"{gov.key}: defence budgets must reach {LAST_HISTORY_YEAR - 1}")
+    if set(gb.tenders.per_year) != keys:
+        out.append("government.tenders.per_year must list every government")
+    known = {c.key for c in data.categories}
+    if not any(c in known for a in g.areas.values() for c in a.categories):
+        out.append("no area names a known category")
+    for area in ("cloud", "ai", "chips", "devices", "cyber"):
+        if bad := [c for c in g.areas[area].categories if c not in known]:
+            out.append(f"area {area}: unknown categories {bad}")
+    bidders = {p.name for p in g.primes} | {c.name for c in g.company_bidders}
+    names = {c.name for c in data.incumbents} | {e.name for e in data.entrants}
+    for c in g.company_bidders:
+        if c.name not in names:
+            out.append(f"company bidder {c.name!r} is not in incumbents.yaml or entrants.yaml")
+    for p in g.primes:
+        if p.country not in countries:
+            out.append(f"prime {p.name}: unknown country {p.country!r}")
+    for t in g.tenders:
+        if bad := [w for w in t.winners if w not in bidders]:
+            out.append(f"tender {t.key}: winners {bad} are not bidders")
+        if len(t.winners) != t.awards:
+            out.append(f"tender {t.key}: {t.awards} awards but {len(t.winners)} winners")
+    for rule in g.bans:
+        if bad := sorted((set(rule.governments) - keys) | (set(rule.countries) - countries)):
+            out.append(f"ban {rule.key}: unknown {bad}")
+    for cat in gb.reputation.consumer_categories:
+        if cat not in known:
+            out.append(f"reputation.consumer_categories: unknown {cat!r}")
+    interests = {i.key for i in data.interests}
+    if bad := sorted(set(gb.reputation.objector_interests) - interests):
+        out.append(f"reputation.objector_interests: unknown {bad}")
+    skills = {s.key for s in data.skills}
+    if bad := sorted(set(gb.bids.capture_skills) - skills):
+        out.append(f"bids.capture_skills: unknown {bad}")
+    if set(gb.itar_keep) != blocs:
+        out.append(f"itar_keep needs {sorted(blocs)}")
+    return out
+
+
 def robotics_problems(balance: Balance, data: GameData) -> list[str]:
     """M39 (53): robotics.yaml covers every region in order, splits installations over the
     industrial segments, reaches 2025, names known incumbents, countries, eras, cities and
@@ -1473,4 +1600,60 @@ def robotics_problems(balance: Balance, data: GameData) -> list[str]:
     for size in rb.robotaxi.zone_sizes:
         if size not in ("small", "medium", "large"):
             out.append(f"robotaxi.zone_sizes: unknown size {size!r}")
+    return out
+
+
+def space_problems(balance: Balance, data: GameData) -> list[str]:
+    """M40 (56): space.yaml names known incumbents, countries and regions, reaches 2025;
+    balance.yaml's space keys agree with categories.yaml, facility kinds, regions and
+    tech_frontier.yaml."""
+    f = data.space
+    sb = balance.space
+    out: list[str] = []
+    if f is None:
+        return ["space.yaml is required"]
+    cats = {c.key: c for c in data.categories}
+    want = {sb.launch: LAUNCH_SEGMENTS, sb.broadband: BROADBAND_SEGMENTS, sb.eo: EO_SEGMENTS}
+    for key, segs in want.items():
+        cat = cats.get(key)
+        if cat is None:
+            out.append(f"space category {key!r} is not in categories.yaml")
+        elif tuple(cat.segment_keys) != segs:
+            out.append(f"{key} must sell to {list(segs)}")
+    if sb.launch in cats and not cats[sb.launch].sells_units:
+        out.append(f"{sb.launch} must be a unit-sale category")
+    if sb.launch not in balance.hardware.bom:
+        out.append(f"hardware.bom needs {sb.launch}")
+    for kind in (sb.site_kind, sb.plant_kind):
+        if kind not in balance.facility.kinds:
+            out.append(f"{kind!r} is not a facility kind")
+    if bad := set(sb.site_regions) - set(data.region_keys):
+        out.append(f"site_regions: unknown regions {sorted(bad)}")
+    for shell in sb.constellation.shells:
+        if bad := set(shell.regions) - set(data.region_keys):
+            out.append(f"shell {shell.label!r}: unknown regions {sorted(bad)}")
+    for table in (sb.licence.review_months, sb.licence.approval):
+        if set(table) != set(data.region_keys):
+            out.append("licence tables must list every region")
+    if data.tech is not None and sb.domain not in {d.key for d in data.tech.domains}:
+        out.append(f"space.domain {sb.domain!r} is not a tech_frontier.yaml domain")
+    names = {c.name for c in data.incumbents}
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    for p in f.launch.providers:
+        if p.company not in names:
+            out.append(f"provider {p.company!r} is not in incumbents.yaml")
+        if countries and p.origin not in countries:
+            out.append(f"provider {p.company!r}: unknown country {p.origin!r}")
+    for c in f.constellations:
+        if c.company not in names:
+            out.append(f"constellation {c.key!r}: {c.company!r} is not in incumbents.yaml")
+    for company in sb.history_share:
+        if company not in names:
+            out.append(f"history_share: {company!r} is not in incumbents.yaml")
+    if f.launch.vehicle(f.launch.bought_vehicle) is None:
+        out.append(f"bought_vehicle {f.launch.bought_vehicle!r} is not a vehicle")
+    if max(f.launch.world) < LAST_HISTORY_YEAR:
+        out.append(f"launch.world must reach {LAST_HISTORY_YEAR}")
+    if set(sb.history_split) != set(BROADBAND_SEGMENTS):
+        out.append(f"history_split must list {list(BROADBAND_SEGMENTS)}")
     return out

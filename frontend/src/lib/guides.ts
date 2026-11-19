@@ -216,6 +216,15 @@ export const GUIDES: Record<string, Guide> = {
       'Humanoids sell only once their era arrives; your own AI model and accelerators lift their capability.',
     ],
   },
+  pharma: {
+    title: 'Pharma',
+    path: 'products/pharma',
+    what: 'Drug discovery to the generics cliff: programmes through preclinical work and Phase I-III trials at historical odds, filings with the FDA, EMA, PMDA and NMPA, prices by region and the IRA, plants and contract manufacturers, biotech licences and twelve big-pharma rivals.',
+    start: [
+      "About 8% of programmes entering Phase I reach approval, and it takes about a decade: run several, and stop the ones whose estimates disappoint. A molecule's true efficacy is never shown; each readout narrows its range.",
+      'AI discovery (with a strong AI model) gives more candidates, a shorter preclinical stage and a modest lift in the early phases. When exclusivity ends, generics take most of a small molecule’s sales within a year.',
+    ],
+  },
   mobility: {
     title: 'Mobility',
     path: 'products/mobility',
@@ -223,6 +232,24 @@ export const GUIDES: Record<string, Guide> = {
     start: [
       'A robotaxi service is a product (Robotaxi services). Launch it, apply for a zone in an approved city, add L4 cars and a depot.',
       'Utilisation decides the economics: above the break-even rides a car a day a fleet earns; a serious incident suspends the zone.',
+    ],
+  },
+  space: {
+    title: 'Space',
+    path: 'products/space',
+    what: "Launch vehicles and reusability, launches and failures, cost a kg, your constellations (shells, coverage, capacity, payback), broadband subscribers and licences by region, and rivals' public launches and constellations.",
+    start: [
+      'A launch vehicle is a product (Launch services): set its design here and fly it from a launch site. Reusability research cuts its cost a kg; full reuse takes years.',
+      'A constellation serves a Satellite broadband line: a region opens once a shell is complete over it and you hold a licence there. It is capital-heavy: expect most of a decade to pay back.',
+    ],
+  },
+  government: {
+    title: 'Government',
+    path: 'products/government',
+    what: 'Governments as customers: tenders by government and area with their requirements, your bids and their score bands, awards and protests, contracts, and staff and facility clearances.',
+    start: [
+      'Pick a tender in an area you sell in, check its requirements, then bid a price with a capture team of sellers. Classified tenders need cleared staff and a cleared facility: clearances take months.',
+      'Past performance counts, most on large tenders: win small contracts first. Defence work costs consumer brands a little and some staff object.',
     ],
   },
   regulation: {

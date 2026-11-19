@@ -26965,6 +26965,1096 @@
         }
       }
     },
+    "/api/saves/{save_id}/space": {
+      "get": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Get Space",
+        "description": "Vehicles and launches, cost a kg, constellations and coverage, subscribers by region,\nlicences and rivals' public launches and constellations.",
+        "operationId": "getSpace",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/vehicles/{product_id}/spec": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Launch Spec",
+        "operationId": "setLaunchSpec",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaunchSpecIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/constellations": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Plan Constellation",
+        "operationId": "planConstellation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConstellationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/constellations/{constellation_id}/plan": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Constellation Plan",
+        "operationId": "setConstellationPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "constellation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Constellation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConstellationPlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/licences": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Apply Licence",
+        "operationId": "applyLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpaceLicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/broadband/{product_id}/terminal": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Terminal Price",
+        "operationId": "setTerminalPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TerminalPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/broadband/{product_id}/d2d": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set D2D Partner",
+        "operationId": "setD2dPartner",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/D2dPartnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government": {
+      "get": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Get Government",
+        "description": "Announced tenders, their requirements, the player's bids, awards and contracts, clearance\nstatuses, governments' budgets this year and rivals' published awards.",
+        "operationId": "getGovernment",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/bid": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Place Bid",
+        "operationId": "placeBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenderBidIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/withdraw": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Withdraw Bid",
+        "operationId": "withdrawBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/protest": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Protest Award",
+        "operationId": "protestAward",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/clearances": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Request Clearances",
+        "operationId": "requestClearances",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearanceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/facilities/{facility_id}/clearance": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Sponsor Facility Clearance",
+        "operationId": "sponsorFacilityClearance",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -27710,6 +28800,981 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MedicalActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma": {
+      "get": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Get Pharma",
+        "description": "Programmes by stage with readouts, ranges, filings, approvals, exclusivity and Explain;\ndrugs with prices and revenue; plants, CMOs, assets, deals and rivals (55.7).",
+        "operationId": "getPharma",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/start": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Start Programme",
+        "operationId": "startProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxStartIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/trial": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Start Trial",
+        "operationId": "startTrial",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxTrialIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/stop": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Stop Programme",
+        "operationId": "stopProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxProgrammeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/file": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "File Drug",
+        "operationId": "fileDrug",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxFileIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/price": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Set Drug Price",
+        "operationId": "setDrugPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/plant": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Build Pharma Plant",
+        "operationId": "buildPharmaPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/plant-quality": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Set Pharma Plant Quality",
+        "operationId": "setPharmaPlantQuality",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlantQualityIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/cmo": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Choose Cmo",
+        "operationId": "chooseCmo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxCmoIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/license-in": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "License Asset",
+        "operationId": "licenseAsset",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxLicenseInIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/license-out": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Out License",
+        "operationId": "outLicense",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxLicenseOutIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/platform": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "License Platform",
+        "operationId": "licensePlatform",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlatformIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
                 }
               }
             }
@@ -31030,6 +33095,58 @@
         "title": "BreakdownOut",
         "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
+      "BroadbandLineOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "terminal_price_cents": {
+            "type": "integer",
+            "title": "Terminal Price Cents"
+          },
+          "terminal_cost_cents": {
+            "type": "integer",
+            "title": "Terminal Cost Cents",
+            "description": "A terminal's cost to make this month"
+          },
+          "d2d_partner": {
+            "type": "boolean",
+            "title": "D2D Partner"
+          },
+          "d2d_capable": {
+            "type": "boolean",
+            "title": "D2D Capable"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionServiceOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "terminal_price_cents",
+          "terminal_cost_cents",
+          "d2d_partner",
+          "d2d_capable",
+          "regions"
+        ],
+        "title": "BroadbandLineOut"
+      },
       "BuildCellPlantIn": {
         "properties": {
           "region": {
@@ -33787,6 +35904,75 @@
         ],
         "title": "CityOut"
       },
+      "ClearanceIn": {
+        "properties": {
+          "person_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Person Ids"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "secret or top_secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_ids",
+          "level"
+        ],
+        "title": "ClearanceIn"
+      },
+      "ClearanceOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "pending, cleared, denied or lapsed"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided",
+            "description": "Shown once decided (never the month it is due)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "level",
+          "status",
+          "requested",
+          "decided"
+        ],
+        "title": "ClearanceOut"
+      },
       "CloudOut": {
         "properties": {
           "product_id": {
@@ -34915,6 +37101,295 @@
         ],
         "title": "ConglomerateOut"
       },
+      "ConstellationIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "shells": {
+            "type": "integer",
+            "title": "Shells"
+          },
+          "mass_kg": {
+            "type": "number",
+            "title": "Mass Kg"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "d2d": {
+            "type": "boolean",
+            "title": "D2D",
+            "default": false
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "product_id",
+          "shells",
+          "mass_kg",
+          "life_months",
+          "build_per_month",
+          "launches_per_month"
+        ],
+        "title": "ConstellationIn"
+      },
+      "ConstellationMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "in_orbit": {
+            "type": "integer",
+            "title": "In Orbit"
+          },
+          "subscribers": {
+            "type": "number",
+            "title": "Subscribers"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "spend_cents": {
+            "type": "integer",
+            "title": "Spend Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "in_orbit",
+          "subscribers",
+          "revenue_cents",
+          "spend_cents"
+        ],
+        "title": "ConstellationMonthOut"
+      },
+      "ConstellationOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "shells": {
+            "items": {
+              "$ref": "#/components/schemas/ShellOut"
+            },
+            "type": "array",
+            "title": "Shells"
+          },
+          "in_orbit": {
+            "type": "integer",
+            "title": "In Orbit"
+          },
+          "ground": {
+            "type": "integer",
+            "title": "Ground"
+          },
+          "planned": {
+            "type": "integer",
+            "title": "Planned"
+          },
+          "lost": {
+            "type": "integer",
+            "title": "Lost"
+          },
+          "mass_kg": {
+            "type": "number",
+            "title": "Mass Kg"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "d2d": {
+            "type": "boolean",
+            "title": "D2D"
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "satellite_cents": {
+            "type": "integer",
+            "title": "Satellite Cents",
+            "description": "A satellite's made cost this month"
+          },
+          "covered": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Covered"
+          },
+          "capacity_gbps": {
+            "type": "number",
+            "title": "Capacity Gbps"
+          },
+          "payback": {
+            "$ref": "#/components/schemas/PaybackOut"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ConstellationMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "product_id",
+          "product",
+          "shells",
+          "in_orbit",
+          "ground",
+          "planned",
+          "lost",
+          "mass_kg",
+          "life_months",
+          "d2d",
+          "insured",
+          "build_per_month",
+          "launches_per_month",
+          "vehicle_product_id",
+          "satellite_cents",
+          "covered",
+          "capacity_gbps",
+          "payback",
+          "history"
+        ],
+        "title": "ConstellationOut"
+      },
+      "ConstellationPlanIn": {
+        "properties": {
+          "shells": {
+            "type": "integer",
+            "title": "Shells"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "shells",
+          "build_per_month",
+          "launches_per_month"
+        ],
+        "title": "ConstellationPlanIn"
+      },
       "ContinueUntilOut": {
         "properties": {
           "months_played": {
@@ -35231,6 +37706,36 @@
           "question"
         ],
         "title": "CooQuestionIn"
+      },
+      "CostPerKgOut": {
+        "properties": {
+          "vehicle": {
+            "type": "string",
+            "title": "Vehicle"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "cost_per_kg_cents": {
+            "type": "number",
+            "title": "Cost Per Kg Cents",
+            "description": "Its list price over its payload, 2010 cents"
+          },
+          "target": {
+            "type": "boolean",
+            "title": "Target",
+            "description": "A stated aspiration, not a flown price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle",
+          "company",
+          "cost_per_kg_cents",
+          "target"
+        ],
+        "title": "CostPerKgOut"
       },
       "CounterIn": {
         "properties": {
@@ -35608,6 +38113,19 @@
         ],
         "title": "CrossDivisionOut"
       },
+      "D2dPartnerIn": {
+        "properties": {
+          "partner": {
+            "type": "boolean",
+            "title": "Partner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "partner"
+        ],
+        "title": "D2dPartnerIn"
+      },
       "DatedRuleOut": {
         "properties": {
           "label": {
@@ -35915,6 +38433,54 @@
         ],
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
+      },
+      "DefenceRecordOut": {
+        "properties": {
+          "awards": {
+            "type": "integer",
+            "title": "Awards"
+          },
+          "blocs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocs",
+            "description": "Blocs whose militaries the company supplies"
+          },
+          "brand_lost": {
+            "type": "number",
+            "title": "Brand Lost"
+          },
+          "reactions": {
+            "type": "integer",
+            "title": "Reactions",
+            "description": "Staff open letters so far"
+          },
+          "controlled_products": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Controlled Products",
+            "description": "Products that are controlled items"
+          },
+          "past_performance": {
+            "type": "number",
+            "title": "Past Performance",
+            "description": "The company's own record, 0-100"
+          }
+        },
+        "type": "object",
+        "required": [
+          "awards",
+          "blocs",
+          "brand_lost",
+          "reactions",
+          "controlled_products",
+          "past_performance"
+        ],
+        "title": "DefenceRecordOut"
       },
       "DepotOut": {
         "properties": {
@@ -38602,7 +41168,9 @@
               "region",
               "plant",
               "order",
-              "zone"
+              "zone",
+              "constellation",
+              "bid"
             ],
             "title": "Scope"
           },
@@ -40099,6 +42667,57 @@
         ],
         "title": "FabsOut"
       },
+      "FacilityClearanceOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "status",
+          "requested"
+        ],
+        "title": "FacilityClearanceOut"
+      },
+      "FacilityOptionOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "kind"
+        ],
+        "title": "FacilityOptionOut"
+      },
       "FacilityOut": {
         "properties": {
           "facility_id": {
@@ -41377,6 +43996,69 @@
           "detail"
         ],
         "title": "FirstOut"
+      },
+      "FlightCostOut": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "build_cents": {
+            "type": "integer",
+            "title": "Build Cents",
+            "description": "The whole vehicle, built new"
+          },
+          "reused_share": {
+            "type": "number",
+            "title": "Reused Share"
+          },
+          "flights_per_vehicle": {
+            "type": "integer",
+            "title": "Flights Per Vehicle"
+          },
+          "refurb_share": {
+            "type": "number",
+            "title": "Refurb Share"
+          },
+          "operations_cents": {
+            "type": "integer",
+            "title": "Operations Cents"
+          },
+          "flight_cents": {
+            "type": "integer",
+            "title": "Flight Cents",
+            "description": "A flight: the expendable part, the reused part's share, refurbishment and operations"
+          },
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg",
+            "description": "Payload flown at the level"
+          },
+          "cost_per_kg_cents": {
+            "type": "number",
+            "title": "Cost Per Kg Cents"
+          },
+          "expendable_per_kg_cents": {
+            "type": "number",
+            "title": "Expendable Per Kg Cents",
+            "description": "The same design flown expendable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "build_cents",
+          "reused_share",
+          "flights_per_vehicle",
+          "refurb_share",
+          "operations_cents",
+          "flight_cents",
+          "payload_kg",
+          "cost_per_kg_cents",
+          "expendable_per_kg_cents"
+        ],
+        "title": "FlightCostOut",
+        "description": "Explain: a launch's cost (56.1)."
       },
       "FlowOut": {
         "properties": {
@@ -43081,6 +45763,210 @@
         "title": "GlossaryOut",
         "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
       },
+      "GovBuyerOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "defence_cents_year": {
+            "type": "integer",
+            "title": "Defence Cents Year",
+            "description": "This year's defence budget, real 2010 cents"
+          },
+          "civil_cents_year": {
+            "type": "integer",
+            "title": "Civil Cents Year",
+            "description": "This year's civil technology budget, real"
+          },
+          "open_to": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Open To"
+          },
+          "refuses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refuses"
+          },
+          "open_tenders": {
+            "type": "integer",
+            "title": "Open Tenders"
+          },
+          "you_may_bid": {
+            "type": "boolean",
+            "title": "You May Bid",
+            "description": "Its tenders take bids from your bloc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "country",
+          "defence_cents_year",
+          "civil_cents_year",
+          "open_to",
+          "refuses",
+          "open_tenders",
+          "you_may_bid"
+        ],
+        "title": "GovBuyerOut"
+      },
+      "GovContractOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tender_id": {
+            "type": "integer",
+            "title": "Tender Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "government_label": {
+            "type": "string",
+            "title": "Government Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "award_cents": {
+            "type": "integer",
+            "title": "Award Cents",
+            "description": "The awarded price over the whole term"
+          },
+          "start": {
+            "type": "string",
+            "title": "Start"
+          },
+          "base_end": {
+            "type": "string",
+            "title": "Base End"
+          },
+          "end": {
+            "type": "string",
+            "title": "End"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active, completed, terminated or defaulted"
+          },
+          "options": {
+            "type": "string",
+            "title": "Options",
+            "description": "pending, exercised or declined"
+          },
+          "performance": {
+            "type": "number",
+            "title": "Performance",
+            "description": "0-100, the running mean of months delivered"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "month_revenue_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Month Revenue Cents"
+          },
+          "month_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Month Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tender_id",
+          "title",
+          "government_label",
+          "area",
+          "buyer",
+          "contract",
+          "product",
+          "award_cents",
+          "start",
+          "base_end",
+          "end",
+          "status",
+          "options",
+          "performance",
+          "revenue_cents",
+          "cost_cents",
+          "month_revenue_cents",
+          "month_cost_cents"
+        ],
+        "title": "GovContractOut"
+      },
+      "GovernmentActionOut": {
+        "properties": {
+          "government": {
+            "$ref": "#/components/schemas/GovernmentScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "government",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "GovernmentActionOut"
+      },
       "GovernmentOut": {
         "properties": {
           "regions": {
@@ -43124,6 +46010,111 @@
         ],
         "title": "GovernmentOut",
         "description": "The Government affairs panel (32.5)."
+      },
+      "GovernmentScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "governments": {
+            "items": {
+              "$ref": "#/components/schemas/GovBuyerOut"
+            },
+            "type": "array",
+            "title": "Governments"
+          },
+          "tenders": {
+            "items": {
+              "$ref": "#/components/schemas/TenderOut"
+            },
+            "type": "array",
+            "title": "Tenders"
+          },
+          "contracts": {
+            "items": {
+              "$ref": "#/components/schemas/GovContractOut"
+            },
+            "type": "array",
+            "title": "Contracts"
+          },
+          "clearances": {
+            "items": {
+              "$ref": "#/components/schemas/ClearanceOut"
+            },
+            "type": "array",
+            "title": "Clearances"
+          },
+          "facility_clearances": {
+            "items": {
+              "$ref": "#/components/schemas/FacilityClearanceOut"
+            },
+            "type": "array",
+            "title": "Facility Clearances"
+          },
+          "staff": {
+            "items": {
+              "$ref": "#/components/schemas/StaffOptionOut"
+            },
+            "type": "array",
+            "title": "Staff"
+          },
+          "facilities": {
+            "items": {
+              "$ref": "#/components/schemas/FacilityOptionOut"
+            },
+            "type": "array",
+            "title": "Facilities"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalAwardOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "record": {
+            "$ref": "#/components/schemas/DefenceRecordOut"
+          },
+          "clearance_cost_cents": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Clearance Cost Cents",
+            "description": "An investigation's price by level"
+          },
+          "facility_cost_cents": {
+            "type": "integer",
+            "title": "Facility Cost Cents"
+          },
+          "protest_cost_cents": {
+            "type": "integer",
+            "title": "Protest Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "enabled",
+          "governments",
+          "tenders",
+          "contracts",
+          "clearances",
+          "facility_clearances",
+          "staff",
+          "facilities",
+          "rivals",
+          "record",
+          "clearance_cost_cents",
+          "facility_cost_cents",
+          "protest_cost_cents"
+        ],
+        "title": "GovernmentScreenOut"
       },
       "GrantOut": {
         "properties": {
@@ -46760,6 +49751,56 @@
         ],
         "title": "LabelOut"
       },
+      "LaunchOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "vehicle": {
+            "type": "string",
+            "title": "Vehicle"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "constellation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constellation"
+          },
+          "satellites": {
+            "type": "integer",
+            "title": "Satellites"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "insured_cents": {
+            "type": "integer",
+            "title": "Insured Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "vehicle",
+          "purpose",
+          "constellation",
+          "satellites",
+          "ok",
+          "insured_cents"
+        ],
+        "title": "LaunchOut"
+      },
       "LaunchReadinessOut": {
         "properties": {
           "ready": {
@@ -46794,6 +49835,24 @@
           "region"
         ],
         "title": "LaunchRegionIn"
+      },
+      "LaunchSpecIn": {
+        "properties": {
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg"
+          },
+          "reuse": {
+            "type": "string",
+            "title": "Reuse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payload_kg",
+          "reuse"
+        ],
+        "title": "LaunchSpecIn"
       },
       "LeaderChangeOut": {
         "properties": {
@@ -47334,6 +50393,24 @@
           "signed"
         ],
         "title": "LicenseOut"
+      },
+      "LineOptionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name"
+        ],
+        "title": "LineOptionOut"
       },
       "ListedOut": {
         "properties": {
@@ -48833,6 +51910,24 @@
           "detail"
         ],
         "title": "MessageOut"
+      },
+      "MilestoneOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "label"
+        ],
+        "title": "MilestoneOut"
       },
       "MineDealOut": {
         "properties": {
@@ -50452,6 +53547,97 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
+      },
+      "MyBidOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tender_id": {
+            "type": "integer",
+            "title": "Tender Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "team": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Team"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "submitted, won, lost, disqualified or withdrawn"
+          },
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreBandOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Score bands once awarded (not when disqualified)"
+          },
+          "score_floor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Floor",
+            "description": "The total band's lower bound (Explain: bid_score)"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Requirements the bid did not meet"
+          },
+          "can_protest": {
+            "type": "boolean",
+            "title": "Can Protest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tender_id",
+          "product_id",
+          "product",
+          "price_cents",
+          "team",
+          "month",
+          "status",
+          "band",
+          "score_floor",
+          "reasons",
+          "can_protest"
+        ],
+        "title": "MyBidOut"
       },
       "MyCarOut": {
         "properties": {
@@ -53061,6 +56247,58 @@
         "title": "PayPreviewOut",
         "description": "A raise or promotion before it happens, from known values only."
       },
+      "PaybackOut": {
+        "properties": {
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents",
+            "description": "Satellites and launches capitalized and in service or waiting"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "Cumulative cash flow since it was planned"
+          },
+          "last_year_cash_cents": {
+            "type": "integer",
+            "title": "Last Year Cash Cents",
+            "description": "Cash flow over the last 12 months"
+          },
+          "months_to_payback": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months To Payback",
+            "description": "At the last 12 months' rate; None if not earning"
+          },
+          "paid_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Back"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capex_cents",
+          "cash_cents",
+          "last_year_cash_cents",
+          "months_to_payback",
+          "paid_back"
+        ],
+        "title": "PaybackOut",
+        "description": "Explain: a constellation's payback (56.4 target 3)."
+      },
       "PaymentOut": {
         "properties": {
           "turn": {
@@ -53946,6 +57184,180 @@
           "stake_bp"
         ],
         "title": "PersonalStakeOut"
+      },
+      "PharmaActionOut": {
+        "properties": {
+          "pharma": {
+            "$ref": "#/components/schemas/PharmaOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pharma",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PharmaActionOut"
+      },
+      "PharmaOut": {
+        "properties": {
+          "engaged": {
+            "type": "boolean",
+            "title": "Engaged"
+          },
+          "ai_ready": {
+            "type": "boolean",
+            "title": "Ai Ready"
+          },
+          "discovery_slots": {
+            "type": "integer",
+            "title": "Discovery Slots"
+          },
+          "in_discovery": {
+            "type": "integer",
+            "title": "In Discovery"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers"
+          },
+          "indications": {
+            "items": {
+              "$ref": "#/components/schemas/RxIndicationOut"
+            },
+            "type": "array",
+            "title": "Indications"
+          },
+          "modalities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Modalities"
+          },
+          "designs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Designs"
+          },
+          "regulators": {
+            "items": {
+              "$ref": "#/components/schemas/RxRegulatorOut"
+            },
+            "type": "array",
+            "title": "Regulators"
+          },
+          "programmes": {
+            "items": {
+              "$ref": "#/components/schemas/RxProgrammeOut"
+            },
+            "type": "array",
+            "title": "Programmes"
+          },
+          "drugs": {
+            "items": {
+              "$ref": "#/components/schemas/RxDrugOut"
+            },
+            "type": "array",
+            "title": "Drugs"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/RxPlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "cmos": {
+            "items": {
+              "$ref": "#/components/schemas/RxCmoOut"
+            },
+            "type": "array",
+            "title": "Cmos"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/RxAssetOut"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/RxDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "inspections": {
+            "items": {
+              "$ref": "#/components/schemas/RxInspectionOut"
+            },
+            "type": "array",
+            "title": "Inspections"
+          },
+          "recalls": {
+            "items": {
+              "$ref": "#/components/schemas/RxRecallOut"
+            },
+            "type": "array",
+            "title": "Recalls"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RxRuleOut"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/RxFactOut"
+            },
+            "type": "array",
+            "title": "Facts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "engaged",
+          "ai_ready",
+          "discovery_slots",
+          "in_discovery",
+          "researchers",
+          "indications",
+          "modalities",
+          "designs",
+          "regulators",
+          "programmes",
+          "drugs",
+          "plants",
+          "cmos",
+          "assets",
+          "deals",
+          "inspections",
+          "recalls",
+          "rivals",
+          "rules",
+          "facts"
+        ],
+        "title": "PharmaOut"
       },
       "PitchAnswerIn": {
         "properties": {
@@ -58235,6 +61647,37 @@
         "title": "ProposalOut",
         "description": "An executive's proposal (24.1, M10c): pending ones block Continue."
       },
+      "ProviderOut": {
+        "properties": {
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "launches_year": {
+            "type": "number",
+            "title": "Launches Year",
+            "description": "Orbital launches a year (public), real world"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "launches_year"
+        ],
+        "title": "ProviderOut"
+      },
       "PublicActionOut": {
         "properties": {
           "public": {
@@ -60036,6 +63479,58 @@
         ],
         "title": "RegionSegmentOut"
       },
+      "RegionServiceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "covered": {
+            "type": "boolean",
+            "title": "Covered"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence",
+            "description": "applied, granted or refused; None if never applied"
+          },
+          "subscribers": {
+            "type": "number",
+            "title": "Subscribers"
+          },
+          "serviceable": {
+            "type": "number",
+            "title": "Serviceable",
+            "description": "Subscribers its constellations can serve there"
+          },
+          "d2d_subscribers": {
+            "type": "number",
+            "title": "D2D Subscribers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "covered",
+          "licence",
+          "subscribers",
+          "serviceable",
+          "d2d_subscribers"
+        ],
+        "title": "RegionServiceOut"
+      },
       "RegionSizeOut": {
         "properties": {
           "region": {
@@ -60648,6 +64143,41 @@
         ],
         "title": "ResearchOut"
       },
+      "ReuseLevelOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "lead": {
+            "type": "number",
+            "title": "Lead",
+            "description": "Reusability lead points it needs"
+          },
+          "min_months": {
+            "type": "integer",
+            "title": "Min Months",
+            "description": "Months of the programme it needs"
+          },
+          "reached": {
+            "type": "boolean",
+            "title": "Reached"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "lead",
+          "min_months",
+          "reached"
+        ],
+        "title": "ReuseLevelOut"
+      },
       "RidePriceIn": {
         "properties": {
           "price_cents": {
@@ -60661,6 +64191,38 @@
           "price_cents"
         ],
         "title": "RidePriceIn"
+      },
+      "RivalAwardOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "awards": {
+            "type": "integer",
+            "title": "Awards"
+          },
+          "awarded_cents": {
+            "type": "integer",
+            "title": "Awarded Cents",
+            "description": "Published awards' value over the last 36 months"
+          },
+          "areas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Areas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "awards",
+          "awarded_cents",
+          "areas"
+        ],
+        "title": "RivalAwardOut"
       },
       "RivalBidOut": {
         "properties": {
@@ -60771,6 +64333,48 @@
           "shares"
         ],
         "title": "RivalCarOut"
+      },
+      "RivalConstellationOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "satellites": {
+            "type": "number",
+            "title": "Satellites",
+            "description": "In orbit now (public), real world"
+          },
+          "subscribers": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscribers",
+            "description": "Thousands (public, to 2025), real world"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "company",
+          "kind",
+          "satellites",
+          "subscribers"
+        ],
+        "title": "RivalConstellationOut"
       },
       "RivalLeadOut": {
         "properties": {
@@ -62732,6 +66336,1413 @@
         ],
         "title": "RuleOut"
       },
+      "RxAssetOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "efficacy": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The estimate from its readouts so far"
+          },
+          "upfront_cents": {
+            "type": "integer",
+            "title": "Upfront Cents"
+          },
+          "milestones_cents": {
+            "type": "integer",
+            "title": "Milestones Cents"
+          },
+          "royalty": {
+            "type": "number",
+            "title": "Royalty"
+          },
+          "acquire_cents": {
+            "type": "integer",
+            "title": "Acquire Cents"
+          },
+          "until": {
+            "type": "string",
+            "title": "Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "indication_label",
+          "area",
+          "modality",
+          "stage",
+          "efficacy",
+          "upfront_cents",
+          "milestones_cents",
+          "royalty",
+          "acquire_cents",
+          "until"
+        ],
+        "title": "RxAssetOut"
+      },
+      "RxCmoIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api",
+              "biologics"
+            ],
+            "title": "Kind"
+          },
+          "cmo": {
+            "type": "string",
+            "title": "Cmo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "cmo"
+        ],
+        "title": "RxCmoIn"
+      },
+      "RxCmoOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Kinds"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "chosen_for": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chosen For"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "region",
+          "kinds",
+          "quality",
+          "chosen_for"
+        ],
+        "title": "RxCmoOut"
+      },
+      "RxDealOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "counterparty": {
+            "type": "string",
+            "title": "Counterparty"
+          },
+          "programme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Programme"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          },
+          "upfront_cents": {
+            "type": "integer",
+            "title": "Upfront Cents"
+          },
+          "milestones_cents": {
+            "type": "integer",
+            "title": "Milestones Cents"
+          },
+          "royalty": {
+            "type": "number",
+            "title": "Royalty"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "counterparty",
+          "programme",
+          "signed",
+          "upfront_cents",
+          "milestones_cents",
+          "royalty",
+          "fee_cents",
+          "until"
+        ],
+        "title": "RxDealOut"
+      },
+      "RxDrugOut": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "list_cents": {
+            "type": "integer",
+            "title": "List Cents",
+            "description": "US list price a patient-year (real cents)"
+          },
+          "reference_cents": {
+            "type": "integer",
+            "title": "Reference Cents",
+            "description": "The indication's branded reference price"
+          },
+          "support": {
+            "type": "number",
+            "title": "Support"
+          },
+          "patients": {
+            "type": "number",
+            "title": "Patients",
+            "description": "Real patients last month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Last month's revenue (game cents)"
+          },
+          "year_cents": {
+            "type": "integer",
+            "title": "Year Cents",
+            "description": "The last 12 months' revenue"
+          },
+          "generic": {
+            "type": "boolean",
+            "title": "Generic",
+            "description": "Exclusivity has ended somewhere it sells"
+          },
+          "ira": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ira",
+            "description": "The Medicare negotiation, once selected"
+          },
+          "hta": {
+            "items": {
+              "$ref": "#/components/schemas/RxHtaOut"
+            },
+            "type": "array",
+            "title": "Hta"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RxMonthPointOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "name",
+          "indication_label",
+          "modality",
+          "list_cents",
+          "reference_cents",
+          "support",
+          "patients",
+          "revenue_cents",
+          "year_cents",
+          "generic",
+          "hta",
+          "history",
+          "blocked"
+        ],
+        "title": "RxDrugOut"
+      },
+      "RxExclusivityOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "ends": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends",
+            "description": "The month exclusivity ends there (once approved)"
+          },
+          "ended": {
+            "type": "boolean",
+            "title": "Ended"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "region_label",
+          "ends",
+          "ended"
+        ],
+        "title": "RxExclusivityOut"
+      },
+      "RxFactOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "text"
+        ],
+        "title": "RxFactOut"
+      },
+      "RxFileIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "regulator"
+        ],
+        "title": "RxFileIn"
+      },
+      "RxHtaOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "covered",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected",
+            "description": "When it decides, as a range (never the draw)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "status",
+          "expected"
+        ],
+        "title": "RxHtaOut"
+      },
+      "RxIndicationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "area_label": {
+            "type": "string",
+            "title": "Area Label"
+          },
+          "orphan": {
+            "type": "boolean",
+            "title": "Orphan"
+          },
+          "market_cents": {
+            "type": "integer",
+            "title": "Market Cents",
+            "description": "Branded sales a year, world, at the game's scale"
+          },
+          "prevalence_m": {
+            "type": "number",
+            "title": "Prevalence M",
+            "description": "People living with it (oncology: new cases), M"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "A branded therapy's US list price a patient-year (real)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "area",
+          "area_label",
+          "orphan",
+          "market_cents",
+          "prevalence_m",
+          "price_cents"
+        ],
+        "title": "RxIndicationOut"
+      },
+      "RxInspectionOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "finding": {
+            "type": "string",
+            "title": "Finding"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          },
+          "fine_cents": {
+            "type": "integer",
+            "title": "Fine Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "month",
+          "finding",
+          "until",
+          "fine_cents"
+        ],
+        "title": "RxInspectionOut"
+      },
+      "RxLicenseInIn": {
+        "properties": {
+          "asset_id": {
+            "type": "integer",
+            "title": "Asset Id"
+          },
+          "acquire": {
+            "type": "boolean",
+            "title": "Acquire",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id"
+        ],
+        "title": "RxLicenseInIn"
+      },
+      "RxLicenseOutIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          },
+          "co_develop": {
+            "type": "boolean",
+            "title": "Co Develop",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "rival_id"
+        ],
+        "title": "RxLicenseOutIn"
+      },
+      "RxMonthPointOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "us_cents": {
+            "type": "integer",
+            "title": "Us Cents"
+          },
+          "patients": {
+            "type": "number",
+            "title": "Patients"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "revenue_cents",
+          "us_cents",
+          "patients"
+        ],
+        "title": "RxMonthPointOut"
+      },
+      "RxPlantIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api",
+              "biologics"
+            ],
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "region"
+        ],
+        "title": "RxPlantIn"
+      },
+      "RxPlantOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "ordered": {
+            "type": "string",
+            "title": "Ordered"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "patient_years_k": {
+            "type": "number",
+            "title": "Patient Years K",
+            "description": "Real thousand patient-years a year it makes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "region",
+          "ordered",
+          "ready",
+          "live",
+          "quality",
+          "capex_cents",
+          "patient_years_k"
+        ],
+        "title": "RxPlantOut"
+      },
+      "RxPlantQualityIn": {
+        "properties": {
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "standard",
+              "high"
+            ],
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_id",
+          "level"
+        ],
+        "title": "RxPlantQualityIn"
+      },
+      "RxPlatformIn": {
+        "properties": {
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rival_id"
+        ],
+        "title": "RxPlatformIn"
+      },
+      "RxPriceIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "list_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "List Cents"
+          },
+          "support": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Support"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "list_cents",
+          "support"
+        ],
+        "title": "RxPriceIn"
+      },
+      "RxProgrammeIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id"
+        ],
+        "title": "RxProgrammeIn"
+      },
+      "RxProgrammeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication": {
+            "type": "string",
+            "title": "Indication"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "design": {
+            "type": "string",
+            "title": "Design"
+          },
+          "patients": {
+            "type": "integer",
+            "title": "Patients"
+          },
+          "started": {
+            "type": "string",
+            "title": "Started"
+          },
+          "planned_end": {
+            "type": "string",
+            "title": "Planned End",
+            "description": "The stage's planned end (its design)"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "ai": {
+            "type": "boolean",
+            "title": "Ai"
+          },
+          "preclinical_months": {
+            "type": "integer",
+            "title": "Preclinical Months",
+            "description": "Its preclinical stage's planned months"
+          },
+          "preclinical_months_without_ai": {
+            "type": "integer",
+            "title": "Preclinical Months Without Ai",
+            "description": "The same without AI discovery"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "efficacy": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The estimate's range (never the true value)"
+          },
+          "readouts": {
+            "type": "integer",
+            "title": "Readouts"
+          },
+          "next_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Stage",
+            "description": "The trial it can start next, if ready"
+          },
+          "next_chance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RxRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "That stage's chance, as a range"
+          },
+          "next_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cost Cents"
+          },
+          "next_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Months"
+          },
+          "redesign_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redesign Cost Cents",
+            "description": "After a failure"
+          },
+          "can_file": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Can File",
+            "description": "Regulators it can be filed with now"
+          },
+          "breakthrough": {
+            "type": "boolean",
+            "title": "Breakthrough"
+          },
+          "accelerated": {
+            "type": "boolean",
+            "title": "Accelerated"
+          },
+          "orphan": {
+            "type": "boolean",
+            "title": "Orphan"
+          },
+          "partner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RxReadoutOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/RxReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          },
+          "approvals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approvals",
+            "description": "Where it is approved (regulator or region)"
+          },
+          "exclusivity": {
+            "items": {
+              "$ref": "#/components/schemas/RxExclusivityOut"
+            },
+            "type": "array",
+            "title": "Exclusivity"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RxValueOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company",
+          "name",
+          "indication",
+          "indication_label",
+          "area",
+          "modality",
+          "stage",
+          "status",
+          "design",
+          "patients",
+          "started",
+          "planned_end",
+          "cost_cents",
+          "spent_cents",
+          "ai",
+          "preclinical_months",
+          "preclinical_months_without_ai",
+          "origin",
+          "efficacy",
+          "readouts",
+          "next_stage",
+          "next_chance",
+          "can_file",
+          "breakthrough",
+          "accelerated",
+          "orphan",
+          "history",
+          "reviews",
+          "approvals",
+          "exclusivity",
+          "value"
+        ],
+        "title": "RxProgrammeOut"
+      },
+      "RxRangeOut": {
+        "properties": {
+          "lo": {
+            "type": "number",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "number",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "RxRangeOut"
+      },
+      "RxReadoutOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "shown": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The chance shown before it read out"
+          },
+          "observed": {
+            "type": "number",
+            "title": "Observed",
+            "description": "Its observed efficacy score"
+          },
+          "design": {
+            "type": "string",
+            "title": "Design"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "month",
+          "success",
+          "shown",
+          "observed",
+          "design"
+        ],
+        "title": "RxReadoutOut"
+      },
+      "RxRecallOut": {
+        "properties": {
+          "programme": {
+            "type": "string",
+            "title": "Programme"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme",
+          "month",
+          "cost_cents"
+        ],
+        "title": "RxRecallOut"
+      },
+      "RxRegulatorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "application": {
+            "type": "string",
+            "title": "Application"
+          },
+          "standard": {
+            "type": "string",
+            "title": "Standard",
+            "description": "Its standard review's months, as a range"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region",
+          "application",
+          "standard"
+        ],
+        "title": "RxRegulatorOut"
+      },
+      "RxReviewOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "application": {
+            "type": "string",
+            "title": "Application"
+          },
+          "filed": {
+            "type": "string",
+            "title": "Filed"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "review",
+              "approved",
+              "crl",
+              "withdrawn"
+            ],
+            "title": "Status"
+          },
+          "priority": {
+            "type": "boolean",
+            "title": "Priority"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected",
+            "description": "When a decision comes, as a range (never the draw)"
+          },
+          "adcom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adcom",
+            "description": "The committee's vote, once it met"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "regulator_name",
+          "application",
+          "filed",
+          "status",
+          "priority",
+          "expected"
+        ],
+        "title": "RxReviewOut"
+      },
+      "RxRivalApprovalOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "area",
+          "modality",
+          "month"
+        ],
+        "title": "RxRivalApprovalOut"
+      },
+      "RxRivalDrugOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "loe_us": {
+            "type": "integer",
+            "title": "Loe Us"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "indication_label",
+          "approved",
+          "loe_us"
+        ],
+        "title": "RxRivalDrugOut"
+      },
+      "RxRivalOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "generics": {
+            "type": "boolean",
+            "title": "Generics"
+          },
+          "year_cents": {
+            "type": "integer",
+            "title": "Year Cents",
+            "description": "Revenue over the last 12 months"
+          },
+          "drugs": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalDrugOut"
+            },
+            "type": "array",
+            "title": "Drugs"
+          },
+          "pipeline": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pipeline"
+          },
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalApprovalOut"
+            },
+            "type": "array",
+            "title": "Approvals",
+            "description": "Its approvals after 2025"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "generics",
+          "year_cents",
+          "drugs",
+          "pipeline",
+          "approvals"
+        ],
+        "title": "RxRivalOut"
+      },
+      "RxRuleOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "text"
+        ],
+        "title": "RxRuleOut"
+      },
+      "RxStartIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "indication": {
+            "type": "string",
+            "title": "Indication"
+          },
+          "modality": {
+            "type": "string",
+            "enum": [
+              "small_molecule",
+              "biologic",
+              "cell_and_gene"
+            ],
+            "title": "Modality"
+          },
+          "ai": {
+            "type": "boolean",
+            "title": "Ai",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "indication",
+          "modality"
+        ],
+        "title": "RxStartIn"
+      },
+      "RxTrialIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "design": {
+            "type": "string",
+            "enum": [
+              "lean",
+              "standard",
+              "large"
+            ],
+            "title": "Design",
+            "default": "standard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id"
+        ],
+        "title": "RxTrialIn"
+      },
+      "RxValueOut": {
+        "properties": {
+          "to_approval": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "Chance to approval from here, as a range"
+          },
+          "rnpv_lo_cents": {
+            "type": "integer",
+            "title": "Rnpv Lo Cents"
+          },
+          "rnpv_hi_cents": {
+            "type": "integer",
+            "title": "Rnpv Hi Cents"
+          },
+          "peak_lo_cents": {
+            "type": "integer",
+            "title": "Peak Lo Cents",
+            "description": "Peak sales a year at the estimate's range"
+          },
+          "peak_hi_cents": {
+            "type": "integer",
+            "title": "Peak Hi Cents"
+          },
+          "cost_left_cents": {
+            "type": "integer",
+            "title": "Cost Left Cents"
+          },
+          "years_to_launch": {
+            "type": "number",
+            "title": "Years To Launch"
+          },
+          "explain": {
+            "type": "string",
+            "title": "Explain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_approval",
+          "rnpv_lo_cents",
+          "rnpv_hi_cents",
+          "peak_lo_cents",
+          "peak_hi_cents",
+          "cost_left_cents",
+          "years_to_launch",
+          "explain"
+        ],
+        "title": "RxValueOut"
+      },
       "SafeHintOut": {
         "properties": {
           "hint": {
@@ -63326,6 +68337,35 @@
           "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
+      },
+      "ScoreBandOut": {
+        "properties": {
+          "total": {
+            "type": "string",
+            "title": "Total",
+            "description": "The bid's score band, e.g. '60-70' (never the score)"
+          },
+          "price": {
+            "type": "string",
+            "title": "Price"
+          },
+          "technical": {
+            "type": "string",
+            "title": "Technical"
+          },
+          "past_performance": {
+            "type": "string",
+            "title": "Past Performance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "price",
+          "technical",
+          "past_performance"
+        ],
+        "title": "ScoreBandOut"
       },
       "ScoreOut": {
         "properties": {
@@ -64157,6 +69197,47 @@
         ],
         "title": "SharesIn"
       },
+      "ShellOut": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "satellites": {
+            "type": "integer",
+            "title": "Satellites"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "label",
+          "satellites",
+          "size",
+          "complete",
+          "regions"
+        ],
+        "title": "ShellOut"
+      },
       "SignPpaIn": {
         "properties": {
           "region": {
@@ -64463,6 +69544,267 @@
         ],
         "title": "SourceOut"
       },
+      "SpaceActionOut": {
+        "properties": {
+          "space": {
+            "$ref": "#/components/schemas/SpaceScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "space",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "SpaceActionOut"
+      },
+      "SpaceLicenceIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "title": "SpaceLicenceIn"
+      },
+      "SpaceLicenceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "applied": {
+            "type": "string",
+            "title": "Applied"
+          },
+          "granted": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Granted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "status",
+          "applied",
+          "granted"
+        ],
+        "title": "SpaceLicenceOut"
+      },
+      "SpaceScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "description": "Whether this game has space markets"
+          },
+          "reusability_lead": {
+            "type": "number",
+            "title": "Reusability Lead"
+          },
+          "programme_started": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Programme Started"
+          },
+          "reuse_levels": {
+            "items": {
+              "$ref": "#/components/schemas/ReuseLevelOut"
+            },
+            "type": "array",
+            "title": "Reuse Levels"
+          },
+          "vehicles": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleOut"
+            },
+            "type": "array",
+            "title": "Vehicles"
+          },
+          "undesigned": {
+            "items": {
+              "$ref": "#/components/schemas/LineOptionOut"
+            },
+            "type": "array",
+            "title": "Undesigned",
+            "description": "Your launch lines with no design yet"
+          },
+          "eo_lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineOptionOut"
+            },
+            "type": "array",
+            "title": "Eo Lines",
+            "description": "Your Earth-observation lines"
+          },
+          "launches": {
+            "items": {
+              "$ref": "#/components/schemas/LaunchOut"
+            },
+            "type": "array",
+            "title": "Launches"
+          },
+          "cost_per_kg": {
+            "items": {
+              "$ref": "#/components/schemas/CostPerKgOut"
+            },
+            "type": "array",
+            "title": "Cost Per Kg"
+          },
+          "world_launches": {
+            "items": {
+              "$ref": "#/components/schemas/WorldLaunchesOut"
+            },
+            "type": "array",
+            "title": "World Launches"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderOut"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "milestones": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneOut"
+            },
+            "type": "array",
+            "title": "Milestones"
+          },
+          "constellations": {
+            "items": {
+              "$ref": "#/components/schemas/ConstellationOut"
+            },
+            "type": "array",
+            "title": "Constellations"
+          },
+          "broadband": {
+            "items": {
+              "$ref": "#/components/schemas/BroadbandLineOut"
+            },
+            "type": "array",
+            "title": "Broadband"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/SpaceLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalConstellationOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "d2d_open": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "D2D Open",
+            "description": "The month direct-to-device service opened, once it has"
+          },
+          "debris_rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debris Rule",
+            "description": "The month the tighter debris rule came, once it has"
+          },
+          "site_regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Site Regions"
+          },
+          "bought_launch_cents": {
+            "type": "integer",
+            "title": "Bought Launch Cents",
+            "description": "A bought launch's price this month"
+          },
+          "bought_payload_kg": {
+            "type": "number",
+            "title": "Bought Payload Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "open",
+          "reusability_lead",
+          "programme_started",
+          "reuse_levels",
+          "vehicles",
+          "undesigned",
+          "eo_lines",
+          "launches",
+          "cost_per_kg",
+          "world_launches",
+          "providers",
+          "milestones",
+          "constellations",
+          "broadband",
+          "licences",
+          "rivals",
+          "d2d_open",
+          "debris_rule",
+          "site_regions",
+          "bought_launch_cents",
+          "bought_payload_kg"
+        ],
+        "title": "SpaceScreenOut"
+      },
       "SpinOffIn": {
         "properties": {
           "company_id": {
@@ -64552,6 +69894,42 @@
           "unit_id"
         ],
         "title": "StaffIn"
+      },
+      "StaffOptionOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "clearance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clearance",
+            "description": "The level held or pending, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "clearance"
+        ],
+        "title": "StaffOptionOut"
       },
       "StaffRefineryIn": {
         "properties": {
@@ -66756,6 +72134,233 @@
         "title": "TeamStrengthOut",
         "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
       },
+      "TenderBidIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "price_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Price Cents"
+          },
+          "team": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Team"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "price_cents"
+        ],
+        "title": "TenderBidIn"
+      },
+      "TenderOptionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "unmet": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unmet",
+            "description": "Requirements this product would not meet now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product",
+          "quality",
+          "unmet"
+        ],
+        "title": "TenderOptionOut"
+      },
+      "TenderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "government": {
+            "type": "string",
+            "title": "Government"
+          },
+          "government_label": {
+            "type": "string",
+            "title": "Government Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer",
+            "description": "defence or civil"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract",
+            "description": "fixed_price, cost_plus or idiq"
+          },
+          "clearance": {
+            "type": "string",
+            "title": "Clearance",
+            "description": "none, secret or top_secret"
+          },
+          "ceiling_cents": {
+            "type": "integer",
+            "title": "Ceiling Cents",
+            "description": "The ceiling over the whole term (game scale)"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "base_months": {
+            "type": "integer",
+            "title": "Base Months"
+          },
+          "awards": {
+            "type": "integer",
+            "title": "Awards",
+            "description": "Awardees (an IDIQ vehicle may have several)"
+          },
+          "large": {
+            "type": "boolean",
+            "title": "Large"
+          },
+          "announced": {
+            "type": "string",
+            "title": "Announced"
+          },
+          "closes": {
+            "type": "string",
+            "title": "Closes"
+          },
+          "award_month": {
+            "type": "string",
+            "title": "Award Month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "open, evaluating, protested, awarded or cancelled"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical",
+            "description": "A named tender from history (JEDI, JWCC, NSSL, ...)"
+          },
+          "winners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Winners",
+            "description": "Published awardees, once awarded"
+          },
+          "winning_band": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winning Band",
+            "description": "The lowest awardee's score band, once awarded"
+          },
+          "protest_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protest By",
+            "description": "Who protested the award, while it is held"
+          },
+          "requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requirements",
+            "description": "What a bid must meet"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TenderOptionOut"
+            },
+            "type": "array",
+            "title": "Options",
+            "description": "The player's live products that could bid"
+          },
+          "my_bid": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MyBidOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "government",
+          "government_label",
+          "area",
+          "buyer",
+          "contract",
+          "clearance",
+          "ceiling_cents",
+          "term_months",
+          "base_months",
+          "awards",
+          "large",
+          "announced",
+          "closes",
+          "award_month",
+          "status",
+          "historical",
+          "winners",
+          "winning_band",
+          "protest_by",
+          "requirements",
+          "options",
+          "my_bid"
+        ],
+        "title": "TenderOut"
+      },
       "TensionPointOut": {
         "properties": {
           "turn": {
@@ -66855,6 +72460,19 @@
           "expires_label"
         ],
         "title": "TermSheetOut"
+      },
+      "TerminalPriceIn": {
+        "properties": {
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price_cents"
+        ],
+        "title": "TerminalPriceIn"
       },
       "TerminateIn": {
         "properties": {
@@ -68361,6 +73979,126 @@
         ],
         "title": "VehicleOptionsOut"
       },
+      "VehicleOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg"
+          },
+          "aim": {
+            "type": "string",
+            "title": "Aim"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "The reuse level it flies at now"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/FlightCostOut"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents",
+            "description": "Its price to commercial operators"
+          },
+          "flights": {
+            "type": "integer",
+            "title": "Flights"
+          },
+          "failures": {
+            "type": "integer",
+            "title": "Failures"
+          },
+          "reliability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reliability",
+            "description": "Successful flights over flights, None before its first"
+          },
+          "failure_rate_lo": {
+            "type": "number",
+            "title": "Failure Rate Lo",
+            "description": "The model's failure chance range for its next flight"
+          },
+          "failure_rate_hi": {
+            "type": "number",
+            "title": "Failure Rate Hi"
+          },
+          "grounded_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grounded Until",
+            "description": "The month an investigation ends, if grounded"
+          },
+          "pads": {
+            "type": "number",
+            "title": "Pads",
+            "description": "Launch-site pad units live"
+          },
+          "cadence": {
+            "type": "number",
+            "title": "Cadence",
+            "description": "Launches a month its sites can fly"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "quality",
+          "payload_kg",
+          "aim",
+          "level",
+          "cost",
+          "price_cents",
+          "flights",
+          "failures",
+          "reliability",
+          "failure_rate_lo",
+          "failure_rate_hi",
+          "grounded_until",
+          "pads",
+          "cadence"
+        ],
+        "title": "VehicleOut"
+      },
       "VehiclePlantOut": {
         "properties": {
           "facility_id": {
@@ -69225,6 +74963,24 @@
           "ready_label"
         ],
         "title": "WorldFacilityOut"
+      },
+      "WorldLaunchesOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "launches": {
+            "type": "number",
+            "title": "Launches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "launches"
+        ],
+        "title": "WorldLaunchesOut"
       },
       "WorldNewsItemOut": {
         "properties": {

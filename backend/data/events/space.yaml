@@ -1,0 +1,50 @@
+# Space event templates (docs/formulas.md 56.1, M40): queued by the engine by template id (trigger
+# space) the month after a launch failure with the player's satellites aboard; the satellites are lost
+# and written off already, the insurer has paid its share, and an own vehicle is grounded. The answer
+# is applied by the engine (space_step): a review shortens the grounding at a cost; rush replacements
+# put the lost satellites back on the ground at a premium; contesting the insurer costs legal fees and
+# may recover the uninsured part. Tone: grounded realism (ADR-0011). The first choice is what happens
+# when it is left unanswered at Continue.
+templates:
+  - id: launch_failure_payload
+    category: space
+    trigger: space
+    severities: [critical]
+    weight: 1.0
+    title: "A {company} launch fails with its own satellites aboard"
+    body: >-
+      The rocket lost thrust two minutes into the climb and the range safety officer ended the flight.
+      A full stack of {company}'s satellites went into the ocean with it. The constellation's schedule
+      has slipped, the insurers want the telemetry, and investors are asking whether the plan still
+      works.
+    choices:
+      - key: A
+        label: "Commission an independent failure review"
+        effects: [{ type: space_step, target: company, stat: review }]
+      - key: B
+        label: "Rush replacement satellites through the factory"
+        effects: [{ type: space_step, target: company, stat: rebuild }]
+      - key: C
+        label: "Contest the insurer over the uninsured value"
+        effects: [{ type: space_step, target: company, stat: claim }]
+
+  - id: launch_failure_upper_stage
+    category: space
+    trigger: space
+    severities: [critical]
+    weight: 1.0
+    title: "An upper stage strands {company}'s satellites in a useless orbit"
+    body: >-
+      The second stage shut down early and left {company}'s new satellites far too low to raise
+      themselves. They will burn up within days. Engineers suspect a propellant leak, the regulator
+      wants a report before the next flight, and the satellite plant is already short of parts.
+    choices:
+      - key: A
+        label: "Bring in outside reviewers to clear the vehicle faster"
+        effects: [{ type: space_step, target: company, stat: review }]
+      - key: B
+        label: "Pay overtime to rebuild the lost satellites now"
+        effects: [{ type: space_step, target: company, stat: rebuild }]
+      - key: C
+        label: "Fight the insurer's offer in arbitration"
+        effects: [{ type: space_step, target: company, stat: claim }]

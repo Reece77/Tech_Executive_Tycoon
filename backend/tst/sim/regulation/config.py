@@ -194,6 +194,15 @@ class HealthRegulatorDef(RegulatorDef):
     kind: Literal["health"]
 
 
+class DrugRegulatorDef(RegulatorDef):
+    """M42 (docs/formulas.md 55.3): a medicines regulator, M34's record with the `drugs` kind
+    (the FDA's CDER and CBER, the EMA, PMDA and NMPA as drug reviewers). It approves drugs and
+    inspects their plants (tst.sim.pharma); M34's competition rules and M41's device code never
+    read it (it is in neither `regulators` nor `health_regulators`)."""
+
+    kind: Literal["drugs"]
+
+
 class RegulationFile(_Frozen):
     """regulation.yaml (48)."""
 
@@ -204,6 +213,7 @@ class RegulationFile(_Frozen):
     cases: tuple[CaseDef, ...] = ()
     precedents: tuple[PrecedentDef, ...] = ()
     health_regulators: tuple[HealthRegulatorDef, ...] = ()  # M41 (50): never in `regulators`
+    drug_regulators: tuple[DrugRegulatorDef, ...] = ()  # M42 (55.3): in neither list above
 
     @property
     def history_end_turn(self) -> int:

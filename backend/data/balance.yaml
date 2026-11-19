@@ -354,6 +354,9 @@ products:
     logistics: 0.5 # M39 (53.2): humanoid buyers (A)
     retail: 0.5
     manufacturing: 0.5
+    satellite_operators: 0.05 # M40 (56.1): a launch contract a customer (A: a seller closes a launch or two a year)
+    government: 0.05 # M40 (56.1, 56.3): agencies buying launches, broadband and imagery (A)
+    aviation_maritime: 0.3 # M40 (56.3): airlines and shipping fleets (A)
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
   qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
@@ -540,6 +543,9 @@ rivals:
     samd: { builder: 0.70, seller: 0.20, marketer: 0.10 } # M41 (A)
     industrial_robots: { builder: 0.65, seller: 0.25, marketer: 0.10 } # M39 (53.1): robot makers (A, as servers: sold to factories)
     humanoid_robots: { builder: 0.75, seller: 0.15, marketer: 0.10 } # M39 (53.2): humanoid makers (A: engineering-led)
+    launch: { builder: 0.80, seller: 0.15, marketer: 0.05 } # M40 (56.1): launch providers (A: engineering-led, sold by contract)
+    satellite_broadband: { builder: 0.55, seller: 0.20, marketer: 0.25 } # M40 (56.3): constellation operators (A: as cloud and consumer services)
+    earth_observation: { builder: 0.65, seller: 0.30, marketer: 0.05 } # M40 (56.3): imagery operators (A: sold to agencies)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -834,6 +840,23 @@ markets:
     surgical_robotics: 0.0015 # A 0.02%
     implantables: 0.004 # A 0.06%
     samd: 0.0005 # A 0.005%
+    # M42 (55.4): pharma's therapeutic areas (pseudo-categories, sized in tst.sim.pharma.ceilings by
+    # this rule). A: about 5x North America's 2026 density (branded sales a year over GDP at the game's
+    # scale: oncology 0.20%, metabolic 0.15%, immunology 0.12%, infectious 0.11%, cardiovascular 0.07%,
+    # neuroscience 0.04%, rare 0.04%), so they barely bind before 2039 and hold obesity's 12% a year
+    # (1.07% of North America's GDP uncapped by 2069). R for scale: medicines about 1.6% of world GDP
+    # at list prices (IQVIA $1.8T in 2024)
+    pharma_oncology: 0.010
+    pharma_metabolic: 0.0075
+    pharma_immunology: 0.006
+    pharma_infectious: 0.0055
+    pharma_cardiovascular: 0.0035
+    pharma_neuroscience: 0.002
+    pharma_rare: 0.002
+
+    launch: 0.0016 # M40 (decision 18): about 5x North America's 2025 addressable share (A 0.031% of its GDP); served 2025 1.05x SIA's about $15B (R)
+    satellite_broadband: 0.0038 # M40: about 5x (A 0.076% of North America's GDP, 0.12% of Oceania's); served 2025 1.03x Starlink's $11.4B (S) with space.history_split (decision 18)
+    earth_observation: 0.0005 # M40: about 5x (A 0.010%); served 2025 0.99x Euroconsult's about $4.5B (R)
   ceiling_start_year: 2026 # ceilings apply from January of this year; the history to 2025 is main's, recalibrated only where 2025 was outside 0.5-2x (PM, 2026-11-18; 54.3). A market already past its ceiling then is held, not cut, until the economy catches up
   era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
   gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
@@ -854,7 +877,7 @@ markets:
     chips_ai_accelerator: 0.03
     cybersecurity: 0.02
   tech_share_max: 0.15 # 54.4 target 1: the technology categories' sum at most this share of world GDP
-  non_tech: [vehicles, medical] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending)
+  non_tech: [vehicles, medical, pharma] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending; M42 adds pharma)
 
 # --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
 geo:
@@ -1113,6 +1136,36 @@ facility:
       staff_skill: operations
       sizes: [50, 100, 250, 500, 1000] # cars
       outages: false
+    launch_site: # M40 (56.1): an own launch site (pads, range access, integration halls) on the generic lifecycle; capacity in pad units, each flying space.reuse.<level>.pad_rate launches a month; only in a region with a range (space.site_regions)
+      label: Launch site
+      unit: pads
+      input_good: equipment
+      output_good: assembly # hardware.output_good: launches go through the production path
+      capex_per_unit_cents: 8000000000 # $80M a pad in 2010 dollars at index 1.0 (A: SpaceX's leases and pad rebuilds of $50-100M; ULA's Vulcan pad works, R) at the game's scale x 1 (a pad is a pad)
+      build_months: 24 # A: a new pad two years (Rocket Lab's Wallops LC-2, R)
+      opex_per_unit_cents: 0 # fixed_opex instead
+      life_months: 360 # 30 years (A)
+      staff_per: 1 # a launch director's team a pad (A)
+      staff_roles: [operations_manager]
+      staff_skill: operations
+      fixed_opex_cents: 50000000 # $500,000 a live month a site (A: range fees, propellant farm and crew at the game's scale)
+      variable_cents: 100000000 # $1M a launch flown: range, recovery fleet and pad refurbishment (A)
+      sizes: [1, 2, 4, 8]
+      outages: false
+    satellite_plant: # M40 (56.2): an own satellite factory on the generic lifecycle; capacity in satellites a month; the satellites' cost is tst.sim.space's (space.yaml satellite_cost_usd)
+      label: Satellite plant
+      unit: satellites/month
+      input_good: equipment
+      output_good: satellites
+      capex_per_unit_cents: 150000000 # $1.5M a satellite-a-month of capacity (A: Starlink's Redmond plant built "six satellites per day" (Starlink, S) for a few hundred million dollars, R; OneWeb Satellites' Florida plant about $85M for two a day, R), at the game's scale
+      build_months: 18 # A
+      opex_per_unit_cents: 50000 # $500 a satellite-a-month of capacity (A)
+      life_months: 240 # 20 years (A)
+      staff_per: 5 # satellites a month a manufacturing engineer (A)
+      staff_roles: [manufacturing_engineer]
+      staff_skill: manufacturing
+      sizes: [5, 10, 25, 50, 100]
+      outages: false
     plant: # M32 (46.2): an owned power plant on the shared facility record; its type, capex, build and costs are in power.yaml (module power)
       label: Power plant
       unit: MW
@@ -1180,6 +1233,7 @@ hardware:
     implantables: { good: device_bom, base_cents: 200000, chip_type: mobile_soc, contract_fee_cents: 30000, plant_slots: 1 } # M41: a $2,000 implant BOM, $300 assembly (A: ~30% of $8,000)
     industrial_robots: { good: equipment, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 200000, plant_slots: 25 } # M39 (53.1): a six-axis robot's arm, reducers, servo motors and controller ($18,000 at index 1.0, A: about 55% of a $33,000 robot's price, makers' gross margins 35-45%, R); a contract maker's fee $2,000 (A); one robot takes 25 units of plant capacity (A: hours of assembly and test against a device's)
     humanoid_robots: { good: device_bom, base_cents: 600000, chip_type: ai_accelerator, contract_fee_cents: 150000, plant_slots: 20 } # M39 (53.2): a humanoid's frame, battery, sensors and wiring ($6,000 at index 1.0, A); its actuators are robotics.yaml's learning-curve cost (tst.sim.robotics.humanoids) and its edge AI chip is an ai_accelerator (bought or own); 20 units of plant capacity (A)
+    launch: { good: equipment, base_cents: 4000000000, chip_type: mobile_soc, contract_fee_cents: 1, plant_slots: 1 } # M40 (56.1): launches cannot be contract-made (contract_fee_cents is a placeholder);: a launch's cost is its vehicle's flight cost (tst.sim.space.launch, its design and reuse level), not this BOM (base_cents only names a $40M flight for validation); a launch-site unit flies its reuse level's pad_rate launches a month; no chip (avionics are in the vehicle's cost)
   contract:
     energy: 6 # founder energy to sign a contract-manufacturing contract (26.2)
     months: [12, 24] # whole months a contract may run (26.2)
@@ -3045,11 +3099,282 @@ robotics:
     contest_chance: 0.5 # chance the regulator extends the suspension (stream robotics (1, zone_id, cities))
     contest_months: 6 # months it adds
 
+# --- Pharmaceuticals (formulas.md 55, M42, v5 lane H) ----------------------------------------------
+# Data (attrition, durations, costs, exclusivity, prices, the IRA, rivals) is pharma.yaml's, cited;
+# these are the game's dials. A = an assumption for gameplay. Nothing here runs for a company without
+# pharma (55.6 target 1).
+pharma:
+  scale: 0.085 # game patients and pharma money = real x this: the devices convention (M34's economy_scale.money 0.0849; vehicles.scale, robotics.scale). Trials, plants and deals scale too (M42 decision 2)
+  scale_basis: "Game drug markets, trials and plants are 8.5% of the real ones at real prices (the game's economy scale)"
+  efficacy: # a molecule's hidden efficacy (55.1), 0-1, never shown
+    mean: 0.5 # A: the standard of care is about 0.5 (pharma.yaml soc)
+    sd: 0.15 # A
+    level_lift: 0.10 # mean + this x drug_discovery lead / 100 (A: a lead of 50 adds 0.05, a third of an sd)
+    ai_lift: 0.01 # mean + this with AI discovery (A: small; 55.2 says evidence is early. M42 tuning from 0.02 for 55.6 target 5)
+  safety:
+    mean: 0.7 # A
+    sd: 0.12 # A
+    level_lift: 0.0
+    ai_lift: 0.01 # A: Jayatunga et al.'s higher Phase I success reads as fewer toxicity failures (M42 tuning from 0.02, target 5)
+  readout: # 55.1: p = sigmoid(logit(T) + w_e x z_eff + w_s x z_safety + design + AI)
+    efficacy_weight: { preclinical: 0.2, phase1: 0.2, phase2: 0.3, phase3: 0.3 } # A: efficacy decides Phase II and III (M42 tuning from 0.3/0.8/0.8: 55.6 target 2's selection on survivors, seeds 1-30)
+    safety_weight: { preclinical: 0.4, phase1: 0.5, phase2: 0.2, phase3: 0.2 } # A: Phase I and toxicology are mostly safety (M42 tuning from 0.6/0.9/0.4/0.4, as above, seeds 1-30)
+    design_logit: { lean: -0.25, standard: 0.0, large: 0.15 } # A: a larger trial has more power
+    design_months: { lean: 0.85, standard: 1.0, large: 1.2 } # A: x the stage's months
+    noise: { preclinical: 0.20, phase1: 0.15, phase2: 0.08, phase3: 0.04 } # sd of a readout's observed efficacy (A: animal models say little; Phase III a lot)
+    shown_band: 0.08 # the chance is shown as +/- this, never the draw (55.7)
+    bounds: [0.02, 0.98]
+  ai: # 55.2
+    min_quality: 60 # an ai_models product at least this good enables AI discovery (A)
+    min_level: 20 # or a drug_discovery lead of at least this (A)
+    preclinical_cut: 0.30 # x (1 - this) preclinical months (A: Insilico's candidate in about 18 months)
+    transition_lift: 0.15 # logit added at Phase I and II readouts (A: modest; Jayatunga's 80-90% Phase I is a small sample. M42 tuning from 0.30 for 55.6 target 5: Phase I 52% -> 56%)
+    platform_fee_cents: 200000000 # real $2M a month a licensee for the AI discovery platform (A, against Isomorphic's $37.5-45M upfronts)
+    platform_months: 36 # a platform licence's term (A)
+  discovery:
+    roles: [research_scientist, data_scientist] # research staff (no new skills, 55.1)
+    slots_base: 1 # programmes in discovery at once with no researchers (A)
+    researchers_per_slot: 5 # one more slot per this many research staff (A)
+    level_slots: 2.0 # + this x drug_discovery lead / 100 slots (A)
+    ai_slots: 0.5 # x (1 + this) with AI discovery: more candidates a year (55.2, A)
+  demand: # 55.4: share weight = exp(e x (eff - soc)) x exp(-s x (1 - safety)) x ramp x support x price
+    efficacy_weight: 6.0 # A: a drug 0.15 (one sd) better than the standard of care has 2.5x its weight
+    safety_weight: 3.0 # A
+    ramp_months: 30 # uptake 1 - exp(-m / this) from launch in a region (A: peak sales about 5-6 years after launch)
+    support_floor: 0.3 # weight x this with no commercial support (A)
+    price_elasticity: 1.0 # weight x (reference list / list)^this in the US (A: formularies)
+    value_premium: 0.5 # HTA value cap = reference x index x (1 + this x (est - soc) / sd) (A)
+    horizon_years: 15 # rNPV counts this many years of sales (A: to LOE and a little after)
+  approval: # 55.3
+    efficacy_weight: 1.0 # logit of the area's submission rate + this x (estimate - soc) / sd (A)
+    priority_margin: 0.10 # an efficacy estimate this far above soc gets priority review (A)
+    breakthrough_margin: 0.15 # a Phase II estimate this far above soc gets breakthrough (A)
+    breakthrough_cut: 0.20 # breakthrough: Phase III months x (1 - this) (A)
+    accelerated_areas: [oncology, rare_disease] # may file in the US after Phase II (A)
+    accelerated_margin: 0.20 # with a Phase II estimate this far above soc (A: 14% of 2024's novel approvals were accelerated)
+    eu_extra_margin: 0.15 # the EU's +1 year for a significant clinical benefit (A)
+    adcom_negative: 0.3 # a negative committee vote's chance at the standard of care's estimate (A)
+    adcom_weight: 1.5 # logit lost after a negative vote (A: the FDA follows the vote 88% of the time, Daval et al. 2023)
+    resubmit_factor: 0.3 # a resubmission's chance x this (A; M42 tuning from 0.5: BIO's submission-to-approval rate already counts approvals after a complete response letter)
+  rivals: # 55.5: rivals' businesses after 2025
+    approvals_per_b: 0.04 # seeded approvals a year per real $B of last year's revenue (A: big pharma about 2 a year; 50 novel FDA approvals in 2024)
+    peak_median_b: 0.8 # a seeded drug's peak revenue, real $B, lognormal median (A)
+    peak_sd: 1.0 # its log sd (A: a few blockbusters)
+    ramp_years: 5 # years to peak (A)
+    exclusivity_years: 12 # approval to US LOE (A: Grabowski et al. 2016, 12-14 years of market exclusivity, est.)
+    rest_decay: 0.05 # the rest of a portfolio (older drugs) loses this a year after 2025 (A)
+    generics_base_growth: 0.02 # a generic maker's base business a year after 2025 (A)
+    cost_shares: { 5000_cogs: 0.25, 6500_research_development: 0.20, 6400_marketing: 0.15, 6900_general_admin: 0.08, 3000_common_equity: 0.22 } # of revenue a month (A: big pharma's typical income statement; 3000 is dividends and buybacks, most of the cash it earns)
+    generics_cost_shares: { 5000_cogs: 0.55, 6500_research_development: 0.06, 6400_marketing: 0.10, 6900_general_admin: 0.10, 3000_common_equity: 0.12 } # A
+    generics_share: 0.35 # the four named generic makers' share of generic and biosimilar sales of the modelled drugs (A: the rest are other makers)
+    modality_weights: { small_molecule: 0.5, biologic: 0.45, cell_and_gene: 0.05 } # a seeded approval's modality (A: about half of 2024's novel approvals were biologics or peptides)
+    assets_a_year: 6 # biotech programmes listed for licence each January (A)
+    asset_stages: { preclinical: 0.35, phase1: 0.35, phase2: 0.25, phase3: 0.05 } # A
+  supply: # 55.5
+    quality_cost_share: { low: 0.8, standard: 1.0, high: 1.3 } # x a plant's running cost (A; quality levels as M41's)
+    inspection_chance_year: 0.4 # a regulator's GMP inspection of a company it has approved drugs for (A)
+    recall_chance_year: { low: 0.06, standard: 0.02, high: 0.006 } # a marketed drug's recall (A)
+    recall_cost_share: 0.5 # a recall costs this x a month of the drug's revenue (A)
+    recall_block_months: 2 # months a recall stops shipments (A)
+    depreciation_years: 20 # own plants (A)
+  rules: # seeded rules after 2025 (55.4), stream pharma (5, year)
+    pill_fix_chance: 0.15 # each January: the IRA's small-molecule window moves to 13 years (A: the EPIC Act debate)
+    drugs_after: [15, 25] # drugs selected a year after pharma.yaml's rounds (A)
+    discount_after: [0.30, 0.50] # their net discount (A)
+    ira_min_b: 1.0 # a modelled drug is selected with at least this US sales a year, real $B (A: round 1's tenth drug had $2.6B of Medicare spending, KFF)
+  redesign_cost_share: 0.20 # re-running a failed phase costs its stage cost x (1 + this) (A)
+  co_develop_share: 0.5 # a co-development partner pays this share of costs and takes it of sales (A: 50/50 is the common split)
+  history_months: 120 # drug months kept for the Pharma screen's revenue charts
+  energy: { start: 2, trial: 2, submit: 2, price: 1, deal: 3, plant: 2, stop: 1 } # founder energy by action (A)
+  discount_rate: 0.105 # rNPV's discount rate a year (DiMasi et al. 2016's cost of capital, 10.5%)
+
+# --- Space and satellites (formulas.md 56, M40) ------------------------------------------------------
+space:
+  start: "2026-01" # history holds before this month: launch providers' shares, operators' subscribers, openings; seeded from it
+  launch: launch # categories.yaml keys
+  broadband: satellite_broadband
+  eo: earth_observation
+  d2d_segment: direct_to_device
+  domain: reusability # tech_frontier.yaml key (56.1)
+  scale: 0.085 # game launches, satellites and subscribers = real x this: the game's economy scale (as robotics.scale; M34's economy_scale.money 0.0849; Reece 2026-11-15)
+  scale_basis: "Game launch, satellite and broadband markets are 8.5% of the real ones at real prices, and so are constellations' shells (the game's economy scale)"
+  site_kind: launch_site # facility.kinds keys
+  plant_kind: satellite_plant
+  site_regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, oceania] # regions with orbital launch ranges (R: Cape Canaveral and Vandenberg, Kourou (counted in Latin America and Europe's programme), Baikonur and Plesetsk (Europe), Jiuquan, Wenchang and Tanegashima, Sriharikota, Mahia in New Zealand); none in Africa
+  reuse: # 56.1: what each reuse level needs (lead points in the reusability domain over its baseline) and gives
+    expendable: { label: Expendable, lead: 0, min_months: 0, reused_share: 0.0, flights: 1, refurb_share: 0.0, payload_cut: 0.0, pad_rate: 0.5 } # A: an expendable pad flies about six a year
+    recovery: { label: First-stage recovery, lead: 20, min_months: 30, reused_share: 0.70, flights: 20, refurb_share: 0.05, payload_cut: 0.23, pad_rate: 1.5 } # D: Falcon 9's second stage "costs $12 million to produce" (Falcon 9, S) of about $40M (R): the first stage about 70%; boosters "certified for 20 missions" (List of Falcon 9 first-stage boosters, S); payload 22,800 kg expended against 17,500 kg landing on a drone ship (Falcon 9, S): 23%; refurbishment A; lead A; min_months D: SpaceX's landing attempts from 2013 to the first landing in December 2015 and reflight in March 2017 (S), about 2.5 years
+    full: { label: Full reuse, lead: 45, min_months: 84, reused_share: 0.95, flights: 100, refurb_share: 0.02, payload_cut: 0.35, pad_rate: 4.0 } # A: Starship's aim of rapid, full reuse (SpaceX Starship, S: Block 3 100 t; Musk's $1M a launch); the upper stage's heat shield and propellant margins cost about a third of the payload (A); lead A; min_months A: seven years of a programme, as Starship's from 2019 test hops (R) is not fully reusable by 2025 (56.4 target 2: at least 6 years)
+  vehicle:
+    payload_kg: [200, 150000] # a design's payload to LEO, expendable (Electron's 300 kg to Starship's 100-200 t, S)
+    build_cents_per_kg: 200000 # $2,000 a kg of payload for an expendable vehicle of ref_payload_kg (D: Falcon 9's stages about $40M for 22,800 kg, R and S, in 2010 dollars)
+    size_exponent: 0.5 # build cost x (payload / ref) ** (this - 1): small vehicles cost more a kg (D: Electron's $25,000 a kg against Falcon 9's $2,720 a kg, S)
+    ref_payload_kg: 20000
+    ops_cents_per_kg: 6000 # $60 a kg flown at ref_payload_kg, x the size factor as the build: propellant, range and launch operations (A: about $1-2M a Falcon-class flight, R)
+    quality_cost: 0.5 # build cost x (1 + this x (quality - 50) / 100) (A)
+    learning_rate: 0.10 # build cost falls 10% a doubling of flights (A: aerospace learning curves 10-15%)
+    max_learning_flights: 100
+  failure: # 56.1: a flight fails with floor + (new_rate - floor) x 0.5 ** (flights / half_flights) x (1 + quality_k x (60 - quality) / 100)
+    new_rate: 0.40 # a new vehicle's first flight (D: Falcon 1 3 of 5, Astra 6 of 7 to first orbit, Firefly Alpha 4 of 7, Electron 1 of its first 2, Long March 5 1 of 2; space.yaml early_failures, S)
+    floor: 0.01 # a mature vehicle (D: Falcon 9 3 of 582, Soyuz-2 5 of 172, Ariane 5 5 of 117, Electron 4 of 100; space.yaml, S)
+    half_flights: 4 # flights that halve the gap (A, fitted to the early records: about 20% over the first ten)
+    quality_k: 1.0
+    max_rate: 0.6
+    ground_months: [2, 9] # an investigation grounds the vehicle (56.1; D: Falcon 9 after CRS-7 about 6 months, after Starlink 9-3 about 2 weeks; Long March 5 28 months, S)
+    brand_points: 5 # brand lost on the launch line (A)
+    insured_share: 0.90 # of an insured payload's value the policy pays (A)
+    premium_rate: 0.07 # of the insured value, a launch (D: "approximately 7% of satellites have failed on launch" and premiums follow the launcher's failure rate, Satellite insurance, S)
+  satellite:
+    mass_kg: [100, 2000] # OneWeb's 150-200 kg to Starlink v3's about 2,000 kg (S)
+    gbps_per_kg: 0.08 # broadband capacity a kg (D: Starlink v1.0 about 17-20 Gbps at 260 kg (R, mass S): about 0.07; V2 mini about 96 Gbps at about 800 kg (R): 0.12)
+    life_months: [36, 180] # three to fifteen years (A: Starlink's about five, R; GEO fifteen)
+    life_cost: 0.5 # cost x (1 + this x the life's place in the range) (A: propellant, redundancy, shielding)
+    eo_cost_mult: 3.0 # an imaging satellite's cost a kg over a broadband one's (A: optics and pointing)
+    chip_share: 0.15 # of a satellite's cost its processors and modems (A)
+    own_chip_cut: 0.5 # of that share saved with the group's own live chips (A: the player's own fabs, 56.2)
+    bought_mult: 1.6 # a satellite bought from a maker x the made cost (A: a maker's margin and its line's lower volume)
+    bought_per_month: 20 # most satellites a constellation can buy a month (A)
+  constellation:
+    shell_sats: 135 # D: Starlink's first shell of 1,584 (R, FCC filing) x space.scale
+    shells: # regions a complete shell opens (A: inclinations and latitudes coarsened to the game's regions)
+      - { label: "53 degrees", regions: [north_america, europe] }
+      - { label: "43 degrees", regions: [latin_america, oceania, south_southeast_asia] }
+      - { label: "70 degrees", regions: [east_asia, africa] }
+      - { label: "97.6 degrees (polar)", regions: [] }
+      - { label: "Capacity shell 5", regions: [] }
+      - { label: "Capacity shell 6", regions: [] }
+    complete_share: 0.9 # of a shell's satellites in orbit for its regions to open (A)
+    subs_per_gbps: 20 # subscribers a Gbps serves, oversubscribed (D: Starlink about 9,500 satellites of 20-100 Gbps for 8.9 million subscribers in 2025, space.yaml)
+    congestion_k: 1.5 # appeal x (capacity / subscribers) ** this when over capacity (A)
+    ground_station_cents: 50000000 # $500,000 a covered region a month: gateways, network operations and spectrum fees (D: Starlink's 2025 revenue $11.4B less $4.4B operating income (Starlink, S) is about $7B of costs, about $600M a year at the game's scale, part of it gateways and operations; M40 tuning $50,000 -> $500,000 for 56.4 target 3)
+    deorbit_cents: 1000000 # $10,000 a satellite's disposal (A: propellant reserve and operations)
+    eo_min_satellites: 10 # an EO constellation sells once this many are in orbit (D: Planet's about 200 for daily revisit x space.scale, about 17; A 10 for a tasking service)
+    eo_gbps: 0.0
+    replace_ahead_months: 9 # satellites retiring within this many months are built and launched ahead (A: replacement cadence keeps a shell full)
+    history_months: 60 # constellation months kept
+    max_shells: 6
+  terminal:
+    learning_rate: 0.15 # a terminal's cost falls 15% a doubling of terminals made (A: phased-array volume; Starlink's $3,000 to about $600 in two years, space.yaml)
+    base_units: 50000 # game terminals the curve starts from (A)
+    amortize_months: 24 # buyers weigh a terminal's price spread over two years (A)
+  licence:
+    review_months: { north_america: 6, europe: 9, east_asia: 18, south_southeast_asia: 18, latin_america: 6, africa: 9, oceania: 6 } # A: Starlink's approvals took months in the Americas and Oceania, years in India (2025, R)
+    approval: { north_america: 0.9, europe: 0.85, east_asia: 0.25, south_southeast_asia: 0.5, latin_america: 0.85, africa: 0.7, oceania: 0.9 } # A: "approximately 160 countries and territories" by 2026 (Starlink, S), not China
+    decision_chance: 0.25 # a month's chance of a decision once reviewed (A)
+    fee_cents: 50000000 # $500,000 an application (A: spectrum filings and landing-rights counsel, at the game's scale)
+    relation_cut: 0.5 # kept for M22's relations (unused in M40: a follow-up)
+  debris:
+    window: [1, 6] # years after space.start a tighter debris rule arrives (seeded, hidden; R: the FCC's five-year disposal rule, September 2022, and "the 25-year rule" (Space debris, S) before it)
+    fee_cents: 10000 # $100 a satellite in orbit a month under it (A: tracking and insurance of disposal)
+    deorbit_mult: 2.0 # disposal cost x this under it (A)
+  d2d:
+    partner_share: 0.5 # of D2D revenue a carrier partner keeps (A: T-Mobile's T-Satellite is sold by the carrier)
+    partner_appeal: 2.0 # appeal x this with a carrier partner (A: the carrier's customers and phones)
+    gbps_share: 0.2 # of a D2D satellite's capacity for phones (A)
+    subs_per_gbps: 2000 # D2D subscribers a Gbps serves (A: texting and light data)
+    cost_mult: 1.3 # a D2D-capable satellite's cost x this (A: Starlink's DtC bus 970 kg against V2 mini's about 800, List of Starlink and Starshield launches, S)
+  broadband_churn_mult: 0.3 # a broadband line's base churn x this, from space.start (D: satellite ISPs lose about 1.5-2% of subscribers a month, R, against the consumer segment's 6%; the terminal is a sunk cost)
+  history_split: { consumer: 0.93, enterprise: 0.05, aviation_maritime: 0.01, government: 0.01, direct_to_device: 0.0 } # an operator's subscribers by segment to 2025 (A; M40 decision 18 from 0.80/0.08/0.04/0.08, which put 2025's served revenue at 2.2x Starlink's $11.4B, M43a's 54.4 target 2: about 89,000 ships and aircraft and 89,000 government sites of 8.9 million); SES and OneWeb sell no consumer plans (their lines have no consumer segment)
+  history_share: { Maxar: 0.35, Planet Labs: 0.15 } # EO operators' shares to 2025 (A: DigitalGlobe/Maxar the largest seller of commercial imagery; Planet's US$191.3M revenue in 2022, Planet Labs, S)
+  rival_growth: [0.0, 0.10] # rivals' launches and satellites a year after 2025, drawn each year (A)
+  rival_cash_cents: 20000000000 # $200M opening capital for each space company's space business (A: as robotics.rival_cash_cents)
+  max_launches_month: 12 # most launches a constellation plan asks a month
+  history_months: 120 # launches kept
+  energy: { design: 2, constellation: 6, plan: 2, licence: 2, terminal: 1, partner: 2 } # founder energy
+  unlock_year: 2015 # the Space screen opens (M29) from 2015 for a stage-3 company (R: Falcon 9's first landing, December 2015), or with a space line or facility
+  event: # M40 (56.1): the answer to a launch failure with the player's satellites aboard (data/events/space.yaml, A)
+    review_cut: 0.5 # the grounding's months left are halved
+    review_cents: 30000000 # $300,000 for an independent failure review board
+    rebuild_cents: 40000000 # $400,000 a lost satellite rebuilt in a rush (A: about twice a 300 kg satellite's made cost in 2025)
+    claim_chance: 0.4 # chance the insurer pays the uninsured part (stream space (3, constellation_id, lost))
+    claim_cents: 20000000 # $200,000 of legal costs
+government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
+  start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)
+  tenders:
+    per_year: { us: 24, uk: 4, france: 3, germany: 3, rest_of_eu: 5, israel: 2, japan: 3, south_korea: 2, australia: 2, india: 3, brazil: 1, china: 6 } # seeded tenders a government announces a year (A: fewer, larger competitions standing for many)
+    tendered_share: 0.25 # of an area's budget openly competed (A: much is sole-source or held by incumbents' running contracts)
+    bid_months: 3 # an announced tender takes bids this long (A: 30-90 days for proposals, plus questions)
+    evaluation_months: 2 # then the award (A)
+    term_years: [2, 8] # a seeded tender's term, uniform (A: IDIQ vehicles 5-10 years, products 2-5)
+    option_share: 0.4 # of a term that is option years after the base (A: JWCC 3 + 2.5, JEDI 2 + 8)
+    large_cents: 15000000000 # $150M at the game's scale (about $1.8B real): a large tender (57.6 target 2)
+    contract_mix: { fixed_price: 0.45, cost_plus: 0.2, idiq: 0.35 } # A: DoD obligations are mostly fixed price; IDIQ vehicles carry much IT
+    clearance_mix: # who needs cleared staff (57.3), A
+      defence: { none: 0.4, secret: 0.4, top_secret: 0.2 }
+      civil: { none: 0.9, secret: 0.1, top_secret: 0.0 }
+    value_sigma: 0.8 # lognormal spread of a seeded tender's value around the mean
+    idiq_awards: [1, 4] # awardees of a seeded IDIQ vehicle, uniform (JWCC 4, NSSL 2-3)
+    history_months: 36 # closed tenders kept on the screen this long
+  budgets: # after 2025 (57.1): growth = trend + tension x (T - 50) / 50 + noise x N(0, 1), drawn a government a year
+    trend: 0.03 # A: nominal defence growth of 2-4% a year in calm years
+    tension: 0.04 # A: 2022-2024's rearmament (Germany +57%, Poland x2.5) at high tension
+    noise: 0.02
+  bids:
+    weights: { price: 0.35, technical: 0.4, past_performance: 0.25 } # best value (57.2, A)
+    large_weights: { price: 0.25, technical: 0.3, past_performance: 0.45 } # large tenders weigh a record more (57.6 target 2; M44 tuned from 0.3 / 0.35 / 0.35)
+    capture_skills: [sales, negotiation, strategy] # the capture team's skills (57.2)
+    capture_weight: 0.3 # of technical merit from the capture team; the rest the product's quality
+    capture_max: 6 # people on a capture team
+    cost_bp: 50 # a proposal costs 0.5% of the bid's first-year price (A: bid and proposal costs of 0.5-2%)
+    min_cost_cents: 5000000 # $50,000 at least
+    price_floor: 0.5 # a bid's price over the tender's value, at least
+    price_cap: 1.2 # and at most (over the ceiling is not compliant beyond a margin)
+    band: 10 # score bands are 10 points wide (the API shows bands, never scores)
+    rival_bid_chance: 0.35 # an eligible bidder bids on a tender (A: about 3-4 rival bids a tender, as DoD competitions draw a few offers; M44 tuned from 0.6 for 57.6 target 2)
+    large_bid_chance: 0.8 # and on a large tender (A: large programmes draw the established bidders; M44, 57.6 target 2)
+    rival_price: [0.8, 1.05] # a rival's price over the value, uniform (A)
+    rival_merit_sd: 6 # spread of a rival's technical merit around its strength
+    history_bonus: 15 # a named tender's historical winner's merit lift, so the record holds without a player bid
+    pp_full: 3 # delivered contracts for full past-performance credit
+    newcomer_pp: 20 # a company with no record ("neutral" past performance scores low here, A)
+  protests:
+    rival_chance: 0.15 # a losing rival protests the player's award (A: about 2,000 GAO cases a year)
+    large_mult: 3 # large awards are protested more (JEDI, NSSL)
+    delay_months: [3, 6] # a protest holds the award this long (57.2; GAO decides in 100 days)
+    cost_cents: 50000000 # $500,000 of legal fees for the player's protest (A)
+    window_months: 1 # the player may protest a loss within this many months of the award
+  delivery:
+    cost_share: { cloud: 0.7, ai: 0.65, space: 0.82, chips: 0.75, devices: 0.8, cyber: 0.7 } # delivery cost over revenue (A: primes' operating margins about 10%; cloud and software higher)
+    cost_plus_fee: 0.08 # cost-plus fee over allowable cost (A: FAR caps fixed fees at 10-15%, typical 7-8%)
+    idiq_orders: [0.4, 0.9] # a month's task orders over the vehicle's monthly ceiling share (A: JWCC's ceiling is not a minimum)
+    overrun_sd: { fixed_price: 0.08, cost_plus: 0.06, idiq: 0.05 } # a month's cost overrun spread (as 35's mines, A)
+    overrun_mean: 0.02 # a month's mean overrun (A: programmes run over more than under)
+    perf_per_overrun: 2.0 # performance points lost per 1% of overrun in a month
+    option_threshold: 70 # performance at or above this has the options exercised
+    lapse_months: 3 # months unable to deliver (product gone, clearances lost) before default
+  clearances:
+    median_of_p90: 0.75 # a case's median days over the fastest-90% days (A: a right-skewed distribution)
+    sponsor_months: 3 # sponsorship, the forms and onboarding before the investigation (A)
+    sigma: 0.45 # lognormal spread of months to a decision
+    integrity_mult: 0.5 # never-clear share x (1 + this x (10 - integrity) / 10): lower integrity clears less
+    facility_cost_cents: 2500000 # $25,000 to prepare a facility clearance (A: security officer, safes, accreditation)
+    required: { none: 0, secret: 3, top_secret: 5 } # cleared staff a classified bid needs at its level
+  reputation:
+    consumer_categories: [consumer_apps, devices, wearables_diagnostics] # whose brand defence work costs (57.4)
+    brand_first: 2.0 # brand points the first defence award costs a consumer line (57.6 target 4: 1-3)
+    brand_next: 0.5 # each later one
+    brand_year_cap: 3.0 # at most this a trailing 12 months
+    persona: { ruthless: 3, beloved: -2 } # the founder's persona a defence award moves (32.4)
+    influence: 4 # influence points a defence award adds in its government's region (32.5)
+    objector_interests: [open_source, climate, consumer, design] # staff interests that object to defence work (A)
+    low_tolerance: 6 # adaptability at or below this objects too (A)
+    morale_pct: -8 # objectors' morale target for morale_months (an event modifier, 23.2)
+    morale_months: 6
+    letter_base: 0.25 # chance of an open letter (the Maven reference) after a defence award
+    letter_slope: 1.2 # x the share of staff who object
+    letter_max: 0.85
+    resign_share: [0.05, 0.15] # of objectors who resign when the company carries on (Maven: about a dozen of about 4,000)
+    withdraw_brand: 1.0 # brand points back on consumer lines when the company withdraws
+    board_cents: 100000000 # $1M a year for an ethics board (A)
+  itar_keep: { us_aligned: 1.0, non_aligned: 0.7, china: 0.0 } # share of a country's demand a controlled item keeps, by bloc (licences; 126.1 destinations 0)
+  energy: { bid: 4, withdraw: 1, protest: 3, clearance: 1, facility: 3 } # founder energy
+  unlock_year: 2012 # the Government screen opens (M29) from 2012 for a stage-3 company, or with a bid
 # --- The conglomerate view (M43 sub-task 2, v5 lane L) ----------------------------------------
 # The industries the conglomerate view reports a group in (read-only; no game effect). A ledger
 # line belongs to an industry when its memo names one of the company's products (by category),
 # facilities (by kind), power plants or mines, or when its revenue account is listed; every other
-# operating line is shared, split across the company's industries by their revenue that year.
+# operating line is shared, split across the company's industries by their revenue that year; a listed cost
+# account (government contracts' delivery costs and bids) is its industry's.
 # The loader checks every product category and facility kind is in exactly one industry.
 conglomerate:
   industries:
@@ -3063,6 +3388,9 @@ conglomerate:
     - { key: vehicles, label: Electric vehicles, categories: [vehicles], facility_kinds: [vehicle_plant, cell_plant, charging_network], accounts: [4440_charging_sales] }
     - { key: robotics, label: Robotics and robotaxis, categories: [industrial_robots, humanoid_robots, mobility], facility_kinds: [depot] }
     - { key: medical, label: Medical devices, categories: [wearables_diagnostics, imaging, surgical_robotics, implantables, samd] }
+    - { key: pharma, label: Pharmaceuticals, categories: [pharma_oncology, pharma_metabolic, pharma_immunology, pharma_neuroscience, pharma_infectious, pharma_cardiovascular, pharma_rare], accounts: [4060_revenue_drugs] } # M42
+    - { key: space, label: Space and satellites, categories: [launch, satellite_broadband, earth_observation], facility_kinds: [launch_site, satellite_plant] } # M40
+    - { key: government, label: Defence and government, accounts: [4070_revenue_government, 5300_contract_costs, 6990_bids_clearances] } # M44: government contracts, their delivery costs and bids
   trend_years: 10 # years of yearly trends the view shows (the brief's ten-year trends)
   risk_years: 5 # years of yearly revenue growth whose spread (standard deviation) is the shown risk
   risk_words: # the spread of yearly revenue growth (a fraction) below `below` reads as `word`

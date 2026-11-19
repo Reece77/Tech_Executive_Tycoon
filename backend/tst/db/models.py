@@ -23,9 +23,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 61  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = 64  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 # M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39
+# M42: 0062_m42
+# M40: 0063_m40 (re-parented onto M42's 0062_m42 at the merge)
+# M44: 0064_m44
 
 
 class Base(DeclarativeBase):
@@ -2326,6 +2329,30 @@ class RoboticsRecordRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+class SpaceRecordRow(Base):
+    """One space record (56; 0063_m40): `kind` names its SpaceState collection (launch_specs,
+    constellations, licences, launches, months, terminal_prices, d2d_partners, space_world) and
+    `data` its fields; rows keep each collection's order."""
+
+    __tablename__ = "space_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class GovernmentRecordRow(Base):
+    """One government record (57; 0064_m44): `kind` names its GameState collection (tenders,
+    gov_bids, protests, gov_contracts, clearances, facility_clearances, controlled_products,
+    defence_records, government_world) and `data` its fields; rows keep each collection's order."""
+
+    __tablename__ = "government_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 class RegulationRecordRow(Base):
     """One regulation record (48; 0055): `kind` names its GameState collection (designations,
     designation_warnings, duties, reg_cases, reg_watches, reg_orders, reg_turnover) and `data`
@@ -2344,6 +2371,19 @@ class MedicalRecordRow(Base):
     med_inspections, med_recalls, med_drift) and `data` its fields; rows keep each order."""
 
     __tablename__ = "medical_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class PharmaRecordRow(Base):
+    """One pharmaceutical record (55; 0062): `kind` names its GameState collection
+    (pharma_programmes, pharma_readouts, ...; tst.db.pharma_io) and `data` its fields; rows keep
+    each order. A programme's and an asset's `efficacy` and `safety` are hidden values: the save
+    holds them, the API never reads them (CLAUDE.md 8)."""
+
+    __tablename__ = "pharma_record"
 
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)

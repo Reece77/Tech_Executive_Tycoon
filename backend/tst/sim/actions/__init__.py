@@ -288,6 +288,16 @@ from tst.sim.geopolitics.actions import (
 from tst.sim.geopolitics.fabs import RequestToolLicence, request_tool_licence
 from tst.sim.geopolitics.fabs import check_order as geo_check_order
 from tst.sim.geopolitics.fabs import fab_country as geo_fab_country
+from tst.sim.government.actions import ACTION_TYPES as GOVERNMENT_ACTION_TYPES
+from tst.sim.government.actions import (
+    GovernmentAction,
+    PlaceBid,
+    ProtestAward,
+    RequestClearance,
+    SponsorFacilityClearance,
+    WithdrawBid,
+    apply_government,
+)
 from tst.sim.group.actions import (
     AnswerGroupPitch,
     BuyOutMinorities,
@@ -337,6 +347,8 @@ from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
 from tst.sim.org.models import Proposal
+from tst.sim.pharma.actions import ACTION_TYPES as PHARMA_ACTION_TYPES
+from tst.sim.pharma.actions import PharmaAction, apply_pharma
 from tst.sim.platforms.actions import ACTION_TYPES as PLATFORM_ACTION_TYPES
 from tst.sim.platforms.actions import (
     AdoptStandard,
@@ -377,6 +389,17 @@ from tst.sim.robotics.actions import (
     SetHumanoidSpec,
     SetRidePrice,
     apply_robotics,
+)
+from tst.sim.space.actions import ACTION_TYPES as SPACE_ACTION_TYPES
+from tst.sim.space.actions import (
+    ApplyLicence,
+    PlanConstellation,
+    SetConstellationPlan,
+    SetD2dPartner,
+    SetLaunchSpec,
+    SetTerminalPrice,
+    SpaceAction,
+    apply_space,
 )
 from tst.sim.state import GameState
 from tst.sim.vehicles.actions import ACTION_TYPES as VEHICLE_ACTION_TYPES
@@ -435,6 +458,9 @@ type Action = (
     | VehicleAction  # M38
     | MedicalAction  # M41
     | RoboticsAction  # M39
+    | PharmaAction  # M42
+    | SpaceAction  # M40
+    | GovernmentAction  # M44
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -456,6 +482,9 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **VEHICLE_ACTION_TYPES,  # M38 (49)
     **MEDICAL_ACTION_TYPES,  # M41 (50)
     **ROBOTICS_ACTION_TYPES,  # M39 (53)
+    **PHARMA_ACTION_TYPES,  # M42 (55)
+    **SPACE_ACTION_TYPES,  # M40 (56)
+    **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -1003,6 +1032,23 @@ def apply_action(
             | CloseZone()
         ):
             out = apply_robotics(state, action, ledger_balances, balance, data)  # M39 (53)
+        case (
+            SetLaunchSpec()
+            | PlanConstellation()
+            | SetConstellationPlan()
+            | ApplyLicence()
+            | SetTerminalPrice()
+            | SetD2dPartner()
+        ):
+            out = apply_space(state, action, ledger_balances, balance, data)  # M40 (56)
+        case (
+            PlaceBid()
+            | WithdrawBid()
+            | ProtestAward()
+            | RequestClearance()
+            | SponsorFacilityClearance()
+        ):
+            out = apply_government(state, action, rng, ledger_balances, balance, data)  # M44 (57)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():
@@ -1016,6 +1062,8 @@ def apply_action(
             | SetPlantQuality()
         ):  # M41 (50)
             out = apply_medical(state, action, rng, balance, data)
+        case _ if getattr(action, "kind", "") in PHARMA_ACTION_TYPES:  # M42 (55)
+            out = apply_pharma(state, action, rng, balance, data)  # type: ignore[arg-type]
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

@@ -9,7 +9,14 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select, text
 
-from tests.helpers import FIRST_PRODUCT, INCUMBENTS, MEDICAL_INCUMBENTS, ROBOT_INCUMBENTS
+from tests.helpers import (
+    FIRST_PRODUCT,
+    INCUMBENTS,
+    MEDICAL_INCUMBENTS,
+    PHARMA_INCUMBENTS,
+    ROBOT_INCUMBENTS,
+    SPACE_INCUMBENTS,
+)
 from tst.db import migrate
 from tst.db.models import SCHEMA_VERSION, CompanyRow
 from tst.db.repository import create_save, load_state, open_session, run_turn
@@ -34,7 +41,15 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     names = [c.name for c in state.companies if not c.is_player]
     assert names == [c.name for c in loaded.game_data.incumbents]
     assert [c.id for c in state.companies] == list(
-        range(1, INCUMBENTS + MEDICAL_INCUMBENTS + ROBOT_INCUMBENTS + 2)
+        range(
+            1,
+            INCUMBENTS
+            + MEDICAL_INCUMBENTS
+            + ROBOT_INCUMBENTS
+            + PHARMA_INCUMBENTS
+            + SPACE_INCUMBENTS
+            + 2,
+        )
     )
     incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
     assert len(state.products) == incumbent_products and all(
@@ -119,7 +134,7 @@ def test_upgrade_from_0007_adds_the_market_at_the_saves_turn(
         players = session.scalars(select(CompanyRow).where(CompanyRow.is_player)).all()
     # M9's six regional incumbents come with new games only (migration 0023_geo), as do M38's
     # thirteen car makers (they list their regions too); INCUMBENTS counts neither M41's device
-    # makers nor M39's robot makers, which come with new games only as well
+    # makers, M39's robot makers nor M42's pharma rivals, which come with new games only as well
     assert len(players) == 1 and len(state.companies) == INCUMBENTS - 6 - 13 + 1
     assert state.turn == 3
     smb = state.market("b2b_saas", "smb")

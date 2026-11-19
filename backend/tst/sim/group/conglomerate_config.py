@@ -19,7 +19,7 @@ class IndustryDef(_Frozen):
     label: str
     categories: tuple[str, ...] = ()
     facility_kinds: tuple[str, ...] = ()
-    accounts: tuple[str, ...] = ()  # revenue accounts not tied to a product (foundry, energy)
+    accounts: tuple[str, ...] = ()  # accounts not tied to a product (foundry, energy, contracts)
     plants: bool = False  # power plants (46)
     mines: bool = False  # mines (35)
 

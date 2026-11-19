@@ -1604,3 +1604,465 @@ companies:
           logistics: { price_cents: 5000000, share_bp: 0 }
           retail: { price_cents: 5000000, share_bp: 0 }
           manufacturing: { price_cents: 5000000, share_bp: 0 }
+
+  # --- M42 (formulas.md 55.5): pharmaceutical rivals ----------------------------------------------
+  # Their business is pharma.yaml's: revenue to 2025 from their reported pharmaceutical revenue, key
+  # drugs and cliffs, then seeded approvals (tst.sim.pharma.rivals); no products here, and they make
+  # no generic product decisions (rivals.holds). Johnson & Johnson's medicines arm is its own company
+  # beside M41's MedTech (as M41 split J&J); AbbVie is Abbott's pharmaceutical business to its 1 Jan
+  # 2013 spin-off; Sandoz is Novartis's generics division to its 4 Oct 2023 spin-off; Viatris is Mylan
+  # to its 16 Nov 2020 merger with Pfizer's Upjohn (A: one company each from 2010). listed_from: A
+  # (listed long before 2010, except Sandoz). cash_months: of pharma revenue at the start (A).
+  - name: Pfizer
+    stage: 4
+    founded_year: 1849
+    listed_from: [1944, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Johnson & Johnson Innovative Medicine
+    stage: 4
+    founded_year: 1886
+    listed_from: [1944, 9]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Roche
+    stage: 4
+    founded_year: 1896
+    listed_from: [1955, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Merck & Co.
+    stage: 4
+    founded_year: 1891
+    listed_from: [1946, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: AbbVie
+    stage: 4
+    founded_year: 2013
+    listed_from: [2013, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Novartis
+    stage: 4
+    founded_year: 1996
+    listed_from: [1996, 12]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: AstraZeneca
+    stage: 4
+    founded_year: 1999
+    listed_from: [1999, 4]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Novo Nordisk
+    stage: 4
+    founded_year: 1923
+    listed_from: [1974, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Eli Lilly
+    stage: 4
+    founded_year: 1876
+    listed_from: [1970, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Bristol Myers Squibb
+    stage: 4
+    founded_year: 1887
+    listed_from: [1929, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sanofi
+    stage: 4
+    founded_year: 1973
+    listed_from: [1973, 1]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: GSK
+    stage: 4
+    founded_year: 2000
+    listed_from: [2000, 12]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Teva
+    stage: 4
+    founded_year: 1901
+    listed_from: [1951, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sandoz
+    stage: 4
+    founded_year: 1886
+    listed_from: [2023, 10]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Viatris
+    stage: 4
+    founded_year: 1961
+    listed_from: [1973, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  - name: Sun Pharma
+    stage: 4
+    founded_year: 1983
+    listed_from: [1994, 1]
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 6
+    key_people: 4
+    products: []
+
+  # --- M40 (formulas.md 56): space incumbents, appended (ids follow the robot makers). Each has a
+  # launch, satellite_broadband or earth_observation line; to December 2025 their customers follow
+  # space.yaml (launch providers' shares of the world's launches, operators' subscribers x space.scale,
+  # EO operators' history shares) and they do not decide (tst.sim.space.rivals.holds). Prices are
+  # categories.yaml's references x the provider's position (A: SpaceX's Falcon 9 cheapest, ULA's and
+  # Arianespace's government-priced vehicles dearest). Qualities and brands A from reliability records
+  # (space.yaml early_failures). Lines with no service before a date have no price before it (Rocket
+  # Lab 2017, Blue Origin 2025, Starlink October 2020, OneWeb 2023, Kuiper 2026).
+
+  - name: SpaceX
+    stage: 3
+    founded_year: 2002
+    personality: aggressive
+    builder_skill: 17
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Falcon 9
+        category: launch
+        quality: 80
+        features: 85
+        brand: 80
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          satellite_operators: { price_cents: 4800000000, share_bp: 0 }
+          government: { price_cents: 8000000000, share_bp: 0 }
+      - name: Starlink
+        category: satellite_broadband
+        quality: 78
+        features: 80
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          consumer: { price_cents: 9500, share_bp: 0 }
+          enterprise: { price_cents: 45000, share_bp: 0 }
+          aviation_maritime: { price_cents: 220000, share_bp: 0 }
+          government: { price_cents: 140000, share_bp: 0 }
+          direct_to_device: { price_cents: 760, share_bp: 0 }
+
+  - name: United Launch Alliance
+    stage: 3
+    founded_year: 2006
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Atlas V and Vulcan
+        category: launch
+        quality: 85
+        features: 70
+        brand: 78
+        regions: [north_america]
+        segments:
+          satellite_operators: { price_cents: 11000000000, share_bp: 0 }
+          government: { price_cents: 12000000000, share_bp: 0 }
+
+  - name: Arianespace
+    stage: 3
+    founded_year: 1980
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Ariane
+        category: launch
+        quality: 80
+        features: 65
+        brand: 75
+        regions: [europe, latin_america, africa, south_southeast_asia]
+        segments:
+          satellite_operators: { price_cents: 13000000000, share_bp: 0 }
+          government: { price_cents: 13000000000, share_bp: 0 }
+
+  - name: Rocket Lab
+    stage: 2
+    founded_year: 2006
+    listed_from: [2021, 8]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Electron
+        category: launch
+        quality: 70
+        features: 70
+        brand: 60
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          satellite_operators: { price_cents: 700000000, share_bp: 0 }
+          government: { price_cents: 800000000, share_bp: 0 }
+
+  - name: CASC
+    stage: 4
+    founded_year: 1999
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Long March
+        category: launch
+        quality: 75
+        features: 60
+        brand: 60
+        regions: [east_asia]
+        segments:
+          satellite_operators: { price_cents: 6000000000, share_bp: 0 }
+          government: { price_cents: 8000000000, share_bp: 0 }
+
+  - name: ISRO
+    stage: 3
+    founded_year: 1969
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 0
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: PSLV and GSLV
+        category: launch
+        quality: 72
+        features: 55
+        brand: 55
+        regions: [south_southeast_asia]
+        segments:
+          satellite_operators: { price_cents: 2200000000, share_bp: 0 }
+          government: { price_cents: 3000000000, share_bp: 0 }
+
+  - name: Blue Origin
+    stage: 2
+    founded_year: 2000
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: New Glenn
+        category: launch
+        quality: 70
+        features: 75
+        brand: 60
+        regions: [north_america]
+        segments:
+          satellite_operators: { price_cents: 7500000000, share_bp: 0 }
+          government: { price_cents: 9000000000, share_bp: 0 }
+
+  - name: Eutelsat OneWeb
+    stage: 2
+    founded_year: 2012
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: OneWeb
+        category: satellite_broadband
+        quality: 70
+        features: 70
+        brand: 50
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          enterprise: { price_cents: 50000, share_bp: 0 }
+          aviation_maritime: { price_cents: 240000, share_bp: 0 }
+          government: { price_cents: 150000, share_bp: 0 }
+
+  - name: Amazon Kuiper
+    stage: 2
+    founded_year: 2019
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 0
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Kuiper
+        category: satellite_broadband
+        quality: 72
+        features: 75
+        brand: 70
+        regions: [north_america, europe, latin_america, oceania]
+        segments:
+          consumer: { price_cents: 8500, share_bp: 0 }
+          enterprise: { price_cents: 45000, share_bp: 0 }
+          aviation_maritime: { price_cents: 220000, share_bp: 0 }
+          government: { price_cents: 140000, share_bp: 0 }
+
+  - name: Viasat
+    stage: 3
+    founded_year: 1986
+    listed_from: [1996, 12]
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Viasat broadband
+        category: satellite_broadband
+        quality: 55
+        features: 55
+        brand: 60
+        regions: [north_america, europe, latin_america]
+        segments:
+          consumer: { price_cents: 10000, share_bp: 0 }
+          enterprise: { price_cents: 55000, share_bp: 0 }
+          aviation_maritime: { price_cents: 260000, share_bp: 0 }
+          government: { price_cents: 160000, share_bp: 0 }
+
+  - name: SES
+    stage: 3
+    founded_year: 1985
+    listed_from: [1998, 1]
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: O3b mPOWER
+        category: satellite_broadband
+        quality: 68
+        features: 65
+        brand: 65
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          enterprise: { price_cents: 60000, share_bp: 0 }
+          aviation_maritime: { price_cents: 250000, share_bp: 0 }
+          government: { price_cents: 170000, share_bp: 0 }
+
+  - name: Planet Labs
+    stage: 2
+    founded_year: 2010
+    listed_from: [2021, 12]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 0
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: PlanetScope
+        category: earth_observation
+        quality: 70
+        features: 75
+        brand: 60
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          enterprise: { price_cents: 2000000, share_bp: 0 }
+          government: { price_cents: 20000000, share_bp: 0 }
+
+  - name: Maxar
+    stage: 3
+    founded_year: 1992
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: WorldView
+        category: earth_observation
+        quality: 82
+        features: 70
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          enterprise: { price_cents: 2000000, share_bp: 0 }
+          government: { price_cents: 20000000, share_bp: 0 }
