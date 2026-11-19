@@ -30,11 +30,12 @@ class MyBidOut(BaseModel):
     band: ScoreBandOut | None = Field(
         description="Score bands once awarded (not when disqualified)"
     )
+    score_floor: int | None = Field(description="The total band's lower bound (Explain: bid_score)")
     reasons: list[str] = Field(description="Requirements the bid did not meet")
     can_protest: bool
 
 
-class OptionOut(BaseModel):
+class TenderOptionOut(BaseModel):
     product_id: int
     product: str
     quality: float
@@ -64,11 +65,11 @@ class TenderOut(BaseModel):
     winning_band: str | None = Field(description="The lowest awardee's score band, once awarded")
     protest_by: str | None = Field(description="Who protested the award, while it is held")
     requirements: list[str] = Field(description="What a bid must meet")
-    options: list[OptionOut] = Field(description="The player's live products that could bid")
+    options: list[TenderOptionOut] = Field(description="The player's live products that could bid")
     my_bid: MyBidOut | None
 
 
-class ContractOut(BaseModel):
+class GovContractOut(BaseModel):
     id: int
     tender_id: int
     title: str
@@ -119,7 +120,7 @@ class FacilityOptionOut(BaseModel):
     kind: str
 
 
-class GovernmentOut(BaseModel):
+class GovBuyerOut(BaseModel):
     key: str
     label: str
     country: str
@@ -150,9 +151,9 @@ class DefenceRecordOut(BaseModel):
 class GovernmentScreenOut(BaseModel):
     month: str
     enabled: bool
-    governments: list[GovernmentOut]
+    governments: list[GovBuyerOut]
     tenders: list[TenderOut]
-    contracts: list[ContractOut]
+    contracts: list[GovContractOut]
     clearances: list[ClearanceOut]
     facility_clearances: list[FacilityClearanceOut]
     staff: list[StaffOptionOut]
@@ -164,7 +165,7 @@ class GovernmentScreenOut(BaseModel):
     protest_cost_cents: int
 
 
-class BidIn(BaseModel):
+class TenderBidIn(BaseModel):
     product_id: int
     price_cents: int = Field(gt=0)
     team: list[int] = Field(default_factory=list)

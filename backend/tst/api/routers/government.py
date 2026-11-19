@@ -12,7 +12,12 @@ from tst.api import government_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
-from tst.api.schemas.government import BidIn, ClearanceIn, GovernmentActionOut, GovernmentScreenOut
+from tst.api.schemas.government import (
+    ClearanceIn,
+    GovernmentActionOut,
+    GovernmentScreenOut,
+    TenderBidIn,
+)
 from tst.db import inbox, repository
 from tst.loader import LoadedData
 from tst.sim.actions import Action
@@ -61,7 +66,7 @@ def get_government(save_id: str, settings: SettingsDep, data: DataDep) -> Govern
     operation_id="placeBid",
 )
 def place_bid(
-    save_id: str, tender_id: int, body: BidIn, settings: SettingsDep, data: DataDep
+    save_id: str, tender_id: int, body: TenderBidIn, settings: SettingsDep, data: DataDep
 ) -> GovernmentActionOut:
     path = _path(settings, save_id)
     action = PlaceBid(

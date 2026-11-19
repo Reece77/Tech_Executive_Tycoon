@@ -26892,6 +26892,495 @@
         }
       }
     },
+    "/api/saves/{save_id}/government": {
+      "get": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Get Government",
+        "description": "Announced tenders, their requirements, the player's bids, awards and contracts, clearance\nstatuses, governments' budgets this year and rivals' published awards.",
+        "operationId": "getGovernment",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/bid": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Place Bid",
+        "operationId": "placeBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenderBidIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/withdraw": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Withdraw Bid",
+        "operationId": "withdrawBid",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/tenders/{tender_id}/protest": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Protest Award",
+        "operationId": "protestAward",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "tender_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tender Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/clearances": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Request Clearances",
+        "operationId": "requestClearances",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearanceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/government/facilities/{facility_id}/clearance": {
+      "post": {
+        "tags": [
+          "government"
+        ],
+        "summary": "Sponsor Facility Clearance",
+        "operationId": "sponsorFacilityClearance",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -33606,6 +34095,75 @@
         ],
         "title": "CityOut"
       },
+      "ClearanceIn": {
+        "properties": {
+          "person_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Person Ids"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "secret or top_secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_ids",
+          "level"
+        ],
+        "title": "ClearanceIn"
+      },
+      "ClearanceOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "pending, cleared, denied or lapsed"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided",
+            "description": "Shown once decided (never the month it is due)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "level",
+          "status",
+          "requested",
+          "decided"
+        ],
+        "title": "ClearanceOut"
+      },
       "CloudOut": {
         "properties": {
           "product_id": {
@@ -35608,6 +36166,54 @@
         ],
         "title": "DecisionOut",
         "description": "Something an executive with authority did this month or lately (24.1-24.2)."
+      },
+      "DefenceRecordOut": {
+        "properties": {
+          "awards": {
+            "type": "integer",
+            "title": "Awards"
+          },
+          "blocs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Blocs",
+            "description": "Blocs whose militaries the company supplies"
+          },
+          "brand_lost": {
+            "type": "number",
+            "title": "Brand Lost"
+          },
+          "reactions": {
+            "type": "integer",
+            "title": "Reactions",
+            "description": "Staff open letters so far"
+          },
+          "controlled_products": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Controlled Products",
+            "description": "Products that are controlled items"
+          },
+          "past_performance": {
+            "type": "number",
+            "title": "Past Performance",
+            "description": "The company's own record, 0-100"
+          }
+        },
+        "type": "object",
+        "required": [
+          "awards",
+          "blocs",
+          "brand_lost",
+          "reactions",
+          "controlled_products",
+          "past_performance"
+        ],
+        "title": "DefenceRecordOut"
       },
       "DepotOut": {
         "properties": {
@@ -38295,7 +38901,8 @@
               "region",
               "plant",
               "order",
-              "zone"
+              "zone",
+              "bid"
             ],
             "title": "Scope"
           },
@@ -39791,6 +40398,57 @@
           "upgrade_energy"
         ],
         "title": "FabsOut"
+      },
+      "FacilityClearanceOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "status",
+          "requested"
+        ],
+        "title": "FacilityClearanceOut"
+      },
+      "FacilityOptionOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "kind"
+        ],
+        "title": "FacilityOptionOut"
       },
       "FacilityOut": {
         "properties": {
@@ -42711,6 +43369,209 @@
         "title": "GlossaryOut",
         "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
       },
+      "GovBuyerOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "defence_cents_year": {
+            "type": "integer",
+            "title": "Defence Cents Year",
+            "description": "This year's defence budget, real 2010 cents"
+          },
+          "civil_cents_year": {
+            "type": "integer",
+            "title": "Civil Cents Year",
+            "description": "This year's civil technology budget, real"
+          },
+          "open_to": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Open To"
+          },
+          "refuses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refuses"
+          },
+          "open_tenders": {
+            "type": "integer",
+            "title": "Open Tenders"
+          },
+          "you_may_bid": {
+            "type": "boolean",
+            "title": "You May Bid",
+            "description": "Its tenders take bids from your bloc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "country",
+          "defence_cents_year",
+          "civil_cents_year",
+          "open_to",
+          "refuses",
+          "open_tenders",
+          "you_may_bid"
+        ],
+        "title": "GovBuyerOut"
+      },
+      "GovContractOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tender_id": {
+            "type": "integer",
+            "title": "Tender Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "government_label": {
+            "type": "string",
+            "title": "Government Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents"
+          },
+          "start": {
+            "type": "string",
+            "title": "Start"
+          },
+          "base_end": {
+            "type": "string",
+            "title": "Base End"
+          },
+          "end": {
+            "type": "string",
+            "title": "End"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "active, completed, terminated or defaulted"
+          },
+          "options": {
+            "type": "string",
+            "title": "Options",
+            "description": "pending, exercised or declined"
+          },
+          "performance": {
+            "type": "number",
+            "title": "Performance",
+            "description": "0-100, the running mean of months delivered"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "month_revenue_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Month Revenue Cents"
+          },
+          "month_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Month Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tender_id",
+          "title",
+          "government_label",
+          "area",
+          "buyer",
+          "contract",
+          "product",
+          "value_cents",
+          "start",
+          "base_end",
+          "end",
+          "status",
+          "options",
+          "performance",
+          "revenue_cents",
+          "cost_cents",
+          "month_revenue_cents",
+          "month_cost_cents"
+        ],
+        "title": "GovContractOut"
+      },
+      "GovernmentActionOut": {
+        "properties": {
+          "government": {
+            "$ref": "#/components/schemas/GovernmentScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "government",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "GovernmentActionOut"
+      },
       "GovernmentOut": {
         "properties": {
           "regions": {
@@ -42754,6 +43615,111 @@
         ],
         "title": "GovernmentOut",
         "description": "The Government affairs panel (32.5)."
+      },
+      "GovernmentScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "governments": {
+            "items": {
+              "$ref": "#/components/schemas/GovBuyerOut"
+            },
+            "type": "array",
+            "title": "Governments"
+          },
+          "tenders": {
+            "items": {
+              "$ref": "#/components/schemas/TenderOut"
+            },
+            "type": "array",
+            "title": "Tenders"
+          },
+          "contracts": {
+            "items": {
+              "$ref": "#/components/schemas/GovContractOut"
+            },
+            "type": "array",
+            "title": "Contracts"
+          },
+          "clearances": {
+            "items": {
+              "$ref": "#/components/schemas/ClearanceOut"
+            },
+            "type": "array",
+            "title": "Clearances"
+          },
+          "facility_clearances": {
+            "items": {
+              "$ref": "#/components/schemas/FacilityClearanceOut"
+            },
+            "type": "array",
+            "title": "Facility Clearances"
+          },
+          "staff": {
+            "items": {
+              "$ref": "#/components/schemas/StaffOptionOut"
+            },
+            "type": "array",
+            "title": "Staff"
+          },
+          "facilities": {
+            "items": {
+              "$ref": "#/components/schemas/FacilityOptionOut"
+            },
+            "type": "array",
+            "title": "Facilities"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalAwardOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "record": {
+            "$ref": "#/components/schemas/DefenceRecordOut"
+          },
+          "clearance_cost_cents": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Clearance Cost Cents",
+            "description": "An investigation's price by level"
+          },
+          "facility_cost_cents": {
+            "type": "integer",
+            "title": "Facility Cost Cents"
+          },
+          "protest_cost_cents": {
+            "type": "integer",
+            "title": "Protest Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "enabled",
+          "governments",
+          "tenders",
+          "contracts",
+          "clearances",
+          "facility_clearances",
+          "staff",
+          "facilities",
+          "rivals",
+          "record",
+          "clearance_cost_cents",
+          "facility_cost_cents",
+          "protest_cost_cents"
+        ],
+        "title": "GovernmentScreenOut"
       },
       "GrantOut": {
         "properties": {
@@ -49957,6 +50923,97 @@
           "parent_id"
         ],
         "title": "MoveUnitIn"
+      },
+      "MyBidOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tender_id": {
+            "type": "integer",
+            "title": "Tender Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          },
+          "team": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Team"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "submitted, won, lost, disqualified or withdrawn"
+          },
+          "band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreBandOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Score bands once awarded (not when disqualified)"
+          },
+          "score_floor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Floor",
+            "description": "The total band's lower bound (Explain: bid_score)"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Requirements the bid did not meet"
+          },
+          "can_protest": {
+            "type": "boolean",
+            "title": "Can Protest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tender_id",
+          "product_id",
+          "product",
+          "price_cents",
+          "team",
+          "month",
+          "status",
+          "band",
+          "score_floor",
+          "reasons",
+          "can_protest"
+        ],
+        "title": "MyBidOut"
       },
       "MyCarOut": {
         "properties": {
@@ -60137,6 +61194,38 @@
         ],
         "title": "RidePriceIn"
       },
+      "RivalAwardOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "awards": {
+            "type": "integer",
+            "title": "Awards"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents",
+            "description": "Published awards' value over the last 36 months"
+          },
+          "areas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Areas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "awards",
+          "value_cents",
+          "areas"
+        ],
+        "title": "RivalAwardOut"
+      },
       "RivalBidOut": {
         "properties": {
           "id": {
@@ -62802,6 +63891,35 @@
         ],
         "title": "ScenarioOut"
       },
+      "ScoreBandOut": {
+        "properties": {
+          "total": {
+            "type": "string",
+            "title": "Total",
+            "description": "The bid's score band, e.g. '60-70' (never the score)"
+          },
+          "price": {
+            "type": "string",
+            "title": "Price"
+          },
+          "technical": {
+            "type": "string",
+            "title": "Technical"
+          },
+          "past_performance": {
+            "type": "string",
+            "title": "Past Performance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "price",
+          "technical",
+          "past_performance"
+        ],
+        "title": "ScoreBandOut"
+      },
       "ScoreOut": {
         "properties": {
           "score": {
@@ -64027,6 +65145,42 @@
           "unit_id"
         ],
         "title": "StaffIn"
+      },
+      "StaffOptionOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "clearance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clearance",
+            "description": "The level held or pending, if any"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role",
+          "clearance"
+        ],
+        "title": "StaffOptionOut"
       },
       "StaffRefineryIn": {
         "properties": {
@@ -66230,6 +67384,233 @@
         ],
         "title": "TeamStrengthOut",
         "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
+      },
+      "TenderBidIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "price_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Price Cents"
+          },
+          "team": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Team"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "price_cents"
+        ],
+        "title": "TenderBidIn"
+      },
+      "TenderOptionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "unmet": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unmet",
+            "description": "Requirements this product would not meet now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "product",
+          "quality",
+          "unmet"
+        ],
+        "title": "TenderOptionOut"
+      },
+      "TenderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "government": {
+            "type": "string",
+            "title": "Government"
+          },
+          "government_label": {
+            "type": "string",
+            "title": "Government Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "buyer": {
+            "type": "string",
+            "title": "Buyer",
+            "description": "defence or civil"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract",
+            "description": "fixed_price, cost_plus or idiq"
+          },
+          "clearance": {
+            "type": "string",
+            "title": "Clearance",
+            "description": "none, secret or top_secret"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents",
+            "description": "The ceiling over the whole term (game scale)"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "base_months": {
+            "type": "integer",
+            "title": "Base Months"
+          },
+          "awards": {
+            "type": "integer",
+            "title": "Awards",
+            "description": "Awardees (an IDIQ vehicle may have several)"
+          },
+          "large": {
+            "type": "boolean",
+            "title": "Large"
+          },
+          "announced": {
+            "type": "string",
+            "title": "Announced"
+          },
+          "closes": {
+            "type": "string",
+            "title": "Closes"
+          },
+          "award_month": {
+            "type": "string",
+            "title": "Award Month"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "open, evaluating, protested, awarded or cancelled"
+          },
+          "historical": {
+            "type": "boolean",
+            "title": "Historical",
+            "description": "A named tender from history (JEDI, JWCC, NSSL, ...)"
+          },
+          "winners": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Winners",
+            "description": "Published awardees, once awarded"
+          },
+          "winning_band": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Winning Band",
+            "description": "The lowest awardee's score band, once awarded"
+          },
+          "protest_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protest By",
+            "description": "Who protested the award, while it is held"
+          },
+          "requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Requirements",
+            "description": "What a bid must meet"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/TenderOptionOut"
+            },
+            "type": "array",
+            "title": "Options",
+            "description": "The player's live products that could bid"
+          },
+          "my_bid": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MyBidOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "government",
+          "government_label",
+          "area",
+          "buyer",
+          "contract",
+          "clearance",
+          "value_cents",
+          "term_months",
+          "base_months",
+          "awards",
+          "large",
+          "announced",
+          "closes",
+          "award_month",
+          "status",
+          "historical",
+          "winners",
+          "winning_band",
+          "protest_by",
+          "requirements",
+          "options",
+          "my_bid"
+        ],
+        "title": "TenderOut"
       },
       "TensionPointOut": {
         "properties": {

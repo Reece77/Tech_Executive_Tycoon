@@ -5993,6 +5993,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/government": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Government
+         * @description Announced tenders, their requirements, the player's bids, awards and contracts, clearance
+         *     statuses, governments' budgets this year and rivals' published awards.
+         */
+        get: operations["getGovernment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/government/tenders/{tender_id}/bid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Place Bid */
+        post: operations["placeBid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/government/tenders/{tender_id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw Bid */
+        post: operations["withdrawBid"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/government/tenders/{tender_id}/protest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Protest Award */
+        post: operations["protestAward"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/government/clearances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Request Clearances */
+        post: operations["requestClearances"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/government/facilities/{facility_id}/clearance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sponsor Facility Clearance */
+        post: operations["sponsorFacilityClearance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/regulation": {
         parameters: {
             query?: never;
@@ -8659,6 +8765,37 @@ export interface components {
              */
             example_rate_cents: number;
         };
+        /** ClearanceIn */
+        ClearanceIn: {
+            /** Person Ids */
+            person_ids: number[];
+            /**
+             * Level
+             * @description secret or top_secret
+             */
+            level: string;
+        };
+        /** ClearanceOut */
+        ClearanceOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Level */
+            level: string;
+            /**
+             * Status
+             * @description pending, cleared, denied or lapsed
+             */
+            status: string;
+            /** Requested */
+            requested: string;
+            /**
+             * Decided
+             * @description Shown once decided (never the month it is due)
+             */
+            decided: string | null;
+        };
         /** CloudOut */
         CloudOut: {
             /**
@@ -9563,6 +9700,33 @@ export interface components {
              * @description A plausible but worse choice (24.2)
              */
             mistake: boolean;
+        };
+        /** DefenceRecordOut */
+        DefenceRecordOut: {
+            /** Awards */
+            awards: number;
+            /**
+             * Blocs
+             * @description Blocs whose militaries the company supplies
+             */
+            blocs: string[];
+            /** Brand Lost */
+            brand_lost: number;
+            /**
+             * Reactions
+             * @description Staff open letters so far
+             */
+            reactions: number;
+            /**
+             * Controlled Products
+             * @description Products that are controlled items
+             */
+            controlled_products: string[];
+            /**
+             * Past Performance
+             * @description The company's own record, 0-100
+             */
+            past_performance: number;
         };
         /** DepotOut */
         DepotOut: {
@@ -10684,7 +10848,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "bid";
             /** Entity */
             entity?: string | null;
             /**
@@ -11238,6 +11402,26 @@ export interface components {
             build_energy: number;
             /** Upgrade Energy */
             upgrade_energy: number;
+        };
+        /** FacilityClearanceOut */
+        FacilityClearanceOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Requested */
+            requested: string;
+        };
+        /** FacilityOptionOut */
+        FacilityOptionOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
         };
         /** FacilityOut */
         FacilityOut: {
@@ -12379,6 +12563,93 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** GovBuyerOut */
+        GovBuyerOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Country */
+            country: string;
+            /**
+             * Defence Cents Year
+             * @description This year's defence budget, real 2010 cents
+             */
+            defence_cents_year: number;
+            /**
+             * Civil Cents Year
+             * @description This year's civil technology budget, real
+             */
+            civil_cents_year: number;
+            /** Open To */
+            open_to: string[];
+            /** Refuses */
+            refuses: string[];
+            /** Open Tenders */
+            open_tenders: number;
+            /**
+             * You May Bid
+             * @description Its tenders take bids from your bloc
+             */
+            you_may_bid: boolean;
+        };
+        /** GovContractOut */
+        GovContractOut: {
+            /** Id */
+            id: number;
+            /** Tender Id */
+            tender_id: number;
+            /** Title */
+            title: string;
+            /** Government Label */
+            government_label: string;
+            /** Area */
+            area: string;
+            /** Buyer */
+            buyer: string;
+            /** Contract */
+            contract: string;
+            /** Product */
+            product: string;
+            /** Value Cents */
+            value_cents: number;
+            /** Start */
+            start: string;
+            /** Base End */
+            base_end: string;
+            /** End */
+            end: string;
+            /**
+             * Status
+             * @description active, completed, terminated or defaulted
+             */
+            status: string;
+            /**
+             * Options
+             * @description pending, exercised or declined
+             */
+            options: string;
+            /**
+             * Performance
+             * @description 0-100, the running mean of months delivered
+             */
+            performance: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Month Revenue Cents */
+            month_revenue_cents: number | null;
+            /** Month Cost Cents */
+            month_cost_cents: number | null;
+        };
+        /** GovernmentActionOut */
+        GovernmentActionOut: {
+            government: components["schemas"]["GovernmentScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
         /**
          * GovernmentOut
          * @description The Government affairs panel (32.5).
@@ -12397,6 +12668,41 @@ export interface components {
              * @description Every region
              */
             region_options: components["schemas"]["tst__api__schemas__founder__RegionOptionOut"][];
+        };
+        /** GovernmentScreenOut */
+        GovernmentScreenOut: {
+            /** Month */
+            month: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Governments */
+            governments: components["schemas"]["GovBuyerOut"][];
+            /** Tenders */
+            tenders: components["schemas"]["TenderOut"][];
+            /** Contracts */
+            contracts: components["schemas"]["GovContractOut"][];
+            /** Clearances */
+            clearances: components["schemas"]["ClearanceOut"][];
+            /** Facility Clearances */
+            facility_clearances: components["schemas"]["FacilityClearanceOut"][];
+            /** Staff */
+            staff: components["schemas"]["StaffOptionOut"][];
+            /** Facilities */
+            facilities: components["schemas"]["FacilityOptionOut"][];
+            /** Rivals */
+            rivals: components["schemas"]["RivalAwardOut"][];
+            record: components["schemas"]["DefenceRecordOut"];
+            /**
+             * Clearance Cost Cents
+             * @description An investigation's price by level
+             */
+            clearance_cost_cents: {
+                [key: string]: number;
+            };
+            /** Facility Cost Cents */
+            facility_cost_cents: number;
+            /** Protest Cost Cents */
+            protest_cost_cents: number;
         };
         /** GrantOut */
         GrantOut: {
@@ -15316,6 +15622,42 @@ export interface components {
              * @description A department, or null for the company root
              */
             parent_id: number | null;
+        };
+        /** MyBidOut */
+        MyBidOut: {
+            /** Id */
+            id: number;
+            /** Tender Id */
+            tender_id: number;
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Price Cents */
+            price_cents: number;
+            /** Team */
+            team: number[];
+            /** Month */
+            month: string;
+            /**
+             * Status
+             * @description submitted, won, lost, disqualified or withdrawn
+             */
+            status: string;
+            /** @description Score bands once awarded (not when disqualified) */
+            band: components["schemas"]["ScoreBandOut"] | null;
+            /**
+             * Score Floor
+             * @description The total band's lower bound (Explain: bid_score)
+             */
+            score_floor: number | null;
+            /**
+             * Reasons
+             * @description Requirements the bid did not meet
+             */
+            reasons: string[];
+            /** Can Protest */
+            can_protest: boolean;
         };
         /** MyCarOut */
         MyCarOut: {
@@ -19644,6 +19986,20 @@ export interface components {
             /** Price Cents */
             price_cents: number;
         };
+        /** RivalAwardOut */
+        RivalAwardOut: {
+            /** Name */
+            name: string;
+            /** Awards */
+            awards: number;
+            /**
+             * Value Cents
+             * @description Published awards' value over the last 36 months
+             */
+            value_cents: number;
+            /** Areas */
+            areas: string[];
+        };
         /** RivalBidOut */
         RivalBidOut: {
             /** Id */
@@ -20740,6 +21096,20 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** ScoreBandOut */
+        ScoreBandOut: {
+            /**
+             * Total
+             * @description The bid's score band, e.g. '60-70' (never the score)
+             */
+            total: string;
+            /** Price */
+            price: string;
+            /** Technical */
+            technical: string;
+            /** Past Performance */
+            past_performance: string;
+        };
         /**
          * ScoreOut
          * @description A company's score now (30.1), from public inputs only, with its parts in points.
@@ -21221,6 +21591,20 @@ export interface components {
         StaffIn: {
             /** Unit Id */
             unit_id: number | null;
+        };
+        /** StaffOptionOut */
+        StaffOptionOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /**
+             * Clearance
+             * @description The level held or pending, if any
+             */
+            clearance: string | null;
         };
         /** StaffRefineryIn */
         StaffRefineryIn: {
@@ -22184,6 +22568,115 @@ export interface components {
              * @description The line the product screen shows
              */
             text: string;
+        };
+        /** TenderBidIn */
+        TenderBidIn: {
+            /** Product Id */
+            product_id: number;
+            /** Price Cents */
+            price_cents: number;
+            /** Team */
+            team?: number[];
+        };
+        /** TenderOptionOut */
+        TenderOptionOut: {
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Quality */
+            quality: number;
+            /**
+             * Unmet
+             * @description Requirements this product would not meet now
+             */
+            unmet: string[];
+        };
+        /** TenderOut */
+        TenderOut: {
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /** Government */
+            government: string;
+            /** Government Label */
+            government_label: string;
+            /** Area */
+            area: string;
+            /**
+             * Buyer
+             * @description defence or civil
+             */
+            buyer: string;
+            /**
+             * Contract
+             * @description fixed_price, cost_plus or idiq
+             */
+            contract: string;
+            /**
+             * Clearance
+             * @description none, secret or top_secret
+             */
+            clearance: string;
+            /**
+             * Value Cents
+             * @description The ceiling over the whole term (game scale)
+             */
+            value_cents: number;
+            /** Term Months */
+            term_months: number;
+            /** Base Months */
+            base_months: number;
+            /**
+             * Awards
+             * @description Awardees (an IDIQ vehicle may have several)
+             */
+            awards: number;
+            /** Large */
+            large: boolean;
+            /** Announced */
+            announced: string;
+            /** Closes */
+            closes: string;
+            /** Award Month */
+            award_month: string;
+            /**
+             * Status
+             * @description open, evaluating, protested, awarded or cancelled
+             */
+            status: string;
+            /**
+             * Historical
+             * @description A named tender from history (JEDI, JWCC, NSSL, ...)
+             */
+            historical: boolean;
+            /**
+             * Winners
+             * @description Published awardees, once awarded
+             */
+            winners: string[];
+            /**
+             * Winning Band
+             * @description The lowest awardee's score band, once awarded
+             */
+            winning_band: string | null;
+            /**
+             * Protest By
+             * @description Who protested the award, while it is held
+             */
+            protest_by: string | null;
+            /**
+             * Requirements
+             * @description What a bid must meet
+             */
+            requirements: string[];
+            /**
+             * Options
+             * @description The player's live products that could bid
+             */
+            options: components["schemas"]["TenderOptionOut"][];
+            my_bid: components["schemas"]["MyBidOut"] | null;
         };
         /** TensionPointOut */
         TensionPointOut: {
@@ -43083,6 +43576,366 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MobilityActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getGovernment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    placeBid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                tender_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TenderBidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    withdrawBid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                tender_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    protestAward: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                tender_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    requestClearances: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClearanceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    sponsorFacilityClearance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GovernmentActionOut"];
                 };
             };
             /** @description Bad Request */

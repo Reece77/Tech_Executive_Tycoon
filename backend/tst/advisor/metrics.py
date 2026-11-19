@@ -112,6 +112,8 @@ METRICS: dict[str, MetricDef] = {
         # v5 (M39): a plant's automation saving and a robotaxi zone's contribution a ride
         _m("automation_saving", "Automation saving", "cents", "plant", "Robots' saving a unit"),
         _m("ride_contribution", "Contribution a ride", "cents", "zone", "A ride's fare less costs"),
+        # v5 (M44): a bid's score band
+        _m("bid_score", "Score band", "points", "bid", "A government bid's weighted score"),
         # v4 (M34): regulators' fines and the designation thresholds
         _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
         _m(

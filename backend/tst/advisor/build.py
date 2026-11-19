@@ -894,6 +894,13 @@ class Builder:
 
         return v5_robotics.ride_contribution(self, m, entity)
 
+    # --- v5 (M44): government ------------------------------------------------------------------
+
+    def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_government
+
+        return v5_government.bid_score(self, m, entity)
+
     # --- v4 (M34): regulation ----------------------------------------------------------------
 
     def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:

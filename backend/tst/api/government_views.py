@@ -9,17 +9,17 @@ from typing import Final
 
 from tst.api.schemas.government import (
     ClearanceOut,
-    ContractOut,
     DefenceRecordOut,
     FacilityClearanceOut,
     FacilityOptionOut,
-    GovernmentOut,
+    GovBuyerOut,
+    GovContractOut,
     GovernmentScreenOut,
     MyBidOut,
-    OptionOut,
     RivalAwardOut,
     ScoreBandOut,
     StaffOptionOut,
+    TenderOptionOut,
     TenderOut,
 )
 from tst.loader import LoadedData
@@ -80,6 +80,11 @@ def _bid_out(state: GameState, bid: Bid, tender: Tender, data: LoadedData) -> My
         month=format_turn(bid.turn),
         status=bid.status,
         band=band,
+        score_floor=(
+            int(min(PCT - width, max(0.0, bid.terms.total)) // width * width)
+            if band is not None and bid.terms is not None
+            else None
+        ),
         reasons=list(bid.reasons),
         can_protest=can_protest,
     )
@@ -117,7 +122,7 @@ def tender_requirements(state: GameState, tender: Tender, data: LoadedData) -> l
     return out
 
 
-def _options(state: GameState, tender: Tender, data: LoadedData) -> list[OptionOut]:
+def _options(state: GameState, tender: Tender, data: LoadedData) -> list[TenderOptionOut]:
     b, d = data.balance, data.game_data
     player = state.player
     out = []
@@ -126,7 +131,7 @@ def _options(state: GameState, tender: Tender, data: LoadedData) -> list[OptionO
             continue
         unmet = requirements(state, player, p, tender, b, d)
         out.append(
-            OptionOut(
+            TenderOptionOut(
                 product_id=p.id, product=p.name, quality=round(p.quality, 1), unmet=list(unmet)
             )
         )
@@ -222,7 +227,7 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
     except (KeyError, StopIteration):
         bloc = ""
     governments = [
-        GovernmentOut(
+        GovBuyerOut(
             key=g.key,
             label=g.label,
             country=g.country,
@@ -242,7 +247,7 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
         t = state.tender(c.tender_id)
         product = state.product(c.product_id)
         contracts.append(
-            ContractOut(
+            GovContractOut(
                 id=c.id,
                 tender_id=c.tender_id,
                 title=t.title if t is not None else f"Contract {c.id}",
