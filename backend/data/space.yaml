@@ -1,0 +1,346 @@
+# Space and satellites (docs/formulas.md 56, M40, v5 lane I). Research: M40 sub-task 1 (2026-11-18)
+# from docs/v5-research/space-dossier.md. History holds to December 2025; seeded after (balance.yaml
+# space.*). Every value carries a tag and a source, as robotics.yaml's:
+#   S  a sourced figure, quoted from the named Wikipedia page (this session could open only
+#      en.wikipedia.org: CSIS, the Space Foundation, SIA and the companies' sites did not resolve),
+#   D  derived from sourced figures (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session,
+#   A  an assumption for gameplay where no public series was found (the basis is given).
+# Money is [value, dollar year, tag] under keys ending _usd, converted to the game's 2010 dollars with
+# `cpi` at load. Re-check the R and A rows against CSIS, the Space Foundation's Space Report, SIA's
+# State of the Satellite Industry and the operators' filings when those hosts are reachable
+# (M40 follow-up).
+#
+# Scale (Reece, 2026-11-15: "markets and money at the game's scale"): launches, satellites and
+# subscribers here are real-world counts; the game's markets (categories.yaml) and constellations are
+# x balance.yaml space.scale (0.085, the game's economy scale, as robotics.scale), at real prices.
+#
+# Corrections to the dossier (M40 brief, Decisions made): the Space Shuttle's cost a kg is not $54,500
+# on Wikipedia: its page gives $1.642 billion a launch over the whole programme (2012 dollars) for 27.5 t,
+# about $59,700 a kg (the dossier's $54,500 is CSIS's figure, R); Electron's list price over its payload
+# is $25,000 a kg ($19,039 in the launch-market table); world orbital launch attempts were 74 (2010), 87
+# (2015), 114 (2020), 223 (2023), 261 (2024) and 330 (2025), not "about 259" in 2024; Starlink's
+# 60-satellite launch of May 2019 is "operational" on its page but "test satellites" on the launch list
+# (November 2019 is the first v1.0 launch); Starlink had about 8.9 million subscribers by December 2025.
+#
+# Sources (Wikipedia pages, fetched 2026-11-18):
+#   SLMC   Space launch market competition (cost-per-kg table; Falcon 9 and Falcon Heavy prices)
+#   SHUT   Space Shuttle;  F9  Falcon 9;  FH  Falcon Heavy;  F1  Falcon 1;  ELEC  Rocket Lab Electron
+#   F9L    List of Falcon 9 and Falcon Heavy launches (launches a year, failures)
+#   F9B    List of Falcon 9 first-stage boosters (reflights)
+#   ATL    Atlas V;  AR5  Ariane 5;  AR6  Ariane 6;  VUL  Vulcan Centaur;  NG  New Glenn
+#   LM5    Long March 5;  PSLV  Polar Satellite Launch Vehicle;  SOY  Soyuz-2;  SS  SpaceX Starship
+#   VEGA   Vega (rocket);  ANT  Antares (rocket);  FFA  Firefly Alpha;  ASTRA  Astra Space
+#   YIS    "<year> in spaceflight" (2010-2025): orbital launch attempts by country
+#   STAR   Starlink (subscribers, ARPU, terminal, masses, revenue);  STL  List of Starlink and Starshield launches
+#   OW     Eutelsat OneWeb;  LEO  Amazon Leo (Project Kuiper);  TMO  T-Mobile US;  AST  AST SpaceMobile
+#   GLOB   Globalstar;  VSAT  Viasat (American company);  SES  SES (company);  PLAN  Planet Labs
+#   SI     Space industry;  TSR  The Space Report;  INS  Satellite insurance;  DEB  Space debris
+#   CPI    US BLS CPI-U annual averages (R; 2025 A, preliminary), as robotics.yaml's
+#   FX     euro and rupee rates (R: ECB reference rates, annual averages)
+
+cpi: # R (CPI), as robotics.yaml
+  2010: 218.056
+  2011: 224.939
+  2012: 229.594
+  2013: 232.957
+  2014: 236.736
+  2015: 237.017
+  2016: 240.007
+  2017: 245.120
+  2018: 251.107
+  2019: 255.657
+  2020: 258.811
+  2021: 270.970
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.0
+
+# --- Launch (56.1) ---------------------------------------------------------------------------------------
+launch:
+  # World orbital launch attempts a year (YIS infobox "total"; 2010: "| total = 74 | success = 70 | failed
+  # = 4", 2025: "World || 330 || 317 || 13"), S.
+  world:
+    2010: [74, S]
+    2011: [84, S]
+    2012: [77, S]
+    2013: [81, S]
+    2014: [92, S]
+    2015: [87, S]
+    2016: [85, S]
+    2017: [91, S]
+    2018: [114, S]
+    2019: [102, S]
+    2020: [114, S]
+    2021: [146, S]
+    2022: [186, S]
+    2023: [223, S]
+    2024: [261, S]
+    2025: [330, S]
+  # Providers in the game (incumbents.yaml): orbital launch attempts a year. A provider's share of the
+  # launch market to 2025 is its share of the world's launches (56.4 target 1); the rest (Russia's,
+  # Japan's, Chinese commercial and other small launchers) is the share no rival serves.
+  providers:
+    - company: SpaceX
+      origin: us
+      first: "2010-06" # F9: Falcon 9's first flight, 4 June 2010 (R, F9L)
+      # F9L "Rocket configurations" chart, Falcon 9 + Falcon Heavy a year, summed (D from S): 2024 "134
+      # total Falcon flights", 2025 "165 total Falcon flights" (S)
+      launches: { 2010: [2, D], 2011: [0, D], 2012: [2, D], 2013: [3, D], 2014: [6, D], 2015: [7, D], 2016: [8, D], 2017: [18, D], 2018: [21, D], 2019: [13, D], 2020: [26, D], 2021: [31, D], 2022: [61, D], 2023: [96, D], 2024: [134, S], 2025: [165, S] }
+      failures: { 2012: [1, S], 2015: [1, S], 2024: [1, S] } # F9: CRS-1 (partial), CRS-7, Starlink 9-3; AMOS-6 (2016) was lost on the pad before flight
+    - company: United Launch Alliance
+      origin: us
+      # R (ULA's Atlas V and Delta IV manifests, Wikipedia's ATL and Delta IV launch lists): ULA flew
+      # 8-14 a year to 2016, fewer as SpaceX took the market; the USA's YIS totals (15 in 2010, 198 in
+      # 2025) bound it (S)
+      launches: { 2010: [8, R], 2011: [11, R], 2012: [10, R], 2013: [11, R], 2014: [14, R], 2015: [12, R], 2016: [12, R], 2017: [8, R], 2018: [8, R], 2019: [5, R], 2020: [6, R], 2021: [5, R], 2022: [7, R], 2023: [3, R], 2024: [5, R], 2025: [6, R] }
+    - company: Arianespace
+      origin: france
+      # R (Ariane 5, Vega and Soyuz-from-Kourou manifests); AR5's last flight 5 July 2023 and AR6's first
+      # 9 July 2024 (S)
+      launches: { 2010: [6, R], 2011: [7, R], 2012: [10, R], 2013: [7, R], 2014: [11, R], 2015: [12, R], 2016: [11, R], 2017: [11, R], 2018: [11, R], 2019: [9, R], 2020: [5, R], 2021: [6, R], 2022: [5, R], 2023: [3, R], 2024: [3, R], 2025: [6, R] }
+    - company: Rocket Lab
+      origin: new_zealand
+      first: "2017-05" # ELEC: "launched on 25 May 2017, reaching space but not achieving orbit" (S)
+      # ELEC: "The Electron has flown 100 times since May 2017, with a total of 96 successes and 4
+      # failures" (S); a year's launches R (Rocket Lab's launch list), summing to about 90 orbital by 2025
+      launches: { 2017: [1, S], 2018: [3, R], 2019: [6, R], 2020: [7, R], 2021: [6, R], 2022: [9, R], 2023: [10, R], 2024: [16, R], 2025: [20, R] }
+      failures: { 2017: [1, S], 2020: [1, S], 2021: [1, S], 2023: [1, R] } # ELEC: the maiden flight (2017) and the 13th (July 2020) and 20th (May 2021) launches failed (S); 2023 R (Rocket Lab, September 2023)
+    - company: CASC
+      origin: china
+      # D: China's YIS totals (15 / 19 / 39 / 56 / 64 / 67 / 68 / 93 in 2010 / 2015 / 2020-2025, S) x CASC's
+      # share (A: all Chinese launches to 2014, falling to about 70% by 2025 as commercial launchers grew;
+      # CASC-only counts were not found)
+      launches: { 2010: [15, D], 2011: [19, D], 2012: [19, D], 2013: [15, D], 2014: [16, D], 2015: [18, D], 2016: [20, D], 2017: [16, D], 2018: [33, D], 2019: [27, D], 2020: [33, D], 2021: [48, D], 2022: [53, D], 2023: [50, D], 2024: [50, D], 2025: [65, D] }
+    - company: ISRO
+      origin: india
+      launches: { 2010: [3, R], 2011: [3, R], 2012: [2, R], 2013: [3, R], 2014: [4, R], 2015: [5, R], 2016: [7, R], 2017: [5, R], 2018: [7, R], 2019: [6, R], 2020: [2, R], 2021: [2, R], 2022: [5, R], 2023: [7, R], 2024: [5, R], 2025: [5, R] } # R (ISRO's PSLV and GSLV manifests)
+    - company: Blue Origin
+      origin: us
+      first: "2025-01" # NG: "Its first flight, NG-1, took place on January 16, 2025" (S)
+      launches: { 2025: [2, S] } # NG: NG-1 (January) and NG-2 (November 2025, the first booster landing) (S)
+  # Vehicles (shown with their cost a kg; a bought launch pays `bought_vehicle`'s price). price_usd is a
+  # launch's list price, payload_kg to LEO.
+  vehicles:
+    - key: shuttle
+      label: Space Shuttle
+      company: NASA
+      first_flight: "1981-04"
+      retired: "2011-07" # R (STS-135, July 2011)
+      payload_kg: [27500, S] # SHUT infobox "{{cvt|27500|kg}}"
+      price_usd: { 2010: [1642000000, 2012, S] } # SHUT: "Accounting for the entire Space Shuttle program budget, the per-launch cost was $1.642 billion (in 2012)" (D about $59,700 a kg; CSIS's $54,500, R)
+    - key: falcon9_v1
+      label: Falcon 9 v1.0/v1.1
+      company: SpaceX
+      first_flight: "2010-06"
+      retired: "2016-01" # R: the last v1.1 flight, January 2016
+      payload_kg: [13100, S] # F9: v1.1 13,100 kg (v1.0 10,400)
+      price_usd: { 2010: [49900000, 2010, S], 2012: [54000000, 2012, S], 2013: [56500000, 2013, S], 2014: [61200000, 2014, S] } # F9: "$49.9-56 million ... By 2012, it rose to $54-59.5 million, followed by $56.5 million for the v1.1 version in 2013, $61.2 million in 2014"
+    - key: falcon9
+      label: Falcon 9 Full Thrust
+      company: SpaceX
+      first_flight: "2015-12"
+      payload_kg: [22800, S] # F9: "22800 kg when expended, 17500 kg when landing on drone ship"
+      price_usd: { 2016: [62000000, 2016, S], 2023: [69750000, 2023, R], 2025: [70000000, 2025, A] } # F9: "$62 million for the Full Thrust version in 2016, and $74 million for the Block 5 version in 2026"; 2023 R (SpaceX's capabilities page); 2025 A between them. SLMC: $2,720 a kg (NASA 2018)
+      reusable_from: "2017-03" # F9B: "B1021 became the first booster to fly a second time ... on March 30, 2017" (S)
+    - key: falcon_heavy
+      label: Falcon Heavy
+      company: SpaceX
+      first_flight: "2018-02" # FH: "first = February 6, 2018" (S)
+      payload_kg: [63800, S] # FH: "63800 kg when fully expended"
+      price_usd: { 2018: [90000000, 2018, S], 2022: [97000000, 2022, S] } # SLMC: "a USD 90 million list price"; FH: "Reusable: US$97 million (2022)". SLMC: $1,500 a kg (CSIS 2022)
+      reusable_from: "2018-02"
+    - key: electron
+      label: Electron
+      company: Rocket Lab
+      first_flight: "2017-05"
+      payload_kg: [300, S] # ELEC: "Updated: 300 kg"
+      price_usd: { 2018: [7500000, 2020, S] } # ELEC: "About US$7.5 million" (D $25,000 a kg; SLMC $19,039)
+    - key: atlas_v
+      label: Atlas V
+      company: United Launch Alliance
+      first_flight: "2002-08" # R
+      payload_kg: [18850, S] # ATL: "8210-18850 kg" (the largest configuration)
+      price_usd: { 2016: [131500000, 2016, D] } # ATL: "US$110-153 million (2016)", the midpoint
+    - key: ariane5
+      label: Ariane 5
+      company: Arianespace
+      first_flight: "1996-06" # R
+      retired: "2023-07" # AR5: last "5 July 2023" (S)
+      payload_kg: [20000, S] # AR5: "ES: >20000 kg"
+      price_usd: { 2016: [193700000, 2016, D] } # AR5: "EUR 150-200 million (2016)": EUR 175M x 1.107 (FX R)
+    - key: ariane6
+      label: Ariane 6
+      company: Arianespace
+      first_flight: "2024-07" # AR6: "first = 2024|7|9" (S)
+      payload_kg: [21650, S] # AR6: "A64: 21650 kg"
+      price_usd: { 2024: [135700000, 2018, D] } # AR6: "A64: EUR 115 million (2018 est.)" x 1.18 (FX R)
+    - key: vulcan
+      label: Vulcan Centaur
+      company: United Launch Alliance
+      first_flight: "2024-01" # R (8 January 2024)
+      payload_kg: [27200, S] # VUL
+      price_usd: { 2024: [110000000, 2024, S] } # VUL: "US$110 million (starting)"
+    - key: new_glenn
+      label: New Glenn
+      company: Blue Origin
+      first_flight: "2025-01"
+      payload_kg: [45000, S] # NG: "7x2: 45000 kg"
+      price_usd: { 2025: [89000000, 2025, D] } # NG: "US$68-110 million", the midpoint
+      reusable_from: "2025-11" # NG: "The first stage achieved its first successful landing on November 13, 2025" (S)
+    - key: long_march_5
+      label: Long March 5
+      company: CASC
+      first_flight: "2016-11" # R
+      payload_kg: [25000, S] # LM5
+      price_usd: { 2020: [160000000, 2020, S] } # LM5: "~US$160 million" (the year A)
+    - key: pslv
+      label: PSLV
+      company: ISRO
+      first_flight: "1993-09" # R
+      payload_kg: [3800, S] # PSLV: "XL: 3800 kg"
+      price_usd: { 2020: [22000000, 2020, D] } # PSLV: "130-200 crore (2020)", midpoint at 74 rupees a dollar (FX R)
+    - key: soyuz2
+      label: Soyuz-2
+      company: Roscosmos
+      first_flight: "2004-11" # R
+      payload_kg: [8670, S] # SOY: "B: 8670 kg"
+      price_usd: { 2018: [35000000, 2018, S] } # SOY: "US$35 million (2018)"
+    - key: starship
+      label: Starship (stated aspiration)
+      company: SpaceX
+      first_flight: "2023-04" # SS: "first = 2023|4|20" (S)
+      payload_kg: [100000, S] # SS: "Block 3: 100 t"
+      price_usd: { 2023: [1000000, 2023, S] } # SS: "Musk has theorized that a Starship orbital launch might eventually cost SpaceX only $1 million" (a target, not a price; its page lists "$100 million (expendable)")
+      target: true
+  bought_vehicle: falcon9 # a bought launch's price and payload (held at 2016's before, 2025's after)
+  milestones:
+    - { month: "2015-11", label: "New Shepard's first powered landing (suborbital)" } # S (New Shepard: "November 23, 2015")
+    - { month: "2015-12", label: "Falcon 9's first booster landing (flight 20)" } # S (F9: "December 21, 2015")
+    - { month: "2017-03", label: "First reflight of an orbital booster (B1021, SES-10)" } # S (F9B)
+    - { month: "2018-02", label: "Falcon Heavy's first flight, two boosters landed" } # S (FH)
+    - { month: "2023-04", label: "Starship's first flight" } # S (SS)
+    - { month: "2024-10", label: "Starship's booster caught by the launch tower" } # S (SS: "October 13, 2024")
+    - { month: "2024-12", label: "A Falcon 9 booster flies its 24th mission (B1067)" } # D (F9B: B1067's 24th flight December 4, 2024)
+    - { month: "2025-11", label: "New Glenn's first booster landing" } # S (NG)
+    - { month: "2025-12", label: "A Falcon 9 booster flies its 32nd mission (B1067)" } # D (F9B: 32nd flight December 8, 2025)
+  # New vehicles' early records (the failure model's calibration, 56.4 target 4; balance.yaml space.failure)
+  early_failures:
+    - { vehicle: Falcon 1, flights: [5, S], failures: [3, S] } # F1: "launches = 5 |fail = 3 ... |success = 2"
+    - { vehicle: Electron (first 12), flights: [12, S], failures: [2, S] } # ELEC: the maiden flight failed; "In July 2020, the thirteenth Electron rocket launch failed" (the 13th counts in the next row)
+    - { vehicle: Electron (to 2026), flights: [100, S], failures: [4, S] } # ELEC: "flown 100 times ... 96 successes and 4 failures"
+    - { vehicle: Astra (to first orbit), flights: [7, S], failures: [6, S] } # ASTRA: "successfully reached orbit in November 2021 with LV0007, after six previous failed attempts"
+    - { vehicle: Firefly Alpha, flights: [7, S], failures: [4, S] } # FFA: "launches = 7 | success = 3 | fail = 2 | partial = 2" (partials counted as failures)
+    - { vehicle: Vega, flights: [22, S], failures: [2, S] } # VEGA
+    - { vehicle: Long March 5 (first 2), flights: [2, S], failures: [1, S] } # LM5: "a core stage failure on its second launch in June 2017"
+    - { vehicle: Ariane 5, flights: [117, S], failures: [5, S] } # AR5: "fail = 2 ... partial = 3"
+    - { vehicle: Falcon 9 (to 2025), flights: [582, D], failures: [3, S] } # F9: 2 in-flight failures and 1 partial; flights D (F9L's chart)
+    - { vehicle: Soyuz-2, flights: [172, S], failures: [5, S] } # SOY: "fail = 4 ... partial = 1"
+
+# --- Constellations and services (56.2-56.3) ----------------------------------------------------------
+# Operators in the game (incumbents.yaml): satellites in orbit at year end and subscribers (thousands, at
+# year end, real). An operator's broadband line is pinned to its subscribers to 2025 (x space.scale).
+constellations:
+  - key: starlink
+    label: Starlink
+    company: SpaceX
+    kind: broadband
+    first_launch: "2019-05" # STAR: "the first batch of 60 operational Starlink satellites was launched on May 24, 2019" (S)
+    service: "2020-10" # STAR: "In October 2020, SpaceX launched a paid-for beta service in the U.S." (S)
+    d2d: true # STL: "First with Direct to Cell capability", 3 January 2024 (S)
+    # D: cumulative satellites launched (STL's table: 122 / 955 / 1,944 / 3,666 / 5,650 / 7,632 / 10,801 by
+    # 2019-2025, D from S) less those failed or deorbited (1,867 of 13,070 by October 2026, S: about 14%,
+    # fewer early); STL: 5,402 operational in February 2024 (S, Satellite Internet access)
+    satellites: { 2019: [120, D], 2020: [940, D], 2021: [1880, D], 2022: [3450, D], 2023: [5300, D], 2024: [6900, D], 2025: [9500, D] }
+    # STAR's subscriber table: February 2021 10,000; November 2021 140,000; December 2022 1,000,000;
+    # December 2023 2,300,000; December 2024 4,400,000; December 2025 8,900,000 (S); 2020 A (a few
+    # thousand beta users)
+    subscribers: { 2020: [5, A], 2021: [145, D], 2022: [1000, S], 2023: [2300, S], 2024: [4400, S], 2025: [8900, S] }
+  - key: oneweb
+    label: OneWeb
+    company: Eutelsat OneWeb
+    kind: broadband
+    first_launch: "2019-02" # OW: "launched its first six satellites in February 2019" (S)
+    service: "2023-03" # OW: "In March 2023, the number of satellites reached 618, enough to provide global coverage" (S)
+    satellites: { 2019: [6, S], 2020: [110, R], 2021: [394, R], 2022: [502, R], 2023: [634, R], 2024: [654, R], 2025: [654, A] } # OW: "584 OneWeb satellites in orbit" (early March 2023), planned 648 (S); year ends R (OneWeb launch list)
+    subscribers: { 2023: [5, A], 2024: [15, A], 2025: [30, A] } # A: enterprise, maritime and government sites (OneWeb sells wholesale; no counts found)
+  - key: kuiper
+    label: Project Kuiper (Amazon Leo)
+    company: Amazon Kuiper
+    kind: broadband
+    first_launch: "2023-10" # LEO: "KuiperSat-1 and KuiperSat-2 launched on October 6, 2023" (S)
+    service: "2026-06" # LEO: "Early service is anticipated in 2026" (S; the month A)
+    satellites: { 2023: [2, S], 2024: [2, R], 2025: [153, R] } # LEO: first 27 production satellites 28 April 2025 (S); 2025's six launches R
+  - key: viasat
+    label: ViaSat and Inmarsat fleet (GEO)
+    company: Viasat
+    kind: broadband
+    first_launch: "2011-10" # R (ViaSat-1, October 2011)
+    service: "2010-01" # R: WildBlue, bought by Viasat in 2009, served from before 2010
+    satellites: { 2010: [2, R], 2011: [3, R], 2017: [4, R], 2023: [17, R], 2025: [18, R] } # R: WildBlue-1 and Anik F2's payload, ViaSat-1 (2011), ViaSat-2 (2017), ViaSat-3 F1 and Inmarsat's fleet (VSAT: acquisition completed May 30, 2023, S)
+    subscribers: { 2010: [410, R], 2013: [560, R], 2016: [650, R], 2019: [590, R], 2022: [400, R], 2025: [190, R] } # R (Viasat's annual reports: US residential broadband subscribers)
+  - key: o3b
+    label: O3b and O3b mPOWER (MEO)
+    company: SES
+    kind: broadband
+    first_launch: "2013-06" # R (the first four O3b satellites, June 2013)
+    service: "2014-09" # R
+    satellites: { 2013: [4, R], 2014: [12, R], 2019: [20, R], 2022: [22, R], 2024: [26, R], 2025: [26, R] } # SES: mPOWER announced September 2017, "initially seven MEO satellites" (S); counts R
+    subscribers: { 2014: [1, A], 2019: [5, A], 2025: [12, A] } # A: enterprise, cruise and government sites
+  - key: planet
+    label: Planet's Dove and SkySat fleet
+    company: Planet Labs
+    kind: eo
+    first_launch: "2013-04" # R (Dove 1 and 2, April 2013)
+    service: "2014-01" # A
+    satellites: { 2014: [70, R], 2017: [190, R], 2020: [200, R], 2025: [200, R] } # R (Planet's reports); PLAN: founded 2010-12-29, revenue US$191.3M (2022) (S)
+  - key: maxar
+    label: WorldView fleet
+    company: Maxar
+    kind: eo
+    first_launch: "2007-09" # R (WorldView-1)
+    service: "2010-01" # R (DigitalGlobe's imagery service)
+    satellites: { 2010: [4, R], 2014: [5, R], 2016: [5, R], 2025: [8, R] } # R (WorldView-3 2014, WorldView-4 2016 (lost 2019), WorldView Legion from 2024)
+
+# Direct-to-device (56.3): sellers have no price in the market's direct_to_device segment before `open`.
+d2d:
+  open: "2025-07" # R: T-Mobile's T-Satellite commercial launch, 23 July 2025 (T-Mobile press release; beta from February 2025); TMO: "the FCC granted a landmark commercial license to SpaceX and T-Mobile in December 2025" (S)
+  milestones:
+    - { month: "2022-08", label: "T-Mobile and SpaceX announce Coverage Above and Beyond" } # S (TMO)
+    - { month: "2022-09", label: "Apple announces emergency texting by satellite (Globalstar)" } # S (GLOB: "On September 7, 2022")
+    - { month: "2022-09", label: "AST SpaceMobile's BlueWalker 3 test satellite" } # S (AST: "September 10, 2022")
+    - { month: "2024-01", label: "First Starlink satellites with Direct to Cell" } # S (STL)
+    - { month: "2024-09", label: "AST SpaceMobile's BlueBird 1-5" } # S (AST: "September 12, 2024")
+    - { month: "2025-07", label: "T-Mobile T-Satellite opens commercially" } # R
+    - { month: "2025-12", label: "The FCC grants SpaceX and T-Mobile a commercial licence" } # S (TMO)
+
+# A broadband user terminal's cost to make (56.3): STAR: "charging $499 ... for a user terminal" (October
+# 2020, S); R: SpaceX said a terminal cost it about $3,000 at launch and about $1,300 by 2021 (Musk, 2021
+# shareholder remarks, R); later A (falling with volume toward $500 and below).
+terminal_cost_usd:
+  2019: [3000, 2020, R]
+  2021: [1300, 2021, R]
+  2023: [600, 2023, A]
+  2025: [450, 2025, A]
+
+# A LEO broadband satellite's made cost a kg (56.2): A before mass production (a small LEO satellite
+# built a few at a time, about $20,000 a kg); D: OneWeb's about $1 million a satellite (R, Airbus OneWeb
+# Satellites) at 150-200 kg (OW, S) is about $5,000-7,000 a kg; R: Starlink's v1.0 "well under $500,000"
+# (Musk, 2019) at 260 kg (STL, S) is under $2,000 a kg; 2025 A (V2 mini at volume).
+satellite_cost_usd:
+  2010: [20000, 2010, A]
+  2015: [6500, 2015, D]
+  2019: [1800, 2019, R]
+  2025: [1000, 2025, A]
+
+# Published market sizes (context for the categories' calibration in categories.yaml; the game's markets
+# are sized there and capped by M43a's ceilings).
+markets:
+  - { key: space_economy_2012, label: "Space economy (commercial revenue and government budgets)", year: 2012, size_usd: [304310000000, 2012, S] } # TSR: "$304.31 billion ... in 2012"
+  - { key: space_economy_2018, label: "Space economy", year: 2018, size_usd: [414750000000, 2018, S] } # SI: "in 2018 total global space activity was $414.75 Billion"
+  - { key: space_economy_2024, label: "Space economy", year: 2024, size_usd: [613000000000, 2024, R] } # R (Space Foundation, The Space Report 2025: $613B for 2024; dossier "about $400-600B")
+  - { key: starlink_2022, label: "Starlink revenue", year: 2022, size_usd: [1400000000, 2022, S] } # STAR: "Revenues from Starlink in 2022 were reportedly $1.4 billion"
+  - { key: starlink_2025, label: "Starlink revenue", year: 2025, size_usd: [11400000000, 2025, S] } # STAR: "generating $11.4 billion in revenue and $4.4 billion in operating income"
+  - { key: launch_2024, label: "Launch services", year: 2024, size_usd: [15000000000, 2024, R] } # R (SIA, State of the Satellite Industry 2025: launch about $9-15B)
+  - { key: earth_observation_2023, label: "Earth observation data and services", year: 2023, size_usd: [4500000000, 2023, R] } # R (Euroconsult: about $4-5B)

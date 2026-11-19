@@ -86,6 +86,9 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "samd",
         "industrial_robots",  # M39
         "humanoid_robots",
+        "launch",  # M40
+        "satellite_broadband",
+        "earth_observation",
     ]
     by_key = {c["key"]: c for c in categories}
     assert by_key["ai_models"]["note"] == "Compute costs follow the market"

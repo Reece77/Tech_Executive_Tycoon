@@ -4109,6 +4109,16 @@ Reece (2026-11-14): **space** after EVs and robotics. Launch, satellites and con
 
 Vehicles, launches and their outcomes, cost per kg, satellites, constellations and coverage, subscribers, licences, rivals' public launches and constellations. Never launch-failure draws, seeded policy before it happens, or rivals' plans.
 
+
+### 56.6 As built (M40 notes)
+
+- **Launch** rides the hardware production path: a `launch` unit is a launch, `launch_site` is its plant (a site unit flies `space.reuse.<level>.pad_rate` launches a month at the company's best level), and its cost of goods is the vehicle's flight cost `B x ((1 - r) + r / N + r x refurb) + ops`, with `B = payload x build_cents_per_kg x (payload / ref) ** (size_exponent - 1) x quality x learning` and ops scaled the same way; cost a kg = flight / (payload x (1 - payload_cut)). Full reuse is about 6x cheaper a kg than the same design expendable at every payload.
+- **Reuse levels** need lead in the `reusability` domain **and** months since the company's programme began (its lead first rose): recovery 20 points and 30 months, full 45 and 84 (21.3's research alone reaches 45 in under two years with a large team; 56.4 target 2 asks for six).
+- **Failures:** `floor + (new_rate - floor) x 0.5 ** (flights / half_flights) x (1 + quality_k x (60 - quality) / 100)`, 40% to 1% (half every 4 flights); a failure grounds the line 2-9 months (seeded) and costs brand; a bought launch flies at the floor.
+- **Constellations:** built in satellite plants (or bought x1.6), capitalized, launched on an own line (pads left after customer launches) or bought (Falcon 9's price and payload), insured at 7% (90% paid on a loss), cohorts depreciated over their life, replaced `replace_ahead_months` (9) ahead into the shell that will be shortest; a shell (135 satellites) opens its regions at 90%. The cash flow (target 3) is the line's revenue in every region less its subscribers' hosting, satellites, launches, premiums, ground stations ($500,000 a covered region a month), disposal, debris fees and terminals, plus terminal sales and insurance.
+- **Services** gate through M31's `Effects`: no appeal outside coverage and granted licences; congestion `(capacity / subscribers) ** 1.5` over capacity (Gbps x 20 subscribers), trimmed in phase 9; `Effects.segment_appeal` closes direct-to-device without D2D satellites or before July 2025; broadband churn x0.3 from 2026; EO sells from 10 satellites up.
+- **History** to 2025: launch providers hold their share of the world's launches, operators their subscribers x 0.085; no price before a first launch, a service or D2D's opening. Space companies do not decide before 2026; the three categories are `family: space` (no startups, pitches or angel starts).
+
 ## 57. Defence and government contracts (M44; v5)
 
 Reece (2026-11-15): **defence and government contracts**, with governments buying the player's chips, satellites, AI, cloud and devices. **History holds to 2025** where M43a set it (`government.yaml`, research `docs/v5-research/defence-dossier.md`); markets at the game's scale (§54).

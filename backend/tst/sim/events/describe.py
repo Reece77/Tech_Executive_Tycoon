@@ -139,6 +139,8 @@ def effect_text(state: GameState, event: GameEvent, effect: Effect, balance: Bal
             return MEDICAL_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "robotics_step":  # M39 (53.3)
             return ROBOTICS_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
+        case "space_step":  # M40 (56.1)
+            return SPACE_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "founder_step":  # M24 (32.1, 32.5)
             return FOUNDER_STEP_TEXT.get(effect.stat, effect.stat.replace("_", " "))
         case "public_step":  # M13 (25)
@@ -172,6 +174,11 @@ ROBOTICS_STEP_TEXT: dict[str, str] = {  # M39 (53.3): never a draw or a chance
     "cooperate": "share the logs with the regulator: the suspension is halved, at a legal cost",
     "compensate": "compensate the people hurt and recall the software: money now, brand back",
     "contest": "dispute the findings: no cost now, but the regulator may extend the suspension",
+}
+SPACE_STEP_TEXT: dict[str, str] = {  # M40 (56.1): never a draw or a chance
+    "review": "commission an independent failure review: the vehicle flies again sooner, at a cost",
+    "rebuild": "rush replacements: the lost satellites are rebuilt at once, at a premium",
+    "claim": "contest the insurer over the uninsured part: legal costs now, perhaps more paid",
 }
 GROUP_STEP_TEXT: dict[str, str] = {  # M16 (31.6)
     "correct_price": "the transfer prices under complaint move to market",

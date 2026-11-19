@@ -112,6 +112,15 @@ METRICS: dict[str, MetricDef] = {
         # v5 (M39): a plant's automation saving and a robotaxi zone's contribution a ride
         _m("automation_saving", "Automation saving", "cents", "plant", "Robots' saving a unit"),
         _m("ride_contribution", "Contribution a ride", "cents", "zone", "A ride's fare less costs"),
+        # v5 (M40): a launch's cost and a constellation's payback
+        _m("launch_price", "Launch cost", "cents", "product", "A vehicle's cost a flight"),
+        _m(
+            "constellation_payback",
+            "Payback",
+            "cents",
+            "constellation",
+            "A constellation's cumulative cash flow",
+        ),
         # v4 (M34): regulators' fines and the designation thresholds
         _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
         _m(

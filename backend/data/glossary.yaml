@@ -942,3 +942,13 @@ terms:
   mobility.breakeven: "Rides a car a day at which the fares cover the car's month: energy and cleaning a ride, insurance, remote assistance and depreciation a car. Above it a fleet earns a positive contribution."
   mobility.acceptance: "The share of covered ride-hailing trips riders would take in a robotaxi: 5% when a city's first driverless service starts, rising toward 30% (Waymo had about a quarter of San Francisco's bookings in 2025)."
   mobility.depot: "A robotaxi depot: chargers, cleaning bays and remote assistance desks in a city. A fleet beyond its depots' capacity runs only the share they serve."
+  # M40 (formulas.md 56): space and satellites
+  space.leo: "Low Earth orbit: about 160-2,000 km up. Launch vehicles are compared by the payload they lift to it, and broadband constellations fly there (Starlink at about 550 km) for short signal delays."
+  space.cost_per_kg: "A launch's cost over the payload it lifts to low Earth orbit: about $59,700 a kg on the Space Shuttle, $2,720 on Falcon 9, $1,500 on Falcon Heavy (in their own years' dollars). Your vehicle's comes from its build cost, how much of it flies again and its operations."
+  space.reusability: "Recovering and reflying launch vehicles, a research domain. First-stage recovery needs 20 lead points and 30 months of programme; full reuse 45 points and 84 months. Each cuts the cost a kg and raises a pad's launches a month, at some payload."
+  space.constellation: "Many satellites working together, built in your satellite plants (or bought) and launched in batches. Its shells open regions when complete, its capacity limits subscribers, and satellites retire after their life and must be replaced."
+  space.shell: "A layer of a constellation at one altitude and inclination. Here a shell is 135 satellites (Starlink's first shell of 1,584 at the game's scale); with 90% of them in orbit it covers its regions."
+  space.direct_to_device: "Satellites that connect to ordinary phones, from July 2025 (T-Mobile's T-Satellite on Starlink). It needs D2D-capable satellites; a carrier partner doubles its appeal and keeps half its revenue."
+  space.licence: "Spectrum and landing rights in a region. Broadband sells only where you hold one and a complete shell covers the region. The review takes 6-18 months and may refuse."
+  space.failure: "A new vehicle fails often (about 40% on its first flight, as Falcon 1 and Electron did) and less with every flight, toward about 1% when mature. A failure grounds the vehicle for 2-9 months."
+  space.scale: "Launch, satellite and broadband markets are 8.5% of the real ones at real prices, and so are constellations' shells: the game's economy scale."

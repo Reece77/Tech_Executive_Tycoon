@@ -57,6 +57,8 @@ def plant_kind(product: Product, balance: Balance) -> str:
     rest in assembly plants (26.2)."""
     if product.category == balance.vehicles.category:
         return balance.vehicles.plant.kind
+    if product.category == balance.space.launch:  # M40 (56.1): launches fly from launch sites
+        return balance.space.site_kind
     return balance.hardware.plant_kind
 
 
@@ -133,6 +135,8 @@ class ProductionPlan:
     plants_of: dict[int, list[int]] = field(default_factory=dict)  # company -> plant ids
     vplants_of: dict[int, list[int]] = field(default_factory=dict)  # M38: company -> car plants
     vehicles: set[int] = field(default_factory=set)  # M38: car product ids (car plants, no chip)
+    splants_of: dict[int, list[int]] = field(default_factory=dict)  # M40: company -> launch sites
+    launches: set[int] = field(default_factory=set)  # M40: launch lines (launch sites, no chip)
     contract_left: dict[int, float] = field(default_factory=dict)
     contract_used: dict[int, float] = field(default_factory=dict)
     contract_delivered: dict[int, float] = field(default_factory=dict)
@@ -210,6 +214,8 @@ class ProductionPlan:
     def _plants(self, product_id: int, company: int) -> list[int]:
         if product_id in self.vehicles:  # M38 (49.1): cars are made in vehicle plants
             return self.vplants_of.get(company, [])
+        if product_id in self.launches:  # M40 (56.1): launches fly from launch sites
+            return self.splants_of.get(company, [])
         return self.plants_of.get(company, [])
 
     def _chips_for(self, product_id: int, units: float) -> None:
@@ -276,6 +282,14 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
         for f in (*plants, *vplants):
             plan.plant_left[f.id] = runnable(state, f, balance)
             plan.plant_yield[f.id] = plant_yield_of(f, balance)
+        if any(p.category == balance.space.launch for p in products):  # M40 (56.1)
+            from tst.sim.space.launch import pads_per_unit
+
+            sites = live_plants(state, company.id, balance, balance.space.site_kind)
+            plan.splants_of[company.id] = [f.id for f in sites]
+            for f in sites:  # a site unit flies its company's best reuse level's launches a month
+                plan.plant_left[f.id] = runnable(state, f, balance)
+                plan.plant_yield[f.id] = pads_per_unit(state, company.id, balance)
         for p in products:
             plan.capped.add(p.id)
             plan.company_of[p.id] = company.id
@@ -293,6 +307,8 @@ def build_plan(state: GameState, balance: Balance, data: GameData) -> Production
             plan.slots[p.id] = bom.plant_slots
             if p.category == balance.vehicles.category:  # M38: chips are in the car's BOM
                 plan.vehicles.add(p.id)
+            elif p.category == balance.space.launch:  # M40: a vehicle's avionics are its cost
+                plan.launches.add(p.id)
             else:
                 plan.chip_type[p.id] = bom.chip_type
             ids = []
@@ -320,6 +336,10 @@ def unit_bom_cents(state: GameState, product: Product, balance: Balance, data: G
         from tst.sim.vehicles import spec as vehicle_spec
 
         return vehicle_spec.unit_cost(state, product, balance, data).total
+    if product.category == balance.space.launch:  # M40 (56.1): the vehicle's flight cost
+        from tst.sim.space.launch import unit_cents
+
+        return unit_cents(state, product, balance)
     bom = balance.hardware.bom[product.category]
     cents = hf.bom_cents(bom.base_cents, costs.cost_index(state, bom.good, data, balance))
     if product.category == balance.robotics.humanoid and data.robotics is not None:

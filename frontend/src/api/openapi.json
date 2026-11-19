@@ -26892,6 +26892,607 @@
         }
       }
     },
+    "/api/saves/{save_id}/space": {
+      "get": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Get Space",
+        "description": "Vehicles and launches, cost a kg, constellations and coverage, subscribers by region,\nlicences and rivals' public launches and constellations.",
+        "operationId": "getSpace",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/vehicles/{product_id}/spec": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Launch Spec",
+        "operationId": "setLaunchSpec",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaunchSpecIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/constellations": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Plan Constellation",
+        "operationId": "planConstellation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConstellationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/constellations/{constellation_id}/plan": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Constellation Plan",
+        "operationId": "setConstellationPlan",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "constellation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Constellation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConstellationPlanIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/licences": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Apply Licence",
+        "operationId": "applyLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpaceLicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/broadband/{product_id}/terminal": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set Terminal Price",
+        "operationId": "setTerminalPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TerminalPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/space/broadband/{product_id}/d2d": {
+      "post": {
+        "tags": [
+          "space"
+        ],
+        "summary": "Set D2D Partner",
+        "operationId": "setD2dPartner",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/D2dPartnerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpaceActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/regulation": {
       "get": {
         "tags": [
@@ -31881,6 +32482,58 @@
         "title": "BreakdownOut",
         "description": "Why a number is what it is: its drivers and an optional note, built by the backend;\nthe front end only displays them (M7b; spec 13)."
       },
+      "BroadbandLineOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "terminal_price_cents": {
+            "type": "integer",
+            "title": "Terminal Price Cents"
+          },
+          "terminal_cost_cents": {
+            "type": "integer",
+            "title": "Terminal Cost Cents",
+            "description": "A terminal's cost to make this month"
+          },
+          "d2d_partner": {
+            "type": "boolean",
+            "title": "D2D Partner"
+          },
+          "d2d_capable": {
+            "type": "boolean",
+            "title": "D2D Capable"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionServiceOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "terminal_price_cents",
+          "terminal_cost_cents",
+          "d2d_partner",
+          "d2d_capable",
+          "regions"
+        ],
+        "title": "BroadbandLineOut"
+      },
       "BuildCellPlantIn": {
         "properties": {
           "region": {
@@ -35583,6 +36236,295 @@
         ],
         "title": "ComponentOut"
       },
+      "ConstellationIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "shells": {
+            "type": "integer",
+            "title": "Shells"
+          },
+          "mass_kg": {
+            "type": "number",
+            "title": "Mass Kg"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "d2d": {
+            "type": "boolean",
+            "title": "D2D",
+            "default": false
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "product_id",
+          "shells",
+          "mass_kg",
+          "life_months",
+          "build_per_month",
+          "launches_per_month"
+        ],
+        "title": "ConstellationIn"
+      },
+      "ConstellationMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "in_orbit": {
+            "type": "integer",
+            "title": "In Orbit"
+          },
+          "subscribers": {
+            "type": "number",
+            "title": "Subscribers"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "spend_cents": {
+            "type": "integer",
+            "title": "Spend Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "in_orbit",
+          "subscribers",
+          "revenue_cents",
+          "spend_cents"
+        ],
+        "title": "ConstellationMonthOut"
+      },
+      "ConstellationOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "shells": {
+            "items": {
+              "$ref": "#/components/schemas/ShellOut"
+            },
+            "type": "array",
+            "title": "Shells"
+          },
+          "in_orbit": {
+            "type": "integer",
+            "title": "In Orbit"
+          },
+          "ground": {
+            "type": "integer",
+            "title": "Ground"
+          },
+          "planned": {
+            "type": "integer",
+            "title": "Planned"
+          },
+          "lost": {
+            "type": "integer",
+            "title": "Lost"
+          },
+          "mass_kg": {
+            "type": "number",
+            "title": "Mass Kg"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "d2d": {
+            "type": "boolean",
+            "title": "D2D"
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "satellite_cents": {
+            "type": "integer",
+            "title": "Satellite Cents",
+            "description": "A satellite's made cost this month"
+          },
+          "covered": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Covered"
+          },
+          "capacity_gbps": {
+            "type": "number",
+            "title": "Capacity Gbps"
+          },
+          "payback": {
+            "$ref": "#/components/schemas/PaybackOut"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ConstellationMonthOut"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "product_id",
+          "product",
+          "shells",
+          "in_orbit",
+          "ground",
+          "planned",
+          "lost",
+          "mass_kg",
+          "life_months",
+          "d2d",
+          "insured",
+          "build_per_month",
+          "launches_per_month",
+          "vehicle_product_id",
+          "satellite_cents",
+          "covered",
+          "capacity_gbps",
+          "payback",
+          "history"
+        ],
+        "title": "ConstellationOut"
+      },
+      "ConstellationPlanIn": {
+        "properties": {
+          "shells": {
+            "type": "integer",
+            "title": "Shells"
+          },
+          "build_per_month": {
+            "type": "integer",
+            "title": "Build Per Month"
+          },
+          "launches_per_month": {
+            "type": "integer",
+            "title": "Launches Per Month"
+          },
+          "vehicle_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vehicle Product Id"
+          },
+          "insured": {
+            "type": "boolean",
+            "title": "Insured",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "shells",
+          "build_per_month",
+          "launches_per_month"
+        ],
+        "title": "ConstellationPlanIn"
+      },
       "ContinueUntilOut": {
         "properties": {
           "months_played": {
@@ -35899,6 +36841,36 @@
           "question"
         ],
         "title": "CooQuestionIn"
+      },
+      "CostPerKgOut": {
+        "properties": {
+          "vehicle": {
+            "type": "string",
+            "title": "Vehicle"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "cost_per_kg_cents": {
+            "type": "number",
+            "title": "Cost Per Kg Cents",
+            "description": "Its list price over its payload, 2010 cents"
+          },
+          "target": {
+            "type": "boolean",
+            "title": "Target",
+            "description": "A stated aspiration, not a flown price"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle",
+          "company",
+          "cost_per_kg_cents",
+          "target"
+        ],
+        "title": "CostPerKgOut"
       },
       "CounterIn": {
         "properties": {
@@ -36275,6 +37247,19 @@
           "fix"
         ],
         "title": "CrossDivisionOut"
+      },
+      "D2dPartnerIn": {
+        "properties": {
+          "partner": {
+            "type": "boolean",
+            "title": "Partner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "partner"
+        ],
+        "title": "D2dPartnerIn"
       },
       "DatedRuleOut": {
         "properties": {
@@ -39270,7 +40255,8 @@
               "region",
               "plant",
               "order",
-              "zone"
+              "zone",
+              "constellation"
             ],
             "title": "Scope"
           },
@@ -41982,6 +42968,69 @@
           "detail"
         ],
         "title": "FirstOut"
+      },
+      "FlightCostOut": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "build_cents": {
+            "type": "integer",
+            "title": "Build Cents",
+            "description": "The whole vehicle, built new"
+          },
+          "reused_share": {
+            "type": "number",
+            "title": "Reused Share"
+          },
+          "flights_per_vehicle": {
+            "type": "integer",
+            "title": "Flights Per Vehicle"
+          },
+          "refurb_share": {
+            "type": "number",
+            "title": "Refurb Share"
+          },
+          "operations_cents": {
+            "type": "integer",
+            "title": "Operations Cents"
+          },
+          "flight_cents": {
+            "type": "integer",
+            "title": "Flight Cents",
+            "description": "A flight: the expendable part, the reused part's share, refurbishment and operations"
+          },
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg",
+            "description": "Payload flown at the level"
+          },
+          "cost_per_kg_cents": {
+            "type": "number",
+            "title": "Cost Per Kg Cents"
+          },
+          "expendable_per_kg_cents": {
+            "type": "number",
+            "title": "Expendable Per Kg Cents",
+            "description": "The same design flown expendable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "build_cents",
+          "reused_share",
+          "flights_per_vehicle",
+          "refurb_share",
+          "operations_cents",
+          "flight_cents",
+          "payload_kg",
+          "cost_per_kg_cents",
+          "expendable_per_kg_cents"
+        ],
+        "title": "FlightCostOut",
+        "description": "Explain: a launch's cost (56.1)."
       },
       "FlowOut": {
         "properties": {
@@ -47271,6 +48320,56 @@
         ],
         "title": "LabelOut"
       },
+      "LaunchOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "vehicle": {
+            "type": "string",
+            "title": "Vehicle"
+          },
+          "purpose": {
+            "type": "string",
+            "title": "Purpose"
+          },
+          "constellation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constellation"
+          },
+          "satellites": {
+            "type": "integer",
+            "title": "Satellites"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "insured_cents": {
+            "type": "integer",
+            "title": "Insured Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "vehicle",
+          "purpose",
+          "constellation",
+          "satellites",
+          "ok",
+          "insured_cents"
+        ],
+        "title": "LaunchOut"
+      },
       "LaunchReadinessOut": {
         "properties": {
           "ready": {
@@ -47305,6 +48404,24 @@
           "region"
         ],
         "title": "LaunchRegionIn"
+      },
+      "LaunchSpecIn": {
+        "properties": {
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg"
+          },
+          "reuse": {
+            "type": "string",
+            "title": "Reuse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payload_kg",
+          "reuse"
+        ],
+        "title": "LaunchSpecIn"
       },
       "LeaderChangeOut": {
         "properties": {
@@ -47814,6 +48931,24 @@
           "signed"
         ],
         "title": "LicenseOut"
+      },
+      "LineOptionOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name"
+        ],
+        "title": "LineOptionOut"
       },
       "ListedOut": {
         "properties": {
@@ -49313,6 +50448,24 @@
           "detail"
         ],
         "title": "MessageOut"
+      },
+      "MilestoneOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "label"
+        ],
+        "title": "MilestoneOut"
       },
       "MineDealOut": {
         "properties": {
@@ -53540,6 +54693,58 @@
         ],
         "title": "PayPreviewOut",
         "description": "A raise or promotion before it happens, from known values only."
+      },
+      "PaybackOut": {
+        "properties": {
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents",
+            "description": "Satellites and launches capitalized and in service or waiting"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "Cumulative cash flow since it was planned"
+          },
+          "last_year_cash_cents": {
+            "type": "integer",
+            "title": "Last Year Cash Cents",
+            "description": "Cash flow over the last 12 months"
+          },
+          "months_to_payback": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months To Payback",
+            "description": "At the last 12 months' rate; None if not earning"
+          },
+          "paid_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Back"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capex_cents",
+          "cash_cents",
+          "last_year_cash_cents",
+          "months_to_payback",
+          "paid_back"
+        ],
+        "title": "PaybackOut",
+        "description": "Explain: a constellation's payback (56.4 target 3)."
       },
       "PaymentOut": {
         "properties": {
@@ -58859,6 +60064,37 @@
         "title": "ProposalOut",
         "description": "An executive's proposal (24.1, M10c): pending ones block Continue."
       },
+      "ProviderOut": {
+        "properties": {
+          "company_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "launches_year": {
+            "type": "number",
+            "title": "Launches Year",
+            "description": "Orbital launches a year (public), real world"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "company",
+          "launches_year"
+        ],
+        "title": "ProviderOut"
+      },
       "PublicActionOut": {
         "properties": {
           "public": {
@@ -60660,6 +61896,58 @@
         ],
         "title": "RegionSegmentOut"
       },
+      "RegionServiceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "covered": {
+            "type": "boolean",
+            "title": "Covered"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence",
+            "description": "applied, granted or refused; None if never applied"
+          },
+          "subscribers": {
+            "type": "number",
+            "title": "Subscribers"
+          },
+          "serviceable": {
+            "type": "number",
+            "title": "Serviceable",
+            "description": "Subscribers its constellations can serve there"
+          },
+          "d2d_subscribers": {
+            "type": "number",
+            "title": "D2D Subscribers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "covered",
+          "licence",
+          "subscribers",
+          "serviceable",
+          "d2d_subscribers"
+        ],
+        "title": "RegionServiceOut"
+      },
       "RegionSizeOut": {
         "properties": {
           "region": {
@@ -61272,6 +62560,41 @@
         ],
         "title": "ResearchOut"
       },
+      "ReuseLevelOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "lead": {
+            "type": "number",
+            "title": "Lead",
+            "description": "Reusability lead points it needs"
+          },
+          "min_months": {
+            "type": "integer",
+            "title": "Min Months",
+            "description": "Months of the programme it needs"
+          },
+          "reached": {
+            "type": "boolean",
+            "title": "Reached"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "lead",
+          "min_months",
+          "reached"
+        ],
+        "title": "ReuseLevelOut"
+      },
       "RidePriceIn": {
         "properties": {
           "price_cents": {
@@ -61395,6 +62718,48 @@
           "shares"
         ],
         "title": "RivalCarOut"
+      },
+      "RivalConstellationOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "satellites": {
+            "type": "number",
+            "title": "Satellites",
+            "description": "In orbit now (public), real world"
+          },
+          "subscribers": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscribers",
+            "description": "Thousands (public, to 2025), real world"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "company",
+          "kind",
+          "satellites",
+          "subscribers"
+        ],
+        "title": "RivalConstellationOut"
       },
       "RivalLeadOut": {
         "properties": {
@@ -66188,6 +67553,47 @@
         ],
         "title": "SharesIn"
       },
+      "ShellOut": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "satellites": {
+            "type": "integer",
+            "title": "Satellites"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "label",
+          "satellites",
+          "size",
+          "complete",
+          "regions"
+        ],
+        "title": "ShellOut"
+      },
       "SignPpaIn": {
         "properties": {
           "region": {
@@ -66493,6 +67899,267 @@
           "available"
         ],
         "title": "SourceOut"
+      },
+      "SpaceActionOut": {
+        "properties": {
+          "space": {
+            "$ref": "#/components/schemas/SpaceScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "space",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "SpaceActionOut"
+      },
+      "SpaceLicenceIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "title": "SpaceLicenceIn"
+      },
+      "SpaceLicenceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "applied": {
+            "type": "string",
+            "title": "Applied"
+          },
+          "granted": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Granted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "status",
+          "applied",
+          "granted"
+        ],
+        "title": "SpaceLicenceOut"
+      },
+      "SpaceScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "description": "Whether this game has space markets"
+          },
+          "reusability_lead": {
+            "type": "number",
+            "title": "Reusability Lead"
+          },
+          "programme_started": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Programme Started"
+          },
+          "reuse_levels": {
+            "items": {
+              "$ref": "#/components/schemas/ReuseLevelOut"
+            },
+            "type": "array",
+            "title": "Reuse Levels"
+          },
+          "vehicles": {
+            "items": {
+              "$ref": "#/components/schemas/VehicleOut"
+            },
+            "type": "array",
+            "title": "Vehicles"
+          },
+          "undesigned": {
+            "items": {
+              "$ref": "#/components/schemas/LineOptionOut"
+            },
+            "type": "array",
+            "title": "Undesigned",
+            "description": "Your launch lines with no design yet"
+          },
+          "eo_lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineOptionOut"
+            },
+            "type": "array",
+            "title": "Eo Lines",
+            "description": "Your Earth-observation lines"
+          },
+          "launches": {
+            "items": {
+              "$ref": "#/components/schemas/LaunchOut"
+            },
+            "type": "array",
+            "title": "Launches"
+          },
+          "cost_per_kg": {
+            "items": {
+              "$ref": "#/components/schemas/CostPerKgOut"
+            },
+            "type": "array",
+            "title": "Cost Per Kg"
+          },
+          "world_launches": {
+            "items": {
+              "$ref": "#/components/schemas/WorldLaunchesOut"
+            },
+            "type": "array",
+            "title": "World Launches"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/ProviderOut"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "milestones": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneOut"
+            },
+            "type": "array",
+            "title": "Milestones"
+          },
+          "constellations": {
+            "items": {
+              "$ref": "#/components/schemas/ConstellationOut"
+            },
+            "type": "array",
+            "title": "Constellations"
+          },
+          "broadband": {
+            "items": {
+              "$ref": "#/components/schemas/BroadbandLineOut"
+            },
+            "type": "array",
+            "title": "Broadband"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/SpaceLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalConstellationOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "d2d_open": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "D2D Open",
+            "description": "The month direct-to-device service opened, once it has"
+          },
+          "debris_rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Debris Rule",
+            "description": "The month the tighter debris rule came, once it has"
+          },
+          "site_regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Site Regions"
+          },
+          "bought_launch_cents": {
+            "type": "integer",
+            "title": "Bought Launch Cents",
+            "description": "A bought launch's price this month"
+          },
+          "bought_payload_kg": {
+            "type": "number",
+            "title": "Bought Payload Kg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "open",
+          "reusability_lead",
+          "programme_started",
+          "reuse_levels",
+          "vehicles",
+          "undesigned",
+          "eo_lines",
+          "launches",
+          "cost_per_kg",
+          "world_launches",
+          "providers",
+          "milestones",
+          "constellations",
+          "broadband",
+          "licences",
+          "rivals",
+          "d2d_open",
+          "debris_rule",
+          "site_regions",
+          "bought_launch_cents",
+          "bought_payload_kg"
+        ],
+        "title": "SpaceScreenOut"
       },
       "SpinOffIn": {
         "properties": {
@@ -68887,6 +70554,19 @@
         ],
         "title": "TermSheetOut"
       },
+      "TerminalPriceIn": {
+        "properties": {
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "price_cents"
+        ],
+        "title": "TerminalPriceIn"
+      },
       "TerminateIn": {
         "properties": {
           "contract": {
@@ -70392,6 +72072,126 @@
         ],
         "title": "VehicleOptionsOut"
       },
+      "VehicleOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "payload_kg": {
+            "type": "number",
+            "title": "Payload Kg"
+          },
+          "aim": {
+            "type": "string",
+            "title": "Aim"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "The reuse level it flies at now"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/FlightCostOut"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents",
+            "description": "Its price to commercial operators"
+          },
+          "flights": {
+            "type": "integer",
+            "title": "Flights"
+          },
+          "failures": {
+            "type": "integer",
+            "title": "Failures"
+          },
+          "reliability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reliability",
+            "description": "Successful flights over flights, None before its first"
+          },
+          "failure_rate_lo": {
+            "type": "number",
+            "title": "Failure Rate Lo",
+            "description": "The model's failure chance range for its next flight"
+          },
+          "failure_rate_hi": {
+            "type": "number",
+            "title": "Failure Rate Hi"
+          },
+          "grounded_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grounded Until",
+            "description": "The month an investigation ends, if grounded"
+          },
+          "pads": {
+            "type": "number",
+            "title": "Pads",
+            "description": "Launch-site pad units live"
+          },
+          "cadence": {
+            "type": "number",
+            "title": "Cadence",
+            "description": "Launches a month its sites can fly"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "quality",
+          "payload_kg",
+          "aim",
+          "level",
+          "cost",
+          "price_cents",
+          "flights",
+          "failures",
+          "reliability",
+          "failure_rate_lo",
+          "failure_rate_hi",
+          "grounded_until",
+          "pads",
+          "cadence"
+        ],
+        "title": "VehicleOut"
+      },
       "VehiclePlantOut": {
         "properties": {
           "facility_id": {
@@ -71209,6 +73009,24 @@
           "ready_label"
         ],
         "title": "WorldFacilityOut"
+      },
+      "WorldLaunchesOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "launches": {
+            "type": "number",
+            "title": "Launches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "launches"
+        ],
+        "title": "WorldLaunchesOut"
       },
       "WorldNewsItemOut": {
         "properties": {

@@ -155,8 +155,8 @@ def test_startups_are_founded_seeded_and_capped(loaded: LoadedData) -> None:
         c
         for c in eager.game_data.categories
         if not (
-            c.capacity_market or c.sells_units or c.assembly_market or c.medical
-        )  # M12a, M12b, M41
+            c.capacity_market or c.sells_units or c.assembly_market or c.medical or c.space
+        )  # M12a, M12b, M41, M40
     ]
     assert len(runs[0]) == len(founding)
     state = fresh_game(eager)

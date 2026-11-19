@@ -135,6 +135,10 @@ STREAM_IDS: Final = MappingProxyType(
         # (6, year, k) assets for licence; (7, kind, id, k) inspections and recalls; (8, id,
         # region) an HTA's length
         "pharma": 67,
+        # M40 (formulas.md 56): (0, year) rivals' growth and (0, 0) the debris month; (1, product,
+        # flight) a flight's failure, (1, 0, constellation, n) a bought launch's; (2, region_index,
+        # company) a licence decision; (3, ...) a grounding's length and an event's answer
+        "space": 68,
         "misc": 99,
     }
 )

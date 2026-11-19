@@ -78,6 +78,7 @@ from tst.sim.power.config import PowerFile
 from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.robotics.config import HUMANOID_SEGMENTS, INDUSTRIAL_SEGMENTS, RoboticsFile
+from tst.sim.space.config import BROADBAND_SEGMENTS, EO_SEGMENTS, LAUNCH_SEGMENTS, SpaceFile
 from tst.sim.vehicles.config import LEVELS, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile
 
@@ -132,6 +133,7 @@ EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
 ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
 PHARMA_FILE = "pharma.yaml"  # M42 (formulas.md 55)
+SPACE_FILE = "space.yaml"  # M40 (formulas.md 56)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -158,6 +160,7 @@ DATA_FILES = (
     VEHICLES_FILE,
     ROBOTICS_FILE,
     PHARMA_FILE,
+    SPACE_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -414,6 +417,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             and kind.output_good not in refined  # M20: a refinery makes its recipe's good
             and key not in vehicle_kinds(balance)  # M38: cells and charging are 49's
             and key != balance.robotics.depot_kind  # M39: a depot serves robotaxis (53.3)
+            and key != balance.space.plant_kind  # M40: satellites are tst.sim.space's (56.2)
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -1127,6 +1131,7 @@ def load_all(
     vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
     robotics = _validate(RoboticsFile, parsed[ROBOTICS_FILE], ROBOTICS_FILE)
     pharma = _validate(PharmaFile, parsed[PHARMA_FILE], PHARMA_FILE)
+    space = _validate(SpaceFile, parsed[SPACE_FILE], SPACE_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1188,6 +1193,7 @@ def load_all(
             "medical": medical,
             "robotics": robotics,
             "pharma": pharma,
+            "space": space,
         },
         "seed data cross-check",
     )
@@ -1223,6 +1229,8 @@ def load_all(
         raise DataLoadError(
             f"{PHARMA_FILE}, {REGULATION_FILE}, {BALANCE_FILE} pharma: " + "; ".join(problems)
         )
+    if problems := space_problems(balance, game_data):
+        raise DataLoadError(f"{SPACE_FILE}, {BALANCE_FILE} space: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1511,4 +1519,60 @@ def robotics_problems(balance: Balance, data: GameData) -> list[str]:
     for size in rb.robotaxi.zone_sizes:
         if size not in ("small", "medium", "large"):
             out.append(f"robotaxi.zone_sizes: unknown size {size!r}")
+    return out
+
+
+def space_problems(balance: Balance, data: GameData) -> list[str]:
+    """M40 (56): space.yaml names known incumbents, countries and regions, reaches 2025;
+    balance.yaml's space keys agree with categories.yaml, facility kinds, regions and
+    tech_frontier.yaml."""
+    f = data.space
+    sb = balance.space
+    out: list[str] = []
+    if f is None:
+        return ["space.yaml is required"]
+    cats = {c.key: c for c in data.categories}
+    want = {sb.launch: LAUNCH_SEGMENTS, sb.broadband: BROADBAND_SEGMENTS, sb.eo: EO_SEGMENTS}
+    for key, segs in want.items():
+        cat = cats.get(key)
+        if cat is None:
+            out.append(f"space category {key!r} is not in categories.yaml")
+        elif tuple(cat.segment_keys) != segs:
+            out.append(f"{key} must sell to {list(segs)}")
+    if sb.launch in cats and not cats[sb.launch].sells_units:
+        out.append(f"{sb.launch} must be a unit-sale category")
+    if sb.launch not in balance.hardware.bom:
+        out.append(f"hardware.bom needs {sb.launch}")
+    for kind in (sb.site_kind, sb.plant_kind):
+        if kind not in balance.facility.kinds:
+            out.append(f"{kind!r} is not a facility kind")
+    if bad := set(sb.site_regions) - set(data.region_keys):
+        out.append(f"site_regions: unknown regions {sorted(bad)}")
+    for shell in sb.constellation.shells:
+        if bad := set(shell.regions) - set(data.region_keys):
+            out.append(f"shell {shell.label!r}: unknown regions {sorted(bad)}")
+    for table in (sb.licence.review_months, sb.licence.approval):
+        if set(table) != set(data.region_keys):
+            out.append("licence tables must list every region")
+    if data.tech is not None and sb.domain not in {d.key for d in data.tech.domains}:
+        out.append(f"space.domain {sb.domain!r} is not a tech_frontier.yaml domain")
+    names = {c.name for c in data.incumbents}
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    for p in f.launch.providers:
+        if p.company not in names:
+            out.append(f"provider {p.company!r} is not in incumbents.yaml")
+        if countries and p.origin not in countries:
+            out.append(f"provider {p.company!r}: unknown country {p.origin!r}")
+    for c in f.constellations:
+        if c.company not in names:
+            out.append(f"constellation {c.key!r}: {c.company!r} is not in incumbents.yaml")
+    for company in sb.history_share:
+        if company not in names:
+            out.append(f"history_share: {company!r} is not in incumbents.yaml")
+    if f.launch.vehicle(f.launch.bought_vehicle) is None:
+        out.append(f"bought_vehicle {f.launch.bought_vehicle!r} is not a vehicle")
+    if max(f.launch.world) < LAST_HISTORY_YEAR:
+        out.append(f"launch.world must reach {LAST_HISTORY_YEAR}")
+    if set(sb.history_split) != set(BROADBAND_SEGMENTS):
+        out.append(f"history_split must list {list(BROADBAND_SEGMENTS)}")
     return out

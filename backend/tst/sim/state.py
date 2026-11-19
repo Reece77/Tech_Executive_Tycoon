@@ -190,6 +190,7 @@ from tst.sim.robotics.models import (
     Zone,
     ZoneMonth,
 )
+from tst.sim.space.models import SpaceState
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -601,6 +602,9 @@ class GameState:
     pharma_assets: tuple[pharma.Asset, ...] = ()
     pharma_deals: tuple[pharma.Deal, ...] = ()
     pharma_markets: tuple[pharma.MarketLevel, ...] = ()  # M43a's ceilings from 2026
+    # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
+    # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
+    space: SpaceState = field(default_factory=SpaceState)
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

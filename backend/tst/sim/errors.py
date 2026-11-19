@@ -413,6 +413,13 @@ class RoboticsRuleError(SimError):
     code = "robotics_rule"
 
 
+class SpaceRuleError(SimError):
+    """A space action the rules do not allow (M40, formulas.md 56). The message never names a
+    licence's decision month, a failure chance's draw or a seeded rule."""
+
+    code = "space_rule"
+
+
 class EquipmentRuleError(SimError):
     """A tool order, prepayment or lithography programme choice the rules do not allow (M33,
     formulas.md 47). The message never names an allocation weight or a programme's draws."""

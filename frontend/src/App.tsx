@@ -42,6 +42,7 @@ import { MedicalScreen } from './screens/MedicalScreen';
 import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screens/PharmaScreen';
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
+import { SpaceScreen } from './screens/SpaceScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
 
@@ -81,6 +82,7 @@ export default function App() {
           <Route path="products/vehicles/cars/:productId" element={<VehicleCarScreen />} />
           <Route path="products/robotics" element={<RoboticsScreen />} />
           <Route path="products/mobility" element={<MobilityScreen />} />
+          <Route path="products/space" element={<SpaceScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
           <Route path="products/pharma" element={<PharmaScreen />} />

@@ -57,6 +57,9 @@ PUBLISHED: Final[dict[str, tuple[float, str]]] = {
     "surgical_robotics": (10.0, "M41: GlobalData about $10B, 2024"),
     "implantables": (30.5, "M41: cardiac rhythm $23.5B + neuromodulation $7B, 2024"),
     "samd": (1.5, "M41: AI imaging and diagnostic software about $1-2B, 2024"),
+    "launch": (15.0, "M40: launch services about $9-15B, 2024 (SIA, space.yaml)"),
+    "satellite_broadband": (11.4, "M40: Starlink revenue 2025 (space.yaml; the largest operator)"),
+    "earth_observation": (4.5, "M40: EO data and services $4-5B, 2023 (Euroconsult)"),
 }
 # categories reported, not judged, by target 2 (decisions in the M43a brief)
 BY_DESIGN: Final[dict[str, str]] = {
