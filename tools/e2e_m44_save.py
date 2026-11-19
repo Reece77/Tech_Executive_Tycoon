@@ -45,8 +45,9 @@ from tst.sim.government import reputation
 from tst.sim.government.models import Clearance, Contract, FacilityClearance, Tender
 from tst.sim.hardware.models import ProductionContract, ProductionMonth
 from tst.sim.ledger import CASH
+from tst.sim.products.models import Product, ProductSegment
 from tst.sim.rng import RngFactory
-from tst.sim.state import with_company, with_product
+from tst.sim.state import with_company, with_product, with_product_segment
 
 SEED: Final = 44
 COMPANY: Final = "Aegis"
@@ -80,11 +81,28 @@ def _played(data: LoadedData) -> Game:
 
 
 def _live_product(game: Game, name: str, category: str, price: int, quality: float) -> int:
-    pid = m38._product(game, name, category, price)
-    m38._launch(game, pid)
-    p = game.state.product(pid)
-    assert p is not None
-    game.state = with_product(game.state, replace(p, quality=quality))
+    """A live product priced in its category's first segment (no customers yet)."""
+    state = game.state
+    pid, ids = state.next_ids.take("product")
+    cat = game.loaded.game_data.category(category)
+    expected = cat.features_at_start + cat.features_per_month * state.turn
+    p = Product(
+        id=pid,
+        company_id=state.player.id,
+        category=category,
+        name=name,
+        status="live",
+        quality=quality,
+        feature_points=expected * 0.9,
+        brand=40.0,
+        marketing_budget_cents=5_000_000,
+        created_turn=state.turn,
+        launched_turn=state.turn,
+    )
+    state = replace(with_product(state, p), next_ids=ids)
+    if cat.segment_keys:
+        state = with_product_segment(state, ProductSegment(pid, cat.segment_keys[0], price, 0.0))
+    game.state = state
     return pid
 
 
@@ -143,8 +161,10 @@ def _state(data: LoadedData) -> Game:
     (dc,) = {f.id for f in game.state.facilities} - before
     m38._live(game, dc)
     s = game.state
-    s, sellers = fixtures.hire(s, data, "account_executive", "senior", SELLERS, "Capture", 15_000_000, 44)
-    s, cleared = fixtures.hire(s, data, "software_engineer", "senior", CLEARED, "Cleared", 16_000_000, 45)
+    s, _ = fixtures.hire(s, data, "account_executive", "senior", SELLERS, "Capture", 15_000_000, 44)
+    s, cleared = fixtures.hire(
+        s, data, "software_engineer", "senior", CLEARED, "Cleared", 16_000_000, 45
+    )
     t = s.turn
     s = replace(
         s,
@@ -235,7 +255,9 @@ def _edit(save_dir: Path, name: str, data: LoadedData, mode: str) -> int:
                 for t in s.tenders
             ),
         )
-        s, entries, _ = gov_phase.month(s, RngFactory(s.save_meta.master_seed), data.balance, data.game_data)
+        s, entries, _ = gov_phase.month(
+            s, RngFactory(s.save_meta.master_seed), data.balance, data.game_data
+        )
         for e in entries:
             for line in e.lines:
                 key = (e.company_id, line.account)
@@ -247,7 +269,10 @@ def _edit(save_dir: Path, name: str, data: LoadedData, mode: str) -> int:
             objecting = reputation.objectors(s, s.player.id, data.balance)
             s = reputation.queue_letter(s, s.player.id)
             base = record or reputation.DefenceRecord(company_id=s.player.id)
-            contract = max((c.id for c in s.gov_contracts if c.buyer == "defence" and c.status == "active"), default=None)
+            contract = max(
+                (c.id for c in s.gov_contracts if c.buyer == "defence" and c.status == "active"),
+                default=None,
+            )
             s = reputation._with_record(
                 s,
                 replace(

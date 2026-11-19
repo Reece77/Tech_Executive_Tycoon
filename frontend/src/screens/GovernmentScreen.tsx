@@ -293,6 +293,7 @@ function TenderPanel({ saveId, g, t }: { saveId: string; g: Government; t: Tende
               <Select
                 label="Product"
                 data-testid="bid-product"
+                allowDeselect={false}
                 size="xs"
                 data={t.options.map((o) => ({
                   value: String(o.product_id),
@@ -449,6 +450,7 @@ function ClearanceForm({ saveId, g }: { saveId: string; g: Government }) {
       <Select
         label="Level"
         size="xs"
+        allowDeselect={false}
         data={[
           {
             value: 'secret',
