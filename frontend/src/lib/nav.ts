@@ -190,6 +190,7 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'products',
   }, // M42
+  {
     path: 'products/space',
     label: 'Space',
     group: 'products',
