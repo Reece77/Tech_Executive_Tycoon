@@ -189,6 +189,7 @@ from tst.db.models import (
     WorkforcePoolRow,
 )
 from tst.db.modes_io import load_modes, sync_modes
+from tst.db.pharma_io import load_pharma, sync_pharma
 from tst.db.platforms_io import load_platforms, sync_platforms
 from tst.db.power_io import load_power, sync_power
 from tst.db.refining_io import load_refining, sync_refining
@@ -612,7 +613,8 @@ def load_state(session: Session) -> GameState:
     state = load_vehicles(session, state, has_table)  # M38 (0058_m38)
     state = load_dynasty(session, state, has_table)  # M37 (0060_m37)
     state = load_robotics(session, state, has_table)  # M39 (0061_m39)
-    state = load_government(session, state, has_table)  # M44 (0062_m44)
+    state = load_pharma(session, state, has_table)  # M42 (0062_m42)
+    state = load_government(session, state, has_table)  # M44 (0063_m44)
     state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_medical(session, state, has_table)  # M41 (0058)
     state = load_equipment(session, state, has_table)  # M33 (0056_m33)
@@ -2306,7 +2308,8 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_vehicles(session, old, new, has_table)  # M38 (0058_m38)
     sync_dynasty(session, old, new, has_table)  # M37 (0060_m37)
     sync_robotics(session, old, new, has_table)  # M39 (0061_m39)
-    sync_government(session, old, new, has_table)  # M44 (0062_m44)
+    sync_pharma(session, old, new, has_table)  # M42 (0062_m42)
+    sync_government(session, old, new, has_table)  # M44 (0063_m44)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_medical(session, old, new, has_table)  # M41 (0058)
     sync_equipment(session, old, new, has_table)  # M33 (0056_m33)

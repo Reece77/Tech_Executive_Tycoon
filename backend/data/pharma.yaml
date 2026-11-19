@@ -1,0 +1,678 @@
+# Pharmaceuticals (docs/formulas.md 55, M42). Built from docs/v5-research/pharma-dossier.md and the
+# M42 session's verification (2026-11-18). Every value carries its source; "est." marks a figure from
+# a secondary source, a recalled filing figure consistent with reported growth, or a range's midpoint;
+# "derived" a figure computed from cited inputs; "A" an assumption for gameplay where no public figure
+# exists (each listed in the M42 brief's "Decisions made"). Money is real US dollars (the engine
+# converts with pharma.scale, the game's economy); foreign currencies are converted at the year's
+# average rate: 2010 US Federal Reserve G.5A (https://www.federalreserve.gov/releases/g5a/20110103),
+# 2024-2025 IRS yearly averages (https://www.irs.gov/individuals/international-taxpayers/yearly-average-currency-exchange-rates):
+# CHF 1.043 / 0.881 / 0.831 (2010 est.), DKK 5.6266 / 6.896 / 6.617, EUR 0.754 (est.) / 0.924 / 0.886,
+# GBP 0.647 (est.) / 0.783 (est.) / 0.759, INR 45.65 / 83.68 / 87.13, KRW 1,364 (2024), CNY 7.189 (2024).
+#
+# History holds (55.6 target 1): the pharma model's programmes, reviews and plants act only for a
+# company that has entered pharmaceuticals. Rivals' revenue to 2025 is this file's (the companies'
+# reported revenue); a company without pharma draws, posts and logs nothing here.
+
+history_end: "2025-12"
+
+# Preclinical to Phase I (BIO's series starts at Phase I): 69%, Paul et al., "How to improve R&D
+# productivity: the pharmaceutical industry's grand challenge", Nat Rev Drug Discov 9:203-214 (2010),
+# doi:10.1038/nrd3078 (confirmed: its model's preclinical p(TS) 69%).
+preclinical_success: 0.69
+preclinical_source: "Paul et al. 2010, Nat Rev Drug Discov 9:203, doi:10.1038/nrd3078"
+
+# --- Therapeutic areas (55.1) ----------------------------------------------------------------------
+# transitions: BIO, Informa Pharma Intelligence and QLS Advisors, "Clinical Development Success Rates
+# and Contributing Factors 2011-2020" (Feb 2021), by disease area (9,704 programmes; each area's four
+# rates multiply to its quoted likelihood of approval within 0.1 points, the check made when they were
+# read): https://go.bio.org/rs/490-EHZ-999/images/ClinicalDevelopmentSuccessRates2011_2020.pdf
+# (confirmed; tables via https://selborneresearch.com/guides/healthcare/clinical-trial-success-by-therapeutic-area/).
+# All indications: 52.0% / 28.9% / 57.8% / 90.6%, LOA 7.9%. Neuroscience is the mean of BIO's neurology
+# (47.7/26.8/53.1/86.7, LOA 5.9%) and psychiatry (52.7/26.8/56.3/91.2, LOA 7.3%) (derived).
+# cost_mult: trials' cost per patient x this. Oncology 1.6: Hsiue, Moore and Alexander, Clin Trials
+# 17:119 (2020), doi:10.1177/1740774520907609, oncology pivotal median $31.7M against $19.0M for all
+# pivotal trials (Moore et al., JAMA Intern Med 178:1451 (2018), doi:10.1001/jamainternmed.2018.3931):
+# x1.67 (confirmed, rounded). Cardiovascular 1.3 and metabolic 1.2: outcome trials are large (A; Sertkaya
+# et al., Clin Trials 13:117 (2016), doi:10.1177/1740774515625964, gives per-study Phase 3 costs from
+# $11.5M to $52.9M by area). The rest 1.0 (A).
+# months_mult: BIO 2021's oncology Phase I 2.7 years against 2.3 for all (x1.17; Phase II 3.7 v 3.6, III
+# 3.1 v 3.3: about x1.05 over the three, derived); cardiovascular and neuroscience 1.1 (A: long outcome
+# and CNS trials); rare disease 0.9 (A: smaller trials enrol faster per patient needed).
+# gross_to_net: US list-to-net. Drug Channels Institute: brand gross-to-net reductions $356B in 2024,
+# net prices about half of list on average (https://www.drugchannels.net/2025/07/gross-to-net-bubble-hits-356b-in.html,
+# confirmed). By area A around that mean: rebated, competitive classes (insulins and GLP-1s, immunology,
+# anticoagulants) deeper; oncology and rare disease (few rebates, buy-and-bill) shallower.
+# region_share: treated patients by region, the same for every area (A, derived): IQVIA's US share of
+# world spending about 45-50% on a list basis (IQVIA Institute, Global Use of Medicines 2025, est.) and
+# the other regions' shares of spending (A: Europe 22%, East Asia 20%, South and Southeast Asia 4%,
+# Latin America 5%, Africa 2%, Oceania 1.5%), each divided by its price index (pricing below).
+# sales_cents: real cents a month a region for full commercial support (medical affairs, sales force):
+# A, $2M a month a region (about 100 representatives); oncology and rare disease less (specialists).
+areas:
+  - key: oncology
+    label: Oncology
+    category: pharma_oncology
+    transitions: { phase1: 0.488, phase2: 0.246, phase3: 0.477, submission: 0.920 } # BIO 2021 oncology, LOA 5.3% (confirmed)
+    cost_mult: 1.6
+    months_mult: 1.05
+    gross_to_net: 0.25 # A
+    region_share: &shares { north_america: 0.174, europe: 0.243, east_asia: 0.259, south_southeast_asia: 0.154, latin_america: 0.077, africa: 0.078, oceania: 0.015 }
+    sales_cents: 150000000 # A
+  - key: metabolic
+    label: Metabolic and obesity
+    category: pharma_metabolic
+    transitions: { phase1: 0.618, phase2: 0.450, phase3: 0.636, submission: 0.875 } # BIO 2021 metabolic, LOA 15.5% (confirmed)
+    cost_mult: 1.2
+    months_mult: 1.0
+    gross_to_net: 0.65 # A: insulins and GLP-1s are the most rebated classes (Drug Channels)
+    region_share: *shares
+    sales_cents: 250000000 # A: primary care needs a large sales force
+  - key: immunology
+    label: Immunology
+    category: pharma_immunology
+    transitions: { phase1: 0.552, phase2: 0.314, phase3: 0.653, submission: 0.941 } # BIO 2021 autoimmune, LOA 10.7% (confirmed)
+    cost_mult: 1.0
+    months_mult: 1.0
+    gross_to_net: 0.55 # A
+    region_share: *shares
+    sales_cents: 200000000 # A
+  - key: neuroscience
+    label: Neuroscience
+    category: pharma_neuroscience
+    transitions: { phase1: 0.502, phase2: 0.268, phase3: 0.547, submission: 0.890 } # BIO 2021 neurology and psychiatry, mean (derived), LOA 6.5%
+    cost_mult: 1.1
+    months_mult: 1.1
+    gross_to_net: 0.45 # A
+    region_share: *shares
+    sales_cents: 200000000 # A
+  - key: infectious_disease
+    label: Infectious disease and vaccines
+    category: pharma_infectious
+    transitions: { phase1: 0.578, phase2: 0.384, phase3: 0.640, submission: 0.929 } # BIO 2021 infectious disease, LOA 13.2% (confirmed)
+    cost_mult: 1.0
+    months_mult: 1.0
+    gross_to_net: 0.40 # A
+    region_share: *shares
+    sales_cents: 150000000 # A
+  - key: cardiovascular
+    label: Cardiovascular
+    category: pharma_cardiovascular
+    transitions: { phase1: 0.500, phase2: 0.210, phase3: 0.552, submission: 0.825 } # BIO 2021 cardiovascular, LOA 4.8% (confirmed)
+    cost_mult: 1.3
+    months_mult: 1.1
+    gross_to_net: 0.60 # A: anticoagulants are heavily rebated
+    region_share: *shares
+    sales_cents: 250000000 # A
+  - key: rare_disease
+    label: Rare disease
+    category: pharma_rare
+    transitions: { phase1: 0.674, phase2: 0.446, phase3: 0.604, submission: 0.936 } # BIO 2021 rare disease, LOA 17.0% (confirmed; haematology 69.6/48.1/76.8/93.1, LOA 23.9%, the highest area)
+    cost_mult: 1.0
+    months_mult: 0.9
+    gross_to_net: 0.10 # A
+    region_share: *shares
+    sales_cents: 60000000 # A: a few hundred specialist centres
+
+# --- Stages (55.1) ---------------------------------------------------------------------------------
+# months: BIO 2021 phase durations: Phase II 3.6 years, Phase III 3.3, review 1.3, 10.5 in all from
+# Phase I (confirmed), so Phase I 2.3 (derived); ranges +/- 20% (A). Discovery and preclinical: Paul et
+# al. 2010's cycle times, target-to-hit 1.0, hit-to-lead 1.5, lead optimisation 2.0 years (4.5 in
+# discovery) and preclinical 1.0 (confirmed); ranges A.
+# patients: the FDA's typical sizes, Phase 1 20-80, Phase 2 100s, Phase 3 300-3,000
+# (https://www.fda.gov/patients/drug-development-process/step-3-clinical-research, est. via
+# reproductions); the game's lean to large (A within them).
+# cost_per_patient and fixed (real USD): Phase III $41,413 per patient, the median of 225 pivotal trials
+# (Moore et al., BMJ Open 10:e038863 (2020), doi:10.1136/bmjopen-2020-038863, confirmed), with $5M fixed
+# so a standard Phase III (1,150 patients) is about $53M, near Moore's $48M per drug (derived). Phase I
+# and II from Martin et al., "How much do clinical trials cost?", Nat Rev Drug Discov 16:381 (2017),
+# doi:10.1038/nrd.2017.70, medians $3.4M (Phase I in patients) and $8.6M (Phase II) a trial (confirmed):
+# a standard Phase I (60 patients) $40,000 x 60 + $1.0M = $3.4M, Phase II (200) $30,000 x 200 + $2.6M =
+# $8.6M (derived split, A). Discovery and preclinical: Paul et al. 2010's cost per candidate, $13.5M
+# through lead optimisation and $5M preclinical (confirmed), a month over their months (derived).
+stages:
+  discovery: { months: [43, 65], fixed: 250000 }
+  preclinical: { months: [10, 14], fixed: 420000 }
+  phase1: { months: [22, 33], patients: [20, 100], cost_per_patient: 40000, fixed: 1000000 }
+  phase2: { months: [35, 52], patients: [100, 300], cost_per_patient: 30000, fixed: 2600000 }
+  phase3: { months: [32, 48], patients: [300, 2000], cost_per_patient: 41413, fixed: 5000000 }
+
+# --- Modalities (55.1) -----------------------------------------------------------------------------
+# us_data_years: new chemical entity exclusivity 5 years (21 U.S.C. 355(j)(5)(F)(ii)); biologics 12
+# from first licensure (BPCIA 2010, 42 U.S.C. 262(k)(7)) (confirmed).
+# erosion: small molecules: FDA, "Generic Competition and Drug Prices" (Conrad and Lutter, Dec 2019),
+# prices 39% below the brand's with one generic, 79% with four, over 95% with six or more
+# (https://www.fda.gov/about-fda/center-drug-evaluation-and-research-cder/generic-competition-and-drug-prices,
+# confirmed): price_share 0.15. Lipitor: US generics 30 Nov 2011, Q1 2012 worldwide sales $1.4B against
+# $2.39B (-42% with the US about half), Q2 $1.22B against $2.59B
+# (https://pharmafile.com/news/pfizer-weathers-patent-expiry-storm/, confirmed): the brand keeps about
+# 15-20% of US patients within a year: floor 0.10, months 4 (derived, A for the shape).
+# Biologics: Humira's US biosimilars from 31 Jan 2023, worldwide revenue $21.2B (2022, derived from
+# -32%), $14.40B (2023) and $8.99B (2024) (https://news.abbvie.com/2025-01-31-AbbVie-Reports-Full-Year-and-Fourth-Quarter-2024-Financial-Results,
+# confirmed): kept 68% after a year and 42% after two: floor 0.25, months 18 (derived fit: 0.64 and
+# 0.45); price_share 0.2: Humira's unbranded biosimilars launched 80-86% below its list price in 2023 (est.,
+# company announcements). Cell and gene therapies: no biosimilars yet (A: slow, shallow).
+# cogs_share / cmo_share: cost of goods x net price, own plant or contract manufacturer (A: small
+# molecules about 5-10% of sales, biologics more; a CMO's margin on top).
+# cost_mult: x trials' cost per patient (A: biologics' CMC and immunogenicity work; cell and gene
+# therapies' manufacturing per patient).
+modalities:
+  - { key: small_molecule, label: Small molecule, cost_mult: 1.0, us_data_years: 5, biologic: false, cogs_share: 0.08, cmo_share: 0.15, erosion: { floor: 0.10, months: 4, price_share: 0.15 } }
+  - { key: biologic, label: Biologic, cost_mult: 1.3, us_data_years: 12, biologic: true, cogs_share: 0.15, cmo_share: 0.25, erosion: { floor: 0.25, months: 18, price_share: 0.2 } }
+  - { key: cell_and_gene, label: Cell and gene therapy, cost_mult: 2.0, us_data_years: 12, biologic: true, cogs_share: 0.30, cmo_share: 0.40, erosion: { floor: 0.60, months: 36, price_share: 0.6 } }
+
+# --- Indications (55.4) ----------------------------------------------------------------------------
+# prevalence_m: people living with the disease (oncology: new cases a year), millions, cited.
+# market_b: the indication's branded sales a year (world, real $B, net): A, derived as the sum of its
+# named drugs' reported revenues (the rivals below and others named) with a share for the rest; held
+# before its first year, linear between years, then growth_after a year (A).
+# price_year: a branded therapy's US list price a patient-year (est. from public list prices, A where
+# noted). brands: the standard of care's weight in the share formula, about the number of comparable
+# branded therapies (A). soc: the standard of care's efficacy score on the molecules' 0-1 scale (A: 0.5
+# is a molecule of average efficacy). medicare_share: of US patients (A; Medicare does not cover
+# weight-loss drugs).
+indications:
+  - key: lung_cancer
+    label: Lung cancer
+    area: oncology
+    prevalence_m: 2.48 # new cases 2022: Bray et al., GLOBOCAN 2022, CA Cancer J Clin 2024, doi:10.3322/caac.21834 (confirmed)
+    market_b: { 2010: 8.0, 2024: 55.0, 2025: 60.0 } # A: Keytruda $29.5B, Opdivo $9.3B, Tagrisso $6.6B, Imfinzi $4.7B (2024, below) and the rest; 2010 Alimta, Tarceva, Iressa, Avastin's lung share
+    growth_after: 0.05 # A
+    price_year: 190000 # est.: pembrolizumab's US list about $11,000 every three weeks
+    brands: 10
+    soc: 0.55
+    medicare_share: 0.55
+    source: "GLOBOCAN 2022; company revenues below"
+  - key: breast_cancer
+    label: Breast cancer
+    area: oncology
+    prevalence_m: 2.30 # new cases 2022, GLOBOCAN 2022 (confirmed)
+    market_b: { 2010: 12.0, 2024: 30.0 } # A: CDK4/6 inhibitors (Verzenio $5.3B, Ibrance, Kisqali), HER2 (Herceptin, Perjeta, Enhertu, Kadcyla)
+    growth_after: 0.04 # A
+    price_year: 160000 # A
+    brands: 12
+    soc: 0.55
+    medicare_share: 0.35
+    source: "GLOBOCAN 2022; company revenues below"
+  - key: blood_cancers
+    label: Blood cancers
+    area: oncology
+    prevalence_m: 1.3 # A: GLOBOCAN 2022's myeloma, leukaemia and non-Hodgkin lymphoma new cases, about 1.3M (est.)
+    market_b: { 2010: 20.0, 2024: 55.0, 2025: 60.0 } # A: Darzalex $11.7B, Revlimid $5.8B, Imbruvica, Venclexta, CAR-Ts; 2010 Rituxan, Revlimid, Velcade
+    growth_after: 0.05 # A
+    price_year: 220000 # A
+    brands: 12
+    soc: 0.55
+    medicare_share: 0.60
+    source: "GLOBOCAN 2022; company revenues below"
+  - key: type2_diabetes
+    label: Type 2 diabetes
+    area: metabolic
+    prevalence_m: 530 # IDF Diabetes Atlas 11th ed. (2025): 589M adults with diabetes in 2024, about 90% type 2 (derived; https://idf.org/news-and-resources/news/idf-diabetes-atlas-11th-edition/, confirmed)
+    market_b: { 2010: 30.0, 2024: 70.0, 2025: 85.0 } # A: Ozempic $17.5B, Mounjaro $11.5B ($23.0B 2025), Farxiga $7.7B, Trulicity $5.3B, Jardiance, Januvia $2.3B and insulins (2024)
+    growth_after: 0.05 # A
+    price_year: 11500 # Ozempic's list $959 a month (KFF/CMS, IRA 2027 round; confirmed)
+    brands: 15
+    soc: 0.5
+    medicare_share: 0.45
+    source: "IDF Diabetes Atlas 2025; company revenues below"
+  - key: obesity
+    label: Obesity
+    area: metabolic
+    prevalence_m: 880 # adults with obesity 2022, NCD-RisC, Lancet 2024, doi:10.1016/S0140-6736(23)02750-2 (confirmed)
+    market_b: { 2010: 0.5, 2024: 15.0, 2025: 28.0 } # A: Wegovy $8.4B and Zepbound $4.9B (2024), $12.0B and $13.5B (2025); 2010 orlistat
+    growth_after: 0.12 # A: the GLP-1 era (IQVIA: GLP-1s 29% of US spending growth in 2024)
+    price_year: 16000 # est.: Wegovy's list about $1,350 a month
+    brands: 3
+    soc: 0.55
+    medicare_share: 0.05
+    source: "NCD-RisC 2024; company revenues below"
+  - key: rheumatoid_arthritis
+    label: Rheumatoid arthritis
+    area: immunology
+    prevalence_m: 17.6 # 2020, GBD 2021 RA Collaborators, Lancet Rheumatol 2023, doi:10.1016/S2665-9913(23)00211-4 (confirmed)
+    market_b: { 2010: 18.0, 2022: 32.0, 2024: 25.0 } # A: Humira (peak $21.2B 2022, about half RA), Enbrel, Remicade, Rinvoq $6.0B, Actemra, Orencia
+    growth_after: 0.02 # A
+    price_year: 85000 # est.: adalimumab's list before biosimilars
+    brands: 10
+    soc: 0.5
+    medicare_share: 0.35
+    source: "GBD 2021; company revenues below"
+  - key: psoriasis_ibd
+    label: Psoriasis and IBD
+    area: immunology
+    prevalence_m: 125 # psoriasis worldwide, National Psoriasis Foundation (https://www.psoriasis.org/about/stats, est.)
+    market_b: { 2010: 5.0, 2024: 40.0, 2025: 45.0 } # A: Skyrizi $11.7B, Stelara $10.4B, Cosentyx $6.1B, Tremfya, Taltz (2024)
+    growth_after: 0.04 # A
+    price_year: 90000 # A
+    brands: 10
+    soc: 0.55
+    medicare_share: 0.30
+    source: "National Psoriasis Foundation; company revenues below"
+  - key: atopic_dermatitis
+    label: Atopic dermatitis and asthma
+    area: immunology
+    prevalence_m: 170 # A: GBD 2019's atopic dermatitis, about 170M (est.)
+    market_b: { 2010: 1.0, 2024: 18.0, 2025: 22.0 } # A: Dupixent EUR 13.1B ($14.1B) 2024, EUR 15.7B ($17.7B, est.) 2025, with Adbry and biologic asthma
+    growth_after: 0.06 # A
+    price_year: 45000 # est.: dupilumab's US list
+    brands: 4
+    soc: 0.55
+    medicare_share: 0.15
+    source: "Sanofi results; GBD 2019 (est.)"
+  - key: alzheimers
+    label: Alzheimer's disease
+    area: neuroscience
+    prevalence_m: 37 # WHO: 57M with dementia in 2021, Alzheimer's 60-70% (derived at 65%, est.)
+    market_b: { 2010: 6.0, 2024: 3.0 } # A: 2010 Aricept and Namenda before generics; 2024 Leqembi and Kisunla small
+    growth_after: 0.10 # A: anti-amyloid antibodies
+    price_year: 26500 # est.: lecanemab's US list
+    brands: 3
+    soc: 0.4
+    medicare_share: 0.90
+    source: "WHO dementia fact sheet (est.)"
+  - key: depression
+    label: Depression and psychiatry
+    area: neuroscience
+    prevalence_m: 280 # WHO depression fact sheet (est.)
+    market_b: { 2010: 12.0, 2024: 7.0 } # A: 2010 Cymbalta, Lexapro, Seroquel XR, Pristiq; 2024 Vraylar, Rexulti, Trintellix, Spravato
+    growth_after: 0.02 # A
+    price_year: 15000 # A
+    brands: 8
+    soc: 0.45
+    medicare_share: 0.25
+    source: "WHO (est.)"
+  - key: multiple_sclerosis
+    label: Multiple sclerosis
+    area: neuroscience
+    prevalence_m: 2.8 # A: MS International Federation, Atlas of MS 2020, 2.8M (est.)
+    market_b: { 2010: 12.0, 2024: 23.0 } # A: Ocrevus CHF 6.7B, Kesimpta $3.2B (2024); 2010 Copaxone $3.3B (Teva, confirmed), Avonex, Rebif, Tysabri
+    growth_after: 0.02 # A
+    price_year: 90000 # A
+    brands: 10
+    soc: 0.55
+    medicare_share: 0.25
+    source: "Atlas of MS 2020 (est.); company revenues below"
+  - key: hiv
+    label: HIV
+    area: infectious_disease
+    prevalence_m: 40.8 # end 2024, 31.6M on treatment: UNAIDS Global AIDS Update 2025 (confirmed)
+    market_b: { 2010: 15.0, 2024: 30.0, 2025: 31.5 } # A: Gilead HIV $20.8B (2025, confirmed), ViiV; 2010 Atripla $2.93B and Truvada $2.65B (confirmed), Isentress, Prezista, Reyataz
+    growth_after: 0.03 # A
+    price_year: 48000 # est.: Biktarvy's US list
+    brands: 6
+    soc: 0.6
+    medicare_share: 0.20
+    source: "UNAIDS 2025; Gilead results"
+  - key: hepatitis_c
+    label: Hepatitis C
+    area: infectious_disease
+    prevalence_m: 50 # WHO Global Hepatitis Report 2024, 50M living with HCV (est.)
+    market_b: { 2010: 2.5, 2015: 22.0, 2024: 3.0 } # A: 2010 Pegasys and PegIntron; Gilead's HCV peak $19.1B in 2015 (est.); cures shrink the market
+    growth_after: -0.02 # A
+    price_year: 84000 # est.: sofosbuvir's $84,000 course (2013)
+    brands: 3
+    soc: 0.6
+    medicare_share: 0.25
+    source: "WHO 2024 (est.)"
+  - key: vaccines
+    label: Vaccines
+    area: infectious_disease
+    prevalence_m: 8000 # A: the world's people (vaccination is for everyone)
+    market_b: { 2010: 25.0, 2024: 50.0 } # A: Gardasil $8.6B, Prevnar $6.4B, Shingrix about $4.3B (2024) and the rest
+    growth_after: 0.04 # A
+    price_year: 300 # A: a branded vaccine course a year
+    brands: 10
+    soc: 0.6
+    medicare_share: 0.30
+    source: "Company revenues below (A)"
+  - key: heart_failure
+    label: Heart failure and cardiomyopathy
+    area: cardiovascular
+    prevalence_m: 64.3 # GBD 2017 via the ESC (https://www.eurekalert.org/news-releases/763086, confirmed)
+    market_b: { 2010: 2.0, 2024: 18.0 } # A: Entresto $7.8B, Vyndaqel $5.5B, the SGLT2s' heart-failure share (2024)
+    growth_after: 0.04 # A
+    price_year: 7500 # est.: Entresto's US list
+    brands: 5
+    soc: 0.5
+    medicare_share: 0.70
+    source: "GBD 2017; company revenues below"
+  - key: thrombosis
+    label: Thrombosis and atrial fibrillation
+    area: cardiovascular
+    prevalence_m: 59.7 # atrial fibrillation 2019, Roth et al. (GBD 2019), JACC 2020, doi:10.1016/j.jacc.2020.11.010 (est.; another GBD-based estimate is 33.3M)
+    market_b: { 2010: 14.0, 2024: 28.0, 2025: 30.0 } # A: Eliquis $13.3B (BMS) + $7.4B (Pfizer alliance), Xarelto (2024); 2010 Plavix $9.4B (est.) and Lovenox
+    growth_after: 0.02 # A
+    price_year: 7000 # est.: apixaban's US list
+    brands: 5
+    soc: 0.5
+    medicare_share: 0.65
+    source: "GBD 2019 (est.); company revenues below"
+  - key: lipids
+    label: Lipids and prevention
+    area: cardiovascular
+    prevalence_m: 2000 # A: WHO's raised cholesterol in about 39% of adults (est.)
+    market_b: { 2010: 30.0, 2024: 8.0 } # A: 2010 Lipitor $10.7B and Crestor $5.7B (est.), Zetia and Vytorin; 2024 Repatha, Praluent, Leqvio, Nexletol
+    growth_after: 0.04 # A
+    price_year: 6500 # est.: evolocumab's US list after its 2018 cut
+    brands: 8
+    soc: 0.5
+    medicare_share: 0.60
+    source: "Company revenues below (A)"
+  - key: cystic_fibrosis
+    label: Cystic fibrosis
+    area: rare_disease
+    orphan: true
+    prevalence_m: 0.105 # Cystic Fibrosis Foundation, about 105,000 worldwide (est.)
+    market_b: { 2010: 1.0, 2024: 11.0, 2025: 11.7 } # A: Vertex's cystic fibrosis revenue (Vertex total $12.0B in 2025, confirmed, almost all CF)
+    growth_after: 0.04 # A
+    price_year: 320000 # est.: Trikafta's US list
+    brands: 2
+    soc: 0.6
+    medicare_share: 0.05
+    source: "CF Foundation (est.); Vertex results"
+  - key: sma
+    label: Spinal muscular atrophy
+    area: rare_disease
+    orphan: true
+    prevalence_m: 0.1 # derived: prevalence 1-2 per 100,000 (https://www.ajmc.com/view/sma-birth-prevalence-in-us-lower-than-expected-new-report-finds, confirmed) x 8 billion
+    market_b: { 2010: 0.01, 2024: 4.4 } # A: Spinraza, Zolgensma and Evrysdi (2024)
+    growth_after: 0.03 # A
+    price_year: 400000 # A
+    brands: 3
+    soc: 0.55
+    medicare_share: 0.05
+    source: "AJMC; company revenues (A)"
+  - key: haemophilia
+    label: Haemophilia and blood disorders
+    area: rare_disease
+    orphan: true
+    prevalence_m: 0.8 # A: World Federation of Hemophilia's estimate of about 0.8-1.1M with haemophilia (est.)
+    market_b: { 2010: 8.0, 2024: 13.0 } # A: factor VIII and IX, Hemlibra CHF 4.5B ($5.1B, est.) 2024
+    growth_after: 0.03 # A
+    price_year: 500000 # A
+    brands: 6
+    soc: 0.55
+    medicare_share: 0.10
+    source: "WFH (est.); Roche results"
+
+# --- Exclusivity (55.3) ----------------------------------------------------------------------------
+# US: patent 20 years from filing (35 U.S.C. 154); Hatch-Waxman (1984) term restoration of half the
+# testing phase plus the review, at most 5 years and 14 years after approval (35 U.S.C. 156); orphan
+# exclusivity 7 years (Orphan Drug Act 1983, 21 U.S.C. 360cc) (confirmed). EU: 8 years' data protection,
+# 2 years' market protection, +1 year for a significant new indication (Directive 2004/27/EC, EMA:
+# https://www.ema.europa.eu/en/documents/presentation/presentation-data-exclusivity-market-protection-and-paediatric-rewards-zaide-frias_en.pdf);
+# the SPC (Reg. 469/2009): approval - filing - 5 years, at most 5 years and 15 after approval; orphan
+# market exclusivity 10 years (Reg. 141/2000 art. 8) (confirmed). Elsewhere (A): the patent and 6 years'
+# data protection (Japan's re-examination is 8, China's data protection 6).
+exclusivity:
+  us: { patent_years: 20, pte_max_years: 5, pte_cap_years: 14, pte_trial_share: 0.5, orphan_years: 7 }
+  eu: { data_years: 8, market_years: 2, extra_years: 1, spc_max_years: 5, spc_cap_years: 15, spc_offset_years: 5, orphan_years: 10 }
+  other: { data_years: 6 }
+
+# --- The Inflation Reduction Act (55.4) ------------------------------------------------------------
+# Signed 16 Aug 2022. Negotiated Medicare prices take effect 9 years after approval for small molecules
+# and 13 for biologics (selection at 7 and 11; IRA 1192(e), confirmed). Round 1: 10 drugs selected 29 Aug
+# 2023, prices from 1 Jan 2026, 22% net savings (38-79% off list); round 2: 15 drugs including
+# semaglutide, prices from 1 Jan 2027, 44% net savings (KFF, https://www.kff.org/medicare/key-facts-about-medicare-drug-price-negotiation/ ;
+# https://www.fiercepharma.com/pharma/medicare-unveils-price-reductions-15-drugs-including-novos-semaglutide ;
+# confirmed). Round 3 (2028): 15 drugs with Part B included, and 20 a year from 2029 (the statute;
+# discount A at 35%). Orphan drugs for a single rare disease are excluded (the statute).
+ira:
+  small_molecule_years: 9
+  biologic_years: 13
+  rounds:
+    - { year: 2026, drugs: 10, discount: 0.22 }
+    - { year: 2027, drugs: 15, discount: 0.44 }
+    - { year: 2028, drugs: 15, discount: 0.35 }
+    - { year: 2029, drugs: 20, discount: 0.35 }
+  selected: [Eliquis, Januvia, Farxiga, Entresto, Stelara, Ozempic, Wegovy]
+  source: "IRA 1192; CMS and KFF on rounds 1-2 (confirmed); rounds 3-4 discounts A"
+
+# --- Prices by region (55.4) -----------------------------------------------------------------------
+# price_index: a brand's net price there x the US net price. RAND (Mulcahy, Schwam and Lovejoy 2024,
+# RR-A788-3, 2022 data): US prices 278% of 33 OECD countries' for all drugs (confirmed), and about 3x for
+# brand-name originators after rebates (est.): other high-income regions about 0.33-0.40 (derived), the
+# rest A. hta: prices set by health-technology assessment (NICE, G-BA, HAS; Japan's NHI price list;
+# China's NRDL; Australia's PBAC). hta_max_premium: a list price more than this above the value cap
+# is not reimbursed (A; NICE's threshold rose from GBP 20-30k to 25-35k a QALY from April 2026:
+# https://www.nice.org.uk/news/articles/changes-to-nice-s-cost-effectiveness-thresholds-confirmed).
+# hta_months: EFPIA's Patients W.A.I.T. Indicator, about 531 days on average from EU approval to
+# availability (2023 survey, est.): 12-24 months.
+pricing:
+  regions:
+    - { region: north_america, price_index: 1.0, hta: false }
+    - { region: europe, price_index: 0.35, hta: true }
+    - { region: east_asia, price_index: 0.30, hta: true }
+    - { region: south_southeast_asia, price_index: 0.10, hta: false }
+    - { region: latin_america, price_index: 0.25, hta: false }
+    - { region: africa, price_index: 0.10, hta: false }
+    - { region: oceania, price_index: 0.40, hta: true }
+  hta_max_premium: 0.3
+  hta_months: [12, 24]
+  source: "RAND RR-A788-3 (2024); EFPIA W.A.I.T. (est.); A"
+
+# --- Approval (55.3) -------------------------------------------------------------------------------
+# FDA: PDUFA goals for new molecular entities, act within 10 months (standard) or 6 (priority) of the
+# 60-day filing date, so 12 or 8 months from submission (PDUFA VII goals letter,
+# https://fda.gov/media/151712/download, confirmed); accelerated approval from December 1992 (21 CFR 314
+# subpart H), breakthrough therapy from FDASIA, 9 July 2012 (confirmed). In 2024 CDER approved 50 novel
+# drugs (55 in 2023): 56% with priority review, 36% breakthrough, 14% accelerated approval, 74% on the
+# first cycle (FDA, New Drug Therapy Approvals 2024, https://fda.gov/media/184967/download, confirmed).
+# Advisory committees: 55-59% of novel approvals in 2010-2011, 6-8% in 2020-2021 (Zhang et al., Health
+# Affairs 2022, doi:10.1377/hlthaff.2021.01927, confirmed via summaries): adcom_share 0.2 (A, between).
+# EMA: up to 210 active days plus clock stops; 465 days on average from the start of evaluation to the
+# Commission's decision in 2023 (EMA Annual Report 2023, confirmed): 13-17 months; accelerated
+# assessment 150 days (9-12 months with stops, est.); PRIME from March 2016; conditional approval from
+# 2006 (Reg. 507/2006). PMDA: a 12-month review target for standard new drugs, 9 for priority (A, est.);
+# NMPA: priority review from 2017 reforms; standard review long before them (A).
+# crl_resubmit_months: a class 2 resubmission's 6-month goal (PDUFA) plus the time to answer (A).
+# reliance_months: other regions register on an FDA or EU approval (A, as M41's reliance).
+approval:
+  reviews:
+    - { regulator: fda_drugs, application: NDA/BLA, standard_months: [11, 13], priority_months: [7, 9], priority_from: "1992-10", breakthrough_from: "2012-07", accelerated_from: "1992-12", adcom_share: 0.2, source: "PDUFA VII goals letter; FDA New Drug Therapy Approvals 2024" }
+    - { regulator: ema, application: MAA, standard_months: [13, 17], priority_months: [9, 12], priority_from: "2006-01", breakthrough_from: "2016-03", accelerated_from: "2006-04", source: "EMA Annual Report 2023" }
+    - { regulator: pmda_drugs, application: J-NDA, standard_months: [11, 14], priority_months: [8, 10], priority_from: "2010-01", source: "A (PMDA review targets, est.)" }
+    - { regulator: nmpa_drugs, application: NDA (China), standard_months: [14, 24], priority_months: [10, 14], priority_from: "2017-10", source: "A (NMPA reforms from 2015-2017, est.)" }
+  crl_resubmit_months: [8, 14]
+  reliance_months: [6, 18]
+  source: "PDUFA VII; FDA 2024 approvals report; EMA Annual Report 2023"
+
+# --- AI-driven discovery (55.2) --------------------------------------------------------------------
+# Jayatunga, Ayers, Bruens, Jayanth and Meier, "How successful are AI-discovered drugs in clinical
+# trials?", Drug Discov Today 29:104009 (2024), doi:10.1016/j.drudis.2024.104009: Phase I success 80-90%
+# and Phase II about 40% in a small sample (confirmed). AI discovery is possible from AlphaFold 2's CASP14
+# (November 2020; Jumper et al., Nature 596:583 (2021), doi:10.1038/s41586-021-03819-2, confirmed).
+ai:
+  phase1: 0.85
+  phase2: 0.40
+  from_month: "2020-11"
+  source: "Jayatunga et al. 2024; Jumper et al. 2021"
+
+# --- Rivals (55.5) ---------------------------------------------------------------------------------
+# revenue: the pharmaceutical business, real $B by year (reported currency at the year's rate above).
+# 2010 Pfizer, Merck and AstraZeneca are company totals (Wyeth's consumer and animal health inside
+# Pfizer's); J&J, Roche, Novartis and Sanofi their pharmaceutical (and vaccines) businesses; AbbVie's 2010
+# is Abbott's pharmaceutical products (AbbVie was spun off on 1 Jan 2013); Viatris's 2010 is Mylan
+# (Viatris formed 16 Nov 2020); Sun's years are its fiscal years to March of the next year.
+# drugs: key drugs with revenue anchors (world), US loss of exclusivity (year) and, where selected, the
+# January their negotiated Medicare price applies. A drug's revenue before its first anchor rises from
+# its approval year; after its US LOE the cliff applies (modalities above). focus: where its seeded
+# approvals fall after 2025 (A, from its pipeline). pipeline: public late-stage programmes in 2025
+# (company pipeline pages, R).
+rivals:
+  - company: Pfizer
+    revenue: { 2010: 67.8, 2024: 63.6, 2025: 62.6 } # 2010 $67,809M (FY2010 release), 2024 annual review, 2025 Q4 release $62,579M (confirmed)
+    drugs:
+      - { name: Lipitor, indication: lipids, modality: small_molecule, approved: 1996, loe_us: 2011, revenue: { 2010: 10.7 } } # est. (Bloomberg ranking); US generics 30 Nov 2011
+      - { name: Eliquis (alliance), indication: thrombosis, modality: small_molecule, approved: 2012, loe_us: 2028, revenue: { 2024: 7.37, 2025: 7.96 }, ira_year: 2026 } # Pfizer alliance revenue (confirmed); earliest US generics 1 Apr 2028 by settlement
+      - { name: Prevnar, indication: vaccines, modality: biologic, approved: 2000, loe_us: 2027, revenue: { 2024: 6.41 } } # confirmed; LOE A
+      - { name: Vyndaqel, indication: heart_failure, modality: small_molecule, approved: 2019, loe_us: 2028, revenue: { 2024: 5.45 } } # confirmed; LOE A
+    focus: [oncology, cardiovascular, infectious_disease]
+    pipeline: [vepdegestrant, sasanlimab]
+    source: "Pfizer FY2010 and Q4 2025 releases; annual review 2024"
+  - company: Johnson & Johnson Innovative Medicine
+    revenue: { 2010: 22.4, 2024: 56.96, 2025: 60.4 } # pharmaceutical segment 2010 (BioSpace), Innovative Medicine 2024 (10-K) and 2025 $60,401M (Q4 release) (confirmed)
+    drugs:
+      - { name: Remicade, indication: rheumatoid_arthritis, modality: biologic, approved: 1998, loe_us: 2016, revenue: { 2010: 4.61 } } # J&J FY2010 (confirmed); US biosimilar Inflectra Nov 2016
+      - { name: Stelara, indication: psoriasis_ibd, modality: biologic, approved: 2009, loe_us: 2025, revenue: { 2024: 10.36, 2025: 6.08 }, ira_year: 2026 } # 2024 confirmed, 2025 est.; US biosimilars 1 Jan 2025
+      - { name: Darzalex, indication: blood_cancers, modality: biologic, approved: 2015, loe_us: 2029, revenue: { 2024: 11.67, 2025: 14.35 } } # 2024 confirmed, 2025 est.; LOE unconfirmed (A)
+    focus: [oncology, immunology, neuroscience]
+    pipeline: [icotrokinra, nipocalimab]
+    source: "J&J FY2010 release; 10-K 2024; Q4 2025 release"
+  - company: Roche
+    revenue: { 2010: 35.5, 2024: 52.4, 2025: 57.4 } # Pharmaceuticals CHF 37.06B, 46.171B and 47.669B (confirmed)
+    drugs:
+      - { name: Ocrevus, indication: multiple_sclerosis, modality: biologic, approved: 2017, loe_us: 2029, revenue: { 2024: 7.6, 2025: 8.4 } } # CHF 6.7B and 7.01B (est.); LOE A
+      - { name: Hemlibra, indication: haemophilia, modality: biologic, approved: 2017, loe_us: 2033, revenue: { 2024: 5.1, 2025: 5.7 } } # CHF 4.5B and 4.75B (est.); LOE A
+    focus: [oncology, neuroscience, rare_disease]
+    pipeline: [giredestrant, trontinemab]
+    source: "Roche FY2010, FY2024 and FY2025 releases"
+  - company: Merck & Co.
+    revenue: { 2010: 46.0, 2024: 64.2, 2025: 65.0 } # FY2010 release, 4Q24 release $64,168M, 4Q25 $65,011M (confirmed)
+    drugs:
+      - { name: Keytruda, indication: lung_cancer, modality: biologic, approved: 2014, loe_us: 2028, revenue: { 2024: 29.48, 2025: 31.68 } } # confirmed; US compound patent December 2028
+      - { name: Gardasil, indication: vaccines, modality: biologic, approved: 2006, loe_us: 2028, revenue: { 2024: 8.58 } } # confirmed; LOE A
+      - { name: Januvia, indication: type2_diabetes, modality: small_molecule, approved: 2006, loe_us: 2026, revenue: { 2024: 2.27 }, ira_year: 2026 } # confirmed; US LOE May 2026 (est.)
+    focus: [oncology, cardiovascular, infectious_disease]
+    pipeline: [enlicitide, sac-TMT]
+    source: "Merck FY2010, 4Q24 and 4Q25 releases"
+  - company: AbbVie
+    revenue: { 2010: 19.9, 2024: 56.33, 2025: 61.16 } # Abbott worldwide pharmaceutical sales $19,894M 2010 (confirmed); AbbVie 2024 and 2025 releases (confirmed)
+    drugs:
+      - { name: Humira, indication: rheumatoid_arthritis, modality: biologic, approved: 2002, loe_us: 2023, revenue: { 2010: 6.5, 2022: 21.2, 2024: 8.99, 2025: 4.54 } } # 2010 (AbbVie 10-K), 2024, 2025 confirmed; 2022 derived from 2023's -32%
+      - { name: Skyrizi, indication: psoriasis_ibd, modality: biologic, approved: 2019, loe_us: 2033, revenue: { 2024: 11.72, 2025: 17.56 } } # confirmed; LOE A
+      - { name: Rinvoq, indication: rheumatoid_arthritis, modality: small_molecule, approved: 2019, loe_us: 2033, revenue: { 2024: 5.97, 2025: 8.30 } } # confirmed; LOE A
+    focus: [immunology, neuroscience, oncology]
+    pipeline: [tavapadon, emraclidine]
+    source: "Abbott FY2010 release; AbbVie FY2024 and FY2025 releases"
+  - company: Novartis
+    revenue: { 2010: 30.6, 2024: 50.3, 2025: 54.5 } # Pharmaceuticals $30,558M (20-F 2010); continuing operations 2024 and 2025 (confirmed)
+    drugs:
+      - { name: Entresto, indication: heart_failure, modality: small_molecule, approved: 2015, loe_us: 2025, revenue: { 2024: 7.82, 2025: 7.75 }, ira_year: 2026 } # confirmed; US generics mid-2025
+      - { name: Cosentyx, indication: psoriasis_ibd, modality: biologic, approved: 2015, loe_us: 2029, revenue: { 2024: 6.14 } } # confirmed; LOE A
+      - { name: Kesimpta, indication: multiple_sclerosis, modality: biologic, approved: 2020, loe_us: 2031, revenue: { 2024: 3.22 } } # confirmed; LOE A
+    focus: [cardiovascular, immunology, oncology]
+    pipeline: [ianalumab, pelacarsen]
+    source: "Novartis 20-F 2010; FY2024 and FY2025 releases"
+  - company: AstraZeneca
+    revenue: { 2010: 33.3, 2024: 54.1, 2025: 58.7 } # $33,269M (FY2010), $54,073M (20-F 2024) confirmed; 2025 est.
+    drugs:
+      - { name: Crestor, indication: lipids, modality: small_molecule, approved: 2003, loe_us: 2016, revenue: { 2010: 5.7 } } # est.
+      - { name: Farxiga, indication: type2_diabetes, modality: small_molecule, approved: 2014, loe_us: 2026, revenue: { 2024: 7.66, 2025: 8.4 }, ira_year: 2026 } # 2024 confirmed, 2025 est.; LOE est.
+      - { name: Tagrisso, indication: lung_cancer, modality: small_molecule, approved: 2015, loe_us: 2032, revenue: { 2024: 6.58, 2025: 7.25 } } # 2024 confirmed, 2025 est.; LOE A
+      - { name: Imfinzi, indication: lung_cancer, modality: biologic, approved: 2017, loe_us: 2030, revenue: { 2024: 4.72 } } # confirmed; LOE A
+    focus: [oncology, cardiovascular, rare_disease]
+    pipeline: [camizestrant, baxdrostat]
+    source: "AstraZeneca FY2010 results; 20-F 2024; 2025 (est.)"
+  - company: Novo Nordisk
+    revenue: { 2010: 10.8, 2024: 42.1, 2025: 46.7 } # DKK 60,776M, 290.4B and 309,064M (confirmed)
+    drugs:
+      - { name: Ozempic, indication: type2_diabetes, modality: small_molecule, approved: 2017, loe_us: 2031, revenue: { 2024: 17.45, 2025: 19.21 }, ira_year: 2027 } # DKK 120.342B and 127.089B (confirmed); a peptide under an NDA; compound patent December 2031 (est.)
+      - { name: Wegovy, indication: obesity, modality: small_molecule, approved: 2021, loe_us: 2031, revenue: { 2024: 8.44, 2025: 11.95 }, ira_year: 2027 } # DKK 58.2B (confirmed) and 79.1B (est.)
+    focus: [metabolic, cardiovascular, rare_disease]
+    pipeline: [CagriSema, amycretin]
+    source: "Novo Nordisk 20-F 2010; Annual Reports 2024 and 2025"
+  - company: Eli Lilly
+    revenue: { 2010: 23.1, 2024: 45.0, 2025: 65.2 } # $23,076.0M, $45.04B and $65,179M (confirmed)
+    drugs:
+      - { name: Trulicity, indication: type2_diabetes, modality: biologic, approved: 2014, loe_us: 2027, revenue: { 2024: 5.25 } } # confirmed; US LOE 2027
+      - { name: Verzenio, indication: breast_cancer, modality: small_molecule, approved: 2017, loe_us: 2031, revenue: { 2024: 5.31, 2025: 5.72 } } # confirmed; LOE A
+      - { name: Mounjaro, indication: type2_diabetes, modality: small_molecule, approved: 2022, loe_us: 2036, revenue: { 2024: 11.54, 2025: 22.97 } } # confirmed; compound patent about 2036 (est.)
+      - { name: Zepbound, indication: obesity, modality: small_molecule, approved: 2023, loe_us: 2036, revenue: { 2024: 4.93, 2025: 13.54 } } # confirmed
+    focus: [metabolic, neuroscience, immunology]
+    pipeline: [orforglipron, retatrutide]
+    source: "Lilly FY2010 release; 10-K 2024 and 2025"
+  - company: Bristol Myers Squibb
+    revenue: { 2010: 19.5, 2024: 48.3, 2025: 48.2 } # $19.48B (confirmed), $48,300M (8-K 2024), $48.2B (2025) (confirmed)
+    drugs:
+      - { name: Eliquis, indication: thrombosis, modality: small_molecule, approved: 2012, loe_us: 2028, revenue: { 2024: 13.33, 2025: 14.44 }, ira_year: 2026 } # 2024 est., 2025 confirmed
+      - { name: Opdivo, indication: lung_cancer, modality: biologic, approved: 2014, loe_us: 2028, revenue: { 2024: 9.30, 2025: 10.05 } } # 2024 est., 2025 confirmed
+      - { name: Revlimid, indication: blood_cancers, modality: small_molecule, approved: 2005, loe_us: 2022, revenue: { 2024: 5.77, 2025: 2.95 } } # 2024 est., 2025 confirmed; volume-limited generics from March 2022
+    focus: [oncology, immunology, neuroscience]
+    pipeline: [milvexian, iberdomide]
+    source: "BMS FY2010 and 2024-2025 releases"
+  - company: Sanofi
+    revenue: { 2010: 40.3, 2024: 44.5, 2025: 49.2 } # EUR 30,384M (20-F 2010, pharmaceuticals and vaccines), EUR 41,081M (2024) confirmed; EUR 43.6B (2025, est.)
+    drugs:
+      - { name: Dupixent, indication: atopic_dermatitis, modality: biologic, approved: 2017, loe_us: 2031, revenue: { 2024: 14.15, 2025: 17.74 } } # EUR 13.072B (confirmed), EUR 15.714B (est.); LOE about 2031 (est.)
+    focus: [immunology, infectious_disease, rare_disease]
+    pipeline: [amlitelimab, tolebrutinib]
+    source: "Sanofi 20-F 2010; FY2024 release; 2025 (est.)"
+  - company: GSK
+    revenue: { 2010: 36.2, 2024: 40.1, 2025: 43.0 } # pharmaceuticals and vaccines about GBP 23.4B (est.; group GBP 28.4B confirmed); GBP 31.4B (2024) and 32,667M (2025) after Haleon's demerger (confirmed)
+    drugs:
+      - { name: Shingrix, indication: vaccines, modality: biologic, approved: 2017, loe_us: 2031, revenue: { 2024: 4.34 } } # about GBP 3.4B (est.); LOE A
+    focus: [infectious_disease, immunology, oncology]
+    pipeline: [depemokimab, camlipixant]
+    source: "GSK 20-F 2010; FY2024 and FY2025 results"
+  - company: Teva
+    generics: true
+    revenue: { 2010: 16.1, 2024: 16.5, 2025: 17.3 } # confirmed (FY2010 release; globes 2024; FY2025 release)
+    drugs:
+      - { name: Copaxone, indication: multiple_sclerosis, modality: small_molecule, approved: 1996, loe_us: 2015, revenue: { 2010: 3.32 } } # in-market $3,316M (confirmed); generics June 2015
+    source: "Teva FY2010, FY2024 and FY2025 releases"
+  - company: Sandoz
+    generics: true
+    revenue: { 2010: 8.5, 2024: 10.4, 2025: 11.1 } # Novartis 20-F 2010 $8,518M; spun off 4 Oct 2023 (est.); 2024 and 2025 (confirmed)
+    source: "Novartis 20-F 2010; Sandoz FY2024 and FY2025 releases"
+  - company: Viatris
+    generics: true
+    revenue: { 2010: 5.45, 2024: 14.7, 2025: 14.3 } # Mylan 2010 $5.45B; Viatris 2024 and 2025 $14,299.9M (confirmed)
+    source: "Mylan 10-K 2010; Viatris FY2024 and FY2025 releases"
+  - company: Sun Pharma
+    generics: true
+    revenue: { 2010: 1.25, 2024: 6.28, 2025: 6.71 } # INR 5,721 crore (FY11), 52,578 crore (FY25) and 58,462 crore (FY26) (confirmed), at 45.65, 83.68 and 87.13
+    source: "Sun Pharma FY11 release; Annual Report 2024-25; FY26 results"
+
+# --- Contract manufacturers (55.5) -----------------------------------------------------------------
+# capacity: real thousand patient-years a year each will make for one client, by kind (A, derived):
+# biologics from bioreactor volume at about 1,000 thousand patient-years per 60 kL (own plants below);
+# small-molecule API at about 100 t a year for a large site, 3.65 g a patient-year for a 5 mg twice-daily
+# tablet, so about 27,000 thousand (A). Revenue 2024, real $B.
+cmos:
+  - { name: Lonza, region: europe, capacity: { api: 20000, biologics: 5000 }, quality: high, revenue_2024_b: 7.46, source: "Lonza 2024 about CHF 6.57B (est.)" }
+  - { name: Samsung Biologics, region: east_asia, capacity: { biologics: 10000 }, quality: high, revenue_2024_b: 3.34, source: "about KRW 4.55T (est.); 845 kL across Plants 1-5 (est., GEN 2025)" }
+  - { name: WuXi Biologics, region: east_asia, capacity: { biologics: 4000 }, quality: standard, revenue_2024_b: 2.60, source: "RMB 18.68B (derived from 2025's +16.7%, est.); BIOSECURE Act enacted 18 Dec 2025 (FY2026 NDAA s.851)" }
+  - { name: Catalent, region: north_america, capacity: { api: 15000, biologics: 3000 }, quality: standard, revenue_2024_b: 4.38, source: "FY2024 about $4.38B (est.); acquired by Novo Holdings 18 Dec 2024 (confirmed)" }
+
+# --- Own plants (55.5) -----------------------------------------------------------------------------
+# Biologics: about $7,000-8,300 a litre (AIChE 2008; Samsung Plant 5, about $1.5B for 180 kL; est.), so
+# 60 kL about $450M; 3-5 years to build and qualify (est.): 42 months. Capacity: 60 kL x about 4 g/L x
+# 70% yield x 20 runs a year is about 3.4 t of antibody, a patient-year about 3 g (derived, A): 1,000
+# thousand patient-years. API plant: $100-500M and 2-3 years (A): $250M, 30 months, about 100 t of API a
+# year at 3.65 g a patient-year (27,000 thousand, A rounded down). fixed_month: A.
+plants:
+  - { kind: api, label: Small-molecule API plant, capex: 250000000, build_months: 30, capacity: 25000, fixed_month: 1500000, source: "A" }
+  - { kind: biologics, label: Biologics plant (60 kL), capex: 450000000, build_months: 42, capacity: 1000, fixed_month: 4000000, source: "est. (USD 7,000-8,300 a litre); A" }
+
+# --- Licensing (55.5) ------------------------------------------------------------------------------
+# Real USD by stage at deal (A, calibrated on Isomorphic Labs' January 2024 discovery deals: Eli Lilly
+# $45M upfront and up to $1.7B in milestones, Novartis $37.5M and up to $1.2B,
+# https://techcrunch.com/2024/01/07/isomorphic-inks-deals-with-eli-lilly-and-novartis-for-drug-discovery,
+# confirmed). acquire_mult: buying a programme outright (no royalty) costs this x upfront + milestones
+# (A).
+licensing:
+  terms:
+    - { stage: discovery, upfront: 40000000, milestones: 1200000000, royalty: 0.05 }
+    - { stage: preclinical, upfront: 30000000, milestones: 400000000, royalty: 0.06 }
+    - { stage: phase1, upfront: 60000000, milestones: 600000000, royalty: 0.08 }
+    - { stage: phase2, upfront: 120000000, milestones: 900000000, royalty: 0.10 }
+    - { stage: phase3, upfront: 250000000, milestones: 1000000000, royalty: 0.12 }
+    - { stage: approved, upfront: 500000000, milestones: 500000000, royalty: 0.15 }
+  acquire_mult: 1.5
+  source: "Isomorphic Labs deals (confirmed); A by stage"
+
+# --- Dated records shown on the Pharma screen ------------------------------------------------------
+history:
+  - { month: "1984-09", text: "Hatch-Waxman: generics' abbreviated approval and patent term restoration", source: "35 U.S.C. 156" }
+  - { month: "2010-03", text: "The BPCIA gives biologics 12 years' exclusivity and a biosimilar pathway", source: "42 U.S.C. 262(k)" }
+  - { month: "2011-11", text: "Lipitor's US generics: Pfizer's largest drug loses 42% of its sales in a quarter", source: "pharmafile.com" }
+  - { month: "2012-07", text: "FDASIA creates breakthrough therapy designation", source: "FDASIA 902" }
+  - { month: "2017-12", text: "Ozempic approved: the GLP-1 era begins", source: "FDA" }
+  - { month: "2020-11", text: "AlphaFold 2 at CASP14: protein structures predicted at near-experimental accuracy", source: "Jumper et al. 2021" }
+  - { month: "2022-08", text: "The Inflation Reduction Act brings Medicare price negotiation", source: "KFF" }
+  - { month: "2023-01", text: "Humira's first US biosimilar launches", source: "AbbVie" }
+  - { month: "2023-06", text: "Insilico's AI-discovered rentosertib doses its first Phase IIa patient", source: "Xu et al., Nat Med 2025" }
+  - { month: "2024-01", text: "Isomorphic Labs signs Eli Lilly and Novartis: about $3B in deals", source: "TechCrunch" }
+  - { month: "2025-12", text: "The BIOSECURE Act becomes law in the FY2026 defence bill", source: "Latham & Watkins" }
+  - { month: "2026-01", text: "The first ten negotiated Medicare prices take effect", source: "CMS" }

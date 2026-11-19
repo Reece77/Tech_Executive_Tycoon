@@ -925,6 +925,18 @@ class Builder:
 
         return v5_medical.study_cost(self, m, entity)
 
+    # --- v5 (M42): pharmaceuticals -------------------------------------------------------------
+
+    def pharma_value(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_pharma
+
+        return v5_pharma.pharma_value(self, m, entity)
+
+    def trial_cost(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v5_pharma
+
+        return v5_pharma.trial_cost(self, m, entity)
+
     # --- v4 (M33): equipment ----------------------------------------------------------------
 
     def tool_wait(self, m: MetricDef, entity: str | None) -> Explanation:

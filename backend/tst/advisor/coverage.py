@@ -39,6 +39,11 @@ _PLATFORM = exempt(
 _MEDICAL = exempt(
     "a published medical figure (a fee, an enrolment) from medical.yaml or its design"
 )
+# M42 (55): pharmaceuticals
+_PHARMA = exempt(
+    "a published pharma figure (a price, a market, a term) from pharma.yaml or a design"
+)
+_PHARMA_BOOKS = exempt("a drug's booked month (patients, revenue), itemised on its revenue chart")
 # M32 (46): power
 _POWER = exempt("a published power figure (a price, a rate, a factor) from power.yaml or its path")
 _QUEUE = exempt("the grid queue's wait as a range from the region's median, in its glossary")
@@ -84,6 +89,34 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "cost_cents": "study_cost",
         "spent_cents": exempt("a study's spending to date, itemised in its cost's breakdown"),
         "patients": _MEDICAL,
+    },
+    # M42 (55): the Pharma screen
+    "pharma.RxProgrammeOut": {
+        "patients": _PHARMA,
+        "cost_cents": "trial_cost",
+        "spent_cents": exempt("a stage's spending to date, itemised in its cost's breakdown"),
+        "readouts": _COUNT,
+        "next_cost_cents": "trial_cost",
+        "next_months": "trial_cost",
+        "preclinical_months": _PHARMA,
+        "preclinical_months_without_ai": _PHARMA,
+        "redesign_cost_cents": "trial_cost",
+    },
+    "pharma.RxValueOut": {
+        "rnpv_lo_cents": "pharma_value",
+        "rnpv_hi_cents": "pharma_value",
+        "peak_lo_cents": "pharma_value",
+        "peak_hi_cents": "pharma_value",
+        "cost_left_cents": "pharma_value",
+        "years_to_launch": "pharma_value",
+    },
+    "pharma.RxDrugOut": {
+        "list_cents": _PHARMA,
+        "reference_cents": _PHARMA,
+        "support": _PHARMA,
+        "patients": _PHARMA_BOOKS,
+        "revenue_cents": _PHARMA_BOOKS,
+        "year_cents": _PHARMA_BOOKS,
     },
     # M36 (45.4, 45.6): the Family screen and the founder's Family tab
     "family.ReadinessOut": {

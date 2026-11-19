@@ -73,6 +73,7 @@ from tst.sim.medical.config import MedicalFile
 from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
 from tst.sim.org.voice_data import VoicesFile
+from tst.sim.pharma.config import PharmaFile
 from tst.sim.platforms.config import PlatformsFile
 from tst.sim.power.config import PowerFile
 from tst.sim.regulation.config import RegulationFile
@@ -132,6 +133,7 @@ EQUIPMENT_FILE = "equipment.yaml"  # M33 (formulas.md 47)
 VEHICLES_FILE = "vehicles.yaml"  # M38 (formulas.md 49)
 ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
 GOVERNMENT_FILE = "government.yaml"  # M44 (formulas.md 57)
+PHARMA_FILE = "pharma.yaml"  # M42 (formulas.md 55)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -158,6 +160,7 @@ DATA_FILES = (
     VEHICLES_FILE,
     ROBOTICS_FILE,
     GOVERNMENT_FILE,
+    PHARMA_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -1127,6 +1130,7 @@ def load_all(
     vehicles = _validate(VehiclesFile, parsed[VEHICLES_FILE], VEHICLES_FILE)
     robotics = _validate(RoboticsFile, parsed[ROBOTICS_FILE], ROBOTICS_FILE)
     government = _validate(GovernmentFile, parsed[GOVERNMENT_FILE], GOVERNMENT_FILE)
+    pharma = _validate(PharmaFile, parsed[PHARMA_FILE], PHARMA_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1188,6 +1192,7 @@ def load_all(
             "medical": medical,
             "robotics": robotics,
             "government": government,
+            "pharma": pharma,
         },
         "seed data cross-check",
     )
@@ -1221,6 +1226,10 @@ def load_all(
         raise DataLoadError(f"{ROBOTICS_FILE}, {BALANCE_FILE} robotics: " + "; ".join(problems))
     if problems := government_problems(balance, game_data):
         raise DataLoadError(f"{GOVERNMENT_FILE}, {BALANCE_FILE} government: " + "; ".join(problems))
+    if problems := pharma_problems(balance, game_data):
+        raise DataLoadError(
+            f"{PHARMA_FILE}, {REGULATION_FILE}, {BALANCE_FILE} pharma: " + "; ".join(problems)
+        )
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1372,6 +1381,52 @@ def vehicle_kinds(balance: Balance) -> tuple[str, ...]:
     """M38 (49.2, 49.5): the facility kinds whose output tst.sim.vehicles runs on the generic
     lifecycle (cell plants and charging networks)."""
     return (balance.vehicles.cell_plant.kind, balance.vehicles.charging.kind)
+
+
+def pharma_problems(balance: Balance, data: GameData) -> list[str]:
+    """M42 (55): pharma.yaml's areas are categories.yaml's family pharma; its rivals are
+    incumbents.yaml companies (with no products: their business is pharma.yaml's); its reviews
+    are regulation.yaml's drug regulators; the IRA's selected drugs are rivals' drugs; the
+    research roles exist; the regions are regions.yaml's."""
+    pf = data.pharma
+    if pf is None:
+        return ["pharma.yaml is required"]
+    out: list[str] = []
+    pharma = {c.key for c in (*data.categories, *data.pseudo_categories) if c.pharma}
+    if any(c.pharma for c in data.categories):
+        out.append("family pharma categories must be pseudo-categories (no market segments)")
+    areas = {a.category for a in pf.areas}
+    if pharma != areas:
+        out.append(f"family pharma categories {sorted(pharma)} must be the areas' {sorted(areas)}")
+    names = {i.name for i in data.incumbents}
+    for r in pf.rivals:
+        if r.company not in names:
+            out.append(f"rival {r.company!r} is not in incumbents.yaml")
+    for inc in data.incumbents:
+        if not inc.products and pf.rival(inc.name) is None:
+            out.append(f"incumbent {inc.name!r} has no products and is not a pharma rival")
+    rf = data.regulation
+    drug_regs = {r.key for r in rf.drug_regulators} if rf is not None else set()
+    reviewed = {r.regulator for r in pf.approval.reviews}
+    if drug_regs != reviewed:
+        out.append(
+            f"approval reviews {sorted(reviewed)} must be the drug regulators {sorted(drug_regs)}"
+        )
+    drugs = {d.name for r in pf.rivals for d in r.drugs}
+    if missing := sorted(set(pf.ira.selected) - drugs):
+        out.append(f"ira.selected names no rival drug: {missing}")
+    regions = set(data.region_keys)
+    for a in pf.areas:
+        if set(a.region_share) != regions:
+            out.append(f"area {a.key}: region_share must cover every region")
+    if {p.region for p in pf.pricing.regions} != regions:
+        out.append("pricing.regions must cover every region")
+    if bad := sorted({c.region for c in pf.cmos} - regions):
+        out.append(f"cmos in unknown regions {bad}")
+    roles = {r.key for r in data.roles}
+    if bad := sorted(set(balance.pharma.discovery.roles) - roles):
+        out.append(f"pharma.discovery.roles {bad} are not roles.yaml keys")
+    return out
 
 
 def government_problems(balance: Balance, data: GameData) -> list[str]:

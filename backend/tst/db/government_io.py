@@ -1,4 +1,4 @@
-"""Loading and syncing M44's records (formulas.md 57; migration 0062_m44). Every collection lives
+"""Loading and syncing M44's records (formulas.md 57; migration 0063_m44). Every collection lives
 in `government_record`, one row a record (`kind` = the GameState field), its fields in `data`; a
 changed collection is rewritten whole. Nested records (a bid's score terms, a contract's month)
 and the game-wide `government_world` (one row) are encoded field by field."""
@@ -96,7 +96,7 @@ def _decode(kind: str, data: dict[str, Any]) -> Any:
 def load_government(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every government record (0062_m44); a save from before M44 has none."""
+    """Every government record (0063_m44); a save from before M44 has none."""
     if not has_table(session, GovernmentRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

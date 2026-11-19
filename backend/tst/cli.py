@@ -4566,6 +4566,64 @@ def vehicles_cmd(
         )
 
 
+@app.command("pharma")
+def pharma_cmd(
+    save: SaveOpt,
+    rivals: Annotated[bool, typer.Option(help="Also list the pharma rivals")] = False,
+) -> None:
+    """Pharmaceuticals (M42, 55): your programmes by stage with readouts, efficacy estimates,
+    chances as ranges, filings and exclusivity; drugs' prices and revenue; plants, assets and
+    deals. Hidden values are never shown."""
+    from tst.api import pharma_views
+
+    _path, data, state = _game(save)
+    m = pharma_views.pharma_out(state, data)
+    typer.echo(
+        f"Discovery {m.in_discovery}/{m.discovery_slots} slots, {m.researchers} research staff;"
+        f" AI discovery {'ready' if m.ai_ready else 'not available'}"
+    )
+    if not m.programmes:
+        typer.echo("No programmes: start one with an indication and a modality.")
+    for p in m.programmes:
+        est = f"efficacy {p.efficacy.lo:.2f}-{p.efficacy.hi:.2f}"
+        typer.echo(
+            f"{p.name} [{p.id}] ({p.indication_label}, {p.modality}): {p.stage} {p.status};"
+            f" {est}; planned end {p.planned_end}"
+        )
+        if p.next_stage and p.next_chance:
+            typer.echo(
+                f"  next: {p.next_stage}, chance {p.next_chance.lo:.0%}-{p.next_chance.hi:.0%},"
+                f" {format_money(p.next_cost_cents or 0)}"
+            )
+        for r in p.history:
+            typer.echo(f"  {r.month} {r.stage}: {'success' if r.success else 'failed'}")
+        for v in p.reviews:
+            typer.echo(f"  {v.regulator_name} {v.application}: {v.status}, {v.expected}")
+        if p.value:
+            typer.echo(
+                f"  to approval {p.value.to_approval.lo:.0%}-{p.value.to_approval.hi:.0%};"
+                f" rNPV {format_money(p.value.rnpv_lo_cents)} to"
+                f" {format_money(p.value.rnpv_hi_cents)}"
+            )
+    for d in m.drugs:
+        typer.echo(
+            f"drug {d.name}: list {format_money(d.list_cents)} a year, {d.patients:,.0f} patients,"
+            f" {format_money(d.year_cents)} in 12 months{' (generics)' if d.generic else ''}"
+        )
+    for pl in m.plants:
+        typer.echo(f"plant {pl.id} {pl.label} ({pl.region}): ready {pl.ready}, {pl.quality}")
+    for a in m.assets:
+        typer.echo(
+            f"asset {a.id} {a.name} ({a.indication_label}, {a.stage}): upfront"
+            f" {format_money(a.upfront_cents)}, royalty {a.royalty:.0%}"
+        )
+    for x in m.deals:
+        typer.echo(f"deal {x.kind} with {x.counterparty} ({x.programme or '-'}) {x.signed}")
+    if rivals:
+        for rv in m.rivals:
+            typer.echo(f"rival {rv.name}: {format_money(rv.year_cents)} in 12 months")
+
+
 @app.command("medical")
 def medical_cmd(
     save: SaveOpt,

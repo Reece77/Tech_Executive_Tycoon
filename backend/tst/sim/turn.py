@@ -78,6 +78,7 @@ from tst.sim.org.replace import replace_offers
 from tst.sim.org.rules import manager_terms, org_view
 from tst.sim.org.upkeep import detach_departed
 from tst.sim.people.growth import grow_person
+from tst.sim.pharma import month as pharma_month
 from tst.sim.platforms import month as platform_month
 from tst.sim.power import phase as power
 from tst.sim.press.phase import press_month
@@ -364,6 +365,15 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = ctx.post(*geopolitics.after_markets(ctx.state, ctx.balance, ctx.data))  # tariffs
     ctx = ctx.post(*royalties(ctx.state, ctx.balance, ctx.data))  # licences (M11, 21.5)
     ctx = ctx.post(*recurring_month(ctx.state, ctx.balance, ctx.data))  # M41 (50.1)
+    # M42 (55.4-55.5): drugs' sales, licences and the pharma rivals' businesses; their revenue
+    # joins the month's MRR (rankings, valuations and stages read it).
+    state, drug_entries, drug_revenue = pharma_month.sales_month(ctx.state, ctx.balance, ctx.data)
+    if drug_revenue:
+        merged = dict(ctx.revenue)
+        for cid, cents in drug_revenue.items():
+            merged[cid] = merged.get(cid, 0) + cents
+        ctx = replace(ctx, revenue=merged)
+    ctx = replace(ctx, state=state).post(*drug_entries)
     # M19 (35.3-35.4): mines' output and sales, after the markets (the group's own use)
     state, entries, logs = mining.operate_month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     return replace(ctx, state=state).post(*entries).log(*logs)
@@ -720,6 +730,9 @@ def event_director_requests(ctx: TurnContext) -> TurnContext:
     # M41 (50): studies, reviews, coverage and adoption, quality, inspections and recalls.
     state, med_entries, med_logs = medical_month(state, ctx.rng, ctx.balance, ctx.data)
     ctx = ctx.post(*med_entries).log(*med_logs)
+    # M42 (55.1-55.5): rules, rivals' approvals, assets, trials, reviews, plants and quality.
+    state, rx_entries, rx_logs = pharma_month.events_month(state, ctx.rng, ctx.balance, ctx.data)
+    ctx = ctx.post(*rx_entries).log(*rx_logs)
     player = state.player.id
     state, requests = direct(
         state,

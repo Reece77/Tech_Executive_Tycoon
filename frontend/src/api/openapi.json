@@ -28173,6 +28173,981 @@
         }
       }
     },
+    "/api/saves/{save_id}/pharma": {
+      "get": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Get Pharma",
+        "description": "Programmes by stage with readouts, ranges, filings, approvals, exclusivity and Explain;\ndrugs with prices and revenue; plants, CMOs, assets, deals and rivals (55.7).",
+        "operationId": "getPharma",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/start": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Start Programme",
+        "operationId": "startProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxStartIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/trial": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Start Trial",
+        "operationId": "startTrial",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxTrialIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/stop": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Stop Programme",
+        "operationId": "stopProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxProgrammeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/file": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "File Drug",
+        "operationId": "fileDrug",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxFileIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/price": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Set Drug Price",
+        "operationId": "setDrugPrice",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPriceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/plant": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Build Pharma Plant",
+        "operationId": "buildPharmaPlant",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/plant-quality": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Set Pharma Plant Quality",
+        "operationId": "setPharmaPlantQuality",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlantQualityIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/cmo": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Choose Cmo",
+        "operationId": "chooseCmo",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxCmoIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/license-in": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "License Asset",
+        "operationId": "licenseAsset",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxLicenseInIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/license-out": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "Out License",
+        "operationId": "outLicense",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxLicenseOutIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/pharma/platform": {
+      "post": {
+        "tags": [
+          "pharma"
+        ],
+        "summary": "License Platform",
+        "operationId": "licensePlatform",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxPlatformIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PharmaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/equipment": {
       "get": {
         "tags": [
@@ -54510,6 +55485,180 @@
         ],
         "title": "PersonalStakeOut"
       },
+      "PharmaActionOut": {
+        "properties": {
+          "pharma": {
+            "$ref": "#/components/schemas/PharmaOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pharma",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "PharmaActionOut"
+      },
+      "PharmaOut": {
+        "properties": {
+          "engaged": {
+            "type": "boolean",
+            "title": "Engaged"
+          },
+          "ai_ready": {
+            "type": "boolean",
+            "title": "Ai Ready"
+          },
+          "discovery_slots": {
+            "type": "integer",
+            "title": "Discovery Slots"
+          },
+          "in_discovery": {
+            "type": "integer",
+            "title": "In Discovery"
+          },
+          "researchers": {
+            "type": "integer",
+            "title": "Researchers"
+          },
+          "indications": {
+            "items": {
+              "$ref": "#/components/schemas/RxIndicationOut"
+            },
+            "type": "array",
+            "title": "Indications"
+          },
+          "modalities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Modalities"
+          },
+          "designs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Designs"
+          },
+          "regulators": {
+            "items": {
+              "$ref": "#/components/schemas/RxRegulatorOut"
+            },
+            "type": "array",
+            "title": "Regulators"
+          },
+          "programmes": {
+            "items": {
+              "$ref": "#/components/schemas/RxProgrammeOut"
+            },
+            "type": "array",
+            "title": "Programmes"
+          },
+          "drugs": {
+            "items": {
+              "$ref": "#/components/schemas/RxDrugOut"
+            },
+            "type": "array",
+            "title": "Drugs"
+          },
+          "plants": {
+            "items": {
+              "$ref": "#/components/schemas/RxPlantOut"
+            },
+            "type": "array",
+            "title": "Plants"
+          },
+          "cmos": {
+            "items": {
+              "$ref": "#/components/schemas/RxCmoOut"
+            },
+            "type": "array",
+            "title": "Cmos"
+          },
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/RxAssetOut"
+            },
+            "type": "array",
+            "title": "Assets"
+          },
+          "deals": {
+            "items": {
+              "$ref": "#/components/schemas/RxDealOut"
+            },
+            "type": "array",
+            "title": "Deals"
+          },
+          "inspections": {
+            "items": {
+              "$ref": "#/components/schemas/RxInspectionOut"
+            },
+            "type": "array",
+            "title": "Inspections"
+          },
+          "recalls": {
+            "items": {
+              "$ref": "#/components/schemas/RxRecallOut"
+            },
+            "type": "array",
+            "title": "Recalls"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RxRuleOut"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/RxFactOut"
+            },
+            "type": "array",
+            "title": "Facts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "engaged",
+          "ai_ready",
+          "discovery_slots",
+          "in_discovery",
+          "researchers",
+          "indications",
+          "modalities",
+          "designs",
+          "regulators",
+          "programmes",
+          "drugs",
+          "plants",
+          "cmos",
+          "assets",
+          "deals",
+          "inspections",
+          "recalls",
+          "rivals",
+          "rules",
+          "facts"
+        ],
+        "title": "PharmaOut"
+      },
       "PitchAnswerIn": {
         "properties": {
           "approve": {
@@ -63296,6 +64445,1413 @@
           "seeded"
         ],
         "title": "RuleOut"
+      },
+      "RxAssetOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "efficacy": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The estimate from its readouts so far"
+          },
+          "upfront_cents": {
+            "type": "integer",
+            "title": "Upfront Cents"
+          },
+          "milestones_cents": {
+            "type": "integer",
+            "title": "Milestones Cents"
+          },
+          "royalty": {
+            "type": "number",
+            "title": "Royalty"
+          },
+          "acquire_cents": {
+            "type": "integer",
+            "title": "Acquire Cents"
+          },
+          "until": {
+            "type": "string",
+            "title": "Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "indication_label",
+          "area",
+          "modality",
+          "stage",
+          "efficacy",
+          "upfront_cents",
+          "milestones_cents",
+          "royalty",
+          "acquire_cents",
+          "until"
+        ],
+        "title": "RxAssetOut"
+      },
+      "RxCmoIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api",
+              "biologics"
+            ],
+            "title": "Kind"
+          },
+          "cmo": {
+            "type": "string",
+            "title": "Cmo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "cmo"
+        ],
+        "title": "RxCmoIn"
+      },
+      "RxCmoOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Kinds"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "chosen_for": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chosen For"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "region",
+          "kinds",
+          "quality",
+          "chosen_for"
+        ],
+        "title": "RxCmoOut"
+      },
+      "RxDealOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "counterparty": {
+            "type": "string",
+            "title": "Counterparty"
+          },
+          "programme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Programme"
+          },
+          "signed": {
+            "type": "string",
+            "title": "Signed"
+          },
+          "upfront_cents": {
+            "type": "integer",
+            "title": "Upfront Cents"
+          },
+          "milestones_cents": {
+            "type": "integer",
+            "title": "Milestones Cents"
+          },
+          "royalty": {
+            "type": "number",
+            "title": "Royalty"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "counterparty",
+          "programme",
+          "signed",
+          "upfront_cents",
+          "milestones_cents",
+          "royalty",
+          "fee_cents",
+          "until"
+        ],
+        "title": "RxDealOut"
+      },
+      "RxDrugOut": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "list_cents": {
+            "type": "integer",
+            "title": "List Cents",
+            "description": "US list price a patient-year (real cents)"
+          },
+          "reference_cents": {
+            "type": "integer",
+            "title": "Reference Cents",
+            "description": "The indication's branded reference price"
+          },
+          "support": {
+            "type": "number",
+            "title": "Support"
+          },
+          "patients": {
+            "type": "number",
+            "title": "Patients",
+            "description": "Real patients last month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Last month's revenue (game cents)"
+          },
+          "year_cents": {
+            "type": "integer",
+            "title": "Year Cents",
+            "description": "The last 12 months' revenue"
+          },
+          "generic": {
+            "type": "boolean",
+            "title": "Generic",
+            "description": "Exclusivity has ended somewhere it sells"
+          },
+          "ira": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ira",
+            "description": "The Medicare negotiation, once selected"
+          },
+          "hta": {
+            "items": {
+              "$ref": "#/components/schemas/RxHtaOut"
+            },
+            "type": "array",
+            "title": "Hta"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RxMonthPointOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "blocked": {
+            "type": "boolean",
+            "title": "Blocked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "name",
+          "indication_label",
+          "modality",
+          "list_cents",
+          "reference_cents",
+          "support",
+          "patients",
+          "revenue_cents",
+          "year_cents",
+          "generic",
+          "hta",
+          "history",
+          "blocked"
+        ],
+        "title": "RxDrugOut"
+      },
+      "RxExclusivityOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "region_label": {
+            "type": "string",
+            "title": "Region Label"
+          },
+          "ends": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends",
+            "description": "The month exclusivity ends there (once approved)"
+          },
+          "ended": {
+            "type": "boolean",
+            "title": "Ended"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "region_label",
+          "ends",
+          "ended"
+        ],
+        "title": "RxExclusivityOut"
+      },
+      "RxFactOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "text"
+        ],
+        "title": "RxFactOut"
+      },
+      "RxFileIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "regulator"
+        ],
+        "title": "RxFileIn"
+      },
+      "RxHtaOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "covered",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected",
+            "description": "When it decides, as a range (never the draw)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "status",
+          "expected"
+        ],
+        "title": "RxHtaOut"
+      },
+      "RxIndicationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "area_label": {
+            "type": "string",
+            "title": "Area Label"
+          },
+          "orphan": {
+            "type": "boolean",
+            "title": "Orphan"
+          },
+          "market_cents": {
+            "type": "integer",
+            "title": "Market Cents",
+            "description": "Branded sales a year, world, at the game's scale"
+          },
+          "prevalence_m": {
+            "type": "number",
+            "title": "Prevalence M",
+            "description": "People living with it (oncology: new cases), M"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "A branded therapy's US list price a patient-year (real)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "area",
+          "area_label",
+          "orphan",
+          "market_cents",
+          "prevalence_m",
+          "price_cents"
+        ],
+        "title": "RxIndicationOut"
+      },
+      "RxInspectionOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "finding": {
+            "type": "string",
+            "title": "Finding"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          },
+          "fine_cents": {
+            "type": "integer",
+            "title": "Fine Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "month",
+          "finding",
+          "until",
+          "fine_cents"
+        ],
+        "title": "RxInspectionOut"
+      },
+      "RxLicenseInIn": {
+        "properties": {
+          "asset_id": {
+            "type": "integer",
+            "title": "Asset Id"
+          },
+          "acquire": {
+            "type": "boolean",
+            "title": "Acquire",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id"
+        ],
+        "title": "RxLicenseInIn"
+      },
+      "RxLicenseOutIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          },
+          "co_develop": {
+            "type": "boolean",
+            "title": "Co Develop",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "rival_id"
+        ],
+        "title": "RxLicenseOutIn"
+      },
+      "RxMonthPointOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "us_cents": {
+            "type": "integer",
+            "title": "Us Cents"
+          },
+          "patients": {
+            "type": "number",
+            "title": "Patients"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "revenue_cents",
+          "us_cents",
+          "patients"
+        ],
+        "title": "RxMonthPointOut"
+      },
+      "RxPlantIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "api",
+              "biologics"
+            ],
+            "title": "Kind"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "region"
+        ],
+        "title": "RxPlantIn"
+      },
+      "RxPlantOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "ordered": {
+            "type": "string",
+            "title": "Ordered"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live"
+          },
+          "quality": {
+            "type": "string",
+            "title": "Quality"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "patient_years_k": {
+            "type": "number",
+            "title": "Patient Years K",
+            "description": "Real thousand patient-years a year it makes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "region",
+          "ordered",
+          "ready",
+          "live",
+          "quality",
+          "capex_cents",
+          "patient_years_k"
+        ],
+        "title": "RxPlantOut"
+      },
+      "RxPlantQualityIn": {
+        "properties": {
+          "plant_id": {
+            "type": "integer",
+            "title": "Plant Id"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "standard",
+              "high"
+            ],
+            "title": "Level"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_id",
+          "level"
+        ],
+        "title": "RxPlantQualityIn"
+      },
+      "RxPlatformIn": {
+        "properties": {
+          "rival_id": {
+            "type": "integer",
+            "title": "Rival Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rival_id"
+        ],
+        "title": "RxPlatformIn"
+      },
+      "RxPriceIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "list_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "List Cents"
+          },
+          "support": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 0.0,
+            "title": "Support"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id",
+          "list_cents",
+          "support"
+        ],
+        "title": "RxPriceIn"
+      },
+      "RxProgrammeIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id"
+        ],
+        "title": "RxProgrammeIn"
+      },
+      "RxProgrammeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication": {
+            "type": "string",
+            "title": "Indication"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "design": {
+            "type": "string",
+            "title": "Design"
+          },
+          "patients": {
+            "type": "integer",
+            "title": "Patients"
+          },
+          "started": {
+            "type": "string",
+            "title": "Started"
+          },
+          "planned_end": {
+            "type": "string",
+            "title": "Planned End",
+            "description": "The stage's planned end (its design)"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "ai": {
+            "type": "boolean",
+            "title": "Ai"
+          },
+          "preclinical_months": {
+            "type": "integer",
+            "title": "Preclinical Months",
+            "description": "Its preclinical stage's planned months"
+          },
+          "preclinical_months_without_ai": {
+            "type": "integer",
+            "title": "Preclinical Months Without Ai",
+            "description": "The same without AI discovery"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "efficacy": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The estimate's range (never the true value)"
+          },
+          "readouts": {
+            "type": "integer",
+            "title": "Readouts"
+          },
+          "next_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Stage",
+            "description": "The trial it can start next, if ready"
+          },
+          "next_chance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RxRangeOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "That stage's chance, as a range"
+          },
+          "next_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cost Cents"
+          },
+          "next_months": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Months"
+          },
+          "redesign_cost_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redesign Cost Cents",
+            "description": "After a failure"
+          },
+          "can_file": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Can File",
+            "description": "Regulators it can be filed with now"
+          },
+          "breakthrough": {
+            "type": "boolean",
+            "title": "Breakthrough"
+          },
+          "accelerated": {
+            "type": "boolean",
+            "title": "Accelerated"
+          },
+          "orphan": {
+            "type": "boolean",
+            "title": "Orphan"
+          },
+          "partner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RxReadoutOut"
+            },
+            "type": "array",
+            "title": "History"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/RxReviewOut"
+            },
+            "type": "array",
+            "title": "Reviews"
+          },
+          "approvals": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Approvals",
+            "description": "Where it is approved (regulator or region)"
+          },
+          "exclusivity": {
+            "items": {
+              "$ref": "#/components/schemas/RxExclusivityOut"
+            },
+            "type": "array",
+            "title": "Exclusivity"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RxValueOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company",
+          "name",
+          "indication",
+          "indication_label",
+          "area",
+          "modality",
+          "stage",
+          "status",
+          "design",
+          "patients",
+          "started",
+          "planned_end",
+          "cost_cents",
+          "spent_cents",
+          "ai",
+          "preclinical_months",
+          "preclinical_months_without_ai",
+          "origin",
+          "efficacy",
+          "readouts",
+          "next_stage",
+          "next_chance",
+          "can_file",
+          "breakthrough",
+          "accelerated",
+          "orphan",
+          "history",
+          "reviews",
+          "approvals",
+          "exclusivity",
+          "value"
+        ],
+        "title": "RxProgrammeOut"
+      },
+      "RxRangeOut": {
+        "properties": {
+          "lo": {
+            "type": "number",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "number",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "RxRangeOut"
+      },
+      "RxReadoutOut": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "shown": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "The chance shown before it read out"
+          },
+          "observed": {
+            "type": "number",
+            "title": "Observed",
+            "description": "Its observed efficacy score"
+          },
+          "design": {
+            "type": "string",
+            "title": "Design"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "month",
+          "success",
+          "shown",
+          "observed",
+          "design"
+        ],
+        "title": "RxReadoutOut"
+      },
+      "RxRecallOut": {
+        "properties": {
+          "programme": {
+            "type": "string",
+            "title": "Programme"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme",
+          "month",
+          "cost_cents"
+        ],
+        "title": "RxRecallOut"
+      },
+      "RxRegulatorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "application": {
+            "type": "string",
+            "title": "Application"
+          },
+          "standard": {
+            "type": "string",
+            "title": "Standard",
+            "description": "Its standard review's months, as a range"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "region",
+          "application",
+          "standard"
+        ],
+        "title": "RxRegulatorOut"
+      },
+      "RxReviewOut": {
+        "properties": {
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "regulator_name": {
+            "type": "string",
+            "title": "Regulator Name"
+          },
+          "application": {
+            "type": "string",
+            "title": "Application"
+          },
+          "filed": {
+            "type": "string",
+            "title": "Filed"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "review",
+              "approved",
+              "crl",
+              "withdrawn"
+            ],
+            "title": "Status"
+          },
+          "priority": {
+            "type": "boolean",
+            "title": "Priority"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected",
+            "description": "When a decision comes, as a range (never the draw)"
+          },
+          "adcom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adcom",
+            "description": "The committee's vote, once it met"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided"
+          }
+        },
+        "type": "object",
+        "required": [
+          "regulator",
+          "regulator_name",
+          "application",
+          "filed",
+          "status",
+          "priority",
+          "expected"
+        ],
+        "title": "RxReviewOut"
+      },
+      "RxRivalApprovalOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "area",
+          "modality",
+          "month"
+        ],
+        "title": "RxRivalApprovalOut"
+      },
+      "RxRivalDrugOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "indication_label": {
+            "type": "string",
+            "title": "Indication Label"
+          },
+          "approved": {
+            "type": "integer",
+            "title": "Approved"
+          },
+          "loe_us": {
+            "type": "integer",
+            "title": "Loe Us"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "indication_label",
+          "approved",
+          "loe_us"
+        ],
+        "title": "RxRivalDrugOut"
+      },
+      "RxRivalOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "generics": {
+            "type": "boolean",
+            "title": "Generics"
+          },
+          "year_cents": {
+            "type": "integer",
+            "title": "Year Cents",
+            "description": "Revenue over the last 12 months"
+          },
+          "drugs": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalDrugOut"
+            },
+            "type": "array",
+            "title": "Drugs"
+          },
+          "pipeline": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pipeline"
+          },
+          "approvals": {
+            "items": {
+              "$ref": "#/components/schemas/RxRivalApprovalOut"
+            },
+            "type": "array",
+            "title": "Approvals",
+            "description": "Its approvals after 2025"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "generics",
+          "year_cents",
+          "drugs",
+          "pipeline",
+          "approvals"
+        ],
+        "title": "RxRivalOut"
+      },
+      "RxRuleOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "text"
+        ],
+        "title": "RxRuleOut"
+      },
+      "RxStartIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "indication": {
+            "type": "string",
+            "title": "Indication"
+          },
+          "modality": {
+            "type": "string",
+            "enum": [
+              "small_molecule",
+              "biologic",
+              "cell_and_gene"
+            ],
+            "title": "Modality"
+          },
+          "ai": {
+            "type": "boolean",
+            "title": "Ai",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "indication",
+          "modality"
+        ],
+        "title": "RxStartIn"
+      },
+      "RxTrialIn": {
+        "properties": {
+          "programme_id": {
+            "type": "integer",
+            "title": "Programme Id"
+          },
+          "design": {
+            "type": "string",
+            "enum": [
+              "lean",
+              "standard",
+              "large"
+            ],
+            "title": "Design",
+            "default": "standard"
+          }
+        },
+        "type": "object",
+        "required": [
+          "programme_id"
+        ],
+        "title": "RxTrialIn"
+      },
+      "RxValueOut": {
+        "properties": {
+          "to_approval": {
+            "$ref": "#/components/schemas/RxRangeOut",
+            "description": "Chance to approval from here, as a range"
+          },
+          "rnpv_lo_cents": {
+            "type": "integer",
+            "title": "Rnpv Lo Cents"
+          },
+          "rnpv_hi_cents": {
+            "type": "integer",
+            "title": "Rnpv Hi Cents"
+          },
+          "peak_lo_cents": {
+            "type": "integer",
+            "title": "Peak Lo Cents",
+            "description": "Peak sales a year at the estimate's range"
+          },
+          "peak_hi_cents": {
+            "type": "integer",
+            "title": "Peak Hi Cents"
+          },
+          "cost_left_cents": {
+            "type": "integer",
+            "title": "Cost Left Cents"
+          },
+          "years_to_launch": {
+            "type": "number",
+            "title": "Years To Launch"
+          },
+          "explain": {
+            "type": "string",
+            "title": "Explain"
+          }
+        },
+        "type": "object",
+        "required": [
+          "to_approval",
+          "rnpv_lo_cents",
+          "rnpv_hi_cents",
+          "peak_lo_cents",
+          "peak_hi_cents",
+          "cost_left_cents",
+          "years_to_launch",
+          "explain"
+        ],
+        "title": "RxValueOut"
       },
       "SafeHintOut": {
         "properties": {

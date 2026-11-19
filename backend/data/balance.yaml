@@ -834,6 +834,19 @@ markets:
     surgical_robotics: 0.0015 # A 0.02%
     implantables: 0.004 # A 0.06%
     samd: 0.0005 # A 0.005%
+    # M42 (55.4): pharma's therapeutic areas (pseudo-categories, sized in tst.sim.pharma.ceilings by
+    # this rule). A: about 5x North America's 2026 density (branded sales a year over GDP at the game's
+    # scale: oncology 0.20%, metabolic 0.15%, immunology 0.12%, infectious 0.11%, cardiovascular 0.07%,
+    # neuroscience 0.04%, rare 0.04%), so they barely bind before 2039 and hold obesity's 12% a year
+    # (1.07% of North America's GDP uncapped by 2069). R for scale: medicines about 1.6% of world GDP
+    # at list prices (IQVIA $1.8T in 2024)
+    pharma_oncology: 0.010
+    pharma_metabolic: 0.0075
+    pharma_immunology: 0.006
+    pharma_infectious: 0.0055
+    pharma_cardiovascular: 0.0035
+    pharma_neuroscience: 0.002
+    pharma_rare: 0.002
   ceiling_start_year: 2026 # ceilings apply from January of this year; the history to 2025 is main's, recalibrated only where 2025 was outside 0.5-2x (PM, 2026-11-18; 54.3). A market already past its ceiling then is held, not cut, until the economy catches up
   era_ceiling_lift: 0.10 # A: each arrived era boosting a category adds 10% to its ceiling (an era makes a market bigger, not infinite)
   gdp_growth: # nominal GDP growth a year after macro_history.yaml's last year, before the regional cycle (A: OECD long-term real growth about 2-3% easing to 1.5-2.4% by 2060, plus about 2% inflation; faster in emerging regions)
@@ -854,7 +867,7 @@ markets:
     chips_ai_accelerator: 0.03
     cybersecurity: 0.02
   tech_share_max: 0.15 # 54.4 target 1: the technology categories' sum at most this share of world GDP
-  non_tech: [vehicles, medical] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending)
+  non_tech: [vehicles, medical, pharma] # categories (keys or families) outside target 1's sum (A: cars and medicine are not technology spending; M42 adds pharma)
 
 # --- Cities and geography (formulas.md 19.1, 19.3, 19.6, M9) -----------------------------
 geo:
@@ -3045,6 +3058,94 @@ robotics:
     contest_chance: 0.5 # chance the regulator extends the suspension (stream robotics (1, zone_id, cities))
     contest_months: 6 # months it adds
 
+# --- Pharmaceuticals (formulas.md 55, M42, v5 lane H) ----------------------------------------------
+# Data (attrition, durations, costs, exclusivity, prices, the IRA, rivals) is pharma.yaml's, cited;
+# these are the game's dials. A = an assumption for gameplay. Nothing here runs for a company without
+# pharma (55.6 target 1).
+pharma:
+  scale: 0.085 # game patients and pharma money = real x this: the devices convention (M34's economy_scale.money 0.0849; vehicles.scale, robotics.scale). Trials, plants and deals scale too (M42 decision 2)
+  scale_basis: "Game drug markets, trials and plants are 8.5% of the real ones at real prices (the game's economy scale)"
+  efficacy: # a molecule's hidden efficacy (55.1), 0-1, never shown
+    mean: 0.5 # A: the standard of care is about 0.5 (pharma.yaml soc)
+    sd: 0.15 # A
+    level_lift: 0.10 # mean + this x drug_discovery lead / 100 (A: a lead of 50 adds 0.05, a third of an sd)
+    ai_lift: 0.01 # mean + this with AI discovery (A: small; 55.2 says evidence is early. M42 tuning from 0.02 for 55.6 target 5)
+  safety:
+    mean: 0.7 # A
+    sd: 0.12 # A
+    level_lift: 0.0
+    ai_lift: 0.01 # A: Jayatunga et al.'s higher Phase I success reads as fewer toxicity failures (M42 tuning from 0.02, target 5)
+  readout: # 55.1: p = sigmoid(logit(T) + w_e x z_eff + w_s x z_safety + design + AI)
+    efficacy_weight: { preclinical: 0.2, phase1: 0.2, phase2: 0.3, phase3: 0.3 } # A: efficacy decides Phase II and III (M42 tuning from 0.3/0.8/0.8: 55.6 target 2's selection on survivors, seeds 1-30)
+    safety_weight: { preclinical: 0.4, phase1: 0.5, phase2: 0.2, phase3: 0.2 } # A: Phase I and toxicology are mostly safety (M42 tuning from 0.6/0.9/0.4/0.4, as above, seeds 1-30)
+    design_logit: { lean: -0.25, standard: 0.0, large: 0.15 } # A: a larger trial has more power
+    design_months: { lean: 0.85, standard: 1.0, large: 1.2 } # A: x the stage's months
+    noise: { preclinical: 0.20, phase1: 0.15, phase2: 0.08, phase3: 0.04 } # sd of a readout's observed efficacy (A: animal models say little; Phase III a lot)
+    shown_band: 0.08 # the chance is shown as +/- this, never the draw (55.7)
+    bounds: [0.02, 0.98]
+  ai: # 55.2
+    min_quality: 60 # an ai_models product at least this good enables AI discovery (A)
+    min_level: 20 # or a drug_discovery lead of at least this (A)
+    preclinical_cut: 0.30 # x (1 - this) preclinical months (A: Insilico's candidate in about 18 months)
+    transition_lift: 0.15 # logit added at Phase I and II readouts (A: modest; Jayatunga's 80-90% Phase I is a small sample. M42 tuning from 0.30 for 55.6 target 5: Phase I 52% -> 56%)
+    platform_fee_cents: 200000000 # real $2M a month a licensee for the AI discovery platform (A, against Isomorphic's $37.5-45M upfronts)
+    platform_months: 36 # a platform licence's term (A)
+  discovery:
+    roles: [research_scientist, data_scientist] # research staff (no new skills, 55.1)
+    slots_base: 1 # programmes in discovery at once with no researchers (A)
+    researchers_per_slot: 5 # one more slot per this many research staff (A)
+    level_slots: 2.0 # + this x drug_discovery lead / 100 slots (A)
+    ai_slots: 0.5 # x (1 + this) with AI discovery: more candidates a year (55.2, A)
+  demand: # 55.4: share weight = exp(e x (eff - soc)) x exp(-s x (1 - safety)) x ramp x support x price
+    efficacy_weight: 6.0 # A: a drug 0.15 (one sd) better than the standard of care has 2.5x its weight
+    safety_weight: 3.0 # A
+    ramp_months: 30 # uptake 1 - exp(-m / this) from launch in a region (A: peak sales about 5-6 years after launch)
+    support_floor: 0.3 # weight x this with no commercial support (A)
+    price_elasticity: 1.0 # weight x (reference list / list)^this in the US (A: formularies)
+    value_premium: 0.5 # HTA value cap = reference x index x (1 + this x (est - soc) / sd) (A)
+    horizon_years: 15 # rNPV counts this many years of sales (A: to LOE and a little after)
+  approval: # 55.3
+    efficacy_weight: 1.0 # logit of the area's submission rate + this x (estimate - soc) / sd (A)
+    priority_margin: 0.10 # an efficacy estimate this far above soc gets priority review (A)
+    breakthrough_margin: 0.15 # a Phase II estimate this far above soc gets breakthrough (A)
+    breakthrough_cut: 0.20 # breakthrough: Phase III months x (1 - this) (A)
+    accelerated_areas: [oncology, rare_disease] # may file in the US after Phase II (A)
+    accelerated_margin: 0.20 # with a Phase II estimate this far above soc (A: 14% of 2024's novel approvals were accelerated)
+    eu_extra_margin: 0.15 # the EU's +1 year for a significant clinical benefit (A)
+    adcom_negative: 0.3 # a negative committee vote's chance at the standard of care's estimate (A)
+    adcom_weight: 1.5 # logit lost after a negative vote (A: the FDA follows the vote 88% of the time, Daval et al. 2023)
+    resubmit_factor: 0.3 # a resubmission's chance x this (A; M42 tuning from 0.5: BIO's submission-to-approval rate already counts approvals after a complete response letter)
+  rivals: # 55.5: rivals' businesses after 2025
+    approvals_per_b: 0.04 # seeded approvals a year per real $B of last year's revenue (A: big pharma about 2 a year; 50 novel FDA approvals in 2024)
+    peak_median_b: 0.8 # a seeded drug's peak revenue, real $B, lognormal median (A)
+    peak_sd: 1.0 # its log sd (A: a few blockbusters)
+    ramp_years: 5 # years to peak (A)
+    exclusivity_years: 12 # approval to US LOE (A: Grabowski et al. 2016, 12-14 years of market exclusivity, est.)
+    rest_decay: 0.05 # the rest of a portfolio (older drugs) loses this a year after 2025 (A)
+    generics_base_growth: 0.02 # a generic maker's base business a year after 2025 (A)
+    cost_shares: { 5000_cogs: 0.25, 6500_research_development: 0.20, 6400_marketing: 0.15, 6900_general_admin: 0.08, 3000_common_equity: 0.22 } # of revenue a month (A: big pharma's typical income statement; 3000 is dividends and buybacks, most of the cash it earns)
+    generics_cost_shares: { 5000_cogs: 0.55, 6500_research_development: 0.06, 6400_marketing: 0.10, 6900_general_admin: 0.10, 3000_common_equity: 0.12 } # A
+    generics_share: 0.35 # the four named generic makers' share of generic and biosimilar sales of the modelled drugs (A: the rest are other makers)
+    modality_weights: { small_molecule: 0.5, biologic: 0.45, cell_and_gene: 0.05 } # a seeded approval's modality (A: about half of 2024's novel approvals were biologics or peptides)
+    assets_a_year: 6 # biotech programmes listed for licence each January (A)
+    asset_stages: { preclinical: 0.35, phase1: 0.35, phase2: 0.25, phase3: 0.05 } # A
+  supply: # 55.5
+    quality_cost_share: { low: 0.8, standard: 1.0, high: 1.3 } # x a plant's running cost (A; quality levels as M41's)
+    inspection_chance_year: 0.4 # a regulator's GMP inspection of a company it has approved drugs for (A)
+    recall_chance_year: { low: 0.06, standard: 0.02, high: 0.006 } # a marketed drug's recall (A)
+    recall_cost_share: 0.5 # a recall costs this x a month of the drug's revenue (A)
+    recall_block_months: 2 # months a recall stops shipments (A)
+    depreciation_years: 20 # own plants (A)
+  rules: # seeded rules after 2025 (55.4), stream pharma (5, year)
+    pill_fix_chance: 0.15 # each January: the IRA's small-molecule window moves to 13 years (A: the EPIC Act debate)
+    drugs_after: [15, 25] # drugs selected a year after pharma.yaml's rounds (A)
+    discount_after: [0.30, 0.50] # their net discount (A)
+    ira_min_b: 1.0 # a modelled drug is selected with at least this US sales a year, real $B (A: round 1's tenth drug had $2.6B of Medicare spending, KFF)
+  redesign_cost_share: 0.20 # re-running a failed phase costs its stage cost x (1 + this) (A)
+  co_develop_share: 0.5 # a co-development partner pays this share of costs and takes it of sales (A: 50/50 is the common split)
+  history_months: 120 # drug months kept for the Pharma screen's revenue charts
+  energy: { start: 2, trial: 2, submit: 2, price: 1, deal: 3, plant: 2, stop: 1 } # founder energy by action (A)
+  discount_rate: 0.105 # rNPV's discount rate a year (DiMasi et al. 2016's cost of capital, 10.5%)
 government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
   start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)
   tenders:
