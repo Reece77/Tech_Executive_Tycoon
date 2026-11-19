@@ -119,3 +119,12 @@ def test_keys_and_streams(loaded: LoadedData) -> None:
     assert STREAM_IDS["ipo"] == 33
     assert STREAM_IDS["market_sentiment"] == 34
     assert 35 not in STREAM_IDS.values()  # reserved for lane B
+
+
+def test_the_arr_floor_reads_the_games_economy(loaded: LoadedData) -> None:
+    """M43 sub-task 3: 25.1's $80M is real-world scale, read x economy_scale.money (48.1)."""
+    from tst.sim.markets_public.ipo import min_arr_cents
+
+    b = loaded.balance
+    assert min_arr_cents(b) == round(80_000_000_00 * b.economy_scale.money)
+    assert min_arr_cents(b) == 679_200_000  # $6.79M at 0.0849

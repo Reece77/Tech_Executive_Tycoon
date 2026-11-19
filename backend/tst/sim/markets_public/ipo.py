@@ -59,6 +59,12 @@ PRICING_STRONG = "ipo_pricing_strong"
 # --- Eligibility (25.1) --------------------------------------------------------------------
 
 
+def min_arr_cents(balance: Balance) -> int:
+    """25.1's ARR floor in the game's economy: `ipo.min_arr_cents` is a real-world amount, read
+    x `economy_scale.money` as M34's thresholds are (48.1; M43 sub-task 3)."""
+    return round(balance.ipo.min_arr_cents * balance.economy_scale.money)
+
+
 def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> str | None:
     """Why the company cannot hire banks now, or None (25.1)."""
     ib = balance.ipo
@@ -79,8 +85,9 @@ def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> 
     if company.stage < ib.min_stage:
         return f"an IPO needs stage {ib.min_stage} (scale-up)"
     mrr = company.mrr_history[-1] if company.mrr_history else 0
-    if mrr * MONTHS_A_YEAR < ib.min_arr_cents:
-        return f"an IPO needs ${ib.min_arr_cents / pf.PCT / MILLION:,.0f}M of ARR"
+    floor = min_arr_cents(balance)
+    if mrr * MONTHS_A_YEAR < floor:
+        return f"an IPO needs ${floor / pf.PCT / MILLION:,.1f}M of ARR"
     if not (
         profitable_quarters(company.op_history, ib.trailing_months)
         or trailing_growth(company) >= ib.min_growth

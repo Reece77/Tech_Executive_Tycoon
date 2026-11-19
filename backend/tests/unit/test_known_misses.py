@@ -1,6 +1,7 @@
 """The recorded known misses (tst/balance/known_misses.py): within the bound a miss is known,
 beyond it or unlisted it fails (2026-11-05). M15a closed T2 and M10.T3 and recorded V3.ai
-(owner M23) and V5's launch clauses (owner M23); M23b recorded I1 at year 30 (owner M28); M43 owns all four from sub-task 1."""
+(owner M23) and V5's launch clauses (owner M23); M23b recorded I1 at year 30 (owner M28); M43
+owns all four from its sub-task 1."""
 
 from __future__ import annotations
 
