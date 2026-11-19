@@ -1,6 +1,6 @@
 """The recorded known misses (tst/balance/known_misses.py): within the bound a miss is known,
 beyond it or unlisted it fails (2026-11-05). M15a closed T2 and M10.T3 and recorded V3.ai
-(owner M23) and V5's launch clauses (owner M23); M23b recorded I1 at year 30 (owner M28)."""
+(owner M23) and V5's launch clauses (owner M23); M23b recorded I1 at year 30 (owner M28); M43 owns all four from sub-task 1."""
 
 from __future__ import annotations
 
@@ -15,14 +15,15 @@ def _ai(gap: float) -> Row:
     )
 
 
-def test_the_list_after_m23b() -> None:
+def test_the_list_after_m43_sub_task_1() -> None:
+    """M43 sub-task 1: the four entries the finished M28 owned move to M43."""
     assert [m.target for m in KNOWN_MISSES][:4] == ["V3.ai", "V5.cells", "V5.cats", "I1"]
     owners = {m.target: m.owner for m in KNOWN_MISSES}
     assert {k: owners[k] for k in ("V3.ai", "V5.cells", "V5.cats", "I1")} == {
-        "V3.ai": "M28",
-        "V5.cells": "M28",
-        "V5.cats": "M28",
-        "I1": "M28",
+        "V3.ai": "M43",
+        "V5.cells": "M43",
+        "V5.cats": "M43",
+        "I1": "M43",
     }
     assert known_miss("T2") is None and known_miss("M10.T3") is None
 
@@ -51,7 +52,7 @@ def test_closed_and_unlisted_misses_fail_and_the_table_says_known() -> None:
     assert verdict(Row("T8", "printed", "$1", "printed", None)) == "printed"
     assert verdict(Row("V3.ai", "gap", "x", "y", False)) == "fail"  # no score: no pass
     text = table([_ai(0.009), t2])
-    assert text.splitlines()[0].endswith("KNOWN MISS (M28)") and "FAIL T2" in text
+    assert text.splitlines()[0].endswith("KNOWN MISS (M43)") and "FAIL T2" in text
 
 
 def test_m35b_carries_t1_2_and_t4_to_m43() -> None:
