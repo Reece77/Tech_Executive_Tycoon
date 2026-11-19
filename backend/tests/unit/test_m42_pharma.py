@@ -14,6 +14,7 @@ import pytest
 from tests.pharma_helpers import base, marketed, programme
 from tst.loader import LoadedData
 from tst.sim.calendar import ym_to_turn
+from tst.sim.data_models import Balance
 from tst.sim.ledger import CASH, DRUG_SALES
 from tst.sim.pharma import approval, demand, licensing, pipeline, rivals, rules, value
 from tst.sim.pharma import data as pd
@@ -372,3 +373,69 @@ def test_a_drug_needs_supply_and_a_recall_stops_it(loaded: LoadedData) -> None:
     blocked = replace(state, pharma_drugs=(replace(drug, blocked_until=state.turn + 1),))
     assert demand.month(blocked, b, d)[2].revenue.get(state.player.id, 0) == 0
     assert isinstance(drug, Drug)
+
+
+# --- M43a's ceilings (54.1) on pharma's markets --------------------------------------------------
+
+
+def _tight(loaded: LoadedData, share: float) -> Balance:
+    b = loaded.balance
+    shares = {**b.markets.ceiling_share, "pharma_metabolic": share}
+    return b.model_copy(update={"markets": b.markets.model_copy(update={"ceiling_share": shares})})
+
+
+def test_pharma_markets_follow_their_data_before_the_ceilings(loaded: LoadedData) -> None:
+    from tst.sim.pharma import ceilings
+
+    b, d = loaded.balance, loaded.game_data
+    state = base(loaded, turn=ym_to_turn(2025, 6))
+    assert ceilings.month(state, b, d).pharma_markets == ()
+    assert ceilings.world_factor(state, b, d) == 1.0
+
+
+def test_a_pharma_market_at_its_ceiling_is_held_not_cut(loaded: LoadedData) -> None:
+    from tst.sim.pharma import ceilings
+
+    d = loaded.game_data
+    tight = _tight(loaded, 1e-6)
+    state = base(loaded, turn=ym_to_turn(2030, 1))
+    metabolic = pd.area(d, "metabolic")
+    for region in ("north_america", "europe"):
+        before = ceilings.value_cents(state, d, tight, metabolic, region)
+        after_state = replace(ceilings.month(state, tight, d), turn=state.turn)
+        held = ceilings.value_cents(after_state, d, tight, metabolic, region)
+        grown = ceilings.value_cents(
+            replace(after_state, pharma_markets=()), d, tight, metabolic, region
+        )
+        assert held == pytest.approx(
+            ceilings._uncapped_cents(d, tight, metabolic, region, state.turn - 1)
+        )
+        assert held < grown and before > 0
+
+
+@pytest.mark.parametrize("year", [2027, 2040, 2060])
+def test_no_pharma_market_grows_past_its_ceiling(loaded: LoadedData, year: int) -> None:
+    from hypothesis import given, settings
+    from hypothesis import strategies as st
+
+    from tst.sim.markets import saturation
+    from tst.sim.pharma import ceilings
+
+    d = loaded.game_data
+
+    @settings(max_examples=15, deadline=None)
+    @given(share=st.floats(1e-5, 0.02), months=st.integers(1, 24))
+    def check(share: float, months: int) -> None:
+        b = _tight(loaded, share)
+        state = base(loaded, turn=ym_to_turn(year, 1))
+        area = pd.area(d, "metabolic")
+        for _ in range(months):
+            prev = ceilings.value_cents(state, d, b, area, "north_america")
+            state = replace(ceilings.month(state, b, d), turn=state.turn + 1)
+            state = replace(state, turn=state.turn - 1)
+            now = ceilings.value_cents(state, d, b, area, "north_america")
+            cap = saturation.ceiling_cents(state, b, d, area.category, "north_america")
+            assert now <= max(cap, prev) * (1 + 1e-9)
+            state = replace(state, turn=state.turn + 1)
+
+    check()

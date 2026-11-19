@@ -152,11 +152,13 @@ def mean_net_price(data: GameData, ind: IndicationDef) -> float:
     return net * sum(s * price_index(data, r) for r, s in a.region_share.items())
 
 
-def treated(data: GameData, ind: IndicationDef, region: str, turn: int) -> float:
+def treated(
+    data: GameData, ind: IndicationDef, region: str, turn: int, level: float = 1.0
+) -> float:
     """Real patients a year on branded therapy in a region: the market / the mean net price,
     x the area's share of patients there."""
     world = market_b(data, ind, turn) * BILLION / mean_net_price(data, ind)
-    return world * area(data, ind.area).region_share.get(region, 0.0)
+    return world * area(data, ind.area).region_share.get(region, 0.0) * level
 
 
 def net_price(data: GameData, ind: IndicationDef, list_cents: int, region: str) -> float:

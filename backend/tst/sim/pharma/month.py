@@ -16,7 +16,16 @@ from __future__ import annotations
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import LedgerEntry
 from tst.sim.log import LogItem
-from tst.sim.pharma import approval, demand, licensing, pipeline, rivals, rules, supply
+from tst.sim.pharma import (
+    approval,
+    ceilings,
+    demand,
+    licensing,
+    pipeline,
+    rivals,
+    rules,
+    supply,
+)
 from tst.sim.pharma import data as pd
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -46,6 +55,7 @@ def events_month(
         return state, [], []
     entries: list[LedgerEntry] = []
     logs: list[LogItem] = []
+    state = ceilings.month(state, balance, data)  # M43a's ceilings (54.1), from 2026
     state, lg = rules.january(state, rng, balance, data)
     logs += lg
     state = rivals.january(state, rng, balance, data)

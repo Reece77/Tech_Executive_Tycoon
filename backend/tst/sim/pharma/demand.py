@@ -31,7 +31,7 @@ from typing import Final
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, COGS, DRUG_SALES, MARKETING, LedgerEntry
-from tst.sim.pharma import approval
+from tst.sim.pharma import approval, ceilings
 from tst.sim.pharma import data as pd
 from tst.sim.pharma.models import Drug, DrugMonth, IraPick, Programme
 from tst.sim.state import GameState
@@ -169,7 +169,8 @@ def month(
         ind = pd.indication(data, key)
         progs = sorted(by_ind[key], key=lambda q: q.id)
         for region in data.region_keys:
-            treated = pd.treated(data, ind, region, turn)
+            lvl = ceilings.level(state, pd.area(data, ind.area).category, region)
+            treated = pd.treated(data, ind, region, turn, lvl)
             world[key] = world.get(key, 0.0) + treated
             ws = {}
             for p in progs:

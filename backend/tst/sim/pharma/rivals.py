@@ -25,8 +25,8 @@ from dataclasses import replace
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, COMMON_EQUITY, DRUG_SALES, LedgerEntry
+from tst.sim.pharma import ceilings, draws
 from tst.sim.pharma import data as pd
-from tst.sim.pharma import draws
 from tst.sim.pharma.config import AREAS, MODALITIES, PharmaRival, RivalDrug
 from tst.sim.pharma.models import SeededDrug
 from tst.sim.rng import RngFactory
@@ -240,6 +240,7 @@ def january(state: GameState, rng: RngFactory, balance: Balance, data: GameData)
     rows = list(state.pharma_seeded)
     next_id = max((s.id for s in rows), default=0) + 1
     per_b = pd.BILLION * pd.CENTS * balance.pharma.scale
+    headroom = ceilings.world_factor(state, balance, data)  # M43a's saturation (54.1)
     for cid, r in sorted(companies(state, data).items()):
         if r.generics:
             continue
@@ -259,6 +260,7 @@ def january(state: GameState, rng: RngFactory, balance: Balance, data: GameData)
                     break
                 u -= w
             peak_b = rb.peak_median_b * dmath.exp(rb.peak_sd * float(g.standard_normal()))
+            peak_b *= headroom
             month = int(g.integers(pd.MONTHS))
             approved = turn + month
             rows.append(

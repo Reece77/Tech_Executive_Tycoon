@@ -600,6 +600,7 @@ class GameState:
     pharma_recalls: tuple[pharma.Recall, ...] = ()
     pharma_assets: tuple[pharma.Asset, ...] = ()
     pharma_deals: tuple[pharma.Deal, ...] = ()
+    pharma_markets: tuple[pharma.MarketLevel, ...] = ()  # M43a's ceilings from 2026
     next_ids: NextIds = field(default_factory=NextIds)
     # M30: values derived from this state (indexes, groups), computed once each. Not part of
     # the state: never compared, saved or passed on by `replace` (a new state starts empty).

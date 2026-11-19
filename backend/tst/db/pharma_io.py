@@ -33,6 +33,7 @@ COLLECTIONS: Final[dict[str, type]] = {
     "pharma_recalls": m.Recall,
     "pharma_assets": m.Asset,
     "pharma_deals": m.Deal,
+    "pharma_markets": m.MarketLevel,
 }
 STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + position
 

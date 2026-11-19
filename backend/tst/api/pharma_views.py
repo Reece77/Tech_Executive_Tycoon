@@ -168,7 +168,7 @@ def programme_out(
         )
     v = None
     if p.status in ("active", "ready", "failed"):
-        x = value.explain(p, balance, data)
+        x = value.explain(p, balance, data, state)
         v = RxValueOut(
             to_approval=_range(x.chance_lo, x.chance_hi),
             rnpv_lo_cents=x.rnpv_lo_cents,

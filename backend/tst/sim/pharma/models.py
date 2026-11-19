@@ -147,6 +147,15 @@ class DrugMonth:
 
 
 @dataclass(frozen=True, slots=True)
+class MarketLevel:
+    """An area's market level in a region under M43a's ceiling (ceilings.py): x its data path."""
+
+    category: str
+    region: str
+    level: float = 1.0
+
+
+@dataclass(frozen=True, slots=True)
 class SeededDrug:
     """A rival's approval after 2025 (55.5): seeded, public once approved."""
 

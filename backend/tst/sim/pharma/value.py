@@ -14,10 +14,12 @@ from dataclasses import dataclass
 
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
+from tst.sim.pharma import ceilings
 from tst.sim.pharma import data as pd
 from tst.sim.pharma import pipeline as pl
 from tst.sim.pharma.config import TRIALS
 from tst.sim.pharma.models import Programme
+from tst.sim.state import GameState
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,7 +84,9 @@ def _at(p: Programme, eff: float, balance: Balance) -> Programme:
     return replace(p, efficacy=eff, safety=p.obs_safety or balance.pharma.safety.mean)
 
 
-def peak_cents(p: Programme, eff: float, balance: Balance, data: GameData) -> float:
+def peak_cents(
+    p: Programme, eff: float, balance: Balance, data: GameData, state: GameState | None = None
+) -> float:
     """Game cents a year at peak: every region's treated patients at the estimate's share."""
     db = balance.pharma.demand
     ind = pd.indication(data, p.indication)
@@ -92,13 +96,20 @@ def peak_cents(p: Programme, eff: float, balance: Balance, data: GameData) -> fl
     total = 0.0
     turn = max(p.due_turn, p.start_turn)
     for region in data.region_keys:
-        n = pd.treated(data, ind, region, turn) * share
+        lvl = (
+            1.0
+            if state is None
+            else ceilings.level(state, pd.area(data, ind.area).category, region)
+        )
+        n = pd.treated(data, ind, region, turn, lvl) * share
         price = pd.net_price(data, ind, round(ind.price_year * pd.CENTS), region) * pd.CENTS
         total += n * price * (1 - mod.cmo_share)
     return total * balance.pharma.scale
 
 
-def explain(p: Programme, balance: Balance, data: GameData) -> Value:
+def explain(
+    p: Programme, balance: Balance, data: GameData, state: GameState | None = None
+) -> Value:
     lo, hi = pl.estimate_range(p, balance)
     stages = remaining(p)
     months = sum(pl.stage_months(p, s, "standard", balance, data) for s in stages)
@@ -115,7 +126,7 @@ def explain(p: Programme, balance: Balance, data: GameData) -> Value:
     out: list[tuple[float, float, float]] = []
     for eff in (lo, hi):
         c, steps = _chance(p, eff, balance, data)
-        peak = peak_cents(p, eff, balance, data)
+        peak = peak_cents(p, eff, balance, data, state)
         pv = 0.0
         for y in range(balance.pharma.demand.horizon_years):
             ramp = 1 - dmath.exp(-(y + 1) * pd.MONTHS / balance.pharma.demand.ramp_months)

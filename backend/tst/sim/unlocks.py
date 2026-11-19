@@ -344,18 +344,18 @@ def _medical(state: GameState, ids: set[int], _b: Balance, data: GameData) -> st
 def _pharma(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
     """M42 (55): a programme, deal or plant of the group's, or an AI or medical product at
     stage 3 (AI discovery and a health business lead to drugs)."""
-    for p in state.pharma_programmes:
-        if p.company_id in ids:
-            return f"{p.name} is a drug programme"
+    for programme in state.pharma_programmes:
+        if programme.company_id in ids:
+            return f"{programme.name} is a drug programme"
     if any(d.company_id in ids for d in state.pharma_deals):
         return "the company has a pharmaceutical deal"
     if _stage(state) < STAGE_GROWTH:
         return None
-    for p in state.products:
-        if p.company_id not in ids or p.status == "retired":
+    for product in state.products:
+        if product.company_id not in ids or product.status == "retired":
             continue
-        if p.category == "ai_models" or data.category(p.category).medical:
-            return f"{p.name} can lead to drug discovery, and the company reached stage 3"
+        if product.category == "ai_models" or data.category(product.category).medical:
+            return f"{product.name} can lead to drug discovery, and the company reached stage 3"
     return None
 
 

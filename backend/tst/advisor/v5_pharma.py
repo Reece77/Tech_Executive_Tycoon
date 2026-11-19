@@ -26,7 +26,7 @@ def pharma_value(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     p = _programme(b, entity)
     if not pd.enabled(d) or p is None:
         return b._out(m, entity, None, (), "Choose a programme.", (), [])
-    v = value.explain(p, bal, d)
+    v = value.explain(p, bal, d, b.state)
     lo, hi = pipeline.estimate_range(p, bal)
     items = [
         Item(
