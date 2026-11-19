@@ -76,6 +76,7 @@ SYSTEMS: tuple[System, ...] = (
     System(29, "medical", "Medical", "products"),  # tunable-exempt: stable id (M41; 28 is M38's)
     System(30, "robotics", "Robotics", "products"),  # tunable-exempt: stable id (M39; 29 is M41's)
     System(31, "mobility", "Mobility", "products"),  # tunable-exempt: stable id (M39)
+    System(32, "pharma", "Pharma", "products"),  # tunable-exempt: stable id (M42; 31 is M39's)
     System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
@@ -358,6 +359,24 @@ def _medical(state: GameState, ids: set[int], _b: Balance, data: GameData) -> st
     return None
 
 
+def _pharma(state: GameState, ids: set[int], _b: Balance, data: GameData) -> str | None:
+    """M42 (55): a programme, deal or plant of the group's, or an AI or medical product at
+    stage 3 (AI discovery and a health business lead to drugs)."""
+    for programme in state.pharma_programmes:
+        if programme.company_id in ids:
+            return f"{programme.name} is a drug programme"
+    if any(d.company_id in ids for d in state.pharma_deals):
+        return "the company has a pharmaceutical deal"
+    if _stage(state) < STAGE_GROWTH:
+        return None
+    for product in state.products:
+        if product.company_id not in ids or product.status == "retired":
+            continue
+        if product.category == "ai_models" or data.category(product.category).medical:
+            return f"{product.name} can lead to drug discovery, and the company reached stage 3"
+    return None
+
+
 CHECKS: dict[str, Check] = {
     "offices": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _offices),
     "research": _any(_by_stage(STAGE_SCALEUP, "stage 2"), _research),
@@ -379,6 +398,7 @@ CHECKS: dict[str, Check] = {
     "vehicles": _vehicles,  # M38 (49)
     "medical": _medical,  # M41 (50)
     "robotics": _robotics,  # M39 (53.1-53.2)
+    "pharma": _pharma,  # M42 (55)
     "mobility": _mobility,  # M39 (53.3)
     "space": _space,  # M40 (56)
 }

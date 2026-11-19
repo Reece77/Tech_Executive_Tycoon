@@ -183,6 +183,9 @@ def new_game(
 
     state, robot_cash = robotics_new_game(state, balance, data)  # M39 (53.1): history to 2025
     rival_cash = (*rival_cash, *robot_cash)
+    from tst.sim.pharma.rivals import opening_cash as pharma_opening_cash
+
+    rival_cash = (*rival_cash, *pharma_opening_cash(state, balance, data))  # M42 (55.5)
     from tst.sim.space.phase import new_game as space_new_game
 
     state, space_cash = space_new_game(state, balance, data)  # M40 (56): history to 2025

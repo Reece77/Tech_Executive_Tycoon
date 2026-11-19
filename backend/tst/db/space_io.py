@@ -1,4 +1,4 @@
-"""Loading and syncing M40's records (formulas.md 56; migration 0062_m40). Every collection of
+"""Loading and syncing M40's records (formulas.md 56; migration 0063_m40). Every collection of
 `GameState.space` lives in `space_record`, one row a record (`kind` = the SpaceState field), its
 fields in `data`; a changed collection is rewritten whole. A constellation's cohorts and month, and
 the game-wide `space_world` (one row), are encoded field by field."""
@@ -93,7 +93,7 @@ def _decode(kind: str, data: dict[str, Any]) -> Any:
 def load_space(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every space record (0062_m40); a save from before M40 has none."""
+    """Every space record (0063_m40); a save from before M40 has none."""
     if not has_table(session, SpaceRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in (*COLLECTIONS, *PAIRS)}

@@ -337,6 +337,8 @@ from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
 from tst.sim.org import ceo_rules
 from tst.sim.org.models import Proposal
+from tst.sim.pharma.actions import ACTION_TYPES as PHARMA_ACTION_TYPES
+from tst.sim.pharma.actions import PharmaAction, apply_pharma
 from tst.sim.platforms.actions import ACTION_TYPES as PLATFORM_ACTION_TYPES
 from tst.sim.platforms.actions import (
     AdoptStandard,
@@ -446,6 +448,7 @@ type Action = (
     | VehicleAction  # M38
     | MedicalAction  # M41
     | RoboticsAction  # M39
+    | PharmaAction  # M42
     | SpaceAction  # M40
 )
 
@@ -468,6 +471,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **VEHICLE_ACTION_TYPES,  # M38 (49)
     **MEDICAL_ACTION_TYPES,  # M41 (50)
     **ROBOTICS_ACTION_TYPES,  # M39 (53)
+    **PHARMA_ACTION_TYPES,  # M42 (55)
     **SPACE_ACTION_TYPES,  # M40 (56)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
@@ -1038,6 +1042,8 @@ def apply_action(
             | SetPlantQuality()
         ):  # M41 (50)
             out = apply_medical(state, action, rng, balance, data)
+        case _ if getattr(action, "kind", "") in PHARMA_ACTION_TYPES:  # M42 (55)
+            out = apply_pharma(state, action, rng, balance, data)  # type: ignore[arg-type]
         case ReplaceLeaver():  # M14b (29.5)
             out = replace_leaver(state, action, balance, data, ledger_balances)
         case (

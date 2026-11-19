@@ -382,6 +382,12 @@ class MedicalRuleError(SimError):
     code = "medical_rule"
 
 
+class PharmaRuleError(SimError):
+    """A pharmaceutical action the rules do not allow (M42, formulas.md 55)."""
+
+    code = "pharma_rule"
+
+
 class PlatformRuleError(SimError):
     """A platform action the rules do not allow (M31, formulas.md 44)."""
 

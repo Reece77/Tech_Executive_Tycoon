@@ -29,6 +29,7 @@ accounts:
   - { code: 4100_revenue_licenses, name: License revenue, type: revenue }
   - { code: 4200_revenue_services, name: Services revenue, type: revenue }
   - { code: 4050_revenue_consumables, name: Consumables and service revenue, type: revenue } # M41 (50.1): medical devices' recurring revenue a month per installed unit (robotic instruments and service, sensors, service contracts)
+  - { code: 4060_revenue_drugs, name: Drug sales, type: revenue } # M42 (55.4): marketed drugs' net sales by region, and generic makers' sales of off-patent molecules
   - { code: 4150_platform_fees, name: Platform fees, type: revenue } # M31 (44.4): a platform owner's fees on other companies' app sales through its store (a group company's go to 4300)
   - { code: 4400_revenue_commodities, name: Commodity sales, type: revenue } # M19 (35.3): a mine's output sold at spot, into contracts and offtakes
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it

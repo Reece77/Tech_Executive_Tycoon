@@ -2,7 +2,7 @@
 vehicle designs (by product id), constellations with their satellites in orbit by cohort, landing
 and spectrum licences by region, the launches flown (`space.history_months`), constellation
 months, and the game-wide `SpaceWorld` (rivals' seeded growth after 2025 and the seeded debris
-rule). Persisted in `space_record` (migration 0062_m40), one row a record.
+rule). Persisted in `space_record` (migration 0063_m40), one row a record.
 
 Hidden values (56.5): `SpaceWorld.growth` (each year's drawn rate), `SpaceWorld.debris_turn`
 before it comes and a licence's `decision_turn` are engine-only: the API never returns them.
