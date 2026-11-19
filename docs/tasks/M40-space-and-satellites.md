@@ -91,4 +91,4 @@ Defence and government contracts (M44); crewed spaceflight and tourism (follow-u
 - Satellite failures in orbit; spare satellites per shell; constellations for Earth-observation tasking by region; satellites made from the group's own fab chips as an internal sale rather than a cost cut.
 - Own launch lines sold to rivals' constellations (rival constellations are data-driven, not customers); rivals' vehicles reusing and failing by the same model after 2025.
 - Defence and government contracts (M44); crewed flight, tourism and space mining; an automation area for space decisions.
-- 56.4 target 3 reads 40% never: a latecomer competing with Starlink and Kuiper rarely pays back by 2039. If Reece wants constellations kinder, `constellation.ground_station_cents` is the lever (M43's v5 balance).
+- 56.4 target 3 reads 50% never on the combined code (40% before M42 and M43a): a latecomer competing with Starlink and Kuiper rarely pays back by 2039. If Reece wants constellations kinder, `constellation.ground_station_cents` is the lever (M43's v5 balance).
