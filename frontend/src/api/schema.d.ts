@@ -12611,8 +12611,11 @@ export interface components {
             contract: string;
             /** Product */
             product: string;
-            /** Value Cents */
-            value_cents: number;
+            /**
+             * Award Cents
+             * @description The awarded price over the whole term
+             */
+            award_cents: number;
             /** Start */
             start: string;
             /** Base End */
@@ -19993,10 +19996,10 @@ export interface components {
             /** Awards */
             awards: number;
             /**
-             * Value Cents
+             * Awarded Cents
              * @description Published awards' value over the last 36 months
              */
-            value_cents: number;
+            awarded_cents: number;
             /** Areas */
             areas: string[];
         };
@@ -22620,10 +22623,10 @@ export interface components {
              */
             clearance: string;
             /**
-             * Value Cents
+             * Ceiling Cents
              * @description The ceiling over the whole term (game scale)
              */
-            value_cents: number;
+            ceiling_cents: number;
             /** Term Months */
             term_months: number;
             /** Base Months */

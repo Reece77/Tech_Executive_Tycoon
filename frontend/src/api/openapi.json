@@ -43465,9 +43465,10 @@
             "type": "string",
             "title": "Product"
           },
-          "value_cents": {
+          "award_cents": {
             "type": "integer",
-            "title": "Value Cents"
+            "title": "Award Cents",
+            "description": "The awarded price over the whole term"
           },
           "start": {
             "type": "string",
@@ -43537,7 +43538,7 @@
           "buyer",
           "contract",
           "product",
-          "value_cents",
+          "award_cents",
           "start",
           "base_end",
           "end",
@@ -61204,9 +61205,9 @@
             "type": "integer",
             "title": "Awards"
           },
-          "value_cents": {
+          "awarded_cents": {
             "type": "integer",
-            "title": "Value Cents",
+            "title": "Awarded Cents",
             "description": "Published awards' value over the last 36 months"
           },
           "areas": {
@@ -61221,7 +61222,7 @@
         "required": [
           "name",
           "awards",
-          "value_cents",
+          "awarded_cents",
           "areas"
         ],
         "title": "RivalAwardOut"
@@ -67480,9 +67481,9 @@
             "title": "Clearance",
             "description": "none, secret or top_secret"
           },
-          "value_cents": {
+          "ceiling_cents": {
             "type": "integer",
-            "title": "Value Cents",
+            "title": "Ceiling Cents",
             "description": "The ceiling over the whole term (game scale)"
           },
           "term_months": {
@@ -67593,7 +67594,7 @@
           "buyer",
           "contract",
           "clearance",
-          "value_cents",
+          "ceiling_cents",
           "term_months",
           "base_months",
           "awards",
