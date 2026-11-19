@@ -29,6 +29,7 @@ V2_SCHEMAS = (
     "modes",  # M15b
     "exploration",  # M18 (v3)
     "mining",  # M19 (v3)
+    "conglomerate",  # M43 (v5)
 )
 SUFFIX = re.compile(r"_(cents|pct|bp|months)$")
 

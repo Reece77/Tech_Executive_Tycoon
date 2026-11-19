@@ -59,6 +59,7 @@ from tst.sim.geopolitics.config import (
     TariffsFile,
 )
 from tst.sim.group.config import GroupBalance
+from tst.sim.group.conglomerate_config import ConglomerateBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.medical.config import MedicalBalance, MedicalFile
@@ -1422,6 +1423,7 @@ class Balance(_Frozen):
     vehicles: VehiclesBalance  # M38 (formulas.md 49): electric vehicles
     dynasty: DynastyBalance  # M37 (formulas.md 52): dynasty mode, 2040-2069
     robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
+    conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

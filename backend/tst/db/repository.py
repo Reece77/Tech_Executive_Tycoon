@@ -61,6 +61,7 @@ from tst.db.state_io import (
     read_meta,
     sync_state,
 )
+from tst.events.letter import LETTER
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.actions import (
@@ -71,7 +72,7 @@ from tst.sim.actions import (
     action_payload,
     apply_action,
 )
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
@@ -793,6 +794,21 @@ def apply_turn_result(
                 company_id=t.company_id, turn=t.turn, kind=t.kind, ref_id=t.ref_id, status="pending"
             )
             for t in result.text_requests
+        )
+    year, month = turn_to_ym(played)
+    if (  # M43: December's turn queues the January letter about its year
+        month == MONTHS_PER_YEAR
+        and year >= data.balance.conglomerate.letter_from_year
+        and has_table(session, LLMTextRow)
+    ):
+        session.add(
+            LLMTextRow(
+                company_id=result.new_state.player.id,
+                turn=played,
+                kind=LETTER,
+                ref_id=year,
+                status="pending",
+            )
         )
     insert_entries(session, result.ledger_entries)
     insert_rows(

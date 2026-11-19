@@ -7,10 +7,11 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from tst.api import group_story_views, group_views, views
+from tst.api import conglomerate_views, group_story_views, group_views, views
 from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
+from tst.api.schemas.conglomerate import ConglomerateOut
 from tst.api.schemas.group import (
     CapitalHistoryOut,
     GroupActionOut,
@@ -254,3 +255,18 @@ def transfer_price(
         _founder(path), body.seller_id, body.buyer_id, body.good, body.price_kind, body.margin
     )
     return _act(path, data, action)
+
+
+@router.get(
+    "/conglomerate",
+    response_model=ConglomerateOut,
+    responses=ERRORS,
+    operation_id="getConglomerate",
+)
+def get_conglomerate(save_id: str, settings: SettingsDep, data: DataDep) -> ConglomerateOut:
+    """M43: the conglomerate view (read-only, no energy): the group by industry and company,
+    ten-year trends, where capital went, the capital-allocation panel and the letters."""
+    path = _path(settings, save_id)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        return conglomerate_views.conglomerate_out(session, state, data)

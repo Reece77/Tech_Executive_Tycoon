@@ -3784,6 +3784,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/conglomerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Conglomerate
+         * @description M43: the conglomerate view (read-only, no energy): the group by industry and company,
+         *     ten-year trends, where capital went, the capital-allocation panel and the letters.
+         */
+        get: operations["getConglomerate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/commodities": {
         parameters: {
             query?: never;
@@ -6695,6 +6716,20 @@ export interface components {
             /** Opinions */
             opinions: components["schemas"]["OpinionOut"][];
         };
+        /** AllocationOut */
+        AllocationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Return On Capital */
+            return_on_capital: number | null;
+            /** Growth */
+            growth: number | null;
+            /** Risk */
+            risk: string;
+            planned: components["schemas"]["PlannedOut"];
+        };
         /** AnalystOut */
         AnalystOut: {
             /** Firm */
@@ -7824,6 +7859,18 @@ export interface components {
              */
             ownership_history: components["schemas"]["OwnershipEventOut"][];
         };
+        /** CapexOut */
+        CapexOut: {
+            /**
+             * Key
+             * @description An industry key, or corporate
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** Cents */
+            cents: number;
+        };
         /** CapitalActionOut */
         CapitalActionOut: {
             /** Turn */
@@ -7905,6 +7952,23 @@ export interface components {
             secondary_fee_pct: number;
             /** Secondary Energy */
             secondary_energy: number;
+        };
+        /** CapitalYearOut */
+        CapitalYearOut: {
+            /** Year */
+            year: number;
+            /** Capex */
+            capex: components["schemas"]["CapexOut"][];
+            /**
+             * Acquisitions Cents
+             * @description Acquisitions, stakes and goodwill
+             */
+            acquisitions_cents: number;
+            /**
+             * Returned Cents
+             * @description Dividends and buybacks
+             */
+            returned_cents: number;
         };
         /** CarMonthOut */
         CarMonthOut: {
@@ -9114,6 +9178,29 @@ export interface components {
             /** Subsidiary */
             subsidiary: boolean;
         };
+        /** CompanyFiguresOut */
+        CompanyFiguresOut: {
+            /** Company Id */
+            company_id: number;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @description holding | operating | subsidiary
+             */
+            role: string;
+            /**
+             * Industries
+             * @description Labels of the industries it had revenue in
+             */
+            industries: string[];
+            figures: components["schemas"]["FiguresOut"];
+            /**
+             * Intercompany Cents
+             * @description Its sales to other group companies
+             */
+            intercompany_cents: number;
+        };
         /** CompanyRefOut */
         CompanyRefOut: {
             /** Company Id */
@@ -9152,6 +9239,31 @@ export interface components {
              * @description Past months up to this one, oldest first
              */
             history: components["schemas"]["tst__api__schemas__facilities__IndexPointOut"][];
+        };
+        /** ConglomerateOut */
+        ConglomerateOut: {
+            /**
+             * Year
+             * @description The year shown: the last full year, or this year to date
+             */
+            year: number;
+            /** Months */
+            months: number;
+            group: components["schemas"]["FiguresOut"];
+            /** Industries */
+            industries: components["schemas"]["IndustryOut"][];
+            /** @description Lines of companies with no industry revenue (a holding company's office) */
+            corporate: components["schemas"]["FiguresOut"] | null;
+            /** Companies */
+            companies: components["schemas"]["CompanyFiguresOut"][];
+            /** Capital */
+            capital: components["schemas"]["CapitalYearOut"][];
+            /** Allocation */
+            allocation: components["schemas"]["AllocationOut"][];
+            /** Proposals */
+            proposals: components["schemas"]["WaitingProposalOut"][];
+            /** Letters */
+            letters: components["schemas"]["LetterOut"][];
         };
         /**
          * ContinueUntilOut
@@ -11611,6 +11723,33 @@ export interface components {
             /** Causes */
             causes: components["schemas"]["tst__api__schemas__press__CauseOut"][];
         };
+        /** FiguresOut */
+        FiguresOut: {
+            /**
+             * Revenue Cents
+             * @description External revenue (intercompany left out)
+             */
+            revenue_cents: number;
+            /**
+             * Gross Margin
+             * @description Gross profit over revenue; null without revenue
+             */
+            gross_margin: number | null;
+            /** Operating Profit Cents */
+            operating_profit_cents: number;
+            /** Operating Margin */
+            operating_margin: number | null;
+            /**
+             * Capital Employed Cents
+             * @description At the year end (or now, this year)
+             */
+            capital_employed_cents: number;
+            /**
+             * Return On Capital
+             * @description Operating profit over capital employed; null when capital employed <= 0
+             */
+            return_on_capital: number | null;
+        };
         /** FinanceActionOut */
         FinanceActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -13349,6 +13488,49 @@ export interface components {
             /** Cost Cents */
             cost_cents: number;
         };
+        /** IndustryOut */
+        IndustryOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            figures: components["schemas"]["FiguresOut"];
+            /**
+             * Share Of Revenue
+             * @description Of the group's revenue in the year shown
+             */
+            share_of_revenue: number;
+            /**
+             * Growth
+             * @description Revenue growth on the year before; null if new
+             */
+            growth: number | null;
+            /**
+             * Risk
+             * @description low | moderate | high | new: the spread of yearly growth
+             */
+            risk: string;
+            /** Trend */
+            trend: components["schemas"]["IndustryYearOut"][];
+        };
+        /** IndustryYearOut */
+        IndustryYearOut: {
+            /** Year */
+            year: number;
+            /**
+             * Months
+             * @description Months of the year played (12 but this year)
+             */
+            months: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Operating Profit Cents */
+            operating_profit_cents: number;
+            /** Capital Employed Cents */
+            capital_employed_cents: number;
+            /** Capex Cents */
+            capex_cents: number;
+        };
         /** InfluenceOut */
         InfluenceOut: {
             /** Region */
@@ -13934,6 +14116,26 @@ export interface components {
              * @default 0
              */
             net_worth_cents?: number;
+        };
+        /** LetterOut */
+        LetterOut: {
+            /**
+             * Year
+             * @description The year the letter covers
+             */
+            year: number;
+            /**
+             * Turn
+             * @description The January it was written
+             */
+            turn: number;
+            /** Text */
+            text: string;
+            /**
+             * Source
+             * @description claude | mock | template
+             */
+            source: string;
         };
         /** LevelOptionOut */
         LevelOptionOut: {
@@ -16991,6 +17193,23 @@ export interface components {
             offers: number;
             /** Summary */
             summary: string;
+        };
+        /** PlannedOut */
+        PlannedOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Committed Cents
+             * @description Builds under way: capex still to pay
+             */
+            committed_cents: number;
+            /**
+             * Limits Cents
+             * @description Subsidiaries' yearly capex limits (31.4)
+             */
+            limits_cents: number;
         };
         /** PlantAutomationOut */
         PlantAutomationOut: {
@@ -23024,6 +23243,27 @@ export interface components {
              * @description M21 (38.1): a process node (nodes.yaml key); none: M12b's wafer
              */
             node?: string | null;
+        };
+        /** WaitingProposalOut */
+        WaitingProposalOut: {
+            /**
+             * Kind
+             * @description pitch | group_pitch | proposal
+             */
+            kind: string;
+            /** Company */
+            company: string;
+            /** Who */
+            who: string;
+            /** Title */
+            title: string;
+            /**
+             * Amount Cents
+             * @description What it would cost, where it says
+             */
+            amount_cents: number | null;
+            /** Turn */
+            turn: number;
         };
         /** WarningSignOut */
         WarningSignOut: {
@@ -36096,6 +36336,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getConglomerate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConglomerateOut"];
                 };
             };
             /** @description Bad Request */

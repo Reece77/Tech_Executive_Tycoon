@@ -17233,6 +17233,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/conglomerate": {
+      "get": {
+        "tags": [
+          "group"
+        ],
+        "summary": "Get Conglomerate",
+        "description": "M43: the conglomerate view (read-only, no energy): the group by industry and company,\nten-year trends, where capital went, the capital-allocation panel and the letters.",
+        "operationId": "getConglomerate",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConglomerateOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/commodities": {
       "get": {
         "tags": [
@@ -28976,6 +29049,57 @@
         ],
         "title": "AdviserOut"
       },
+      "AllocationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "return_on_capital": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return On Capital"
+          },
+          "growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Growth"
+          },
+          "risk": {
+            "type": "string",
+            "title": "Risk"
+          },
+          "planned": {
+            "$ref": "#/components/schemas/PlannedOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "return_on_capital",
+          "growth",
+          "risk",
+          "planned"
+        ],
+        "title": "AllocationOut"
+      },
       "AnalystOut": {
         "properties": {
           "firm": {
@@ -31699,6 +31823,30 @@
         ],
         "title": "CapTableOut"
       },
+      "CapexOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "An industry key, or corporate"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "cents": {
+            "type": "integer",
+            "title": "Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "cents"
+        ],
+        "title": "CapexOut"
+      },
       "CapitalActionOut": {
         "properties": {
           "turn": {
@@ -31876,6 +32024,39 @@
           "secondary_energy"
         ],
         "title": "CapitalOut"
+      },
+      "CapitalYearOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "capex": {
+            "items": {
+              "$ref": "#/components/schemas/CapexOut"
+            },
+            "type": "array",
+            "title": "Capex"
+          },
+          "acquisitions_cents": {
+            "type": "integer",
+            "title": "Acquisitions Cents",
+            "description": "Acquisitions, stakes and goodwill"
+          },
+          "returned_cents": {
+            "type": "integer",
+            "title": "Returned Cents",
+            "description": "Dividends and buybacks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "capex",
+          "acquisitions_cents",
+          "returned_cents"
+        ],
+        "title": "CapitalYearOut"
       },
       "CarMonthOut": {
         "properties": {
@@ -34539,6 +34720,49 @@
         "title": "CompanyChoiceOut",
         "description": "M27b: a company of the group the Automation screen can switch to."
       },
+      "CompanyFiguresOut": {
+        "properties": {
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "holding | operating | subsidiary"
+          },
+          "industries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Industries",
+            "description": "Labels of the industries it had revenue in"
+          },
+          "figures": {
+            "$ref": "#/components/schemas/FiguresOut"
+          },
+          "intercompany_cents": {
+            "type": "integer",
+            "title": "Intercompany Cents",
+            "description": "Its sales to other group companies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_id",
+          "name",
+          "role",
+          "industries",
+          "figures",
+          "intercompany_cents"
+        ],
+        "title": "CompanyFiguresOut"
+      },
       "CompanyRefOut": {
         "properties": {
           "company_id": {
@@ -34607,6 +34831,89 @@
           "history"
         ],
         "title": "ComponentOut"
+      },
+      "ConglomerateOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year",
+            "description": "The year shown: the last full year, or this year to date"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          },
+          "group": {
+            "$ref": "#/components/schemas/FiguresOut"
+          },
+          "industries": {
+            "items": {
+              "$ref": "#/components/schemas/IndustryOut"
+            },
+            "type": "array",
+            "title": "Industries"
+          },
+          "corporate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FiguresOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Lines of companies with no industry revenue (a holding company's office)"
+          },
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyFiguresOut"
+            },
+            "type": "array",
+            "title": "Companies"
+          },
+          "capital": {
+            "items": {
+              "$ref": "#/components/schemas/CapitalYearOut"
+            },
+            "type": "array",
+            "title": "Capital"
+          },
+          "allocation": {
+            "items": {
+              "$ref": "#/components/schemas/AllocationOut"
+            },
+            "type": "array",
+            "title": "Allocation"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/WaitingProposalOut"
+            },
+            "type": "array",
+            "title": "Proposals"
+          },
+          "letters": {
+            "items": {
+              "$ref": "#/components/schemas/LetterOut"
+            },
+            "type": "array",
+            "title": "Letters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "months",
+          "group",
+          "industries",
+          "corporate",
+          "companies",
+          "capital",
+          "allocation",
+          "proposals",
+          "letters"
+        ],
+        "title": "ConglomerateOut"
       },
       "ContinueUntilOut": {
         "properties": {
@@ -40744,6 +41051,69 @@
         ],
         "title": "FeudOut"
       },
+      "FiguresOut": {
+        "properties": {
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "External revenue (intercompany left out)"
+          },
+          "gross_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Margin",
+            "description": "Gross profit over revenue; null without revenue"
+          },
+          "operating_profit_cents": {
+            "type": "integer",
+            "title": "Operating Profit Cents"
+          },
+          "operating_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operating Margin"
+          },
+          "capital_employed_cents": {
+            "type": "integer",
+            "title": "Capital Employed Cents",
+            "description": "At the year end (or now, this year)"
+          },
+          "return_on_capital": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Return On Capital",
+            "description": "Operating profit over capital employed; null when capital employed <= 0"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revenue_cents",
+          "gross_margin",
+          "operating_profit_cents",
+          "operating_margin",
+          "capital_employed_cents",
+          "return_on_capital"
+        ],
+        "title": "FiguresOut"
+      },
       "FinanceActionOut": {
         "properties": {
           "energy": {
@@ -45082,6 +45452,100 @@
         ],
         "title": "IncidentOut"
       },
+      "IndustryOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "figures": {
+            "$ref": "#/components/schemas/FiguresOut"
+          },
+          "share_of_revenue": {
+            "type": "number",
+            "title": "Share Of Revenue",
+            "description": "Of the group's revenue in the year shown"
+          },
+          "growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Growth",
+            "description": "Revenue growth on the year before; null if new"
+          },
+          "risk": {
+            "type": "string",
+            "title": "Risk",
+            "description": "low | moderate | high | new: the spread of yearly growth"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/IndustryYearOut"
+            },
+            "type": "array",
+            "title": "Trend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "figures",
+          "share_of_revenue",
+          "growth",
+          "risk",
+          "trend"
+        ],
+        "title": "IndustryOut"
+      },
+      "IndustryYearOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months of the year played (12 but this year)"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "operating_profit_cents": {
+            "type": "integer",
+            "title": "Operating Profit Cents"
+          },
+          "capital_employed_cents": {
+            "type": "integer",
+            "title": "Capital Employed Cents"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "months",
+          "revenue_cents",
+          "operating_profit_cents",
+          "capital_employed_cents",
+          "capex_cents"
+        ],
+        "title": "IndustryYearOut"
+      },
       "InfluenceOut": {
         "properties": {
           "region": {
@@ -46618,6 +47082,37 @@
         ],
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
+      },
+      "LetterOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year",
+            "description": "The year the letter covers"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn",
+            "description": "The January it was written"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "claude | mock | template"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "turn",
+          "text",
+          "source"
+        ],
+        "title": "LetterOut"
       },
       "LevelOptionOut": {
         "properties": {
@@ -53767,6 +54262,36 @@
           "summary"
         ],
         "title": "PlanActivityOut"
+      },
+      "PlannedOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "committed_cents": {
+            "type": "integer",
+            "title": "Committed Cents",
+            "description": "Builds under way: capex still to pay"
+          },
+          "limits_cents": {
+            "type": "integer",
+            "title": "Limits Cents",
+            "description": "Subsidiaries' yearly capex limits (31.4)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "committed_cents",
+          "limits_cents"
+        ],
+        "title": "PlannedOut"
       },
       "PlantAutomationOut": {
         "properties": {
@@ -68272,6 +68797,53 @@
           "months"
         ],
         "title": "WaferContractIn"
+      },
+      "WaitingProposalOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "pitch | group_pitch | proposal"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "who": {
+            "type": "string",
+            "title": "Who"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents",
+            "description": "What it would cost, where it says"
+          },
+          "turn": {
+            "type": "integer",
+            "title": "Turn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "company",
+          "who",
+          "title",
+          "amount_cents",
+          "turn"
+        ],
+        "title": "WaitingProposalOut"
       },
       "WarningSignOut": {
         "properties": {

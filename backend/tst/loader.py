@@ -356,6 +356,7 @@ def _check_against_balance(balance: Balance, data: GameData) -> None:
                 f"{sorted(rv.weights)}"
             )
     _check_facilities(balance, data)
+    _check_conglomerate(balance, data)
     _check_family(balance, data)
     founder = balance.founder
     for bg in data.backgrounds:
@@ -390,6 +391,22 @@ def _check_family(balance: Balance, data: GameData) -> None:
     unknown = sorted(named - set(data.skill_keys))
     if unknown:
         raise DataLoadError(f"{BALANCE_FILE}: family skills {unknown} are not in skills.yaml")
+
+
+def _check_conglomerate(balance: Balance, data: GameData) -> None:
+    """M43: every product category and facility kind is reported in an industry, and every
+    account an industry lists is a revenue account."""
+    where = f"{BALANCE_FILE}: conglomerate.industries"
+    industries = balance.conglomerate.industries
+    categories = {c for i in industries for c in i.categories}
+    if missing := sorted({c.key for c in data.categories} - categories):
+        raise DataLoadError(f"{where}: categories {missing} are in no industry")
+    kinds = {k for i in industries for k in i.facility_kinds}
+    if missing := sorted(set(balance.facility.kinds) - kinds):
+        raise DataLoadError(f"{where}: facility kinds {missing} are in no industry")
+    revenue = {a.code for a in data.accounts if a.type == "revenue"}
+    if bad := sorted({a for i in industries for a in i.accounts} - revenue):
+        raise DataLoadError(f"{where}: accounts {bad} are not revenue accounts")
 
 
 def _check_facilities(balance: Balance, data: GameData) -> None:
