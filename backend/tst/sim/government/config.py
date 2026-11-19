@@ -419,6 +419,7 @@ class BidBalance(_Frozen):
     price_cap: float = Field(gt=0)
     band: int = Field(ge=1)  # score bands' width
     rival_bid_chance: float = Field(ge=0, le=1)
+    large_bid_chance: float = Field(ge=0, le=1)  # an eligible bidder on a large tender
     rival_price: Range  # a rival's price over the value (uniform)
     rival_merit_sd: float = Field(ge=0)
     history_bonus: float = Field(ge=0)  # a historical winner's merit lift (keeps the record)

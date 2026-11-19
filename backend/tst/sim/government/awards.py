@@ -9,7 +9,8 @@ the mean performance of its completed contracts, blended from `newcomer_pp` to i
 
 **Rivals** bid at the award (stream `defence` (1, tender_id, round)), in government.yaml's order:
 every prime with merit in the area (from its `from_year`) and every company bidder with a live
-product there, from a bloc the government takes, each with `rival_bid_chance` (a named tender's
+product there, from a bloc the government takes, each with `rival_bid_chance` (`large_bid_chance`
+on a large tender) (a named tender's
 historical winners always, with `history_bonus` merit). A rival's merit is its strength (a prime's
 data, a company's best live product's quality) + N(0, `rival_merit_sd`), its price ratio uniform
 in `rival_price`, its PP its data. Three draws a candidate whether it bids or not, then a
@@ -148,6 +149,7 @@ def rival_candidates(
     winners = set(hist.winners) if hist is not None else set()
     year = year_of(tender.award_turn)
     turn = state.turn
+    chance = gb.large_bid_chance if is_large(tender, balance) else gb.rival_bid_chance
     out: list[Candidate] = []
     for p in f.primes:
         u, noise, price = float(g.random()), float(g.normal()), float(g.random())
@@ -157,7 +159,7 @@ def rival_candidates(
         if gov_bloc_of(p.country, data, turn) not in gov.open_to and p.name not in winners:
             continue
         is_winner = p.name in winners
-        if not is_winner and u >= gb.rival_bid_chance:
+        if not is_winner and u >= chance:
             continue
         merit = prime_merit + gb.rival_merit_sd * noise + (gb.history_bonus if is_winner else 0.0)
         ratio = gb.rival_price.lo + (gb.rival_price.hi - gb.rival_price.lo) * price
@@ -183,7 +185,7 @@ def rival_candidates(
             strength = best
             if company_bloc(state, company, balance, data) not in gov.open_to and not is_winner:
                 continue
-        if not is_winner and u >= gb.rival_bid_chance:
+        if not is_winner and u >= chance:
             continue
         merit = strength + gb.rival_merit_sd * noise + (gb.history_bonus if is_winner else 0.0)
         ratio = gb.rival_price.lo + (gb.rival_price.hi - gb.rival_price.lo) * price

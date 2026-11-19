@@ -3068,7 +3068,7 @@ government: # 57: defence and government contracts (M44, v5 lane K). Data (budge
     noise: 0.02
   bids:
     weights: { price: 0.35, technical: 0.4, past_performance: 0.25 } # best value (57.2, A)
-    large_weights: { price: 0.3, technical: 0.35, past_performance: 0.35 } # large tenders weigh a record more (57.6 target 2)
+    large_weights: { price: 0.25, technical: 0.3, past_performance: 0.45 } # large tenders weigh a record more (57.6 target 2; M44 tuned from 0.3 / 0.35 / 0.35)
     capture_skills: [sales, negotiation, strategy] # the capture team's skills (57.2)
     capture_weight: 0.3 # of technical merit from the capture team; the rest the product's quality
     capture_max: 6 # people on a capture team
@@ -3077,7 +3077,8 @@ government: # 57: defence and government contracts (M44, v5 lane K). Data (budge
     price_floor: 0.5 # a bid's price over the tender's value, at least
     price_cap: 1.2 # and at most (over the ceiling is not compliant beyond a margin)
     band: 10 # score bands are 10 points wide (the API shows bands, never scores)
-    rival_bid_chance: 0.6 # an eligible bidder bids on a tender (A)
+    rival_bid_chance: 0.35 # an eligible bidder bids on a tender (A: about 3-4 rival bids a tender, as DoD competitions draw a few offers; M44 tuned from 0.6 for 57.6 target 2)
+    large_bid_chance: 0.8 # and on a large tender (A: large programmes draw the established bidders; M44, 57.6 target 2)
     rival_price: [0.8, 1.05] # a rival's price over the value, uniform (A)
     rival_merit_sd: 6 # spread of a rival's technical merit around its strength
     history_bonus: 15 # a named tender's historical winner's merit lift, so the record holds without a player bid

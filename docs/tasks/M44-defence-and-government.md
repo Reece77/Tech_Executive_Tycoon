@@ -72,6 +72,16 @@ Weapons systems; classified detail; selling to sanctioned states; automating bid
 11. **Reputation** uses existing hooks: brand on consumer lines, the founder's persona (`raise_trait`), influence (`with_influence`), objectors' morale through 23.2's event modifiers, and an engine-queued critical event (`defence_open_letter`, trigger `government`, `government_step`), as M39's incidents do.
 12. **Unlock id** 34 (M42 takes 32, M40 33). The Government screen sits under Markets at `products/government`.
 13. **Accounts** `4070_revenue_government`, `5300_contract_costs` (cost of revenue), `6990_bids_clearances`.
+14. **Tuning (rule 1, `government.*` only).** First reading (seeds 1-10): the veteran's median win share 20% (target 2 missed). `bids.rival_bid_chance` 0.6 -> 0.35 (about 3-4 rival bids a tender, as DoD competitions draw a few offers): veteran 33%, but newcomers then won 7 of 45 large tenders (16%), each one that drew no rival bid. `bids.large_weights` 0.30 / 0.35 / 0.35 -> 0.25 / 0.30 / 0.45 (no change in the reading: those wins had no rival) and a new key, `bids.large_bid_chance` 0.8 (large programmes draw the established bidders): newcomers 0 of 45, veteran 31%. No other key moved.
+15. **Readings (57.6), seeds 1-10 (`tools/m44_targets.py`):**
+
+| Target | Reading | Band | |
+| --- | --- | --- | --- |
+| 1 History holds | identical books and player snapshots with and without government.yaml, 24 months from January 2026, on 10 of 10 seeds; M30's nine 360-month runs identical with M44's fields left out of the digest (decision 5) | identical | met |
+| 2 A real but slow customer | the veteran (three completed contracts, six Top Secret staff, a cleared US data centre) won a median **31%** of its decided bids (18-45% by seed, 11-85 bids each over 36 months); the newcomer won **0 of 45** large tenders | >= 25% / <= 10% | met |
+| 3 Clearances take time | median **8.0 months** to a decision (January 2027, every person in the world, Top Secret and Secret); **6.2%** never clear | 6-15 months / >= 5% | met |
+| 4 It costs something | a consumer-heavy company's first US defence award costs its consumer lines **2.0** brand points on every seed; an open letter on **8 of 10** seeds | 1-3 / >= 5 of 10 | met |
+| 5 Turn time | **301 ms** a turn (median, 2026-2028, the bidding company, four worlds at once on 4 cores); `make check-timing` and the weekly guards on the merged code below | the guards | met |
 
 ## Follow-ups
 
