@@ -137,6 +137,15 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         reason="1.45x on M43 (main in band): as V2, the CEO spends the listing's cash and "
         "steady_regions' two hires a month do not",
     ),
+    KnownMiss(
+        target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
+        owner=V6_BALANCE,
+        # score: the adjusted median in seconds; known up to the M43 branch's reading
+        worse_than=0.527,
+        reason="526 ms adjusted on M43 (main passes): no M43 step in the profile (markets 27%, "
+        "state sync 22%, rival decisions 11% of a 2069 month); the listings from 2015 leave a "
+        "larger 2069 group (157 staff), so the existing phases do more",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]
