@@ -47,3 +47,20 @@ def test_a_dynasty_run_reads_the_familys_value() -> None:
     founder = game.founder_value[game.state.turn]
     assert founder > 0
     assert v5.family_value(game) >= founder
+
+
+def test_a_dynasty_run_keeps_its_value_at_december_2069() -> None:
+    """A run that reaches December 2069 ends in "dynasty_end": a finished game, not a failed
+    one, so its family value still reads (every dynasty row printed $0M before)."""
+    from dataclasses import replace
+
+    from tst.balance import m37
+
+    game = m37._family_game(1)
+    alive = v5.family_value(game)
+    state = game.state
+    game.state = replace(state, save_meta=replace(state.save_meta, game_state=v5.DYNASTY_ENDED))
+    assert game.state.ended
+    assert v5.family_value(game) == alive > 0
+    game.state = replace(state, save_meta=replace(state.save_meta, game_state="bankrupt"))
+    assert v5.family_value(game) == 0

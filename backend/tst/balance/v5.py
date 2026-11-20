@@ -51,6 +51,7 @@ PLAYED: Final = tuple(dict.fromkeys((*FIELD, *(b for _, b in PAIRS))))
 ARR_RATIO: Final = (0.9, 1.4)  # T1
 MAX_WINS: Final = 4  # T2
 DYNASTY_END: Final = 720  # the turn after December 2069
+DYNASTY_ENDED: Final = "dynasty_end"  # the game state a dynasty run ends in (49)
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,8 +81,8 @@ def family_value(game: Game) -> int:
     from tst.sim.state import ultimate_owner
 
     state = game.state
-    if state.ended:
-        return 0
+    if state.ended and state.save_meta.game_state != DYNASTY_ENDED:
+        return 0  # a failed game (bankruptcy, removal); December 2069's end keeps its value
     value = base_value(state, PLAYER, game.loaded.balance, game.loaded.game_data)
     return value * family_bp(state, ultimate_owner(state, PLAYER)) // 10_000
 
