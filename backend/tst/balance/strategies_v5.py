@@ -165,6 +165,30 @@ def line_step(game: Game, line: Line) -> int | None:
     return pid
 
 
+# --- Budgets: a new line is funded from its own budget ------------------------------------------
+
+LINE_BUDGETS: dict[str, int] = {}  # category -> cents a month, filled below from each line
+
+
+def fund_lines(game: Game) -> None:
+    """A v5 line's marketing is its own budget, and steady's 20% of revenue is split over the
+    other products only (rule 2: steady splits one budget equally over every product, so a car
+    line took a share of every app's marketing; M43 measured -$2.6B of app revenue on seed 3)."""
+    from tst.balance.strategies import STEADY_MARKETING, STEADY_MARKETING_MIN, last_revenue
+
+    products = [p for p in game.state.company_products(PLAYER) if p.status != "retired"]
+    own = [p for p in products if p.category in LINE_BUDGETS]
+    if not own:
+        return
+    rest = [p for p in products if p.category not in LINE_BUDGETS]
+    share = max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game) / len(rest)))
+    targets = [(p, share) for p in rest] + [(p, LINE_BUDGETS[p.category]) for p in own]
+    for p, cents in targets:
+        if p.marketing_budget_cents != cents:
+            refill_energy(game)
+            game.act(SetMarketing(game.founder_id, p.id, cents))
+
+
 # --- ev_integrator ------------------------------------------------------------------------------
 
 CAR: Final = Line(
@@ -223,10 +247,14 @@ def car_step(game: Game) -> None:
     _staff_plants(game, "cell_plant", CELL_ROLE, "Cell crew")
 
 
+LINE_BUDGETS[CAR.category] = CAR.marketing_cents
+
+
 def ev_integrator(game: Game) -> None:
     """full_integrator with a car line from 2026 on its own cells from stage 4."""
     full_integrator(game)
     car_step(game)
+    fund_lines(game)
 
 
 # --- robotics_first -----------------------------------------------------------------------------
@@ -345,6 +373,10 @@ def _robotaxis(game: Game) -> None:
             game.notes["fleet"] = game.state.turn
 
 
+LINE_BUDGETS[ROBOT.category] = ROBOT.marketing_cents
+LINE_BUDGETS[HUMANOID.category] = HUMANOID.marketing_cents
+
+
 def robotics_first(game: Game) -> None:
     """devices_regions, then industrial robots from 2026, humanoids once their market opens, and
     robotaxis once its own autonomy research and AI model reach L4. The AI model starts at stage 3
@@ -368,6 +400,7 @@ def robotics_first(game: Game) -> None:
             ):
                 game.notes["humanoid_spec"] = game.state.turn
         _robotaxis(game)
+    fund_lines(game)
 
 
 # --- life_sciences ------------------------------------------------------------------------------
@@ -415,6 +448,10 @@ def _file(game: Game, pid: int, use: str) -> None:
             game.act(RequestCoverage(f, pid, region))
 
 
+LINE_BUDGETS[WEARABLE.category] = WEARABLE.marketing_cents
+LINE_BUDGETS[SAMD[1]] = WEARABLE.marketing_cents  # clinical AI, as the wearable
+
+
 def life_sciences(game: Game) -> None:
     """devices_regions, then medical devices from 2024: a wearable, then clinical AI."""
     devices_regions(game)
@@ -443,6 +480,7 @@ def life_sciences(game: Game) -> None:
     _file(game, sid, use)
     _answer_medical(game)
     pharma_step(game)
+    fund_lines(game)
 
 
 PHARMA_FROM: Final = ym_to_turn(2026, 1)  # pharma.start (checked in tests)
@@ -629,12 +667,17 @@ def _government(game: Game) -> None:
             _mark(game, "bid")
 
 
+BROADBAND_MARKETING: Final = 50_000_000  # $500k a month: the constellation's own budget
+LINE_BUDGETS[BROADBAND[1]] = BROADBAND_MARKETING
+
+
 def space_and_defence(game: Game) -> None:
     """devices_regions (its devices and own SoC), then from 2026 a broadband constellation from
     its own satellite plant, and government bids in devices, chips and space."""
     devices_regions(game)
     _space(game)
     _government(game)
+    fund_lines(game)
 
 
 # --- cloud_first --------------------------------------------------------------------------------
