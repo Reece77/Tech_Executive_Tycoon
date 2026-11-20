@@ -2041,7 +2041,7 @@ Reece's decisions (2026-10-31, ADR-0019 §10–§12): the IPO is an event chain;
 
 ### 25.1 Eligibility
 
-- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars, real-world scale: read × `economy_scale.money` as §48.1's thresholds are, about $6.8M in the game's economy; M43), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
+- **Stage 3,** ARR ≥ `ipo.min_arr` ($241M at real-world scale, the 2015–2024 median sales of US tech IPOs in 2025 dollars from Ritter's Table 4a; read × `economy_scale.money` as §48.1's thresholds are, about $20.5M in the game's economy; M43, PM ruling 2026-11-20; was $80M), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
 - **Board approval:** average director confidence ≥ 50 at the decision.
 
 ### 25.2 The IPO chain (an event chain; templates and LLM within §16)

@@ -1332,7 +1332,7 @@ rnd:
 # --- IPO (formulas.md 25.1-25.2, M13 lane B) ---------------------------------------------------
 ipo:
   min_stage: 3 # stage a company must have reached to hire banks (25.1)
-  min_arr_cents: 8000000000 # cents; $80M ARR at real-world scale (2010 dollars; the game has no inflation) (25.1); read x economy_scale.money (M43 sub-task 3, as M34's thresholds: $6.8M in the game's economy)
+  min_arr_cents: 24100000000 # cents; $241M of ARR at real-world scale (25.1), read x economy_scale.money: $20.5M in the game's economy (M43, PM ruling 2026-11-20: the floor from real listings, was $80M). Derivation: Jay R. Ritter, "Initial Public Offerings: Technology Stock IPOs", Table 4a (updated 30 Dec 2025), median LTM sales of US tech IPOs, $2024: 2015 172.6 (38 IPOs), 2016 142.6 (21), 2017 239.3 (30), 2018 226.5 (40), 2019 252.2 (38), 2020 241.2 (48), 2021 234.3 (126), 2022 101.7 (6), 2023 6.8 (9), 2024 115.8 (15); the median of the 371 IPOs' yearly medians, weighted by count, $234.3M ($2024), x 1.03 to 2025 dollars (Ritter's factor; economy_scale.money is read against 2025 revenue) = $241M. https://site.warrington.ufl.edu/ritter/files/IPOs-Tech.pdf
   trailing_months: 12 # months behind the profitability or growth test: the last 4 quarters (25.1)
   min_growth: 0.20 # fraction a year of revenue growth that qualifies a loss-making company (25.1 says 40%; M13 tuning for 25.9 target 2: blitzscale passes $80M ARR growing 20-25% a year and loss-making, so it never listed)
   board_min_confidence: 50 # average director confidence needed when the banks are hired (25.1)
