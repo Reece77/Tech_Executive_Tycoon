@@ -21,7 +21,7 @@ class KnownMiss:
     reason: str
 
 
-KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
+_EARLIER: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
         target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
         owner="M43",  # M43 sub-task 1: moved from the finished M28 (owner M23, then M28)
@@ -111,6 +111,31 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.30,
         reason="0.89x on M43a (main 0.99x), December 2039: not traced; likely the ceilings from "
         "2026 and the long-run decay from 2030 acting on the two strategies' markets differently",
+    ),
+)
+
+# M43 (PM ruling 2026-11-20): the guards the real-listings IPO floor (25.1: $241M x
+# economy_scale.money, $20.5M game ARR) still moves are known misses owned by v6's first balance
+# pass, each bounded at the branch's reading
+V6_BALANCE: Final = "v6 balance"
+KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
+    *_EARLIER,
+    KnownMiss(
+        target="V2",  # formulas 30.7 V2: research_heavy / steady_regions median ARR, 1.0-1.4x
+        owner=V6_BALANCE,
+        # score: |ratio - 1.2|; known up to 1.42x (score 0.22), the M43 branch's reading
+        worse_than=0.221,
+        reason="1.42x on M43 (main in band): with the IPO floor at the game's economy every script "
+        "lists in 2015-16 with $440-770M of cash; steady_regions hires at most two a month, so "
+        "its cash sits idle while research_heavy's research unit turns it into growth",
+    ),
+    KnownMiss(
+        target="V4",  # formulas 30.7 V4: ceo / steady_regions median ARR, 0.85-1.4x
+        owner=V6_BALANCE,
+        # score: |ratio - 1.125|; known up to 1.45x (score 0.325), the M43 branch's reading
+        worse_than=0.326,
+        reason="1.45x on M43 (main in band): as V2, the CEO spends the listing's cash and "
+        "steady_regions' two hires a month do not",
     ),
 )
 
