@@ -349,7 +349,7 @@ M13's own §25.9 targets (`tools/m13_targets.py`, nightly), 10 seeds:
 | T2 median first-day return | +6.6% | 0–30% | pass |
 | T3 guiding 10% above trend: quarters missed | 100% | ≥ 60% | pass |
 | T3 median price after 3 years, above / at trend | 0.51 | ≤ 0.85 | pass |
-| T4 reference listing P/S (growth 107%, margin −47%; M43: the IPO floor at the game's economy): 2012–2019 / 2020–2021 | 23.3× / 33.7× (2022 fall 28%) | 15–30 / 25–45, fall ≥ 25% (re-banded by Reece, 2026-11-19; was 4–15 / 8–25, ≥ 30%) | pass |
+| T4 reference listing P/S (growth 70%, margin −21%; M43: the IPO floor from real listings, $20.5M game ARR): 2012–2019 / 2020–2021 | 17.1× / 25.6× (2022 fall 37%) | 15–30 / 25–45, fall ≥ 25% (re-banded by Reece, 2026-11-19; was 4–15 / 8–25, ≥ 30%) | pass |
 | T4 Jan → Dec 2022 | 10.4× → 5.0× (−52%) | ≥ 30% fall | pass |
 | T5 CEO (score 14, full authority) / steady script, median ARR over 36 months | 1.01 | 0.85–1.15 | pass |
 | T5 the Chair's energy spent | 0% | ≤ 40% | pass |
