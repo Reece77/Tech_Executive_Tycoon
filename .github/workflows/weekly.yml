@@ -27,11 +27,11 @@ jobs:
   weekly:
     name: weekly (${{ matrix.part }})
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 360 # GitHub-hosted maximum (M43: the v5 shards)
     strategy:
       fail-fast: false
       matrix:
-        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m37", "weekly-m45", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems", "weekly-m43-a", "weekly-m43-b", "weekly-m43-c", "weekly-m43-dynasty"]') }}
+        part: ${{ fromJSON(inputs.parts || '["weekly-v1to4", "weekly-v1", "weekly-v5", "weekly-v6", "weekly-v3-shocks", "weekly-v3-integration", "weekly-v3-long", "weekly-v6-integrator", "weekly-m37", "weekly-m45", "weekly-m27b", "weekly-v4-a", "weekly-v4-b", "weekly-v4-c", "weekly-v4-systems", "weekly-m43-a1", "weekly-m43-a2", "weekly-m43-b1", "weekly-m43-b2", "weekly-m43-c1", "weekly-m43-c2", "weekly-m43-d1", "weekly-m43-d2", "weekly-m43-d3", "weekly-m43-d4"]') }}
     steps:
       - uses: actions/checkout@v4
 
