@@ -10,7 +10,7 @@ seeds as M23b's and M35b's, and the v5 strategies with a family to December 2069
   measuring: the brief's Decisions made). The trailing year's revenue ratio prints beside it.
 - **T2, no strategy always wins:** no strategy has the highest founder value at December 2039 on
   more than 4 of 10 seeds among all the founder-played strategies (M35b's field and v5's).
-- **The dynasty runs** print each v5 strategy's 2069 ARR and founder value beside its 2039
+- **The dynasty runs** print each v5 strategy's 2069 ARR and family value beside its 2039
   reading (52's targets are M37's own).
 
 T3 (each system's targets on the combined code), T4 (the known misses), T5 (compliance) and T6
@@ -57,7 +57,7 @@ DYNASTY_END: Final = 720  # the turn after December 2069
 class V5Run:
     strategy: str
     seed: int
-    value: int  # founder value at the end, cents
+    value: int  # founder value at the end (the family's in a dynasty run), cents
     revenue_month: int  # the group's last month, cents
     revenue_year: int  # the group's last 12 months, cents
     rungs: dict[str, int]
@@ -70,10 +70,29 @@ class V5Run:
         return 12 * self.revenue_month
 
 
+def family_value(game: Game) -> int:
+    """A dynasty run's value at the end: the family's stake (45.6: its people and the trust) at
+    the top of the group x V_base. The founder's own stake is gone after a succession, so
+    `Game.founder_value` reads 0 there."""
+    from tst.balance.game import PLAYER
+    from tst.sim.family.rules import family_bp
+    from tst.sim.finance.fundraising import base_value
+    from tst.sim.state import ultimate_owner
+
+    state = game.state
+    if state.ended:
+        return 0
+    value = base_value(state, PLAYER, game.loaded.balance, game.loaded.game_data)
+    return value * family_bp(state, ultimate_owner(state, PLAYER)) // 10_000
+
+
 def _result(strategy: str, seed: int, game: Game, started: float, dynasty: bool) -> V5Run:
     last = max(game.group_pnl) if game.group_pnl else 0
     year = [game.group_pnl[t] for t in range(last - 11, last + 1) if t in game.group_pnl]
-    value = game.founder_value.get(max(game.founder_value), 0) if game.founder_value else 0
+    if dynasty:
+        value = family_value(game)
+    else:
+        value = game.founder_value.get(max(game.founder_value), 0) if game.founder_value else 0
     return V5Run(
         strategy=strategy,
         seed=seed,
@@ -213,7 +232,7 @@ def dynasty_rows(runs: Sequence[V5Run]) -> list[Row]:
         rows.append(
             Row(
                 f"V5.dynasty.{name}",
-                f"{name} with a family to December 2069: median ARR (2039's), founder value",
+                f"{name} with a family to December 2069: median ARR (2039's), family value",
                 f"${(arr69 or 0) / 1e8:,.0f}M (${(arr39 or 0) / 1e8:,.0f}M), "
                 f"${(value or 0) / 1e8:,.0f}M",
                 "printed",

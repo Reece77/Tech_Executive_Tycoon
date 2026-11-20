@@ -36,3 +36,14 @@ def test_v5_runs() -> None:
     known = [known_miss(r.target) for r in rows if verdict(r) == "known"]
     if known:
         pytest.xfail("; ".join(f"KNOWN MISS ({k.owner}): {k.reason}" for k in known if k))
+
+
+def test_a_dynasty_run_reads_the_familys_value() -> None:
+    """The dynasty rows print the family's value (45.6), which a succession keeps: at turn 0 the
+    founder heads the family, so it is at least the founder's own."""
+    from tst.balance import m37
+
+    game = m37._family_game(1)
+    founder = game.founder_value[game.state.turn]
+    assert founder > 0
+    assert v5.family_value(game) >= founder
