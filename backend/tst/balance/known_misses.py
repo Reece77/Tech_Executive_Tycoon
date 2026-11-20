@@ -138,6 +138,16 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "steady_regions' two hires a month do not",
     ),
     KnownMiss(
+        target="V4.T2",  # formulas 51 T2: no v4 strategy top on more than 4 of 10 seeds
+        owner=V6_BALANCE,
+        # score: the most wins; known up to 5 of 10, the M43 branch's reading on seeds 11-20
+        # and 21-30 (main: 3 on 11-20, 6 on 21-30)
+        worse_than=5.0,
+        reason="litho_bet 5/10 on M43 (main 3 on seeds 11-20 and 6 on 21-30): litho_bet "
+        "(full_integrator plus its own lithography) already tops founder value on main; the "
+        "IPO floor moves which seeds it wins, not how often",
+    ),
+    KnownMiss(
         target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
         owner=V6_BALANCE,
         # score: the adjusted median in seconds; known up to the M43 branch's reading
