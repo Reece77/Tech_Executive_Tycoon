@@ -345,10 +345,24 @@ STEADY_MARKETING_MIN = 1_000_000  # $10,000 a month, then 20% of revenue
 STEADY_MARKETING = 0.20
 
 
-def steady(game: Game, appoint: bool = True, keep: frozenset[int] = frozenset()) -> None:
+# M43 (product manager, 2026-11-21): a hiring plan beyond steady's one-a-month growth (the
+# v2 scripts' listed founder, strategies_v2.listed_plan): (headcount wanted, hires this month,
+# role order), or None to hire as steady does.
+HiringPlan = Callable[[Game], "tuple[int, int, tuple[str, ...]] | None"]
+
+
+def steady(
+    game: Game,
+    appoint: bool = True,
+    keep: frozenset[int] = frozenset(),
+    marketing: bool = True,
+    plan: HiringPlan | None = None,
+) -> None:
     """The M3a team on one product; a seed at launch or when runway falls below 12 months,
     whichever comes first, and a Series A when allowed, best pre-money; grows while runway
-    stays above 18 months; a second product at $5M ARR."""
+    stays above 18 months; a second product at $5M ARR. `marketing=False` leaves the month's
+    marketing to the caller (M43: steady_regions sets it once, split over its products), and
+    `plan` hires faster where it has open roles (M43: the listed founder)."""
     accept_bridges(game)
     months = runway(game)
     live = any(p.status == "live" for p in _products(game))
@@ -361,8 +375,14 @@ def steady(game: Game, appoint: bool = True, keep: frozenset[int] = frozenset())
     wanted = STEADY_START
     if headcount(game) >= STEADY_START and (months is None or months > STEADY_RUNWAY):
         wanted = headcount(game) + 1
-    hire(game, wanted, per_month=2, keep=keep)
-    set_marketing(game, max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game))))
+    per_month = 2  # tunable-exempt: steady's own pace (M3a)
+    order: tuple[str, ...] = HIRE_ORDER
+    planned = plan(game) if plan is not None and headcount(game) >= STEADY_START else None
+    if planned is not None and planned[0] > wanted:
+        wanted, per_month, order = planned[0], max(per_month, planned[1]), planned[2]
+    hire(game, wanted, per_month=per_month, order=order, keep=keep)
+    if marketing:
+        set_marketing(game, max(STEADY_MARKETING_MIN, round(STEADY_MARKETING * last_revenue(game))))
     go_public(game)  # M13 (25.9)
     if appoint:  # M8 target 2's vacant arm turns this off
         appoint_executives(game)  # from stage 3

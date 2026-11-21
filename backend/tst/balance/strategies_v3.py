@@ -355,7 +355,9 @@ def _advance(game: Game, p: Project, commodity: str) -> None:
 
 def explore_step(game: Game, region: str, commodity: str) -> None:
     """Geologists, a desk study, and up to PROJECTS_AT_ONCE licensed projects taken stage by
-    stage toward a permit (34.2)."""
+    stage toward a permit (34.2). Energy is refilled first, as before the scripts' other key
+    acts (M43: the month's hiring could leave none for moving the geologists in)."""
+    refill_energy(game)
     staff_unit(game, "Exploration", GEOLOGIST_ROLE, GEOLOGISTS)
     if not any(e.unit_id == _unit(game, "Exploration") for e in game.state.staff(PLAYER)):
         return
