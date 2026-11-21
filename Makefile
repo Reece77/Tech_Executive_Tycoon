@@ -117,9 +117,11 @@ weekly-m43-d4:
 
 # M43 T3 and T6, on demand (weekly.yml's `parts` input): each v5 system's targets on the combined
 # code (one tool a job), and 54.4's economy (technology's share of world GDP) to December 2069
-WEEKLY_M43_T3 := m36 m38 m39 m40 m41 m42 m44
+WEEKLY_M43_T3 := m38 m39 m40 m41 m42 m44
 $(addprefix weekly-m43-t3-,$(WEEKLY_M43_T3)):
 	uv run --project backend python tools/$(patsubst weekly-m43-t3-%,%,$@)_targets.py
+weekly-m43-t3-m36:  # reads Settings().data_dir, relative to backend/
+	cd backend && uv run python ../tools/m36_targets.py
 weekly-m43-t6:
 	uv run --project backend python tools/m43a_targets.py
 
