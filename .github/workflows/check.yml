@@ -23,7 +23,7 @@ jobs:
   check:
     name: check (shard ${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50 # M43: 40 -> 50; the listed founder hires to plan (strategies_v2.listed_plan), so tests playing the scripts past 2015 run larger companies (shard 1: 28 -> 36 min, plus the 6-minute timing step)
     strategy:
       fail-fast: false
       matrix:

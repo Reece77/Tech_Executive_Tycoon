@@ -114,28 +114,33 @@ _EARLIER: Final[tuple[KnownMiss, ...]] = (
     ),
 )
 
-# M43 (PM ruling 2026-11-20): the guards the real-listings IPO floor (25.1: $241M x
-# economy_scale.money, $20.5M game ARR) still moves are known misses owned by v6's first balance
-# pass, each bounded at the branch's reading
+# M43 (PM rulings 2026-11-20 and 2026-11-21): the guards the real-listings IPO floor (25.1: $241M
+# x economy_scale.money, $20.5M game ARR) still moves after steady_regions' fix are known misses
+# owned by v6's first balance pass (M37's turn time by its performance pass), each bounded at
+# the branch's reading or the PM's bound
 V6_BALANCE: Final = "v6 balance"
 KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     *_EARLIER,
     KnownMiss(
         target="V2",  # formulas 30.7 V2: research_heavy / steady_regions median ARR, 1.0-1.4x
         owner=V6_BALANCE,
-        # score: |ratio - 1.2|; known up to 1.42x (score 0.22), the M43 branch's reading
-        worse_than=0.221,
-        reason="1.42x on M43 (main in band): with the IPO floor at the game's economy every script "
-        "lists in 2015-16 with $440-770M of cash; steady_regions hires at most two a month, so "
-        "its cash sits idle while research_heavy's research unit turns it into growth",
+        # score: |ratio - 1.2|; known up to 1.50x (score 0.30): seeds 11-20's reading after
+        # steady_regions' fix (PM ruling 2026-11-21); seeds 1-10 read 1.38x, in band
+        worse_than=0.301,
+        reason="1.38x on seeds 1-10 and 1.50x on 11-20 (before steady_regions' fix 1.42x and "
+        "1.40x): every script lists in 2015-16 with $440-770M; the listed founder now hires to "
+        "plan (strategies_v2.listed_plan), which research_heavy's research unit turns into eras "
+        "and steady_regions' larger shared team does not (its own 10-year ARR falls ~18%)",
     ),
     KnownMiss(
         target="V4",  # formulas 30.7 V4: ceo / steady_regions median ARR, 0.85-1.4x
         owner=V6_BALANCE,
-        # score: |ratio - 1.125|; known up to 1.45x (score 0.325), the M43 branch's reading
-        worse_than=0.326,
-        reason="1.45x on M43 (main in band): as V2, the CEO spends the listing's cash and "
-        "steady_regions' two hires a month do not",
+        # score: |ratio - 1.125|; known up to 1.73x (score 0.605): seeds 1-10's reading after
+        # steady_regions' fix (PM ruling 2026-11-21); seeds 11-20 read 1.29x, in band
+        worse_than=0.606,
+        reason="1.73x on seeds 1-10 and 1.29x on 11-20 (before steady_regions' fix 1.45x and "
+        "1.27x): the CEO's executives spend the listing's cash through their own pitches; "
+        "steady_regions hires to its plan, but its shared team's ARR falls ~18% at year 10",
     ),
     KnownMiss(
         target="V4.T2",  # formulas 51 T2: no v4 strategy top on more than 4 of 10 seeds
@@ -149,9 +154,9 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
-        owner=V6_BALANCE,
-        # score: the adjusted median in seconds; known up to the M43 branch's reading
-        worse_than=0.527,
+        owner="v6 performance",  # PM ruling 2026-11-21: v6's performance pass
+        # score: the adjusted median in seconds; known up to 550 ms (PM ruling 2026-11-21)
+        worse_than=0.550,
         reason="526 ms adjusted on M43 (main passes): no M43 step in the profile (markets 27%, "
         "state sync 22%, rival decisions 11% of a 2069 month); the listings from 2015 leave a "
         "larger 2069 group (157 staff), so the existing phases do more",
