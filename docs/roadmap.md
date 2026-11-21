@@ -80,6 +80,25 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | M45, performance at scale, part two | lane J after `m43a-done` (brief `docs/tasks/M45-performance-at-scale-part-two.md`): rival decisions and per-turn saving proportional; both 2039 saves back to 400 ms; a 2069 turn under 500 ms |
 | M43, v5 balance and the conglomerate view | lane L now (measurement and the view); tunes and merges after M42, M40 and M44; closes v5 (brief `docs/tasks/M43-v5-balance-and-conglomerate-view.md`) |
 
+## Phase 5: v6, conversations, scenarios and more of the world
+
+**Reece's decision (2026-11-21):** all three directions: conversations (A), scenarios (B), and new industries (C). Outline: `docs/v6-outline.md`.
+
+| Milestone | Direction |
+| --- | --- |
+| M46, v6 balance pass one (v5's carried misses) | — |
+| M47, negotiations by conversation | A |
+| M48, board meetings, earnings calls and investor days | A |
+| M49, press conferences, interviews and one-to-ones | A |
+| M50, start years (2008, 2000, 1995) | B |
+| M51, scenarios and challenges | B |
+| M52, the editor and sandbox | B |
+| M53, telecom | C |
+| M54, financial services (banking, payments, insurance, currencies) | C |
+| M55, media and entertainment | C |
+| M56, the shared core | engineering |
+| M57, v6 balance and polish; closes v6 | — |
+
 ## Process
 
 - **Codex review every 5–6 milestones**, with findings folded into the next balance or integration milestone rather than a separate fix milestone.
