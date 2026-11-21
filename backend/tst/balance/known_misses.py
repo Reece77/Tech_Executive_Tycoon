@@ -90,14 +90,6 @@ _EARLIER: Final[tuple[KnownMiss, ...]] = (
         "sells into follow cloud and servers, both recalibrated before 2026",
     ),
     KnownMiss(
-        target="V2.wins",  # formulas 30.7 V2: research_heavy wins at most 4 of 10
-        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
-        # score: research_heavy's wins out of 10; known while at most 5
-        worse_than=5.0,
-        reason="5/10 on M43a (main <= 4): measured before 2026, where only M43a's four "
-        "recalibrations (AI models, cloud, developer tools, servers) act",
-    ),
-    KnownMiss(
         target="V3.margin",  # formulas 30.7 V3: integrator - steady_regions margin -1 pt or more
         owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
         # score: minus the margin gap; known while the gap is at least -2.0 points
@@ -115,32 +107,20 @@ _EARLIER: Final[tuple[KnownMiss, ...]] = (
 )
 
 # M43 (PM rulings 2026-11-20 and 2026-11-21): the guards the real-listings IPO floor (25.1: $241M
-# x economy_scale.money, $20.5M game ARR) still moves after steady_regions' fix are known misses
-# owned by v6's first balance pass (M37's turn time by its performance pass), each bounded at
-# the branch's reading or the PM's bound
+# x economy_scale.money, $20.5M game ARR) still moves after steady_regions' marketing fix are
+# known misses owned by v6's first balance pass (M37's turn time by its performance pass), each
+# at the PM's bound
 V6_BALANCE: Final = "v6 balance"
 KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     *_EARLIER,
     KnownMiss(
-        target="V2",  # formulas 30.7 V2: research_heavy / steady_regions median ARR, 1.0-1.4x
-        owner=V6_BALANCE,
-        # score: |ratio - 1.2|; known up to 1.50x (score 0.30): seeds 11-20's reading after
-        # steady_regions' fix (PM ruling 2026-11-21); seeds 1-10 read 1.38x, in band
-        worse_than=0.301,
-        reason="1.38x on seeds 1-10 and 1.50x on 11-20 (before steady_regions' fix 1.42x and "
-        "1.40x): every script lists in 2015-16 with $440-770M; the listed founder now hires to "
-        "plan (strategies_v2.listed_plan), which research_heavy's research unit turns into eras "
-        "and steady_regions' larger shared team does not (its own 10-year ARR falls ~18%)",
-    ),
-    KnownMiss(
         target="V4",  # formulas 30.7 V4: ceo / steady_regions median ARR, 0.85-1.4x
         owner=V6_BALANCE,
-        # score: |ratio - 1.125|; known up to 1.73x (score 0.605): seeds 1-10's reading after
-        # steady_regions' fix (PM ruling 2026-11-21); seeds 11-20 read 1.29x, in band
-        worse_than=0.606,
-        reason="1.73x on seeds 1-10 and 1.29x on 11-20 (before steady_regions' fix 1.45x and "
-        "1.27x): the CEO's executives spend the listing's cash through their own pitches; "
-        "steady_regions hires to its plan, but its shared team's ARR falls ~18% at year 10",
+        # score: |ratio - 1.125|; known up to 1.47x (score 0.345; PM ruling 2026-11-21)
+        worse_than=0.346,
+        reason="1.46x on M43 (main in band): with the IPO floor at the game's economy every "
+        "script lists in 2015-16 with $440-770M of cash; the CEO's executives spend it through "
+        "their pitches, while steady_regions' growth (a hire a month) leaves it idle",
     ),
     KnownMiss(
         target="V4.T2",  # formulas 51 T2: no v4 strategy top on more than 4 of 10 seeds

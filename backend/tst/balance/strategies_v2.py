@@ -17,14 +17,11 @@ from typing import Final
 
 from tst.balance.game import PLAYER, Game
 from tst.balance.strategies import (
-    HIRE_ORDER,
     STEADY_MARKETING,
     STEADY_MARKETING_MIN,
     STEADY_RUNWAY,
     Strategy,
-    headcount,
     last_revenue,
-    monthly_cost,
     runway,
     set_marketing,
     steady,
@@ -282,59 +279,17 @@ def split_marketing(game: Game) -> None:
     set_marketing(game, max(STEADY_MARKETING_MIN, share))
 
 
-# M43 (product manager, 2026-11-21): the listed founder's hiring plan. Once listed, cash above
-# a reserve goes into the plan's open roles, where there is work for them; above what the plan
-# can take it sits idle (before, steady's one hire a month left $440-770M of IPO cash idle).
-LISTED_RESERVE_MONTHS: Final = 24  # months of operating costs kept in hand (steady's runway)
-LISTED_MAX_HIRES: Final = 10  # hires a month at most (one founder's interviews)
-PLAN_PER_PRODUCT: Final = 25  # a product's team: engineers, product, design, marketing
-PLAN_PER_REGION: Final = 6  # sales in each region a product sells in, its home region included
-SALES_ROLES: Final = ("account_executive", "sales_representative")
-
-
-def plan_size(game: Game) -> tuple[int, int]:
-    """(people, of whom sales): PLAN_PER_PRODUCT per product being built or sold, and
-    PLAN_PER_REGION salespeople per region each sells in."""
-    products = [p for p in game.state.company_products(PLAYER) if p.status != "retired"]
-    regions = sum(len(game.state.regions_of(p.id)) or 1 for p in products)
-    sales = PLAN_PER_REGION * regions
-    return PLAN_PER_PRODUCT * len(products) + sales, sales
-
-
-def listed_plan(game: Game) -> tuple[int, int, tuple[str, ...]] | None:
-    """Once listed (25): hire into the plan's open roles as far as the cash above a reserve of
-    LISTED_RESERVE_MONTHS of costs covers, each hire costed at that many months of the
-    company's cost per head; at most LISTED_MAX_HIRES a month. Sales roles first while sales
-    are short of the plan. None when unlisted, inside the reserve, or the plan is full."""
-    state = game.state
-    if not valuation.is_listed(state, PLAYER, game.loaded.game_data):
-        return None
-    costs = monthly_cost(game)
-    staff = len(state.staff(PLAYER))
-    if costs <= 0 or staff <= 0:
-        return None
-    surplus = game.cash - LISTED_RESERVE_MONTHS * costs
-    per_hire = LISTED_RESERVE_MONTHS * costs // staff
-    size, sales_wanted = plan_size(game)
-    count = headcount(game)
-    n = min(LISTED_MAX_HIRES, size - count, surplus // per_hire if per_hire > 0 else 0)
-    if n <= 0:
-        return None
-    sales = sum(1 for e in state.staff(PLAYER) if state.person(e.person_id).role in SALES_ROLES)
-    order = SALES_ROLES if sales < sales_wanted else HIRE_ORDER
-    return count + n, n, order
-
-
 def steady_regions(game: Game) -> None:
     """M13b's arm: steady plus a region launch whenever one is due (30.6), and from
     2026-11-07 a new-category product when one is due (new_category_step), with steady's
     marketing split over the products (split_marketing). From M43 the marketing is set once a
     month, by the split alone and before the month's hiring takes the founder's energy (steady
     set the whole 20% on every product first, one energy an act, so a founder short of energy
-    kept some at the whole: robotics_first went bankrupt in dynasty mode), and the listed
-    founder hires to plan (listed_plan)."""
+    kept some at the whole: robotics_first went bankrupt in dynasty mode). A listed founder's
+    cash above steady's growth stays idle (PM ruling 2026-11-21: hiring to a plan lowered
+    this script's 10-year ARR, a design question for v6)."""
     split_marketing(game)  # first, while the founder has the energy for it
-    steady(game, keep=_kept(game), marketing=False, plan=listed_plan)
+    steady(game, keep=_kept(game), marketing=False)
     regions_step(game)
     new_category_step(game)
 
