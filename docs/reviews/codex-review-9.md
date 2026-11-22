@@ -110,19 +110,19 @@ No P1. All fourteen findings go to **M43r** (`docs/tasks/M43r-review-9-fixes.md`
 
 | # | Severity | Finding | Lane |
 | --- | --- | --- | --- |
-| 1 | P2 | Mortality credits the heir with the deceased founder's salary | A |
-| 2 | P2 | An inherited foundation returns under the deceased founder after a cold reload | A |
-| 3 | P2 | The conglomerate view exposes hidden construction overruns | A |
-| 4 | P2 | The conglomerate view and letter include gaps in ownership | A |
+| 1 | P2 | Mortality credits the heir with the deceased founder's salary | A: fixed (`test_m43r_estate.py::test_a_january_death_credits_the_payroll_founder_and_settles_after_it`) |
+| 2 | P2 | An inherited foundation returns under the deceased founder after a cold reload | A: fixed (`test_m43r_estate.py::test_an_inherited_foundation_survives_a_cold_reload_once`) |
+| 3 | P2 | The conglomerate view exposes hidden construction overruns | A: fixed (`test_m43r_conglomerate_capital.py::test_planned_capital_never_moves_with_a_hidden_overrun`) |
+| 4 | P2 | The conglomerate view and letter include gaps in ownership | A: fixed (`test_m43r_ownership_gaps.py::test_a_gap_in_ownership_reaches_neither_the_view_nor_the_letter`, `::test_overlapping_runs_count_once`) |
 | 5 | P2 | Classified contracts lose their clearance requirement when the tender is pruned | B |
-| 6 | P2 | Pharma sales use the previous month's ceiling adjustment | A |
+| 6 | P2 | Pharma sales use the previous month's ceiling adjustment | A: fixed (`test_m43r_pharma_ceiling.py`, four tests: Codex's 99.9 boundary, a later near-ceiling month, the clamp, a market already over) |
 | 7 | P2 | Customer flights launch while their vehicle is grounded | B |
 | 8 | P2 | A successful out-licensed programme stalls before approval | B |
 | 9 | P2 | Unrelated activity changes vehicle-incident and bought-launch draws | B |
 | 10 | P2 | The money guard misses binary-float arithmetic under other names | B |
-| 11 | P3 | Space history opens a service after its first month's sales | A |
+| 11 | P3 | Space history opens a service after its first month's sales | A: fixed (`test_m43r_space_opening.py::test_starlink_sells_from_its_opening_month`) |
 | 12 | P3 | Derived caches key on object ids without keeping the objects alive | B |
 | 13 | P3 | Fixed-price delivery settles a different total from the price | B |
-| 14 | P3 | The pre-2040 guard can accept a change shared by both settings | A |
+| 14 | P3 | The pre-2040 guard can accept a change shared by both settings | A: fixed (`test_m43r_pre_2040_guard.py::test_a_rule_moved_across_january_2040_is_caught_at_its_first_month`; nightly `test_m37_balance.py::test_52_5_target_1_same_code_differential`) |
 
 Lane A holds every change to the turn's phase order (findings 1, 6 and 11) so they don't conflict.

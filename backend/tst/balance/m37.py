@@ -199,6 +199,29 @@ def replay_pair(
     return out[0], out[1]
 
 
+def write_reference(workers: int) -> int:
+    """`tools/m37_targets.py --write-reference`: the nine standard runs become the mode-parity
+    fixture once the dynasty runs and the reference arm equal them; 1 (nothing written) if any
+    run differs."""
+    standard = all_pre_2040(workers, (False,))
+    dynasty = all_pre_2040(workers, (True,))
+    ref = all_reference(workers)
+    plain = {k.rsplit("/", 1)[0]: v for k, v in standard.items()}
+    diff = {
+        k: v
+        for k, v in {**differential(standard, ref), **differential(dynasty, plain)}.items()
+        if v is not None
+    }
+    if diff:
+        for k, v in sorted(diff.items()):
+            print(f"{k}: {v}")
+        return 1
+    text = json.dumps(plain, indent=0, sort_keys=True) + "\n"
+    LEGACY_FILE.write_text(text, encoding="utf-8", newline="\n")
+    print(f"wrote {LEGACY_FILE.name}: {len(plain)} runs")
+    return 0
+
+
 def first_differing_turn(start_turn: int, a: Sequence[str], b: Sequence[str]) -> int | None:
     """The turn of the first month the arms differ (`start_turn` is the first month played)."""
     for i, (x, y) in enumerate(zip(a, b, strict=False)):
