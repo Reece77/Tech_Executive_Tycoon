@@ -26,7 +26,15 @@ from tst.db.conglomerate import MONTHS_A_YEAR, Member, current_year, read_books
 from tst.db.models import LLMTextRow
 from tst.loader import LoadedData
 from tst.sim.calendar import turn_to_ym
-from tst.sim.group.conglomerate import CORPORATE, Books, Figures, growth, industry_maps, risk_word
+from tst.sim.group.conglomerate import (
+    CORPORATE,
+    Books,
+    Figures,
+    Uses,
+    growth,
+    industry_maps,
+    risk_word,
+)
 from tst.sim.state import GameState, holding_of
 
 LETTER = "letter"  # LLMTextRow kind of the January letters (M43)
@@ -237,6 +245,8 @@ def conglomerate_out(session: Session, state: GameState, data: LoadedData) -> Co
                 intercompany_cents=internal,
             )
         )
+    # every year of the trend, a year with nothing spent included (it reads as nothing, not as
+    # a year the table leaves out)
     capital = [
         CapitalYearOut(
             year=y,
@@ -247,8 +257,8 @@ def conglomerate_out(session: Session, state: GameState, data: LoadedData) -> Co
             acquisitions_cents=u.stakes,
             returned_cents=u.returned,
         )
-        for y, u in sorted(b.uses.items())
-        if y in trend_years
+        for y in trend_years
+        for u in (b.uses.get(y, Uses()),)
     ]
     ids = {m.company_id for m in group}
     return ConglomerateOut(

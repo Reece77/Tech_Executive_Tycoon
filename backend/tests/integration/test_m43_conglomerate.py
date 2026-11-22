@@ -58,6 +58,10 @@ def test_the_group_by_industry_and_company(api: Client) -> None:
         assert len(i["trend"]) <= 10 + 1  # ten years and this one
     assert {a["key"] for a in out["allocation"]} == {i["key"] for i in out["industries"]}
     assert all(p["kind"] in ("pitch", "group_pitch", "proposal") for p in out["proposals"])
+    # where capital went: a row for every year of the trend, one with nothing spent included
+    years = [c["year"] for c in out["capital"]]
+    trend = {y["year"] for i in out["industries"] for y in i["trend"]}
+    assert years == sorted(years) and set(years) >= trend and len(years) <= 10 + 1
 
 
 def test_a_january_letter_each_year_kept_in_history(tmp_path: Path, loaded: LoadedData) -> None:
