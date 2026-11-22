@@ -367,6 +367,7 @@ def test_a_fixed_price_contract_settles_its_exact_price(loaded: LoadedData, valu
         start_turn=t0,
         base_end_turn=t0 + 18,
         end_turn=t0 + 24,
+        clearance="none",
     )
     state = replace(state, gov_contracts=(c,))
     rng = RngFactory(3)
@@ -424,3 +425,75 @@ def test_the_node_timeline_recomputes_for_other_rules_under_a_reused_id(
     )
     _move_ids(nodes._CACHE, b.fab, fb)
     assert nodes.timeline(5, nf, fb) == nodes.build(5, nf, fb) != first
+
+
+# --- finding 8: an out-licensed programme reaches approval -------------------------------------
+
+
+def test_an_out_licensed_programme_is_filed_approved_and_pays_its_licensor(
+    loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Out-license a Phase III programme, force a successful readout: the rival files through the
+    approval path, the approval milestone posts once, and royalties reconcile in both books."""
+    from tests.pharma_helpers import base, programme
+    from tst.sim.ledger import LICENSE_REVENUE, ROYALTIES
+    from tst.sim.money import times
+    from tst.sim.pharma import approval, licensing, pipeline
+    from tst.sim.pharma.licensing import MILESTONES
+    from tst.sim.pharma.month import events_month, sales_month
+
+    b, d = loaded.balance, loaded.game_data
+    t0 = ym_to_turn(2022, 1)
+    state = base(loaded, turn=t0)
+    p = programme(
+        state, stage="phase3", status="active", start_turn=t0 - 20, due_turn=t0 + 1,
+        efficacy=0.8, safety=0.8, obs_n=2, obs_eff=0.8, obs_safety=0.8, patent_turn=t0 - 60,
+        ind_turn=t0 - 48,
+    )  # fmt: skip
+    state = replace(state, pharma_programmes=(p,))
+    lilly = next(c for c in state.rivals() if c.name == "Eli Lilly")
+    state, _, _ = licensing.out_license(state, p, lilly.id, False, b, d)
+    deal = state.pharma_deals[0]
+    monkeypatch.setattr(pipeline, "chance", lambda *a: 1.0)  # the readout succeeds
+    monkeypatch.setattr(approval, "approve_chance", lambda *a: 1.0)  # and the review approves
+    rng = RngFactory(4)
+    milestone: list[LedgerEntry] = []
+    royalties: list[LedgerEntry] = []
+    sales: list[int] = []
+    approved_at = None
+    for turn in range(t0 + 1, t0 + 72):
+        state = replace(state, turn=turn)
+        state, entries, _ = sales_month(state, b, d)
+        milestone += [e for e in entries if e.memo == f"Milestone: {p.name}"]
+        royalties += [e for e in entries if e.memo == f"Royalty: {p.name}"]
+        sales += [
+            m.revenue_cents
+            for m in state.pharma_months
+            if m.programme_id == p.id and m.turn == turn
+        ]
+        state, _, _ = events_month(state, rng, b, d)
+        now = next(q for q in state.pharma_programmes if q.id == p.id)
+        if approved_at is None and now.approved_turn is not None:
+            approved_at = turn
+    filed = [r for r in state.pharma_reviews if r.programme_id == p.id]
+    assert filed and all(r.status == "approved" for r in filed)  # the rival filed
+    now = next(q for q in state.pharma_programmes if q.id == p.id)
+    assert approved_at is not None and now.company_id == lilly.id and now.status == "marketed"
+    final = state.pharma_deals[0]
+    assert final.milestones_paid == MILESTONES
+    each = deal.milestones_cents // MILESTONES
+    paid_player = [e for e in milestone if e.company_id == PLAYER]
+    assert -sum(e.lines[1].amount for e in paid_player) == each * MILESTONES  # all three, once
+    at_approval = [e for e in milestone if e.turn >= approved_at]
+    assert sorted(e.company_id for e in at_approval) == sorted([PLAYER, lilly.id])
+    assert all(e.lines[0].amount == each for e in at_approval)  # the approval's, once each book
+    assert sum(sales) > 0
+    got = sum(
+        line.amount for e in royalties if e.company_id == PLAYER for line in e.lines
+        if line.account == LICENSE_REVENUE
+    )  # fmt: skip
+    owed = sum(
+        line.amount for e in royalties if e.company_id == lilly.id for line in e.lines
+        if line.account == ROYALTIES
+    )  # fmt: skip
+    assert -got == owed == sum(times(s, deal.royalty) for s in sales if s > 0) > 0
