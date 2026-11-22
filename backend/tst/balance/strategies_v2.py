@@ -282,11 +282,16 @@ def split_marketing(game: Game) -> None:
 def steady_regions(game: Game) -> None:
     """M13b's arm: steady plus a region launch whenever one is due (30.6), and from
     2026-11-07 a new-category product when one is due (new_category_step), with steady's
-    marketing split over the products (split_marketing)."""
-    steady(game, keep=_kept(game))
+    marketing split over the products (split_marketing). From M43 the marketing is set once a
+    month, by the split alone and before the month's hiring takes the founder's energy (steady
+    set the whole 20% on every product first, one energy an act, so a founder short of energy
+    kept some at the whole: robotics_first went bankrupt in dynasty mode). A listed founder's
+    cash above steady's growth stays idle (PM ruling 2026-11-21: hiring to a plan lowered
+    this script's 10-year ARR, a design question for v6)."""
+    split_marketing(game)  # first, while the founder has the energy for it
+    steady(game, keep=_kept(game), marketing=False)
     regions_step(game)
     new_category_step(game)
-    split_marketing(game)
 
 
 RESEARCH_UNIT: Final = "Research"

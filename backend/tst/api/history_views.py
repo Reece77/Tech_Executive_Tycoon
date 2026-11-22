@@ -93,6 +93,7 @@ NOT_HISTORY: frozenset[str] = frozenset(
     }
 )
 INBOX_CATEGORY: dict[str, str] = {
+    "letter": "finance",  # M43: the January letter to shareholders
     "offer_accepted": "people",
     "resigned": "people",
     "retired": "people",

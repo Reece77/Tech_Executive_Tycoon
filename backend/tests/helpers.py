@@ -383,10 +383,13 @@ def answer_events(path: Path, loaded: LoadedData) -> None:
 
 def continue_at_end(path: Path, loaded: LoadedData) -> None:
     """M37 (52.1): a standard campaign stops after December 2039; a player who plays on
-    continues in dynasty mode. Scripts that play a 2039 save on call this first."""
+    continues in dynasty mode. Scripts that play a 2039 save on call this first. A critical
+    event waiting at the end is answered first, as a player must before any action (M43: the
+    V6 save's history can end on one)."""
     from tst.db.repository import read_session, read_state, run_action
     from tst.sim.dynasty.mode import ContinueDynasty, at_standard_end
 
+    answer_critical(path, loaded)
     with read_session(path) as session:
         state = read_state(session)
     if at_standard_end(state, loaded.balance):

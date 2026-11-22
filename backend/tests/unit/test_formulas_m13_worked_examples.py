@@ -105,7 +105,7 @@ def test_price_sentiment_and_analysts(loaded: LoadedData) -> None:
 
 def test_keys_and_streams(loaded: LoadedData) -> None:
     b = loaded.balance
-    assert b.ipo.min_arr_cents == 80_000_000_00
+    assert b.ipo.min_arr_cents == 241_000_000_00  # M43: Ritter's 2015-2024 tech IPO median sales
     assert b.ipo.hire_energy == 10
     assert b.public.earnings.guidance_energy == 4
     assert (b.public.capital.buyback_energy, b.public.capital.dividend_energy) == (6, 4)
@@ -119,3 +119,13 @@ def test_keys_and_streams(loaded: LoadedData) -> None:
     assert STREAM_IDS["ipo"] == 33
     assert STREAM_IDS["market_sentiment"] == 34
     assert 35 not in STREAM_IDS.values()  # reserved for lane B
+
+
+def test_the_arr_floor_reads_the_games_economy(loaded: LoadedData) -> None:
+    """M43 sub-task 3: 25.1's floor is real-world scale ($241M: the 2015-2024 median sales of US
+    tech IPOs, Ritter), read x economy_scale.money (48.1)."""
+    from tst.sim.markets_public.ipo import min_arr_cents
+
+    b = loaded.balance
+    assert min_arr_cents(b) == round(241_000_000_00 * b.economy_scale.money)
+    assert min_arr_cents(b) == 2_046_090_000  # $20.46M at 0.0849

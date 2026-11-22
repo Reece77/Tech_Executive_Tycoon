@@ -21,10 +21,10 @@ class KnownMiss:
     reason: str
 
 
-KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
+_EARLIER: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
         target="V3.ai",  # docs/formulas.md 30.7 V3's AI arm: integrator_ai +3 to +10 points
-        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
+        owner="M43",  # M43 sub-task 1: moved from the finished M28 (owner M23, then M28)
         # score: minus the margin gap (larger is worse); known while the AI integrator is no
         # more than 2 points below ai_regions (product manager, 2026-11-07)
         worse_than=0.02,
@@ -32,7 +32,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="V5.cells",  # 30.7 V5: >= 75% of (run, category, decade after 2020) cells
-        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
+        owner="M43",  # M43 sub-task 1: moved from the finished M28 (owner M23, then M28)
         # score: the empty share; known while at most 40% empty (product manager,
         # 2026-11-07, fifth round: owned by M23, fails below 60%)
         worse_than=0.40,
@@ -40,14 +40,14 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="V5.cats",  # 30.7 V5: no category misses a decade in more than 2 of 10 runs
-        owner="M28",  # product manager, 2026-11-13: moved from the finished M23 to M28
+        owner="M43",  # M43 sub-task 1: moved from the finished M28 (owner M23, then M28)
         # score: the most runs a category-decade is empty in, as a share; known up to 70%
         worse_than=0.70,
         reason="2030s category-decades empty in up to 6 of 10 runs (M15a): as V5.cells",
     ),
     KnownMiss(
         target="I1",  # docs/formulas.md 43 I1: full_integrator margin - devices_regions, +3 to +10
-        owner="M28",
+        owner="M43",  # M43 sub-task 1: moved from the finished M28
         # score: minus the margin gap at year 30; known while the gap is at least -2.0 points,
         # the year-30 reading on the combined code (-0.0, weekly 43381860624) minus 2 (product
         # manager, 2026-11-12)
@@ -74,15 +74,6 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "before 2032, so both scripts' capacity goes live together; +12 over seeds 1-30",
     ),
     KnownMiss(
-        target="M13.T2.blitzscale",  # formulas 25.9 T2: listed by turn 180 on >= 4 of 10 seeds
-        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10): v5's balance pass
-        # score: minus the seeds listed; known while at least 1 of 10 lists
-        worse_than=-1.0,
-        reason="1/10 on M43a (main 4/10): blitzscale's second product is developer tools, whose "
-        "base growth M43a cut x0.66 (2025 within 2x of published), so its 2020 market is about "
-        "63% of main's; M43 first checks whether the IPO thresholds need economy_scale",
-    ),
-    KnownMiss(
         target="M13b.T1",  # formulas 27.5 T1: a new product and region on >= 7 of 10 seeds
         owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
         # score: minus the seeds; known while at least 6 of 10
@@ -99,14 +90,6 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "sells into follow cloud and servers, both recalibrated before 2026",
     ),
     KnownMiss(
-        target="V2.wins",  # formulas 30.7 V2: research_heavy wins at most 4 of 10
-        owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
-        # score: research_heavy's wins out of 10; known while at most 5
-        worse_than=5.0,
-        reason="5/10 on M43a (main <= 4): measured before 2026, where only M43a's four "
-        "recalibrations (AI models, cloud, developer tools, servers) act",
-    ),
-    KnownMiss(
         target="V3.margin",  # formulas 30.7 V3: integrator - steady_regions margin -1 pt or more
         owner="M43",  # PM, 2026-11-18 (M43a brief, decision 10)
         # score: minus the margin gap; known while the gap is at least -2.0 points
@@ -120,6 +103,54 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.30,
         reason="0.89x on M43a (main 0.99x), December 2039: not traced; likely the ceilings from "
         "2026 and the long-run decay from 2030 acting on the two strategies' markets differently",
+    ),
+)
+
+# M43 (PM rulings 2026-11-20 and 2026-11-21): the guards the real-listings IPO floor (25.1: $241M
+# x economy_scale.money, $20.5M game ARR) still moves after steady_regions' marketing fix are
+# known misses owned by v6's first balance pass (M37's turn time by its performance pass), each
+# at the PM's bound
+V6_BALANCE: Final = "v6 balance"
+KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
+    *_EARLIER,
+    KnownMiss(
+        target="V4",  # formulas 30.7 V4: ceo / steady_regions median ARR, 0.85-1.4x
+        owner=V6_BALANCE,
+        # score: |ratio - 1.125|; known up to 1.47x (score 0.345; PM ruling 2026-11-21)
+        worse_than=0.346,
+        reason="1.46x on M43 (main in band): with the IPO floor at the game's economy every "
+        "script lists in 2015-16 with $440-770M of cash; the CEO's executives spend it through "
+        "their pitches, while steady_regions' growth (a hire a month) leaves it idle",
+    ),
+    KnownMiss(
+        target="V4.T2",  # formulas 51 T2: no v4 strategy top on more than 4 of 10 seeds
+        owner=V6_BALANCE,
+        # score: the most wins; known up to 5 of 10, the M43 branch's reading on seeds 11-20
+        # and 21-30 (main: 3 on 11-20, 6 on 21-30)
+        worse_than=5.0,
+        reason="litho_bet 5/10 on M43 (main 3 on seeds 11-20 and 6 on 21-30): litho_bet "
+        "(full_integrator plus its own lithography) already tops founder value on main; the "
+        "IPO floor moves which seeds it wins, not how often",
+    ),
+    KnownMiss(
+        target="M10b.T1.spacing",  # tests/balance/test_m10b_balance.py: critical events >= 6
+        owner=V6_BALANCE,  # months apart at a grown company (23.7 target 1)
+        # score: seeds (of 10) with a shortest critical gap under 6 months; known up to 5
+        # (PM ruling 2026-11-22)
+        worse_than=5.0,
+        reason="5 of 10 seeds on M43 (main 0): under the real-listings IPO floor the scripts "
+        "list from 2015, and a listed company's follow_up critical events land within months of "
+        "a key exit (seed 6: both in month 111); the director's 6-month spacing does not cover "
+        "follow-ups (v6 follow-up)",
+    ),
+    KnownMiss(
+        target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
+        owner="v6 performance",  # PM ruling 2026-11-21: v6's performance pass
+        # score: the adjusted median in seconds; known up to 550 ms (PM ruling 2026-11-21)
+        worse_than=0.550,
+        reason="526 ms adjusted on M43 (main passes): no M43 step in the profile (markets 27%, "
+        "state sync 22%, rival decisions 11% of a 2069 month); the listings from 2015 leave a "
+        "larger 2069 group (157 staff), so the existing phases do more",
     ),
 )
 
