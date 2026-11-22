@@ -106,6 +106,15 @@ def load_government(
             world = _decode(WORLD, row.data)
         elif row.kind in COLLECTIONS:
             found[row.kind].append(_decode(row.kind, row.data))
+    # a contract saved before M43r keeps its tender's clearance from now on (review 9
+    # finding 5); one whose tender is gone is resolved by delivery.requirement
+    tenders = {t.id: t for t in found["tenders"]}
+    found["gov_contracts"] = [
+        replace(c, clearance=tenders[c.tender_id].clearance)
+        if c.clearance is None and c.tender_id in tenders
+        else c
+        for c in found["gov_contracts"]
+    ]
     for kind, items in found.items():
         state = replace(state, **{kind: tuple(items)})  # type: ignore[arg-type]
     if world is not None:

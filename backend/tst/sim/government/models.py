@@ -127,6 +127,10 @@ class Contract:
     revenue_cents: int = 0
     cost_cents: int = 0
     month: ContractMonth | None = None
+    # the awarded tender's clearance, kept with the contract (M43r, review 9 finding 5: the
+    # tender is pruned while delivery runs); None only in a save from before M43r whose tender
+    # is gone (delivery.requirement)
+    clearance: Level | None = None
 
 
 @dataclass(frozen=True, slots=True)
