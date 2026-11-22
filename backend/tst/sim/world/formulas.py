@@ -44,6 +44,7 @@ def unit_cash_cost(long_run: float, cost: float, power_index: float, wb: WorldBa
 def unit_full_cost(long_run: float, cash: float, wb: WorldBalance) -> float:
     """Cash cost plus fixed costs and the capital's straight-line charge a unit (41.2's cost
     per unit for the hurdle): the expansion is judged on what a new unit costs to own."""
+    # money-exact: rate: a unit full cost in float dollars a tonne
     return cash + long_run * (wb.fixed_share + wb.capex_years / wb.life_years)
 
 

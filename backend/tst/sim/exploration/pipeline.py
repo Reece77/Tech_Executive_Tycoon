@@ -614,6 +614,7 @@ def mine_npv_usd(
     ref = c.grade_median * sum(c.recovery) / 2  # product per tonne of ore at the reference
     product = grade * recovery
     capex = (
+        # money-exact: estimate: the NPV estimate in float dollars; the sale price from it is exact
         xf.capex_usd(
             tonnage_mt=tonnage,
             grade=ref,

@@ -16,22 +16,18 @@ from tests.money_guard import Hit, scan
 # line's code, so a line moving does not break the guard; a deferred line that is fixed
 # drops out (see the last test).
 DEFERRED: dict[tuple[str, str], str] = {
+    # M43r lane B: lines in files lane A edits (review 9 findings 1, 3, 4 and 6), fixed after
+    # lane A merges (CLAUDE.md section 9 rule 8)
+    ("founder/personal.py", "net = gross - round(gross * cb.secondary_fee)"): "M43r lane A",
     (
-        "mining/phase.py",
-        "sustaining = mb.sustaining_share * mine.capex_paid_cents / CENTS / 12 if running else 0.0",
-    ): "M32",
-    ("mining/phase.py", "sustaining = mb.sustaining_share * mine.capex_cents / CENTS"): "M32",
+        "group/conglomerate.py",
+        "return self.gross_profit / self.revenue if self.revenue > 0 else None",
+    ): "M43r lane A",
     (
-        "refining/quote.py",
-        "rg.price_cents(state, r.input_good, balance, data) * per_in if r.input_good else 0.0",
-    ): "M32 (a rate)",
-    ("refining/quote.py", "fixed = size * r.fixed_cents / out_year if out_year else 0.0"): (
-        "M32 (a rate)"
-    ),
-    (
-        "refining/quote.py",
-        "dep = q.capex_cents / (kind.life_months / MONTHS) / out_year if out_year else 0.0",
-    ): "M32 (a rate)",
+        "group/conglomerate.py",
+        "return self.operating_profit / self.revenue if self.revenue > 0 else None",
+    ): "M43r lane A",
+    ("pharma/demand.py", "cogs = round(revenue * share)"): "M43r lane A",
 }
 
 

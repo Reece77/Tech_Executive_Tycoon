@@ -763,6 +763,7 @@ def _products(state: GameState, balance: Balance) -> GameState:
                 brand += ib.brand_blend * (sum(own) / len(own) - brand)
             quality = product.quality
             if debt:
+                # money-exact: ratio: quality points of tech debt, not money
                 quality -= pb.tech_debt_quality / pb.tech_debt_months
             state = with_product(
                 state,

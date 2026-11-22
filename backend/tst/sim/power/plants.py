@@ -54,6 +54,7 @@ def capex_kw(state: GameState, key: str, balance: Balance, data: GameData) -> fl
     year = grid.year_of(state.turn)
     base = t.capex_at(min(year, HISTORY_YEAR))
     learnt = pf.learnt(base, learning(state, key), year - HISTORY_YEAR)
+    # money-exact: rate: $/kW in float dollars
     return learnt * balance.power.plants.capex_premium
 
 

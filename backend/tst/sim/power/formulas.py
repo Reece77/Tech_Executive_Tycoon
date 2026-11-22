@@ -43,6 +43,7 @@ def levelised_usd_mwh(
     mwh_per_kw = HOURS_A_YEAR * capacity_factor / KW_PER_MW
     if mwh_per_kw <= 0:
         return math.inf
+    # money-exact: rate: $/MWh, a unit cost in float dollars
     return (capex_kw * crf(rate, years) + fixed_om_kw) / mwh_per_kw + variable_usd_mwh
 
 
@@ -59,6 +60,7 @@ def ppa_price(forward_cents: float, years: int, per_year: float, cap: float) -> 
 
 def learnt(capex: float, rate: float, years: float) -> float:
     """A type's capex after `years` of its seeded yearly decline (46.2, after 2025)."""
+    # money-exact: rate: $/kW in float dollars
     return float(capex * dmath.pow(1 - rate, max(0.0, years)))
 
 

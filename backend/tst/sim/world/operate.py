@@ -371,6 +371,7 @@ def _books(
 ) -> tuple[GameState, list[LedgerEntry], list[Item]]:
     wb = balance.world
     turn = state.turn
+    # money-exact: ratio: a monthly interest rate
     rate = (macro.base_rate(state, data) / PERCENT + wb.interest_spread) / MONTHS
     entries: list[LedgerEntry] = []
     news: list[Item] = []
@@ -386,7 +387,7 @@ def _books(
         cost = round(cogs.get(cid, Fraction()) * wq.CENTS)
         fix = round(fixed.get(cid, 0.0) * wq.CENTS)
         debt = -account_balance(balances, cid, DEBT)
-        interest = round(max(0, debt) * rate)
+        interest = times(max(0, debt), rate)
         dep = depreciation.get(cid, 0)
         net = rev - cost - fix - interest
         lines = [
@@ -410,6 +411,7 @@ def _books(
             plant = account_balance(balances, cid, PPE) + account_balance(
                 balances, cid, ACCUMULATED_DEPRECIATION
             )
+            # money-exact: estimate: a borrowing limit, rounded once where compared
             limit = max(wb.max_leverage * max(0, year_ebitda), wb.asset_lending * max(0, plant))
             room = round(limit) - (debt - cash)
             if rec.is_other or room >= 0:

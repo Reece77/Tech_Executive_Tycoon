@@ -86,6 +86,7 @@ def npv_usd(
     r, life = fb.discount_rate, fb.life_years
     product = tonnage_mt * 1e6 * grade * recovery / life  # tunable-exempt: Mt to t; a year
     build = max(build_years, 1)
+    # money-exact: estimate: an NPV in float dollars; a sale price from it is exact
     capex_pv = capex_usd / build * annuity(r, build)
     start = dmath.pow(1 + r, -build)
     early = min(fb.deck_years, life)
@@ -114,9 +115,10 @@ def capex_usd(
     type's multiple, x (1 + per km to infrastructure) x (1 + per metre of depth)."""
     product = tonnage_mt * 1e6 * grade * recovery / fb.life_years  # tunable-exempt: Mt to t
     return (
+        # money-exact: estimate: capex in float dollars (34.2), an input to the NPV estimate
         product
         * intensity
         * kind_mult
-        * (1 + fb.infra_capex_per_km * infra_km)
-        * (1 + fb.depth_capex_per_m * depth_m)
+        * (1 + fb.infra_capex_per_km * infra_km)  # money-exact: estimate
+        * (1 + fb.depth_capex_per_m * depth_m)  # money-exact: estimate
     )

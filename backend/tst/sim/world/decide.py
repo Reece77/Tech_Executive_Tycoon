@@ -27,7 +27,7 @@ from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, DEBT, PPE, AccountCode, LedgerEntry, LedgerLine, account_balance
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 from tst.sim.world import data as wd
@@ -100,6 +100,7 @@ def decide(
         cash = account_balance(balances, cid, CASH)
         debt = -account_balance(balances, cid, DEBT)
         ebitda = _year_ebitda(rec.ebitda)
+        # money-exact: estimate: a leverage test, only compared
         if ebitda <= 0 or (debt - cash) >= wb.max_leverage * ebitda:
             continue
         mine = own(cid)
@@ -127,8 +128,9 @@ def decide(
             full = wf.unit_full_cost(lr, wq.cash_cost_usd(state, sample, balance, data), wb)
             if seen <= full * (1 + hurdle):
                 continue
-            capex = round(size * lr * wb.capex_years * wq.CENTS)
+            capex = round(exact(size) * exact(lr) * exact(wb.capex_years) * wq.CENTS)
             borrow = max(0, capex - cash)
+            # money-exact: estimate: a leverage test, only compared
             if borrow and (debt + borrow - (cash + borrow - capex)) > wb.max_leverage * ebitda:
                 continue
             if borrow:

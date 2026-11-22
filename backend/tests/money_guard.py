@@ -39,7 +39,22 @@ SKIP_FILES = frozenset({"money.py"})
 # M43r (Codex review 9 finding 10): money carried under other names. A name is money when one
 # of its words (split on "_") is one of these, or it contains "cents".
 ALIASES = frozenset(
-    {"revenue", "revenues", "sales", "cost", "costs", "amount", "fee", "fees", "spend", "payout"}
+    {
+        "revenue",
+        "revenues",
+        "sales",
+        "cost",
+        "costs",
+        "amount",
+        "fee",
+        "fees",
+        "spend",
+        "payout",
+        "debt",
+        "interest",
+        "ebitda",
+        "capex",
+    }
 )
 FLOAT_ITERS = frozenset({"items", "values"})  # a float mapping's iteration yields floats
 

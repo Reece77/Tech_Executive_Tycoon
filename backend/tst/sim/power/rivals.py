@@ -25,7 +25,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.ledger import CASH, PPE, AccountCode, LedgerEntry, LedgerLine, account_balance
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 from tst.sim.power import draws
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -123,7 +123,7 @@ def rivals_month(
             continue
         size = rb.plant_share * load
         lr = wq.long_run_usd(state, good, balance, data)
-        capex = round(size * lr * balance.world.capex_years * wq.CENTS)
+        capex = round(exact(size) * exact(lr) * exact(balance.world.capex_years) * wq.CENTS)
         if capex <= 0 or account_balance(balances, rec.company_id, CASH) < capex:
             continue
         entries.append(
