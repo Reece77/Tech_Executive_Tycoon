@@ -54,3 +54,18 @@ Two sessions, each in its **own clone or worktree** (never a shared folder):
 - **Finding 10, the guard:** a name is money when it contains `cents` or one of its `_`-separated words is `revenue(s)`, `sales`, `cost(s)`, `amount`, `fee(s)`, `spend` or `payout`; a local assigned money is money; `x[k]` and `x.get(k)` read through money and float mappings; tuple-unpacked assignments, `for` targets and comprehension targets take floatness from the value (a float mapping's `.values()`, the last element of its `.items()`, a float sequence's items). Each line it then found in `tst/sim/` is fixed with the exact helpers when it posts or stores cents, or carries a `# money-exact:` reason when it doesn't (audit table below).
 - **Finding 12:** every cache keyed on an input's `id()` keeps the input with its value and checks identity before answering, as payroll's cache does: `eras.arrived`, `saturation.value_per_customer` and `saturation.ceilings` (named by the review), and the audit's module caches `platforms.fees.fee_drag` (which also left `balance` out of its key), `fabs.nodes.timeline`, and `fabs.market`'s China overlay, EUV ratios (also missing `balance` and `data`) and EUV-gated timeline.
 - **Finding 13:** a fixed-price month earns installment i = round(V x (i + 1) / term) - round(V x i / term), i = months since the start; a month the company can't deliver forfeits its installment. Cost-plus and IDIQ are unchanged (their revenue is drawn work, not a price).
+
+### Finding 10's audit (the upgraded guard over `tst/sim/`)
+
+About 135 lines: about 55 fixed with the exact helpers (they post or store cents), about 75 carry a `# money-exact:` reason (rates in float cents rounded where posted, ratios, estimates only compared or shown), 4 wait in `DEFERRED` for lane A's merge (`founder/personal.py`, `group/conglomerate.py` x2, `pharma/demand.py`).
+
+| Area | Fixed: posted or stored cents now exact |
+| --- | --- |
+| Payroll | pool salaries and tools and travel (`times` with the float headcount) |
+| Pharma | rival costs (the review's 27,500,016 case), royalties and co-development shares, stage cost, redesign, partner share, quality supply cost |
+| Rivals and startups | prices, poach offers, funding rounds, entrant cash |
+| Founder and finance | family office gains, scandal fines, share trade costs, dividends, secondary fees (capital), fundraising values, the insolvency bridge cap |
+| Chain and mining | world rivals' COGS, interest, debt repayment, expansion capex, opening cash, capex and debt; mine cash cost, unit cost, in-group sales; refinery mine payments; power rivals' plant capex |
+| Other | regulation fines and FX amounts, hardware take-or-pay and COGS, CRO reference price, hosting savings, CMO marketing budgets, shared-cost allocation, constellation waiting value, car connectivity revenue, analyst targets, family answers' rounding, exploration sale price |
+
+The five lines M36r deferred to M32 (mining sustaining capex, refinery quotes) are resolved: the posted one exact, the quote and the display figure given reasons.
