@@ -1,6 +1,7 @@
 """Pharmaceuticals' place in the turn (docs/formulas.md 55).
 
-Phase 5, after the markets (`sales_month`): every marketed drug's patients, revenue, cost of
+Phase 5, after the markets (`sales_month`): the month's market levels under M43a's ceilings
+(54.1), then every marketed drug's patients, revenue, cost of
 goods and commercial support; licences' milestones, royalties and partners' shares; every pharma
 rival's revenue and costs (history's to 2025). The revenue joins the month's MRR.
 
@@ -36,6 +37,9 @@ def sales_month(
 ) -> tuple[GameState, list[LedgerEntry], dict[int, int]]:
     if not pd.enabled(data):
         return state, [], {}
+    # M43a's ceilings (54.1): this month's levels before demand reads them (M43r, Codex
+    # review 9 finding 6; they were set in phase 12, after the month's sales).
+    state = ceilings.month(state, balance, data)
     state, entries, out = demand.month(state, balance, data)
     revenue = dict(out.revenue)
     if state.pharma_deals:
@@ -55,7 +59,6 @@ def events_month(
         return state, [], []
     entries: list[LedgerEntry] = []
     logs: list[LogItem] = []
-    state = ceilings.month(state, balance, data)  # M43a's ceilings (54.1), from 2026
     state, lg = rules.january(state, rng, balance, data)
     logs += lg
     state = rivals.january(state, rng, balance, data)

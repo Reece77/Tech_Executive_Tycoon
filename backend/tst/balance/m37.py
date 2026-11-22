@@ -61,10 +61,13 @@ def _digest(digester: m30.Digester, game: Game) -> str:
     return hashlib.sha256(state + balances).hexdigest()[: m30.HEX]
 
 
-def pre_2040_hashes(job: tuple[str, int, bool], turns: int = TURNS) -> list[str]:
-    """One M30 run to December 2039, dynasty mode off or on, M37's fields left out."""
+def pre_2040_hashes(
+    job: tuple[str, int, bool], turns: int = TURNS, *, reference: bool = False
+) -> list[str]:
+    """One M30 run to December 2039, dynasty mode off or on, M37's fields left out.
+    `reference`: on the same code with M37's rules disabled (`reference_loaded`)."""
     name, seed, dynasty = job
-    loaded = m30.loaded()
+    loaded = reference_loaded() if reference else m30.loaded()
     game = start_game(loaded, seed, SCENARIO)
     if dynasty:
         game.state = continue_dynasty(game.state, loaded.balance)
@@ -101,6 +104,130 @@ def legacy() -> Hashes:
 def compare(runs: Mapping[str, list[str]], want: Hashes) -> dict[str, str | None]:
     """run -> None if identical to the pre-M37 digests, else the first difference."""
     return {k: m30.first_difference(v, want[k.rsplit("/", 1)[0]]) for k, v in runs.items()}
+
+
+# --- Target 1's same-code differential (M43r, Codex review 9 finding 14) ----------------------
+#
+# A fixture re-recorded from current runs takes in any change both settings share, so the
+# mode-parity check above cannot see an M37 rule moved before 2040 in both. The differential
+# replays each run on the same code against a reference arm with M37's rules disabled: the data
+# loaded with dynasty.start_year (and end_year) moved REFERENCE_SHIFT years on, so every rule
+# M37 keys on its start (the turn's January steps, eras' and nodes' windows, the loader's
+# maturity, slowdown and successors) lies past the horizon. Approved changes of any other
+# milestone run on both sides; a month that differs before 2040 is an M37 rule moved early.
+
+REFERENCE_SHIFT: Final = 200  # years M37's start moves in the reference arm (past any horizon)
+_REFERENCE: dict[str, LoadedData] = {}
+
+
+def reference_loaded(data_dir: Path | None = None) -> LoadedData:
+    """The game's data with M37 disabled: a copy whose dynasty.start_year and end_year are
+    REFERENCE_SHIFT years later, loaded once a process."""
+    import re
+    import shutil
+    import tempfile
+
+    from tst.loader import load_all
+
+    source = data_dir or m30.DATA
+    key = str(source)
+    if key not in _REFERENCE:
+        target = Path(tempfile.mkdtemp(prefix="tst-m37-reference-")) / "data"
+        shutil.copytree(source, target)
+        path = target / "balance.yaml"
+        text = path.read_text(encoding="utf-8")
+
+        def shift(m: re.Match[str]) -> str:
+            return f"{m.group(1)}{int(m.group(2)) + REFERENCE_SHIFT}"
+
+        block = re.compile(r"(?ms)^dynasty:.*?(?=^\S)")
+        head = block.search(text)
+        assert head is not None, "balance.yaml has no dynasty block"
+        moved = re.sub(r"(?m)^(  (?:start|end)_year: )(\d+)", shift, head.group(0), count=2)
+        path.write_text(text[: head.start()] + moved + text[head.end() :], encoding="utf-8")
+        loaded = load_all(target)
+        b = loaded.balance.dynasty
+        assert b.start_year == m30.loaded().balance.dynasty.start_year + REFERENCE_SHIFT
+        _REFERENCE[key] = loaded
+    return _REFERENCE[key]
+
+
+def reference_hashes(job: tuple[str, int]) -> list[str]:
+    name, seed = job
+    return pre_2040_hashes((name, seed, False), reference=True)
+
+
+def all_reference(workers: int) -> dict[str, list[str]]:
+    todo = m30.jobs()
+    with ProcessPoolExecutor(max_workers=max(1, workers)) as pool:
+        runs = list(pool.map(reference_hashes, todo))
+    return {m30.key(n, s): r for (n, s), r in zip(todo, runs, strict=True)}
+
+
+def differential(
+    runs: Mapping[str, list[str]], ref: Mapping[str, list[str]]
+) -> dict[str, str | None]:
+    """run -> None if every month to December 2039 equals the reference arm's, else the first
+    month that differs."""
+    return {k: m30.first_difference(v, ref[k.rsplit("/", 1)[0]]) for k, v in runs.items()}
+
+
+def replay_pair(
+    start: GameState,
+    months: int,
+    loaded: LoadedData,
+    reference: LoadedData,
+    balances: Mapping[tuple[int, str], int] | None = None,
+) -> tuple[list[str], list[str]]:
+    """A short differential from one state: `months` months on `loaded` and on `reference`,
+    each month's digest (M37's fields left out). The reference arm starts from its own copy,
+    so no cache built in one arm is read in the other."""
+    import pickle
+
+    out: list[list[str]] = []
+    for arm in (loaded, reference):
+        state: GameState = pickle.loads(pickle.dumps(start))
+        game = Game(arm, state, dict(balances or {}))
+        digester = m30.Digester(SKIP)
+        digests: list[str] = []
+        for _ in range(months):
+            if game.state.ended:
+                break
+            game.turn()
+            digests.append(_digest(digester, game))
+        out.append(digests)
+    return out[0], out[1]
+
+
+def write_reference(workers: int) -> int:
+    """`tools/m37_targets.py --write-reference`: the nine standard runs become the mode-parity
+    fixture once the dynasty runs and the reference arm equal them; 1 (nothing written) if any
+    run differs."""
+    standard = all_pre_2040(workers, (False,))
+    dynasty = all_pre_2040(workers, (True,))
+    ref = all_reference(workers)
+    plain = {k.rsplit("/", 1)[0]: v for k, v in standard.items()}
+    diff = {
+        k: v
+        for k, v in {**differential(standard, ref), **differential(dynasty, plain)}.items()
+        if v is not None
+    }
+    if diff:
+        for k, v in sorted(diff.items()):
+            print(f"{k}: {v}")
+        return 1
+    text = json.dumps(plain, indent=0, sort_keys=True) + "\n"
+    LEGACY_FILE.write_text(text, encoding="utf-8", newline="\n")
+    print(f"wrote {LEGACY_FILE.name}: {len(plain)} runs")
+    return 0
+
+
+def first_differing_turn(start_turn: int, a: Sequence[str], b: Sequence[str]) -> int | None:
+    """The turn of the first month the arms differ (`start_turn` is the first month played)."""
+    for i, (x, y) in enumerate(zip(a, b, strict=False)):
+        if x != y:
+            return start_turn + i
+    return None if len(a) == len(b) else start_turn + min(len(a), len(b))
 
 
 # --- Targets 2-5: dynasty games to December 2069 ---------------------------------------------

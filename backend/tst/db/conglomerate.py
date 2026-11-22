@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from tst.db.models import LedgerEntryRow, LedgerLineRow
@@ -24,33 +24,59 @@ MONTHS_A_YEAR = 12  # tunable-exempt: calendar
 START_YEAR = 2010  # tunable-exempt: turn 0 is January 2010
 
 
+type Run = tuple[int, int | None]  # [first turn counted, the turn it left) ; None: inside now
+
+
 @dataclass(frozen=True, slots=True)
 class Member:
     company_id: int
     parent_id: int | None
     start: int  # first turn counted
-    end: int | None  # the turn it left; None while inside
+    end: int | None  # the turn it last left; None while inside
+    # M43r (Codex review 9 finding 4): every run it was inside, coalesced; a company sold and
+    # bought again has two, and the months between belong to someone else.
+    runs: tuple[Run, ...] = ()
+
+    def spans(self) -> tuple[Run, ...]:
+        return self.runs or ((self.start, self.end),)
+
+
+def coalesce(runs: list[Run]) -> tuple[Run, ...]:
+    """The union of half-open runs, sorted: overlapping or touching runs merge (the operating
+    and holding-company paths to one company), disjoint ones stay apart."""
+    out: list[Run] = []
+    for start, end in sorted(runs, key=lambda r: r[0]):
+        if out:
+            last_start, last_end = out[-1]
+            if last_end is None or start <= last_end:
+                merged = None if last_end is None or end is None else max(last_end, end)
+                out[-1] = (last_start, merged)
+                continue
+        out.append((start, end))
+    return tuple(out)
 
 
 def members(state: GameState) -> list[Member]:
     """The group's root (the listed entity: the holding company once formed), the player's
-    company and every company inside either (31.1), each with the run of turns it was inside.
+    company and every company inside either (31.1), each with the runs of turns it was inside.
     The player's company counts from the start, and what it owned counts from when it bought
     it, before the holding company was formed as after."""
     root = listed_id(state)
     player = state.player.id
-    runs: dict[int, Member] = {root: Member(root, None, 0, None)}
-    runs.setdefault(player, Member(player, root if player != root else None, 0, None))
+    fixed = {root: Member(root, None, 0, None)}
+    fixed.setdefault(player, Member(player, root if player != root else None, 0, None))
+    found: dict[int, list[Run]] = {}
+    parents: dict[int, int | None] = {}
     for top in dict.fromkeys((player, root)):
         for m in group_members(state, top):
-            run = Member(m.company_id, m.parent_id, m.start + 1, m.end)
-            old = runs.get(m.company_id)
-            if old is None:
-                runs[m.company_id] = run
-            elif old.parent_id is not None or old.company_id != root:
-                start = min(old.start, run.start)
-                end = None if old.end is None or run.end is None else max(old.end, run.end)
-                runs[m.company_id] = Member(m.company_id, run.parent_id, start, end)
+            if m.company_id in fixed:
+                continue
+            found.setdefault(m.company_id, []).append((m.start + 1, m.end))
+            parents[m.company_id] = m.parent_id
+    runs = dict(fixed)
+    for cid, spans in found.items():
+        merged = coalesce(spans)
+        runs[cid] = Member(cid, parents[cid], merged[0][0], merged[-1][1], merged)
     order = [root, *([player] if player != root else [])]
     rest = sorted((c for c in runs if c not in order), key=lambda c: (runs[c].start, c))
     return [runs[c] for c in (*order, *rest)]
@@ -77,8 +103,15 @@ def names(state: GameState, ids: set[int], data: LoadedData) -> dict[int, dict[s
     return dict(out)
 
 
+def _inside(run: Run) -> ColumnElement[bool]:
+    start, end = run
+    turn = LedgerEntryRow.turn
+    return turn >= start if end is None else and_(turn >= start, turn < end)
+
+
 def line_sums(session: Session, group: list[Member]) -> list[LineSum]:
-    """The members' ledger lines while inside the group, summed by year, account and memo."""
+    """The members' ledger lines while inside the group (each run, each entry once), summed by
+    year, account and memo."""
     out: list[LineSum] = []
     year = LedgerEntryRow.turn // MONTHS_A_YEAR
     for m in group:
@@ -90,11 +123,9 @@ def line_sums(session: Session, group: list[Member]) -> list[LineSum]:
                 func.sum(LedgerLineRow.amount_cents),
             )
             .join(LedgerLineRow.entry)
-            .where(LedgerEntryRow.company_id == m.company_id, LedgerEntryRow.turn >= m.start)
+            .where(LedgerEntryRow.company_id == m.company_id, or_(*map(_inside, m.spans())))
             .group_by("year", LedgerLineRow.account_code, LedgerEntryRow.memo)
         )
-        if m.end is not None:
-            q = q.where(LedgerEntryRow.turn < m.end)
         for y, account, memo, cents in session.execute(q):
             out.append(
                 LineSum(m.company_id, START_YEAR + int(y), str(account), str(memo), int(cents))

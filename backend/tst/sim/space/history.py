@@ -1,5 +1,6 @@
 """The space markets' history to 2025 (docs/formulas.md 56.4 target 1), set after demand each month
-before `space.start` (phase 9, and at a new game):
+before `space.start` (phase 9, and at a new game); a dated opening (a first launch, a service,
+D2D) is also pinned before phase 5's markets, so it sells in its opening month (M43r):
 
 - **Launch:** each provider's customers in a region's segment are its share of the year's world
   launches (space.yaml) x the market not held by other companies' lines; no price before its
@@ -107,8 +108,13 @@ def _target(
     )
 
 
-def pin(state: GameState, balance: Balance, data: GameData) -> GameState:
-    """Module docstring. Before `space.start` every rule; from it only the openings' prices."""
+def pin(
+    state: GameState, balance: Balance, data: GameData, *, openings_only: bool = False
+) -> GameState:
+    """Module docstring. Before `space.start` every rule; from it only the openings' prices.
+    `openings_only` (phase 5, before the markets; M43r, Codex review 9 finding 11): only the
+    rows whose price this month's date opens, pinned as phase 9 would pin them, so a service
+    sells in its opening month."""
     history = in_history(state.turn, balance)
     lines = _lines(state, balance, data)
     if not lines:
@@ -158,6 +164,8 @@ def pin(state: GameState, balance: Balance, data: GameData) -> GameState:
         ]
         for seg_row, region in pairs:
             price = _price(state, product, seg_row.segment, region, company, balance, data)
+            if openings_only and (price is None or seg_row.price_cents is not None):
+                continue
             customers = seg_row.customers
             if history:
                 k = (product.category, region, seg_row.segment)
