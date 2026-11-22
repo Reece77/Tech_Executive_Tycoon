@@ -84,6 +84,7 @@ def bids_month(
         view = rival_view_cents(state, rival.id, public.value_cents, z, balance)
         if cap >= wb.bid_discount * view:
             continue
+        # money-exact: ratio: a funding threshold, only compared
         if account_balance(balances, rival.id, CASH) < wb.bids.fund * price:
             continue
         if u >= wb.bids.monthly:

@@ -123,6 +123,7 @@ def pace(output: float, scope: float, pb: ProductsBalance) -> PaceLabel:
 
 def sell_skill(sales: float, negotiation: float, communication: float) -> float:
     """sell_i = (2 sales + negotiation + communication) / 4."""
+    # money-exact: ratio: `sales` is a skill attribute, not money
     return (MAIN_SKILL_WEIGHT * sales + negotiation + communication) / MIX_DIVISOR
 
 

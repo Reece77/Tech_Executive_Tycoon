@@ -99,6 +99,7 @@ def month_start(state: GameState, balance: Balance) -> GameState:
             continue
         if project.end_turn != state.turn - 1 or not state.company(project.company_id).alive:
             continue
+        # money-exact: ratio: a headcount factor, not money
         state = _scale_builders(state, project.company_id, 1 / (1 + balance.rnd.rival.pool_cost))
     return state
 

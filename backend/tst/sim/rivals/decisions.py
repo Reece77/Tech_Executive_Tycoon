@@ -205,6 +205,7 @@ def cash_months(
 ) -> float:
     cost = monthly_cost_cents(state, company_id, balance, data)
     cash = account_balance(balances, company_id, CASH)
+    # money-exact: ratio: months of cash, compared with thresholds
     return float("inf") if cost <= 0 else cash / cost
 
 
@@ -550,7 +551,7 @@ def act(
         return state, f"started a brand push on {product.name}"
     if c.action == "enter_segment" and product is not None and c.segment is not None:
         market = data.category(product.category).market(c.segment)
-        price = round(market.reference_price_cents * rv.price_factor[style(state, company)])
+        price = times(market.reference_price_cents, rv.price_factor[style(state, company)])
         state = with_product_segment(
             state,
             ProductSegment(
@@ -564,9 +565,9 @@ def act(
         return enter_region(state, company, product, c.segment, balance, data)
     if c.action == "cut_costs":
         for pool in state.company_pools(company.id):
-            state = with_pool(
-                state, replace(pool, headcount=pool.headcount * (1 - rv.cut_costs_pools))
-            )
+            # money-exact: ratio: a headcount cut, not money
+            headcount = pool.headcount * (1 - rv.cut_costs_pools)
+            state = with_pool(state, replace(pool, headcount=headcount))
         for p in state.company_products(company.id):
             budget = round(p.marketing_budget_cents * (1 - exact(rv.cut_costs_marketing)))
             state = with_product(state, replace(p, marketing_budget_cents=budget))
@@ -605,7 +606,7 @@ def enter_region(
     for seg in product_segment_keys(state, product, data):
         reference = category.market(seg).reference_price_cents
         if region == home:
-            price = max(1, round(reference * factor))
+            price = max(1, times(reference, factor))
             if state.product_segment(product.id, seg) is None:
                 state = with_product_segment(
                     state, ProductSegment(product.id, seg, price, added_turn=state.turn)
@@ -636,7 +637,7 @@ def approach(
         data.role(employment.role).salary_band_mid_cents[employment.level],
         work_multiplier_bp(state, employment, balance, data),
     )
-    offer = round(market * balance.rivals.poach.offer_mult)
+    offer = times(market, balance.rivals.poach.offer_mult)
     approach_id, ids = state.next_ids.take("approach")
     return with_approach(
         replace(state, next_ids=ids),
@@ -789,6 +790,7 @@ def _add_feature(product: Product, amount: float, data: GameData, turn: int) -> 
     if product.held_feature is not None:
         held = max(0.0, min(SCORE_MAX, product.held_feature + amount))
         return replace(product, held_feature=held)
+    # money-exact: ratio: `amount` is a feature-score change, not money
     points = amount / SCORE_MAX * pf.expected_features(data.category(product.category), turn)
     return replace(product, feature_points=max(0.0, product.feature_points + points))
 

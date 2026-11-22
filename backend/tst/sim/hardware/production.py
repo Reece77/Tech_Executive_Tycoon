@@ -371,6 +371,7 @@ def _mean_saving(state: GameState, plan: ProductionPlan, company: int, product_i
     run = sum(plan.plant_run.get(f, 0.0) for f in ids)
     if run <= 0:
         return 0.0
+    # money-exact: rate: a run-weighted saving a unit
     return sum(plan.plant_run.get(f, 0.0) * unit_saving_cents(state, f) for f in ids) / run
 
 
@@ -525,6 +526,7 @@ def _posted_units(
             out[pid] = contract
             continue
         pack = balance.chips.packaging_cents
+        # money-exact: rate: a blended cost a chip
         out[pid] = (own * pack + (made - own) * contract) / made
         left = own
         for s in fab_supply.product_shares(state, product, balance, data):
@@ -641,7 +643,7 @@ def _plants_month(
         for f in (*live_plants(state, company.id, balance), *cars):
             own = plan.plant_run.get(f.id, 0.0) if plan else 0.0
             sold = cm_sold.get(f.id, 0.0)
-            cost = round(sold * plant_unit_cents(state, f, balance))
+            cost = round(exact(sold) * exact(plant_unit_cents(state, f, balance)))
             if cost:
                 memo = f"Cost of goods: contract manufacturing at {facility_name(f, balance, data)}"
                 entries.append(_entry(state.turn, f.company_id, memo, cost, COGS, None))

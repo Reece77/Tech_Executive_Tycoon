@@ -51,7 +51,7 @@ from tst.sim.ledger import (
     LedgerLine,
     account_balance,
 )
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact, times
 from tst.sim.state import GameState, with_company
 from tst.sim.world import data as wd
 from tst.sim.world import formulas as wf
@@ -205,7 +205,7 @@ def operate(
 
     # Facilities run, mothball, restart and close.
     revenue: dict[int, float] = {}
-    cogs: dict[int, float] = {}
+    cogs: dict[int, Fraction] = {}
     fixed: dict[int, float] = {}
     depreciation: dict[int, int] = {}
     ran: list[WorldFacility] = []
@@ -234,7 +234,8 @@ def operate(
         if f.status == "live":
             output = f.capacity * utilisation[f.good] / MONTHS
             revenue[f.company_id] = revenue.get(f.company_id, 0.0) + output * spot
-            cogs[f.company_id] = cogs.get(f.company_id, 0.0) + output * cash_cost
+            made_cost = exact(output) * exact(cash_cost)
+            cogs[f.company_id] = cogs.get(f.company_id, Fraction()) + made_cost
             below = f.below_months + 1 if losing(spot, cash_cost, factors[f.good], wb) else 0
             changes.update(output=output, below_months=below)
             if below >= wb.mothball_months and f.id in to_mothball:
@@ -300,6 +301,7 @@ def losing(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> bo
 def winning(spot: float, cash_cost: float, factor: float, wb: WorldBalance) -> bool:
     """A month toward restarting: spot over the cash cost x (1 + hurdle), or a market short by
     the hurdle (factor at least 1 + hurdle)."""
+    # money-exact: estimate: unit price against unit cash cost, only compared
     return spot > cash_cost * (1 + wb.hurdle) or factor >= 1 + wb.hurdle
 
 
@@ -363,7 +365,7 @@ def _books(
     data: GameData,
     balances: Mapping[tuple[int, AccountCode], Cents],
     revenue: Mapping[int, float],
-    cogs: Mapping[int, float],
+    cogs: Mapping[int, Fraction],
     fixed: Mapping[int, float],
     depreciation: Mapping[int, int],
 ) -> tuple[GameState, list[LedgerEntry], list[Item]]:
@@ -381,7 +383,7 @@ def _books(
         cid = rec.company_id
         foundry = any(f.good == FOUNDRY_GOOD for f in state.world_facilities if f.company_id == cid)
         rev = round(revenue.get(cid, 0.0) * wq.CENTS)
-        cost = round(cogs.get(cid, 0.0) * wq.CENTS)
+        cost = round(cogs.get(cid, Fraction()) * wq.CENTS)
         fix = round(fixed.get(cid, 0.0) * wq.CENTS)
         debt = -account_balance(balances, cid, DEBT)
         interest = round(max(0, debt) * rate)
@@ -414,8 +416,8 @@ def _books(
                 entries.append(_borrow(turn, cid, company.name, -cash))
             else:
                 insolvent = rec.insolvent_months + 1
-        elif debt > 0 and cash > wb.repay_cash_months * costs:
-            repay = min(debt, cash - round(wb.repay_cash_months * costs))
+        elif debt > 0 and cash > exact(wb.repay_cash_months) * costs:
+            repay = min(debt, cash - times(costs, wb.repay_cash_months))
             if repay > 0:
                 entries.append(_borrow(turn, cid, company.name, -repay))
         rec = replace(

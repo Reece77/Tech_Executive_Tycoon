@@ -647,7 +647,7 @@ def sale_price_cents(state: GameState, project: Project, balance: Balance, data:
         return 0
     npv = indicative_npv_cents(state, project, balance, data)
     share = sb.share.get(stage, 0.0)
-    price = round(share * max(0, npv or 0))
+    price = times(max(0, npv or 0), share)
     if project.reading == "strong" and stage == "surveyed":
         price = max(price, sb.anomaly_cents)
     return price

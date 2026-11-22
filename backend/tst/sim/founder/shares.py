@@ -51,7 +51,7 @@ from tst.sim.founder.wealth import post, share_price_cents
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS, QUARTER_MONTHS
-from tst.sim.money import exact
+from tst.sim.money import exact, exact_product, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -136,7 +136,7 @@ def trade(
     price = share_price_cents(state, company_id, balances, balance, data)
     assert price is not None
     value = shares * price
-    cost = round(value * pb.trade_cost)
+    cost = times(value, pb.trade_cost)
     held = holding_in(state, person_id, company_id)
     held_shares = held.shares if held is not None else 0
     held_cost = held.cost_cents if held is not None else 0
@@ -459,7 +459,7 @@ def dividends_month(
         price = share_price_cents(state, h.company_id, balances, balance, data)
         if price is None:
             continue
-        cents = round(h.shares * price * pb.dividend_yield / (12 // QUARTER_MONTHS))
+        cents = round(exact_product(h.shares * price, pb.dividend_yield) / (12 // QUARTER_MONTHS))
         if cents <= 0:
             continue
         entries.append(

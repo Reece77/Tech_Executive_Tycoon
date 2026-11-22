@@ -18,6 +18,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.fabs import market
 from tst.sim.fabs import nodes as nd
 from tst.sim.ledger import CASH, COMMON_EQUITY, DEBT, PPE, LedgerEntry, LedgerLine
+from tst.sim.money import exact
 from tst.sim.rivals.models import CHAIN_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState
@@ -132,7 +133,7 @@ def materialise(
                 fixed += capacity * lr * wb.fixed_share
                 book += f.capex_cents
         ebitda = revenue - cash_costs - fixed
-        cash = round(revenue / MONTHS * wb.open_cash_months * wq.CENTS)
+        cash = round(exact(revenue) / MONTHS * exact(wb.open_cash_months) * wq.CENTS)
         debt = round(max(ebitda, 0.0) * wb.open_leverage * wq.CENTS)
         plant = round(book)
         equity = cash + plant - debt

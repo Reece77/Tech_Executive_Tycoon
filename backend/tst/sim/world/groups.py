@@ -506,6 +506,7 @@ def _security(state: GameState, balance: Balance, data: GameData) -> tuple[GameS
             continue
         demand = wo.baseline(state, good, turn, balance, data)
         for c in rivals:
+            # money-exact: ratio: a volume, demand x the rival's revenue share
             need = gb.security_need * demand * revenue[c.id] / total
             if need <= 0:
                 continue

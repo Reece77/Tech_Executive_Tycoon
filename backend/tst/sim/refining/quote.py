@@ -55,12 +55,15 @@ def estimate(
     eff = rf.effective_yield(r.yield_, r.semi_grade, level, rb.semi_min_level, rb.semi_low_yield)
     per_in = rf.input_per_output(r.input_per_output, r.yield_, eff)
     input_cents = (
+        # money-exact: estimate: the plant quote's unit cost, only shown, never posted
         rg.price_cents(state, r.input_good, balance, data) * per_in if r.input_good else 0.0
     )
     index = power_index(state, region, balance, data)
     power = rf.power_cents(r.mwh_per_unit, rb.power_cents_per_mwh, index)
     out_year = size * r.per_capacity_unit * eff / r.yield_
+    # money-exact: estimate: the quote's float cents a unit, only shown, never posted
     fixed = size * r.fixed_cents / out_year if out_year else 0.0
+    # money-exact: estimate: as above
     dep = q.capex_cents / (kind.life_months / MONTHS) / out_year if out_year else 0.0
     unit = input_cents + power + r.other_cents + fixed + dep
     return UnitEstimate(

@@ -112,6 +112,7 @@ def made_value(
         weight = f.run_units / run if run > EPS else 1 / len(plants)
         country = world.facility_country(state, f, data)
         out[country] = out.get(country, 0.0) + row.plant_units / units * weight
+    # money-exact: rate: float cents a country, rounded once where posted
     return {c: share * row.cogs_cents for c, share in out.items()}
 
 

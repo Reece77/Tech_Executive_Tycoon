@@ -34,6 +34,7 @@ Each month after the sales, for each constellation (by id):
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
@@ -77,6 +78,7 @@ def satellite_cents(state: GameState, c: Constellation, balance: Balance, data: 
     per_kg = interp(file(data).satellite_cost_cents, year_at(state.turn))
     span = sb.life_months.hi - sb.life_months.lo
     life = (c.life_months - sb.life_months.lo) / span if span > 0 else 0.0
+    # money-exact: rate: a satellite's unit cost in float cents, rounded where a build is posted
     cents = c.mass_kg * per_kg * (1 + sb.life_cost * life)
     if c.kind == "eo":
         cents *= sb.eo_cost_mult
@@ -249,7 +251,7 @@ def month(
             entries.append(_entry(turn, company, f"{memo}: launch", PPE, CASH, launch_cents))
             spend += launch_cents
             capex += launch_cents
-            each_wait = wait_value / ground if ground > 0 else 0.0
+            each_wait = Fraction(wait_value, ground) if ground > 0 else Fraction()
             value = round(exact(each_wait) * sats) + launch_cents
             if c.insured:
                 premium = round(exact(value) * exact(sb.failure.premium_rate))

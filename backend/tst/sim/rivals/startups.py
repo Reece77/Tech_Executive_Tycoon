@@ -24,6 +24,7 @@ from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
+from tst.sim.money import times
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.research.eras import annual_growth
@@ -257,7 +258,7 @@ def startup_funding(
     state = with_company(state, company)
     if draw >= sb.raise_chance * climate(state, data):
         return state, (), None, True
-    amount = round(sb.raise_months * monthly_cost)
+    amount = times(monthly_cost, sb.raise_months)
     entry = LedgerEntry.transfer(
         turn=state.turn,
         company_id=company.id,
@@ -353,7 +354,7 @@ def found_company(
             ProductSegment(
                 product_id=product_id,
                 segment=market.segment,
-                price_cents=max(1, round(market.reference_price_cents * factor)),
+                price_cents=max(1, times(market.reference_price_cents, factor)),
                 added_turn=state.turn,
             ),
         )

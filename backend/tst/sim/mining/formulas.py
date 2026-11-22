@@ -90,15 +90,18 @@ def ore_cost_usd_t(opex_per_t_product: float, kind_opex: float, ref: float, mult
 
 
 def annual_cost_usd(ore_mt: float, ore_cost: float) -> float:
+    # money-exact: rate: ore_cost is float USD a t; the month's cost is rounded once where posted
     return ore_mt * 1e6 * ore_cost  # tunable-exempt: Mt to t
 
 
 def fixed_month_usd(annual_usd: float, fixed_share: float, safety_cost: float) -> float:
+    # money-exact: rate: float USD from a USD-a-t rate; rounded once where posted
     return annual_usd * fixed_share / MONTHS * safety_cost
 
 
 def energy_usd(ore_t: float, ore_cost: float, fixed_share: float, energy_share: float) -> float:
     """The month's energy part of variable cost at the reference price (M32 46.1's draw)."""
+    # money-exact: rate: ore_cost is float USD a t; rounded once where posted
     return ore_t * ore_cost * (1 - fixed_share) * energy_share
 
 
@@ -106,6 +109,7 @@ def variable_usd(
     ore_t: float, ore_cost: float, fixed_share: float, energy_share: float, power: float
 ) -> float:
     """The month's variable cost: ore x the variable share, its energy part x power."""
+    # money-exact: rate: ore_cost is float USD a t; rounded once where posted
     return ore_t * ore_cost * (1 - fixed_share) * ((1 - energy_share) + energy_share * power)
 
 

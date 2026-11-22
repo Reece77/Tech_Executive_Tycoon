@@ -186,6 +186,7 @@ def fab_unit_cents(
     cost = sum(s.starts * s.cost_per_start_cents for s in shares)
     if chips_ <= 0 or cost <= 0:
         return None
+    # money-exact: rate: cents a chip, rounded once where posted
     return cost / starts / (chips_ / starts) + balance.chips.packaging_cents
 
 

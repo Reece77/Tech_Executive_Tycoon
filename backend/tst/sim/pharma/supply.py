@@ -34,6 +34,7 @@ from tst.sim.ledger import (
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.medical import data as md
 from tst.sim.medical.config import FINDINGS
+from tst.sim.money import exact
 from tst.sim.pharma import data as pd
 from tst.sim.pharma import draws
 from tst.sim.pharma.demand import KINDS
@@ -115,7 +116,7 @@ def plant_entries(state: GameState, balance: Balance, data: GameData) -> list[Le
             continue
         spec = pd.file(data).plant(p.kind)
         base = pd.cents(spec.fixed_month, balance)
-        extra = round(base * (sb.quality_cost_share[p.quality] - 1))
+        extra = round(base * (exact(sb.quality_cost_share[p.quality]) - 1))
         entries.append(
             LedgerEntry.transfer(
                 turn=state.turn,

@@ -358,6 +358,7 @@ def list_company(
     state = with_listing(state, listing)
     value = pf.fundamental_value_cents(f.arr_cents, f.multiple)
     per_share = pf.per_share_cents(value, shares)
+    # money-exact: ratio: close against value a share
     sentiment = pb.sentiment.bounds.clamp(close / per_share if per_share > 0 else 1.0)
     analysts = first_analysts(close * shares, per_share, close, gen, balance)
     public = PublicCompany(

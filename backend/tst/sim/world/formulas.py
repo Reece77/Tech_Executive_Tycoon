@@ -36,6 +36,7 @@ def normal_supply(capacity: float, player: float, wb: WorldBalance) -> float:
 def unit_cash_cost(long_run: float, cost: float, power_index: float, wb: WorldBalance) -> float:
     """A unit's cash cost (41.1): the long-run price x the cost position's share of it, the
     power share moving with the region's power index."""
+    # money-exact: ratio: `cost` is a cost position in 0-1; share is a share of the price
     share = wb.cost_range.lo + (wb.cost_range.hi - wb.cost_range.lo) * cost
     return long_run * share * (1 - wb.power_share + wb.power_share * power_index)
 

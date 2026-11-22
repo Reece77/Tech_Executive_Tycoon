@@ -855,6 +855,7 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
                 / float(ct.premium(state, customer, b))
             )
             best *= 1 - EPS
+            # money-exact: estimate: a price floor only compared, never posted
             if best < cost * (1 + margin):
                 continue
             right = _right(run, owner)
@@ -1011,6 +1012,7 @@ def corp_targets(
         if estimate <= 0 or estimate > cash:
             continue
         customers = sum(s.customers for p in theirs for s in state.segments_of(p.id))
+        # money-exact: ratio: customers a cent, only ranked
         out.append((customers / estimate, c.id, estimate))
     out.sort(key=lambda t: (-t[0], t[1]))
     return out

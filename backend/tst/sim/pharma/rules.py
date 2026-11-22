@@ -73,6 +73,7 @@ def january(
         if turn - us < window_years(state, biologic, year, data) * pd.MONTHS:
             continue
         sales = us_revenue_year(state, p.id)
+        # money-exact: ratio: sales in real billions, only compared with a threshold
         if sales / per_b >= rb.ira_min_b:
             candidates.append((-sales, p.id, p))
     logs: list[LogItem] = []

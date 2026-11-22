@@ -43,12 +43,14 @@ def growth_of(company: CompanyState, revenue_now: int) -> float:
     if len(history) <= MONTHS_A_YEAR:
         return 0.0
     then = history[-MONTHS_A_YEAR - 1]
+    # money-exact: ratio: revenue growth
     return revenue_now / then - 1 if then > 0 else 0.0
 
 
 def margin_of(company: CompanyState, revenue_now: int, op_now: int) -> float:
     revenue, ops = trailing(company, revenue_now, op_now, MONTHS_A_YEAR)
     total = sum(revenue)
+    # money-exact: ratio: an operating margin
     return sum(ops) / total if total > 0 else 0.0
 
 

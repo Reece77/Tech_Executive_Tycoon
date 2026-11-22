@@ -495,8 +495,9 @@ def _add(
     got = 0.0
     for row in rows:
         share = row.customers / total if total > 0 else 1 / len(rows)
+        # money-exact: ratio: `amount` is customers, not money
         state = _put(state, replace(row, customers=row.customers + amount * share))
-        got += amount * share
+        got += amount * share  # money-exact: ratio: customers, not money
     return state, got
 
 

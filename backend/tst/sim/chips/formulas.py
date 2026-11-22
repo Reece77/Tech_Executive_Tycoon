@@ -27,4 +27,5 @@ def gpu_capex_factor(own_cost: float, market_price: float, floor: float, share: 
     chip price), never above 1 (26.3)."""
     if market_price <= 0:
         return 1.0
+    # money-exact: ratio: own unit cost against the market price
     return min(1.0, floor + share * own_cost / market_price)

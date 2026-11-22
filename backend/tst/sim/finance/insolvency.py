@@ -21,7 +21,7 @@ from tst.sim.finance.statements import projected_net_burn
 from tst.sim.hiring.models import Candidate
 from tst.sim.ledger import CASH, AccountCode, LedgerEntry, account_balance
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import Cents
+from tst.sim.money import Cents, times
 from tst.sim.rivals.models import FreeAgent
 from tst.sim.state import (
     CompanyState,
@@ -182,7 +182,7 @@ def insolvency(
         if avg is None or avg < bk.bridge_min_confidence or offered or post is None:
             continue
         amount = bridge_amount(state, company.id, cash, balance, data)
-        cap = round(bk.bridge_cap_of_post * post)
+        cap = times(post, bk.bridge_cap_of_post)
         safe_id, ids = state.next_ids.take("safe")
         expires = state.turn + bk.bridge_open_turns
         state = with_safe(

@@ -20,6 +20,7 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.group import formulas as gf
 from tst.sim.ledger import CASH, COGS, LedgerEntry, LedgerLine
+from tst.sim.money import times
 from tst.sim.refining import goods as rg
 from tst.sim.refining.plants import intercompany, live_refineries, recipe_of
 from tst.sim.state import GameState, with_refinery
@@ -70,7 +71,7 @@ def feed_from_mine(
         price_t = gf.transfer_price_cents(
             price_kind, round(unit_cost_cents_t), market_t, balance, margin
         )
-        paid = round(tonnes * price_t) if facility.company_id != mine_company else 0
+        paid = times(price_t, tonnes) if facility.company_id != mine_company else 0
         if spot_cents > 0:  # its spot purchase came from the group instead
             entries.append(
                 LedgerEntry(

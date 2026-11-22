@@ -370,6 +370,7 @@ def _run_plant(
     staff = staff_cents(state, facility, balance)
     input_cents = round(group_cents) + bought
     total = input_cents + power + other + fixed + depreciation + staff
+    # money-exact: rate: float cents a unit of output; amounts from it are rounded where posted
     unit = total / output if output > EPS else 0.0
     if output > EPS:
         pools.setdefault((root, r.output_good), []).append(_Lot(facility.id, company, output, unit))

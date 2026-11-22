@@ -357,7 +357,7 @@ def _monthly_cost_lines(
         pay = monthly_salary_cents(
             market_mid_cents(role.salary_band_mid_cents["mid"], _mid_region(balance, data))
         )
-        salaries[None] += round(pool.headcount * pay)
+        salaries[None] += times(pay, pool.headcount)
         benefits[None] += times(benefits_cents(pay, balance.payroll), pool.headcount)
         office[None] += times(balance.payroll.office_cost_per_head_cents, pool.headcount)
         employees[None] += pool.headcount
@@ -368,7 +368,7 @@ def _monthly_cost_lines(
         ("Salaries", SALARIES, salaries),
         ("Benefits", BENEFITS, benefits),
         ("Office", RENT, office),
-        ("Tools and travel", GENERAL_ADMIN, {d: round(tools * n) for d, n in employees.items()}),
+        ("Tools and travel", GENERAL_ADMIN, {d: times(tools, n) for d, n in employees.items()}),
     ):
         lines += [(memo, account, int(by_division[d]), d) for d in divisions]
     lines += rent_lines(state, company_id, balance, data)  # leased offices (M9, 19.2)

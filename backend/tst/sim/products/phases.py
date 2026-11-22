@@ -35,7 +35,7 @@ from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.markets import saturation
 from tst.sim.medical import gate as medical_gate
 from tst.sim.modes.rankings import brand_bonus
-from tst.sim.money import Cents, exact, times
+from tst.sim.money import Cents, exact, exact_product, times
 from tst.sim.org.executives import CRO, side_factor
 from tst.sim.org.pitch_execution import execution_factor
 from tst.sim.org.rules import OrgView, org_view
@@ -125,7 +125,7 @@ def reference_price(
     if price_index != 1:
         reference = max(1, times(reference, price_index))
     if pricing_power != 1 and data.segment(segment).reach == "sales":
-        reference = round(reference * pricing_power)
+        reference = times(reference, pricing_power)
     return reference
 
 
@@ -886,11 +886,16 @@ def product_costs_by_division(
         hosting[d] = hosting.get(d, 0) + sum(by_region.values())
         if alloc is not None:
             if category.capacity_market:  # its CU come from the company's own capacity
-                saved = sum(by_region.values()) * alloc.sold_share
+                saved = exact_product(sum(by_region.values()), alloc.sold_share)
             else:
                 saved = sum(
-                    amount * alloc.served_share(product.id, home if r is None else r)
-                    for r, amount in by_region.items()
+                    (
+                        exact_product(
+                            amount, alloc.served_share(product.id, home if r is None else r)
+                        )
+                        for r, amount in by_region.items()
+                    ),
+                    Fraction(0),
                 )
             hosting[d] -= round(saved)
     return hosting, marketing

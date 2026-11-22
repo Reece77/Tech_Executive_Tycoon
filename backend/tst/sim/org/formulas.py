@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
+from fractions import Fraction
 from typing import Literal
 
 from tst.sim.data_models import (
@@ -157,7 +158,7 @@ def allocate_shared(
     total = corporate_headcount + sum(central.values())
     if total <= 0 or corporate_costs == 0:
         return {d: 0 for d in central}
-    return {d: round(corporate_costs * h / total) for d, h in central.items()}
+    return {d: round(Fraction(corporate_costs * h, total)) for d, h in central.items()}
 
 
 def support_churn(c: float, k_coo: float, org: OrgBalance) -> float:

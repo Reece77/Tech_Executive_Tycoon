@@ -252,7 +252,7 @@ def _cmo(seat: _Seat, data: GameData, revenue: Cents) -> None:
     live = [p for p in state.company_products(company) if p.status in SELLING]
     if not live or revenue <= 0:
         return
-    total = revenue * seat.a.number("marketing_pct_of_revenue") / PCT
+    total = exact(revenue) * exact(seat.a.number("marketing_pct_of_revenue")) / PCT
     weights = {
         p.id: max(SCORE_MAX - p.brand, 1.0)
         * math.sqrt(1 + sum(s.customers for s in state.segments_of(p.id)))
@@ -267,7 +267,7 @@ def _cmo(seat: _Seat, data: GameData, revenue: Cents) -> None:
         shares[best] -= moved
         shares[worst] += moved
     for p in live:
-        cents = round(total * shares[p.id])
+        cents = round(total * exact(shares[p.id]))
         if abs(cents - p.marketing_budget_cents) <= CHANGE_TOLERANCE * max(cents, 1):
             continue
         seat.act(

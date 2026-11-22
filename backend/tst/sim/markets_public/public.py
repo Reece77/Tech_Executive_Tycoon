@@ -287,7 +287,8 @@ def _report(
     per_share = f.per_share_cents
     analysts = []
     for i in range(pf.analyst_count(cap, ab)):  # targets refresh after each report (25.3)
-        target = max(1, round(per_share * (1 + ab.target_sd * float(gen.standard_normal()))))
+        draw = float(gen.standard_normal())
+        target = max(1, round(per_share * (1 + exact(ab.target_sd) * exact(draw))))
         analysts.append(Analyst(i, target, "hold"))  # rated below, against the new price
     public = replace(
         public,

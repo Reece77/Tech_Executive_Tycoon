@@ -185,6 +185,7 @@ def fee_drag(category: str, balance: Balance, data: GameData) -> float:
                     continue
                 sched = pdata.schedule(p, region, turn, balance, data)
                 fee = pdata.fee_for(sched, category, BIG_SELLER, False, balance)
+                # money-exact: ratio: a user-weighted fee rate, not money
                 drag += w * users * fee
         years.append(app.paid_share * drag)
     drag = sum(years) / len(years)

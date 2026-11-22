@@ -9,6 +9,7 @@ from typing import Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
+from tst.sim.money import exact, times
 from tst.sim.regulation.config import CaseDef, RegimeDef, RegulationFile, RegulatorDef
 from tst.sim.state import GameState, derived
 
@@ -65,7 +66,7 @@ def part_share(data: GameData, reg: RegulatorDef) -> float:
 
 def usd_cents(amount: float, currency: str, balance: Balance) -> int:
     """An amount in a currency as US cents (regulation.fx, A)."""
-    return round(amount * balance.regulation.fx[currency] * CENTS)
+    return round(exact(amount) * exact(balance.regulation.fx[currency]) * CENTS)
 
 
 def threshold_cents(billions: float | None, currency: str, balance: Balance) -> int | None:
@@ -76,7 +77,7 @@ def threshold_cents(billions: float | None, currency: str, balance: Balance) -> 
 def game_threshold_cents(billions: float | None, currency: str, balance: Balance) -> int | None:
     """The same threshold in the game's economy (`economy_scale.money`): what the tests read."""
     real = threshold_cents(billions, currency, balance)
-    return None if real is None else round(real * balance.economy_scale.money)
+    return None if real is None else times(real, balance.economy_scale.money)
 
 
 def game_users_share(share: float, balance: Balance) -> float:

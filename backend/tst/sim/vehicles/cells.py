@@ -107,6 +107,7 @@ def metals_cents(
         if not q:
             continue
         if turn is None:
+            # money-exact: rate: a kWh's metal cost in float cents, not an amount
             total += q * rg.price_cents(state, good, balance, data)
         else:
             price = commodity.price(state, good, turn, data, balance)

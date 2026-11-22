@@ -317,6 +317,7 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
             if launch is None:
                 continue
             selling = (pb.record_months - launch) / pb.record_months
+            # money-exact: estimate: a pitch's float case, only ranked and shown
             case = revenue * fit * dmath.pow(1 + growth, 2) * selling
             if sized is None or case - team * pay > sized[0]:
                 sized = (case - team * pay, team, launch, case)
@@ -410,6 +411,7 @@ def _regions(state: GameState, company: int, b: Balance, data: GameData) -> list
                 if rm is None or price <= 0:
                     continue
                 local = gf.regional_price_cents(price, region, home, data)
+                # money-exact: estimate: a pitch's float case, only ranked and shown
                 central += rm.addressable * share * fit * local
             year = 2010 + state.turn // MONTHS_PER_YEAR  # tunable-exempt: turn 0 is 2010
             central *= dmath.pow(1 + cat.growth_in(year), 2) * pb.region_capture  # at 24 months
@@ -1137,6 +1139,7 @@ def _acquisitions(
             if p.category in mine
         )
         costs = deals.public_costs_cents(state, target.id, b, data)  # public only (M15r)
+        # money-exact: estimate: a pitch's float case, only ranked and shown
         central = revenue * dmath.pow(1 + growth, 2) + mb.pitch_synergy * costs
         listed = valuation.is_listed(state, target.id, data)
         if listed:
@@ -1144,6 +1147,7 @@ def _acquisitions(
         else:
             price = valuation.value_range_cents(state, target.id, balances, b, data)[1]
         share, _ = antitrust.combined_share(state, company, target.id, b, data)
+        # money-exact: ratio: revenue to price, a pitch's score weight
         ratio = revenue * fit / price
         out.append(
             Candidate(

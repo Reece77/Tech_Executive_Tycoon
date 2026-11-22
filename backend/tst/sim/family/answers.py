@@ -5,6 +5,7 @@ the group), each applied by the engine."""
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from statistics import median
 from typing import Final
 
@@ -338,7 +339,7 @@ def _salary(state: GameState, role: str, level: str, balance: Balance, data: Gam
     """The role's band midpoint at the level (13.8's market rate), regional multiplier 1."""
     mid = data.role(role).salary_band_mid_cents[level]
     step = balance.payroll.salary_round_to_cents
-    return round(mid / step) * step
+    return round(Fraction(mid, step)) * step
 
 
 def note_seat(state: GameState, person_id: int, seat: str) -> GameState:

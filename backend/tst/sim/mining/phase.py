@@ -45,7 +45,7 @@ from tst.sim.mining import prices, risk
 from tst.sim.mining.actions import LINK, close_entries, closed, group_ids, mine_name
 from tst.sim.mining.draws import ACCIDENT, GRADE, PROTEST, mining_draws
 from tst.sim.mining.models import HISTORY_MONTHS, Mine, MineMonth
-from tst.sim.money import format_money, times
+from tst.sim.money import exact, format_money, times
 from tst.sim.power import grid
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_facility, with_mine, with_mine_deal, with_queued
@@ -358,8 +358,9 @@ def _operate(
     energy_usd = mf.energy_usd(
         ore_mt * MT, ore_cost(mine, balance, data, kind), sub.fixed_share, mb.energy_share
     )
-    sustaining = mb.sustaining_share * mine.capex_paid_cents / CENTS / 12 if running else 0.0
-    cash_cost = round((fixed + variable + sustaining) * CENTS)
+    # Sustaining capex in exact cents: the month's share of capex paid (ADR-0003).
+    sustaining = exact(mb.sustaining_share) * mine.capex_paid_cents / 12 if running else Fraction(0)
+    cash_cost = round((exact(fixed) + exact(variable)) * CENTS + sustaining)
     if cash_cost:
         entries.append(
             LedgerEntry.transfer(
@@ -375,7 +376,7 @@ def _operate(
     left = product
     revenue = 0
     banned = mine.ban_until is not None and turn <= mine.ban_until
-    unit_cost_cents = round(cash_cost / product) if product > EPS else 0
+    unit_cost_cents = round(Fraction(cash_cost) / exact(product)) if product > EPS else 0
     if left > EPS and mine.buyer_id is not None and mine.buyer_id in group_ids(state):
         buyer_region = _company_region(state, mine.buyer_id, data)
         if not banned or buyer_region == mine.region:
@@ -385,7 +386,7 @@ def _operate(
                 price = gf.transfer_price_cents(
                     mine.price_kind, unit_cost_cents, market, balance, mine.margin
                 )
-                paid, spot_value = round(q * price), round(q * market)
+                paid, spot_value = times(price, q), times(market, q)
                 buyer = state.company(mine.buyer_id).name
                 entries += [
                     LedgerEntry(
@@ -520,6 +521,7 @@ def _operate(
                 amount=provision,
             )
         )
+    # money-exact: rate: the float USD a t shown on the Mines screen, never posted
     cost_t = (cash_cost + royalty) / CENTS / product if product > EPS else 0.0
     month = MineMonth(
         turn=turn,
@@ -723,6 +725,7 @@ def would_be_cost_usd_t(state: GameState, mine: Mine, balance: Balance, data: Ga
         mb.energy_share,
         grid.multiplier(state, mine.region, balance, data),
     )
+    # money-exact: estimate: the would-be USD a t the Mines screen shows, never posted
     sustaining = mb.sustaining_share * mine.capex_cents / CENTS
     spot = prices.spot_usd_t(state, mine.commodity, data, balance)
     royalty = spot * data.region(mine.region).royalty_rate

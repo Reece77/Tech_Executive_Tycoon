@@ -33,6 +33,7 @@ from tst.sim.dynasty.mode import in_dynasty_years
 from tst.sim.dynasty.models import DynastyState, LeaderChange, Relaunch, SuccessorKind
 from tst.sim.ledger import LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.press.names import rival_ceo_id
 from tst.sim.rivals.models import RivalMove, stream_key
 from tst.sim.rivals.setup import hire_key_people, key_people_split, market_salary_cents
@@ -266,7 +267,7 @@ def entrants_month(
             staff = lo + min(hi - lo, int(u_staff * (hi - lo + 1)))
             role = balance.rivals.function_roles["builder"]
             pay = market_salary_cents(role, ENTRANT_LEVEL, balance, data)
-            cash = round(pay * staff * r.entrant_cash_months.at(u_cash))
+            cash = times(pay, staff, r.entrant_cash_months.at(u_cash))
             functions = ["builder", *key_people_split(staff - 1, _mix(category.key, balance))]
             state, company, entry = found_company(
                 state,

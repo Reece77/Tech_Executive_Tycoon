@@ -90,6 +90,7 @@ def programme_month(state: GameState, balance: Balance) -> GameState:
 def build_cents(payload_kg: float, quality: float, flights: int, balance: Balance) -> float:
     vb = balance.space.vehicle
     size = dmath.pow(payload_kg / vb.ref_payload_kg, vb.size_exponent - 1)
+    # money-exact: ratio: a quality multiplier on the build cost rate
     quality_mult = 1 + vb.quality_cost * (quality - QUALITY_MID) / 100
     n = max(1, min(flights, vb.max_learning_flights))
     learning = dmath.pow(float(n), dmath.log2(1 - vb.learning_rate)) if vb.learning_rate else 1.0

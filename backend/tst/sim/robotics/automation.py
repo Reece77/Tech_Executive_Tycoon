@@ -75,7 +75,9 @@ def saving_cents(
     """Line labour saved a unit run at an automation level (module docstring)."""
     ab = balance.robotics.automation
     kind = balance.facility.kinds[facility.kind]
+    # money-exact: rate: line labour a unit in float cents, rounded where posted
     plant_labour = kind.variable_cents * ab.labour_share.get(facility.kind, 0.0)
+    # money-exact: rate: regional line labour a unit in float cents
     regional = ab.workers_per_unit.get(facility.kind, 0.0) * wage_month_cents(
         state, facility.region, balance, data
     )
