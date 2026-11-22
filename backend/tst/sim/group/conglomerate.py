@@ -94,10 +94,12 @@ class Figures:
 
     @property
     def gross_margin(self) -> float | None:
+        # money-exact: ratio: a margin shown as a percentage, never posted
         return self.gross_profit / self.revenue if self.revenue > 0 else None
 
     @property
     def operating_margin(self) -> float | None:
+        # money-exact: ratio: a margin shown as a percentage, never posted
         return self.operating_profit / self.revenue if self.revenue > 0 else None
 
     @property

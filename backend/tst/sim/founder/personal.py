@@ -23,7 +23,7 @@ from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.capital import listed
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
-from tst.sim.money import exact
+from tst.sim.money import exact, times
 from tst.sim.state import GameState, with_cap_entry, with_personal_entries
 
 
@@ -148,7 +148,7 @@ def sell_shares(
         )
     price = round(public.price_cents * (1 - exact(cb.secondary_discount)))
     gross = shares * price
-    net = gross - round(gross * cb.secondary_fee)
+    net = gross - times(gross, cb.secondary_fee)
     mine = [
         e
         for e in state.company_cap(company_id)

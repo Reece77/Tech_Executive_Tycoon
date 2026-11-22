@@ -68,7 +68,7 @@ Two sessions, each in its **own clone or worktree** (never a shared folder):
 
 ### Finding 10's audit (the upgraded guard over `tst/sim/`)
 
-About 135 lines: about 55 fixed with the exact helpers (they post or store cents), about 75 carry a `# money-exact:` reason (rates in float cents rounded where posted, ratios, estimates only compared or shown), 4 wait in `DEFERRED` for lane A's merge (`founder/personal.py`, `group/conglomerate.py` x2, `pharma/demand.py`).
+About 135 lines: about 55 fixed with the exact helpers (they post or store cents), about 75 carry a `# money-exact:` reason (rates in float cents rounded where posted, ratios, estimates only compared or shown), and 4 in lane A's files waited in `DEFERRED` until lane A merged (rule 8) and were then done the same way: `founder/personal.py`'s secondary fee and `pharma/demand.py`'s COGS exact (`times`), `group/conglomerate.py`'s two margins given `ratio` reasons. `DEFERRED` is empty.
 
 | Area | Fixed: posted or stored cents now exact |
 | --- | --- |
