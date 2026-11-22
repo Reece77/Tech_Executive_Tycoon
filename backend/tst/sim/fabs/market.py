@@ -107,8 +107,10 @@ def euv_ratios(
         state.supplier_years,
     )
     hit = _RATIOS.get(memo)
-    if hit is not None and hit[0] is tl and hit[1] is balance and hit[2] is data:
-        return hit[3]
+    if hit is not None:
+        held_tl, held_balance, held_data, kept = hit
+        if held_tl is tl and held_balance is balance and held_data is data:
+            return kept
     if len(_RATIOS) > _OVERLAY_SIZE:
         _RATIOS.clear()
     out = _ratios(state, tl, balance, data)

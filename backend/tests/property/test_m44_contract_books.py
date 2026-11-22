@@ -44,6 +44,7 @@ def test_contract_books_balance(
     c = Contract(
         id=1,
         tender_id=1,
+        clearance="none",
         company_id=PLAYER,
         product_id=pid,
         government="us",
