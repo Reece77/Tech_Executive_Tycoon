@@ -25,6 +25,7 @@ from dataclasses import replace
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, COMMON_EQUITY, DRUG_SALES, LedgerEntry
+from tst.sim.money import times
 from tst.sim.pharma import ceilings, draws
 from tst.sim.pharma import data as pd
 from tst.sim.pharma.config import AREAS, MODALITIES, PharmaRival, RivalDrug
@@ -214,7 +215,7 @@ def month(
         )
         shares = rb.generics_cost_shares if r.generics else rb.cost_shares
         for account, s in sorted(shares.items()):
-            cost = round(cents * s)
+            cost = times(cents, s)
             if cost > 0:
                 entries.append(
                     LedgerEntry.transfer(

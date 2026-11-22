@@ -7,7 +7,7 @@ index)); approvals are public once made, and the chance is not shown ahead.
 
 **Incidents.** Each month a player line whose cars run L3 or L4 in a region has a Poisson number of
 incidents with mean `cars on the road there x incident_rate / 12 / 100,000` (stream vehicles (1,
-product_id), one draw a region in regions.yaml order). An incident recalls the region's cars
+product_id, region_index), a region's own draw, M43r). An incident recalls the region's cars
 running the level (`recall_cents` each, 6900), costs the line `brand_points` of brand, and the
 region's regulator suspends the level for the company's cars for `suspend_months`. The draw and
 the mean are never stored or shown; the incident is, once it has happened.
@@ -99,13 +99,13 @@ def incidents_month(
         capable = vs.capable_level(state, spec, product.company_id, balance)
         if vb.levels[capable].incident_rate <= 0:
             continue
-        gen = draws.gen(rng, state.turn, draws.INCIDENT, product.id)
-        for region in data.region_keys:
+        for i, region in enumerate(data.region_keys):
             level = vs.level_in(state, product, region, balance, data, capable)
             rate = vb.levels[level].incident_rate
             cars = cars_on_road(state, product.id, region, balance, data)
             if rate <= 0 or cars <= 0:
                 continue
+            gen = draws.gen(rng, state.turn, draws.INCIDENT, product.id, i)
             n = int(gen.poisson(cars * rate / MONTHS / PER_CARS))
             if n <= 0:
                 continue

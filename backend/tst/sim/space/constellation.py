@@ -207,7 +207,7 @@ def month(
             state.product(c.vehicle_product_id) if c.vehicle_product_id is not None else None
         )
         spec = state.space.spec(vehicle.id) if vehicle is not None else None
-        for _ in range(min(c.launches_per_month, sb.max_launches_month)):
+        for ordinal in range(min(c.launches_per_month, sb.max_launches_month)):
             if ground <= 0:
                 break
             own = vehicle is not None and spec is not None and vehicle.status == "live"
@@ -239,7 +239,8 @@ def month(
             else:
                 price, payload = launch.bought_price_cents(state, balance, data)
                 rate = sb.failure.floor
-                gen = draws.gen(rng, turn, draws.FLIGHT, 0, c.id, len(flown))
+                # the constellation's own flight this month (M43r, review 9 finding 9)
+                gen = draws.gen(rng, turn, draws.FLIGHT, 0, c.id, ordinal)
                 label = BOUGHT
             sats = min(ground, int(payload // c.mass_kg))
             if sats <= 0:

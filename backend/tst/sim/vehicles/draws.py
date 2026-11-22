@@ -2,8 +2,8 @@
 
 Keys (families): `(0, region_index)` a region's EV-share speed (at `vehicles.start`) and, each
 December from it, `(0, region_index, 1 + level_index)` its approval of a level; `(0, n_regions)`
-the game-wide learning rate (drawn once, at `vehicles.start`); `(1, product_id)` a product's
-autonomy incidents in a month; `(2, facility)` a cell plant's overrun at its order and its yield
+the game-wide learning rate (drawn once, at `vehicles.start`); `(1, product_id, region_index)` a
+product's autonomy incidents in a region in a month; `(2, facility)` a cell plant's overrun at its order and its yield
 noise in later months; `(3, *rival key)` a rival's December model refresh; `(4, facility)` a
 vehicle plant's monthly yield noise."""
 

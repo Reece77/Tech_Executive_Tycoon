@@ -60,7 +60,8 @@ def _china(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
     if not state.china_lags:
         return base
     key = (id(base), tuple((x.foundry, x.reached) for x in state.china_lags))
-    got = _OVERLAY.get(key)
+    hit = _OVERLAY.get(key)
+    got = hit[1] if hit is not None and hit[0] is base else None
     if got is None:
         if len(_OVERLAY) > _OVERLAY_SIZE:
             _OVERLAY.clear()
@@ -72,14 +73,17 @@ def _china(state: GameState, balance: Balance, data: GameData) -> nd.Timeline:
         for x in state.china_lags:
             for node, turn in x.reached:
                 reach[(x.foundry, node)] = turn
-        got = _OVERLAY[key] = replace(base, reach=reach)
+        got = replace(base, reach=reach)
+        _OVERLAY[key] = (base, got)  # the base kept with it: its id is never reused (M43r)
     return got
 
 
-_OVERLAY: dict[tuple[object, ...], nd.Timeline] = {}
+_OVERLAY: dict[tuple[object, ...], tuple[nd.Timeline, nd.Timeline]] = {}
 _OVERLAY_SIZE: Final = 256  # tunable-exempt: memo entries kept
-_GATED: dict[tuple[object, ...], nd.Timeline] = {}
-_RATIOS: dict[tuple[object, ...], dict[tuple[str, int], float]] = {}
+_GATED: dict[tuple[object, ...], tuple[nd.Timeline, nd.Timeline]] = {}
+_RATIOS: dict[
+    tuple[object, ...], tuple[nd.Timeline, Balance, GameData, dict[tuple[str, int], float]]
+] = {}
 
 
 def euv_ratios(
@@ -95,17 +99,20 @@ def euv_ratios(
         return {}
     memo = (
         id(tl),
+        id(balance),
+        id(data),
         state.turn,
         len(state.tool_deliveries),
         state.tool_deliveries[-1] if state.tool_deliveries else None,
         state.supplier_years,
     )
     hit = _RATIOS.get(memo)
-    if hit is not None:
-        return hit
+    if hit is not None and hit[0] is tl and hit[1] is balance and hit[2] is data:
+        return hit[3]
     if len(_RATIOS) > _OVERLAY_SIZE:
         _RATIOS.clear()
-    _RATIOS[memo] = out = _ratios(state, tl, balance, data)
+    out = _ratios(state, tl, balance, data)
+    _RATIOS[memo] = (tl, balance, data, out)  # the inputs kept with it (M43r)
     return out
 
 
@@ -149,7 +156,8 @@ def euv_gated(tl: nd.Timeline, state: GameState, balance: Balance, data: GameDat
     if not ratios:
         return tl
     key = (id(tl), tuple(sorted(ratios.items())))
-    out = _GATED.get(key)
+    hit = _GATED.get(key)
+    out = hit[1] if hit is not None and hit[0] is tl else None
     if out is None:
         if len(_GATED) > _OVERLAY_SIZE:
             _GATED.clear()
@@ -158,7 +166,8 @@ def euv_gated(tl: nd.Timeline, state: GameState, balance: Balance, data: GameDat
         for k, r in ratios.items():
             if k in growth:
                 growth[k] = growth[k] * (1 - s + s * r)
-        out = _GATED[key] = replace(tl, growth=growth)
+        out = replace(tl, growth=growth)
+        _GATED[key] = (tl, out)  # the timeline kept with it (M43r)
     return out
 
 

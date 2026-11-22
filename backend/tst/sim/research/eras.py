@@ -46,14 +46,17 @@ def _active(arrival: EraArrival | None, months: int, turn: int) -> bool:
 
 def arrived(state: GameState, data: GameData) -> tuple[tuple[EraDef, EraArrival], ...]:
     """The arrived eras with their arrivals, in eras.yaml order, once per state (M37: eras.yaml
-    grew by seven eras of dynasty years; the boosts' loops stay proportional to arrivals)."""
-    return derived(
-        state,
-        ("arrived_eras", id(data)),
-        lambda: tuple(
-            (e, a) for e in data.eras.eras if (a := state.era_arrival(e.key)) is not None
-        ),
+    grew by seven eras of dynasty years; the boosts' loops stay proportional to arrivals). The
+    rules are kept with the value and checked, so a reused id never answers for other rules
+    (M43r, Codex review 9 finding 12; as payroll's cache)."""
+
+    def compute() -> tuple[tuple[EraDef, EraArrival], ...]:
+        return tuple((e, a) for e in data.eras.eras if (a := state.era_arrival(e.key)) is not None)
+
+    kept: tuple[GameData, tuple[tuple[EraDef, EraArrival], ...]] = derived(
+        state, ("arrived_eras", id(data)), lambda: (data, compute())
     )
+    return kept[1] if kept[0] is data else compute()
 
 
 def growth_boost(state: GameState, data: GameData, category: str, segment: str | None) -> float:

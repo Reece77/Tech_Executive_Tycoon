@@ -69,7 +69,7 @@ class Timeline:
         return self.leading(turn - lag_months)
 
 
-_CACHE: dict[tuple[int, int, int], Timeline] = {}
+_CACHE: dict[tuple[int, int, int], tuple[NodesFile, FabBalance, Timeline]] = {}
 
 
 def _lerp(r_lo: float, r_hi: float, u: float) -> float:
@@ -147,11 +147,13 @@ def _blocked(f: FoundryDef, node: str, keys: tuple[str, ...]) -> bool:
 def timeline(seed: int, nodes: NodesFile, fb: FabBalance) -> Timeline:
     """The seed's timeline, memoized (a pure function of its arguments)."""
     key = (seed, id(nodes), id(fb))
-    got = _CACHE.get(key)
-    if got is None:
-        if len(_CACHE) > _CACHE_SIZE:
-            _CACHE.clear()
-        got = _CACHE[key] = build(seed, nodes, fb)
+    hit = _CACHE.get(key)
+    if hit is not None and hit[0] is nodes and hit[1] is fb:
+        return hit[2]
+    if len(_CACHE) > _CACHE_SIZE:
+        _CACHE.clear()
+    got = build(seed, nodes, fb)
+    _CACHE[key] = (nodes, fb, got)  # the inputs kept with it: an id is never reused (M43r)
     return got
 
 

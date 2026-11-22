@@ -13,12 +13,16 @@ row is a default. At the base's end the options are exercised when performance i
 `option_threshold`, else the contract completes. Completed and defaulted contracts are the
 company's past performance (57.2).
 
+A fixed-price month's revenue is its installment: the price x months / term rounded, less the
+same for the months before (so a contract delivered every month books its price exactly).
+
 Books: revenue 4070 against cash, delivery cost 5300 against cash, in integer cents (rounded
 half to even once each), in the product's division."""
 
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
@@ -82,6 +86,11 @@ def start(
             ),
         )
     return state, contract
+
+
+def _entitled(value_cents: int, months: int, term: int) -> int:
+    """Cents of a fixed price earned over its first `months` of `term`, rounded half to even."""
+    return round(Fraction(value_cents * months, term))
 
 
 def _able(state: GameState, c: Contract, clearance: str, balance: Balance) -> bool:
@@ -155,7 +164,14 @@ def month(
             work *= exact(orders)
         cost = work * exact(db.cost_share[c.area]) * (1 + exact(overrun))
         revenue = cost * (1 + exact(db.cost_plus_fee)) if c.contract == "cost_plus" else work
-        rev_c, cost_c = round(revenue), round(cost)
+        cost_c = round(cost)
+        if c.contract == "fixed_price":
+            # installment i is the difference of the rounded cumulative entitlements, so the
+            # months delivered settle the accepted price exactly (M43r, review 9 finding 13)
+            i = turn - c.start_turn
+            rev_c = _entitled(c.value_cents, i + 1, term) - _entitled(c.value_cents, i, term)
+        else:
+            rev_c = round(revenue)
         month_perf = max(0.0, min(PCT, PCT - db.perf_per_overrun * max(0.0, overrun) * PCT))
         perf = (c.performance * c.months + month_perf) / (c.months + 1)
         product = state.product(c.product_id)

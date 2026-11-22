@@ -162,9 +162,10 @@ def fee_drag(category: str, balance: Balance, data: GameData) -> float:
     """The category's 2010-2025 average fee drag (44.4's calibration): paid_share x the users'
     effective fee (a large seller's, every platform with users, the regions weighted by their
     market sizes), averaged over the history's years. Data only: the same on every seed."""
-    key = (id(data), category)
-    if key in _DRAG:
-        return _DRAG[key]
+    key = (id(data), id(balance), category)
+    hit = _DRAG.get(key)
+    if hit is not None and hit[0] is data and hit[1] is balance:
+        return hit[2]
     pf = pdata.file(data)
     app = balance.platforms.app_categories[category]
     weights = pdata.region_weights(data)
@@ -186,11 +187,12 @@ def fee_drag(category: str, balance: Balance, data: GameData) -> float:
                 fee = pdata.fee_for(sched, category, BIG_SELLER, False, balance)
                 drag += w * users * fee
         years.append(app.paid_share * drag)
-    _DRAG[key] = sum(years) / len(years)
-    return _DRAG[key]
+    drag = sum(years) / len(years)
+    _DRAG[key] = (data, balance, drag)  # the rules kept with it: an id is never reused (M43r)
+    return drag
 
 
-_DRAG: dict[tuple[int, str], float] = {}
+_DRAG: dict[tuple[int, int, str], tuple[GameData, Balance, float]] = {}
 BIG_SELLER: Final = 10**12  # tunable-exempt: a seller far over any small-business threshold
 
 

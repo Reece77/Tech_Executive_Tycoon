@@ -103,3 +103,47 @@ def test_the_allow_comment_and_the_line_above_are_honoured(tmp_path: Path) -> No
         encoding="utf-8",
     )
     assert [h.line for h in scan(pkg)] == [5]
+
+
+# --- M43r (Codex review 9 finding 10): money under other names, unpacking, mapping iteration --
+
+ALIASES_SNIPPET = """
+from dataclasses import dataclass
+
+
+@dataclass
+class Rates:
+    cost_shares: dict[str, float]
+    royalty: float
+
+
+def rate_pair() -> tuple[float, float]:
+    return 0.1, 0.2
+
+
+def f(cents: int, rates: Rates, revenue: dict[int, int], sales: int, pid: int) -> None:
+    for account, s in sorted(rates.cost_shares.items()):
+        cost = round(cents * s)  # flag
+    for s in rates.cost_shares.values():
+        a = round(cents * s)  # flag
+    b = round(sales * rates.royalty)  # flag
+    got = revenue.get(pid, 0)
+    c = round(got * rates.royalty)  # flag
+    lo, hi = rate_pair()
+    d = round(cents * hi)  # flag
+    e = round(revenue[pid] * rates.royalty)  # flag
+    g = times(sales, rates.royalty)
+    for account, n in sorted(revenue.items()):
+        h = round(cents * n)
+"""
+
+
+def test_the_scan_follows_money_aliases_unpacking_and_mapping_iteration(tmp_path: Path) -> None:
+    """Each flagged line is one the M36r guard passed (review 9's rival COGS line is the first)."""
+    pkg = tmp_path / "sim"
+    pkg.mkdir()
+    (pkg / "snippet.py").write_text(ALIASES_SNIPPET, encoding="utf-8")
+    flagged = [
+        i + 1 for i, line in enumerate(ALIASES_SNIPPET.splitlines()) if line.endswith("# flag")
+    ]
+    assert [h.line for h in scan(pkg)] == flagged
