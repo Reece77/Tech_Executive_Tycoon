@@ -26,6 +26,7 @@ from tst.db.conglomerate import MONTHS_A_YEAR, Member, current_year, read_books
 from tst.db.models import LLMTextRow
 from tst.loader import LoadedData
 from tst.sim.calendar import turn_to_ym
+from tst.sim.facilities.public import committed_cents
 from tst.sim.group.conglomerate import (
     CORPORATE,
     Books,
@@ -79,7 +80,8 @@ def _industry_series(b: Books, key: str) -> list[tuple[int, Figures]]:
 def _planned(
     state: GameState, group: list[Member], b: Books, data: LoadedData
 ) -> dict[str, list[int]]:
-    """Next year's planned capital by industry: builds under way (capex still to pay) and the
+    """Next year's planned capital by industry: builds under way (capex still to pay, as the
+    facility screens project it: never a hidden overrun; tst.sim.facilities.public) and the
     subsidiaries' yearly capex limits, each under the subsidiary's largest industry."""
     _, kinds, _, _, _ = industry_maps(data.balance.conglomerate)
     ids = {m.company_id for m in group}
@@ -87,7 +89,7 @@ def _planned(
     for f in state.facilities:
         if f.company_id in ids and f.status == "building" and f.kind in kinds:
             row = out.setdefault(kinds[f.kind], [0, 0])
-            row[0] += max(0, f.capex_cents - f.capex_paid_cents)
+            row[0] += committed_cents(state, f)  # the screens' public figures (M43r)
     year = b.years[-1] if b.years else current_year(state)
     for m in state.mandates:
         if m.company_id not in ids or m.capex_limit_cents <= 0:
