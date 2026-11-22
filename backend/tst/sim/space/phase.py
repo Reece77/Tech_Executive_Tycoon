@@ -2,7 +2,8 @@
 
 - **New game** (`new_game`): the space markets' history for January 2010 and every space
   incumbent's opening capital.
-- **Phase 5** before the markets (`with_effects`): the player's space lines' gates (designs and
+- **Phase 5** before the markets (`open_month`): the history's dated openings (M43r);
+  (`with_effects`): the player's space lines' gates (designs and
   groundings, coverage and licences, capacity and congestion, D2D, EO); after the markets
   (`after_sales`): customer launches fly, terminals and carriers' shares, constellations' months
   (building, own launches, failures, retirements, coverage, books), lost-satellite events,
@@ -58,6 +59,14 @@ def with_effects(
     if not enabled(state, balance, data):
         return base
     return services.effects(base, state, balance, data)
+
+
+def open_month(state: GameState, balance: Balance, data: GameData) -> GameState:
+    """Phase 5, before the markets: lines whose date opens this month get their price (and, in
+    the history, their customers) now, not after the month's sales (M43r, finding 11)."""
+    if not enabled(state, balance, data):
+        return state
+    return history.pin(state, balance, data, openings_only=True)
 
 
 def after_sales(

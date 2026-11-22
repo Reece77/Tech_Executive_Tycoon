@@ -2,7 +2,7 @@
 event director. Order: the persona drifts, then this month's sources raise it; stress from
 the month's energy use (a burnout queues its critical event); burnt-out bold claims that
 backfired this month cost more; December's foundation grants; lobbying, influence and
-scandals; the founder's salary reaches the personal book.
+scandals. The founder's salary reaches the personal book in phase 6, with payroll (M43r).
 
 The founder's energy budget for the next month is set in `next_budget`, after energy resets."""
 
@@ -14,7 +14,7 @@ from typing import Final
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent
 from tst.sim.family.steps import FAMILY_STEPS
-from tst.sim.founder import foundation, influence, persona, personal, stress
+from tst.sim.founder import foundation, influence, persona, stress
 from tst.sim.founder.events import queue
 from tst.sim.founder.models import FounderLife
 from tst.sim.ledger import LedgerEntry
@@ -113,7 +113,6 @@ def founder_month(
     logs += granted
     state, entries, lobbied = influence.lobbying_month(state, rng, balance, data)
     logs += lobbied
-    state = personal.salary_month(state, balance)
     return state, tuple(entries), tuple(logs)
 
 

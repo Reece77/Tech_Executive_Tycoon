@@ -92,8 +92,16 @@ def sync_founder(
             for e in new.personal_book[known:]
         )
     if new.foundations != old.foundations:
+        # M43r (Codex review 9 finding 2): an estate re-keys the foundation to the heir, so a
+        # key the new state no longer holds is deleted, in this same turn's transaction.
+        kept = {f.person_id: f for f in new.foundations}
+        gone = [f.person_id for f in old.foundations if f.person_id not in kept]
+        if gone:
+            session.execute(delete(FoundationRow).where(FoundationRow.person_id.in_(gone)))
+        was = {f.person_id: f for f in old.foundations}
         for f in new.foundations:
-            session.merge(FoundationRow(person_id=f.person_id, data=to_data(f, ("person_id",))))
+            if was.get(f.person_id) != f:
+                session.merge(FoundationRow(person_id=f.person_id, data=to_data(f, ("person_id",))))
     if new.influence != old.influence:
         before_i = {(i.company_id, i.region): i for i in old.influence}
         for i in new.influence:
