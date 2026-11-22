@@ -33,10 +33,15 @@ By the end of v5 the game has more industries than any one campaign can use: sof
 | **M53** | **Telecom:** mobile and fixed networks, spectrum auctions, 5G then 6G, towers and fibre as facilities, subsea cables, satellite links (M40), network equipment (Ericsson, Nokia, Huawei under §39's rules) | C | ties devices, space, chips and geopolitics |
 | **M54** | **Financial services at scale:** a bank (deposits, loans, capital rules, interest-rate cycles), payments networks, and insurance; the player's fintech products can grow into them; regulators with capital requirements and stress tests; **currencies and hedging** (the backlog's last item) | C | |
 | **M55** | **Media and entertainment:** streaming, a games studio and social networks, with content as an asset (hits drawn like trials), talent with egos, and platforms and advertising tying back to M31 | C | |
-| **M56** | **The shared core:** extract the engine, RNG, ledger, people, org and automation, events and LLM layer, regulators and the interface shell into a library this game depends on, so other games (the law firm idea, or a hospital game) can share it | engineering | after M46–M49 settle the conversation layer |
+| **M56** | **The shared core (deferred):** extracting the engine into a library for another game. Not in v6 unless the law firm game starts and outgrows a fork (Reece, 2026-11-22) | engineering | deferred |
+| **M58** | **A real executable:** one Windows installer and `.exe` that runs in its own window with nothing else installed (PyInstaller and pywebview approved as build tools), with automatic updates from GitHub releases and a "What's new" note | engineering | early, beside M46 and M47 |
 | **M57** | **v6 balance and polish:** strategies for the new industries and start years, conversation outcomes within bands, review and playtest fixes | — | closes v6 |
 
 Expect review-fix milestones (Codex reviews 10 and later) and a playtest milestone, as in earlier versions. **Rough size:** 12 milestones in four or five rounds of three lanes.
+
+## Reece's answers (2026-11-22)
+
+The defaults below, except question 5: the shared core is **deferred**. Also: M58, a real executable with automatic updates, early in v6.
 
 ## Questions (with the product manager's defaults)
 
