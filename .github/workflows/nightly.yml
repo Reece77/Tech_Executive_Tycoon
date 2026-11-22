@@ -38,7 +38,9 @@ jobs:
     name: nightly (${{ matrix.part }})
     runs-on: ubuntu-latest
     # M15a: 60 -> 120; shard 1 passed 60 minutes with V1-V4's nine strategies and AI arms
-    timeout-minutes: 120
+    # M43: 120 -> 180; listed companies from 2015 (the real-listings IPO floor) lengthen the balance
+    # runs, and shard 3 already passed 120 on main (six shards: a v6 follow-up)
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
