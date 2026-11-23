@@ -177,8 +177,10 @@ def world_run(job: tuple[int, int]) -> WorldRun:
                 ]
         if turn == 0:
             st = game.state
-            for m in (*st.markets, *st.regional_markets):
-                run.markets[m.category] = run.markets.get(m.category, 0.0) + m.addressable
+            sizes = [(m.category, m.addressable) for m in st.markets]
+            sizes += [(m.category, m.addressable) for m in st.regional_markets]
+            for category, addressable in sizes:
+                run.markets[category] = run.markets.get(category, 0.0) + addressable
             for c in st.companies:
                 if c.name in named and c.mrr_history:
                     run.revenue[c.name] = c.mrr_history[-1]
