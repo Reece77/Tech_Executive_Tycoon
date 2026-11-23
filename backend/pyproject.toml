@@ -29,6 +29,14 @@ dev = [
     "httpx2>=2.15.1",
     "pytest-xdist>=3.8.0",
 ]
+# M58 (Reece approved, 2026-11-22): the installed game's window and its bundle. Not in the
+# default `uv sync`; the release workflow runs `uv sync --group desktop --group packaging`.
+desktop = [
+    "pywebview>=6.2",
+]
+packaging = [
+    "pyinstaller>=6.22",
+]
 
 [build-system]
 requires = ["uv_build>=0.8,<0.14"]
@@ -70,6 +78,10 @@ extra_checks = true
 
 [[tool.mypy.overrides]]
 module = ["yaml"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["webview"]  # M58: the desktop group, installed only to build the exe
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

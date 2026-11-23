@@ -17,6 +17,7 @@ from tst.api.routers import (
     commodities,
     contracts,
     coo,
+    desktop,
     equipment,
     events,
     explain,
@@ -158,6 +159,8 @@ def create_app() -> FastAPI:
     app.include_router(events.settings_router)
     app.include_router(onboarding.settings_router)  # M29
     app.include_router(meta.router)
+    app.include_router(desktop.router)  # M58: health and the installed game's routes
+    app.middleware("http")(desktop.update_guard)  # M58: no writes once an update's backup starts
 
     @app.exception_handler(SimError)
     async def _sim_error(_request: Request, exc: SimError) -> JSONResponse:
