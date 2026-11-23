@@ -89,6 +89,9 @@ Engineering and design choices the spec, ADR-0023 and this brief left open (CLAU
 13. **Every earlier guard.** Golden snapshots and M30's state cache are unchanged (no state model, turn phase or draw changed; the hiring refactor moves the accepted offer's code into `_hire` with identical results); the earlier milestones' targets are untouched because no balance key of theirs changed and a game without conversations plays exactly as before (the nightly suites on this branch: see the pull request).
 14. **Screens without an Accept.** The out-licence and foundry-contract actions had no screen; the foundry card now offers a 12-month contract negotiation with each slot customer; the out-licence is negotiable through the API (`licence_out`) until it has a screen (follow-up).
 
+15. **A busy save does not lose an outcome.** When talks end, the outcome's action waits (up to about 10 s) while another write holds the save, rather than leaving the talks ended and the deal unsigned. Reads of talks never take the write lock (talks still open from an earlier month show as lapsed until the next write records it).
+16. **M29's palette flow (rule 5):** it searched the palette with a random founder's last name, and a founder named Hall matched the Hall of fame screen first (seen in this branch's CI); it now searches the founder's full name.
+
 ### 58.5 targets (tools/m47_targets.py, seeds 1-10, 40 deals a kind a seed)
 
 1. Skip is fair: every kind but acquisitions closes at today's price exactly (0.0%); acquisitions vs today's second counter: median 0.000%, worst 0.000% on 430 companies: **met**.
