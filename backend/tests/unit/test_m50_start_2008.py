@@ -215,3 +215,19 @@ def test_a_read_from_2010_ignores_2008_and_2009() -> None:
     assert from_2010(points, 2009.54) == {2010: 3.0, 2012: 5.0}  # January 2010 mid-year
     assert from_2010(points, 2009.46) == points  # December 2009
     assert from_2010({2011: 1.0}, 2012.0) == {2011: 1.0}
+
+
+def test_an_active_strategy_plays_from_2008_into_2010() -> None:
+    """A founder who hires, raises and is poached from plays 2008-2009 (target 4's run found a
+    negative month in an RNG key); the ledger balances every month."""
+    from tst.balance import m50
+    from tst.balance.strategies_v2 import STRATEGIES
+
+    game = m50.start(3, 2008)
+    script = STRATEGIES["blitzscale"]
+    while game.state.turn < 2 and not game.state.ended:
+        script(game)
+        game.turn()
+        assert game.last_result is not None
+        assert all(sum(ln.amount for ln in e.lines) == 0 for e in game.last_result.ledger_entries)
+    assert game.state.turn == 2 or game.state.ended
