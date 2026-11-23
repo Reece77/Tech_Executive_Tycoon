@@ -60,7 +60,8 @@ class _Frozen(BaseModel):
 class MoveEffect(_Frozen):
     concession: float = Field(ge=0, le=1)  # share of move_step this move earns
     patience: int = Field(ge=-1, le=1)  # rounds of patience it adds (+) or uses (-)
-    relationship: int = Field(ge=-2, le=2)  # points on the counterpart's relationship
+    # points on the counterpart's relationship
+    relationship: int = Field(ge=-2, le=2)  # tunable-exempt: 58.3's +/-2 bound
 
 
 class RangeBalance(_Frozen):

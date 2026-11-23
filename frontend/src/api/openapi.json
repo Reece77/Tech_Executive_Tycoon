@@ -42017,7 +42017,8 @@
               "order",
               "zone",
               "constellation",
-              "bid"
+              "bid",
+              "negotiation"
             ],
             "title": "Scope"
           },

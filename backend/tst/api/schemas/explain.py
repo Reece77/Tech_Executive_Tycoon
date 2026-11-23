@@ -50,6 +50,7 @@ class ExplainOut(BaseModel):
         "zone",  # M39: a robotaxi zone
         "constellation",  # M40: a satellite constellation
         "bid",  # M44: a government bid
+        "negotiation",  # M47: a negotiation's revealed range
     ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")

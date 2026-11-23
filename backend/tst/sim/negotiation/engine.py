@@ -37,6 +37,7 @@ MOOD_OPEN = 3  # tunable-exempt: patience rounds left from which it reads "open"
 FAR = 0.30  # tunable-exempt: share of the zone between offer and demand that reads "far apart"
 NEAR = 0.15  # tunable-exempt: ...and "close"
 SCORE_MAX = 20.0  # tunable-exempt: the attribute scale (1-20)
+REL_BOUND = 2  # tunable-exempt: 58.3: a round moves the relationship by at most +/-2
 
 
 def kind_index(kind: DealKind) -> int:
@@ -310,7 +311,7 @@ def play_round(
             p = min(p, 0)
         patience_delta += p
     patience_left = neg.patience_left - 1 + _clamp(patience_delta, -1, 1)
-    rel_change = _clamp(sum(b.effects[m.kind].relationship for m in moves), -2, 2)
+    rel_change = _clamp(sum(b.effects[m.kind].relationship for m in moves), -REL_BOUND, REL_BOUND)
     n = len(neg.rounds) + 1
     used = neg.used_facts + tuple(
         m.fact for m in moves if m.kind == "justify" and m.fact is not None
