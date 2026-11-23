@@ -114,9 +114,7 @@ def test_a_2010_game_has_no_mode_as_before(loaded: LoadedData) -> None:
 def test_the_prompt_says_when_the_game_began() -> None:
     text = "a game that began in January 2010."
     assert began_in(text, None) == text
-    assert began_in(text, GameMode(kind="campaign", start_turn=-24)) == text.replace(
-        "2010", "2008"
-    )
+    assert began_in(text, GameMode(kind="campaign", start_turn=-24)) == text.replace("2010", "2008")
     assert began_in(text, GameMode(kind="sandbox", start_turn=60)) == text
 
 
@@ -153,7 +151,9 @@ def test_later_launches_are_missing_at_the_start_and_join_on_their_month(
     assert "GitHub" not in names and "Windows Azure" not in names and "Facebook" in names
     in_2010, _ = _game(loaded, 2010)
     assert {"GitHub", "Windows Azure"} <= {p.name for p in in_2010.products}
-    joined = incumbent_launches(replace(state, turn=ym_to_turn(2008, 3)), loaded.balance, loaded.game_data)
+    joined = incumbent_launches(
+        replace(state, turn=ym_to_turn(2008, 3)), loaded.balance, loaded.game_data
+    )
     github = next(p for p in joined.products if p.name == "GitHub")
     assert github.launched_turn == ym_to_turn(2008, 4)
     assert all(s.customers == 0 for s in joined.segments_of(github.id))
