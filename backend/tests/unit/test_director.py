@@ -206,3 +206,36 @@ def test_early_days_until_something_is_live(loaded: LoadedData) -> None:
 
     live = with_product(solo, customers={"smb": 10.0})
     assert "early_days" not in {h.trigger for h in _hits(live, loaded)}
+
+
+def test_a_critical_follow_up_waits_for_the_critical_slot(loaded: LoadedData) -> None:
+    """M46 (16.1): a critical queued event respects the 6-month spacing, deferred not dropped."""
+    gap = loaded.balance.events.critical_gap_turns
+    base = _staffed(loaded, turn=40)
+    base = _past(base, severity="critical", turn=base.turn - 2, template_id="key_exit_crisis")
+    base = with_queued(base, QueuedEvent(1, 1, "activist_stake", base.turn + 1, source_event_id=None))
+    state, requests = direct(
+        base, base, RngFactory(4), loaded.balance, loaded.game_data, 400_000_000, 0, ()
+    )
+    assert "activist_stake" not in {r.template_id for r in requests}
+    assert not state.queued[0].done  # still queued
+    # The first month the slot is free, it arrives, critical, and takes the slot.
+    later = replace(base, turn=base.turn - 2 + gap)
+    state, requests = direct(
+        later, later, RngFactory(4), loaded.balance, loaded.game_data, 400_000_000, 0, ()
+    )
+    assert requests[0].template_id == "activist_stake"
+    assert requests[0].severity == "critical"
+    assert state.queued[0].done
+    assert [r.severity for r in requests].count("critical") == 1
+
+
+def test_two_critical_follow_ups_due_together_arrive_months_apart(loaded: LoadedData) -> None:
+    state = _staffed(loaded, turn=40)
+    state = with_queued(state, QueuedEvent(1, 1, "activist_stake", state.turn + 1, source_event_id=None))
+    state = with_queued(state, QueuedEvent(2, 1, "ipo_pricing_strong", state.turn + 1, source_event_id=None))
+    state, requests = direct(
+        state, state, RngFactory(4), loaded.balance, loaded.game_data, 400_000_000, 0, ()
+    )
+    assert [r.severity for r in requests].count("critical") == 1
+    assert sum(q.done for q in state.queued) == 1

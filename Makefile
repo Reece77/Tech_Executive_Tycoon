@@ -28,10 +28,12 @@ balance:
 nightly:
 	cd backend && uv run pytest -q -n auto -m "nightly and not weekly" -s
 
-# CI's nightly matrix (M10d): shard SHARD of NIGHTLY_SHARDS, balanced by tests/durations.json.
-NIGHTLY_SHARDS ?= 4
+# CI's nightly matrix (M10d; six shards from M46): shard SHARD of NIGHTLY_SHARDS, balanced by
+# tests/durations.json. Each shard prints every test's duration (--durations=0), the numbers
+# tools/nightly_durations.py merges into the durations file to rebalance the shards.
+NIGHTLY_SHARDS ?= 6
 nightly-ci:
-	cd backend && uv run pytest -q -n auto -m "nightly and not weekly" -s --shard $(SHARD)/$(NIGHTLY_SHARDS)
+	cd backend && uv run pytest -q -n auto -m "nightly and not weekly" -s --durations=0 --shard $(SHARD)/$(NIGHTLY_SHARDS)
 
 # The v2 30-year targets (M15a, formulas.md 30.7; CI: .github/workflows/weekly.yml, Sundays):
 # V1 over 30 seeds, V5's runs to December 2039, and V6's turn time on a 2039 stage-4 save.

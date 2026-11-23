@@ -133,17 +133,6 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "IPO floor moves which seeds it wins, not how often",
     ),
     KnownMiss(
-        target="M10b.T1.spacing",  # tests/balance/test_m10b_balance.py: critical events >= 6
-        owner=V6_BALANCE,  # months apart at a grown company (23.7 target 1)
-        # score: seeds (of 10) with a shortest critical gap under 6 months; known up to 5
-        # (PM ruling 2026-11-22)
-        worse_than=5.0,
-        reason="5 of 10 seeds on M43 (main 0): under the real-listings IPO floor the scripts "
-        "list from 2015, and a listed company's follow_up critical events land within months of "
-        "a key exit (seed 6: both in month 111); the director's 6-month spacing does not cover "
-        "follow-ups (v6 follow-up)",
-    ),
-    KnownMiss(
         target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
         owner="v6 performance",  # PM ruling 2026-11-21: v6's performance pass
         # score: the adjusted median in seconds; known up to 550 ms (PM ruling 2026-11-21)
