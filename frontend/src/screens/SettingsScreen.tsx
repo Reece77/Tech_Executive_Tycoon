@@ -1,8 +1,16 @@
-import { Button, NumberInput, SegmentedControl, Switch, TextInput } from '@mantine/core';
+import {
+  Button,
+  NumberInput,
+  PasswordInput,
+  SegmentedControl,
+  Switch,
+  TextInput,
+} from '@mantine/core';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { LoadError, Loading, ScreenTitle } from '../components/ScreenState';
 import { useLlmSettings, useSaves, useUpdateLlmSettings, type LlmSettings } from '../hooks/api';
+import { useDesktop, useSetApiKey, type Desktop } from '../hooks/desktop';
 import { useOnboardingSettings, useUpdateOnboardingSettings } from '../hooks/onboarding';
 import { formatMoney } from '../lib/format';
 
@@ -13,6 +21,7 @@ export function SettingsScreen() {
   const { saveId = '' } = useParams();
   const settings = useLlmSettings();
   const saves = useSaves();
+  const desktop = useDesktop().data;
   if (settings.isPending) return <Loading />;
   if (settings.error) return <LoadError title="Could not load settings" error={settings.error} />;
   const save = saves.data?.find((x) => x.save_id === saveId);
@@ -23,6 +32,7 @@ export function SettingsScreen() {
         key={`${settings.data.adapter}-${settings.data.budget_cents}-${settings.data.model_events}-${settings.data.model_story}`}
         s={settings.data}
       />
+      {desktop?.desktop && <ApiKey d={desktop} />}
       <Onboarding />
       <section
         className="tst-panel"
@@ -33,8 +43,15 @@ export function SettingsScreen() {
           Game
         </h2>
         <p style={{ margin: 0, fontSize: 14 }}>
-          Difficulty: <strong>{save ? save.difficulty : '…'}</strong>. Saves are kept in the saves
-          folder next to the game, one file per company.
+          Difficulty: <strong>{save ? save.difficulty : '…'}</strong>.{' '}
+          {desktop?.desktop ? (
+            <>
+              Saves are kept in <code data-testid="saves-dir">{desktop.saves_dir}</code>, one file
+              per company. Version {desktop.version}.
+            </>
+          ) : (
+            'Saves are kept in the saves folder next to the game, one file per company.'
+          )}
         </p>
       </section>
     </>
@@ -184,6 +201,66 @@ function AiWriting({ s }: { s: LlmSettings }) {
           )}
         </div>
       </div>
+    </section>
+  );
+}
+
+/** The installed game's Anthropic API key (M58): entered once, stored in this computer's app
+ * data, never shown again or sent anywhere but Anthropic. */
+export function ApiKey({ d }: { d: Desktop }) {
+  const save = useSetApiKey();
+  const [key, setKey] = useState('');
+  return (
+    <section
+      className="tst-panel"
+      style={{ padding: '20px 24px', maxWidth: 760, marginTop: 16 }}
+      aria-label="Anthropic API key"
+    >
+      <h2 className="tst-ptitle" style={{ marginTop: 0 }}>
+        Anthropic API key
+      </h2>
+      <p className="tst-muted" style={{ margin: '0 0 12px', fontSize: 13 }} data-testid="key-state">
+        {d.key_saved
+          ? 'A key is saved on this computer. Enter a new one to replace it.'
+          : 'No key saved: events use the offline templates. Paste a key to let Claude write them.'}{' '}
+        The key is kept in this computer&apos;s app data, never in a save, and is not shown again.
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+        <PasswordInput
+          label="API key"
+          placeholder="sk-ant-…"
+          value={key}
+          onChange={(e) => setKey(e.currentTarget.value)}
+          autoComplete="off"
+          style={{ flex: '1 1 320px' }}
+          data-testid="api-key-input"
+        />
+        <Button
+          h={44}
+          disabled={key.trim() === ''}
+          loading={save.isPending}
+          onClick={() => save.mutate(key, { onSuccess: () => setKey('') })}
+          data-testid="api-key-save"
+        >
+          Save key
+        </Button>
+        {d.key_saved && (
+          <Button
+            h={44}
+            variant="default"
+            loading={save.isPending}
+            onClick={() => save.mutate('')}
+            data-testid="api-key-remove"
+          >
+            Remove key
+          </Button>
+        )}
+      </div>
+      {save.error && (
+        <span role="alert" style={{ color: 'var(--tst-warn)', fontSize: 13 }}>
+          {save.error.message}
+        </span>
+      )}
     </section>
   );
 }

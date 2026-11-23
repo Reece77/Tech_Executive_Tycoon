@@ -6957,6 +6957,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Health
+         * @description The server is up (the release smoke test and the window wait on this).
+         */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Desktop
+         * @description The installed game's state: the version, the update offered, the first-run import.
+         */
+        get: operations["getDesktop"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/api-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Api Key
+         * @description Store the Anthropic API key in app data (empty removes it). The key is never returned.
+         */
+        put: operations["setApiKey"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Import
+         * @description The first-run offer: copy the repository's saves, or never ask again.
+         */
+        post: operations["answerImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Update
+         * @description Update now: download and verify the installer, back up the saves, install, restart.
+         */
+        post: operations["startUpdate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/desktop/update/later": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Later
+         * @description Later: the offer comes back at the next start.
+         */
+        post: operations["updateLater"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -7256,6 +7376,15 @@ export interface components {
              * @enum {string}
              */
             how: "sell" | "spin_off";
+        };
+        /** ApiKeyIn */
+        ApiKeyIn: {
+            /**
+             * Key
+             * @description Empty removes the stored key
+             * @default
+             */
+            key?: string;
         };
         /** AppFeeOut */
         AppFeeOut: {
@@ -10404,6 +10533,39 @@ export interface components {
             done_turn: number;
             /** Done */
             done: boolean;
+        };
+        /** DesktopOut */
+        DesktopOut: {
+            /**
+             * Desktop
+             * @description False outside the installed game (make dev, launcher)
+             */
+            desktop: boolean;
+            /** Version */
+            version: string;
+            /** Saves Dir */
+            saves_dir?: string | null;
+            /**
+             * Key Saved
+             * @description An API key is stored; never the key
+             * @default false
+             */
+            key_saved?: boolean;
+            import_offer?: components["schemas"]["ImportOfferOut"] | null;
+            /**
+             * Update State
+             * @default none
+             * @enum {string}
+             */
+            update_state?: "none" | "checking" | "available" | "downloading" | "backing_up" | "installing" | "failed";
+            update?: components["schemas"]["UpdateOut"] | null;
+            /**
+             * Update Message
+             * @default
+             */
+            update_message?: string;
+            /** Backup Folder */
+            backup_folder?: string | null;
         };
         /** DeviceLineOut */
         DeviceLineOut: {
@@ -13828,6 +13990,20 @@ export interface components {
              */
             gap: number;
         };
+        /** HealthOut */
+        HealthOut: {
+            /**
+             * Status
+             * @default ok
+             * @constant
+             */
+            status?: "ok";
+            /**
+             * Version
+             * @description The build's version; dev when run from the repository
+             */
+            version: string;
+        };
         /** HealthRegulatorOut */
         HealthRegulatorOut: {
             /** Key */
@@ -14224,6 +14400,32 @@ export interface components {
             ai_product_id?: number | null;
             /** Chip Product Id */
             chip_product_id?: number | null;
+        };
+        /** ImportIn */
+        ImportIn: {
+            /**
+             * Accept
+             * @description True copies the saves; false never asks again
+             */
+            accept: boolean;
+        };
+        /** ImportOfferOut */
+        ImportOfferOut: {
+            /**
+             * Folder
+             * @description The repository saves folder found on this computer
+             */
+            folder: string;
+            /**
+             * Saves
+             * @description Saves there that the game's own folder lacks
+             */
+            saves: string[];
+        };
+        /** ImportOut */
+        ImportOut: {
+            /** Imported */
+            imported: string[];
         };
         /**
          * InboxBulkOut
@@ -24895,6 +25097,20 @@ export interface components {
              * @description Systems announced this month (for the toast)
              */
             fresh: string[];
+        };
+        /** UpdateOut */
+        UpdateOut: {
+            /** Version */
+            version: string;
+            /**
+             * Notes
+             * @description What's new: the release notes, from CHANGELOG
+             */
+            notes: string;
+            /** Page Url */
+            page_url: string;
+            /** Size Bytes */
+            size_bytes: number;
         };
         /**
          * UpgradeFabIn
@@ -48210,6 +48426,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GlossaryOut"];
+                };
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+        };
+    };
+    getDesktop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+        };
+    };
+    setApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    updateLater: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
         };

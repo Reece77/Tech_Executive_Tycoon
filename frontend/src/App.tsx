@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { DesktopPrompts } from './components/DesktopPrompts';
 import { AchievementsScreen } from './screens/AchievementsScreen';
 import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
@@ -50,6 +51,7 @@ import { WorldScreen } from './screens/WorldScreen';
 export default function App() {
   return (
     <BrowserRouter>
+      <DesktopPrompts />
       <Routes>
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
