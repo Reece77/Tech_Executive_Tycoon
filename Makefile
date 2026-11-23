@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture
 
 check: check-backend check-api check-frontend check-timing
 
@@ -62,6 +62,11 @@ weekly-m27b:
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
 	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), reached in M45; the 1,000 ms raw budget stays
+
+# M46: re-record a long state fixture on CI and print it to the log (tools/record_state_fixtures.py;
+# FIXTURE m30, m37 or m45). Dispatch weekly.yml with parts ["record-fixture FIXTURE=m30", ...].
+record-fixture:
+	uv run --project backend python tools/record_state_fixtures.py $(FIXTURE)
 
 # M45 (sub-task 1): M37's dynasty game on seeds 1-3 for 720 months, every month's full-state
 # digest against the one recorded before any M45 change (tests/fixtures/m45_dynasty_hashes.json).
