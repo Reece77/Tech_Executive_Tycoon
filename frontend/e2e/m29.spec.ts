@@ -89,7 +89,8 @@ test('(b) the palette jumps to a person', async ({ page }) => {
   await page.keyboard.press('Control+k');
   const input = page.getByTestId('palette-input');
   await expect(input).toBeFocused();
-  await input.fill(founder?.label.split(' ')[1] ?? '');
+  // The full name (M47: a random founder named Hall also matched the Hall of fame screen first).
+  await input.fill(founder?.label ?? '');
   await expect(page.getByTestId('palette-option').first()).toContainText(founder?.label ?? '');
   await input.press('Enter');
   await expect(page).toHaveURL(new RegExp(`/game/${save}/${founder?.path}$`));

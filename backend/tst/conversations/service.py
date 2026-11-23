@@ -35,7 +35,12 @@ from tst.events.service import Writer
 from tst.llm.base import ConversationPrompt, LLMAdapter
 from tst.llm.settings import LLMSettings, add_spend, load_settings, month_spend
 from tst.loader import LoadedData
-from tst.sim.errors import NegotiationRuleError, SimError, UnknownNegotiationError
+from tst.sim.errors import (
+    NegotiationRuleError,
+    SaveBusyError,
+    SimError,
+    UnknownNegotiationError,
+)
 from tst.sim.negotiation import deals, engine
 from tst.sim.negotiation.config import DEAL_KINDS, MOVE_KINDS, DealKind
 from tst.sim.negotiation.models import Move, Negotiation
@@ -469,16 +474,35 @@ def _conclude(
                 neg.kind, params_row.params, _ref_stub(neg), _deal_id(neg.kind, params_row.params)
             )
             action: Any = deals.walk_away(stub, actor, data.balance)
-            repository.run_action(path, data, action)
+            _run(path, data, action)
             with repository.read_session(path) as session:
                 turn = repository.read_state(session).turn
             return None, turn + b.cooldown_months
         assert deal is not None and neg.final is not None
         action = deals.agreement(deal, neg.final, actor, deal.ref.terms[0].base)
-        repository.run_action(path, data, action)
+        _run(path, data, action)
     except SimError as exc:
         return exc.message, None
     return None, None
+
+
+BUSY_TRIES = 40  # tunable-exempt: about 10 s of a save busy with another write
+BUSY_WAIT_S = 0.25  # tunable-exempt: the front end's own busy retry delay
+
+
+def _run(path: Path, data: LoadedData, action: Any) -> None:
+    """The outcome's action, waiting while another write holds the save (a screen's mark-read,
+    say): the talks have ended, so the outcome must not be lost to a busy save."""
+    import time
+
+    for attempt in range(BUSY_TRIES):
+        try:
+            repository.run_action(path, data, action)
+            return
+        except SaveBusyError:
+            if attempt == BUSY_TRIES - 1:
+                raise
+            time.sleep(BUSY_WAIT_S)
 
 
 def _deal_id(kind: str, params: dict[str, Any]) -> int:

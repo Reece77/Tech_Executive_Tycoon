@@ -267,3 +267,29 @@ def test_the_cli_opens_plays_and_skips(save: Path, monkeypatch: pytest.MonkeyPat
     out = run.invoke(cli_app, ["negotiate", "--save", SAVE, "--id", "1", "--finish", "skip"])
     assert out.exit_code == 0 and "skipped" in out.output, out.output
     assert "1 skipped" in run.invoke(cli_app, ["negotiate", "--save", SAVE]).output
+
+
+def test_an_agreement_waits_out_a_busy_save(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Another write holding the save (a screen's mark-read) when the deal closes: the outcome
+    waits for it rather than leaving the talks ended and the deal unsigned."""
+    from tst.db import repository
+    from tst.sim.errors import SaveBusyError
+
+    real = repository.run_action
+    calls = {"n": 0}
+
+    def busy_once(*args: object, **kwargs: object) -> object:
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise SaveBusyError("busy")
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(service, "BUSY_WAIT_S", 0.0)
+    monkeypatch.setattr(repository, "run_action", busy_once)
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    done = service.skip(save, loaded, t.id)
+    assert done.status == "skipped" and calls["n"] == 2
+    with open_session(save) as session:
+        assert load_state(session).commodity_deals

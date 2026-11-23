@@ -75,9 +75,12 @@ test('(a) negotiate an acquisition in template mode and close below the opening'
   await page.getByTestId('move-justify').click();
   await page.getByTestId('negotiation-send').click();
   await expect(page.getByTestId('negotiation-round')).toHaveCount(1);
-  await page.getByTestId('negotiation-accept').click();
-  await expect(page.getByTestId('negotiation-error')).toHaveCount(0);
-  await expect(page.getByTestId('negotiation-status')).toContainText('Agreed', { timeout: 30_000 });
+  const [accepted] = await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith('/accept') && r.request().method() === 'POST'),
+    page.getByTestId('negotiation-accept').click(),
+  ]);
+  expect(accepted.ok(), await accepted.text()).toBeTruthy();
+  await expect(page.getByTestId('negotiation-status')).toContainText('Agreed');
   await expect(page.getByTestId('negotiation-debrief')).toContainText('they opened at');
   const n = await latest(page);
   expect(n.status).toBe('agreed');
@@ -108,7 +111,11 @@ test('(c) skip and get the median', async ({ page }) => {
   test.setTimeout(300_000);
   ensureSave();
   await openTalks(page, targets[2]);
-  await page.getByTestId('negotiation-skip').click();
+  const [skipped] = await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith('/skip') && r.request().method() === 'POST'),
+    page.getByTestId('negotiation-skip').click(),
+  ]);
+  expect(skipped.ok(), await skipped.text()).toBeTruthy();
   await expect(page.getByTestId('negotiation-status')).toContainText('Skipped');
   const n = await latest(page);
   expect(n.status).toBe('skipped');
