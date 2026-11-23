@@ -629,6 +629,9 @@ class ProductsBalance(_Frozen):
     dev_noise_sd_cap: float = Field(ge=0)
     seller_rate: dict[str, float]
     marketer_mk: float = Field(ge=0)
+    marketer_lift: float = Field(default=0.0, ge=0)
+    marketer_lift_cap: float = Field(default=0.0, ge=0)
+    marketer_lift_from_mk: float = Field(default=0.0, ge=0)
     budget_mk_unit_cents: int = Field(gt=0)
     qcap_per_skill: float = Field(gt=0)
     quality_rate: float = Field(ge=0, le=1)
