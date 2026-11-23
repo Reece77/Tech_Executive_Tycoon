@@ -64,8 +64,29 @@ Download the installer from the repository's Releases page, install it, and star
 
 ## Decisions made
 
-(filled in by the agent)
+1. **Branch.** Built on `claude/m58-executable-build-18bvvv` (the branch this cloud session may push to) rather than `m58-executable`; same content, merged by pull request as §6 says.
+2. **Package, not one file.** The desktop entry point is the package `backend/tst/desktop/` (`main.py`, run as `python -m tst.desktop`) with one module per concern (`paths`, `instance`, `secrets`, `imports`, `update`, `context`, `version`), so the API's routes and the tests import everything but the window without pywebview.
+3. **The server runs in the window's process** (uvicorn on a thread, on a socket bound to 127.0.0.1 port 0 before the server starts), not as a child process: one process to close, no port race, and closing the window ends everything.
+4. **Desktop routes are not game routes.** `GET /api/health` (for the smoke test and anyone else) and `/api/desktop/*` live in a new router (`tst/api/routers/desktop.py`); `app.py` gains only its `include_router` and one middleware (`update_guard`, which refuses writes outside `/api/desktop` once an update's backup has started). Outside the installed game the routes answer `desktop: false` or 409 `not_desktop`, so the generated client and `make check-api` cover them.
+5. **Never update during a turn:** Update now is refused while any save is busy (a turn, an action, a holiday: `saves_db.list_files(...).busy`); the backup then takes every save's write lock before copying (SQLite's backup API), and from that moment every write is refused, so the backup is the saves' last state.
+6. **Per-user install** (`PrivilegesRequired=lowest`, `%LOCALAPPDATA%\Programs\Tech Startup Tycoon`): no UAC prompt, so the in-game update can run the installer silently. `[InstallDelete]` clears `_internal` first so no module from an older version lingers.
+7. **Saves and settings outside the install folder** (Documents and `%APPDATA%`); the uninstaller removes only the install folder. Pre-update backups go to `Documents\Tech Startup Tycoon\backups\before-<version>-<stamp>`, beside the saves (the user's files, not app data).
+8. **Paths:** Documents comes from Windows' `SHGetFolderPathW` (it follows OneDrive and moved folders), falling back to `%USERPROFILE%\Documents`; `TST_DESKTOP_HOME` puts both folders under one directory for tests.
+9. **First-run import:** candidates are `TST_IMPORT_FROM`, then GitHub Desktop's default clone (`Documents\GitHub\Tech_Executive_Tycoon\saves`) and a few usual places. Saves (with SQLite's backup API, so a `-wal` is included), settings and mods are copied; existing names are never overwritten; the repository's `backups` folder is left where it is (hundreds of MB per save by the 2030s). Asked once: either answer is remembered in app data's `desktop.json`.
+10. **The API key** is entered in Settings, written to `%APPDATA%\Tech Startup Tycoon\.env`, applied to the running process (the settings cache is cleared), never returned by the API (only `key_saved`), and masked (`sk-…` → `sk-***`) by a filter on every log handler.
+11. **Versions:** the release workflow writes `packaging/version.txt`, bundled at the bundle's root; a repository run is `dev` and never checks for updates. Only `vX.Y.Z` releases with both the installer and its `.sha256` are offered; pre-releases and drafts are not.
+12. **Release notes** (`packaging/release_notes.py`): a `## vX.Y.Z` section in CHANGELOG when Reece writes one; otherwise the top-level entries added since the previous release's CHANGELOG, first lines only; for the first release, the newest twelve.
+13. **Inno Setup** is on GitHub's Windows images; the workflow falls back to `choco install innosetup` if a future image drops it (no need to ask).
+14. **The installer is not code-signed** (no certificate); Windows SmartScreen will warn on first run, and README says how to proceed. The SHA-256 check guards the update download.
+15. **Window details:** 1440 x 900, minimum 1024 x 700, the dark theme's background before the page paints, WebView2 (`edgechromium`) on Windows, and a persistent WebView profile in app data (`webview/`) so the front end's local settings survive restarts. If WebView2 is missing the game opens in the browser instead and says so.
+16. **No new tunable numbers in balance files** (the brief forbids editing them): the few desktop constants (timeouts, window size, log size) are named constants in `tst/desktop`, documented where they are defined.
+17. **The icon** (`packaging/icon.ico`) is drawn by `packaging/make_icon.py` (standard library only): three rising bars in the accent blue on the dark panel colour.
 
 ## Follow-ups
 
-(filled in by the agent)
+- **Code signing:** an Authenticode certificate would stop SmartScreen's "unknown publisher" warning on first install (needs Reece to buy one and add it as a secret).
+- **WebView2 bootstrapper:** the installer could install Microsoft's WebView2 runtime when it is missing (Windows 10 machines without Edge updates); today the game falls back to the browser.
+- **Release notes for players:** write a `## v6.0.0` section in CHANGELOG before the first tag; the automatic notes are milestone headlines written for developers.
+- **A Settings "Check for updates" button** and a "Show saves folder" button (open Explorer at the folder).
+- **macOS/Linux builds:** the spec and entry point run on Linux headless (tested); a macOS `.app` would need its own runner job and signing.
+- **Delta updates:** each update downloads the full installer (about 40-50 MB).
