@@ -38,6 +38,7 @@ from tst.api.routers import (
     investing,
     living,
     medical,
+    meetings,
     meta,
     mining,
     mna,
@@ -145,6 +146,7 @@ def create_app() -> FastAPI:
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
     app.include_router(negotiations.router)  # M47
+    app.include_router(meetings.router)  # M48
     app.include_router(living.router)  # M28
     app.include_router(family.router)  # M36
     app.include_router(platforms.router)  # M31
