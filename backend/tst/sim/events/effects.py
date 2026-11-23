@@ -489,7 +489,7 @@ def check_read_only(state: GameState, kind: str, event_id: int | None) -> None:
     critical = critical_open(state)
     if not critical:
         return
-    if kind == READ_ONLY_ALLOWED and event_id in {e.id for e in critical}:
+    if kind in READ_ONLY_ANSWERS and event_id in {e.id for e in critical}:
         return
     first = critical[0]
     raise ReadOnlyError(
@@ -500,6 +500,10 @@ def check_read_only(state: GameState, kind: str, event_id: int | None) -> None:
 
 
 READ_ONLY_ALLOWED = "choose_event"  # the one action allowed while a critical event is open
+# ...and the negotiated answers to it (M47, 58.4: a settlement agreed or walked away from)
+READ_ONLY_ANSWERS = frozenset(
+    {READ_ONLY_ALLOWED, "negotiation_settlement", "negotiation_walk_away"}
+)
 
 
 def auto_resolve(

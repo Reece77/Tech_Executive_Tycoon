@@ -2,6 +2,7 @@ import { Alert, Button, Checkbox, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { DataTable } from '../components/DataTable';
 import { Explain } from '../components/Explain';
 import { NodeTimeline } from '../components/NodeTimeline';
@@ -265,6 +266,19 @@ function FabPanel({
           Foundry customers:{' '}
           {f.customers.map((c) => `${c.name} (${starts(c.starts)} starts)`).join(' · ')}
         </p>
+      )}
+      {f.customers.length > 0 && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} data-testid="fab-contracts">
+          {f.customers.map((c) => (
+            <OpenNegotiation
+              key={c.name}
+              saveId={saveId}
+              kind="foundry"
+              label={`Negotiate a 12-month contract with ${c.name}`}
+              params={{ fab_id: f.id, customer: c.name, monthly_starts: c.starts, months: 12 }}
+            />
+          ))}
+        </div>
       )}
       {f.history.length > 0 && (
         <p className="tst-muted" style={{ fontSize: 12 }} data-testid="fab-history">

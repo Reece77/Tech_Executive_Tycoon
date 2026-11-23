@@ -32,6 +32,10 @@ export function SettingsScreen() {
         key={`${settings.data.adapter}-${settings.data.budget_cents}-${settings.data.model_events}-${settings.data.model_story}`}
         s={settings.data}
       />
+      <Conversations
+        key={`${settings.data.conversation_budget_cents}-${settings.data.conversation_mode}`}
+        s={settings.data}
+      />
       {desktop?.desktop && <ApiKey d={desktop} />}
       <Onboarding />
       <section
@@ -200,6 +204,72 @@ function AiWriting({ s }: { s: LlmSettings }) {
             </span>
           )}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/** Conversations' own monthly cap and mode (M47, ADR-0023): over the cap, or in template mode,
+ * negotiations run on labelled move buttons with the same engine. */
+function Conversations({ s }: { s: LlmSettings }) {
+  const update = useUpdateLlmSettings();
+  const [cap, setCap] = useState(s.conversation_budget_cents);
+  const [mode, setMode] = useState(s.conversation_mode);
+  const dirty = cap !== s.conversation_budget_cents || mode !== s.conversation_mode;
+  return (
+    <section
+      className="tst-panel"
+      style={{ padding: '20px 24px', maxWidth: 760, marginTop: 16 }}
+      aria-label="Conversations"
+      data-testid="conversation-settings"
+    >
+      <h2 className="tst-ptitle" style={{ marginTop: 0 }}>
+        Conversations
+      </h2>
+      <p style={{ margin: '0 0 10px', fontSize: 14 }}>
+        Negotiations use Claude to read your messages and word the other side's replies, within
+        their own budget; the engine decides every outcome. Now:{' '}
+        <strong data-testid="conversation-in-use">{s.conversation_in_use}</strong> (
+        {formatMoney(Math.round(s.conversation_spend_cents))} of{' '}
+        {formatMoney(s.conversation_budget_cents)} this calendar month).
+      </p>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'end' }}>
+        <NumberInput
+          label="Monthly cap (dollars)"
+          min={0}
+          max={1000}
+          decimalScale={2}
+          value={cap / 100}
+          onChange={(v) => setCap(Math.round(Number(v || 0) * 100))}
+          style={{ maxWidth: 200 }}
+          data-testid="conversation-cap"
+        />
+        <SegmentedControl
+          data-testid="conversation-mode"
+          value={mode}
+          onChange={setMode}
+          data={[
+            { value: 'auto', label: 'Free text within the cap' },
+            { value: 'template', label: 'Template mode' },
+          ]}
+        />
+        <Button
+          disabled={!dirty}
+          loading={update.isPending}
+          data-testid="save-conversation-settings"
+          onClick={() =>
+            update.mutate({
+              adapter: s.adapter,
+              monthly_budget_cents: s.budget_cents,
+              model_events: s.model_events,
+              model_story: s.model_story,
+              conversation_budget_cents: cap,
+              conversation_mode: mode,
+            })
+          }
+        >
+          Save
+        </Button>
       </div>
     </section>
   );

@@ -144,6 +144,9 @@ STREAM_IDS: Final = MappingProxyType(
         # clearance, (2, 0, facility_id) a facility's; (3, contract_id, month) overruns and task
         # orders; (4, company_id, turn) staff reactions
         "defence": 69,
+        # M47 (formulas.md 58.2): (kind index, *deal key) a counterpart's hidden zone, patience,
+        # priorities, openness and revealed-range offsets, drawn at the month the talks open
+        "negotiation": 70,
         "misc": 99,
     }
 )

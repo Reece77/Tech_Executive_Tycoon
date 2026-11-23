@@ -1047,13 +1047,25 @@ def next_action_seq(session: Session, turn: int) -> int:
     return (current or 0) + 1
 
 
+def answered_event(action: Action) -> int | None:
+    """The event an action answers (M23r's read-only boundary): a choice, or a negotiated
+    settlement agreed or walked away from (M47)."""
+    from tst.sim.negotiation.actions import AgreeSettlement, WalkAway
+
+    if isinstance(action, ChooseEvent | AgreeSettlement):
+        return action.event_id
+    if isinstance(action, WalkAway) and action.deal_kind == "settlement":
+        return action.deal_id
+    return None
+
+
 def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResult:
     """Apply one player action in its own short transaction and log it to decision_log."""
     migrate.ensure_current(save_path)
     with write_session(save_path) as session:
         state = load_current(session)
         # M23r (Codex review 6 finding 4): the server's read-only boundary, before anything runs
-        answers = action.event_id if isinstance(action, ChooseEvent) else None
+        answers = answered_event(action)
         check_read_only(state, action.kind, answers)
         balances = current_balances(session, state.turn)
         seq = next_action_seq(session, state.turn)

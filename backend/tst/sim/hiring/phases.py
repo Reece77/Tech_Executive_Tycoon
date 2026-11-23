@@ -34,7 +34,7 @@ from tst.sim.hiring.formulas import (
     retirement_bp,
     roll_succeeds,
 )
-from tst.sim.hiring.models import Candidate, OfferStatus, PersonState, Search
+from tst.sim.hiring.models import Candidate, Offer, OfferStatus, PersonState, Search
 from tst.sim.hiring.rules import matching_interests, offer_pitch
 from tst.sim.ledger import (
     BENEFITS,
@@ -66,6 +66,7 @@ from tst.sim.products.phases import product_costs_by_division
 from tst.sim.rivals.poaching import leave_rival, poach_batch
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
+    CompanyState,
     GameState,
     ceo_of,
     derived,
@@ -211,62 +212,96 @@ def resolve_offers(
                 )
             )
             continue
-        if candidate is not None and candidate.channel == "poach":
-            state = leave_rival(state, person.id, balance, data)  # M5 (15.6)
-        emp_id, ids = state.next_ids.take("employment")
-        state = replace(state, next_ids=ids)
-        joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
-        hire = Employment(
-            id=emp_id,
-            person_id=person.id,
-            company_id=company.id,
-            role=person.role or "",
-            level=person.level or "",
-            salary_cents=offer.salary_cents,
-            equity_bp=offer.equity_bp,
-            start_turn=state.turn,
-            end_turn=None,
-            status="active",
-            unit_id=joins.id if joins is not None and joins.status == "active" else None,
-        )
-        state = grant_on_hire(with_employment(state, hire), hire)  # options from the pool (14.2)
-        state, filled = _count_plan_hire(state, offer.plan_id, data)
-        state = with_person_state(
-            state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
-        )
-        # Working together shows interests and work style (M1c review): reveal them at hire.
-        reveal = state.reveal(company.id, person.id)
-        if reveal is not None and reveal.profile_revealed_turn is None:
-            state = with_reveal(state, replace(reveal, profile_revealed_turn=state.turn))
-        if candidate is not None and candidate.channel == "recruiter":
-            fee = recruiter_fee_cents(offer.salary_cents, hiring)
-            if fee:
-                units = {u.id: u for u in state.active_units(company.id)}
-                d = division_of_unit(units, hire.unit_id)  # the hire's division (M8, 18.1)
-                entries.append(
-                    LedgerEntry(
-                        turn=state.turn,
-                        company_id=company.id,
-                        memo=f"Recruiter fee: {_name(person)}",
-                        lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
-                    )
+        state, hired, logged = _hire(state, offer, candidate, person, company, balance, data)
+        entries += hired
+        logs += logged
+    return state, tuple(entries), tuple(logs)
+
+
+def _hire(
+    state: GameState,
+    offer: Offer,
+    candidate: Candidate | None,
+    person: Person,
+    company: CompanyState,
+    balance: Balance,
+    data: GameData,
+) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
+    """An accepted offer becomes an employment (section 7): the hire, options, morale, the
+    reveal at hire, the recruiter's fee and relocation."""
+    entries: list[LedgerEntry] = []
+    logs: list[LogItem] = []
+    if candidate is not None and candidate.channel == "poach":
+        state = leave_rival(state, person.id, balance, data)  # M5 (15.6)
+    emp_id, ids = state.next_ids.take("employment")
+    state = replace(state, next_ids=ids)
+    joins = state.unit(offer.unit_id) if offer.unit_id is not None else None
+    hire = Employment(
+        id=emp_id,
+        person_id=person.id,
+        company_id=company.id,
+        role=person.role or "",
+        level=person.level or "",
+        salary_cents=offer.salary_cents,
+        equity_bp=offer.equity_bp,
+        start_turn=state.turn,
+        end_turn=None,
+        status="active",
+        unit_id=joins.id if joins is not None and joins.status == "active" else None,
+    )
+    state = grant_on_hire(with_employment(state, hire), hire)  # options from the pool (14.2)
+    state, filled = _count_plan_hire(state, offer.plan_id, data)
+    state = with_person_state(
+        state, PersonState(person_id=person.id, morale=balance.morale.new_hire)
+    )
+    # Working together shows interests and work style (M1c review): reveal them at hire.
+    reveal = state.reveal(company.id, person.id)
+    if reveal is not None and reveal.profile_revealed_turn is None:
+        state = with_reveal(state, replace(reveal, profile_revealed_turn=state.turn))
+    if candidate is not None and candidate.channel == "recruiter":
+        fee = recruiter_fee_cents(offer.salary_cents, balance.hiring)
+        if fee:
+            units = {u.id: u for u in state.active_units(company.id)}
+            d = division_of_unit(units, hire.unit_id)  # the hire's division (M8, 18.1)
+            entries.append(
+                LedgerEntry(
+                    turn=state.turn,
+                    company_id=company.id,
+                    memo=f"Recruiter fee: {_name(person)}",
+                    lines=(LedgerLine(RECRUITING, fee, d), LedgerLine(CASH, -fee, d)),
                 )
-        state, moved = _relocate(state, hire, balance, data)
-        entries += moved
-        logs.append(
-            inbox_item(
-                state.turn,
-                company.id,
-                "offer_accepted",
-                link_kind="person",
-                link_id=person.id,
-                name=_name(person),
-                level=person.level or "",
-                role=_role_label(person, data),
-                salary_cents=offer.salary_cents,
             )
+    state, moved = _relocate(state, hire, balance, data)
+    entries += moved
+    logs.append(
+        inbox_item(
+            state.turn,
+            company.id,
+            "offer_accepted",
+            link_kind="person",
+            link_id=person.id,
+            name=_name(person),
+            level=person.level or "",
+            role=_role_label(person, data),
+            salary_cents=offer.salary_cents,
         )
-        logs += filled
+    )
+    logs += filled
+    return state, entries, logs
+
+
+def accept_agreed(
+    state: GameState, offer: Offer, balance: Balance, data: GameData
+) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[LogItem, ...]]:
+    """M47 (58.4): an offer agreed in a negotiation is accepted when it is made, with no draw;
+    everything else is the accepted offer's (`_hire`)."""
+    candidate = state.candidate(offer.candidate_id)
+    person = state.person(offer.candidate_id)
+    company = state.company(offer.company_id)
+    state = with_offer(state, replace(offer, status="accepted", resolved_turn=state.turn))
+    if candidate is not None:
+        state = with_candidate(state, replace(candidate, status="hired", resolved_turn=state.turn))
+    state, entries, logs = _hire(state, offer, candidate, person, company, balance, data)
     return state, tuple(entries), tuple(logs)
 
 

@@ -43,6 +43,7 @@ from tst.api.routers import (
     mna,
     modes,
     mods,
+    negotiations,
     onboarding,
     org,
     pharma,
@@ -143,6 +144,7 @@ def create_app() -> FastAPI:
     app.include_router(mods.router)  # M25
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
+    app.include_router(negotiations.router)  # M47
     app.include_router(living.router)  # M28
     app.include_router(family.router)  # M36
     app.include_router(platforms.router)  # M31

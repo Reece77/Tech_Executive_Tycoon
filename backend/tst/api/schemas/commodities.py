@@ -72,6 +72,9 @@ class CommodityDealOut(BaseModel):
     last_taken: float
     hedge_cents: int = Field(description="Cost of goods saved against spot so far")
     charged_cents: int = Field(description="Take-or-pay so far")
+    # M47: a renewal is negotiated on the same terms (its length and volume)
+    months_left: int = Field(description="Months it still runs, this one included")
+    term_months: int = Field(description="Its length in months")
 
 
 class SupplierGoodOut(BaseModel):

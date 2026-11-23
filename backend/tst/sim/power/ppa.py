@@ -11,10 +11,11 @@ The forward price is half this month's grid price and half the region's long-run
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.negotiation.models import BP
 from tst.sim.power import formulas as pf
 from tst.sim.power import grid
 from tst.sim.power.models import Ppa
@@ -102,6 +103,18 @@ def quote(
         end_turn=start + years * MONTHS - 1,
         monthly_cents=round(mwh_month * price),
         minimum_cents=round(mwh_month * price * pb.take_or_pay),
+    )
+
+
+def at_bp(q: PpaQuote, price_bp: int, balance: Balance) -> PpaQuote:
+    """The quote at a negotiated price, `price_bp` basis points of the quoted one (M47, 58.4)."""
+    # money-exact: rate
+    price = q.price_cents * price_bp / BP
+    return replace(
+        q,
+        price_cents=price,
+        monthly_cents=round(q.mwh_month * price),
+        minimum_cents=round(q.mwh_month * price * balance.power.ppa.take_or_pay),
     )
 
 

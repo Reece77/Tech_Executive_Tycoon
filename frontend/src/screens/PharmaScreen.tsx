@@ -16,6 +16,7 @@ import {
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { DataTable } from '../components/DataTable';
 import { Explain } from '../components/Explain';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
@@ -615,11 +616,16 @@ function Assets({ saveId, m }: { saveId: string; m: Pharma }) {
               >
                 Acquire ({formatMoneyWhole(c.row.original.acquire_cents)})
               </Button>
+              <OpenNegotiation
+                saveId={saveId}
+                kind="licence_in"
+                params={{ asset_id: c.row.original.id }}
+              />
             </Group>
           ),
         }),
       ]),
-    [take],
+    [take, saveId],
   );
   const table = useTable({
     features: gameTableFeatures,

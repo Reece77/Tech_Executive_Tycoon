@@ -75,6 +75,7 @@ from tst.sim.modes.config import (
     StoryBalance,
 )
 from tst.sim.money import BP_DENOMINATOR
+from tst.sim.negotiation.config import LlmBalance, NegotiationBalance
 from tst.sim.org.voice_data import Voice
 from tst.sim.pharma.config import PharmaBalance, PharmaFile
 from tst.sim.platforms.config import PlatformsBalance, PlatformsFile
@@ -1430,6 +1431,8 @@ class Balance(_Frozen):
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
+    negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
+    llm: LlmBalance  # M47 (ADR-0023): the conversations' own monthly LLM cap
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

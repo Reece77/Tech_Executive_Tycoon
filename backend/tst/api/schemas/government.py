@@ -89,6 +89,7 @@ class GovContractOut(BaseModel):
     cost_cents: int
     month_revenue_cents: int | None
     month_cost_cents: int | None
+    terms_open: bool = Field(description="M47: won this month; its final terms can be negotiated")
 
 
 class ClearanceOut(BaseModel):

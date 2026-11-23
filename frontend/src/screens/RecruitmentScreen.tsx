@@ -7,6 +7,7 @@ import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
 import { HiringPlansPanel } from '../components/HiringPlans';
 import { LearnedPanel } from '../components/LearnedPanel';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
 import {
   useCandidates,
@@ -861,6 +862,11 @@ function OfferPanel({
         >
           Send offer
         </Button>
+        <OpenNegotiation
+          saveId={saveId}
+          kind="hire"
+          params={{ candidate_id: candidate.person_id, equity_bp: equityBp }}
+        />
         <Button h={44} variant="default" onClick={onClose}>
           Cancel
         </Button>

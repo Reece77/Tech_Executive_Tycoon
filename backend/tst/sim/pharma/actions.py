@@ -96,6 +96,7 @@ class LicenseAsset:
     actor_id: int
     asset_id: int
     acquire: bool = False
+    upfront_cents: int | None = None  # M47 (58.4): a negotiated upfront (set by an agreement)
     kind: Literal["pharma_license_in"] = "pharma_license_in"
 
 
@@ -105,6 +106,7 @@ class OutLicense:
     programme_id: int
     rival_id: int
     co_develop: bool = False
+    upfront_cents: int | None = None  # M47 (58.4): a negotiated upfront (set by an agreement)
     kind: Literal["pharma_license_out"] = "pharma_license_out"
 
 
@@ -259,14 +261,26 @@ def apply_pharma(
         case LicenseAsset():
             state = _energy(state, action.actor_id, "deal", balance)
             state, entries, logs = licensing.take_asset(
-                state, company_id, action.asset_id, action.acquire, balance, data
+                state,
+                company_id,
+                action.asset_id,
+                action.acquire,
+                balance,
+                data,
+                upfront_cents=action.upfront_cents,
             )
             return Outcome(state, tuple(entries), tuple(logs))
         case OutLicense():
             p = own(state, company_id, action.programme_id)
             state = _energy(state, action.actor_id, "deal", balance)
             state, entries, logs = licensing.out_license(
-                state, p, action.rival_id, action.co_develop, balance, data
+                state,
+                p,
+                action.rival_id,
+                action.co_develop,
+                balance,
+                data,
+                upfront_cents=action.upfront_cents,
             )
             return Outcome(state, tuple(entries), tuple(logs))
         case LicensePlatform():

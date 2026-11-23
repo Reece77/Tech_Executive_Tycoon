@@ -3398,3 +3398,60 @@ conglomerate:
     - { below: 0.25, word: moderate }
   risk_top_word: high # a spread at or above the last `below` (or under two years of growth: "new")
   letter_from_year: 2010 # the first year a January letter to shareholders covers (written January 2011)
+
+negotiation: # 58: negotiations by conversation (M47, v6 lane A). The engine owns every outcome: these are its dials; the LLM only scores a message into moves. A = an assumption for gameplay, tuned only for 58.5
+  spread: # deal kind -> the zone's half-width x the median (today's price): the counterpart opens this far from it and walks below the same distance the other side (A)
+    acquisition: 0.10 # unused: an acquisition's zone is the existing first counter and reservation (28.3)
+    hire: 0.08
+    retention: 0.08
+    supplier: 0.06
+    offtake: 0.06
+    foundry: 0.06
+    ppa: 0.06
+    government: 0.05
+    settlement: 0.15
+    licence_in: 0.12
+    licence_out: 0.12
+  spread_jitter: 0.30 # share; a deal's half-width is the kind's x (1 +/- this) by a draw (A)
+  min_spread_bp: 100 # basis points of the median; the narrowest half-width a zone has (A)
+  patience: [3, 8] # rounds before the counterpart walks, drawn uniformly (58.2)
+  move_step: 0.35 # share of the zone; the most the counterpart's offer moves in one round (58.3)
+  effects: # move -> concession (share of move_step it earns), patience (rounds +/-), relationship (points +/-) (58.3; A)
+    concede: { concession: 0.70, patience: 0, relationship: 1 }
+    anchor: { concession: 0.80, patience: -1, relationship: -1 }
+    justify: { concession: 0.70, patience: 0, relationship: 0 }
+    appeal: { concession: 0.50, patience: 1, relationship: 1 }
+    threaten_walk: { concession: 1.00, patience: -1, relationship: -2 }
+    package: { concession: 0.70, patience: 0, relationship: 1 }
+    close: { concession: 0.30, patience: 0, relationship: 0 }
+    neutral: { concession: 0.30, patience: 0, relationship: 0 }
+  appeal_good: 20 # relationship points; an appeal adds patience only from 16.7's "good"
+  anchor_gap: 0.30 # share of the zone; an anchor offers at least this far below the counterpart's demand, else it is neutral
+  accept_tolerance: 0.05 # share of the zone; the counterpart accepts an offer within this of its demand
+  close_tolerance: 0.10 # share of the zone; ...within this when the player asks to close
+  max_moves: 3 # moves one message counts at most (duplicates once)
+  max_rounds: 10 # rounds a negotiation runs at most; then the counterpart walks
+  shown_round: 0.02 # share of the median; offers and ranges are shown rounded to this, in the counterpart's favour, so no run of offers pins the reservation (as 28.3's counters)
+  range: # the revealed range the reservation lies in (58.2)
+    start: 0.60 # half-width at the opening, x the zone
+    narrow: 0.50 # a round narrows it by this x the counterpart's openness (0-1, drawn)
+    floor: 0.15 # never narrower than this half-width, x the zone
+    centre: 0.50 # the centre is at most this x the half-width from the reservation (a draw)
+    skill_power: 3.0 # the width x (band lo + band hi - the negotiator's factor) to this power: a better negotiator reads the other side better
+  skill: # 58.3: the negotiator's skills and persona scale the moves' effects
+    band: [0.8, 1.2] # the factor at skill score 1 and 20 (58.3)
+    weights: { negotiation: 0.5, communication: 0.25, strategy: 0.25 } # the score's skills
+    persona_at: 60 # persona score; a trait counts from here (32.4's effects threshold)
+    persona_mult: 1.10 # x a threat or anchor for a ruthless founder, x an appeal for a beloved one (within the band)
+  relationship_walk: -10 # relationship points a walk-away costs with that counterpart (58.4; A)
+  relationship_agree: 3 # ...an agreement adds (A)
+  relationship_floor: -100 # a counterpart's relationship stays within these (16.7's scale)
+  relationship_ceiling: 100
+  cooldown_months: 6 # months before a deal the counterpart walked away from can be talked about again (58.4; A)
+  max_message_chars: 600 # characters in the player's message
+  max_reply_words: 80 # words in the counterpart's reply
+  suggestions: 3 # suggested replies a round (58.3)
+  history_rounds: 4 # earlier rounds quoted in a prompt
+
+llm: # ADR-0023: the conversations' own budget, apart from events' (Reece, 2026-11-22)
+  conversation_budget_cents: 1000 # real cents a calendar month (default $10, a setting); over it conversations run in template mode

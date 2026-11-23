@@ -29,6 +29,7 @@ import {
   parseDollars,
 } from '../lib/format';
 import { MANAGER_LABELS, POLICY_LABELS, signed } from '../lib/org';
+import { OpenNegotiation } from './NegotiationPanel';
 import { ChangeDialog, type Pending } from './OrgChangeDialog';
 import { Panel } from './ScreenState';
 
@@ -239,6 +240,14 @@ export function RaiseDialog({
           >
             Confirm raise
           </Button>
+          {approachId != null && (
+            <OpenNegotiation
+              saveId={saveId}
+              kind="retention"
+              params={{ approach_id: approachId }}
+              label="Open negotiation (keep them)"
+            />
+          )}
           <Button size="md" variant="default" onClick={onClose}>
             Cancel
           </Button>

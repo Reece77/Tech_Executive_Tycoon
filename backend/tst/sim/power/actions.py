@@ -53,6 +53,8 @@ class SignPpa:
     producer: str
     mwh_month: float
     years: int
+    # M47 (58.4): a negotiated price, basis points of the quote (set only by an agreement)
+    price_bp: int | None = None
     kind: Literal["sign_ppa"] = "sign_ppa"
 
 
@@ -204,6 +206,8 @@ def sign_ppa(state: GameState, action: SignPpa, balance: Balance, data: GameData
     q = ppa.quote(
         state, action.region, action.producer, action.mwh_month, action.years, balance, data
     )
+    if action.price_bp is not None:  # M47: the agreed price (58.4), the quote's rules kept
+        q = ppa.at_bp(q, action.price_bp, balance)
     state = spend_energy(state, action.actor_id, "sign_ppa", balance, cost=balance.power.ppa.energy)
     contract = ppa.from_quote(state, company, q)
     state = with_ppa(state, contract)

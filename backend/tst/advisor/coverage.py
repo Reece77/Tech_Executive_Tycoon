@@ -230,6 +230,11 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "staff": _CAPACITY,
         "staff_needed": _CAPACITY,
     },
+    # v6 (M47): the negotiation panel's revealed range (58.2)
+    "negotiations.NegotiationRangeOut": {
+        "lo": "negotiation_range",
+        "hi": "negotiation_range",
+    },
     # v5 (M44): the Government screen (57.7)
     "government.MyBidOut": {
         "price_cents": _INPUT,

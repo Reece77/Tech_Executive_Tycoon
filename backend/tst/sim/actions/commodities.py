@@ -23,6 +23,8 @@ class SignCommodityContract:
     good: str  # commodities.yaml key
     months: int
     volume_year: float  # volume units a year
+    # M47 (58.4): a negotiated price, basis points of the quote (set only by an agreement)
+    price_bp: int | None = None
     kind: Literal["sign_commodity_contract"] = "sign_commodity_contract"
 
 
@@ -34,6 +36,7 @@ class SignOfftake:
     years: int
     volume_year: float
     prepay: float = 0.0  # share of year 1's value paid now (at most offtake.prepay_max)
+    price_bp: int | None = None  # M47 (58.4): a negotiated price, basis points of the quote
     kind: Literal["sign_offtake"] = "sign_offtake"
 
 
@@ -42,6 +45,8 @@ def sign_commodity_contract(
 ) -> Outcome:
     company = acting_company(state, action.actor_id)
     q = offtake.contract_quote(state, action.good, action.months, action.volume_year, balance, data)
+    if action.price_bp is not None:  # M47: the agreed price (58.4), the quote's rules kept
+        q = offtake.at_bp(q, action.price_bp, data)
     state = spend_energy(
         state,
         action.actor_id,
@@ -89,6 +94,8 @@ def sign_offtake(
         balance,
         data,
     )
+    if action.price_bp is not None:  # M47: the agreed price (58.4), the quote's rules kept
+        q = offtake.at_bp(q, action.price_bp, data)
     if q.prepaid_cents and account_balance(balances, company, CASH) < q.prepaid_cents:
         raise InsufficientCashError(f"the prepayment needs {q.prepaid_cents} cents")
     state = spend_energy(

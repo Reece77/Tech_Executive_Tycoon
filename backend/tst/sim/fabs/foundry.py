@@ -48,6 +48,9 @@ class SignFoundryContract:
     monthly_starts: float
     months: int
     price_cents: float  # a start
+    # M47 (58.4): the price was agreed in a negotiation, whose zone (around the ceiling, today's
+    # price) replaces the ceiling; set only by an agreement
+    agreed: bool = False
     kind: Literal["sign_foundry_contract"] = "sign_foundry_contract"
 
 
@@ -97,7 +100,7 @@ def sign(
     # money-exact: rate
     ceiling = slot_price_cents(state, fab, balance, data) * fb.max_price
     ceiling /= float(ct.premium(state, action.customer, balance))
-    if action.price_cents > ceiling * (1 + EPS):
+    if not action.agreed and action.price_cents > ceiling * (1 + EPS):
         raise FabRuleError(
             f"{action.customer} pays at most {format_money(round(ceiling))} a start at this node"
         )

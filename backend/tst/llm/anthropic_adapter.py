@@ -14,7 +14,16 @@ from typing import Any
 
 import anthropic
 
-from tst.llm.base import EVENT_SCHEMA, Completion, EventPrompt, TextPrompt, Usage
+from tst.llm.base import (
+    CLASSIFY_SCHEMA,
+    EVENT_SCHEMA,
+    SUGGEST_SCHEMA,
+    Completion,
+    ConversationPrompt,
+    EventPrompt,
+    TextPrompt,
+    Usage,
+)
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +42,13 @@ class AnthropicAdapter:
         self.model_story = model_story
 
     def _call(
-        self, model: str, system: str, user: str, max_tokens: int, schema: bool
+        self,
+        model: str,
+        system: str,
+        user: str,
+        max_tokens: int,
+        schema: bool,
+        json_schema: dict[str, Any] | None = None,
     ) -> Completion:
         started = time.monotonic()
         params: dict[str, Any] = {
@@ -44,7 +59,10 @@ class AnthropicAdapter:
             "output_config": {"effort": EFFORT},
         }
         if schema:
-            params["output_config"]["format"] = {"type": "json_schema", "schema": EVENT_SCHEMA}
+            params["output_config"]["format"] = {
+                "type": "json_schema",
+                "schema": json_schema or EVENT_SCHEMA,
+            }
         try:
             response = self.client.messages.create(**params)
         except anthropic.APIConnectionError as exc:
@@ -75,3 +93,12 @@ class AnthropicAdapter:
             self.model_story if prompt.kind in ("coo", "explain", "letter") else self.model_events
         )
         return self._call(model, prompt.system, prompt.user, TEXT_MAX_TOKENS, False)
+
+    def generate_conversation(self, prompt: ConversationPrompt) -> Completion:
+        """M47 (ADR-0023): the small model scores and suggests (JSON); replies are text."""
+        if prompt.kind == "reply":
+            return self._call(self.model_events, prompt.system, prompt.user, TEXT_MAX_TOKENS, False)
+        schema = CLASSIFY_SCHEMA if prompt.kind == "classify" else SUGGEST_SCHEMA
+        return self._call(
+            self.model_events, prompt.system, prompt.user, TEXT_MAX_TOKENS, True, schema
+        )

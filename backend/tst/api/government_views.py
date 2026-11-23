@@ -248,6 +248,7 @@ def government_out(state: GameState, data: LoadedData) -> GovernmentScreenOut:
         product = state.product(c.product_id)
         contracts.append(
             GovContractOut(
+                terms_open=c.status == "active" and c.start_turn > state.turn,
                 id=c.id,
                 tender_id=c.tender_id,
                 title=t.title if t is not None else f"Contract {c.id}",

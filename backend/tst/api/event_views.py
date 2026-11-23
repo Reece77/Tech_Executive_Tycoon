@@ -74,7 +74,24 @@ def event_out(state: GameState, event: GameEvent, data: LoadedData) -> EventOut:
         follow_up_note=follow,
         person_ids=list(event.person_ids),
         links=event_links(state, event, data),
+        negotiable=_negotiable(state, event, data),
     )
+
+
+def _negotiable(state: GameState, event: GameEvent, data: LoadedData) -> str | None:
+    """M47 (58.1): an open case event with a fine to settle can be negotiated."""
+    if event.status != "open" or not any(
+        e.type == "regulation_step" and e.stat == "settle" for c in event.choices for e in c.effects
+    ):
+        return None
+    from tst.sim.errors import SimError
+    from tst.sim.negotiation.deals import settlement_fine
+
+    try:
+        settlement_fine(state, event.id, data.balance, data.game_data)
+    except SimError:
+        return None
+    return "settlement"
 
 
 def storyline_out(story: Storyline) -> StorylineOut:

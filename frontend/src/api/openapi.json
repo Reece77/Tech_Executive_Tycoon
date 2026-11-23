@@ -23164,6 +23164,498 @@
         }
       }
     },
+    "/api/saves/{save_id}/negotiations": {
+      "get": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "List Negotiations",
+        "description": "This save's negotiations, newest first, and whether conversations use the LLM now.",
+        "operationId": "listNegotiations",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationListOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "Open Negotiation",
+        "description": "Open talks on a deal the game prices (or resume this month's open talks on it).",
+        "operationId": "openNegotiation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NegotiationOpenIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/negotiations/{negotiation_id}": {
+      "get": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "Get Negotiation",
+        "description": "The negotiation and, once it is over, its debrief: every round's moves and what they did,\nthe final terms against the opening offer and the revealed range.",
+        "operationId": "getNegotiation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "negotiation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Negotiation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/rounds": {
+      "post": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "Play Round",
+        "description": "One round: free text (scored by the LLM into moves) or template moves, with an offer.",
+        "operationId": "playNegotiationRound",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "negotiation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Negotiation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NegotiationRoundIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/accept": {
+      "post": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "Accept Offer",
+        "description": "Take the counterpart's offer as shown: the deal executes through its own action.",
+        "operationId": "acceptNegotiationOffer",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "negotiation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Negotiation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/skip": {
+      "post": {
+        "tags": [
+          "negotiations"
+        ],
+        "summary": "Skip Negotiation",
+        "description": "Skip: the deal closes at the median outcome, as the game prices it today (58.4).",
+        "operationId": "skipNegotiation",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "negotiation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Negotiation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NegotiationOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world-news": {
       "get": {
         "tags": [
@@ -30331,7 +30823,7 @@
           "settings"
         ],
         "summary": "Update Llm Settings",
-        "description": "Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.",
+        "description": "Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.\nM47: the conversations' cap and mode, when given.",
         "operationId": "updateLlmSettings",
         "requestBody": {
           "content": {
@@ -36804,6 +37296,16 @@
             "type": "integer",
             "title": "Charged Cents",
             "description": "Take-or-pay so far"
+          },
+          "months_left": {
+            "type": "integer",
+            "title": "Months Left",
+            "description": "Months it still runs, this one included"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months",
+            "description": "Its length in months"
           }
         },
         "type": "object",
@@ -36827,7 +37329,9 @@
           "taken",
           "last_taken",
           "hedge_cents",
-          "charged_cents"
+          "charged_cents",
+          "months_left",
+          "term_months"
         ],
         "title": "CommodityDealOut"
       },
@@ -41182,6 +41686,18 @@
             "type": "array",
             "title": "Links",
             "description": "The screens that matter for the decision (M23c): its mine, product, people"
+          },
+          "negotiable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Negotiable",
+            "description": "M47: the deal kind whose talks this event opens (a regulator's settlement)"
           }
         },
         "type": "object",
@@ -41501,7 +42017,8 @@
               "order",
               "zone",
               "constellation",
-              "bid"
+              "bid",
+              "negotiation"
             ],
             "title": "Scope"
           },
@@ -46251,6 +46768,11 @@
               }
             ],
             "title": "Month Cost Cents"
+          },
+          "terms_open": {
+            "type": "boolean",
+            "title": "Terms Open",
+            "description": "M47: won this month; its final terms can be negotiated"
           }
         },
         "type": "object",
@@ -46273,7 +46795,8 @@
           "revenue_cents",
           "cost_cents",
           "month_revenue_cents",
-          "month_cost_cents"
+          "month_cost_cents",
+          "terms_open"
         ],
         "title": "GovContractOut"
       },
@@ -50032,6 +50555,31 @@
             "maxLength": 64,
             "minLength": 1,
             "title": "Model Story"
+          },
+          "conversation_budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Budget Cents"
+          },
+          "conversation_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(auto|template)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Mode"
           }
         },
         "type": "object",
@@ -50116,6 +50664,29 @@
             },
             "type": "array",
             "title": "Cannot See"
+          },
+          "conversation_budget_cents": {
+            "type": "integer",
+            "title": "Conversation Budget Cents",
+            "description": "The conversations' monthly cap"
+          },
+          "conversation_spend_cents": {
+            "type": "number",
+            "title": "Conversation Spend Cents"
+          },
+          "conversation_calls": {
+            "type": "integer",
+            "title": "Conversation Calls"
+          },
+          "conversation_mode": {
+            "type": "string",
+            "title": "Conversation Mode",
+            "description": "auto | template"
+          },
+          "conversation_in_use": {
+            "type": "string",
+            "title": "Conversation In Use",
+            "description": "What runs conversations now: Claude or templates"
           }
         },
         "type": "object",
@@ -50133,7 +50704,12 @@
           "rejected_drafts",
           "average_cost_cents",
           "can_see",
-          "cannot_see"
+          "cannot_see",
+          "conversation_budget_cents",
+          "conversation_spend_cents",
+          "conversation_calls",
+          "conversation_mode",
+          "conversation_in_use"
         ],
         "title": "LLMSettingsOut"
       },
@@ -54163,6 +54739,709 @@
         ],
         "title": "MyCarOut"
       },
+      "NegotiationListOut": {
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "items"
+        ],
+        "title": "NegotiationListOut"
+      },
+      "NegotiationModeOut": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "description": "llm | template"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "'' | setting | offline | budget"
+          },
+          "cap_cents": {
+            "type": "integer",
+            "title": "Cap Cents"
+          },
+          "spent_cents": {
+            "type": "number",
+            "title": "Spent Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "reason",
+          "cap_cents",
+          "spent_cents"
+        ],
+        "title": "NegotiationModeOut"
+      },
+      "NegotiationMoveIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "concede | anchor | justify | appeal | threaten_walk | package | close"
+          },
+          "term": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term"
+          },
+          "other": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "NegotiationMoveIn"
+      },
+      "NegotiationMoveOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "term": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Term"
+          },
+          "other": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "term",
+          "other",
+          "fact",
+          "words"
+        ],
+        "title": "NegotiationMoveOut"
+      },
+      "NegotiationOpenIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "acquisition | hire | retention | supplier | offtake | foundry | ppa | government | settlement | licence_in | licence_out"
+          },
+          "params": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParamValue"
+            },
+            "type": "object",
+            "title": "Params",
+            "description": "The deal as its own action takes it (e.g. target_id, candidate_id, good)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "params"
+        ],
+        "title": "NegotiationOpenIn"
+      },
+      "NegotiationOut": {
+        "properties": {
+          "negotiation_id": {
+            "type": "integer",
+            "title": "Negotiation Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "open | agreed | walked | skipped | lapsed | failed"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "cooldown_until": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cooldown Until"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationTermOut"
+            },
+            "type": "array",
+            "title": "Terms"
+          },
+          "counterpart_name": {
+            "type": "string",
+            "title": "Counterpart Name"
+          },
+          "counterpart_role": {
+            "type": "string",
+            "title": "Counterpart Role"
+          },
+          "counterpart_organisation": {
+            "type": "string",
+            "title": "Counterpart Organisation"
+          },
+          "counterpart_style": {
+            "type": "string",
+            "title": "Counterpart Style"
+          },
+          "relationship": {
+            "type": "string",
+            "title": "Relationship"
+          },
+          "facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "used_facts": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Used Facts"
+          },
+          "persona": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Persona"
+          },
+          "opening": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Opening"
+          },
+          "opening_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Opening Shown"
+          },
+          "opening_line": {
+            "type": "string",
+            "title": "Opening Line"
+          },
+          "counter": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Counter"
+          },
+          "counter_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Counter Shown"
+          },
+          "offer": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer"
+          },
+          "offer_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Offer Shown"
+          },
+          "ranges": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationRangeOut"
+            },
+            "type": "array",
+            "title": "Ranges",
+            "description": "Where their limit lies, as revealed"
+          },
+          "mood": {
+            "type": "string",
+            "title": "Mood"
+          },
+          "rounds": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationRoundOut"
+            },
+            "type": "array",
+            "title": "Rounds"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "final": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Final"
+          },
+          "final_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Final Shown"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "negotiation_id",
+          "kind",
+          "subject",
+          "status",
+          "opened_turn",
+          "date_label",
+          "cooldown_until",
+          "error",
+          "terms",
+          "counterpart_name",
+          "counterpart_role",
+          "counterpart_organisation",
+          "counterpart_style",
+          "relationship",
+          "facts",
+          "used_facts",
+          "persona",
+          "opening",
+          "opening_shown",
+          "opening_line",
+          "counter",
+          "counter_shown",
+          "offer",
+          "offer_shown",
+          "ranges",
+          "mood",
+          "rounds",
+          "suggestions",
+          "final",
+          "final_shown",
+          "mode"
+        ],
+        "title": "NegotiationOut"
+      },
+      "NegotiationRangeOut": {
+        "properties": {
+          "lo": {
+            "type": "integer",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "integer",
+            "title": "Hi"
+          },
+          "shown": {
+            "type": "string",
+            "title": "Shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi",
+          "shown"
+        ],
+        "title": "NegotiationRangeOut"
+      },
+      "NegotiationRoundIn": {
+        "properties": {
+          "offer": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Offer",
+            "description": "The player's offer, one value per term in its unit"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Free text (LLM mode); untrusted"
+          },
+          "moves": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/NegotiationMoveIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moves",
+            "description": "Template mode's buttons"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "free",
+              "suggested",
+              "template"
+            ],
+            "title": "Source",
+            "default": "free"
+          }
+        },
+        "type": "object",
+        "required": [
+          "offer"
+        ],
+        "title": "NegotiationRoundIn"
+      },
+      "NegotiationRoundOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "offer": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Offer"
+          },
+          "offer_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Offer Shown"
+          },
+          "claimed": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationMoveOut"
+            },
+            "type": "array",
+            "title": "Claimed",
+            "description": "The moves as scored"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/NegotiationMoveOut"
+            },
+            "type": "array",
+            "title": "Moves",
+            "description": "After the engine's checks"
+          },
+          "counter_before": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Counter Before"
+          },
+          "counter": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Counter"
+          },
+          "counter_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Counter Shown"
+          },
+          "outcome": {
+            "type": "string",
+            "title": "Outcome",
+            "description": "countered | final | agreed | walked"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "reason_words": {
+            "type": "string",
+            "title": "Reason Words"
+          },
+          "mood": {
+            "type": "string",
+            "title": "Mood",
+            "description": "open | firm | final: how close they are to walking"
+          },
+          "relationship_change": {
+            "type": "integer",
+            "title": "Relationship Change"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "message_source": {
+            "type": "string",
+            "title": "Message Source"
+          },
+          "reply": {
+            "type": "string",
+            "title": "Reply"
+          },
+          "reply_source": {
+            "type": "string",
+            "title": "Reply Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "offer",
+          "offer_shown",
+          "claimed",
+          "moves",
+          "counter_before",
+          "counter",
+          "counter_shown",
+          "outcome",
+          "reason",
+          "reason_words",
+          "mood",
+          "relationship_change",
+          "message",
+          "message_source",
+          "reply",
+          "reply_source"
+        ],
+        "title": "NegotiationRoundOut"
+      },
+      "NegotiationSummaryOut": {
+        "properties": {
+          "negotiation_id": {
+            "type": "integer",
+            "title": "Negotiation Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "counterpart_name": {
+            "type": "string",
+            "title": "Counterpart Name"
+          },
+          "counterpart_organisation": {
+            "type": "string",
+            "title": "Counterpart Organisation"
+          },
+          "rounds": {
+            "type": "integer",
+            "title": "Rounds"
+          },
+          "final_shown": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Final Shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "negotiation_id",
+          "kind",
+          "subject",
+          "status",
+          "opened_turn",
+          "date_label",
+          "counterpart_name",
+          "counterpart_organisation",
+          "rounds",
+          "final_shown"
+        ],
+        "title": "NegotiationSummaryOut"
+      },
+      "NegotiationTermOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "cents | bp (basis points of the quote)"
+          },
+          "wants": {
+            "type": "string",
+            "title": "Wants",
+            "description": "lower | higher: which way the player wants it"
+          },
+          "base_shown": {
+            "type": "string",
+            "title": "Base Shown",
+            "description": "The quote a bp term is a share of"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "wants",
+          "base_shown"
+        ],
+        "title": "NegotiationTermOut"
+      },
       "NetWorthOut": {
         "properties": {
           "total_cents": {
@@ -56523,6 +57802,22 @@
           "entries"
         ],
         "title": "PaletteOut"
+      },
+      "ParamValue": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
       },
       "PartnerIn": {
         "properties": {

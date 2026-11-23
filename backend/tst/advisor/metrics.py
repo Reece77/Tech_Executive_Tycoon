@@ -123,6 +123,14 @@ METRICS: dict[str, MetricDef] = {
         ),
         # v5 (M44): a bid's score band
         _m("bid_score", "Score band", "points", "bid", "A government bid's weighted score"),
+        # v6 (M47): where a counterpart's limit lies, as revealed (58.2)
+        _m(
+            "negotiation_range",
+            "Revealed range",
+            "cents",
+            "negotiation",
+            "Where the counterpart's walk-away point lies, as the talks have revealed it",
+        ),
         # v4 (M34): regulators' fines and the designation thresholds
         _m("regulation_fines", "Fines", "cents", "company", "Regulators' fines on the group"),
         _m(
