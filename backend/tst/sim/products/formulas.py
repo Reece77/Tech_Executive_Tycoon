@@ -164,10 +164,11 @@ def held_feature_points(score: float, category: CategoryDef, turn: int) -> float
 
 
 def marketing_points(budget_cents: int, mu: float, pb: ProductsBalance) -> float:
-    """mk = budget in $1,000s + 5 mu."""
+    """mk = budget in $1,000s + 5 mu, plus the budget points above the lift threshold times
+    min(cap, lift x mu) (M46: marketers direct a large budget)."""
     # money-exact: ratio
     points = budget_cents / pb.budget_mk_unit_cents
-    lift = min(pb.marketer_lift_cap, pb.marketer_lift * mu)  # M46: marketers direct a large budget
+    lift = min(pb.marketer_lift_cap, pb.marketer_lift * mu)
     return points + pb.marketer_mk * mu + max(0.0, points - pb.marketer_lift_from_mk) * lift
 
 
