@@ -9,7 +9,8 @@ Target 1 (a 2010 game is unchanged) is the golden snapshots and the state caches
   (14.3) for one standard company (ARR $1M, doubling in 6 months, live, 6 staff) at the
   month's climate. *Failures*: of the rival startups with under 12 months of runway (cash over
   last month's operating loss) in October 2008, the share closed within 12 months, against
-  the same share from January 2010 and January 2011 in the 2010 games.
+  the same share from October 2010-March 2011 in the 2010 games (the same months after the
+  start: every world begins without rival startups). Rounds per attempt pool 2010 from both.
 - **Target 3, the world arrives sensibly.** January 2010 in a 2008 game against January 2010 in
   a 2010 game (after that month is played): each category's addressable customers (home and
   regional) and each named v1 incumbent's MRR, as ratios; the median per seed, then over seeds.
@@ -44,14 +45,16 @@ CALM: Final = (ym_to_turn(2010, 1), ym_to_turn(2010, 12))  # 2010
 # short-runway snapshots: each month of the crisis's first half, Oct 2008-Mar 2009, against each
 # month of 2010 (a startup counts once, at its first short month), outcome within 12 months
 CRISIS_SNAPSHOTS: Final = tuple(range(ym_to_turn(2008, 10), ym_to_turn(2009, 3) + 1))
-CALM_SNAPSHOTS: Final = tuple(range(ym_to_turn(2010, 1), ym_to_turn(2010, 12) + 1))
+# the calm comparison at the same age of the world (every world begins without rival startups):
+# a 2010 game's October 2010-March 2011, inside 2010-2011 as 60.3 asks
+CALM_SNAPSHOTS: Final = tuple(range(ym_to_turn(2010, 10), ym_to_turn(2011, 3) + 1))
 FAIL_WINDOW: Final = 12  # months after the snapshot
 SHORT_RUNWAY: Final = 12  # months of runway
 SCARCER: Final = 0.40  # 60.3 target 2: at least 40% fewer rounds
 CHEAPER: Final = 0.20  # and 20% cheaper
 FAIL_RATIO: Final = 2.0  # short-runway startups fail at least twice as often
 BAND: Final = (0.7, 1.3)  # 60.3 target 3
-TURNS_TO_2011: Final = ym_to_turn(2012, 1)  # the games play to December 2011
+TURNS_TO_2011: Final = ym_to_turn(2012, 4)  # the games play to March 2012
 TURNS_2008: Final = TURNS_TO_2011  # the 2008 games also play to December 2011
 STANDARD_ARR: Final = 100_000_000  # cents: $1M ARR (target 2's standard company)
 STANDARD_GROWTH: Final = 1.0  # doubling over 6 months
@@ -138,9 +141,7 @@ def world_run(job: tuple[int, int]) -> WorldRun:
     firms = [f for f in data.game_data.investors if "seed" in f.series]
     rb = data.balance.finance.round
     last = TURNS_2008 if start_year < 2010 else TURNS_TO_2011
-    # the calm baseline (2010, outcomes to 2011) comes from both kinds of game: a 2010 game's
-    # startups are all new in 2010, so a 2008 game's own 2010-2011 counts too
-    snapshots = (*CRISIS_SNAPSHOTS, *CALM_SNAPSHOTS) if start_year < 2010 else CALM_SNAPSHOTS
+    snapshots = CRISIS_SNAPSHOTS if start_year < 2010 else CALM_SNAPSHOTS
     counted: set[int] = set()
     named = _named(data)
     while game.state.turn < last:
@@ -260,13 +261,13 @@ def crisis_readings(runs: Sequence[WorldRun]) -> list[Reading]:
         return sum(1 for _, f in rows if f), len(rows)
 
     fc, nc = failed(early, CRISIS_SNAPSHOTS)
-    fn, nn = failed(runs, CALM_SNAPSHOTS)
+    fn, nn = failed(late, CALM_SNAPSHOTS)
     ratio = None if not nc or not nn or not fn else (fc / nc) / (fn / nn)
     out.append(
         Reading(
             "60.3 T2",
-            f"short-runway startups failing within a year: Oct 2008-Mar 2009 {fc}/{nc} vs 2010 "
-            f"{fn}/{nn} (x)",
+            f"short-runway startups failing within a year: Oct 2008-Mar 2009 {fc}/{nc} vs Oct "
+            f"2010-Mar 2011 {fn}/{nn} (x)",
             ratio,
             f">= {FAIL_RATIO:g}x",
             None if ratio is None else ratio >= FAIL_RATIO,
