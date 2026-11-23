@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useMna, useMnaAction, type MnaActionResult, type MnaTarget } from '../hooks/api';
 import { formatMoneyWhole, humanize } from '../lib/format';
+import { OpenNegotiation } from './NegotiationPanel';
 import { Panel } from './ScreenState';
 
 export function RivalDealPanel({ saveId, companyId }: { saveId: string; companyId: number }) {
@@ -177,6 +178,12 @@ function DealBody({
           >
             Make an offer
           </Button>
+          <OpenNegotiation
+            saveId={saveId}
+            kind="acquisition"
+            disabled={hostile}
+            params={{ target_id: t.company_id, mode, cash_share: Number(cash) / 100 }}
+          />
         </div>
       )}
       {act.error && (

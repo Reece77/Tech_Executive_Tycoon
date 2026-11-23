@@ -10,16 +10,16 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _path
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.negotiations import (
-    ModeOut,
-    MoveOut,
     NegotiationListOut,
+    NegotiationModeOut,
+    NegotiationMoveOut,
     NegotiationOpenIn,
     NegotiationOut,
+    NegotiationRangeOut,
+    NegotiationRoundIn,
+    NegotiationRoundOut,
     NegotiationSummaryOut,
-    RangeOut,
-    RoundIn,
-    RoundOut,
-    TermOut,
+    NegotiationTermOut,
 )
 from tst.conversations import service
 from tst.conversations.view import PublicMove
@@ -28,14 +28,14 @@ from tst.sim.calendar import format_turn
 router = APIRouter(prefix="/api/saves/{save_id}/negotiations", tags=["negotiations"])
 
 
-def _mode(m: service.ModeInfo) -> ModeOut:
-    return ModeOut(
+def _mode(m: service.ModeInfo) -> NegotiationModeOut:
+    return NegotiationModeOut(
         mode=m.mode, reason=m.reason, cap_cents=m.cap_cents, spent_cents=round(m.spent_cents, 4)
     )
 
 
-def _move(m: PublicMove) -> MoveOut:
-    return MoveOut(kind=m.kind, term=m.term, other=m.other, fact=m.fact, words=m.words)
+def _move(m: PublicMove) -> NegotiationMoveOut:
+    return NegotiationMoveOut(kind=m.kind, term=m.term, other=m.other, fact=m.fact, words=m.words)
 
 
 def negotiation_out(t: service.Talks) -> NegotiationOut:
@@ -51,7 +51,9 @@ def negotiation_out(t: service.Talks) -> NegotiationOut:
         cooldown_until=t.cooldown_until,
         error=t.error,
         terms=[
-            TermOut(key=x.key, label=x.label, unit=x.unit, wants=x.wants, base_shown=x.base_shown)
+            NegotiationTermOut(
+                key=x.key, label=x.label, unit=x.unit, wants=x.wants, base_shown=x.base_shown
+            )
             for x in v.terms
         ],
         counterpart_name=v.counterpart_name,
@@ -69,10 +71,10 @@ def negotiation_out(t: service.Talks) -> NegotiationOut:
         counter_shown=list(v.counter_shown),
         offer=None if v.offer is None else list(v.offer),
         offer_shown=list(v.offer_shown),
-        ranges=[RangeOut(lo=r.lo, hi=r.hi, shown=r.shown) for r in v.ranges],
+        ranges=[NegotiationRangeOut(lo=r.lo, hi=r.hi, shown=r.shown) for r in v.ranges],
         mood=v.mood,
         rounds=[
-            RoundOut(
+            NegotiationRoundOut(
                 n=r.n,
                 offer=list(r.offer),
                 offer_shown=list(r.offer_shown),
@@ -157,7 +159,11 @@ def get_negotiation(
     operation_id="playNegotiationRound",
 )
 def play_round(
-    save_id: str, negotiation_id: int, body: RoundIn, settings: SettingsDep, data: DataDep
+    save_id: str,
+    negotiation_id: int,
+    body: NegotiationRoundIn,
+    settings: SettingsDep,
+    data: DataDep,
 ) -> NegotiationOut:
     """One round: free text (scored by the LLM into moves) or template moves, with an offer."""
     t = service.play(

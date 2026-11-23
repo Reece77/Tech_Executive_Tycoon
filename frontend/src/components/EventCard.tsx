@@ -2,6 +2,7 @@ import { Button, Modal } from '@mantine/core';
 import { Link } from 'react-router';
 import { useChooseEvent, useEvents, type GameEventOut } from '../hooks/api';
 import { IpoEventPricing } from './IpoPanel';
+import { OpenNegotiation } from './NegotiationPanel';
 import { Term } from './Term';
 import { usePress } from '../hooks/press';
 import { returnToDecision, setAside, useSetAside } from '../lib/setAside';
@@ -113,6 +114,16 @@ export function EventCard({
           );
         })}
       </div>
+      {open && event.negotiable && (
+        <div>
+          <OpenNegotiation
+            saveId={saveId}
+            kind={event.negotiable}
+            params={{ event_id: event.event_id }}
+            label="Open negotiation (the settlement's fine)"
+          />
+        </div>
+      )}
       {choose.error && (
         <span role="alert" style={{ color: 'var(--tst-warn)', fontSize: 13 }}>
           {choose.error.message}

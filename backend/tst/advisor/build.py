@@ -913,6 +913,13 @@ class Builder:
 
         return v5_government.bid_score(self, m, entity)
 
+    # --- v6 (M47): negotiations ---------------------------------------------------------------
+
+    def negotiation_range(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_negotiation
+
+        return v6_negotiation.negotiation_range(self, m, entity)
+
     # --- v4 (M34): regulation ----------------------------------------------------------------
 
     def regulation_fines(self, m: MetricDef, entity: str | None) -> Explanation:

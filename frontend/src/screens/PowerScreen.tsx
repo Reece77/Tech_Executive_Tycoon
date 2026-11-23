@@ -6,6 +6,7 @@ import { Alert, Button, NumberInput, Select } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { DataTable } from '../components/DataTable';
 import { Explain } from '../components/Explain';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
@@ -501,6 +502,13 @@ function SignPpa({ saveId, p }: { saveId: string; p: Power }) {
         >
           Sign
         </Button>
+        {chosen && mwh > 0 && (
+          <OpenNegotiation
+            saveId={saveId}
+            kind="ppa"
+            params={{ region, producer: chosen, mwh_month: mwh, years }}
+          />
+        )}
       </div>
       {q && (
         <div data-testid="ppa-quote" style={{ fontSize: 13, marginTop: 6 }}>

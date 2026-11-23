@@ -21,7 +21,7 @@ class NegotiationOpenIn(BaseModel):
     )
 
 
-class MoveIn(BaseModel):
+class NegotiationMoveIn(BaseModel):
     kind: str = Field(
         description="concede | anchor | justify | appeal | threaten_walk | package | close"
     )
@@ -30,14 +30,16 @@ class MoveIn(BaseModel):
     fact: int | None = None
 
 
-class RoundIn(BaseModel):
+class NegotiationRoundIn(BaseModel):
     offer: list[int] = Field(description="The player's offer, one value per term in its unit")
     message: str | None = Field(default=None, description="Free text (LLM mode); untrusted")
-    moves: list[MoveIn] | None = Field(default=None, description="Template mode's buttons")
+    moves: list[NegotiationMoveIn] | None = Field(
+        default=None, description="Template mode's buttons"
+    )
     source: Literal["free", "suggested", "template"] = "free"
 
 
-class TermOut(BaseModel):
+class NegotiationTermOut(BaseModel):
     key: str
     label: str
     unit: str = Field(description="cents | bp (basis points of the quote)")
@@ -45,7 +47,7 @@ class TermOut(BaseModel):
     base_shown: str = Field(description="The quote a bp term is a share of")
 
 
-class MoveOut(BaseModel):
+class NegotiationMoveOut(BaseModel):
     kind: str
     term: int | None
     other: int | None
@@ -53,18 +55,18 @@ class MoveOut(BaseModel):
     words: str
 
 
-class RangeOut(BaseModel):
+class NegotiationRangeOut(BaseModel):
     lo: int
     hi: int
     shown: str
 
 
-class RoundOut(BaseModel):
+class NegotiationRoundOut(BaseModel):
     n: int
     offer: list[int]
     offer_shown: list[str]
-    claimed: list[MoveOut] = Field(description="The moves as scored")
-    moves: list[MoveOut] = Field(description="After the engine's checks")
+    claimed: list[NegotiationMoveOut] = Field(description="The moves as scored")
+    moves: list[NegotiationMoveOut] = Field(description="After the engine's checks")
     counter_before: list[int]
     counter: list[int]
     counter_shown: list[str]
@@ -79,7 +81,7 @@ class RoundOut(BaseModel):
     reply_source: str
 
 
-class ModeOut(BaseModel):
+class NegotiationModeOut(BaseModel):
     mode: str = Field(description="llm | template")
     reason: str = Field(description="'' | setting | offline | budget")
     cap_cents: int
@@ -95,7 +97,7 @@ class NegotiationOut(BaseModel):
     date_label: str
     cooldown_until: int | None
     error: str | None
-    terms: list[TermOut]
+    terms: list[NegotiationTermOut]
     counterpart_name: str
     counterpart_role: str
     counterpart_organisation: str
@@ -111,13 +113,13 @@ class NegotiationOut(BaseModel):
     counter_shown: list[str]
     offer: list[int] | None
     offer_shown: list[str]
-    ranges: list[RangeOut] = Field(description="Where their limit lies, as revealed")
+    ranges: list[NegotiationRangeOut] = Field(description="Where their limit lies, as revealed")
     mood: str
-    rounds: list[RoundOut]
+    rounds: list[NegotiationRoundOut]
     suggestions: list[str]
     final: list[int] | None
     final_shown: list[str]
-    mode: ModeOut
+    mode: NegotiationModeOut
 
 
 class NegotiationSummaryOut(BaseModel):
@@ -134,5 +136,5 @@ class NegotiationSummaryOut(BaseModel):
 
 
 class NegotiationListOut(BaseModel):
-    mode: ModeOut
+    mode: NegotiationModeOut
     items: list[NegotiationSummaryOut]

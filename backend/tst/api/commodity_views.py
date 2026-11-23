@@ -118,6 +118,8 @@ def deal_out(state: GameState, deal_id: int, data: LoadedData) -> CommodityDealO
         last_taken=deal.last_taken,
         hedge_cents=deal.hedge_cents,
         charged_cents=deal.charged_cents,
+        months_left=max(0, deal.end_turn - state.turn + 1),
+        term_months=deal.end_turn - deal.signed_turn + 1,
     )
 
 

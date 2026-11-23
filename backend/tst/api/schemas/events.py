@@ -53,6 +53,10 @@ class EventOut(BaseModel):
     links: list[EventLinkOut] = Field(
         description="The screens that matter for the decision (M23c): its mine, product, people",
     )
+    negotiable: str | None = Field(
+        default=None,
+        description="M47: the deal kind whose talks this event opens (a regulator's settlement)",
+    )
 
 
 class EventsOut(BaseModel):

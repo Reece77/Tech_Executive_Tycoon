@@ -5174,6 +5174,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/negotiations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Negotiations
+         * @description This save's negotiations, newest first, and whether conversations use the LLM now.
+         */
+        get: operations["listNegotiations"];
+        put?: never;
+        /**
+         * Open Negotiation
+         * @description Open talks on a deal the game prices (or resume this month's open talks on it).
+         */
+        post: operations["openNegotiation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/negotiations/{negotiation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Negotiation
+         * @description The negotiation and, once it is over, its debrief: every round's moves and what they did,
+         *     the final terms against the opening offer and the revealed range.
+         */
+        get: operations["getNegotiation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/rounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Play Round
+         * @description One round: free text (scored by the LLM into moves) or template moves, with an offer.
+         */
+        post: operations["playNegotiationRound"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Offer
+         * @description Take the counterpart's offer as shown: the deal executes through its own action.
+         */
+        post: operations["acceptNegotiationOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/negotiations/{negotiation_id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Skip Negotiation
+         * @description Skip: the deal closes at the median outcome, as the game prices it today (58.4).
+         */
+        post: operations["skipNegotiation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/world-news": {
         parameters: {
             query?: never;
@@ -6750,6 +6855,7 @@ export interface paths {
         /**
          * Update Llm Settings
          * @description Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.
+         *     M47: the conversations' cap and mode, when given.
          */
         put: operations["updateLlmSettings"];
         post?: never;
@@ -9613,6 +9719,16 @@ export interface components {
              * @description Take-or-pay so far
              */
             charged_cents: number;
+            /**
+             * Months Left
+             * @description Months it still runs, this one included
+             */
+            months_left: number;
+            /**
+             * Term Months
+             * @description Its length in months
+             */
+            term_months: number;
         };
         /** CommodityOut */
         CommodityOut: {
@@ -11476,6 +11592,11 @@ export interface components {
              * @description The screens that matter for the decision (M23c): its mine, product, people
              */
             links: components["schemas"]["tst__api__schemas__events__EventLinkOut"][];
+            /**
+             * Negotiable
+             * @description M47: the deal kind whose talks this event opens (a regulator's settlement)
+             */
+            negotiable?: string | null;
         };
         /** EventStorylineOut */
         EventStorylineOut: {
@@ -13468,6 +13589,11 @@ export interface components {
             month_revenue_cents: number | null;
             /** Month Cost Cents */
             month_cost_cents: number | null;
+            /**
+             * Terms Open
+             * @description M47: won this month; its final terms can be negotiated
+             */
+            terms_open: boolean;
         };
         /** GovernmentActionOut */
         GovernmentActionOut: {
@@ -14951,6 +15077,10 @@ export interface components {
             model_events: string;
             /** Model Story */
             model_story: string;
+            /** Conversation Budget Cents */
+            conversation_budget_cents?: number | null;
+            /** Conversation Mode */
+            conversation_mode?: string | null;
         };
         /** LLMSettingsOut */
         LLMSettingsOut: {
@@ -14991,6 +15121,25 @@ export interface components {
             can_see: string[];
             /** Cannot See */
             cannot_see: string[];
+            /**
+             * Conversation Budget Cents
+             * @description The conversations' monthly cap
+             */
+            conversation_budget_cents: number;
+            /** Conversation Spend Cents */
+            conversation_spend_cents: number;
+            /** Conversation Calls */
+            conversation_calls: number;
+            /**
+             * Conversation Mode
+             * @description auto | template
+             */
+            conversation_mode: string;
+            /**
+             * Conversation In Use
+             * @description What runs conversations now: Claude or templates
+             */
+            conversation_in_use: string;
         };
         /** LabelOut */
         LabelOut: {
@@ -16676,6 +16825,268 @@ export interface components {
             /** History */
             history: components["schemas"]["CarMonthOut"][];
         };
+        /** NegotiationListOut */
+        NegotiationListOut: {
+            mode: components["schemas"]["NegotiationModeOut"];
+            /** Items */
+            items: components["schemas"]["NegotiationSummaryOut"][];
+        };
+        /** NegotiationModeOut */
+        NegotiationModeOut: {
+            /**
+             * Mode
+             * @description llm | template
+             */
+            mode: string;
+            /**
+             * Reason
+             * @description '' | setting | offline | budget
+             */
+            reason: string;
+            /** Cap Cents */
+            cap_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+        };
+        /** NegotiationMoveIn */
+        NegotiationMoveIn: {
+            /**
+             * Kind
+             * @description concede | anchor | justify | appeal | threaten_walk | package | close
+             */
+            kind: string;
+            /** Term */
+            term?: number | null;
+            /** Other */
+            other?: number | null;
+            /** Fact */
+            fact?: number | null;
+        };
+        /** NegotiationMoveOut */
+        NegotiationMoveOut: {
+            /** Kind */
+            kind: string;
+            /** Term */
+            term: number | null;
+            /** Other */
+            other: number | null;
+            /** Fact */
+            fact: number | null;
+            /** Words */
+            words: string;
+        };
+        /** NegotiationOpenIn */
+        NegotiationOpenIn: {
+            /**
+             * Kind
+             * @description acquisition | hire | retention | supplier | offtake | foundry | ppa | government | settlement | licence_in | licence_out
+             */
+            kind: string;
+            /**
+             * Params
+             * @description The deal as its own action takes it (e.g. target_id, candidate_id, good)
+             */
+            params: {
+                [key: string]: components["schemas"]["ParamValue"];
+            };
+        };
+        /** NegotiationOut */
+        NegotiationOut: {
+            /** Negotiation Id */
+            negotiation_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /**
+             * Status
+             * @description open | agreed | walked | skipped | lapsed | failed
+             */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Cooldown Until */
+            cooldown_until: number | null;
+            /** Error */
+            error: string | null;
+            /** Terms */
+            terms: components["schemas"]["NegotiationTermOut"][];
+            /** Counterpart Name */
+            counterpart_name: string;
+            /** Counterpart Role */
+            counterpart_role: string;
+            /** Counterpart Organisation */
+            counterpart_organisation: string;
+            /** Counterpart Style */
+            counterpart_style: string;
+            /** Relationship */
+            relationship: string;
+            /** Facts */
+            facts: string[];
+            /** Used Facts */
+            used_facts: number[];
+            /** Persona */
+            persona: string[];
+            /** Opening */
+            opening: number[];
+            /** Opening Shown */
+            opening_shown: string[];
+            /** Opening Line */
+            opening_line: string;
+            /** Counter */
+            counter: number[];
+            /** Counter Shown */
+            counter_shown: string[];
+            /** Offer */
+            offer: number[] | null;
+            /** Offer Shown */
+            offer_shown: string[];
+            /**
+             * Ranges
+             * @description Where their limit lies, as revealed
+             */
+            ranges: components["schemas"]["NegotiationRangeOut"][];
+            /** Mood */
+            mood: string;
+            /** Rounds */
+            rounds: components["schemas"]["NegotiationRoundOut"][];
+            /** Suggestions */
+            suggestions: string[];
+            /** Final */
+            final: number[] | null;
+            /** Final Shown */
+            final_shown: string[];
+            mode: components["schemas"]["NegotiationModeOut"];
+        };
+        /** NegotiationRangeOut */
+        NegotiationRangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
+            /** Shown */
+            shown: string;
+        };
+        /** NegotiationRoundIn */
+        NegotiationRoundIn: {
+            /**
+             * Offer
+             * @description The player's offer, one value per term in its unit
+             */
+            offer: number[];
+            /**
+             * Message
+             * @description Free text (LLM mode); untrusted
+             */
+            message?: string | null;
+            /**
+             * Moves
+             * @description Template mode's buttons
+             */
+            moves?: components["schemas"]["NegotiationMoveIn"][] | null;
+            /**
+             * Source
+             * @default free
+             * @enum {string}
+             */
+            source?: "free" | "suggested" | "template";
+        };
+        /** NegotiationRoundOut */
+        NegotiationRoundOut: {
+            /** N */
+            n: number;
+            /** Offer */
+            offer: number[];
+            /** Offer Shown */
+            offer_shown: string[];
+            /**
+             * Claimed
+             * @description The moves as scored
+             */
+            claimed: components["schemas"]["NegotiationMoveOut"][];
+            /**
+             * Moves
+             * @description After the engine's checks
+             */
+            moves: components["schemas"]["NegotiationMoveOut"][];
+            /** Counter Before */
+            counter_before: number[];
+            /** Counter */
+            counter: number[];
+            /** Counter Shown */
+            counter_shown: string[];
+            /**
+             * Outcome
+             * @description countered | final | agreed | walked
+             */
+            outcome: string;
+            /** Reason */
+            reason: string;
+            /** Reason Words */
+            reason_words: string;
+            /**
+             * Mood
+             * @description open | firm | final: how close they are to walking
+             */
+            mood: string;
+            /** Relationship Change */
+            relationship_change: number;
+            /** Message */
+            message: string;
+            /** Message Source */
+            message_source: string;
+            /** Reply */
+            reply: string;
+            /** Reply Source */
+            reply_source: string;
+        };
+        /** NegotiationSummaryOut */
+        NegotiationSummaryOut: {
+            /** Negotiation Id */
+            negotiation_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /** Status */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Counterpart Name */
+            counterpart_name: string;
+            /** Counterpart Organisation */
+            counterpart_organisation: string;
+            /** Rounds */
+            rounds: number;
+            /** Final Shown */
+            final_shown: string[];
+        };
+        /** NegotiationTermOut */
+        NegotiationTermOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Unit
+             * @description cents | bp (basis points of the quote)
+             */
+            unit: string;
+            /**
+             * Wants
+             * @description lower | higher: which way the player wants it
+             */
+            wants: string;
+            /**
+             * Base Shown
+             * @description The quote a bp term is a share of
+             */
+            base_shown: string;
+        };
         /** NetWorthOut */
         NetWorthOut: {
             /** Total Cents */
@@ -17715,6 +18126,7 @@ export interface components {
             /** Entries */
             entries: components["schemas"]["PaletteEntryOut"][];
         };
+        ParamValue: string | number | boolean;
         /** PartnerIn */
         PartnerIn: {
             /** Company Id */
@@ -42819,6 +43231,366 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RecordOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listNegotiations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationListOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openNegotiation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NegotiationOpenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getNegotiation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                negotiation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    playNegotiationRound: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                negotiation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NegotiationRoundIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    acceptNegotiationOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                negotiation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    skipNegotiation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                negotiation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NegotiationOut"];
                 };
             };
             /** @description Bad Request */

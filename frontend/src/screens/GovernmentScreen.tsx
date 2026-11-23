@@ -7,6 +7,7 @@ import { Alert, Button, MultiSelect, NumberInput, Select, Switch } from '@mantin
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { DataTable } from '../components/DataTable';
 import { Explain } from '../components/Explain';
 import { LoadError, Loading, Panel, ScreenTitle } from '../components/ScreenState';
@@ -124,7 +125,7 @@ function GovernmentBody({ saveId, g }: { saveId: string; g: Government }) {
       </Panel>
       {chosen && <TenderPanel saveId={saveId} g={g} t={chosen} />}
       <Panel title="Contracts" testId="government-contracts">
-        <ContractTable g={g} />
+        <ContractTable saveId={saveId} g={g} />
       </Panel>
       <Panel title="Clearances" testId="government-clearances">
         <ClearanceTable g={g} />
@@ -364,7 +365,7 @@ function TenderPanel({ saveId, g, t }: { saveId: string; g: Government; t: Tende
   );
 }
 
-function ContractTable({ g }: { g: Government }) {
+function ContractTable({ saveId, g }: { saveId: string; g: Government }) {
   const columns = useMemo(
     () =>
       contractHelper.columns([
@@ -396,8 +397,20 @@ function ContractTable({ g }: { g: Government }) {
           cell: (c) => formatMoneyShort(c.getValue()),
         }),
         contractHelper.accessor('end', { header: 'Ends' }),
+        contractHelper.display({
+          id: 'terms',
+          header: 'Final terms',
+          cell: ({ row }) =>
+            row.original.terms_open ? (
+              <OpenNegotiation
+                saveId={saveId}
+                kind="government"
+                params={{ contract_id: row.original.id }}
+              />
+            ) : null,
+        }),
       ]),
-    [],
+    [saveId],
   );
   const table = useTable({ features: gameTableFeatures, columns, data: g.contracts });
   return <DataTable table={table} label="Contracts" empty="No government contracts yet." />;

@@ -23,6 +23,7 @@ type Scope = Literal[
     "zone",  # M39: a robotaxi zone
     "constellation",  # M40: a satellite constellation
     "bid",  # M44: a government bid
+    "negotiation",  # M47: a negotiation's revealed range
 ]
 
 

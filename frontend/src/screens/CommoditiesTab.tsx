@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import type { components } from '../api/schema';
+import { OpenNegotiation } from '../components/NegotiationPanel';
 import { CompanyLink } from '../components/CompanyLink';
 import { DataTable } from '../components/DataTable';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -224,6 +225,9 @@ function PowerPanel({ c }: { c: Commodities }) {
   );
 }
 
+// M47: a contract in its last months can be renewed by negotiation (the same length and volume).
+const RENEW_MONTHS = 3;
+
 function DealsPanel({ saveId, deals }: { saveId: string; deals: Deal[] }) {
   const columns = useMemo(
     () =>
@@ -275,6 +279,34 @@ function DealsPanel({ saveId, deals }: { saveId: string; deals: Deal[] }) {
           header: 'Prepaid left',
           meta: { term: 'commodity.prepaid' },
           cell: ({ getValue }) => <span className="tst-num">{formatMoney(getValue())}</span>,
+        }),
+        dealHelper.display({
+          id: 'renew',
+          header: 'Renewal',
+          cell: ({ row }) => {
+            const d = row.original;
+            if (d.status !== 'active' || d.months_left > RENEW_MONTHS) return null;
+            return d.kind === 'offtake' && d.supplier ? (
+              <OpenNegotiation
+                saveId={saveId}
+                kind="offtake"
+                label="Negotiate renewal"
+                params={{
+                  good: d.good,
+                  supplier: d.supplier,
+                  years: Math.max(1, Math.round(d.term_months / 12)),
+                  volume_year: d.volume_year,
+                }}
+              />
+            ) : (
+              <OpenNegotiation
+                saveId={saveId}
+                kind="supplier"
+                label="Negotiate renewal"
+                params={{ good: d.good, months: d.term_months, volume_year: d.volume_year }}
+              />
+            );
+          },
         }),
       ]),
     [saveId],
@@ -381,6 +413,7 @@ function OfftakeForm({
         >
           Sign ({c.offtake_energy} energy)
         </Button>
+        {body && <OpenNegotiation saveId={saveId} kind="offtake" params={{ ...body }} />}
       </div>
       {quote.data && (
         <p style={{ margin: 0, fontSize: 13 }} data-testid="offtake-quote-out">
