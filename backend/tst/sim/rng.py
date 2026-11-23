@@ -194,7 +194,7 @@ class RngFactory:
         for part in key:
             if isinstance(part, bool) or not isinstance(part, int):
                 raise InvalidSeedError(f"stream keys must be ints, got {key!r}")
-            if not -NEGATIVE_TURN_BASE < part:
+            if part <= -NEGATIVE_TURN_BASE:
                 raise InvalidSeedError(f"stream key out of range: {key!r}")
         # ADR-0024: a key part may be a month (an approach's, a contract's), negative before
         # 2010; it enters as a turn does, so every key from 0 is unchanged
