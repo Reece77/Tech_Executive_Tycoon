@@ -84,6 +84,26 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 
 All of v5 is built and merged: family and succession (M36), dynasty mode to 2069 (M37), electric vehicles (M38), robotics and robotaxis (M39), space and satellites (M40), medical devices (M41), pharmaceuticals (M42), defence and government contracts (M44), market sizes and saturation (M43a), performance at scale (M45) and the balance pass with the conglomerate view (M43, `m43-done`). On the combined code the five v5 strategies are viable and none dominates over 30 years (T1-T2, seeds 1-20, printed weekly), each v5 system's targets hold (T3), and technology stays under 15% of world GDP to 2069 (T6), apart from the known misses recorded in `docs/tasks/M43-v5-balance-and-conglomerate-view.md` (V4, V4.T2, M37's 2069 month, owned by v6). What M43 found and changed is in its "Decisions made"; what is left, including whether a sensible founder can deploy listed capital at a positive return (M46), is in its "Follow-ups".
 
+## Phase 5: v6, conversations, scenarios and more of the world
+
+**Reece's decision (2026-11-21):** all three directions: conversations (A), scenarios (B), and new industries (C). Outline: `docs/v6-outline.md`.
+
+| Milestone | Direction |
+| --- | --- |
+| M46, v6 balance pass one (v5's carried misses) | — |
+| M47, negotiations by conversation | A |
+| M48, board meetings, earnings calls and investor days | A |
+| M49, press conferences, interviews and one-to-ones | A |
+| M50, start years (2008, 2000, 1995) | B |
+| M51, scenarios and challenges | B |
+| M52, the editor and sandbox | B |
+| M53, telecom | C |
+| M54, financial services (banking, payments, insurance, currencies) | C |
+| M55, media and entertainment | C |
+| M56, the shared core (deferred unless the law firm game outgrows a fork) | engineering |
+| M58, a real executable with automatic updates | engineering, early |
+| M57, v6 balance and polish; closes v6 | — |
+
 ## Process
 
 - **Codex review every 5–6 milestones**, with findings folded into the next balance or integration milestone rather than a separate fix milestone.
