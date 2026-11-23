@@ -68,6 +68,7 @@ class RangeBalance(_Frozen):
     narrow: float = Field(ge=0, lt=1)  # a round narrows it by this x the counterpart's openness
     floor: float = Field(gt=0)  # never narrower than this half-width, x the zone
     centre: float = Field(ge=0, lt=1)  # the range's centre is at most this x its half-width off
+    skill_power: float = Field(ge=0)  # the width x (2 - skill factor) to this power
 
 
 class SkillBalance(_Frozen):

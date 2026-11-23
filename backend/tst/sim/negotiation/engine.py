@@ -172,7 +172,8 @@ def revealed(neg: Negotiation, b: NegotiationBalance) -> tuple[tuple[int, int], 
     for t in range(len(neg.terms)):
         zone = abs(h.aspiration[t] - h.reservation[t])
         width = b.range.start * (1 - b.range.narrow * h.openness) ** rounds
-        width *= b.skill.band.lo + b.skill.band.hi - h.skill  # a factor of 1.2 shows 0.8x
+        # a better negotiator sees it narrower: x (lo + hi - factor) ^ power (1.2 shows 0.8^p)
+        width *= (b.skill.band.lo + b.skill.band.hi - h.skill) ** b.range.skill_power
         half = Fraction(max(width, b.range.floor)) * zone
         centre = Fraction(h.reservation[t]) + Fraction(h.offsets[t] * b.range.centre) * half
         out.append(_outward(centre - half, centre + half, step_of(h.medians[t], b)))
