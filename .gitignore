@@ -10,3 +10,8 @@ dist/
 .hypothesis/
 frontend/test-results/
 frontend/playwright-report/
+# M58: PyInstaller and Inno Setup output, and the version the release workflow writes
+packaging/build/
+packaging/dist/
+packaging/out/
+packaging/version.txt

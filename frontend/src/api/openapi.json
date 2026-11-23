@@ -30680,6 +30680,238 @@
           }
         }
       }
+    },
+    "/api/health": {
+      "get": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Get Health",
+        "description": "The server is up (the release smoke test and the window wait on this).",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desktop": {
+      "get": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Get Desktop",
+        "description": "The installed game's state: the version, the update offered, the first-run import.",
+        "operationId": "getDesktop",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesktopOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desktop/api-key": {
+      "put": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Set Api Key",
+        "description": "Store the Anthropic API key in app data (empty removes it). The key is never returned.",
+        "operationId": "setApiKey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesktopOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desktop/import": {
+      "post": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Answer Import",
+        "description": "The first-run offer: copy the repository's saves, or never ask again.",
+        "operationId": "answerImport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desktop/update": {
+      "post": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Start Update",
+        "description": "Update now: download and verify the installer, back up the saves, install, restart.",
+        "operationId": "startUpdate",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesktopOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desktop/update/later": {
+      "post": {
+        "tags": [
+          "desktop"
+        ],
+        "summary": "Update Later",
+        "description": "Later: the offer comes back at the next start.",
+        "operationId": "updateLater",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesktopOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -31393,6 +31625,19 @@
           "how"
         ],
         "title": "AnswerOrderIn"
+      },
+      "ApiKeyIn": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Key",
+            "description": "Empty removes the stored key",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ApiKeyIn"
       },
       "AppFeeOut": {
         "properties": {
@@ -38695,6 +38940,92 @@
           "done"
         ],
         "title": "DeskStudyOut"
+      },
+      "DesktopOut": {
+        "properties": {
+          "desktop": {
+            "type": "boolean",
+            "title": "Desktop",
+            "description": "False outside the installed game (make dev, launcher)"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "saves_dir": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saves Dir"
+          },
+          "key_saved": {
+            "type": "boolean",
+            "title": "Key Saved",
+            "description": "An API key is stored; never the key",
+            "default": false
+          },
+          "import_offer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportOfferOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "update_state": {
+            "type": "string",
+            "enum": [
+              "none",
+              "checking",
+              "available",
+              "downloading",
+              "backing_up",
+              "installing",
+              "failed"
+            ],
+            "title": "Update State",
+            "default": "none"
+          },
+          "update": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UpdateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "update_message": {
+            "type": "string",
+            "title": "Update Message",
+            "default": ""
+          },
+          "backup_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Backup Folder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "desktop",
+          "version"
+        ],
+        "title": "DesktopOut"
       },
       "DeviceLineOut": {
         "properties": {
@@ -47222,6 +47553,26 @@
         "title": "HeadcountTargetOut",
         "description": "M27b sub-task 9: a unit's headcount target in one role, which Hiring fills."
       },
+      "HealthOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "The build's version; dev when run from the repository"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "title": "HealthOut"
+      },
       "HealthRegulatorOut": {
         "properties": {
           "key": {
@@ -48242,6 +48593,59 @@
         },
         "type": "object",
         "title": "HumanoidSpecIn"
+      },
+      "ImportIn": {
+        "properties": {
+          "accept": {
+            "type": "boolean",
+            "title": "Accept",
+            "description": "True copies the saves; false never asks again"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accept"
+        ],
+        "title": "ImportIn"
+      },
+      "ImportOfferOut": {
+        "properties": {
+          "folder": {
+            "type": "string",
+            "title": "Folder",
+            "description": "The repository saves folder found on this computer"
+          },
+          "saves": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Saves",
+            "description": "Saves there that the game's own folder lacks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "folder",
+          "saves"
+        ],
+        "title": "ImportOfferOut"
+      },
+      "ImportOut": {
+        "properties": {
+          "imported": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Imported"
+          }
+        },
+        "type": "object",
+        "required": [
+          "imported"
+        ],
+        "title": "ImportOut"
       },
       "InboxBulkOut": {
         "properties": {
@@ -73752,6 +74156,35 @@
           "fresh"
         ],
         "title": "UnlocksOut"
+      },
+      "UpdateOut": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes",
+            "description": "What's new: the release notes, from CHANGELOG"
+          },
+          "page_url": {
+            "type": "string",
+            "title": "Page Url"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "notes",
+          "page_url",
+          "size_bytes"
+        ],
+        "title": "UpdateOut"
       },
       "UpgradeFabIn": {
         "properties": {
