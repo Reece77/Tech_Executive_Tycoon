@@ -52,6 +52,12 @@ from tst.sim.state import (
 SEEDS: tuple[int, ...] = tuple(range(1, 11))
 SCENARIO = "funded_spinout"
 T2_TURNS = 180
+# T4's bands, re-banded by Reece (2026-11-19, M43 sub-task 3): with 25.1's floor read at the
+# game's economy, companies list young (about $7M ARR growing ~100% a year), and such listings
+# price high (2019-2021 SaaS IPOs at 20-50x ARR); was 4-15x, 8-25x and a fall of 30%
+T4_EARLY = (15.0, 30.0)  # median P/S at listing, 2012-2019
+T4_LATE = (25.0, 45.0)  # 2020-2021
+T4_FALL = 0.25  # at least this fall from January to December 2022
 T3_MONTHS = 36
 T3_ABOVE = 1.10
 T5_MONTHS = 36
@@ -416,8 +422,9 @@ def report(r: Results) -> str:
     drop = 1 - m.dec_2022 / m.jan_2022
     rows.append(
         f"T4 reference listing (growth {m.growth:.0%}, margin {m.margin:+.0%}): median P/S "
-        f"{m.early:.1f}x 2012-2019 (4-15), {m.late:.1f}x 2020-2021 (8-25); Jan 2022 "
-        f"{m.jan_2022:.1f}x, Dec 2022 {m.dec_2022:.1f}x, fall {drop:.0%} (>= 30%)"
+        f"{m.early:.1f}x 2012-2019 ({T4_EARLY[0]:g}-{T4_EARLY[1]:g}), {m.late:.1f}x 2020-2021 "
+        f"({T4_LATE[0]:g}-{T4_LATE[1]:g}); Jan 2022 {m.jan_2022:.1f}x, Dec 2022 "
+        f"{m.dec_2022:.1f}x, fall {drop:.0%} (>= {T4_FALL:.0%})"
     )
     rows.append(
         f"T5 CEO score {T5_SCORE:g} with full authority: median ARR {t5_arr_ratio(r):.2f} x the "

@@ -77,7 +77,9 @@ def test_eligibility() -> None:
     b = LOADED.balance
     state = eligible()
     assert ipo.eligibility_problem(state, 1, b) is None
-    small = with_company(state, replace(state.player, mrr_history=(MRR // 10,) * 13))
+    # M43 sub-task 3: the floor is 25.1's $241M read at the game's economy ($20.46M of ARR)
+    below = ipo.min_arr_cents(b) // 12 - 1
+    small = with_company(state, replace(state.player, mrr_history=(below,) * 13))
     assert "ARR" in (ipo.eligibility_problem(small, 1, b) or "")
     stage2 = with_company(state, replace(state.player, stage=2))
     assert "stage" in (ipo.eligibility_problem(stage2, 1, b) or "")

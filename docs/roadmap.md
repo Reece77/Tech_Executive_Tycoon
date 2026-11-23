@@ -80,6 +80,10 @@ All of v4 is built and merged: platforms (M31), power (M32), equipment (M33), re
 | M45, performance at scale, part two | lane J after `m43a-done` (brief `docs/tasks/M45-performance-at-scale-part-two.md`): rival decisions and per-turn saving proportional; both 2039 saves back to 400 ms; a 2069 turn under 500 ms |
 | M43, v5 balance and the conglomerate view | lane L now (measurement and the view); tunes and merges after M42, M40 and M44; closes v5 (brief `docs/tasks/M43-v5-balance-and-conglomerate-view.md`) |
 
+### v5 status (M43, 2026-11-21): closed
+
+All of v5 is built and merged: family and succession (M36), dynasty mode to 2069 (M37), electric vehicles (M38), robotics and robotaxis (M39), space and satellites (M40), medical devices (M41), pharmaceuticals (M42), defence and government contracts (M44), market sizes and saturation (M43a), performance at scale (M45) and the balance pass with the conglomerate view (M43, `m43-done`). On the combined code the five v5 strategies are viable and none dominates over 30 years (T1-T2, seeds 1-20, printed weekly), each v5 system's targets hold (T3), and technology stays under 15% of world GDP to 2069 (T6), apart from the known misses recorded in `docs/tasks/M43-v5-balance-and-conglomerate-view.md` (V4, V4.T2, M37's 2069 month, owned by v6). What M43 found and changed is in its "Decisions made"; what is left, including whether a sensible founder can deploy listed capital at a positive return (M46), is in its "Follow-ups".
+
 ## Phase 5: v6, conversations, scenarios and more of the world
 
 **Reece's decision (2026-11-21):** all three directions: conversations (A), scenarios (B), and new industries (C). Outline: `docs/v6-outline.md`.

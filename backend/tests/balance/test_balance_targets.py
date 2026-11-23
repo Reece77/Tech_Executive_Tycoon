@@ -20,6 +20,9 @@ from tst.balance.known_misses import KNOWN_MISSES, KnownMiss, verdict
 from tst.balance.report import RunResult, evaluate, run_all, runs_table, table
 
 V3_INTEGRATION = frozenset({"I1", "I2", "I3"})  # tst.balance.v3.integration_rows' gated targets
+# formulas 30.7's V2 and V4 (M43): judged on tools/v2_targets.py's runs (test_v2_balance), not
+# this report's strategies
+V2_TARGETS = frozenset({"V2", "V4"})
 
 
 @pytest.fixture(scope="module")
@@ -50,7 +53,11 @@ def test_balance_targets(results: list[RunResult]) -> None:
 # tests/balance/test_v3_balance.py::test_v3_integration_thirty_years.
 @pytest.mark.parametrize(
     "known",
-    [k for k in KNOWN_MISSES if "." not in k.target and k.target not in V3_INTEGRATION],
+    [
+        k
+        for k in KNOWN_MISSES
+        if "." not in k.target and k.target not in V3_INTEGRATION | V2_TARGETS
+    ],
     ids=lambda k: k.target,
 )
 def test_known_misses(results: list[RunResult], known: KnownMiss) -> None:

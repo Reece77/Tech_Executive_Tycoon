@@ -60,6 +60,7 @@ from tst.sim.geopolitics.config import (
 )
 from tst.sim.government.config import GovernmentBalance, GovernmentFile
 from tst.sim.group.config import GroupBalance
+from tst.sim.group.conglomerate_config import ConglomerateBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.medical.config import MedicalBalance, MedicalFile
@@ -1428,6 +1429,7 @@ class Balance(_Frozen):
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
+    conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

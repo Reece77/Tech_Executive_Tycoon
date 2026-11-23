@@ -37,6 +37,7 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
+from tst.sim.founder import personal
 from tst.sim.founder.investing import investing_month
 from tst.sim.founder.phase import founder_month, next_budget
 from tst.sim.geo.cities import settle_home_cities
@@ -334,6 +335,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     """Appeal, churn, customers won, and revenue for every market segment (11.6-11.8)."""
     # M22 (39.3): customers in destinations export controls closed leave first.
     ctx = replace(ctx, state=geopolitics.before_markets(ctx.state, ctx.balance, ctx.data))
+    # M40 (56.3-56.4): space lines whose dated opening is this month sell from it (M43r).
+    ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
@@ -392,7 +395,10 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     (formulas.md sections 8 and 11.8)."""
     entries, payroll = phases.payroll(ctx.state, ctx.balance, ctx.data)
     months = division_months(ctx.state)  # headcounts for the division statements (M8)
-    ctx = replace(ctx, payroll=payroll, division_months=months).post(*entries)
+    # 32.2: the founder payroll just paid has the salary after tax in the personal book now,
+    # before a January death (phase 10) settles the estate (M43r, Codex review 9 finding 1).
+    state = personal.salary_month(ctx.state, ctx.balance)
+    ctx = replace(ctx, state=state, payroll=payroll, division_months=months).post(*entries)
     state, outage_logs = outages_month(ctx.state, ctx.rng, ctx.balance, ctx.data)  # M12a (22.5)
     ctx = replace(ctx, state=state).log(*outage_logs)
     # M32 (46.2, ADR-0022 3): the power settlement, after every facility posted its energy

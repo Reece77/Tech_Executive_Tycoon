@@ -19,6 +19,7 @@ import pytest
 from tests.calibration import REFERENCE_S, calibrate, runner_note
 from tests.helpers import answer_critical
 from tests.integration.test_product_perf import LIMIT_S, TurnTime
+from tst.balance.known_misses import Reading, known_miss, verdict
 from tst.db import migrate
 from tst.db.repository import load_state, open_session, run_turn
 from tst.loader import LoadedData
@@ -33,6 +34,7 @@ pytestmark = [
 ]
 
 MEDIAN_S = 0.5  # M45's 2069 median, runner-adjusted (M45 brief, sub-task 6)
+TIMING = "M37.2069_month"  # its known-miss target (tst/balance/known_misses.py)
 MAX_BYTES = 400 * 1024 * 1024  # 400 MB
 WARM_UP = 2
 MONTHS = 10  # March to December 2069
@@ -69,6 +71,10 @@ def test_a_2069_month_and_the_save_size(tmp_path: Path, loaded: LoadedData) -> N
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
-    assert adjusted <= MEDIAN_S, report
     assert size <= MAX_BYTES, report
     assert worst < LIMIT_S, report
+    # M43 (PM ruling 2026-11-20): a known miss owned by v6's first balance pass within its bound
+    reading = Reading(TIMING, adjusted <= MEDIAN_S, adjusted, report)
+    assert verdict(reading) != "fail", report
+    if verdict(reading) == "known":
+        pytest.xfail(f"KNOWN MISS ({known_miss(TIMING).owner}): {report}")  # type: ignore[union-attr]

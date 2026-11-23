@@ -5,6 +5,7 @@ import { usePublic } from '../hooks/api';
 import { useGroup } from '../hooks/group';
 import { BoardTab } from './finance/BoardTab';
 import { CapTableTab } from './finance/CapTableTab';
+import { ConglomerateTab } from './finance/ConglomerateTab';
 import { DealsTab } from './finance/DealsTab';
 import { DebtTab } from './finance/DebtTab';
 import { DivisionsTab } from './finance/DivisionsTab';
@@ -23,6 +24,7 @@ const FINANCE_TABS = [
   { key: 'board', label: 'Board' },
   { key: 'deals', label: 'Deals' }, // M14: acquisitions
   { key: 'group', label: 'Group' }, // M16: the holding company and its subsidiaries
+  { key: 'conglomerate', label: 'Conglomerate' }, // M43: the group across its industries
 ] as const;
 // M16 (31.2): the company switcher scopes these tabs to one company of the group
 const SCOPED: readonly string[] = ['statements', 'captable', 'board'];
@@ -112,5 +114,7 @@ function TabBody({
       return <DealsTab saveId={saveId} />;
     case 'group':
       return <GroupTab saveId={saveId} />;
+    case 'conglomerate':
+      return <ConglomerateTab saveId={saveId} />;
   }
 }

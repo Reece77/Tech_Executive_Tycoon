@@ -124,6 +124,8 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
             _x(ratio),
             f"{V2_BAND[0]}-{V2_BAND[1]}x",
             _in(ratio, V2_BAND),
+            # M43 (known_misses): the distance from the band's centre, as V4.T1's
+            score=None if ratio is None else abs(ratio - sum(V2_BAND) / 2),
         )
     )
     cap2 = V2_MAX_WINS * seeds / 10
@@ -178,6 +180,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
             _x(ratio4),
             f"{V4_BAND[0]}-{V4_BAND[1]}x",
             _in(ratio4, V4_BAND),
+            score=None if ratio4 is None else abs(ratio4 - sum(V4_BAND) / 2),  # M43, as V2's
         )
     )
     for s in ("acquirer", BASE):  # printed: M14's 28.9 target 5 reads this pair

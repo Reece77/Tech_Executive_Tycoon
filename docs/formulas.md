@@ -2041,7 +2041,7 @@ Reece's decisions (2026-10-31, ADR-0019 §10–§12): the IPO is an event chain;
 
 ### 25.1 Eligibility
 
-- **Stage 3,** ARR ≥ `ipo.min_arr` ($80M, 2010 dollars), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
+- **Stage 3,** ARR ≥ `ipo.min_arr` ($241M at real-world scale, the 2015–2024 median sales of US tech IPOs in 2025 dollars from Ritter's Table 4a; read × `economy_scale.money` as §48.1's thresholds are, about $20.5M in the game's economy; M43, PM ruling 2026-11-20; was $80M), and the last 4 quarters either profitable at the operating line or growing revenue ≥ 40% a year.
 - **Board approval:** average director confidence ≥ 50 at the decision.
 
 ### 25.2 The IPO chain (an event chain; templates and LLM within §16)
@@ -2107,7 +2107,7 @@ The IPO chain's status and choices; the price range and book demand as words ("s
 1. All earlier targets pass as before (no new xfails).
 2. **IPOs happen.** blitzscale and steady reach an IPO on at least 4 of 10 seeds each by turn 180 (15 years), with median first-day return 0–30%.
 3. **Guidance matters.** A company that guides 10% above trend misses in at least 60% of quarters, and its median share price after 3 years is at least 15% below a company that guides at trend.
-4. **Prices are believable.** The median price-to-sales multiple at listing is 4–15× in 2012–2019 and 8–25× in 2020–2021, falling at least 30% between Jan 2022 and Dec 2022.
+4. **Prices are believable.** The median price-to-sales multiple at listing is 15–30× in 2012–2019 and 25–45× in 2020–2021, falling at least 25% between Jan 2022 and Dec 2022. (Re-banded by Reece, 2026-11-19, M43 sub-task 3: with 25.1's ARR floor read at the game's economy, companies list young, about $7M of game ARR growing about 100% a year; was 4–15×, 8–25× and 30%.)
 5. **The CEO runs things.** A CEO with score 14 and full authority keeps a stage-4 company within 15% of the scripted strategy's median ARR over 36 months, with the founder spending at most 40% of the Chair's energy.
 
 ### 25.10 Worked examples
@@ -2590,6 +2590,7 @@ Reece's decisions (2026-11-02, ADR-0020; defaults 2026-11-06 accepted 2026-11-08
 - **Ultimate owner:** `owner_of(state, company_id)` follows `parent_id` to the top, cycle-checked (a cycle is a data error). `group_companies(state, root_id, turn)` returns every company whose ultimate owner was `root_id` at `turn`, at any depth, from **ownership history** (each company's `owned_from` and `owned_to` turns by owner), not from which companies are alive now.
 - **Consolidation per period:** each reporting period consolidates the companies controlled during it. A failed or sold subsidiary keeps its contributions to earlier periods; its end posts a **disposal** (net assets out, the investment out, the difference to `4930 gain or loss on disposal`). Intercompany investments are eliminated at every level, and each subsidiary consolidates once.
 - **Antitrust** (§28.4) counts the customers of every company under the same ultimate owner.
+- **Read models (M43r, Codex review 9 finding 4):** the conglomerate view and the shareholder letter read a company's ledger only inside its ownership runs: the union of every run reaching it (the operating and holding-company paths), overlapping runs coalesced so each entry counts once, and a gap between a sale and a reacquisition left out.
 
 ### 31.2 Becoming a holding company (stage 5)
 
@@ -2667,6 +2668,7 @@ Reece's decisions (2026-11-07): **burnout from overwork** with a visible stress 
 - **Spending:** gifts to the foundation (§32.3), and nothing else in M24 (personal investing is v5).
 - **API:** a Personal tab on the founder's profile (balance, income by source, gifts).
 - **Hook:** `founder.credit(state, person_id, cents, source)` is the only way money enters the book; M16 calls it for group dividends when it merges.
+- **When (M43r, Codex review 9 finding 1):** the salary after tax is credited in phase 6, with payroll, to the founder payroll paid (the same state, the same `monthly_salary_cents`), so a January death (§52.4, phase 10) settles an estate that already holds the final salary, and an heir is never credited the deceased founder's pay.
 
 ### 32.3 The foundation
 
@@ -3793,6 +3795,8 @@ Reece (2026-11-14): **electric vehicles first** among v5's new industries, on th
 
 Vehicle products and their specs, EV shares, battery prices, subsidies and tariffs, charging coverage, rivals' public line-ups and shares, approvals and recalls. Never incident draws, seeded future rules or prices before they happen, or rivals' plans.
 
+**Conglomerate view (M43r, Codex review 9 finding 3):** a build's committed capital in the capital-allocation panel is the facility screens' public projection (`tst.sim.facilities.public`): the quote (fab, refinery, power plant, cell plant), a mine's estimate or revision, else the open capex, less payments, never below 0. A hidden overrun never moves it.
+
 ### 49.8 As built (M38 notes)
 
 - **Scale.** A region's game buyers are its real new car buyers x `vehicles.scale` (0.085, M34's `economy_scale.money`, the devices incumbents' in-game over real revenue), at real prices in 2010 dollars. The vehicles market's addressable customers are set each month (phase 9, and at a new game) as `car sales x segment share x EV share x scale x replacement_months / 12 / units_per_customer`, so a month's replacements are about a month's EV sales; categories.yaml's D0 is North America's January 2010 value of it. New car sales hold at 2025's after the history. Regions use vehicles.yaml's own sizes, not categories.yaml's region sizes. Segments: `consumer` (1 car, 96 months), `fleet` (sales-led, 50 cars a customer, 48 months), `commercial` (sales-led, 20, 84).
@@ -3927,7 +3931,7 @@ Every series with a last dated or seeded entry before 2069 continues by a rule, 
 
 ### 52.5 Balance targets (printed)
 
-1. **Nothing moves before 2040:** every game state and guard to December 2039 identical to `main` before M37 (state-cache and golden checks), dynasty mode on or off.
+1. **Nothing moves before 2040:** every game state and guard to December 2039 identical to `main` before M37 (state-cache and golden checks), dynasty mode on or off. **As checked from M43r** (Codex review 9 finding 14): mode parity (both settings against `m37_pre_2040_hashes.json`) and a same-code differential: each run against a reference arm on the same code with M37's rules disabled (the data loaded with `dynasty.start_year` and `end_year` 200 years later, `tst.balance.m37.reference_loaded`), so a rule moved before January 2040 in both settings still shows at its first differing month.
 2. **The world keeps moving:** in 2040–2069 at least 4 of the seeded eras arrive (median, 10 seeds), every category has at least 3 active rivals in each decade on 9 of 10 seeds, and no commodity's price stays below a third or above three times its 2030s average for more than 60 months.
 3. **Moore's law slows:** the gap between seeded nodes after A10 lengthens, and leading-edge wafer cost per transistor falls by at most half from 2040 to 2069.
 4. **Succession happens:** in a dynasty run with a family, at least one succession by 2069 on 9 of 10 seeds.
@@ -4071,7 +4075,7 @@ Programmes, stages, designs, readouts once read out, efficacy and safety as rang
 - **Approval:** review months ~ U(the regulator's standard or priority range; a resubmission's `crl_resubmit_months`); priority when the estimate is `priority_margin` above soc, orphan, or breakthrough; an advisory committee (FDA `adcom_share`) votes half way; approve = sigmoid(logit(T_area,submission) + `efficacy_weight` x (estimate - soc) / sd - `adcom_weight` if negative) x `resubmit_factor` on a resubmission. Accelerated approval (oncology and rare disease, estimate `accelerated_margin` above soc after Phase II) starts a confirmatory Phase III at approval; its failure withdraws the US approval.
 - **Demand:** treated(indication, region) = market_b(t) / the world's mean net price x the area's region share; w = exp(6 (efficacy - soc)) x exp(-3 (1 - safety)) x (1 - exp(-m / 30)) x support x (reference / list)^1 in the US; patients = treated x w / (brands + sum w) x access x (1 or `no_coverage_share` without HTA). Net price = list x (1 - the area's gross-to-net) x the region's index; Medicare's share of US patients at (1 - the IRA's discount) once picked. After exclusivity ends in a region the brand keeps floor + (1 - floor) exp(-m / months).
 - **Rivals:** revenue to 2025 = their data less the modelled molecules' share of their key drugs' indications; after it, the rest of their 2025 portfolio decaying `rest_decay` a year + key drugs (held and grown to US LOE, then the cliff, IRA-cut from their data's year) + seeded approvals; generic makers grow their base and take `generics_share` of generic sales of modelled molecules past exclusivity. Costs and payouts are shares of revenue.
-- **Markets under M43a's ceilings (54.1):** the areas are pseudo-categories, so `tst.sim.pharma.ceilings` applies 54.1's rule itself: from `markets.ceiling_start_year` each (area, region) level multiplies its indications' data paths, and each month the area's uncapped growth u is applied as 1 + (u - 1) x factor(A, C), A the area's sales value there a year (every indication's market x the region's share of patients x its price index x the level) and C = `saturation.ceiling_cents` with `markets.ceiling_share.pharma_<area>`; a market at its ceiling is held, not cut. Rivals' seeded approvals' peaks are x the world's factor (every area and region summed).
+- **Markets under M43a's ceilings (54.1):** the areas are pseudo-categories, so `tst.sim.pharma.ceilings` applies 54.1's rule itself: from `markets.ceiling_start_year` each (area, region) level multiplies its indications' data paths, and each month the area's uncapped growth u is applied as 1 + (u - 1) x factor(A, C), A the area's sales value there a year (every indication's market x the region's share of patients x its price index x the level) and C = `saturation.ceiling_cents` with `markets.ceiling_share.pharma_<area>`; a market at its ceiling is held, not cut. Rivals' seeded approvals' peaks are x the world's factor (every area and region summed). **When (M43r, Codex review 9 finding 6):** the month's levels are computed in phase 5, before demand reads them (they were set in phase 12, after the month's sales), from the cycle and eras in force at that point; a final clamp keeps a market that was under its ceiling at it (a large data step can otherwise pass it), and one already over is held as before.
 - **Measuring 55.6:** target 2 on cohorts of 100 programmes an area from Phase I (January 2021), target 5 on 700 from discovery with and without AI, played on the engine's own steps with a sensible policy; target 4's cliff is revenue 24 months after exclusivity has ended in every region against the month before it ends in any.
 
 ## 56. Space and satellites (M40; v5)
@@ -4096,6 +4100,7 @@ Reece (2026-11-14): **space** after EVs and robotics. Launch, satellites and con
 - **Direct-to-device** (phones connecting to satellites) from its seeded era, partnering with or competing against mobile carriers.
 - **Earth observation and government services** as smaller categories; defence demand comes in M44.
 - **Rivals** from the data: SpaceX (Falcon, Starship, Starlink), Blue Origin, ULA, Arianespace, Rocket Lab, CASC, ISRO, Eutelsat OneWeb, Amazon Kuiper, SES, Viasat; entrants from seeded rules.
+- **Dated openings (M43r, Codex review 9 finding 11):** a line whose data date opens it (a provider's first orbital launch, a constellation's service, direct-to-device) is pinned before phase 5's markets in its opening month, as phase 9's pin would pin it, so it sells from that month (Starlink from October 2020), not the month after.
 
 ### 56.4 Balance targets (printed)
 

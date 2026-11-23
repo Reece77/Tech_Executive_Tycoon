@@ -8,8 +8,10 @@ import os
 import pytest
 
 from tst.balance import m10b
+from tst.balance.known_misses import Reading, known_miss, verdict
 
 CRITICAL_GAP = 6
+SPACING = "M10b.T1.spacing"  # a known miss owned by v6 (M43, PM ruling 2026-11-22)
 
 
 @pytest.mark.nightly
@@ -22,6 +24,12 @@ def test_1_critical_events_for_grown_companies() -> None:
         )
     value = m10b.per_window(runs)
     print(f"23.7 target 1: {value:.2f} critical events per 18 months with 20+ staff (needs >= 1)")
-    assert all(r.shortest_gap is None or r.shortest_gap >= CRITICAL_GAP for r in runs)
     assert sum(r.big_months for r in runs) > 0
     assert value >= 1.0
+    close = [r.seed for r in runs if r.shortest_gap is not None and r.shortest_gap < CRITICAL_GAP]
+    report = f"seeds with a critical gap under {CRITICAL_GAP} months: {close}"
+    print(report)
+    reading = Reading(SPACING, not close, float(len(close)), report)
+    assert verdict(reading) != "fail", report
+    if verdict(reading) == "known":
+        pytest.xfail(f"KNOWN MISS ({known_miss(SPACING).owner}): {report}")  # type: ignore[union-attr]

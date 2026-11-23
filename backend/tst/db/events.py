@@ -22,9 +22,10 @@ from tst.config import get_settings
 from tst.db.mappers import event_from_row
 from tst.db.models import EventRow, InboxItemRow, LLMCallLogRow, LLMTextRow
 from tst.db.state_io import has_table, sync_state
+from tst.events import letter
 from tst.events.context import Kpis
 from tst.events.service import Writer, write_event, write_text
-from tst.llm.base import LLMAdapter
+from tst.llm.base import LLMAdapter, TextPrompt
 from tst.llm.settings import active_adapter, add_spend, load_settings, month_spend
 from tst.loader import LoadedData
 from tst.sim.events.models import GameEvent
@@ -169,6 +170,55 @@ def _write_digest(session: Session, state: GameState, text: LLMTextRow, writer: 
         row.body = text.text + (PARAGRAPH + rest if rest else "")
 
 
+def _write_letter(
+    session: Session, state: GameState, text: LLMTextRow, writer: Writer | None, data: LoadedData
+) -> None:
+    """M43: the January letter to shareholders about year `text.ref_id`, from the conglomerate
+    view's figures (engine facts only); kept as an inbox item, so it is in History. Replay
+    (`writer` None) keeps the copied words."""
+    from tst.api.conglomerate_views import labels
+    from tst.db.conglomerate import read_books
+
+    year = int(text.ref_id or 0)
+    b, _ = read_books(session, state, data)
+    if not letter.has_figures(b, year):
+        text.text, text.source, text.status = "", "template", "written"
+        return
+    names = labels(data)
+    founder, lines = letter.facts(state, b, year, names)
+    if writer is not None:
+        fallback = letter.template(founder, state.player.name, year, b, names)
+        text.source = "template"
+        text.text = fallback
+        if writer.live and writer.can_spend():
+            system, user = letter.prompt(founder, state.player.name, year, lines)
+            completion = writer.adapter.generate_text(
+                TextPrompt(letter.LETTER, system, user, fallback)
+            )
+            out = completion.content if isinstance(completion.content, str) else None
+            ok = bool(out and out.strip())
+            outcome = "ok" if ok else "rejected"
+            writer.record(letter.LETTER, system + "\n" + user, completion, outcome)
+            if ok and out:
+                text.text, text.source = out.strip(), writer.adapter.name
+    text.status = "written"
+    if text.text:
+        session.add(
+            InboxItemRow(
+                turn=text.turn,
+                company_id=text.company_id,
+                template=letter.LETTER,
+                title=letter.title(year),
+                body=text.text,
+                link_kind=None,
+                link_id=None,
+                read=False,
+                archived=False,
+                bookmarked=False,
+            )
+        )
+
+
 def write_pending(
     path: Path,
     data: LoadedData,
@@ -194,8 +244,15 @@ def write_pending(
         state = committed if committed is not None else load_current(session)
         before = state
         if copy_from is not None:
+            letters = session.scalars(  # M43: the letters the copy writes, for their inbox items
+                select(LLMTextRow).where(
+                    LLMTextRow.kind == letter.LETTER, LLMTextRow.status == "pending"
+                )
+            ).all()
             state = _copy(session, state, copy_from)
             writer = None
+            for text in letters:
+                _write_letter(session, state, text, None, data)
         else:
             settings = load_settings(save_dir)
             spent = month_spend(save_dir).cents
@@ -213,6 +270,9 @@ def write_pending(
             ):
                 if text.kind == DIGEST:  # M27a (40.4): the opening paragraph only
                     _write_digest(session, state, text, writer)
+                    continue
+                if text.kind == letter.LETTER:  # M43: the January letter
+                    _write_letter(session, state, text, writer, data)
                     continue
                 report = _report_row(session, text) if text.kind in WRITTEN_OVER else None
                 given = (report.body, [report.title, report.body]) if report else None

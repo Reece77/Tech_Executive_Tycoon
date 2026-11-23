@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e
 
 check: check-backend check-api check-frontend check-timing
 
@@ -87,6 +87,43 @@ weekly-v4-systems:
 	uv run --project backend python tools/m32_targets.py
 	uv run --project backend python tools/m33_targets.py
 	uv run --project backend python tools/m34_targets.py
+
+# M43's v5 targets (tst.balance.v5; CI: weekly.yml): every strategy since v1 played to December
+# 2039 in three seed shards, and the v5 strategies with a family to December 2069; each saves
+# its runs (tools/v5_targets.py --load combines them).
+V5_OUT ?= /tmp/tst-v5
+# five seeds a 30-year job and two or three a dynasty job: a 10-seed shard ran past GitHub's
+# job limit on the real-listings IPO floor (M43)
+weekly-m43-a1:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=1-5 TST_V5_SAVE=$(V5_OUT)/v5-1-5.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-a2:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=6-10 TST_V5_SAVE=$(V5_OUT)/v5-6-10.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-b1:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=11-15 TST_V5_SAVE=$(V5_OUT)/v5-11-15.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-b2:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=16-20 TST_V5_SAVE=$(V5_OUT)/v5-16-20.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-c1:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=21-25 TST_V5_SAVE=$(V5_OUT)/v5-21-25.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-c2:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=26-30 TST_V5_SAVE=$(V5_OUT)/v5-26-30.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-d1:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=1-3 TST_V5_DYNASTY=1 TST_V5_SAVE=$(V5_OUT)/v5-dynasty-1-3.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-d2:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=4-6 TST_V5_DYNASTY=1 TST_V5_SAVE=$(V5_OUT)/v5-dynasty-4-6.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-d3:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=7-8 TST_V5_DYNASTY=1 TST_V5_SAVE=$(V5_OUT)/v5-dynasty-7-8.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+weekly-m43-d4:
+	mkdir -p $(V5_OUT) && cd backend && TST_V5_SEEDS=9-10 TST_V5_DYNASTY=1 TST_V5_SAVE=$(V5_OUT)/v5-dynasty-9-10.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v5_balance.py
+
+# M43 T3 and T6, on demand (weekly.yml's `parts` input): each v5 system's targets on the combined
+# code (one tool a job), and 54.4's economy (technology's share of world GDP) to December 2069
+WEEKLY_M43_T3 := m38 m39 m40 m41 m42 m44
+$(addprefix weekly-m43-t3-,$(WEEKLY_M43_T3)):
+	uv run --project backend python tools/$(patsubst weekly-m43-t3-%,%,$@)_targets.py
+weekly-m43-t3-m36:  # reads Settings().data_dir, relative to backend/
+	cd backend && uv run python ../tools/m36_targets.py
+weekly-m43-t6:
+	uv run --project backend python tools/m43a_targets.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20

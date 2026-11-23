@@ -1332,7 +1332,7 @@ rnd:
 # --- IPO (formulas.md 25.1-25.2, M13 lane B) ---------------------------------------------------
 ipo:
   min_stage: 3 # stage a company must have reached to hire banks (25.1)
-  min_arr_cents: 8000000000 # cents; $80M ARR (2010 dollars; the game has no inflation) (25.1)
+  min_arr_cents: 24100000000 # cents; $241M of ARR at real-world scale (25.1), read x economy_scale.money: $20.5M in the game's economy (M43, PM ruling 2026-11-20: the floor from real listings, was $80M). Derivation: Jay R. Ritter, "Initial Public Offerings: Technology Stock IPOs", Table 4a (updated 30 Dec 2025), median LTM sales of US tech IPOs, $2024: 2015 172.6 (38 IPOs), 2016 142.6 (21), 2017 239.3 (30), 2018 226.5 (40), 2019 252.2 (38), 2020 241.2 (48), 2021 234.3 (126), 2022 101.7 (6), 2023 6.8 (9), 2024 115.8 (15); the median of the 371 IPOs' yearly medians, weighted by count, $234.3M ($2024), x 1.03 to 2025 dollars (Ritter's factor; economy_scale.money is read against 2025 revenue) = $241M. https://site.warrington.ufl.edu/ritter/files/IPOs-Tech.pdf
   trailing_months: 12 # months behind the profitability or growth test: the last 4 quarters (25.1)
   min_growth: 0.20 # fraction a year of revenue growth that qualifies a loss-making company (25.1 says 40%; M13 tuning for 25.9 target 2: blitzscale passes $80M ARR growing 20-25% a year and loss-making, so it never listed)
   board_min_confidence: 50 # average director confidence needed when the banks are hired (25.1)
@@ -3369,3 +3369,32 @@ government: # 57: defence and government contracts (M44, v5 lane K). Data (budge
   itar_keep: { us_aligned: 1.0, non_aligned: 0.7, china: 0.0 } # share of a country's demand a controlled item keeps, by bloc (licences; 126.1 destinations 0)
   energy: { bid: 4, withdraw: 1, protest: 3, clearance: 1, facility: 3 } # founder energy
   unlock_year: 2012 # the Government screen opens (M29) from 2012 for a stage-3 company, or with a bid
+# --- The conglomerate view (M43 sub-task 2, v5 lane L) ----------------------------------------
+# The industries the conglomerate view reports a group in (read-only; no game effect). A ledger
+# line belongs to an industry when its memo names one of the company's products (by category),
+# facilities (by kind), power plants or mines, or when its revenue account is listed; every other
+# operating line is shared, split across the company's industries by their revenue that year; a listed cost
+# account (government contracts' delivery costs and bids) is its industry's.
+# The loader checks every product category and facility kind is in exactly one industry.
+conglomerate:
+  industries:
+    - { key: software, label: Software, categories: [b2b_saas, dev_tools, consumer_apps, cybersecurity, fintech, os], accounts: [4150_platform_fees] }
+    - { key: ai, label: AI models, categories: [ai_models] }
+    - { key: cloud, label: Cloud and data centres, categories: [cloud_hosting], facility_kinds: [data_centre_general, data_centre_gpu] }
+    - { key: devices, label: Devices and hardware, categories: [devices, servers, contract_manufacturing], facility_kinds: [assembly_plant] }
+    - { key: chips, label: Chips and fabs, categories: [chips_mobile_soc, chips_server_cpu, chips_ai_accelerator], facility_kinds: [fab], accounts: [4420_foundry_sales, 4430_tool_sales] }
+    - { key: materials, label: Mining and materials, facility_kinds: [mine, silicon_smelter, poly_plant, poly_plant_semi, wafer_plant, li_converter, co_refinery, ree_separator, byproduct_recovery], accounts: [4400_revenue_commodities, 4410_materials_sales], mines: true }
+    - { key: energy, label: Energy, facility_kinds: [plant], accounts: [4950_energy_sales], plants: true }
+    - { key: vehicles, label: Electric vehicles, categories: [vehicles], facility_kinds: [vehicle_plant, cell_plant, charging_network], accounts: [4440_charging_sales] }
+    - { key: robotics, label: Robotics and robotaxis, categories: [industrial_robots, humanoid_robots, mobility], facility_kinds: [depot] }
+    - { key: medical, label: Medical devices, categories: [wearables_diagnostics, imaging, surgical_robotics, implantables, samd] }
+    - { key: pharma, label: Pharmaceuticals, categories: [pharma_oncology, pharma_metabolic, pharma_immunology, pharma_neuroscience, pharma_infectious, pharma_cardiovascular, pharma_rare], accounts: [4060_revenue_drugs] } # M42
+    - { key: space, label: Space and satellites, categories: [launch, satellite_broadband, earth_observation], facility_kinds: [launch_site, satellite_plant] } # M40
+    - { key: government, label: Defence and government, accounts: [4070_revenue_government, 5300_contract_costs, 6990_bids_clearances] } # M44: government contracts, their delivery costs and bids
+  trend_years: 10 # years of yearly trends the view shows (the brief's ten-year trends)
+  risk_years: 5 # years of yearly revenue growth whose spread (standard deviation) is the shown risk
+  risk_words: # the spread of yearly revenue growth (a fraction) below `below` reads as `word`
+    - { below: 0.10, word: low }
+    - { below: 0.25, word: moderate }
+  risk_top_word: high # a spread at or above the last `below` (or under two years of growth: "new")
+  letter_from_year: 2010 # the first year a January letter to shareholders covers (written January 2011)

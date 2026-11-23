@@ -114,3 +114,15 @@ export function useSubsidiaryUpdates(saveId: string) {
     queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/group/updates', path(saveId))),
   });
 }
+
+export type Conglomerate = Schemas['ConglomerateOut'];
+export type IndustryFigures = Schemas['IndustryOut'];
+
+/** M43: the conglomerate view (read-only): the group by industry and company, trends, where
+ * capital went, the capital-allocation panel and the January letters. */
+export function useConglomerate(saveId: string) {
+  return useQuery({
+    queryKey: ['saves', saveId, 'conglomerate'],
+    queryFn: async () => unwrap(await api.GET('/api/saves/{save_id}/conglomerate', path(saveId))),
+  });
+}

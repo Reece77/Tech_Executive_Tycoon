@@ -11,8 +11,10 @@ area's uncapped growth u is applied as `1 + (u - 1) x factor(A, C)`, M43a's satu
         region's GDP path x economy_scale.money
 
 A market already past its ceiling is held, not cut, until the economy catches up (M43a's rule);
-a shrinking market shrinks in full. Rivals' seeded approvals after 2025 are sized by the same
-headroom over the whole world (`world_factor`), so their revenue cannot compound past it.
+a shrinking market shrinks in full; one under its ceiling is clamped at it, never stepped over.
+The month's levels are set in phase 5, before demand reads them (M43r). Rivals' seeded
+approvals after 2025 are sized by the same headroom over the whole world (`world_factor`), so
+their revenue cannot compound past it.
 """
 
 from __future__ import annotations
@@ -72,7 +74,10 @@ def month(state: GameState, balance: Balance, data: GameData) -> GameState:
                 u = now / before
                 ceiling = saturation.ceiling_cents(state, balance, data, area.category, region)
                 f = saturation.factor(before * lvl, ceiling)
+                under = before * lvl <= ceiling
                 lvl *= (1 + (u - 1) * f) / u
+                if under and now * lvl > ceiling:  # the final clamp (M43r, review 9 finding 6)
+                    lvl = ceiling / now
             rows.append(MarketLevel(area.category, region, lvl))
     return replace(state, pharma_markets=tuple(rows))
 
