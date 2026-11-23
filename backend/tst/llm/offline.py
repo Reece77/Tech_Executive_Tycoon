@@ -12,7 +12,7 @@ import copy
 from collections.abc import Callable, Sequence
 from typing import Any
 
-from tst.llm.base import Completion, EventPrompt, TextPrompt, Usage
+from tst.llm.base import Completion, ConversationPrompt, EventPrompt, TextPrompt, Usage
 
 MOCK_MODEL = "mock"
 CHARS_PER_TOKEN = 4  # tunable-exempt: rough token estimate for the mock's usage
@@ -27,6 +27,9 @@ class TemplateAdapter:
     def generate_text(self, prompt: TextPrompt) -> Completion:
         return Completion(prompt.fallback)
 
+    def generate_conversation(self, prompt: ConversationPrompt) -> Completion:
+        return Completion(copy.deepcopy(prompt.fallback))
+
 
 class MockLLMAdapter:
     """Deterministic stand-in for Claude. `script` drafts (or a function of the prompt) are
@@ -40,10 +43,14 @@ class MockLLMAdapter:
         script: Sequence[dict[str, Any] | None]
         | Callable[[EventPrompt], dict[str, Any] | None] = (),
         model: str = MOCK_MODEL,
+        conversation: Callable[[ConversationPrompt], dict[str, Any] | str | None] | None = None,
     ) -> None:
         self.script = script
         self.model = model
-        self.calls: list[EventPrompt | TextPrompt] = []
+        # M47: a conversation call's answer (a function of the prompt); by default the
+        # template's, a reply marked "[mock]"
+        self.conversation = conversation
+        self.calls: list[EventPrompt | TextPrompt | ConversationPrompt] = []
 
     def _usage(self, system: str, user: str, out: str) -> Usage:
         return Usage(
@@ -75,6 +82,19 @@ class MockLLMAdapter:
             else prompt.fallback
         )
         return Completion(text, self._usage(prompt.system, prompt.user, text))
+
+    def generate_conversation(self, prompt: ConversationPrompt) -> Completion:
+        self.calls.append(prompt)
+        out: dict[str, Any] | str | None
+        if self.conversation is not None:
+            out = self.conversation(prompt)
+        elif prompt.kind == "reply" and isinstance(prompt.fallback, str):
+            out = f"[mock] {prompt.fallback}"
+        else:
+            out = copy.deepcopy(prompt.fallback)
+        if out is None:
+            return Completion(None, self._usage(prompt.system, prompt.user, ""), error="scripted")
+        return Completion(out, self._usage(prompt.system, prompt.user, str(out)))
 
 
 def mock_coo_answer(user: str) -> str:

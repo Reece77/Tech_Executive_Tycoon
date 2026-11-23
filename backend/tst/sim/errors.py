@@ -432,3 +432,14 @@ class EquipmentRuleError(SimError):
     formulas.md 47). The message never names an allocation weight or a programme's draws."""
 
     code = "equipment_rule"
+
+
+class NegotiationRuleError(SimError):
+    """A negotiation step the rules do not allow (M47, formulas.md 58). The message never names
+    a reservation, aspiration, patience, priority or draw (58.6)."""
+
+    code = "negotiation_rule"
+
+
+class UnknownNegotiationError(NotFoundError):  # M47
+    code = "unknown_negotiation"

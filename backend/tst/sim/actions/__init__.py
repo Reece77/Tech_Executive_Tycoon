@@ -345,6 +345,15 @@ from tst.sim.mna.antitrust import AcceptRemedy
 from tst.sim.mna.deals import AbandonDeal, BidForCompany, SetDealMode, StartDiligence
 from tst.sim.mna.integration import SetDirective
 from tst.sim.modes.serial import FoundAgain, Retire, found_again, retire
+from tst.sim.negotiation.actions import ACTION_TYPES as NEGOTIATION_ACTION_TYPES
+from tst.sim.negotiation.actions import (
+    AgreeContractValue,
+    AgreeRetention,
+    AgreeSettlement,
+    NegotiationAction,
+    WalkAway,
+    apply_negotiation,
+)
 from tst.sim.org import ceo_rules
 from tst.sim.org.models import Proposal
 from tst.sim.pharma.actions import ACTION_TYPES as PHARMA_ACTION_TYPES
@@ -461,6 +470,7 @@ type Action = (
     | PharmaAction  # M42
     | SpaceAction  # M40
     | GovernmentAction  # M44
+    | NegotiationAction  # M47
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -485,6 +495,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **PHARMA_ACTION_TYPES,  # M42 (55)
     **SPACE_ACTION_TYPES,  # M40 (56)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
+    **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -870,7 +881,7 @@ def apply_action(
                 data,
             )
         case MakeOffer():
-            out = make_offer(state, action, balance)
+            out = make_offer(state, action, balance, data)
         case WithdrawOffer():
             out = withdraw_offer(state, action)
         case Fire():
@@ -1049,6 +1060,8 @@ def apply_action(
             | SponsorFacilityClearance()
         ):
             out = apply_government(state, action, rng, ledger_balances, balance, data)  # M44 (57)
+        case AgreeRetention() | AgreeContractValue() | AgreeSettlement() | WalkAway():  # M47
+            out = apply_negotiation(state, action, balance, data, ledger_balances)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():

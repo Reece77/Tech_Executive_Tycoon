@@ -101,6 +101,13 @@ def _deal_id(state: GameState) -> int:
     return max((d.id for d in state.pharma_deals), default=0) + 1
 
 
+def upfront_of(a: Asset, acquire: bool, data: GameData) -> int:
+    """What taking an asset costs now: its upfront, or its upfront and milestones x the
+    acquisition multiple when acquired outright."""
+    mult = pd.file(data).licensing.acquire_mult
+    return times(a.upfront_cents + a.milestones_cents, mult) if acquire else a.upfront_cents
+
+
 def take_asset(
     state: GameState,
     company_id: int,
@@ -108,7 +115,10 @@ def take_asset(
     acquire: bool,
     balance: Balance,
     data: GameData,
+    *,
+    upfront_cents: int | None = None,
 ) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
+    """`upfront_cents` is a negotiated upfront (M47, 58.4) in place of the listed one."""
     from tst.sim.errors import PharmaRuleError
 
     a = next((x for x in state.pharma_assets if x.id == asset_id), None)
@@ -136,8 +146,9 @@ def take_asset(
         patent_turn=state.turn if a.stage != "discovery" else None,
         ind_turn=state.turn if a.stage in ("phase2", "phase3") else None,
     )
-    mult = pd.file(data).licensing.acquire_mult
-    upfront = times(a.upfront_cents + a.milestones_cents, mult) if acquire else a.upfront_cents
+    upfront = upfront_of(a, acquire, data)
+    if upfront_cents is not None:
+        upfront = upfront_cents
     deal = Deal(
         id=_deal_id(state),
         kind="acquire" if acquire else "in_license",
@@ -177,22 +188,10 @@ def take_asset(
     return state, [entry], [log]
 
 
-def out_license(
-    state: GameState,
-    p: Programme,
-    rival_id: int,
-    co_develop: bool,
-    balance: Balance,
-    data: GameData,
-) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
-    """A rival takes the programme (out-licence) or shares it (co-development)."""
-    from tst.sim.errors import PharmaRuleError
-
-    rival = state.company(rival_id)
-    if rival.is_player or pd.file(data).rival(rival.name) is None:
-        raise PharmaRuleError("license to one of the pharmaceutical rivals")
-    if p.status in ("stopped", "withdrawn", "out") or p.partner_id is not None:
-        raise PharmaRuleError(f"{p.name} cannot be licensed now")
+def out_terms(
+    p: Programme, co_develop: bool, balance: Balance, data: GameData
+) -> tuple[int, int, float, float]:
+    """(upfront, milestones, royalty, share) a rival pays for the programme today."""
     stage = "approved" if p.status == "marketed" else p.stage
     up, ms, royalty = terms_cents(stage, balance, data)
     share = balance.pharma.co_develop_share if co_develop else 0.0
@@ -200,6 +199,31 @@ def out_license(
         up = round(up * share)
         ms = 0
         royalty = 0.0
+    return up, ms, royalty, share
+
+
+def out_license(
+    state: GameState,
+    p: Programme,
+    rival_id: int,
+    co_develop: bool,
+    balance: Balance,
+    data: GameData,
+    *,
+    upfront_cents: int | None = None,
+) -> tuple[GameState, list[LedgerEntry], list[LogItem]]:
+    """A rival takes the programme (out-licence) or shares it (co-development).
+    `upfront_cents` is a negotiated upfront (M47, 58.4) in place of the stage's."""
+    from tst.sim.errors import PharmaRuleError
+
+    rival = state.company(rival_id)
+    if rival.is_player or pd.file(data).rival(rival.name) is None:
+        raise PharmaRuleError("license to one of the pharmaceutical rivals")
+    if p.status in ("stopped", "withdrawn", "out") or p.partner_id is not None:
+        raise PharmaRuleError(f"{p.name} cannot be licensed now")
+    up, ms, royalty, share = out_terms(p, co_develop, balance, data)
+    if upfront_cents is not None:
+        up = upfront_cents
     deal = Deal(
         id=_deal_id(state),
         kind="co_develop" if co_develop else "out_license",

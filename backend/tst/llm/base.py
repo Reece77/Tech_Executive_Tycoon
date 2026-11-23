@@ -67,6 +67,53 @@ EVENT_SCHEMA: dict[str, Any] = {
 }
 
 
+# M47 (ADR-0023): what a conversation call does. `classify` scores the player's message into
+# moves (JSON, CLASSIFY_SCHEMA); `suggest` proposes replies (JSON, SUGGEST_SCHEMA); `reply` words
+# the counterpart's decided answer (text).
+type ConversationKind = Literal["classify", "suggest", "reply"]
+
+MOVE_NAMES = ("concede", "anchor", "justify", "appeal", "threaten_walk", "package", "close")
+CLASSIFY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "moves": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "move": {"type": "string", "enum": [*MOVE_NAMES, "neutral"]},
+                    "term": {"type": "integer"},
+                    "other": {"type": "integer"},
+                    "fact": {"type": "integer"},
+                },
+                "required": ["move"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["moves"],
+    "additionalProperties": False,
+}
+SUGGEST_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {"replies": {"type": "array", "items": {"type": "string"}}},
+    "required": ["replies"],
+    "additionalProperties": False,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ConversationPrompt:
+    """One conversation call (ADR-0023). `fallback` is the template's answer in the same shape
+    (a dict for classify and suggest, text for reply): the template and mock adapters return
+    it, and the service uses it when the LLM's answer fails validation."""
+
+    kind: ConversationKind
+    system: str
+    user: str
+    fallback: dict[str, Any] | str
+
+
 @dataclass(frozen=True, slots=True)
 class Usage:
     model: str
@@ -129,3 +176,5 @@ class LLMAdapter(Protocol):
     def generate_event(self, prompt: EventPrompt) -> Completion: ...
 
     def generate_text(self, prompt: TextPrompt) -> Completion: ...
+
+    def generate_conversation(self, prompt: ConversationPrompt) -> Completion: ...

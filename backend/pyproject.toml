@@ -63,7 +63,7 @@ check_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["tst.sim", "tst.sim.*", "tst.events", "tst.events.*"]
+module = ["tst.sim", "tst.sim.*", "tst.events", "tst.events.*", "tst.conversations", "tst.conversations.*"]
 # Per-module equivalent of --strict (mypy does not allow `strict` in overrides).
 disallow_any_generics = true
 disallow_subclassing_any = true

@@ -119,6 +119,9 @@ class MakeOffer:
     salary_cents: int
     equity_bp: int
     plan_id: int | None = None  # set by a delegate working a hiring plan (ADR-0015)
+    # M47 (58.4): the candidate agreed these terms in a negotiation, so the offer is accepted
+    # when made, with no draw; set only by an agreement
+    agreed: bool = False
     kind: Literal["make_offer"] = "make_offer"
 
 
@@ -381,7 +384,7 @@ def _reveal_text(tag: str, data: GameData) -> str:
     return next(t.reveal_text for t in data.tags if t.key == tag)
 
 
-def make_offer(state: GameState, action: MakeOffer, balance: Balance) -> Outcome:
+def make_offer(state: GameState, action: MakeOffer, balance: Balance, data: GameData) -> Outcome:
     company = acting_company(state, action.actor_id)
     candidate = open_candidate(state, company, action.candidate_id)
     if candidate.interviewed_turn is None:
@@ -416,7 +419,13 @@ def make_offer(state: GameState, action: MakeOffer, balance: Balance) -> Outcome
         plan_id=action.plan_id,
         unit_id=unit_id,
     )
-    return Outcome(replace(with_offer(state, offer), next_ids=ids))
+    state = replace(with_offer(state, offer), next_ids=ids)
+    if action.agreed:
+        from tst.sim.hiring.phases import accept_agreed
+
+        state, entries, logs = accept_agreed(state, offer, balance, data)
+        return Outcome(state, entries, logs)
+    return Outcome(state)
 
 
 def withdraw_offer(state: GameState, action: WithdrawOffer) -> Outcome:

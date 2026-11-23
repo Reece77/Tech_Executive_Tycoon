@@ -29,6 +29,9 @@ SPEND_FILE = "llm_spend.json"
 MICRO = 1_000_000  # tunable-exempt: prices are per million tokens
 
 type AdapterChoice = Literal["claude", "templates", "mock"]
+# M47 (ADR-0023): conversations use the LLM within their own cap ("auto") or always run in
+# template mode, the player picking moves from labelled buttons
+type ConversationMode = Literal["auto", "template"]
 
 
 class ModelPrice(BaseModel):
@@ -42,6 +45,10 @@ class LLMSettings(BaseModel):
 
     adapter: AdapterChoice = "claude"
     monthly_budget_cents: int = Field(default=1000, ge=0)
+    # M47 (ADR-0023): the conversations' own monthly cap, real cents; None = the default,
+    # balance.yaml's llm.conversation_budget_cents ($10)
+    conversation_budget_cents: int | None = Field(default=None, ge=0)
+    conversation_mode: ConversationMode = "auto"
     model_events: str = "claude-haiku-5-5"
     model_story: str = "claude-sonnet-5-5"
     price_per_mtok_cents: dict[str, ModelPrice] = Field(
@@ -66,6 +73,8 @@ class MonthSpend(BaseModel):
     events_claude: int = 0  # events written by Claude
     events_rejected: int = 0  # drafts rejected twice, replaced by templates
     event_cents: float = 0.0  # spend on events, for the average cost per event
+    conversation_cents: float = 0.0  # M47: spend on conversations, against their own cap
+    conversation_calls: int = 0
 
 
 _lock = threading.Lock()
@@ -119,6 +128,8 @@ def add_spend(
     claude_events: int = 0,
     rejected: int = 0,
     event_cents: float = 0.0,
+    conversation_cents: float = 0.0,
+    conversation_calls: int = 0,
     now: datetime | None = None,
 ) -> MonthSpend:
     with _lock:
@@ -131,6 +142,8 @@ def add_spend(
             events_claude=month.events_claude + claude_events,
             events_rejected=month.events_rejected + rejected,
             event_cents=month.event_cents + event_cents,
+            conversation_cents=month.conversation_cents + conversation_cents,
+            conversation_calls=month.conversation_calls + conversation_calls,
         )
         spend[key] = month
         save_dir.mkdir(parents=True, exist_ok=True)

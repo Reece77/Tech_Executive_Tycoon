@@ -23,7 +23,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 64  # M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+SCHEMA_VERSION = (
+    65  # M47: 0065; M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+)
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 # M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39
 # M42: 0062_m42
@@ -2432,3 +2434,60 @@ class EquipmentRecordRow(Base):
     n: Mapped[int] = mapped_column(Integer, primary_key=True)
     kind: Mapped[str] = mapped_column(String, nullable=False)
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+# --- Conversations (M47, migration 0065_m47; ADR-0023, formulas.md 58) ----------------------
+# Outside the game state: conversations run between turns and their outcome reaches the game
+# through an ordinary action (decision_log), so a replay of the game never reads these rows.
+
+
+class ConversationRow(Base):
+    """One negotiation (58): its deal, status and the engine's record. `state` holds the
+    negotiation with its HIDDEN zone, patience and priorities: never returned by the API and
+    never put in a prompt (58.6)."""
+
+    __tablename__ = "conversation"
+    __table_args__ = (Index("ix_conversation_deal", "deal_key", "status"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)  # the deal kind (58.1)
+    deal_key: Mapped[str] = mapped_column(String(120), nullable=False)  # kind and stream key
+    counterpart_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)  # open|agreed|walked|...
+    opened_turn: Mapped[int] = mapped_column(Integer, nullable=False)
+    closed_turn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cooldown_until: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)  # HIDDEN fields inside
+    suggestions: Mapped[list[str]] = mapped_column(JSON, nullable=False)  # for the next round
+    suggestions_source: Mapped[str] = mapped_column(String(16), nullable=False)
+    relationship_change: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)  # an agreement the deal refused
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class ConversationRoundRow(Base):
+    """One round (ADR-0023): the player's message (untrusted text, stored as typed), the moves
+    it was scored into and by whom, the offer, and the counterpart's reply. Replays read the
+    stored moves; they never call the LLM."""
+
+    __tablename__ = "conversation_round"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    conversation_id: Mapped[int] = mapped_column(
+        ForeignKey("conversation.id"), nullable=False, index=True
+    )
+    n: Mapped[int] = mapped_column(Integer, nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    message_source: Mapped[str] = mapped_column(
+        String(16), nullable=False
+    )  # free|suggested|template
+    moves: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)  # as scored
+    moves_source: Mapped[str] = mapped_column(
+        String(16), nullable=False
+    )  # claude|mock|template|invalid
+    offer: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    reply: Mapped[str] = mapped_column(Text, nullable=False)
+    reply_source: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[str] = mapped_column(String(32), nullable=False)

@@ -34,6 +34,7 @@ from tst.sim.errors import CommodityRuleError
 from tst.sim.ledger import CASH, COGS, GENERAL_ADMIN, PREPAID, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import Cents, exact, times
+from tst.sim.negotiation.models import BP
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_commodity_deal
 
@@ -157,6 +158,22 @@ def offtake_quote(
         ceiling=price * (1 + ob.collar),
         year_value_cents=year,
         prepaid_cents=times(year, prepay),  # M23a: exact (Codex review 5 finding 10)
+    )
+
+
+def at_bp(q: DealQuote, price_bp: int, data: GameData) -> DealQuote:
+    """The quote at a negotiated price, `price_bp` basis points of the quoted one (M47, 58.4):
+    the collar and the prepayment move with it."""
+    # money-exact: rate
+    factor = price_bp / BP
+    price = q.price * factor
+    return replace(
+        q,
+        price=price,
+        floor=q.floor * factor,
+        ceiling=q.ceiling * factor,
+        year_value_cents=round(exact_value(q.volume_year, price, q.good, data)),
+        prepaid_cents=round(Fraction(q.prepaid_cents * price_bp, BP)),
     )
 
 
