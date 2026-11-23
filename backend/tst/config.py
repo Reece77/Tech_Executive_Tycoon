@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     # M6 (ADR-0005): TST_LLM_ADAPTER forces "claude", "templates" or "mock" (tests use mock);
     # the key comes from ANTHROPIC_API_KEY in the environment or .env and is never returned.
     llm_adapter: str | None = None
+    # M47 (ADR-0023): TST_CONVERSATION_ADAPTER forces conversations' adapter alone ("mock" in
+    # the Playwright server, so its flows can show the cap switching to template mode while
+    # events keep their templates); unset, conversations use the events' adapter
+    conversation_adapter: str | None = None
     anthropic_api_key: str | None = Field(
         default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TST_ANTHROPIC_API_KEY")
     )

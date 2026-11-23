@@ -194,7 +194,7 @@ def get_team_mood(
 
 
 def _settings_out(settings: SettingsDep, data: DataDep) -> LLMSettingsOut:
-    from tst.conversations.service import cap_cents
+    from tst.conversations.service import cap_cents, mode_info
 
     save_dir = settings.resolved_save_dir()
     llm = load_settings(save_dir)
@@ -222,12 +222,7 @@ def _settings_out(settings: SettingsDep, data: DataDep) -> LLMSettingsOut:
         conversation_spend_cents=round(spend.conversation_cents, 4),
         conversation_calls=spend.conversation_calls,
         conversation_mode=llm.conversation_mode,
-        conversation_in_use="Claude"
-        if llm.adapter == "claude"
-        and key
-        and llm.conversation_mode == "auto"
-        and spend.conversation_cents < cap_cents(llm, data)
-        else "Templates",
+        conversation_in_use="Claude" if mode_info(save_dir, data).mode == "llm" else "Templates",
     )
 
 

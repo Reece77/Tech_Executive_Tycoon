@@ -80,12 +80,24 @@ def cap_cents(settings: LLMSettings, data: LoadedData) -> int:
     return data.balance.llm.conversation_budget_cents if chosen is None else chosen
 
 
+def conversation_adapter(save_dir: Path) -> LLMAdapter:
+    """The adapter conversations use: TST_CONVERSATION_ADAPTER, else the events' adapter."""
+    from tst.config import get_settings
+    from tst.llm.settings import active_adapter
+
+    forced = get_settings().conversation_adapter
+    if forced:
+        settings = get_settings()
+        return active_adapter(load_settings(save_dir), settings.anthropic_api_key, forced)
+    return default_adapter(save_dir)
+
+
 def mode_info(save_dir: Path, data: LoadedData, adapter: LLMAdapter | None = None) -> ModeInfo:
     """LLM or template mode now (ADR-0023 section 4)."""
     settings = load_settings(save_dir)
     cap = cap_cents(settings, data)
     spent = month_spend(save_dir).conversation_cents
-    live = (adapter or default_adapter(save_dir)).name != "template"
+    live = (adapter or conversation_adapter(save_dir)).name != "template"
     if settings.conversation_mode == "template":
         return ModeInfo("template", "setting", cap, spent)
     if not live:
@@ -100,7 +112,7 @@ def _writer(save_dir: Path, data: LoadedData, adapter: LLMAdapter | None) -> Wri
     cap = cap_cents(settings, data)
     spent = month_spend(save_dir).conversation_cents
     return Writer(
-        adapter=adapter or default_adapter(save_dir),
+        adapter=adapter or conversation_adapter(save_dir),
         settings=settings,
         budget_left=lambda: cap - spent,
         debug=os.environ.get("TST_LLM_DEBUG") == "1",

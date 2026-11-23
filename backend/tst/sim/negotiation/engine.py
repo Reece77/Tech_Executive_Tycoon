@@ -55,9 +55,17 @@ def skill_factor(skills: dict[str, float], b: NegotiationBalance) -> float:
     return lo + (hi - lo) * (min(max(score, 1.0), SCORE_MAX) - 1.0) / (SCORE_MAX - 1.0)
 
 
+NICE = (5, 2, 1)  # tunable-exempt: steps are 1, 2 or 5 x a power of ten (round figures)
+
+
 def step_of(median: int, b: NegotiationBalance) -> int:
-    """The rounding step of shown values: `shown_round` of the median, at least 1."""
-    return max(1, round(Fraction(abs(median)) * Fraction(str(b.shown_round))))
+    """The rounding step of shown values: `shown_round` of the median, down to a round figure
+    (1, 2 or 5 x a power of ten: $20,000 on a $1M deal, 200 bp on a quote), at least 1."""
+    raw = Fraction(abs(median)) * Fraction(str(b.shown_round))
+    if raw < 1:
+        return 1
+    power = 10 ** (len(str(int(raw))) - 1)
+    return next(n * power for n in NICE if n * power <= raw)
 
 
 def _favour(term: TermSpec, value: Fraction, step: int) -> int:

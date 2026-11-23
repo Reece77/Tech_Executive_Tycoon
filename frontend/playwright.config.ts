@@ -58,6 +58,9 @@ export default defineConfig({
         TST_ERROR_LOG: errorLog,
         ANTHROPIC_API_KEY: '',
         TST_ANTHROPIC_API_KEY: '',
+        // M47: conversations on the mock adapter (never Claude), so e2e/m47.spec.ts can show the
+        // cap switching them to template mode; events keep their templates
+        TST_CONVERSATION_ADAPTER: 'mock',
       },
       reuseExistingServer: false,
       timeout: 60_000,

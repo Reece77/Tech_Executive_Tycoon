@@ -25,5 +25,6 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0019](0019-v2-scope-decisions.md) | v2 scope: divisions first, simplified facilities, cities early, CEO/Chair with IPO, two lanes | Accepted |
 | [0020](0020-design-for-v3-now.md) | Design v2 systems so v3 can extend them: per-company entities, one facility model, one market-good model, region risk fields | Accepted |
 | [0022](0022-power-as-an-input-everywhere.md) | Power as an input everywhere: one meter and grid price per facility, a month-end settlement for plants, PPAs and exports, power producers as chain companies | Accepted |
+| [0023](0023-conversations.md) | Conversations run between turns as a service; the LLM only scores moves, suggests and words replies; their own monthly cap; template mode; skip always; the player's text is untrusted | Accepted |
 
 Template: [0000-template.md](0000-template.md).

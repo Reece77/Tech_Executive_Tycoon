@@ -2224,3 +2224,48 @@ No table or column is added. Two new values in existing columns:
 - `inbox_item.template` `letter`: the written letter (`title` "Letter to shareholders, <year>", `body` the letter, no link), shown in History under Finance.
 
 The view itself (`GET /api/saves/{save_id}/conglomerate`) is a read model over `ledger_entry`/`ledger_line` (the group's lines summed by company, year, account and memo; index `ix_ledger_entry_company_turn`), the state and `llm_text`: `tst/db/conglomerate.py`, `tst/sim/group/conglomerate.py`.
+
+## Negotiations by conversation (migration `0065_m47`, M47)
+
+Negotiations (formulas.md 58, ADR-0023, M47) run between turns and live outside the game state in two tables (`tst/conversations/service.py`); a negotiation's outcome reaches the game through an ordinary action in `decision_log` (the deal kind's own action with the agreed terms, or `negotiation_walk_away`), so a game replay never reads them and never calls the LLM. RNG stream `negotiation` (70), key `(deal kind index, *deal key)`, drawn when talks open. Balance keys `negotiation.*` (`spread`, `spread_jitter`, `min_spread_bp`, `patience`, `move_step`, `effects`, `appeal_good`, `anchor_gap`, `accept_tolerance`, `close_tolerance`, `max_moves`, `max_rounds`, `shown_round`, `range.*`, `skill.*`, `relationship_*`, `cooldown_months`, `max_message_chars`, `max_reply_words`, `suggestions`, `history_rounds`) and `llm.conversation_budget_cents`. New action kinds `negotiation_retention`, `negotiation_contract`, `negotiation_settlement`, `negotiation_walk_away`; existing actions gain optional agreed terms (`make_offer.agreed`, `sign_commodity_contract.price_bp`, `sign_offtake.price_bp`, `sign_ppa.price_bp`, `sign_foundry_contract.agreed`, `pharma_license_in.upfront_cents`, `pharma_license_out.upfront_cents`), set only by an agreement. `llm_settings.json` gains `conversation_budget_cents` (null: the balance default) and `conversation_mode` (`auto`/`template`); `llm_spend.json`'s months gain `conversation_cents` and `conversation_calls`. `llm_call_log.purpose` `negotiation`. `save_meta.schema_version` is 65. Existing saves have no conversations. Never shown (58.6): `conversation.state`'s `hidden` (reservation values, aspirations, medians, patience, priorities, openness, range offsets, the negotiator's skill factor), `level` and `patience_left`.
+
+### conversation
+
+One negotiation.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `kind` | VARCHAR(32) | no | The deal kind (58.1): `acquisition`, `hire`, `retention`, `supplier`, `offtake`, `foundry`, `ppa`, `government`, `settlement`, `licence_in`, `licence_out`. |
+| `deal_key` | VARCHAR(120) | no | The kind and the deal's stream key (`acquisition:12`): one open negotiation a deal. Indexed with `status`. |
+| `counterpart_key` | VARCHAR(120) | no | The counterpart (`company:12`, `person:40`, `traders:cobalt`, a supplier or producer key, `regulator:eu_commission`, `biotech:3`): its relationship is the sum of its rows' `relationship_change`, and a walk-away's cool-off applies to it and the kind. |
+| `subject` | VARCHAR(200) | no | The deal in words ("Acquire Zoho"). |
+| `status` | VARCHAR(16) | no | `open`, `agreed`, `walked`, `skipped`, `lapsed` (still open at the month end: talks run within the month they open) or `failed` (agreed, but the deal's own action refused it; `error` says why). |
+| `opened_turn` | INTEGER | no | The month the talks opened (the draws' turn). |
+| `closed_turn` | INTEGER | yes | The month they ended. |
+| `cooldown_until` | INTEGER | yes | After a walk-away: the turn from which this counterpart talks about this kind of deal again (`negotiation.cooldown_months`). |
+| `params` | JSON | no | The deal as its own action takes it (`target_id`, `candidate_id`, `good`, ...). |
+| `state` | JSON | no | The engine's record (`tst.sim.negotiation.models.Negotiation`): terms, counterpart, facts, the opening, the counter, rounds with their moves, status and final terms, and the HIDDEN `hidden`, `level` and `patience_left`. |
+| `suggestions` | JSON | no | The next round's suggested replies (three strings). |
+| `suggestions_source` | VARCHAR(16) | no | `claude`, `mock` or `template`. |
+| `relationship_change` | INTEGER | no | What the talks did to the relationship (the rounds' changes, plus `relationship_walk` or `relationship_agree` at the end). |
+| `error` | TEXT | yes | Why an agreed deal could not close. |
+| `created_at` | VARCHAR(32) | no | Wall-clock time (UTC, ISO) the talks opened. |
+
+### conversation_round
+
+One round.
+
+| Column | Type | Null | Meaning |
+| --- | --- | --- | --- |
+| `id` | INTEGER | no | Primary key. |
+| `conversation_id` | INTEGER | no | `conversation.id` (indexed). |
+| `n` | INTEGER | no | The round, from 1. |
+| `message` | TEXT | no | The player's message as stored (untrusted: control characters removed, at most `negotiation.max_message_chars`), or the picked moves in words in template mode. |
+| `message_source` | VARCHAR(16) | no | `free`, `suggested` or `template`. |
+| `moves` | JSON | no | The moves it was scored into (`kind`, optional `term`, `other`, `fact`), before the engine's checks; a replay plays these. |
+| `moves_source` | VARCHAR(16) | no | `claude`, `mock`, `template` (buttons) or `invalid` (the classifier's JSON failed validation: `neutral`). |
+| `offer` | JSON | no | The player's offer, one value a term in its unit (cents, or basis points of the quote). |
+| `reply` | TEXT | no | The counterpart's reply. |
+| `reply_source` | VARCHAR(16) | no | `claude`, `mock` or `template` (also when the LLM's wording named a number the decision did not give). |
+| `created_at` | VARCHAR(32) | no | Wall-clock time (UTC, ISO). |
