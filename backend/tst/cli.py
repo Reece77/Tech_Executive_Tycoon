@@ -5005,8 +5005,8 @@ def meet(
         elif meeting is not None:
             t = meetings.get(path, data, meeting)
         else:
-            for a in meetings.availability(path, data):
-                typer.echo(f"{a.kind}: {'due' if a.available else a.reason}")
+            for slot in meetings.availability(path, data):
+                typer.echo(f"{slot.kind}: {'due' if slot.available else slot.reason}")
             for row in meetings.listing(path, data):
                 typer.echo(f"{row.id} {row.status} {row.view.subject}")
             return
