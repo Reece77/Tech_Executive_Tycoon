@@ -4228,3 +4228,60 @@ Every deal the game already prices: an acquisition (§28), a key hire or retenti
 ### 58.6 What the API may show
 
 Opening offers, the counterpart's public facts and stated reasons, ranges as revealed, rounds and their moves, the debrief. Never reservation values, aspirations, patience, priorities or draws.
+
+## 59. Board meetings, earnings calls and investor days (M48; v6)
+
+Built on M47's conversation engine (§58, ADR-0023): the engine decides every outcome within fixed bounds, the LLM classifies the player's messages into moves and words the other side, and every conversation can be skipped (the default outcome, as today) or played in template mode.
+
+### 59.1 Board meetings
+
+- **When:** each quarter-end board meeting (§14.6's summary today), plus extraordinary meetings the engine already calls (a removal vote, an activist's demands, a large one-off proposal under §40.2).
+- **Agenda:** from the engine's facts: results against plan, the next quarter's plan, proposals waiting, and any director's concern (confidence under 50, a missed guidance, a scandal).
+- **Directors** are the board's people (§14.6), each with personality, confidence and priorities (growth, margin, risk, governance; hidden weights). Each agenda item is a short exchange: the director's question (LLM-worded from facts and their priority), the player's answer, scored into moves (`commit` to a plan figure, `explain` with a displayed fact, `defer`, `concede`, `push_back`).
+- **Effects:** each move moves that director's confidence by at most `meetings.board_step` (±4) per meeting, scaled by persona and the founder's `communication` and `leadership` (0.8–1.2). A **commitment** becomes a tracked promise like §29's: kept, it lifts confidence; broken, it costs double. **Votes** on proposals follow each director's confidence and priorities; skipping gives today's outcome.
+
+### 59.2 Earnings calls
+
+- **When:** with each quarterly report once listed (§25.4).
+- **Analysts** (§25.3's 3–8, each a person with a rating, a target and a focus: growth, margin, a segment, a risk) ask questions from the report's public numbers and the guidance. The player's answers score into moves (`reaffirm`, `raise` or `lower` guidance, `explain`, `deflect`, `promise`).
+- **Effects:** sentiment `S` moves by at most `meetings.call_step` (±3%) per call beyond §25.4's surprise jump, and each analyst's target by at most ±5%. **Credibility** (0–100, new) tracks kept and missed guidance and promises: it scales future calls' effects (low credibility halves positive moves) and §25.4's jumps. A deflection on a question about a real problem (a miss, a recall, an investigation) costs credibility.
+
+### 59.3 Investor days
+
+- An optional event the player schedules (a one-off, at most once a year) to present a strategy change: a new industry, a capital plan, a restructuring. Investors' reception (sentiment ±8% at most, credibility ±10) depends on the plan's displayed economics (the conglomerate view's returns, M43), the company's credibility, and how the questions are answered.
+
+### 59.4 Balance targets (printed)
+
+1. **Skip is today's game:** with every meeting and call skipped, board confidence, sentiment and prices match pre-M48 `main` (state-cache check).
+2. **Talking helps, within limits:** a scripted good communicator (score 16) keeps board confidence 3–10 points higher and sentiment 2–6% higher over 5 years than skipping; a poor one 0–8 points lower.
+3. **Credibility matters:** breaking three guidance promises in two years cuts the next calls' positive effects by at least half.
+4. **No leak:** no director's priorities, hidden weights or draws reach the API or a prompt.
+
+### 59.5 What the API may show
+
+Agendas, questions, answers, moves and their visible effects, directors' and analysts' public facts and confidence, credibility, promises and their status. Never directors' hidden priorities or draws.
+
+## 60. Start years before 2010 (M50; v6)
+
+Reece (2026-11-22): **start years, 2008 first**, then 2000, then 1995. M50 adds **2008** (the financial crisis, the iPhone's App Store and Android's launch). The 2010 start and everything from 2010 in a 2010 game stay exactly as they are.
+
+### 60.1 The calendar
+
+- ADR-0024 (new): turn 0 stays January 2010. Earlier starts use **negative turns** (January 2008 is turn −24); `tst.sim.calendar` converts them, RNG streams take negative turns, and the save records its start turn. Every series keyed by year gains 2008–2009 entries.
+
+### 60.2 History for 2008–2009
+
+Every system's data gains 2008–2009 (research `docs/v6-research/start-2008-dossier.md`):
+- **macro:** the financial crisis (GDP, rates, the venture climate's collapse in late 2008 and recovery from mid-2009, credit availability);
+- **markets:** category sizes and growth for 2008–2009 at the game's scale (§54); smartphones and app stores from their dates (the App Store July 2008, Android Market October 2008);
+- **rivals:** companies at their real 2008 values, with those founded in 2008–2009 entering on their dates (for example Airbnb, Uber, WhatsApp, Square);
+- **eras** and the R&D tree at their 2008 state;
+- **commodities, power, chips and nodes** (45 nm, then 32 nm) for the two years;
+- **regulation and geopolitics** as dated.
+
+### 60.3 Balance targets (printed)
+
+1. **A 2010 game is unchanged:** golden snapshots, every state cache and every guard on the 2010 start are byte-identical to `main` before M50.
+2. **The crisis bites:** a 2008 start's venture rounds in Q4 2008 to Q2 2009 are at least 40% scarcer and 20% cheaper than in 2010 (median), and startups with under 12 months of runway in October 2008 fail at least twice as often as in 2010–2011.
+3. **The world arrives at 2010 sensibly:** in a 2008 start, by January 2010, category sizes and the named rivals' revenues sit within 0.7–1.3× the 2010 start's values (median, 10 seeds).
+4. **Every strategy plays:** V1's strategies started in 2008 finish 2037 within their v1 bands, or are reported.
