@@ -16,6 +16,7 @@ from fractions import Fraction
 
 import numpy as np
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance
 from tst.sim.negotiation.config import DEAL_KINDS, DealKind, NegotiationBalance
 from tst.sim.negotiation.models import (
@@ -64,7 +65,7 @@ def step_of(median: int, b: NegotiationBalance) -> int:
     raw = Fraction(abs(median)) * Fraction(str(b.shown_round))
     if raw < 1:
         return 1
-    power = 10 ** (len(str(int(raw))) - 1)
+    power = int("1" + "0" * (len(str(int(raw))) - 1))  # the power of ten at or below raw
     return next(n * power for n in NICE if n * power <= raw)
 
 
@@ -179,9 +180,9 @@ def revealed(neg: Negotiation, b: NegotiationBalance) -> tuple[tuple[int, int], 
     out = []
     for t in range(len(neg.terms)):
         zone = abs(h.aspiration[t] - h.reservation[t])
-        width = b.range.start * (1 - b.range.narrow * h.openness) ** rounds
+        width = b.range.start * dmath.pow(1 - b.range.narrow * h.openness, rounds)
         # a better negotiator sees it narrower: x (lo + hi - factor) ^ power (1.2 shows 0.8^p)
-        width *= (b.skill.band.lo + b.skill.band.hi - h.skill) ** b.range.skill_power
+        width *= dmath.pow(b.skill.band.lo + b.skill.band.hi - h.skill, b.range.skill_power)
         half = Fraction(max(width, b.range.floor)) * zone
         centre = Fraction(h.reservation[t]) + Fraction(h.offsets[t] * b.range.centre) * half
         out.append(_outward(centre - half, centre + half, step_of(h.medians[t], b)))
