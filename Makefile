@@ -67,7 +67,7 @@ weekly-v6-integrator:
 	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), reached in M45; the 1,000 ms raw budget stays
 
 # M46: re-record a long state fixture on CI and print it to the log (tools/record_state_fixtures.py;
-# FIXTURE m30, m37 or m45). Dispatch weekly.yml with parts ["record-fixture FIXTURE=m30", ...].
+# FIXTURE m30, m32, m37 or m45). Dispatch weekly.yml with parts ["record-fixture FIXTURE=m30", ...].
 record-fixture:
 	uv run --project backend python tools/record_state_fixtures.py $(FIXTURE)
 
