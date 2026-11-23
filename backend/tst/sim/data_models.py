@@ -865,7 +865,7 @@ class PoachBalance(_Frozen):
 
 
 class RivalsBalance(_Frozen):
-    prelaunch_cash_months: float = Field(default=36, ge=0)  # M50 (60.2)
+    prelaunch_cash_months: float = Field(ge=0)  # M50 (60.2)
     act_threshold: float
     noise_sd: float = Field(ge=0)
     cooldown_turns: int = Field(ge=0)

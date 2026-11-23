@@ -29,7 +29,7 @@ def test_every_year_of_every_region_sums_to_one(loaded: LoadedData) -> None:
     assert pf_ is not None
     for region in loaded.game_data.region_keys:
         years = pf_.user_shares[region]
-        assert sorted(years) == list(range(2010, 2026))
+        assert sorted(years) == list(range(2008, 2026))  # M50: from the earliest start
         for year, shares in years.items():
             assert sum(shares.values()) == pytest.approx(1.0, abs=1e-6), (region, year)
 
