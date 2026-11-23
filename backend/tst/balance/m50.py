@@ -51,8 +51,8 @@ SCARCER: Final = 0.40  # 60.3 target 2: at least 40% fewer rounds
 CHEAPER: Final = 0.20  # and 20% cheaper
 FAIL_RATIO: Final = 2.0  # short-runway startups fail at least twice as often
 BAND: Final = (0.7, 1.3)  # 60.3 target 3
-TURNS_TO_2011: Final = ym_to_turn(2012, 1)  # the 2010 games play to December 2011
-TURNS_2008: Final = ym_to_turn(2010, 4)  # the 2008 games play through March 2010
+TURNS_TO_2011: Final = ym_to_turn(2012, 1)  # the games play to December 2011
+TURNS_2008: Final = TURNS_TO_2011  # the 2008 games also play to December 2011
 STANDARD_ARR: Final = 100_000_000  # cents: $1M ARR (target 2's standard company)
 STANDARD_GROWTH: Final = 1.0  # doubling over 6 months
 STANDARD_STAFF: Final = 6
@@ -136,7 +136,9 @@ def world_run(job: tuple[int, int]) -> WorldRun:
     firms = [f for f in data.game_data.investors if "seed" in f.series]
     rb = data.balance.finance.round
     last = TURNS_2008 if start_year < 2010 else TURNS_TO_2011
-    snapshots = CRISIS_SNAPSHOTS if start_year < 2010 else CALM_SNAPSHOTS
+    # the calm baseline (2010, outcomes to 2011) comes from both kinds of game: a 2010 game's
+    # startups are all new in 2010, so a 2008 game's own 2010-2011 counts too
+    snapshots = (*CRISIS_SNAPSHOTS, *CALM_SNAPSHOTS) if start_year < 2010 else CALM_SNAPSHOTS
     counted: set[int] = set()
     named = _named(data)
     while game.state.turn < last:
@@ -211,7 +213,7 @@ def crisis_readings(runs: Sequence[WorldRun]) -> list[Reading]:
         got = sum(sum(_window(r.funded, span)) for r in rs)
         return got / tries if tries else None
 
-    crisis_rate, calm_rate = rate(early, CRISIS), rate(late, CALM)
+    crisis_rate, calm_rate = rate(early, CRISIS), rate(runs, CALM)
     drop = None if crisis_rate is None or not calm_rate else 1 - crisis_rate / calm_rate
 
     def counts(rs: Sequence[WorldRun], span: tuple[int, int]) -> str:
@@ -222,7 +224,7 @@ def crisis_readings(runs: Sequence[WorldRun]) -> list[Reading]:
         Reading(
             "60.3 T2",
             f"startup rounds closed per attempt, Q4 2008-Q2 2009 {counts(early, CRISIS)} vs 2010 "
-            f"{counts(late, CALM)} (fewer by)",
+            f"{counts(runs, CALM)} (fewer by)",
             drop,
             f">= {SCARCER:.0%}",
             None if drop is None else drop >= SCARCER,
@@ -251,12 +253,12 @@ def crisis_readings(runs: Sequence[WorldRun]) -> list[Reading]:
         )
     )
 
-    def failed(rs: Sequence[WorldRun]) -> tuple[int, int]:
-        rows = [row for r in rs for snap in r.short.values() for row in snap]
+    def failed(rs: Sequence[WorldRun], snaps: Sequence[int]) -> tuple[int, int]:
+        rows = [row for r in rs for t in snaps for row in r.short.get(t, [])]
         return sum(1 for _, f in rows if f), len(rows)
 
-    fc, nc = failed(early)
-    fn, nn = failed(late)
+    fc, nc = failed(early, CRISIS_SNAPSHOTS)
+    fn, nn = failed(runs, CALM_SNAPSHOTS)
     ratio = None if not nc or not nn or not fn else (fc / nc) / (fn / nn)
     out.append(
         Reading(
