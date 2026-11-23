@@ -35,7 +35,7 @@ from tst.sim.press.moments import queue_moment
 from tst.sim.press.names import press_names
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_event, with_queued, with_storyline
+from tst.sim.state import GameState, listing_of, with_event, with_queued, with_storyline
 
 BP = 10_000  # tunable-exempt: basis-point scale
 
@@ -399,6 +399,12 @@ def direct(
                 )
             )
 
+    # M46: while the player's IPO chain is under way (banks hired, not yet priced), the critical
+    # slot is held for its pricing step, so a drawn critical event or crisis waits instead of
+    # the listing (a deferred pricing would delay the IPO itself).
+    listing = listing_of(state, cid)
+    if listing is not None and listing.status in ("hired", "filing", "roadshow", "pricing"):
+        critical_free = False
     gen = rng.stream(state.turn, "events")
     count = draw_count(gen, balance)
     crisis = _crisis(state, crisis_hits(state, gen, balance, data), data) if critical_free else None
