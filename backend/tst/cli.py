@@ -4892,3 +4892,70 @@ def government_cmd(
         )
     for r in g.rivals[:10]:
         typer.echo(f"rival {r.name}: {r.awards} awards, {format_money(r.awarded_cents)}")
+
+
+@app.command()
+def negotiate(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    kind: Annotated[
+        str | None,
+        typer.Option(help="M47 (58.1): open talks on a deal of this kind (acquisition, hire, ...)"),
+    ] = None,
+    params: Annotated[
+        str, typer.Option(help='The deal as JSON, e.g. \'{"target_id": 4, "mode": "brand"}\'')
+    ] = "{}",
+    talks: Annotated[
+        int | None, typer.Option("--id", help="Open talks' id (tst negotiate)")
+    ] = None,
+    offer: Annotated[int | None, typer.Option(help="A round's offer, in the term's unit")] = None,
+    moves: Annotated[
+        str, typer.Option(help="Template-mode moves, comma-separated (justify:0,anchor,appeal)")
+    ] = "",
+    finish: Annotated[
+        str | None, typer.Option(help="accept (their offer) or skip (today's)")
+    ] = None,
+) -> None:
+    """Negotiations by conversation (M47, formulas.md 58), headless and in template mode: list
+    the save's talks, open talks on a deal, play a round of moves, or accept or skip."""
+    import json
+
+    from tst.conversations import service
+    from tst.llm.offline import TemplateAdapter
+
+    settings, data = _context()
+    adapter = TemplateAdapter()
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        if kind is not None:
+            t = service.open_talks(path, data, kind, json.loads(params), adapter=adapter)
+        elif talks is not None and finish in ("accept", "skip"):
+            t = (service.accept if finish == "accept" else service.skip)(path, data, talks)
+        elif talks is not None and offer is not None:
+            picked = []
+            for m in (x for x in moves.split(",") if x):
+                name, _, fact = m.partition(":")
+                picked.append({"kind": name, **({"fact": int(fact)} if fact else {})})
+            t = service.play(path, data, talks, [offer], moves=picked, adapter=adapter)
+        elif talks is not None:
+            t = service.get(path, data, talks)
+        else:
+            for row in service.listing(path, data):
+                typer.echo(
+                    f"{row.id} {row.status} {row.view.subject} ({len(row.view.rounds)} rounds)"
+                )
+            return
+    except (SimError, ValueError) as exc:
+        raise _fail(getattr(exc, "message", str(exc))) from exc
+    v = t.view
+    typer.echo(f"{t.id} {v.subject}: {t.status}, {v.counterpart_name} ({v.relationship})")
+    typer.echo(
+        f"their offer {'; '.join(v.counter_shown)}; "
+        f"their limit {'; '.join(r.shown for r in v.ranges)}"
+    )
+    for r in v.rounds:
+        typer.echo(
+            f"round {r.n}: {', '.join(r.offer_shown)} "
+            f"[{', '.join(m.words for m in r.moves)}] -> {r.reason_words}"
+        )
+    if v.final_shown:
+        typer.echo(f"final {'; '.join(v.final_shown)} (opened at {'; '.join(v.opening_shown)})")

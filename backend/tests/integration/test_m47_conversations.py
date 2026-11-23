@@ -246,3 +246,24 @@ def test_skip_signs_at_todays_quote_and_a_walk_cools_off(save: Path, loaded: Loa
     assert walked.status == "walked" and walked.cooldown_until is not None
     with pytest.raises(NegotiationRuleError, match="won't talk"):
         service.open_talks(save, loaded, "supplier", other, adapter=TemplateAdapter())
+
+
+def test_the_cli_opens_plays_and_skips(save: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from typer.testing import CliRunner
+
+    from tst.cli import app as cli_app
+
+    monkeypatch.setenv("TST_SAVE_DIR", str(save.parent))
+    run = CliRunner()
+    deal = json.dumps(DEAL)
+    out = run.invoke(cli_app, ["negotiate", "--save", SAVE, "--kind", "supplier", "--params", deal])
+    assert out.exit_code == 0, out.output
+    assert "their offer" in out.output and "their limit" in out.output
+    out = run.invoke(
+        cli_app,
+        ["negotiate", "--save", SAVE, "--id", "1", "--offer", "9000", "--moves", "justify:0"],
+    )
+    assert out.exit_code == 0 and "round 1" in out.output, out.output
+    out = run.invoke(cli_app, ["negotiate", "--save", SAVE, "--id", "1", "--finish", "skip"])
+    assert out.exit_code == 0 and "skipped" in out.output, out.output
+    assert "1 skipped" in run.invoke(cli_app, ["negotiate", "--save", SAVE]).output
