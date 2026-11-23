@@ -37,6 +37,8 @@ from tst.sim.pharma import data as pd
 from tst.sim.pharma.models import Drug, DrugMonth, IraPick, Programme
 from tst.sim.state import GameState
 
+NOT_BLOCKED: Final = -1  # tunable-exempt: DrugRegion.blocked_until's default (no recall)
+
 KINDS: Final = {"small_molecule": "api", "biologic": "biologics", "cell_and_gene": "biologics"}
 THOUSAND: Final = 1000  # tunable-exempt: capacities are thousand patient-years
 
@@ -76,7 +78,8 @@ def weight(
 ) -> float:
     """w_m before access (55.4); 0 before launch in the region or while a recall stops it."""
     start = launched_in(state, p, region)
-    if start is None or state.turn < drug.blocked_until:
+    # blocked_until -1 is "never recalled" (M50: a 2008 game's months are below it)
+    if start is None or (drug.blocked_until != NOT_BLOCKED and state.turn < drug.blocked_until):
         return 0.0
     db = balance.pharma.demand
     ind = pd.indication(data, p.indication)

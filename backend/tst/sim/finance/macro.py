@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Final
 import numpy as np
 
 from tst.sim import dmath
-from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym
+from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym, ym_to_turn
 from tst.sim.data_models import Ar1Balance, Balance, GameData, MacroBalance, MacroHistory
 from tst.sim.rng import RngFactory
 
@@ -62,7 +62,7 @@ def _history(data: GameData) -> MacroHistory:
 def last_history_turn(data: GameData) -> int:
     """The last turn with history (December 2025)."""
     h = _history(data)
-    return (h.last_year - h.first_year + 1) * MONTHS_PER_YEAR - 1
+    return ym_to_turn(h.last_year, MONTHS_PER_YEAR)  # ADR-0024: not from the first year
 
 
 def rescaled_confidence(raw: float, history: MacroHistory) -> float:
@@ -77,13 +77,17 @@ def history_month(turn: int, data: GameData) -> MacroMonth | None:
     if not h.first_year <= year <= h.last_year:
         return None
     ai = data.compute_index.of(year)
+    ci = data.compute_index
+    # the base year's change is 0 by definition (its year before is outside the index's own
+    # history), as before M50 extended the index back (ADR-0024)
+    before = ai if year == ci.base_year else ci.of(year - 1)
     return MacroMonth(
         turn=turn,
         base_rate=h.base_rate[year][month - 1],
-        climate=h.climate[year],
+        climate=h.climate_at(year, month),
         confidence=rescaled_confidence(h.confidence[year][month - 1], h),
         ai_index=ai,
-        ai_change=ai / data.compute_index.of(year - 1) - 1,
+        ai_change=ai / before - 1,
     )
 
 

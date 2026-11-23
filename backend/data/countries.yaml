@@ -138,7 +138,13 @@ rivals:
 # the Section 301 tariffs and ZTE in 2018; Huawei 2019; the FDPR and SMIC 2020; October 2022's
 # rules; 2023's tool deals and gallium licensing; December 2024's bans; Busan's truce in
 # October-November 2025). Values hold from their month until the next.
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: rows for 2008-2009 added before 2010-01 so a 2008 start has
+# history (A, as the rest: calm under the 2006-2009 Strategic Economic Dialogue, rising to 2010's level with
+# the October 2008 Taiwan arms package and the September 2009 tyre safeguard; dates R, the levels A).
 tension_history:
+  - ["2008-01", 18]
+  - ["2008-10", 20] # the $6.5B Taiwan arms package (3 Oct 2008); China suspends military contacts
+  - ["2009-09", 21] # the Section 421 safeguard tariff on Chinese tyres (11 Sep 2009)
   - ["2010-01", 22]
   - ["2010-09", 26] # the rare-earth halt to Japan
   - ["2012-03", 28] # the WTO case

@@ -72,7 +72,7 @@ from tst.sim.actions import (
     action_payload,
     apply_action,
 )
-from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym
+from tst.sim.calendar import HISTORY_START_YEAR, MONTHS_PER_YEAR, TURN_ZERO, format_turn, turn_to_ym
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
@@ -422,8 +422,11 @@ def create_save(
     mode: ModeSpec | None = None,
     family: FamilySpec | None = None,
     length: CampaignLength = "standard",
+    start_year: int = TURN_ZERO[0],
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
+    `start_year` (M50, ADR-0024): a campaign's first January, 2008 or 2010 (calendar
+    START_YEARS); a Sandbox starting in 2008-2009 is built on the 2008 world.
     `length` (M37, 52.1): a campaign's length, standard (to December 2039) or dynasty (2069).
     `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
     or scenario start, the world built to its start month."""
@@ -439,6 +442,8 @@ def create_save(
     scenario_def = data.game_data.scenario(scenario)
     if scenario_def is None:
         raise UnknownScenarioError(f"unknown scenario {scenario!r}")
+    if mode is not None:  # a Sandbox or scenario keeps its own year; before 2010, 2008's world
+        start_year = HISTORY_START_YEAR if mode.start_year < TURN_ZERO[0] else TURN_ZERO[0]
     state, entries = new_game(
         save_name=name,
         master_seed=seed,
@@ -451,6 +456,7 @@ def create_save(
         mission=mission,
         hq_city=hq_city,
         family=family,
+        start_year=start_year,
     )
     if mode is not None:
         state, entries = start_mode(
@@ -459,7 +465,8 @@ def create_save(
     if length == "dynasty":  # M37 (52.1): only a campaign has one
         if mode is not None:
             raise InvalidModeError("only a campaign can be played in dynasty mode")
-        state = replace(state, mode=GameMode(kind="campaign", length="dynasty"))
+        begun = state.mode or GameMode(kind="campaign")  # M50: a 2008 game keeps its start
+        state = replace(state, mode=replace(begun, length="dynasty"))
 
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -474,6 +481,7 @@ def create_save(
                     difficulty=difficulty,
                     created_turn=state.turn,
                     current_turn=state.turn,
+                    start_turn=state.turn,  # M50 (ADR-0024): the month the game began
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
                     # M25: a mod's name, merged-data hash and overlay copy; None without one
@@ -509,6 +517,7 @@ def create_save(
                         state.player.hq_city,
                         mode,
                         family,
+                        start_year if mode is None else TURN_ZERO[0],
                     ),
                     seq=0,
                 )
@@ -1120,6 +1129,7 @@ def new_game_payload(
     hq_city: str | None = None,
     mode: ModeSpec | None = None,
     family: FamilySpec | None = None,
+    start_year: int = TURN_ZERO[0],
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
@@ -1135,6 +1145,8 @@ def new_game_payload(
     }
     if family is not None and family.setting != "none":  # M36 (45.1); none leaves it out
         out["family"] = {"setting": family.setting, "child_ages": list(family.child_ages)}
+    if start_year != TURN_ZERO[0]:  # M50: a 2010 game's payload is unchanged
+        out["start_year"] = start_year
     return out
 
 
@@ -1200,6 +1212,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
             if setup.get("family")
             else None
         ),
+        start_year=setup.get("start_year", TURN_ZERO[0]),  # M50
     )
     for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):

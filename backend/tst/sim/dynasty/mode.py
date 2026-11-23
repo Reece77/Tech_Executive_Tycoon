@@ -9,6 +9,9 @@ allowed: end it (`EndCampaign`, game state `campaign_end`) or continue in dynast
 A **dynasty** game runs to December 2069; after that month it is over (`dynasty_end`), the
 save open for browsing. Every game that reaches 2070 ends there (a Sandbox too): no system's
 data continues past it (52.2; sandbox after 2069 is out of scope).
+
+ADR-0024 (M50): a campaign begun before 2010 is also 360 turns, so one started in January 2008
+reaches its standard end after December 2037. The dynasty years still begin in January 2040.
 """
 
 from __future__ import annotations
@@ -16,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Literal
 
-from tst.sim.calendar import ym_to_turn
+from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.data_models import Balance
 from tst.sim.errors import CampaignEndError, InvalidActionError
 from tst.sim.modes.models import CampaignLength, GameMode
@@ -54,6 +57,18 @@ def final_turn(balance: Balance) -> int:
     return ym_to_turn(balance.dynasty.end_year, DECEMBER) + 1
 
 
+def standard_end_turn(state: GameState, balance: Balance) -> int:
+    """The month after a standard campaign's last (ADR-0024): 360 turns after its start, so
+    January 2040 for a 2010 game and January 2038 for a 2008 one."""
+    begun = state.mode.start_turn if state.mode is not None else 0
+    return start_turn(balance) + min(begun, 0)
+
+
+def last_month_label(state: GameState, balance: Balance) -> str:
+    """ "December 2039" (or 2037 for a 2008 start): the standard campaign's last month."""
+    return f"December {turn_to_ym(standard_end_turn(state, balance) - 1)[0]}"
+
+
 def in_dynasty_years(state: GameState, balance: Balance) -> bool:
     return state.turn >= start_turn(balance)
 
@@ -73,7 +88,7 @@ def at_standard_end(state: GameState, balance: Balance) -> bool:
         state.save_meta.game_state == "active"
         and is_campaign(state)
         and length(state) == "standard"
-        and state.turn >= start_turn(balance)
+        and state.turn >= standard_end_turn(state, balance)
     )
 
 
@@ -89,7 +104,8 @@ def check_can_play(state: GameState, balance: Balance) -> None:
     """Refuse a turn or an action at the standard end (CampaignEndError, 409)."""
     if at_standard_end(state, balance):
         raise CampaignEndError(
-            "the standard campaign ended in December 2039: end it or continue in dynasty mode"
+            f"the standard campaign ended in {last_month_label(state, balance)}: end it or"
+            " continue in dynasty mode"
         )
 
 
@@ -106,7 +122,9 @@ def continue_dynasty(state: GameState, balance: Balance) -> GameState:
 
 def end_campaign(state: GameState, balance: Balance) -> GameState:
     if not at_standard_end(state, balance):
-        raise InvalidActionError("a campaign can be ended only at December 2039")
+        raise InvalidActionError(
+            f"a campaign can be ended only at {last_month_label(state, balance)}"
+        )
     meta = replace(state.save_meta, game_state="campaign_end", ended_turn=state.turn - 1)
     return replace(state, save_meta=meta)
 

@@ -21,6 +21,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import Final
 
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.commodities.config import SupplierGood
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent, QueuedEvent
@@ -492,7 +493,8 @@ def rival_capacity(
     explored = {c.key for c in data.geology.commodities}
     out = []
     events: list[RegionEvent] = []
-    for t in range(max(0, turn - EVENT_YEARS * YEAR), turn + 1):
+    floor = 0 if turn >= 0 else HISTORY_START_TURN  # M50: a 2008 game's first years
+    for t in range(max(floor, turn - EVENT_YEARS * YEAR), turn + 1):
         events += region_events(rng, t, balance, data)
     paths: dict[str, tuple[float, float]] = {}  # good -> (capacity, index now): M30, once a good
     for s in data.suppliers.suppliers:
@@ -520,17 +522,20 @@ def _capacity_path(
     """A rival's capacity multiple in `turn` (a pure function of the good's price path, the
     same for every supplier of it) and the good's index in `turn`."""
     rb = balance.mining.rivals
-    idx = [_index_at(state, good, t, data, balance) for t in range(turn + 1)]
-    cap, last_start = 1.0, -YEAR
+    # M50 (ADR-0024): from January 2010 the path starts there, as before; a 2008 game's
+    # months before 2010 run their own path from January 2008
+    first = 0 if turn >= 0 else HISTORY_START_TURN
+    idx = [_index_at(state, good, t, data, balance) for t in range(first, turn + 1)]
+    cap, last_start = 1.0, first - YEAR
     pending: list[int] = []
-    for t in range(turn + 1):
+    for t in range(first, turn + 1):
         cap += rb.expand * sum(1 for due in pending if due == t)
-        window = idx[max(0, t + 1 - YEAR) : t + 1]
+        window = idx[max(0, t - first + 1 - YEAR) : t - first + 1]
         if len(window) == YEAR and sum(window) / YEAR > rb.spike and t - last_start >= YEAR:
             pending.append(t + rb.lag_months)
             last_start = t
         cap = min(rb.cap, max(rb.floor, cap))
-    return cap, idx[turn]
+    return cap, idx[turn - first]
 
 
 def _shares(goods: Mapping[str, SupplierGood]) -> list[tuple[str, float]]:

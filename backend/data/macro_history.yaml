@@ -1,4 +1,4 @@
-# Macro history, 2010-2025 (docs/formulas.md 20.1, M10). Every run shares this past; from
+# Macro history, 2008-2025 (docs/formulas.md 20.1, M10; 2008-2009 M50, 60.2). Every run shares this past; from
 # January 2026 the indicators move in seeded cycles (stream `macro`, balance.yaml `macro.*`).
 # Real figures, personal use (CLAUDE.md section 7); monthly values are approximate.
 #
@@ -9,9 +9,25 @@
 #   investors pay and on each firm's chance of answering (14.3, 14.5, 15.4). Folded in from
 #   M4's climate.yaml unchanged, so v1 rounds are unchanged.
 # The AI compute index's history stays in compute_index.yaml (18.6), its one source.
-first_year: 2010
+#
+# M50 (ADR-0024, formulas.md 60.2): 2008 and 2009 for a game begun in January 2008. A 2010
+# game never reads them. Sources:
+#   FRED  FEDFUNDS (effective federal funds rate, monthly) and UMCSENT (University of Michigan
+#         consumer sentiment, monthly), fetched 2026-11-23 from
+#         https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS and ?id=UMCSENT; their
+#         2010 rows equal this file's, so the two years join the series without a seam (V).
+#   MT    PwC/NVCA MoneyTree (Thomson Reuters data): US venture investment $30.9B in 2007,
+#         $28.3B in 2008 (Q1-Q3 about $7B a quarter, Q4 $5.4B), $17.7B in 2009 (Q1 $3.0B, the
+#         lowest quarter since 1997; Q2 $4.3B, Q3 $4.8B, Q4 $5.6B), $21.8B in 2010 (R).
+# The climate before 2010 is monthly (a list of 12): the 2010 multiplier (0.90) scaled by each
+# quarter's dollars invested against 2010's average quarter ($5.45B) and held near 2007's level
+# until September 2008, the collapse after Lehman's failure (15 September 2008) and the
+# recovery from mid-2009 (D from MT; the months inside a quarter are interpolated, A).
+first_year: 2008
 confidence_base_years: [2010, 2019] # inclusive: the years whose average confidence is 100
 climate:
+  2008: [1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 0.95, 0.75, 0.62, 0.55] # D (MT)
+  2009: [0.50, 0.48, 0.48, 0.52, 0.56, 0.60, 0.66, 0.70, 0.74, 0.80, 0.84, 0.88] # D (MT)
   2010: 0.90
   2011: 1.00
   2012: 1.00
@@ -29,6 +45,8 @@ climate:
   2024: 0.90
   2025: 1.00
 base_rate:
+  2008: [3.94, 2.98, 2.61, 2.28, 1.98, 2.00, 2.01, 2.00, 1.81, 0.97, 0.39, 0.16] # V (FRED)
+  2009: [0.15, 0.22, 0.18, 0.15, 0.18, 0.21, 0.16, 0.16, 0.15, 0.12, 0.12, 0.12] # V (FRED)
   2010: [0.11, 0.13, 0.16, 0.20, 0.20, 0.18, 0.18, 0.19, 0.19, 0.19, 0.19, 0.18]
   2011: [0.17, 0.16, 0.14, 0.10, 0.09, 0.09, 0.07, 0.10, 0.08, 0.07, 0.08, 0.07]
   2012: [0.08, 0.10, 0.13, 0.14, 0.16, 0.16, 0.16, 0.13, 0.14, 0.16, 0.16, 0.16]
@@ -46,6 +64,8 @@ base_rate:
   2024: [5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.13, 4.83, 4.64, 4.48]
   2025: [4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.22, 4.09, 3.88, 3.72]
 confidence:
+  2008: [78.4, 70.8, 69.5, 62.6, 59.8, 56.4, 61.2, 63.0, 70.3, 57.6, 55.3, 60.1] # V (FRED)
+  2009: [61.2, 56.3, 57.3, 65.1, 68.7, 70.8, 66.0, 65.7, 73.5, 70.6, 67.4, 72.5] # V (FRED)
   2010: [74.4, 73.6, 73.6, 72.2, 73.6, 76.0, 67.8, 68.9, 68.2, 67.7, 71.6, 74.5]
   2011: [74.2, 77.5, 67.5, 69.8, 74.3, 71.5, 63.7, 55.8, 59.5, 60.8, 63.7, 69.9]
   2012: [75.0, 75.3, 76.2, 76.4, 79.3, 73.2, 72.3, 74.3, 78.3, 82.6, 82.7, 72.9]
@@ -71,11 +91,17 @@ confidence:
 # islands (the Middle East has no region). W: IMF World Economic Outlook (current dollars),
 # recalled and summed by country, about +/-5%; not re-verified (the session could not reach
 # imf.org). Their sum is about $64T in 2010 and $108T in 2025 against a world $66.5T and $117T.
+# M50: 2008 the same way (IMF WEO, recalled and summed by country, R, about +/-5%: US 14.8,
+# Canada 1.55, Mexico 1.11; the EU with the UK 18.4, Russia 1.66, Turkey 0.77 and the rest of
+# Europe 1.5; China 4.6, Japan 5.04, South Korea 1.05, Taiwan 0.42; India 1.2, ASEAN 1.5 and
+# the rest 0.3; Brazil 1.7 and the rest of Latin America 1.5; Africa 1.7; Australia 1.05 and
+# New Zealand 0.13): about $63T against a world $64T. Months between 2008 and 2010
+# interpolate, as later years do.
 gdp:
-  north_america: { 2010: 17.7, 2015: 20.9, 2020: 24.1, 2025: 34.4 }
-  europe: { 2010: 21.2, 2015: 20.3, 2020: 22.0, 2025: 29.0 }
-  east_asia: { 2010: 13.4, 2015: 17.5, 2020: 22.1, 2025: 26.2 }
-  south_southeast_asia: { 2010: 4.0, 2015: 5.2, 2020: 6.5, 2025: 9.2 }
-  latin_america: { 2010: 4.1, 2015: 3.9, 2020: 3.1, 2025: 4.7 }
-  africa: { 2010: 2.0, 2015: 2.3, 2020: 2.4, 2025: 2.9 }
-  oceania: { 2010: 1.33, 2015: 1.55, 2020: 1.56, 2025: 2.08 }
+  north_america: { 2008: 17.5, 2010: 17.7, 2015: 20.9, 2020: 24.1, 2025: 34.4 }
+  europe: { 2008: 22.3, 2010: 21.2, 2015: 20.3, 2020: 22.0, 2025: 29.0 }
+  east_asia: { 2008: 11.1, 2010: 13.4, 2015: 17.5, 2020: 22.1, 2025: 26.2 }
+  south_southeast_asia: { 2008: 3.0, 2010: 4.0, 2015: 5.2, 2020: 6.5, 2025: 9.2 }
+  latin_america: { 2008: 3.2, 2010: 4.1, 2015: 3.9, 2020: 3.1, 2025: 4.7 }
+  africa: { 2008: 1.7, 2010: 2.0, 2015: 2.3, 2020: 2.4, 2025: 2.9 }
+  oceania: { 2008: 1.18, 2010: 1.33, 2015: 1.55, 2020: 1.56, 2025: 2.08 }

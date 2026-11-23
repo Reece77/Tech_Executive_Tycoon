@@ -22,6 +22,7 @@ from tst.sim.data_models import INSTRUMENTS, Instrument
 from tst.sim.finance import debt, macro
 from tst.sim.finance.captable import fd_shares
 from tst.sim.finance.models import Loan
+from tst.sim.modes.models import world_start_turn
 from tst.sim.money import Cents, format_money
 from tst.sim.state import GameState
 
@@ -47,7 +48,10 @@ def macro_months(
     gd = data.game_data
     current = macro.now(state, gd)
     out = []
-    for turn in range(max(0, current.turn - data.balance.macro.history_months), current.turn):
+    for turn in range(
+        max(world_start_turn(state.mode), current.turn - data.balance.macro.history_months),
+        current.turn,
+    ):
         m = stored.get(turn) or macro.history_month(turn, gd)
         if m is not None:
             out.append(m)

@@ -9,7 +9,7 @@ from dataclasses import replace
 from fractions import Fraction
 
 from tst.sim import dmath
-from tst.sim.calendar import format_turn, turn_to_ym
+from tst.sim.calendar import TURN_ZERO, format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import exact, format_money
@@ -35,7 +35,7 @@ def base_growth(data: GameData, category: str, year: int) -> float:
     """A category's annual demand growth without era boosts: eras.yaml's base_growth for
     categories whose eras are in the tuned curves, else categories.yaml's (21.4)."""
     table = data.eras.base_growth.get(category)
-    if table:
+    if table and year >= TURN_ZERO[0]:  # ADR-0024: before 2010, categories.yaml early_growth
         return rate_in(table, year)
     return data.category(category).growth_in(year)
 

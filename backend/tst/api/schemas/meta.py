@@ -74,6 +74,10 @@ class HistoricalOut(BaseModel):
 
 
 class NewGameMetaOut(BaseModel):
+    start_years: list[int] = Field(
+        default_factory=lambda: [2010],
+        description="M50 (ADR-0024): the years a campaign can start in, earliest first",
+    )
     sandbox: SandboxMetaOut | None = None  # M15b (30.2)
     historical: list[HistoricalOut] = Field(default_factory=list)  # M15b (30.3)
     scenarios: list[ScenarioOut]  # selectable ones

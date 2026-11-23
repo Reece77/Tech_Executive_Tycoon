@@ -20,6 +20,7 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from tst.sim import dmath
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR
 from tst.sim.facilities.config import (
     FIRST_YEAR,
     MONTHS,
@@ -93,12 +94,14 @@ class AnnualHistory(_Frozen):
 
     @model_validator(mode="after")
     def _check(self) -> AnnualHistory:
-        missing = [y for y in range(FIRST_YEAR, LAST_YEAR + 1) if y not in self.years]
+        missing = [y for y in range(HISTORY_START_YEAR, LAST_YEAR + 1) if y not in self.years]
         if missing:
             raise ValueError(f"{self.key!r}: no value for {missing}")  # 33.1: rejects a gap
-        extra = [y for y in self.years if not FIRST_YEAR <= y <= LAST_YEAR]
+        extra = [y for y in self.years if not HISTORY_START_YEAR <= y <= LAST_YEAR]
         if extra:
-            raise ValueError(f"{self.key!r}: years outside 2010-2025: {extra}")
+            raise ValueError(
+                f"{self.key!r}: years outside {HISTORY_START_YEAR}-{LAST_YEAR}: {extra}"
+            )
         for year, pair in self.years.items():
             if len(pair) != YEAR_VALUE or pair[0] <= 0 or pair[1] not in TAGS:
                 raise ValueError(f"{self.key!r} {year}: expected [positive value, tag]")
@@ -115,7 +118,7 @@ class AnnualHistory(_Frozen):
     def value_at(self, turn: int) -> float:
         """The month's price from history: a shock's path inside its months, else the
         year's value (33.1)."""
-        if not 0 <= turn <= self.last_turn:
+        if not HISTORY_START_TURN <= turn <= self.last_turn:
             raise ValueError(f"turn {turn} is outside {self.key!r}'s history")
         for shock in self.shocks:
             price = shock.price_at(turn)
@@ -240,7 +243,8 @@ class SupplierDef(_Frozen):
 
     def window(self, good: str | None = None) -> tuple[int, int | None]:
         """The first and last month it can sign (the good's own window inside its own)."""
-        lo = month_to_turn(self.from_month) if self.from_month else 0
+        # no `from`: signing since before the history (M50: from the earliest start)
+        lo = month_to_turn(self.from_month) if self.from_month else HISTORY_START_TURN
         hi = month_to_turn(self.until) if self.until else None
         g = self.goods.get(good) if good else None
         if g is not None:

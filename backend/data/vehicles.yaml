@@ -9,6 +9,9 @@
 #   A  an assumption for gameplay where no public series was found (the basis is given).
 # Re-check the R and A rows against the primary pages when www.iea.org and about.bnef.com are
 # reachable (M38 follow-up).
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: 2008 and 2009 entries added before each 2010 entry
+# so a game can start in January 2008, with the same S/D/R/A tags and the M50 sources below (S here
+# means opened in this session: FRED's CSVs; the rest R/D/A). Values from 2010 on are unchanged.
 #
 # Scale (Reece, 2026-11-14: "market sizes and money follow the game's own scale"): car buyers
 # here are real-world counts; the game multiplies them by balance.yaml vehicles.scale (0.085,
@@ -71,8 +74,34 @@
 #   NACS    Wikipedia, North American Charging Standard: https://en.wikipedia.org/wiki/North_American_Charging_Standard
 #   KBB     Cox Automotive / Kelley Blue Book, December 2024 ATP report:
 #           https://www.coxautoinc.com/insights/december-2024-atp-report/
+# M50 (2008-2009) sources:
+#   FRED    St. Louis Fed FRED annual averages, opened 2026-11-23: CPIAUCNS (CPI-U 215.303 in 2008,
+#           214.537 in 2009), EXUSEU (USD a EUR 1.4705, 1.3933), ALTSALES (US light vehicles 13.195 M,
+#           10.403 M): https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCNS (and id=EXUSEU,
+#           id=ALTSALES)
+#   CARS08  2008-2009 car sales (R): DesRosiers / Statistics Canada (Canada 1.67 M, 1.46 M), AMIA
+#           (Mexico 1.03 M, 0.75 M), ACEA (EU + EFTA 14.7 M, 14.5 M with the scrappage schemes),
+#           CAAM (China passenger cars 6.76 M, 10.33 M), JADA (Japan 5.08 M, 4.61 M), KAMA (Korea
+#           1.15 M, 1.39 M), SIAM (India passenger vehicles about 1.55 M, 1.95 M), ASEAN Automotive
+#           Federation (2.12 M, 1.93 M), Fenabrave and ADEFA (Brazil 2.82 M, 3.14 M; Argentina
+#           0.61 M, 0.49 M), NAAMSA (South Africa 0.53 M, 0.40 M), FCAI (Australia 1.012 M,
+#           0.937 M)
+#   TS1     Tesla Motors Form S-1 (January 2010): 937 Roadsters delivered to 31 December 2009 in
+#           18 countries, deliveries from February 2008 (R); BMW's MINI E US field trial, about 450
+#           cars from June 2009 (R); Mitsubishi i-MiEV fleet sales in Japan from July 2009 and BYD's
+#           F3DM from 15 December 2008 (R, WPEV)
+#   NN15    Nykvist and Nilsson, "Rapidly falling costs of battery packs for electric vehicles",
+#           Nature Climate Change 5, 329-332 (2015): industry-wide pack cost estimates above
+#           $1,000/kWh in 2007-2009 (R)
+#   EIEA    IRC 30D as enacted by the Energy Improvement and Extension Act of 2008 (3 October
+#           2008; $2,500 plus $417 a kWh above 4 kWh, up to $7,500 for cars, for cars acquired after
+#           31 December 2008) and amended by ARRA (February 2009) (R)
+#   FRB08   France's bonus ecologique from 1 January 2008 (decree of 26 December 2007): EUR 5,000 for
+#           cars emitting at most 60 g CO2/km (R)
 
-cpi: # R (CPI): annual averages; 2025 A (preliminary), as power.yaml's
+cpi: # R (CPI): annual averages; 2025 A (preliminary), as power.yaml's; 2008-2009 S (FRED CPIAUCNS)
+  2008: 215.303
+  2009: 214.537
   2010: 218.056
   2012: 229.594
   2015: 237.017
@@ -107,41 +136,51 @@ cpi: # R (CPI): annual averages; 2025 A (preliminary), as power.yaml's
 #   cars) and commercial (vans and light trucks). A: US fleet sales are about a fifth of light
 #   vehicles (R, Cox Automotive's fleet reports); Europe's company cars are more (R, about 30% of
 #   registrations counting company-owned); light commercial vehicles 5-12% of new vehicles (R).
+# M50 2008-2009: car_sales north_america D = US (FRED ALTSALES, S) + Canada + Mexico (CARS08, R);
+#   europe R (ACEA via CARS08); east_asia D = China + Japan + Korea + Taiwan (CARS08, R; Taiwan
+#   about 0.23 M and 0.29 M, R); the rest A from CARS08's national totals plus about 0.1-0.2 M for
+#   the region's other countries. The 2009 crash shows in the US, Japan, Mexico and South Africa;
+#   China's 2009 tax cut and Europe's scrappage schemes held their totals up. ev_share D/A from TS1's
+#   counts: north_america about 200 (2008) and 1,300 (2009, Roadsters plus the MINI E trial) plug-in
+#   cars; europe about 700 and 1,500 (A: Think City, Reva G-Wiz, Roadsters, conversions);
+#   east_asia about 1,900 in 2009 (A: i-MiEV and Subaru Stella fleet cars, F3DM, China's pilots),
+#   none of note in 2008. chargers 2008 A (legacy 1990s points in California, early city points in
+#   London, Paris and Oslo, TEPCO's trial quick chargers).
 regions:
   north_america:
-    car_sales: { 2010: [14.0, R], 2015: [20.6, R], 2019: [20.2, R], 2024: [19.4, D], 2025: [19.4, A] }
-    ev_share: { 2010: [0.0002, D], 2012: [0.0037, D], 2013: [0.0060, S], 2015: [0.0066, S], 2016: [0.0090, S], 2017: [0.011, S], 2018: [0.021, S], 2019: [0.019, S], 2020: [0.022, S], 2021: [0.040, S], 2022: [0.068, S], 2023: [0.094, S], 2024: [0.099, S], 2025: [0.097, S] }
-    chargers: { 2010: [1, A], 2012: [5, A], 2015: [30, R], 2020: [100, R], 2022: [130, R], 2023: [165, D], 2024: [195, S] }
+    car_sales: { 2008: [15.9, D], 2009: [12.6, D], 2010: [14.0, R], 2015: [20.6, R], 2019: [20.2, R], 2024: [19.4, D], 2025: [19.4, A] }
+    ev_share: { 2008: [0.00001, D], 2009: [0.0001, D], 2010: [0.0002, D], 2012: [0.0037, D], 2013: [0.0060, S], 2015: [0.0066, S], 2016: [0.0090, S], 2017: [0.011, S], 2018: [0.021, S], 2019: [0.019, S], 2020: [0.022, S], 2021: [0.040, S], 2022: [0.068, S], 2023: [0.094, S], 2024: [0.099, S], 2025: [0.097, S] }
+    chargers: { 2008: [0.5, A], 2010: [1, A], 2012: [5, A], 2015: [30, R], 2020: [100, R], 2022: [130, R], 2023: [165, D], 2024: [195, S] }
     segments: { consumer: [0.74, A], fleet: [0.20, A], commercial: [0.06, A] }
   europe:
-    car_sales: { 2010: [13.8, R], 2015: [14.2, R], 2019: [15.8, R], 2024: [13.0, S], 2025: [13.3, A] }
-    ev_share: { 2010: [0.0001, D], 2012: [0.002, D], 2013: [0.0049, S], 2015: [0.0141, S], 2016: [0.013, S], 2017: [0.0174, S], 2018: [0.025, S], 2019: [0.036, S], 2020: [0.114, S], 2021: [0.190, S], 2022: [0.229, S], 2023: [0.234, S], 2024: [0.228, S], 2025: [0.285, S] }
-    chargers: { 2010: [2, A], 2012: [12, A], 2015: [70, R], 2020: [280, R], 2022: [500, R], 2023: [750, D], 2024: [1010, S] }
+    car_sales: { 2008: [14.7, R], 2009: [14.5, R], 2010: [13.8, R], 2015: [14.2, R], 2019: [15.8, R], 2024: [13.0, S], 2025: [13.3, A] }
+    ev_share: { 2008: [0.00005, A], 2009: [0.0001, A], 2010: [0.0001, D], 2012: [0.002, D], 2013: [0.0049, S], 2015: [0.0141, S], 2016: [0.013, S], 2017: [0.0174, S], 2018: [0.025, S], 2019: [0.036, S], 2020: [0.114, S], 2021: [0.190, S], 2022: [0.229, S], 2023: [0.234, S], 2024: [0.228, S], 2025: [0.285, S] }
+    chargers: { 2008: [0.5, A], 2010: [2, A], 2012: [12, A], 2015: [70, R], 2020: [280, R], 2022: [500, R], 2023: [750, D], 2024: [1010, S] }
     segments: { consumer: [0.62, A], fleet: [0.30, A], commercial: [0.08, A] }
   east_asia:
-    car_sales: { 2010: [20.5, D], 2015: [28.3, D], 2019: [28.8, D], 2024: [29.0, D], 2025: [30.0, A] }
-    ev_share: { 2010: [0.0003, D], 2012: [0.002, D], 2013: [0.0012, D], 2015: [0.0067, D], 2016: [0.0100, D], 2017: [0.016, D], 2018: [0.032, D], 2019: [0.037, D], 2020: [0.041, D], 2021: [0.115, D], 2022: [0.230, D], 2023: [0.290, D], 2024: [0.378, D], 2025: [0.440, D] }
-    chargers: { 2010: [1, A], 2012: [8, A], 2015: [80, R], 2020: [850, R], 2022: [1850, R], 2023: [2780, D], 2024: [3700, D] }
+    car_sales: { 2008: [13.2, D], 2009: [16.6, D], 2010: [20.5, D], 2015: [28.3, D], 2019: [28.8, D], 2024: [29.0, D], 2025: [30.0, A] }
+    ev_share: { 2008: [0.0, A], 2009: [0.0001, A], 2010: [0.0003, D], 2012: [0.002, D], 2013: [0.0012, D], 2015: [0.0067, D], 2016: [0.0100, D], 2017: [0.016, D], 2018: [0.032, D], 2019: [0.037, D], 2020: [0.041, D], 2021: [0.115, D], 2022: [0.230, D], 2023: [0.290, D], 2024: [0.378, D], 2025: [0.440, D] }
+    chargers: { 2008: [0.1, A], 2010: [1, A], 2012: [8, A], 2015: [80, R], 2020: [850, R], 2022: [1850, R], 2023: [2780, D], 2024: [3700, D] }
     segments: { consumer: [0.78, A], fleet: [0.14, A], commercial: [0.08, A] }
   south_southeast_asia:
-    car_sales: { 2010: [5.0, A], 2015: [6.0, A], 2019: [6.5, A], 2024: [7.6, A], 2025: [7.8, A] }
-    ev_share: { 2010: [0.0, A], 2015: [0.0005, A], 2019: [0.002, A], 2021: [0.004, A], 2022: [0.010, A], 2023: [0.025, A], 2024: [0.040, A], 2025: [0.055, A] }
-    chargers: { 2010: [0, A], 2015: [1, A], 2020: [5, A], 2024: [40, A] }
+    car_sales: { 2008: [3.9, A], 2009: [4.1, A], 2010: [5.0, A], 2015: [6.0, A], 2019: [6.5, A], 2024: [7.6, A], 2025: [7.8, A] }
+    ev_share: { 2008: [0.0, A], 2010: [0.0, A], 2015: [0.0005, A], 2019: [0.002, A], 2021: [0.004, A], 2022: [0.010, A], 2023: [0.025, A], 2024: [0.040, A], 2025: [0.055, A] }
+    chargers: { 2008: [0, A], 2010: [0, A], 2015: [1, A], 2020: [5, A], 2024: [40, A] }
     segments: { consumer: [0.78, A], fleet: [0.12, A], commercial: [0.10, A] }
   latin_america:
-    car_sales: { 2010: [5.0, A], 2015: [4.0, A], 2019: [4.5, A], 2024: [4.5, A], 2025: [4.7, A] }
-    ev_share: { 2010: [0.0, A], 2015: [0.0002, A], 2019: [0.001, A], 2021: [0.004, A], 2022: [0.008, A], 2023: [0.015, A], 2024: [0.030, A], 2025: [0.045, A] }
-    chargers: { 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [20, A] }
+    car_sales: { 2008: [4.4, A], 2009: [4.3, A], 2010: [5.0, A], 2015: [4.0, A], 2019: [4.5, A], 2024: [4.5, A], 2025: [4.7, A] }
+    ev_share: { 2008: [0.0, A], 2010: [0.0, A], 2015: [0.0002, A], 2019: [0.001, A], 2021: [0.004, A], 2022: [0.008, A], 2023: [0.015, A], 2024: [0.030, A], 2025: [0.045, A] }
+    chargers: { 2008: [0, A], 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [20, A] }
     segments: { consumer: [0.78, A], fleet: [0.12, A], commercial: [0.10, A] }
   africa:
-    car_sales: { 2010: [1.3, A], 2015: [1.4, A], 2019: [1.3, A], 2024: [1.4, A], 2025: [1.4, A] }
-    ev_share: { 2010: [0.0, A], 2019: [0.0003, A], 2022: [0.001, A], 2024: [0.003, A], 2025: [0.005, A] }
-    chargers: { 2010: [0, A], 2020: [0.3, A], 2024: [2, A] }
+    car_sales: { 2008: [1.4, A], 2009: [1.2, A], 2010: [1.3, A], 2015: [1.4, A], 2019: [1.3, A], 2024: [1.4, A], 2025: [1.4, A] }
+    ev_share: { 2008: [0.0, A], 2010: [0.0, A], 2019: [0.0003, A], 2022: [0.001, A], 2024: [0.003, A], 2025: [0.005, A] }
+    chargers: { 2008: [0, A], 2010: [0, A], 2020: [0.3, A], 2024: [2, A] }
     segments: { consumer: [0.80, A], fleet: [0.10, A], commercial: [0.10, A] }
   oceania:
-    car_sales: { 2010: [1.15, A], 2015: [1.25, A], 2019: [1.2, A], 2024: [1.35, A], 2025: [1.35, A] }
-    ev_share: { 2010: [0.0, A], 2015: [0.002, A], 2019: [0.006, A], 2021: [0.020, R], 2022: [0.038, R], 2023: [0.085, R], 2024: [0.096, R], 2025: [0.110, A] }
-    chargers: { 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [14, A] }
+    car_sales: { 2008: [1.11, A], 2009: [1.02, A], 2010: [1.15, A], 2015: [1.25, A], 2019: [1.2, A], 2024: [1.35, A], 2025: [1.35, A] }
+    ev_share: { 2008: [0.0, A], 2010: [0.0, A], 2015: [0.002, A], 2019: [0.006, A], 2021: [0.020, R], 2022: [0.038, R], 2023: [0.085, R], 2024: [0.096, R], 2025: [0.110, A] }
+    chargers: { 2008: [0, A], 2010: [0, A], 2015: [0.5, A], 2020: [3, A], 2024: [14, A] }
     segments: { consumer: [0.70, A], fleet: [0.20, A], commercial: [0.10, A] }
 
 # --- Batteries (49.2) ----------------------------------------------------------------------------
@@ -151,12 +190,17 @@ regions:
 #   real 2025 $); 2010 about 1,400 (D: BNEF21's "above $1,200 in 2010" in real 2021 $ x CPI to
 #   2023); 2011, 2012 and 2014 D from BNEF's 2019 chart (917, 721, 588 real 2019 $) x CPI.
 #   (The dossier's "about $1,100+ in 2010" is an older BNEF vintage.)
+#   M50: 2008 1,600 and 2009 1,500 (D: NN15's industry-wide estimates of about $1,130 and $1,060
+#   nominal, R, x CPI to 2023 (FRED); BNEF's survey starts in 2010). cell_share and lfp_share 2008
+#   held at 2010's (A; BYD's F3DM and A123's cells were LFP).
 # cell_share: the cells' share of the pack price: 2025 cells $74 of $108 (S, BNEF25: 0.685);
 #   2024 about $78 of $115 (R: 0.68); 2010 0.70 (A: held back).
 # lfp_share: LFP's share of EV cells (context; R from SNE and IEA's chemistry charts: about 5% in
 #   2018, about 30% in 2021, about 45% in 2024).
 battery:
   pack_usd:
+    2008: [1600, 2023, D]
+    2009: [1500, 2023, D]
     2010: [1400, 2023, D]
     2011: [1090, 2023, D]
     2012: [860, 2023, D]
@@ -173,8 +217,8 @@ battery:
     2023: [139, 2023, S]
     2024: [115, 2024, S]
     2025: [108, 2025, S]
-  cell_share: { 2010: [0.70, A], 2024: [0.68, R], 2025: [0.685, S] }
-  lfp_share: { 2010: [0.05, A], 2018: [0.05, R], 2021: [0.30, R], 2024: [0.45, R], 2025: [0.50, A] }
+  cell_share: { 2008: [0.70, A], 2010: [0.70, A], 2024: [0.68, R], 2025: [0.685, S] }
+  lfp_share: { 2008: [0.05, A], 2010: [0.05, A], 2018: [0.05, R], 2021: [0.30, R], 2024: [0.45, R], 2025: [0.50, A] }
   # chemistries: wh_per_kg cell-level 2024 (S, MCK (search): LFP 160-180, NMC 220-250; midpoints);
   #   cost_mult x the market's average cell price (D: BNEF25 LFP packs $81 and NMC $128 against
   #   the $108 average); range_mult (D: the 5-20% pack-level density gap (MCK) adds about 50 kg
@@ -202,24 +246,30 @@ battery:
 #   517.9 (S), 2023 705.5 (S), 2024 894.4 (S), 2025 about 1,187 (S); 2021 296.8 (R); 2019 116.6
 #   (R); 2010-2018 D from WPEV's yearly plug-in sales x an average pack (about 25 kWh in 2010-2013
 #   with many PHEVs, 40 kWh by 2016, 50 kWh by 2018: A).
-world_cells_gwh: { 2010: [0.3, D], 2012: [3, D], 2013: [5, D], 2014: [8, D], 2015: [22, D], 2016: [31, D], 2017: [55, D], 2018: [100, D], 2019: [116.6, R], 2020: [142.8, S], 2021: [296.8, R], 2022: [517.9, S], 2023: [705.5, S], 2024: [894.4, S], 2025: [1187, S] }
+#   M50: 2008 about 150 Roadsters x 53 kWh plus conversions; 2009 about 800 Roadsters, 450 MINI Es
+#   (35 kWh), 1,500 i-MiEVs (16 kWh) and a few hundred others (D from TS1's counts, R).
+world_cells_gwh: { 2008: [0.01, D], 2009: [0.1, D], 2010: [0.3, D], 2012: [3, D], 2013: [5, D], 2014: [8, D], 2015: [22, D], 2016: [31, D], 2017: [55, D], 2018: [100, D], 2019: [116.6, R], 2020: [142.8, S], 2021: [296.8, R], 2022: [517.9, S], 2023: [705.5, S], 2024: [894.4, S], 2025: [1187, S] }
 
 # km_per_kwh: a typical BEV's rated efficiency, km a kWh of pack (D: EPA and WLTP ratings, 150-200
 #   Wh/km for cars in 2024 (5-6.5 km/kWh); the 2010 Nissan Leaf's 24 kWh and 117 km EPA, 4.9; the
 #   2015 Model S 85's 426 km, 5.0; the 2020 Model 3 Long Range's 75 kWh and 518 km, 6.9; mixes A).
-km_per_kwh: { 2010: [4.9, D], 2015: [5.1, D], 2020: [5.8, D], 2024: [6.0, D] }
+km_per_kwh: { 2008: [4.9, A], 2010: [4.9, D], 2015: [5.1, D], 2020: [5.8, D], 2024: [6.0, D] }
 # range_expected_km: the market's expected range (feature score, 49.1): 2010 the Leaf's 117 km
 #   (S, EPA via Wikipedia's Nissan Leaf page), 2024 D from the IEA's 65 kWh global average BEV pack
 #   (GEVO25, S (search)) x 6.0 km/kWh; between A.
-range_expected_km: { 2010: [120, D], 2015: [200, A], 2018: [300, A], 2020: [350, A], 2024: [390, D] }
+range_expected_km: { 2008: [100, A], 2010: [120, D], 2015: [200, A], 2018: [300, A], 2020: [350, A], 2024: [390, D] }
 # charge_expected_kw: the market's expected DC charging peak: 2010 CHAdeMO's 50 kW (R), 2024 150-250
 #   kW typical (E in the research; A midpoint 175), between A.
-charge_expected_kw: { 2010: [50, R], 2015: [75, A], 2020: [120, A], 2024: [175, A] }
+charge_expected_kw: { 2008: [30, A], 2010: [50, R], 2015: [75, A], 2020: [120, A], 2024: [175, A] }
 # software_attach: share of connected cars paying a software subscription (49.3). A: no public
 #   series; Tesla's FSD take-rate estimates (about 37% in 2019, 22% in 2020, 12% in 2021, WPEV's
 #   Tesla Autopilot page) bound the driver-assistance share, and Premium Connectivity ($9.99 a
 #   month, R) is the base subscription most connected cars offer.
-software_attach: { 2010: [0.0, A], 2012: [0.02, A], 2015: [0.06, A], 2020: [0.15, A], 2024: [0.22, A] }
+# M50 2008 (A): km_per_kwh held at the Leaf's (the Roadster's 7.4 km/kWh is a sports car's);
+#   range_expected_km about 100 km (the city EVs of the day: Think City, G-Wiz, i-MiEV);
+#   charge_expected_kw 30 (TEPCO's 50 kW trial quick chargers from 2008 against the Roadster's
+#   16.8 kW AC, R); software_attach 0 (no paid car software yet).
+software_attach: { 2008: [0.0, A], 2010: [0.0, A], 2012: [0.02, A], 2015: [0.06, A], 2020: [0.15, A], 2024: [0.22, A] }
 
 # --- Cell makers (49.2): chain companies of battery_cells (41.1) ----------------------------------
 # share: share of world EV cell installations (SNE): CATL 24.0% (2020, S), 33% (2021, S), 37.0% (2022,
@@ -233,13 +283,17 @@ software_attach: { 2010: [0.0, A], 2012: [0.02, A], 2015: [0.06, A], 2020: [0.15
 #   price_mult: a supplier's
 #   cells x the market price (A: Chinese cells about 10% cheaper, BNEF25's China packs $84 against
 #   North America 44% and Europe 56% higher (S (search)).
+# M50 2008 shares (A, R facts): CATL 0 (founded 2011); BYD 0.05 (its own F3DM from December 2008);
+#   LG Chem 0.10 (conversion and trial packs; the Volt's supplier chosen in 2008); Panasonic and
+#   Sanyo 0.35 (the Roadster's 18650 cells); SK 0 (first car contracts 2009-2010); Samsung SDI
+#   0.02 (SB LiMotive, formed September 2008). The rest is GS Yuasa's LEJ (i-MiEV), AESC, A123.
 cell_makers:
-  - { key: catl, name: CATL, country: china, price_mult: [0.92, A], share: { 2010: [0.0, A], 2015: [0.10, A], 2018: [0.22, A], 2020: [0.240, S], 2021: [0.33, S], 2022: [0.370, S], 2024: [0.379, R], 2025: [0.392, S] }, gwh: { 2022: [191.6, S], 2023: [259.7, S], 2025: [464.7, S] } }
-  - { key: byd_battery, name: BYD Battery (FinDreams), country: china, price_mult: [0.92, A], share: { 2010: [0.15, A], 2015: [0.12, A], 2018: [0.12, A], 2020: [0.067, R], 2021: [0.088, R], 2022: [0.136, S], 2023: [0.158, D], 2024: [0.172, S], 2025: [0.164, S] }, gwh: { 2022: [70.4, S], 2024: [153.7, S], 2025: [194.8, S] } }
-  - { key: lges, name: LG Energy Solution, country: south_korea, price_mult: [1.0, A], share: { 2010: [0.20, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.235, S], 2021: [0.203, S], 2022: [0.136, S], 2023: [0.136, R], 2024: [0.108, D], 2025: [0.092, S] }, gwh: { 2024: [96.3, S], 2025: [108.8, S] } }
-  - { key: panasonic_energy, name: Panasonic Energy, country: japan, price_mult: [1.05, A], share: { 2010: [0.30, A], 2015: [0.35, A], 2018: [0.30, R], 2020: [0.185, S], 2021: [0.122, R], 2022: [0.073, R], 2023: [0.064, R], 2024: [0.039, R], 2025: [0.03, R] } }
-  - { key: sk_on, name: SK On, country: south_korea, price_mult: [1.0, A], share: { 2010: [0.02, A], 2015: [0.03, A], 2018: [0.04, A], 2020: [0.054, R], 2021: [0.056, R], 2022: [0.054, R], 2023: [0.049, R], 2024: [0.044, D], 2025: [0.037, D] }, gwh: { 2024: [39.0, S], 2025: [44.5, S] } }
-  - { key: samsung_sdi, name: Samsung SDI, country: south_korea, price_mult: [1.02, A], share: { 2010: [0.05, A], 2015: [0.08, A], 2018: [0.07, A], 2020: [0.058, R], 2021: [0.045, R], 2022: [0.047, R], 2023: [0.046, R], 2024: [0.033, R], 2025: [0.03, R] } }
+  - { key: catl, name: CATL, country: china, price_mult: [0.92, A], share: { 2008: [0.0, A], 2010: [0.0, A], 2015: [0.10, A], 2018: [0.22, A], 2020: [0.240, S], 2021: [0.33, S], 2022: [0.370, S], 2024: [0.379, R], 2025: [0.392, S] }, gwh: { 2022: [191.6, S], 2023: [259.7, S], 2025: [464.7, S] } }
+  - { key: byd_battery, name: BYD Battery (FinDreams), country: china, price_mult: [0.92, A], share: { 2008: [0.05, A], 2010: [0.15, A], 2015: [0.12, A], 2018: [0.12, A], 2020: [0.067, R], 2021: [0.088, R], 2022: [0.136, S], 2023: [0.158, D], 2024: [0.172, S], 2025: [0.164, S] }, gwh: { 2022: [70.4, S], 2024: [153.7, S], 2025: [194.8, S] } }
+  - { key: lges, name: LG Energy Solution, country: south_korea, price_mult: [1.0, A], share: { 2008: [0.10, A], 2010: [0.20, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.235, S], 2021: [0.203, S], 2022: [0.136, S], 2023: [0.136, R], 2024: [0.108, D], 2025: [0.092, S] }, gwh: { 2024: [96.3, S], 2025: [108.8, S] } }
+  - { key: panasonic_energy, name: Panasonic Energy, country: japan, price_mult: [1.05, A], share: { 2008: [0.35, A], 2010: [0.30, A], 2015: [0.35, A], 2018: [0.30, R], 2020: [0.185, S], 2021: [0.122, R], 2022: [0.073, R], 2023: [0.064, R], 2024: [0.039, R], 2025: [0.03, R] } }
+  - { key: sk_on, name: SK On, country: south_korea, price_mult: [1.0, A], share: { 2008: [0.0, A], 2010: [0.02, A], 2015: [0.03, A], 2018: [0.04, A], 2020: [0.054, R], 2021: [0.056, R], 2022: [0.054, R], 2023: [0.049, R], 2024: [0.044, D], 2025: [0.037, D] }, gwh: { 2024: [39.0, S], 2025: [44.5, S] } }
+  - { key: samsung_sdi, name: Samsung SDI, country: south_korea, price_mult: [1.02, A], share: { 2008: [0.02, A], 2010: [0.05, A], 2015: [0.08, A], 2018: [0.07, A], 2020: [0.058, R], 2021: [0.045, R], 2022: [0.047, R], 2023: [0.046, R], 2024: [0.033, R], 2025: [0.03, R] } }
 
 # --- Rivals (49.1) ---------------------------------------------------------------------------------
 # Each is an incumbents.yaml company (appended for M38) with one vehicles product. shares: its share
@@ -256,13 +310,17 @@ cell_makers:
 # (Tesla's US, China and Europe deliveries, R from its registrations; BYD's China and exports, R),
 # else A, made so each region's makers sum to its electric sales (WEVC) less the makers outside.
 # origin: where its cars for export are made (tariffs, 39.3); cells: its main cell supplier.
+# M50 2008-2009 (A, from TS1's counts and the regions' ev_share above): Tesla's Roadster was most of
+# North America's plug-in cars (about 150 of 200 in 2008, 650 of 1,300 in 2009) and about 120 of
+# Europe's 1,500 in 2009 (European deliveries from mid-2009); BYD's F3DM about 100 of East Asia's
+# 1,900 in 2009; GM (Volt December 2010), Volkswagen, Toyota and PSA/Fiat sold none.
 rivals:
   - company: Tesla
     origin: us
     cells: panasonic_energy
     shares:
-      north_america: { 2010: [0.05, A], 2012: [0.05, D], 2013: [0.19, D], 2015: [0.26, D], 2018: [0.53, D], 2020: [0.55, D], 2022: [0.53, D], 2023: [0.46, D], 2024: [0.40, D], 2025: [0.39, D] }
-      europe: { 2010: [0.01, A], 2013: [0.08, A], 2015: [0.10, A], 2018: [0.12, A], 2019: [0.19, A], 2020: [0.07, A], 2021: [0.13, A], 2022: [0.12, A], 2023: [0.15, A], 2024: [0.13, A], 2025: [0.08, A] }
+      north_america: { 2008: [0.80, A], 2009: [0.50, A], 2010: [0.05, A], 2012: [0.05, D], 2013: [0.19, D], 2015: [0.26, D], 2018: [0.53, D], 2020: [0.55, D], 2022: [0.53, D], 2023: [0.46, D], 2024: [0.40, D], 2025: [0.39, D] }
+      europe: { 2008: [0.0, A], 2009: [0.08, A], 2010: [0.01, A], 2013: [0.08, A], 2015: [0.10, A], 2018: [0.12, A], 2019: [0.19, A], 2020: [0.07, A], 2021: [0.13, A], 2022: [0.12, A], 2023: [0.15, A], 2024: [0.13, A], 2025: [0.08, A] }
       east_asia: { 2014: [0.02, A], 2018: [0.01, A], 2020: [0.11, D], 2021: [0.10, A], 2022: [0.08, A], 2023: [0.07, A], 2024: [0.06, A], 2025: [0.05, A] }
       oceania: { 2014: [0.20, A], 2019: [0.45, A], 2022: [0.60, A], 2024: [0.40, A], 2025: [0.35, A] }
       latin_america: { 2022: [0.01, A], 2025: [0.01, A] }
@@ -270,7 +328,7 @@ rivals:
     origin: china
     cells: byd_battery
     shares:
-      east_asia: { 2010: [0.10, A], 2013: [0.10, A], 2015: [0.18, D], 2018: [0.20, D], 2020: [0.14, D], 2021: [0.17, D], 2022: [0.30, D], 2023: [0.32, D], 2024: [0.36, D], 2025: [0.32, D] }
+      east_asia: { 2008: [0.0, A], 2009: [0.05, A], 2010: [0.10, A], 2013: [0.10, A], 2015: [0.18, D], 2018: [0.20, D], 2020: [0.14, D], 2021: [0.17, D], 2022: [0.30, D], 2023: [0.32, D], 2024: [0.36, D], 2025: [0.32, D] }
       europe: { 2022: [0.002, A], 2023: [0.007, A], 2024: [0.02, A], 2025: [0.045, A] }
       south_southeast_asia: { 2021: [0.0, A], 2023: [0.15, A], 2024: [0.25, A], 2025: [0.27, A] }
       latin_america: { 2020: [0.05, A], 2022: [0.15, A], 2024: [0.35, A], 2025: [0.40, A] }
@@ -280,7 +338,7 @@ rivals:
     origin: germany
     cells: lges
     shares:
-      europe: { 2010: [0.02, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.25, A], 2021: [0.24, A], 2022: [0.22, A], 2023: [0.22, A], 2024: [0.24, A], 2025: [0.26, A] }
+      europe: { 2008: [0.0, A], 2010: [0.02, A], 2015: [0.15, A], 2018: [0.15, A], 2020: [0.25, A], 2021: [0.24, A], 2022: [0.22, A], 2023: [0.22, A], 2024: [0.24, A], 2025: [0.26, A] }
       north_america: { 2014: [0.02, A], 2015: [0.06, A], 2020: [0.05, A], 2022: [0.06, A], 2024: [0.06, A], 2025: [0.05, A] }
       east_asia: { 2018: [0.01, A], 2019: [0.02, A], 2020: [0.07, A], 2021: [0.05, A], 2022: [0.03, A], 2023: [0.03, A], 2024: [0.02, A], 2025: [0.02, A] }
       latin_america: { 2022: [0.03, A], 2025: [0.05, A] }
@@ -288,7 +346,7 @@ rivals:
     origin: japan
     cells: panasonic_energy
     shares:
-      east_asia: { 2010: [0.0, A], 2012: [0.20, A], 2015: [0.05, A], 2020: [0.02, A], 2024: [0.01, A], 2025: [0.01, A] }
+      east_asia: { 2008: [0.0, A], 2010: [0.0, A], 2012: [0.20, A], 2015: [0.05, A], 2020: [0.02, A], 2024: [0.01, A], 2025: [0.01, A] }
       north_america: { 2011: [0.0, A], 2012: [0.24, A], 2015: [0.03, A], 2018: [0.08, A], 2020: [0.07, A], 2024: [0.06, A], 2025: [0.06, A] }
       europe: { 2012: [0.05, A], 2015: [0.02, A], 2024: [0.03, A], 2025: [0.03, A] }
       south_southeast_asia: { 2019: [0.05, A], 2025: [0.05, A] }
@@ -310,7 +368,7 @@ rivals:
     origin: us
     cells: lges
     shares:
-      north_america: { 2010: [0.30, A], 2011: [0.45, D], 2013: [0.24, D], 2015: [0.13, D], 2017: [0.20, D], 2019: [0.07, D], 2020: [0.07, D], 2022: [0.04, D], 2023: [0.05, D], 2024: [0.073, D], 2025: [0.11, A] }
+      north_america: { 2008: [0.0, A], 2009: [0.0, A], 2010: [0.30, A], 2011: [0.45, D], 2013: [0.24, D], 2015: [0.13, D], 2017: [0.20, D], 2019: [0.07, D], 2020: [0.07, D], 2022: [0.04, D], 2023: [0.05, D], 2024: [0.073, D], 2025: [0.11, A] }
       europe: { 2011: [0.0, A], 2012: [0.10, A], 2014: [0.02, A], 2017: [0.02, A], 2018: [0.0, A] }
       latin_america: { 2022: [0.03, A], 2025: [0.05, A] }
   - company: Ford
@@ -323,7 +381,7 @@ rivals:
     origin: france
     cells: samsung_sdi
     shares:
-      europe: { 2010: [0.01, A], 2015: [0.03, A], 2020: [0.08, A], 2021: [0.10, A], 2023: [0.10, A], 2024: [0.09, A], 2025: [0.08, A] }
+      europe: { 2008: [0.0, A], 2010: [0.01, A], 2015: [0.03, A], 2020: [0.08, A], 2021: [0.10, A], 2023: [0.10, A], 2024: [0.09, A], 2025: [0.08, A] }
       north_america: { 2017: [0.0, A], 2018: [0.03, A], 2021: [0.08, A], 2023: [0.09, A], 2024: [0.07, A], 2025: [0.06, A] }
       latin_america: { 2022: [0.02, A], 2025: [0.03, A] }
   - company: Geely
@@ -381,7 +439,9 @@ subsidies:
     # 2023 with the North American assembly rule (S (search): from 17 August 2022), MSRP caps of
     # $55,000 for cars (R) and the FEOC rule on battery components from 1 January 2024 (R); terminated
     # for cars acquired after 30 September 2025 (S, IRS FAQ).
-    steps: [["2010-01", [7500, R]], ["2025-10", [0, S]]]
+    # M50: none in 2008 (IRC 30's electric-vehicle credit expired in 2006, R); EIEA's 30D from
+    # January 2009, $7,500 for a BEV of 16 kWh or more (R).
+    steps: [["2008-01", [0, R]], ["2009-01", [7500, R]], ["2010-01", [7500, R]], ["2025-10", [0, S]]]
     price_cap: [["2023-04", [55000, R]]]
     rules:
       - { start: "2022-08", made_in: [us, canada, mexico], label: "IRA: final assembly in North America" }
@@ -410,7 +470,9 @@ subsidies:
     country: france
     # R: since 2008; BEVs up to EUR 6,000-7,000 in 2017-2023 (R); from 2024 EUR 4,000 with an
     # environmental score that excludes most China-built cars (R); cut further in 2025 (A: EUR 2,000).
-    steps: [["2010-01", [6600, R]], ["2017-01", [6700, R]], ["2024-01", [4300, R]], ["2025-01", [2200, A]]]
+    # M50: EUR 5,000 from January 2008 (FRB08, R) at FRED's USD 1.4705 (2008) and 1.3933 (2009) a
+    # EUR (S): 7,400 and 7,000 (D).
+    steps: [["2008-01", [7400, D]], ["2009-01", [7000, D]], ["2010-01", [6600, R]], ["2017-01", [6700, R]], ["2024-01", [4300, R]], ["2025-01", [2200, A]]]
     price_cap: [["2020-06", [50000, R]]]
     rules:
       - { start: "2024-01", cells_not_from: [china], label: "Environmental score: China-made cars and cells excluded" }
@@ -423,7 +485,8 @@ tariffs:
     market: us
     # USTR: 25% from the 2018 lists (R) plus 2.5% MFN; 100% (plus 2.5%) from 27 September 2024 (R;
     # rates are capped at 100%, 39.3).
-    steps: [["2010-01", 0.025], ["2018-07", 0.275], ["2024-09", 1.0]]
+    # M50: 2008-01 rows repeat the MFN rates that applied before 2010 (US 2.5%, EU 10%, Canada 6.1%; R).
+    steps: [["2008-01", 0.025], ["2010-01", 0.025], ["2018-07", 0.275], ["2024-09", 1.0]]
     tag: R
   - key: eu_cvd_ev
     title: EU countervailing duties on Chinese battery-electric cars
@@ -432,38 +495,38 @@ tariffs:
     # EC24: 10% MFN (V); definitive duties from 30 October 2024 (S): BYD 17.0%, Geely 18.8%, SAIC
     # 35.3%, other cooperating 20.7%, Tesla 7.8%; a new maker pays the cooperating 20.7% (S); the
     # provisional duties from July 2024 (R) are folded into October.
-    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    steps: [["2008-01", 0.10], ["2010-01", 0.10], ["2024-10", 0.307]]
     tag: V
   - key: eu_cvd_ev_de
     title: EU countervailing duties on Chinese battery-electric cars (Germany)
     origin: china
     market: germany
-    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    steps: [["2008-01", 0.10], ["2010-01", 0.10], ["2024-10", 0.307]]
     tag: V
   - key: eu_cvd_ev_fr
     title: EU countervailing duties on Chinese battery-electric cars (France)
     origin: china
     market: france
-    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    steps: [["2008-01", 0.10], ["2010-01", 0.10], ["2024-10", 0.307]]
     tag: V
   - key: eu_cvd_ev_nl
     title: EU countervailing duties on Chinese battery-electric cars (Netherlands)
     origin: china
     market: netherlands
-    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    steps: [["2008-01", 0.10], ["2010-01", 0.10], ["2024-10", 0.307]]
     tag: V
   - key: eu_cvd_ev_ie
     title: EU countervailing duties on Chinese battery-electric cars (Ireland)
     origin: china
     market: ireland
-    steps: [["2010-01", 0.10], ["2024-10", 0.307]]
+    steps: [["2008-01", 0.10], ["2010-01", 0.10], ["2024-10", 0.307]]
     tag: V
   - key: ca_surtax_ev
     title: Canada's surtax on Chinese electric vehicles
     origin: china
     market: canada
     # S (search): 100% from 1 October 2024; the March 2026 quota deal is after the history.
-    steps: [["2010-01", 0.061], ["2024-10", 1.0]] # tariffs.yaml rates are capped at 100% (39.3): the 6.1% MFN on top is dropped
+    steps: [["2008-01", 0.061], ["2010-01", 0.061], ["2024-10", 1.0]] # tariffs.yaml rates are capped at 100% (39.3): the 6.1% MFN on top is dropped
     tag: V
 
 # --- Automotive regulators (49.4) ---------------------------------------------------------------------

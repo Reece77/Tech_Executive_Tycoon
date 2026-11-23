@@ -152,6 +152,9 @@ def new_game(
     length: Annotated[
         str, typer.Option(help="Campaign length (M37, 52.1): standard (to 2039) | dynasty (2069)")
     ] = "standard",
+    start_year: Annotated[
+        int, typer.Option(help="M50 (ADR-0024): the campaign's first January, 2008 or 2010")
+    ] = 2010,
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background. A
     historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
@@ -168,6 +171,8 @@ def new_game(
         except SimError as exc:
             raise _fail(exc.message) from exc
     mode: ModeSpec | None = None
+    if start_year != 2010 and (sandbox or data.game_data.historical_scenario(scenario)):
+        raise _fail("--start-year is a campaign's; a Sandbox takes --year, a scenario its own")
     if data.game_data.historical_scenario(scenario) is not None:
         if sandbox:
             raise _fail("choose a Sandbox or a historical scenario, not both")
@@ -210,10 +215,11 @@ def new_game(
             mode=mode,
             family=family_spec,
             length=length,  # type: ignore[arg-type]
+            start_year=start_year,
         )
     except SimError as exc:
         raise _fail(exc.message) from exc
-    start = 0 if mode is None else ym_to_turn(mode.start_year, 1)
+    start = ym_to_turn(start_year if mode is None else mode.start_year, 1)
     note = f" with mod {mod!r} (earns no achievements)" if mod else ""
     typer.echo(f"Created {path.name}: {company_name}, {format_turn(start)}{note}")
 

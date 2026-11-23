@@ -42,7 +42,7 @@ from tst.db.models import (
     TurnSnapshotRow,
     WorldNewsArchiveRow,
 )
-from tst.sim.calendar import MONTHS_PER_YEAR
+from tst.sim.calendar import HISTORY_START_TURN, MONTHS_PER_YEAR
 from tst.sim.data_models import RetentionBalance
 from tst.sim.world.models import WorldNews
 
@@ -85,7 +85,9 @@ def prune(session: Session, played: int, keep: RetentionBalance) -> None:
     """Thin the months that have left the windows by the month `played` (module docstring),
     from the month after `save_meta.history_pruned_through`."""
     meta = session.scalars(select(SaveMetaRow)).one()
-    done = -1 if meta.history_pruned_through is None else meta.history_pruned_through
+    # M50: a 2008 game's months from -24; a 2010 or later start's from 0, as before
+    first = min(meta.created_turn, 0)
+    done = first - 1 if meta.history_pruned_through is None else meta.history_pruned_through
     last = played - max(keep.snapshot_months, keep.log_months)
     if last <= done:
         return
@@ -177,7 +179,7 @@ def prune_candidates(
 def _peaks_through(session: Session, month: int) -> Peaks:
     """Every company's highest `PEAK_KEYS` values over the months up to `month`."""
     peaks: Peaks = {}
-    if month < 0:
+    if month < HISTORY_START_TURN:  # M50: before the earliest start nothing was played
         return peaks
     columns = [func.max(func.json_extract(TurnSnapshotRow.kpis, f"$.{k}")) for k in PEAK_KEYS]
     for company_id, *values in session.execute(

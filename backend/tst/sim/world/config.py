@@ -71,6 +71,8 @@ class ChainCompaniesFile(_Frozen):
         """World output a year of `good` in `turn`: linear between the year points (each read
         as its January), held at the ends."""
         pts = sorted((month_to_turn(f"{y}-01"), v) for y, v in self.world_supply[good].items())
+        if turn >= 0:  # M50: from 2010 the points from 2010 only, exactly as before
+            pts = [p for p in pts if p[0] >= 0] or pts
         if turn <= pts[0][0]:
             return pts[0][1]
         for (t0, v0), (t1, v1) in itertools.pairwise(pts):

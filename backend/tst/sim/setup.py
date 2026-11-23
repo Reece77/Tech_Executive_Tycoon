@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim.calendar import TURN_ZERO, start_turn_of
 from tst.sim.data_models import Balance, GameData, Scenario
 from tst.sim.errors import (
     InvalidCompanyNameError,
@@ -19,6 +20,7 @@ from tst.sim.family.setup import FamilySpec, start_family
 from tst.sim.finance.setup import initial_cap_table
 from tst.sim.hiring.models import NextIds, PersonState
 from tst.sim.ledger import CASH, LedgerEntry
+from tst.sim.modes.models import GameMode
 from tst.sim.money import Cents, pct_of
 from tst.sim.people.founder import FounderSpec, build_founder
 from tst.sim.people.models import FOUNDER_ROLE, Employment, Person
@@ -82,13 +84,19 @@ def new_game(
     mission: tuple[str, ...] | None = None,
     hq_city: str | None = None,
     family: FamilySpec | None = None,
+    start_year: int = TURN_ZERO[0],
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """Return the turn-0 state and the opening ledger entries. The caller persists both.
 
     The state holds the player company, its founder (formulas.md section 5), the founder's
     employment (role founder, level exec, salary 0, equity 0), the company's exact
     knowledge of its founder, and the 2010 market with its incumbents (11.1, 11.9).
+
+    `start_year` (ADR-0024, M50): a campaign begun before 2010 starts at a negative turn
+    (January 2008 is -24) with that month's market, and records its start in `state.mode`;
+    a 2010 game has no mode, exactly as before.
     """
+    start_turn = start_turn_of(start_year)
     if not scenario.selectable:
         raise ScenarioUnavailableError(
             f"scenario {scenario.id!r} unlocks in {scenario.available_in}"
@@ -102,7 +110,7 @@ def new_game(
     if not data.has_city(hq):
         raise UnknownCityError(f"unknown city {hq!r}")
     rng = RngFactory(master_seed)
-    person = build_founder(founder, rng, data, balance, START_TURN, person_id=FOUNDER_PERSON_ID)
+    person = build_founder(founder, rng, data, balance, start_turn, person_id=FOUNDER_PERSON_ID)
     person = replace(person, city=hq)  # the founder lives in the HQ city (M9)
     employment = Employment(
         id=FOUNDER_EMPLOYMENT_ID,
@@ -112,14 +120,14 @@ def new_game(
         level=FOUNDER_LEVEL,
         salary_cents=0,
         equity_bp=0,
-        start_turn=START_TURN,
+        start_turn=start_turn,
         end_turn=None,
         status="active",
     )
     reveal = new_reveal_state(
         observer_company_id=PLAYER_COMPANY_ID,
         person=person,
-        turn=START_TURN,
+        turn=start_turn,
         rng=rng,
         data=data,
         balance=balance,
@@ -127,7 +135,7 @@ def new_game(
     )
     market = initial_market(
         data,
-        turn=START_TURN,
+        turn=start_turn,
         first_company_id=PLAYER_COMPANY_ID + 1,
         first_product_id=FIRST_PRODUCT_ID,
         home=data.city(hq).region,
@@ -140,15 +148,15 @@ def new_game(
             scenario_id=scenario.id,
             difficulty=difficulty,
         ),
-        turn=START_TURN,
+        turn=start_turn,
         companies=(
             CompanyState(
                 id=PLAYER_COMPANY_ID,
                 name=name,
                 is_player=True,
                 stage=START_STAGE,
-                founded_turn=START_TURN,
-                stage_history=((START_STAGE, START_TURN),),
+                founded_turn=start_turn,
+                stage_history=((START_STAGE, start_turn),),
                 mission=company_mission(mission, person, data),
                 hq_city=hq,
             ),
@@ -164,6 +172,7 @@ def new_game(
         regional_markets=market.regional_markets,
         product_regions=market.product_regions,
         regional_segments=market.regional_segments,
+        mode=None if start_turn == START_TURN else GameMode(kind="campaign", start_turn=start_turn),
         next_ids=NextIds(
             person=FOUNDER_PERSON_ID + 1,
             search=1,
@@ -196,7 +205,7 @@ def new_game(
     if cash:
         entries = (
             LedgerEntry.transfer(
-                turn=START_TURN,
+                turn=start_turn,
                 company_id=PLAYER_COMPANY_ID,
                 memo="Starting cash",
                 debit=CASH,

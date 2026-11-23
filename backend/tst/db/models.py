@@ -24,8 +24,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
 SCHEMA_VERSION = (
-    65  # M47: 0065; M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045; M21: 0046
+    66  # M50: 0066; M47: 0065; M25: 0040; M17: 0041; M18: 0042; M19: 0043; M26: 0044; M20: 0045
 )
+# M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 # M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39
 # M42: 0062_m42
@@ -86,6 +87,11 @@ class SaveMetaRow(Base):
     # any. Deferred, as display_name: earlier migrations read save_meta through these models.
     history_pruned_through: Mapped[int | None] = mapped_column(
         Integer, nullable=True, deferred=True
+    )
+    # M50 (ADR-0024): the month the game began, 0 for January 2010, -24 for January 2008 (a
+    # Sandbox or scenario: its start month). Deferred, as display_name.
+    start_turn: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default="0", deferred=True
     )
 
 

@@ -152,6 +152,16 @@ STREAM_IDS: Final = MappingProxyType(
 )
 
 MAX_SEED: Final = 2**64 - 1
+# ADR-0024: a turn before January 2010 (a 2008 start's -24..-1) enters the seed sequence as
+# NEGATIVE_TURN_BASE + |turn|. Turns from 0 enter as themselves, so a 2010 game's draws are
+# unchanged, and no reachable turn (a dynasty game ends at 719) can meet a negative one.
+NEGATIVE_TURN_BASE: Final = 2**32  # tunable-exempt: derivation constant, never change it
+
+
+def turn_key(turn: int) -> int:
+    """The seed sequence's first spawn-key part for `turn` (ADR-0024): itself from 0, and
+    NEGATIVE_TURN_BASE + |turn| before January 2010."""
+    return turn if turn >= 0 else NEGATIVE_TURN_BASE - turn
 
 
 class RngFactory:
@@ -177,12 +187,14 @@ class RngFactory:
     def stream(self, turn: int, name: str, *key: int) -> np.random.Generator:
         if name not in STREAM_IDS:
             raise UnknownStreamError(f"unknown RNG stream {name!r}; add it to STREAM_IDS")
-        if turn < 0:
-            raise InvalidSeedError(f"turn must be >= 0 for an RNG stream, got {turn}")
+        if isinstance(turn, bool) or not isinstance(turn, int):
+            raise InvalidSeedError(f"turn must be an int, got {type(turn).__name__}")
+        if not -NEGATIVE_TURN_BASE < turn < NEGATIVE_TURN_BASE:
+            raise InvalidSeedError(f"turn out of range for an RNG stream: {turn}")
         for part in key:
             if isinstance(part, bool) or not isinstance(part, int) or part < 0:
                 raise InvalidSeedError(f"stream keys must be non-negative ints, got {key!r}")
         seq = np.random.SeedSequence(
-            entropy=self._master_seed, spawn_key=(turn, STREAM_IDS[name], *key)
+            entropy=self._master_seed, spawn_key=(turn_key(turn), STREAM_IDS[name], *key)
         )
         return np.random.Generator(np.random.PCG64(seq))

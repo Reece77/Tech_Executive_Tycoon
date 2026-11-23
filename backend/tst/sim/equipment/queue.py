@@ -36,6 +36,7 @@ from tst.sim.equipment import data as ed
 from tst.sim.equipment.config import MONTHS, GenerationDef
 from tst.sim.equipment.draws import ALLOCATION, gen
 from tst.sim.equipment.models import Delivery, ToolOrder
+from tst.sim.modes.models import world_start_turn
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -189,7 +190,8 @@ def rival_targets(
 def catch_up(state: GameState, balance: Balance, data: GameData) -> GameState:
     """A save from before M33 (no orders after turn 0): rivals' recent deliveries from
     equipment.yaml (their history weight) and this year's book, as at turn 0."""
-    if state.tool_orders or state.tool_deliveries or state.supplier_years or state.turn == 0:
+    first = world_start_turn(state.mode)  # M50: a new game's first month, not turn 0
+    if state.tool_orders or state.tool_deliveries or state.supplier_years or state.turn == first:
         return state
     ef = ed.equipment_file(data)
     qb = balance.equipment.queue
@@ -215,7 +217,7 @@ def december_orders(
     """Rivals' December orders for next year (and at turn 0, or `force`, for this year), every
     queued generation shipping by then."""
     turn = state.turn
-    now = turn == 0 or force
+    now = turn == world_start_turn(state.mode) or force  # M50: the world's first month
     if turn % MONTHS != DECEMBER and not now:
         return state
     year = ed.year_of(turn) + (0 if now else 1)

@@ -12,7 +12,8 @@ import math
 from typing import Final
 
 from tst.sim import dmath
-from tst.sim.calendar import turn_to_ym
+from tst.sim.calendar import TURN_ZERO, turn_to_ym
+from tst.sim.calendar import from_2010 as cal_from_2010
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.pharma.config import (
@@ -109,10 +110,18 @@ def engaged(state: GameState, data: GameData) -> bool:
 # --- series ---------------------------------------------------------------------------------
 
 
+def from_2010(points: dict[int, float], t: float) -> dict[int, float]:
+    """M50 (ADR-0024): from January 2010 a series is read without its 2008-2009 entries, so a
+    2010 game's months (mid-year interpolation reaches back half a year) are exactly as
+    before. Before 2010 every entry counts."""
+    return cal_from_2010(points, t, TURN_ZERO[0])
+
+
 def series_at(points: dict[int, float], t: float, growth_after: float, last_year: int) -> float:
     """A yearly series at a fractional year: linear between its years (each year's value at its
     mid-year), held before the first; after `last_year` it grows `growth_after` a year."""
     mid = 0.5  # tunable-exempt: a year's value sits at its middle
+    points = from_2010(points, t)
     years = sorted(points)
     if t <= years[0] + mid:
         return points[years[0]]

@@ -11,6 +11,18 @@
 #   WB   World Bank population, 2020, millions (approximate): https://data.worldbank.org/indicator/SP.POP.TOTL
 #        China 1411, Japan 126, South Korea 52, India 1396, Indonesia 274, United States 331,
 #        Canada 38, Mexico 129, EU-27 447, Europe (UN geoscheme) about 745
+#   SC09 the same StatCounter export for 2009 (fromInt=2009&toInt=2010; fetched 2026-11-23 for M50; its 2010
+#        rows reproduce the file's 2010 rows exactly by the method below)
+#   GN   Gartner and IDC smartphone sales shares, 2008 (recalled, R): worldwide Symbian 52.4%, RIM 16.6%,
+#        Windows Mobile 11.8%, iPhone OS 8.2%, Linux 8.1%, Palm 1.8%, Android 0.5% (Gartner, 11 Mar 2009:
+#        https://www.gartner.com/en/newsroom/press-releases/2009-03-11-gartner-says-worldwide-smartphone-sales-reached-its-lowest-growth-rate-with-3-point-7-per-cent-increase-in-fourth-quarter-of-2008);
+#        regional splits recalled from Gartner, IDC and Canalys regional reports (R) and rounded (A)
+#
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: user_shares gained 2008 and 2009 rows so a 2008 start has
+# history. 2009 is SC09 by the same method (S, as SC). StatCounter's mobile series starts in 2009, so 2008
+# is GN's smartphone sales shares mapped to the same keys (Windows Mobile -> windows_phone; Palm OS,
+# Linux and feature phones -> other), each row summing to 1: a different measure (sales, not web use;
+# R/A, the basis on each row), so 2008 to 2009 jumps where web use ran ahead of sales (iOS).
 
 history_end: "2025-12" # the last month whose shares, fees and rules come only from this file (44.1)
 
@@ -193,6 +205,8 @@ open_source:
 # --- Regional user shares by year (44.1): SC as above; each row sums to 1 --------------------------
 user_shares:
   north_america:
+    2008: { ios: 0.2, android_play: 0.02, blackberry: 0.44, symbian: 0.02, windows_phone: 0.2, other: 0.12 } # GN 2008 North America: RIM about 44%, iPhone and Windows Mobile about 20% each, Palm and Linux in other; the G1 from Oct 2008 (R/A)
+    2009: { ios: 0.6185, android_play: 0.0577, blackberry: 0.1718, symbian: 0.0333, windows_phone: 0.0263, other: 0.0924 } # SC09
     2010: { ios: 0.4167, android_play: 0.1799, blackberry: 0.3037, symbian: 0.0313, windows_phone: 0.0042, other: 0.0642 }
     2011: { ios: 0.3909, android_play: 0.3248, blackberry: 0.1683, symbian: 0.0684, windows_phone: 0.0077, other: 0.0399 }
     2012: { ios: 0.4888, android_play: 0.3917, blackberry: 0.0521, symbian: 0.0158, windows_phone: 0.0114, other: 0.0402 }
@@ -210,6 +224,8 @@ user_shares:
     2024: { ios: 0.5467, android_play: 0.4504, symbian: 0.0001, windows_phone: 0.0003, other: 0.0025 }
     2025: { ios: 0.5366, android_play: 0.4611, windows_phone: 0.0001, other: 0.0022 }
   europe:
+    2008: { ios: 0.08, android_play: 0.0, blackberry: 0.09, symbian: 0.62, windows_phone: 0.12, other: 0.09 } # GN 2008 Europe: Symbian (Nokia) about 60%+, Windows Mobile about 12%, RIM and iPhone below 10% (R/A)
+    2009: { ios: 0.4578, android_play: 0.0171, blackberry: 0.0612, symbian: 0.3508, windows_phone: 0.0243, other: 0.0888 } # SC09
     2010: { ios: 0.475, android_play: 0.0888, blackberry: 0.1646, symbian: 0.1733, windows_phone: 0.0062, other: 0.0921 }
     2011: { ios: 0.4279, android_play: 0.2372, blackberry: 0.1655, symbian: 0.1069, windows_phone: 0.0079, other: 0.0546 }
     2012: { ios: 0.409, android_play: 0.3734, blackberry: 0.1013, symbian: 0.051, windows_phone: 0.0175, other: 0.0478 }
@@ -227,6 +243,8 @@ user_shares:
     2024: { ios: 0.3261, android_play: 0.6693, windows_phone: 0.0002, other: 0.0044 }
     2025: { ios: 0.3535, android_play: 0.6416, windows_phone: 0.0001, other: 0.0048 }
   east_asia:
+    2008: { ios: 0.04, android_play: 0.0, android_china: 0.0, blackberry: 0.01, symbian: 0.72, windows_phone: 0.12, other: 0.11 } # GN 2008, China-weighted (WB): Symbian about 70%+, Windows Mobile, Linux (Motorola, other) in other; no Android phone sold (R/A)
+    2009: { ios: 0.1777, android_play: 0.0007, android_china: 0.0026, blackberry: 0.0088, symbian: 0.7077, windows_phone: 0.0203, other: 0.0822 } # SC09
     2010: { ios: 0.1236, android_play: 0.0308, android_china: 0.011, blackberry: 0.0074, symbian: 0.7525, windows_phone: 0.0034, other: 0.0713 }
     2011: { ios: 0.2045, android_play: 0.0633, android_china: 0.1054, blackberry: 0.0055, symbian: 0.5748, windows_phone: 0.0036, other: 0.0429 }
     2012: { ios: 0.2003, android_play: 0.0669, android_china: 0.5438, blackberry: 0.0025, symbian: 0.1494, windows_phone: 0.0069, other: 0.0302 }
@@ -244,6 +262,8 @@ user_shares:
     2024: { ios: 0.2648, android_play: 0.0552, android_china: 0.6793, symbian: 0.0001, windows_phone: 0.0002, other: 0.0004 }
     2025: { ios: 0.2588, android_play: 0.056, android_china: 0.6844, symbian: 0.0001, windows_phone: 0.0002, other: 0.0005 }
   south_southeast_asia:
+    2008: { ios: 0.01, android_play: 0.0, blackberry: 0.03, symbian: 0.8, windows_phone: 0.05, other: 0.11 } # GN 2008, India and Indonesia: Nokia's Symbian about 80% (R/A)
+    2009: { ios: 0.0177, android_play: 0.0003, blackberry: 0.0015, symbian: 0.8576, windows_phone: 0.0049, other: 0.118 } # SC09
     2010: { ios: 0.009, android_play: 0.0057, blackberry: 0.0377, symbian: 0.7786, windows_phone: 0.0023, other: 0.1667 }
     2011: { ios: 0.0078, android_play: 0.034, blackberry: 0.0379, symbian: 0.7226, windows_phone: 0.0028, other: 0.1949 }
     2012: { ios: 0.0102, android_play: 0.1211, blackberry: 0.0112, symbian: 0.3779, windows_phone: 0.0088, other: 0.4708 }
@@ -261,6 +281,8 @@ user_shares:
     2024: { ios: 0.051, android_play: 0.9439, other: 0.0051 }
     2025: { ios: 0.0541, android_play: 0.9444, other: 0.0015 }
   latin_america:
+    2008: { ios: 0.04, android_play: 0.0, blackberry: 0.2, symbian: 0.55, windows_phone: 0.12, other: 0.09 } # GN 2008 Latin America: Symbian about 55%, RIM about 20% (R/A)
+    2009: { ios: 0.3161, android_play: 0.0024, blackberry: 0.0164, symbian: 0.5719, windows_phone: 0.0275, other: 0.0657 } # SC09
     2010: { ios: 0.1357, android_play: 0.0388, blackberry: 0.0374, symbian: 0.5555, windows_phone: 0.0145, other: 0.2181 }
     2011: { ios: 0.0811, android_play: 0.1359, blackberry: 0.0342, symbian: 0.4893, windows_phone: 0.0085, other: 0.251 }
     2012: { ios: 0.1436, android_play: 0.4239, blackberry: 0.039, symbian: 0.1826, windows_phone: 0.011, other: 0.1999 }
@@ -278,6 +300,8 @@ user_shares:
     2024: { ios: 0.1498, android_play: 0.8481, windows_phone: 0.0002, other: 0.0019 }
     2025: { ios: 0.1272, android_play: 0.8713, windows_phone: 0.0002, other: 0.0013 }
   africa:
+    2008: { ios: 0.02, android_play: 0.0, blackberry: 0.03, symbian: 0.85, windows_phone: 0.05, other: 0.05 } # GN 2008 Middle East and Africa: Symbian about 85% (R/A)
+    2009: { ios: 0.0419, android_play: 0.0006, blackberry: 0.0067, symbian: 0.8188, windows_phone: 0.0124, other: 0.1196 } # SC09
     2010: { ios: 0.0334, android_play: 0.007, blackberry: 0.012, symbian: 0.8205, windows_phone: 0.0063, other: 0.1208 }
     2011: { ios: 0.039, android_play: 0.0345, blackberry: 0.0202, symbian: 0.8051, windows_phone: 0.0075, other: 0.0937 }
     2012: { ios: 0.0528, android_play: 0.1053, blackberry: 0.0198, symbian: 0.4888, windows_phone: 0.0093, other: 0.324 }
@@ -295,6 +319,8 @@ user_shares:
     2024: { ios: 0.1253, android_play: 0.8715, windows_phone: 0.0001, other: 0.0031 }
     2025: { ios: 0.1369, android_play: 0.8605, windows_phone: 0.0001, other: 0.0025 }
   oceania:
+    2008: { ios: 0.2, android_play: 0.0, blackberry: 0.1, symbian: 0.45, windows_phone: 0.15, other: 0.1 } # GN 2008 Australia: Symbian about 45%, the iPhone 3G from Jul 2008 about 20% (R/A)
+    2009: { ios: 0.4483, android_play: 0.0026, blackberry: 0.3942, symbian: 0.1146, windows_phone: 0.0066, other: 0.0337 } # SC09
     2010: { ios: 0.6278, android_play: 0.0455, blackberry: 0.1921, symbian: 0.1, windows_phone: 0.002, other: 0.0326 }
     2011: { ios: 0.7184, android_play: 0.1717, blackberry: 0.0144, symbian: 0.0684, windows_phone: 0.008, other: 0.0191 }
     2012: { ios: 0.6899, android_play: 0.2632, blackberry: 0.0027, symbian: 0.0186, windows_phone: 0.0089, other: 0.0167 }

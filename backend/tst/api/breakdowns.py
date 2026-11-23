@@ -17,6 +17,7 @@ from tst.sim.errors import UnknownPersonError
 from tst.sim.finance.statements import projected_net_burn
 from tst.sim.hiring.phases import monthly_costs
 from tst.sim.ledger import CASH
+from tst.sim.modes.models import world_start_turn
 from tst.sim.money import Cents, format_money
 from tst.sim.products.models import Product
 from tst.sim.research.levels import IDENTITY, TechFactor
@@ -87,7 +88,7 @@ def cash_change(session: Session, state: GameState) -> BreakdownOut:
     """Last month's change in cash by revenue, payroll, marketing, other costs, financing and
     event effects."""
     played = state.turn - 1
-    if played < 0:
+    if played < world_start_turn(state.mode):  # M50: a 2008 game's months
         return BreakdownOut(items=[], note="No month has closed yet.")
     totals: dict[str, int] = defaultdict(int)
     for code, _, memo, cents in cash_effects(session, state.player.id, played):
@@ -104,7 +105,7 @@ def burn(session: Session, state: GameState) -> BreakdownOut:
     """Last month's burn by cost line, less revenue and event gains: net cash used before
     financing (14.1; M8r). Investor and loan money is left out."""
     played = state.turn - 1
-    if played < 0:
+    if played < world_start_turn(state.mode):  # M50: a 2008 game's months
         return BreakdownOut(items=[], note="No month has closed yet.")
     lines: dict[str, int] = defaultdict(int)
     for code, name, memo, cents in cash_effects(session, state.player.id, played):
@@ -148,7 +149,7 @@ def revenue_by_product(session: Session, state: GameState, annual: bool) -> Brea
     played = state.turn - 1
     own = {p.id: p.name for p in state.company_products(state.player.id)}
     totals: dict[int, int] = defaultdict(int)
-    if own and played >= 0:
+    if own and played >= world_start_turn(state.mode):
         for pid, cents in session.execute(
             select(ProductMonthRow.product_id, ProductMonthRow.revenue_cents).where(
                 ProductMonthRow.turn == played, ProductMonthRow.product_id.in_(list(own))

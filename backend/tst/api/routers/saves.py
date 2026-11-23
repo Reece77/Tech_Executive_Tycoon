@@ -244,6 +244,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
             else None
         ),
         length=body.campaign_length,
+        start_year=body.start_year,  # M50 (ADR-0024)
     )
     return _save_out(saves_db.describe(path))
 

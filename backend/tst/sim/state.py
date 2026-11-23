@@ -15,6 +15,7 @@ from types import MappingProxyType
 from typing import Any, Final
 
 from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.dynasty.models import DynastyState
@@ -239,7 +240,8 @@ _PRODUCT_REGION = attrgetter("product_id", "region")
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
 _REL_MAPS: dict[int, tuple[tuple[Relationship, ...], Mapping[tuple[int, int], Relationship]]] = {}
 _REL_MAPS_KEPT: Final = 4  # tunable-exempt: memo size (the turn's old and new tuples)
-_BEFORE_TIME: Final = -1  # tunable-exempt: the root's own window starts before turn 0
+# tunable-exempt: the root's own window starts before the earliest start (M50: before -24)
+_BEFORE_TIME: Final = HISTORY_START_TURN - 1
 
 
 @dataclass(frozen=True, slots=True)

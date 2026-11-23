@@ -94,6 +94,7 @@ from tst.sim.research.rivals import month_start as rival_research_start
 from tst.sim.research.rivals import rival_research_month
 from tst.sim.rivals.ceo_knowledge import ceo_knowledge_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
+from tst.sim.rivals.launches import incumbent_launches
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
 from tst.sim.rivals.startups import (
@@ -529,6 +530,7 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
+    state = incumbent_launches(state, ctx.balance, ctx.data)  # M50: a 2008 game's later launches
     # M37 (52.3): each January from 2040, rival leaders hand over and short markets get entrants
     state, successions = dynasty_rivals.leaders_month(state, ctx.rng, ctx.balance, ctx.data)
     state, entering, entered = dynasty_rivals.entrants_month(state, ctx.rng, ctx.balance, ctx.data)
