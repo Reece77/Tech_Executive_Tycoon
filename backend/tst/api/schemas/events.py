@@ -129,6 +129,12 @@ class LLMSettingsOut(BaseModel):
     average_cost_cents: float | None
     can_see: list[str]
     cannot_see: list[str]
+    # M47 (ADR-0023): conversations' own cap and mode
+    conversation_budget_cents: int = Field(description="The conversations' monthly cap")
+    conversation_spend_cents: float
+    conversation_calls: int
+    conversation_mode: str = Field(description="auto | template")
+    conversation_in_use: str = Field(description="What runs conversations now: Claude or templates")
 
 
 class LLMSettingsIn(BaseModel):
@@ -136,3 +142,6 @@ class LLMSettingsIn(BaseModel):
     monthly_budget_cents: int = Field(ge=0, le=100_000)
     model_events: str = Field(min_length=1, max_length=64)
     model_story: str = Field(min_length=1, max_length=64)
+    # M47: None leaves them as they are
+    conversation_budget_cents: int | None = Field(default=None, ge=0, le=100_000)
+    conversation_mode: str | None = Field(default=None, pattern="^(auto|template)$")

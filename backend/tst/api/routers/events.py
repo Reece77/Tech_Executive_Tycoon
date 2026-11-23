@@ -193,7 +193,9 @@ def get_team_mood(
     return event_views.team_mood(_state(_path(settings, save_id)), unit_id, data)
 
 
-def _settings_out(settings: SettingsDep) -> LLMSettingsOut:
+def _settings_out(settings: SettingsDep, data: DataDep) -> LLMSettingsOut:
+    from tst.conversations.service import cap_cents
+
     save_dir = settings.resolved_save_dir()
     llm = load_settings(save_dir)
     spend = month_spend(save_dir)
@@ -216,18 +218,31 @@ def _settings_out(settings: SettingsDep) -> LLMSettingsOut:
         else None,
         can_see=CAN_SEE,
         cannot_see=CANNOT_SEE,
+        conversation_budget_cents=cap_cents(llm, data),
+        conversation_spend_cents=round(spend.conversation_cents, 4),
+        conversation_calls=spend.conversation_calls,
+        conversation_mode=llm.conversation_mode,
+        conversation_in_use="Claude"
+        if llm.adapter == "claude"
+        and key
+        and llm.conversation_mode == "auto"
+        and spend.conversation_cents < cap_cents(llm, data)
+        else "Templates",
     )
 
 
 @settings_router.get("/llm", response_model=LLMSettingsOut, operation_id="getLlmSettings")
-def get_llm_settings(settings: SettingsDep) -> LLMSettingsOut:
+def get_llm_settings(settings: SettingsDep, data: DataDep) -> LLMSettingsOut:
     """AI writing: the adapter, this calendar month's spend against the budget, models."""
-    return _settings_out(settings)
+    return _settings_out(settings, data)
 
 
 @settings_router.put("/llm", response_model=LLMSettingsOut, operation_id="updateLlmSettings")
-def update_llm_settings(body: LLMSettingsIn, settings: SettingsDep) -> LLMSettingsOut:
-    """Change the adapter, budget (0 is offline play) or model ids; prices stay as they are."""
+def update_llm_settings(
+    body: LLMSettingsIn, settings: SettingsDep, data: DataDep
+) -> LLMSettingsOut:
+    """Change the adapter, budget (0 is offline play) or model ids; prices stay as they are.
+    M47: the conversations' cap and mode, when given."""
     save_dir = settings.resolved_save_dir()
     current = load_settings(save_dir)
     updated = LLMSettings(
@@ -236,9 +251,15 @@ def update_llm_settings(body: LLMSettingsIn, settings: SettingsDep) -> LLMSettin
         model_events=body.model_events,
         model_story=body.model_story,
         price_per_mtok_cents=current.price_per_mtok_cents,
+        conversation_budget_cents=current.conversation_budget_cents
+        if body.conversation_budget_cents is None
+        else body.conversation_budget_cents,
+        conversation_mode=current.conversation_mode
+        if body.conversation_mode is None
+        else ("template" if body.conversation_mode == "template" else "auto"),
     )
     save_settings(save_dir, updated)
-    return _settings_out(settings)
+    return _settings_out(settings, data)
 
 
 @settings_router.get(
