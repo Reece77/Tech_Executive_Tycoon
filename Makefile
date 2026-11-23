@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture weekly-v2-table
 
 check: check-backend check-api check-frontend check-timing
 
@@ -40,6 +40,9 @@ nightly-ci:
 V6_SAVE_DIR ?= /tmp/tst-v6
 weekly-v1to4:
 	cd backend && uv run pytest -q -n auto -s -m weekly tests/balance/test_v2_balance.py::test_v1_to_v4_ten_years
+# M46: V1-V4's ten-year table printed (the pytest test's table stays in its xdist worker)
+weekly-v2-table:
+	uv run --project backend python tools/v2_targets.py --runs
 weekly-v1:
 	uv run --project backend python tools/v2_targets.py --seeds-30
 weekly-v5:
