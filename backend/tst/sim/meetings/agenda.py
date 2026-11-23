@@ -49,10 +49,14 @@ ATTR_MAX: Final = 20.0  # tunable-exempt: the attribute scale (1-20)
 TRAIT_FLIP: Final = ATTR_MAX + 1  # a reversed trait: 21 - value
 TRAIT_MID: Final = ATTR_MAX / 2
 FALL_FLOOR: Final = -0.5  # tunable-exempt: a plan never assumes revenue falling faster
-STREAM: Final = "meetings"
 UNITS: Final = ((10**9, "B"), (10**6, "M"), (10**3, "K"))  # tunable-exempt: number units
 SHORT_RUNWAY: Final = 6  # tunable-exempt: 14.6's runway band below which the board worries
 RESULT_WORDS: Final = {"beat": "a beat", "inline": "in line", "miss": "a miss"}
+
+
+def meeting_gen(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
+    """The one call site of stream `meetings` (ADR-0013, formulas.md 59)."""
+    return rng.stream(turn, "meetings", *key)
 
 
 def kind_index(kind: MeetingKind) -> int:
@@ -246,7 +250,7 @@ def _analysts(state: GameState, rng: RngFactory, balance: Balance, data: GameDat
     out = []
     for a in public.analysts:
         # an analyst's name and focus are theirs for the listing: key (call, 0, index)
-        gen = rng.stream(public.listed_turn, STREAM, kind_index("call"), 0, a.index)
+        gen = meeting_gen(rng, public.listed_turn, kind_index("call"), 0, a.index)
         first, last = draw_name(gen, balance.founder.default_region, data)
         focus = ANALYST_FOCUS[int(gen.integers(0, len(ANALYST_FOCUS)))]
         out.append(
@@ -521,7 +525,7 @@ def open_meeting(
         raise MeetingRuleError(why)
     mb = balance.meetings
     cid = state.player.id
-    gen = rng.stream(state.turn, STREAM, kind_index(kind), state.turn)
+    gen = meeting_gen(rng, state.turn, kind_index(kind), state.turn)
     f = facts(state, cid, cash_cents, balance, data)
     cred = credibility(state, cid, balance)
     guidance_base: tuple[int, int] | None = None
