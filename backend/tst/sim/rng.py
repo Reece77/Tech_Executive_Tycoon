@@ -192,9 +192,14 @@ class RngFactory:
         if not -NEGATIVE_TURN_BASE < turn < NEGATIVE_TURN_BASE:
             raise InvalidSeedError(f"turn out of range for an RNG stream: {turn}")
         for part in key:
-            if isinstance(part, bool) or not isinstance(part, int) or part < 0:
-                raise InvalidSeedError(f"stream keys must be non-negative ints, got {key!r}")
+            if isinstance(part, bool) or not isinstance(part, int):
+                raise InvalidSeedError(f"stream keys must be ints, got {key!r}")
+            if not -NEGATIVE_TURN_BASE < part:
+                raise InvalidSeedError(f"stream key out of range: {key!r}")
+        # ADR-0024: a key part may be a month (an approach's, a contract's), negative before
+        # 2010; it enters as a turn does, so every key from 0 is unchanged
         seq = np.random.SeedSequence(
-            entropy=self._master_seed, spawn_key=(turn_key(turn), STREAM_IDS[name], *key)
+            entropy=self._master_seed,
+            spawn_key=(turn_key(turn), STREAM_IDS[name], *(turn_key(p) for p in key)),
         )
         return np.random.Generator(np.random.PCG64(seq))
