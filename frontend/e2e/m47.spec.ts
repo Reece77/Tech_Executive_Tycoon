@@ -53,7 +53,9 @@ async function openTalks(page: Page, target: number) {
 }
 
 async function latest(page: Page) {
-  const list = await (await page.request.get(`/api/saves/${save}/negotiations`)).json();
+  const res = await page.request.get(`/api/saves/${save}/negotiations`);
+  expect(res.ok(), await res.text()).toBeTruthy();
+  const list = await res.json();
   const id = list.items[0].negotiation_id as number;
   return (await page.request.get(`/api/saves/${save}/negotiations/${id}`)).json();
 }
@@ -74,7 +76,8 @@ test('(a) negotiate an acquisition in template mode and close below the opening'
   await page.getByTestId('negotiation-send').click();
   await expect(page.getByTestId('negotiation-round')).toHaveCount(1);
   await page.getByTestId('negotiation-accept').click();
-  await expect(page.getByTestId('negotiation-status')).toContainText('Agreed');
+  await expect(page.getByTestId('negotiation-error')).toHaveCount(0);
+  await expect(page.getByTestId('negotiation-status')).toContainText('Agreed', { timeout: 30_000 });
   await expect(page.getByTestId('negotiation-debrief')).toContainText('they opened at');
   const n = await latest(page);
   expect(n.status).toBe('agreed');

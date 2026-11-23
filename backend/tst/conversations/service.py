@@ -259,27 +259,33 @@ def _talks(
     )
 
 
+def _shown_status(row: ConversationRow, turn: int) -> str:
+    """Talks still open from an earlier month read as lapsed (written at the next write)."""
+    return "lapsed" if row.status == OPEN and row.opened_turn < turn else row.status
+
+
 def get(path: Path, data: LoadedData, conv_id: int) -> Talks:
-    with repository.write_session(path) as session:
+    """A read: never writes (a lapse is recorded by the next open or round)."""
+    with repository.read_session(path) as session:
         state = repository.read_state(session)
-        _lapse(session, state.turn)
         row = session.get(ConversationRow, conv_id)
         if row is None:
             raise UnknownNegotiationError(f"no negotiation {conv_id}")
-        rounds = _history(session, conv_id)
-        session.flush()
-        talks = _talks(row, rounds, data, mode_info(path.parent, data))
-    return talks
+        talks = _talks(row, _history(session, conv_id), data, mode_info(path.parent, data))
+    return replace(talks, status=_shown_status(row, state.turn))
 
 
 def listing(path: Path, data: LoadedData) -> list[Talks]:
     mode = mode_info(path.parent, data)
-    with repository.write_session(path) as session:
+    with repository.read_session(path) as session:
         state = repository.read_state(session)
-        _lapse(session, state.turn)
-        session.flush()
         rows = list(session.scalars(select(ConversationRow).order_by(ConversationRow.id.desc())))
-        return [_talks(r, _history(session, r.id), data, mode) for r in rows]
+        return [
+            replace(
+                _talks(r, _history(session, r.id), data, mode), status=_shown_status(r, state.turn)
+            )
+            for r in rows
+        ]
 
 
 def replayed(path: Path, data: LoadedData, conv_id: int) -> Negotiation:
