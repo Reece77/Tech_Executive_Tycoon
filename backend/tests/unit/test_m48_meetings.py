@@ -180,9 +180,9 @@ def test_the_board_outcome_moves_confidence_and_tracks_the_commitment() -> None:
     assert made[0].domain == "revenue" and made[0].level == m.items[1].figure.value  # type: ignore[union-attr]
     # the founder's energy paid for the meeting
     fid = _founder(state)
-    assert after.person_state(fid).energy == (state.person_state(fid).energy or 0) - MB.energy[
-        "board"
-    ]
+    assert (
+        after.person_state(fid).energy == (state.person_state(fid).energy or 0) - MB.energy["board"]
+    )
 
 
 def _at_deadline(state: GameState, mult: float) -> GameState:

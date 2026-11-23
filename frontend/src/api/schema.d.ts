@@ -5279,6 +5279,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/meetings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Meetings
+         * @description This month's meetings and why any cannot be held, past meetings newest first, the
+         *     commitments made in meetings and their status, and credibility.
+         */
+        get: operations["listMeetings"];
+        put?: never;
+        /**
+         * Open Meeting
+         * @description Hold this month's meeting of a kind (or resume it while it is open).
+         */
+        post: operations["openMeeting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/meetings/{meeting_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Meeting
+         * @description The meeting and, once it is over, its visible effects.
+         */
+        get: operations["getMeeting"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/meetings/{meeting_id}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Item
+         * @description Answer the current item: free text (scored by the LLM into moves) or template moves.
+         */
+        post: operations["answerMeetingItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/meetings/{meeting_id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Skip Meeting
+         * @description Skip: today's outcome; nothing the meeting would have moved moves (59).
+         */
+        post: operations["skipMeeting"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/world-news": {
         parameters: {
             query?: never;
@@ -16121,6 +16206,258 @@ export interface components {
             rivals: components["schemas"]["RivalProductOut"][];
             /** Precedents */
             precedents: components["schemas"]["DatedRuleOut"][];
+        };
+        /** MeetingAnswerIn */
+        MeetingAnswerIn: {
+            /**
+             * Message
+             * @description The player's answer (free text)
+             */
+            message?: string | null;
+            /**
+             * Moves
+             * @description Template mode's moves
+             */
+            moves?: components["schemas"]["MeetingMoveIn"][] | null;
+            /**
+             * Source
+             * @description free | suggested | template
+             * @default free
+             */
+            source?: string;
+        };
+        /** MeetingAnswerOut */
+        MeetingAnswerOut: {
+            /** N */
+            n: number;
+            /** Message */
+            message: string;
+            /** Message Source */
+            message_source: string;
+            /** Reply */
+            reply: string;
+            /** Reply Source */
+            reply_source: string;
+            /** Claimed */
+            claimed: components["schemas"]["MeetingMoveOut"][];
+            /** Moves */
+            moves: components["schemas"]["MeetingMoveOut"][];
+            /** Reaction */
+            reaction: string;
+            /** Reaction Words */
+            reaction_words: string;
+            /** Commitment */
+            commitment: string;
+        };
+        /** MeetingAvailabilityOut */
+        MeetingAvailabilityOut: {
+            /** Kind */
+            kind: string;
+            /** Available */
+            available: boolean;
+            /** Reason */
+            reason: string;
+            /** Meeting Id */
+            meeting_id: number | null;
+        };
+        /** MeetingCommitmentOut */
+        MeetingCommitmentOut: {
+            /** Promise Id */
+            promise_id: number;
+            /** Kind */
+            kind: string;
+            /** Words */
+            words: string;
+            /** Made Label */
+            made_label: string;
+            /** Deadline Label */
+            deadline_label: string;
+            /** Status */
+            status: string;
+        };
+        /** MeetingEffectOut */
+        MeetingEffectOut: {
+            /** Who */
+            who: string;
+            /** What */
+            what: string;
+            /** Change */
+            change: number;
+            /** Words */
+            words: string;
+        };
+        /** MeetingItemOut */
+        MeetingItemOut: {
+            /** N */
+            n: number;
+            /** Speaker */
+            speaker: number;
+            /** Topic */
+            topic: string;
+            /** Title */
+            title: string;
+            /** Question */
+            question: string;
+            /** Facts */
+            facts: string[];
+            /** Problem */
+            problem: boolean;
+            /** Figure */
+            figure: string;
+            /** Guidance */
+            guidance: boolean;
+        };
+        /** MeetingListOut */
+        MeetingListOut: {
+            mode: components["schemas"]["NegotiationModeOut"];
+            /** Available */
+            available: components["schemas"]["MeetingAvailabilityOut"][];
+            /** Items */
+            items: components["schemas"]["MeetingSummaryOut"][];
+            /** Commitments */
+            commitments: components["schemas"]["MeetingCommitmentOut"][];
+            /** Credibility */
+            credibility: number;
+            /**
+             * Industries
+             * @description The industries an investor day can present a new industry in (key, label)
+             */
+            industries: components["schemas"]["MeetingMoveChoiceOut"][];
+        };
+        /** MeetingMoveChoiceOut */
+        MeetingMoveChoiceOut: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+        };
+        /** MeetingMoveIn */
+        MeetingMoveIn: {
+            /**
+             * Kind
+             * @description board: commit | explain | defer | concede | push_back; call: reaffirm | raise | lower | explain | deflect | promise; investor day: explain | commit | deflect | concede
+             */
+            kind: string;
+            /**
+             * Fact
+             * @description The question's fact an explain cites
+             */
+            fact?: number | null;
+        };
+        /** MeetingMoveOut */
+        MeetingMoveOut: {
+            /** Kind */
+            kind: string;
+            /** Fact */
+            fact: number | null;
+            /** Words */
+            words: string;
+        };
+        /** MeetingOpenIn */
+        MeetingOpenIn: {
+            /**
+             * Kind
+             * @description board | call | investor_day
+             */
+            kind: string;
+            /**
+             * Params
+             * @description An investor day's plan: plan_kind (new_industry | capital_plan | restructuring) and industry (for a new industry)
+             */
+            params?: {
+                [key: string]: components["schemas"]["ParamValue"];
+            };
+        };
+        /** MeetingOut */
+        MeetingOut: {
+            /** Meeting Id */
+            meeting_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /** Status */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Error */
+            error: string | null;
+            /** Speakers */
+            speakers: components["schemas"]["MeetingSpeakerOut"][];
+            /** Items */
+            items: components["schemas"]["MeetingItemOut"][];
+            /** Answers */
+            answers: components["schemas"]["MeetingAnswerOut"][];
+            /** Next Item */
+            next_item: number | null;
+            /** Opening Line */
+            opening_line: string;
+            /** Move Choices */
+            move_choices: components["schemas"]["MeetingMoveChoiceOut"][];
+            /** Credibility */
+            credibility: number;
+            /** Persona */
+            persona: string[];
+            /** Plan Subject */
+            plan_subject: string;
+            /** Plan Facts */
+            plan_facts: string[];
+            /** Effects */
+            effects: components["schemas"]["MeetingEffectOut"][];
+            /** Votes */
+            votes: components["schemas"]["MeetingVoteOut"][];
+            /** Commitments */
+            commitments: string[];
+            /** Suggestions */
+            suggestions: string[];
+            mode: components["schemas"]["NegotiationModeOut"];
+        };
+        /** MeetingSpeakerOut */
+        MeetingSpeakerOut: {
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Organisation */
+            organisation: string;
+            /** Focus */
+            focus: string;
+            /** Confidence */
+            confidence: number | null;
+            /** Rating */
+            rating: string;
+            /** Target Cents */
+            target_cents: number;
+        };
+        /** MeetingSummaryOut */
+        MeetingSummaryOut: {
+            /** Meeting Id */
+            meeting_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /** Status */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Effects */
+            effects: string[];
+        };
+        /** MeetingVoteOut */
+        MeetingVoteOut: {
+            /** Name */
+            name: string;
+            /** Backs Plan */
+            backs_plan: boolean;
         };
         /** MentorIn */
         MentorIn: {
@@ -43591,6 +43928,307 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NegotiationOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listMeetings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingListOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openMeeting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingOpenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMeeting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerMeetingItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    skipMeeting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                meeting_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
                 };
             };
             /** @description Bad Request */

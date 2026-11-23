@@ -156,7 +156,8 @@ def facts(
     g = actual_growth(state, cid, balance)
     latest = last_round(state, cid)
     if g is not None:
-        words = f"revenue grew {g:.0%} a year over the last six months"
+        moved = f"grew {g:.0%}" if g >= 0 else f"fell {-g:.0%}"
+        words = f"revenue {moved} a year over the last six months"
         if latest is not None:
             words += f", against the {balance.board.expected_growth[latest.series]:.0%} expected"
         out["growth"] = words
