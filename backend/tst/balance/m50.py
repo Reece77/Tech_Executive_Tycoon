@@ -96,7 +96,9 @@ class WorldRun:
     climate: dict[int, float] = field(default_factory=dict)
     sheets: dict[int, float] = field(default_factory=dict)  # expected seed term sheets
     value: dict[int, float] = field(default_factory=dict)  # the standard company's V_base
-    short: dict[int, list[tuple[int, bool]]] = field(default_factory=dict)  # snapshot -> (id, failed)
+    short: dict[int, list[tuple[int, bool]]] = field(
+        default_factory=dict
+    )  # snapshot -> (id, failed)
     markets: dict[str, float] = field(default_factory=dict)  # Jan 2010 addressable, by category
     revenue: dict[str, int] = field(default_factory=dict)  # Jan 2010 MRR, by named incumbent
 
