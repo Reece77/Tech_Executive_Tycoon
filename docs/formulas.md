@@ -4178,3 +4178,43 @@ Tenders, requirements, the player's bids and awards, score bands, protests, cont
 - **Sourcing** reads M22's `made_in` (a product's plants' and contract makers' countries, a chip's foundries'): Section 889 refuses any China share for US bids from August 2019; Buy American's domestic content (50%, 55% from 2020, 60% from October 2022, 65% from 2024, 75% from 2029) for US devices, chips and space; trusted foundry: every defence chip made in the US. Classified cloud needs a data centre in the buyer's country. A product delivering a defence contract in a controlled area (ai, space, chips, devices) keeps `itar_keep[bloc]` of a country's demand (US-aligned 1, non-aligned 0.7, China bloc 0) and none in 126.1's China and Russia (the hook in M22's `sales.access`).
 - **Reputation** (57.4): a defence award costs consumer lines (`consumer_categories`) 2 brand points (0.5 after, at most 3 a year), moves the founder's persona (Ruthless +3, Beloved -2), adds 4 influence in the buyer's region, records the buyer's bloc (China's buyers refuse US-aligned suppliers' militaries and the reverse), and gives objectors (an `objector_interests` interest or adaptability at most 6) a -8% morale target for 6 months; an open letter (critical event `defence_open_letter`) follows with min(0.85, 0.25 + 1.2 x the objectors' share).
 
+
+## 58. Negotiations by conversation (M47; v6)
+
+Reece (2026-11-21, 2026-11-22): **conversations** are v6's first direction; the player **types freely with three suggested replies**; conversations have **their own monthly LLM cap** (default $10, a setting) after which they fall back to template choices; and **a bad negotiation can lose a deal**. The rule above all (CLAUDE.md §2.5, ADR-0005): **the engine sets what is possible, the conversation moves the player's odds only within it**, every effect is clamped and shown afterwards, and the LLM never sees a hidden value.
+
+### 58.1 What can be negotiated
+
+Every deal the game already prices: an acquisition (§28), a key hire or retention offer (§7, §13), a supplier contract, offtake or foundry contract (§33, §38), a power-purchase agreement (§46), a government contract award's final terms (§57), a regulator settlement (§48), a licensing deal (§44, §55). Each deal kind names its **terms** (price, length, volume, exclusivity, equity, milestones; at most four per kind) and the engine's existing pricing gives each term a **zone**.
+
+### 58.2 The zone and the counterpart
+
+- For each term the engine computes the counterpart's **reservation value** (the worst it will accept) and **aspiration** (where it opens), from the deal's existing pricing plus a draw (stream `negotiation`, id 70, key `(deal kind, deal id)`). Both are **hidden**; the player sees only the counterpart's opening offer and, as talks go on, ranges that narrow as §18.8's reveals do (by the player's or delegate's `negotiation` skill and the counterpart's openness).
+- The **counterpart** is a person (a rival's CEO, a supplier's sales head, a candidate, a regulator's case officer) with personality (§2), relationship with the player (§16.7) and interests; their **patience** (rounds before they walk, 3–8) and **priorities** (weights on the terms) are hidden.
+
+### 58.3 A round
+
+- Each round the player writes a message (free text or one of three suggested replies, which the LLM proposes from public facts) and may change the offer's terms.
+- **The engine decides the response.** A message is scored by the LLM into a small, validated set of **moves**: `concede` (on a named term), `anchor`, `justify` (with a reason drawn from displayed facts), `appeal` (to relationship or interests), `threaten_walk`, `package` (trade one term for another), `close`. Each move has a fixed effect in the engine: on the counterpart's next offer (up to `negotiation.move_step` of the zone per round), on its patience (±1) and on the relationship (±2). The LLM never sets numbers; an unrecognised or invalid scoring is a `neutral` move.
+- **The counterpart's reply text** is written by the LLM from the engine's decided response (its new offer, its stated reason, whether it is close to walking), within §16.5's allowlist, or by a template.
+- **Persona and skill** (§32.4, the negotiator's `negotiation`, `communication` and `strategy`) scale the moves' effects within `negotiation.skill_band` (0.8–1.2).
+
+### 58.4 Outcomes
+
+- **Agreement** at any terms inside the counterpart's zone; the deal executes through its existing action, so books, rules and one-offs (§40.2) apply unchanged.
+- **Walk-away** when patience runs out or a `threaten_walk` is called with an offer outside the zone; the deal may return later (`negotiation.cooldown_months`), and the relationship falls.
+- **Skip** (always available, any time): the deal closes at the **median outcome** (the midpoint between the opening offer and the reservation value), as the game's existing pricing gives today. Delegates (§40) negotiate by skip with their quality draw, unless the player takes the conversation.
+- **Template mode** (no LLM, over the cap, or in tests): the player picks moves directly from labelled buttons; the engine is identical.
+- After a deal, a **debrief** shows what each round's moves did, the final terms against the opening offer and the revealed range, never the hidden reservation value.
+
+### 58.5 Balance targets (printed)
+
+1. **Skip is fair:** skip outcomes match the pre-M47 prices for every deal kind within 1% (median), so a player who never talks plays as before.
+2. **Talking matters, within limits:** a scripted strong negotiator (score 16) gets terms 10–25% of the zone better than skip on average; a weak one (score 6) 0–15% worse; nobody beats the counterpart's reservation value.
+3. **Walk-aways happen:** a script that always threatens to walk loses at least 30% of deals.
+4. **No leak:** a prompt-builder test with planted hidden values shows none in any conversation prompt or reply.
+5. **Turn time** unchanged (conversations run outside the turn, between turns).
+
+### 58.6 What the API may show
+
+Opening offers, the counterpart's public facts and stated reasons, ranges as revealed, rounds and their moves, the debrief. Never reservation values, aspirations, patience, priorities or draws.
