@@ -41,6 +41,7 @@ class MeetingSkill(_Frozen):
     band: Range  # the founder's factor at score 1 and 20 (59.1: 0.8-1.2)
     weights: dict[str, float]  # skill -> weight in the founder's score (sums to 1)
     persona_mult: float = Field(ge=1)  # x a suiting move for a strong persona trait (32.4)
+    impression: float = Field(ge=0)  # strength x (factor - 1) every answer gains or loses
 
 
 class BoardMeeting(_Frozen):

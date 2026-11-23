@@ -99,7 +99,8 @@ def scaled(
     meeting: Meeting, strength: float, moves: tuple[Move, ...], mb: MeetingsBalance
 ) -> float:
     """The founder's factor: x factor on a gain, x (lo + hi - factor) on a loss; a strong
-    persona trait multiplies what suits it (beloved: gains; ruthless: a push-back)."""
+    persona trait multiplies what suits it (beloved: gains; ruthless: a push-back); and the
+    impression the founder makes, `skill.impression` x (factor - 1), on every answer."""
     f = meeting.hidden.skill
     lo, hi = mb.skill.band.lo, mb.skill.band.hi
     if strength >= 0:
@@ -110,7 +111,8 @@ def scaled(
         out = strength * (lo + hi - f)
         if "ruthless" in meeting.persona and any(m.kind == "push_back" for m in moves):
             out /= mb.skill.persona_mult
-    return out
+    # the founder's manner colours every answer: above factor 1 it adds, below it costs (59.4)
+    return out + mb.skill.impression * (f - 1)
 
 
 def cred_mult(meeting: Meeting, mb: MeetingsBalance) -> float:

@@ -17,7 +17,7 @@ import numpy as np
 
 from tst.sim import dmath
 from tst.sim.calendar import format_turn, turn_to_ym
-from tst.sim.data_models import SCORE_MAX, Balance, GameData
+from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import MeetingRuleError
 from tst.sim.finance.board import actual_growth, average_confidence
 from tst.sim.finance.captable import last_round
@@ -45,8 +45,9 @@ QUARTERS: Final = 4  # tunable-exempt: quarters in a year
 MONTHS_A_YEAR: Final = 12
 ANALYST_FOCUS: Final[tuple[Topic, ...]] = ("growth", "margin", "risk")
 FOCUS_WEIGHT: Final = 2.0  # tunable-exempt: an analyst weighs its focus double the rest
-TRAIT_FLIP: Final = SCORE_MAX + 1  # a reversed trait: 21 - value (1-20 scale)
-TRAIT_MID: Final = SCORE_MAX / 2
+ATTR_MAX: Final = 20.0  # tunable-exempt: the attribute scale (1-20)
+TRAIT_FLIP: Final = ATTR_MAX + 1  # a reversed trait: 21 - value
+TRAIT_MID: Final = ATTR_MAX / 2
 FALL_FLOOR: Final = -0.5  # tunable-exempt: a plan never assumes revenue falling faster
 STREAM: Final = "meetings"
 UNITS: Final = ((10**9, "B"), (10**6, "M"), (10**3, "K"))  # tunable-exempt: number units
@@ -235,7 +236,7 @@ def founder_factor(skills: dict[str, float], mb: MeetingsBalance) -> float:
     """59.1: the founder's weighted communication and leadership (1-20), onto the band."""
     score = sum(skills.get(k, 1.0) * w for k, w in mb.skill.weights.items())
     lo, hi = mb.skill.band.lo, mb.skill.band.hi
-    return lo + (hi - lo) * (min(max(score, 1.0), SCORE_MAX) - 1.0) / (SCORE_MAX - 1.0)
+    return lo + (hi - lo) * (min(max(score, 1.0), ATTR_MAX) - 1.0) / (ATTR_MAX - 1.0)
 
 
 def _analysts(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -> list[Speaker]:

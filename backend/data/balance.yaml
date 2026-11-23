@@ -3462,6 +3462,7 @@ meetings: # 59: board meetings, earnings calls and investor days (M48, v6 lane B
     band: [0.8, 1.2] # the factor at skill score 1 and 20 (59.1)
     weights: { communication: 0.5, leadership: 0.5 } # the score's skills
     persona_mult: 1.10 # x a gain for a beloved founder, / a push-back's loss for a ruthless one (32.4)
+    impression: 12.0 # strength; every answer gains this x (factor - 1): a poor communicator's answers land worse than saying nothing (59.4 target 2; A)
   priority_traits: { growth: ambition, margin: professionalism, risk: -risk_appetite, governance: integrity } # topic -> the director's personality trait behind its hidden weight ("-": 21 - the trait)
   priority_noise: 0.30 # share; each meeting's draw moves a raw weight by up to this (A)
   priority_weight: 0.5 # 0-1; an effect x (1 + this x (4 w - 1)) for the speaker's hidden weight w on the topic (A)
@@ -3474,15 +3475,15 @@ meetings: # 59: board meetings, earnings calls and investor days (M48, v6 lane B
     concern_below: 50 # confidence; a director under it raises a concern item (59.1)
     vote_at: 50 # confidence; a director backs the next quarter's plan from here (A)
     vote_priority: 10 # confidence points a director's growth weight adds to (or takes from) its vote, x (4 w - 1) (A)
-    commitment_kept: 3.0 # points to every voting director when a commitment is kept (A)
+    commitment_kept: 1.5 # points to every voting director when a commitment is kept (A)
     commitment_broken_mult: 2.0 # a broken commitment costs this x the kept points (59.1: double)
-    effects: { commit: 0.7, explain: 0.6, defer: -0.3, concede: 0.2, push_back: -0.4, neutral: 0.0 } # move -> strength on an ordinary item (A)
-    problem_effects: { commit: 0.5, explain: 0.4, defer: -0.7, concede: 0.6, push_back: -0.8, neutral: -0.3 } # ...on an item about a real problem (A)
+    effects: { commit: 0.4, explain: 0.3, defer: -0.3, concede: 0.1, push_back: -0.4, neutral: 0.0 } # move -> strength on an ordinary item (A)
+    problem_effects: { commit: 0.3, explain: 0.2, defer: -0.7, concede: 0.4, push_back: -0.8, neutral: -0.3 } # ...on an item about a real problem (A)
     push_back_unloved: 0.3 # a push-back's strength when the asker's weight on the topic is under a quarter (A)
   call: # 59.2
     step: 0.03 # share of S; the most a call moves sentiment beyond 25.4's jump (59.2)
     target_step: 0.05 # share; the most a call moves one analyst's target (59.2)
-    item_share: 0.012 # share of S a full-strength answer earns (A)
+    item_share: 0.002 # share of S a full-strength answer earns (A)
     target_share: 0.03 # share of the asker's target a full-strength answer earns (A)
     questions: 4 # questions a call takes at most
     guidance_step: 0.03 # share; raise and lower move the quarter's revenue guidance by this (A)
@@ -3492,8 +3493,8 @@ meetings: # 59: board meetings, earnings calls and investor days (M48, v6 lane B
   investor_day: # 59.3
     step: 0.08 # share of S; the most an investor day moves sentiment (59.3)
     cred_step: 10 # credibility points it moves at most (59.3)
-    item_share: 0.015 # share of S a full-strength answer earns (A)
-    item_cred: 2.0 # credibility points a full-strength answer earns (A)
+    item_share: 0.008 # share of S a full-strength answer earns (A)
+    item_cred: 1.0 # credibility points a full-strength answer earns (A)
     economics_share: 0.03 # share of S the plan's economics earn at +1 (and lose at -1) (A)
     economics_cred: 4.0 # credibility points they earn at +1 (A)
     hurdle: 0.10 # return on capital; the plan's economics score 0 here (A)
