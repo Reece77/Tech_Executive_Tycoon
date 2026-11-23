@@ -10375,6 +10375,12 @@ export interface components {
              * @enum {string}
              */
             campaign_length?: "standard" | "dynasty";
+            /**
+             * Start Year
+             * @description M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2008 or 2010); a Sandbox or scenario keeps its own year
+             * @default 2010
+             */
+            start_year?: number;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -17143,6 +17149,11 @@ export interface components {
         };
         /** NewGameMetaOut */
         NewGameMetaOut: {
+            /**
+             * Start Years
+             * @description M50 (ADR-0024): the years a campaign can start in, earliest first
+             */
+            start_years?: number[];
             sandbox?: components["schemas"]["SandboxMetaOut"] | null;
             /** Historical */
             historical?: components["schemas"]["HistoricalOut"][];

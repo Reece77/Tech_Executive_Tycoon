@@ -352,7 +352,10 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
           <NativeSelect
             label="Start year"
             description="January 2010, or January 2008: the financial crisis hits in your first year, then the App Store and Android arrive."
-            data={(meta.start_years ?? []).map((y) => ({ value: String(y), label: `January ${y}` }))}
+            data={(meta.start_years ?? []).map((y) => ({
+              value: String(y),
+              label: `January ${y}`,
+            }))}
             value={String(startYear)}
             onChange={(e) => setStartYear(Number(e.currentTarget.value))}
             data-testid="start-year"
