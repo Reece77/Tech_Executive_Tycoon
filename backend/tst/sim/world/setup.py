@@ -18,6 +18,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.fabs import market
 from tst.sim.fabs import nodes as nd
 from tst.sim.ledger import CASH, COMMON_EQUITY, DEBT, PPE, LedgerEntry, LedgerLine
+from tst.sim.money import exact
 from tst.sim.rivals.models import CHAIN_KEY
 from tst.sim.rng import RngFactory
 from tst.sim.state import CompanyState, GameState
@@ -108,8 +109,10 @@ def materialise(
                 state, good, spec.key, turn, pipeline.end_turn(turn, good, data), balance, data
             )
             for capacity, cost in _tranches(spec, _capacity(data, spec, good, last), balance):
-                capex = capacity * lr * wb.capex_years * wq.CENTS
-                building = capacity * (grown - 1) * lr * wb.capex_years * wq.CENTS
+                capex = exact(capacity) * exact(lr) * exact(wb.capex_years) * wq.CENTS
+                building = (
+                    exact(capacity) * (exact(grown) - 1) * exact(lr) * exact(wb.capex_years)
+                ) * wq.CENTS
                 f = WorldFacility(
                     id=facility_id,
                     company_id=cid,
@@ -121,7 +124,7 @@ def materialise(
                     status="live",
                     ordered_turn=turn,
                     ready_turn=turn,
-                    capex_cents=round(capex * wb.open_book + building),
+                    capex_cents=round(capex * exact(wb.open_book) + building),
                     output=capacity * wb.base_utilisation / MONTHS,
                 )
                 facility_id += 1
@@ -132,8 +135,8 @@ def materialise(
                 fixed += capacity * lr * wb.fixed_share
                 book += f.capex_cents
         ebitda = revenue - cash_costs - fixed
-        cash = round(revenue / MONTHS * wb.open_cash_months * wq.CENTS)
-        debt = round(max(ebitda, 0.0) * wb.open_leverage * wq.CENTS)
+        cash = round(exact(revenue) / MONTHS * exact(wb.open_cash_months) * wq.CENTS)
+        debt = round(exact(max(ebitda, 0.0)) * exact(wb.open_leverage) * wq.CENTS)
         plant = round(book)
         equity = cash + plant - debt
         entries.append(

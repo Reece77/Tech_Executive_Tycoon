@@ -4,7 +4,8 @@ A sold launch (a unit of the `launch` market, made on the company's launch sites
 hardware production path) is owed until it flies: the line's `pending` launches add the month's
 units, and each whole one flies this month. Each flight can fail (stream space (1, product_id,
 flight)); a failure grounds the line (no sales and no flights until `grounded_until`) and costs it
-brand. The customer's payload is insured by the customer: no money moves on a failure.
+brand. A grounded line's owed launches wait, drawing nothing, until the grounding ends. The
+customer's payload is insured by the customer: no money moves on a failure.
 """
 
 from __future__ import annotations
@@ -37,6 +38,10 @@ def customer_flights(
         made = state.production_of(product.id)
         units = made.units if made is not None and made.turn == turn else 0.0
         if units <= 0 and spec.pending < 1 - TINY:
+            continue
+        if spec.grounded_until is not None and turn < spec.grounded_until:
+            # grounded (56.1): the backlog waits for the investigation, untouched (M43r, Codex
+            # review 9 finding 7); a grounded line sells nothing, so `units` is zero here
             continue
         used[spec.company_id] = used.get(spec.company_id, 0.0) + units
         pending = spec.pending + units

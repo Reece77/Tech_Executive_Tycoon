@@ -31,6 +31,7 @@ from typing import Final
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, COGS, DRUG_SALES, MARKETING, LedgerEntry
+from tst.sim.money import times
 from tst.sim.pharma import approval, ceilings
 from tst.sim.pharma import data as pd
 from tst.sim.pharma.models import Drug, DrugMonth, IraPick, Programme
@@ -245,7 +246,7 @@ def month(
                         )
                     )
                     share = own_part * mod.cogs_share + (1 - own_part) * mod.cmo_share
-                    cogs = round(revenue * share)
+                    cogs = times(revenue, share)
                     if cogs > 0:
                         entries.append(
                             LedgerEntry.transfer(

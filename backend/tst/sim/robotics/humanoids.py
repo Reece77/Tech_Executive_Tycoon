@@ -77,6 +77,7 @@ def annual_cost_cents(balance: Balance, data: GameData) -> float:
     service."""
     hb = balance.robotics.humanoids
     price = data.category(balance.robotics.humanoid).market("logistics").reference_price_cents
+    # money-exact: estimate: a yearly cost only used in the adoption ratio, never posted
     return price / (hb.life_months / MONTHS) + price * hb.service_share
 
 

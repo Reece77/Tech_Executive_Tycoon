@@ -36,6 +36,27 @@ EXACT_CALLS = frozenset({"exact", "Fraction", "times", "pct_of", "to_millicents"
 THROUGH = frozenset({"min", "max", "abs", "sum", "round", "int"})
 MATH = frozenset({"sqrt", "exp", "log", "log10", "pow", "tanh", "erf", "log1p", "expm1"})
 SKIP_FILES = frozenset({"money.py"})
+# M43r (Codex review 9 finding 10): money carried under other names. A name is money when one
+# of its words (split on "_") is one of these, or it contains "cents".
+ALIASES = frozenset(
+    {
+        "revenue",
+        "revenues",
+        "sales",
+        "cost",
+        "costs",
+        "amount",
+        "fee",
+        "fees",
+        "spend",
+        "payout",
+        "debt",
+        "interest",
+        "ebitda",
+        "capex",
+    }
+)
+FLOAT_ITERS = frozenset({"items", "values"})  # a float mapping's iteration yields floats
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +67,11 @@ class Hit:
 
     def __str__(self) -> str:
         return f"tst/sim/{self.path}:{self.line}: {self.code}"
+
+
+def money_name(name: str) -> bool:
+    """`price_cents`, `revenue`, `drug_sales`, `cost`: a name that carries money."""
+    return "cents" in name or any(part in ALIASES for part in name.lower().split("_"))
 
 
 def _name(node: ast.AST) -> str | None:
@@ -91,6 +117,7 @@ class _Scan:
         self.fields, self.funcs = fields, funcs
         self.locals: set[str] = set()
         self.exacts: set[str] = set()  # locals holding an exact rational
+        self.monies: set[str] = set()  # locals assigned money under any name
 
     def exact_call(self, node: ast.AST) -> bool:
         return isinstance(node, ast.Call) and _name(node.func) in EXACT_CALLS
@@ -119,6 +146,8 @@ class _Scan:
                 return name in self.locals
             case ast.Attribute(attr=attr):
                 return attr in self.fields
+            case ast.Subscript(value=value):
+                return self.floaty(value)  # shares[account]
             case ast.BinOp(op=ast.Div(), left=left, right=right):
                 exact_div = self.exactish(left) or self.exactish(right)
                 return not exact_div or self.floaty(left) or self.floaty(right)
@@ -136,6 +165,8 @@ class _Scan:
                     return True
                 if isinstance(func, ast.Attribute) and _name(func.value) == "math":
                     return func.attr in MATH
+                if isinstance(func, ast.Attribute) and func.attr == "get":
+                    return self.floaty(func.value)  # shares.get(account, 0.0)
                 if name in ("min", "max", "abs", "sum"):
                     return any(self.floaty(a) for a in args)
                 return False
@@ -145,8 +176,12 @@ class _Scan:
         if self.exact_call(node):
             return False
         match node:
-            case ast.Name(id=name) | ast.Attribute(attr=name):
-                return "cents" in name
+            case ast.Name(id=name):
+                return money_name(name) or name in self.monies
+            case ast.Attribute(attr=name):
+                return money_name(name)
+            case ast.Subscript(value=value):
+                return self.money(value)  # revenue[cid]
             case ast.BinOp(left=left, right=right):
                 return self.money(left) or self.money(right)
             case ast.UnaryOp(operand=operand):
@@ -157,6 +192,8 @@ class _Scan:
                     return True
                 if name in THROUGH:
                     return any(self.money(a) for a in args)
+                if name == "get" and isinstance(func, ast.Attribute):
+                    return self.money(func.value)  # revenue.get(pid, 0)
                 return False
             case ast.IfExp(body=body, orelse=orelse):
                 return self.money(body) or self.money(orelse)
@@ -196,11 +233,52 @@ class _Scan:
                 elif isinstance(node, ast.Assign | ast.AugAssign):
                     value = node.value
                     targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-                    names = [t.id for t in targets if isinstance(t, ast.Name)]
+                    names = [n for t in targets for n in _target_names(t)]
                     if self.floaty(value):
                         self.locals.update(names)
                     elif self.exactish(value):
                         self.exacts.update(names)
+                    elif isinstance(node, ast.Assign) and self.money(value):
+                        self.monies.update(n for t in targets for n in _plain_names(t))
+                elif isinstance(node, ast.For | ast.AsyncFor | ast.comprehension):
+                    self.loop_target(node.target, node.iter)
+
+    def loop_target(self, target: ast.AST, iterable: ast.AST) -> None:
+        """`for s in shares.values()`, `for k, s in sorted(shares.items())`, `for r in rates`:
+        a float mapping's values, or a float sequence's items, are floats."""
+        while isinstance(iterable, ast.Call) and _name(iterable.func) in ("sorted", "reversed"):
+            if not iterable.args:
+                return
+            iterable = iterable.args[0]
+        if (
+            isinstance(iterable, ast.Call)
+            and isinstance(iterable.func, ast.Attribute)
+            and iterable.func.attr in FLOAT_ITERS
+        ):
+            if not self.floaty(iterable.func.value):
+                return
+            if iterable.func.attr == "items" and isinstance(target, ast.Tuple) and target.elts:
+                target = target.elts[-1]
+            self.locals.update(_target_names(target))
+        elif self.floaty(iterable):
+            self.locals.update(_target_names(target))
+
+
+def _target_names(target: ast.AST) -> list[str]:
+    """Every name an assignment target binds (`a`, `a, b`, `(a, (b, c))`, `*rest`)."""
+    match target:
+        case ast.Name(id=name):
+            return [name]
+        case ast.Tuple(elts=elts) | ast.List(elts=elts):
+            return [n for e in elts for n in _target_names(e)]
+        case ast.Starred(value=value):
+            return _target_names(value)
+    return []
+
+
+def _plain_names(target: ast.AST) -> list[str]:
+    """A single-name target only: a tuple's parts may be anything (`cents, share = ...`)."""
+    return [target.id] if isinstance(target, ast.Name) else []
 
 
 def _display(tree: ast.AST) -> set[int]:

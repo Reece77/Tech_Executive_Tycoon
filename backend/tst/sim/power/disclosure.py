@@ -74,6 +74,7 @@ def disclose(
         s2 = sum(m.scope2_tonnes for m in year)
         energy = sum(m.demand_mwh for m in year)
         clean = sum(m.plant_mwh + m.ppa_mwh for m in year) / energy if energy else 0.0
+        # money-exact: ratio: tonnes per million of revenue, an intensity, not money
         per_m = (s1 + s2) / (revenue / MILLION_CENTS) if revenue > 0 else 0.0
         points = 0.0
         if cb.green_brand_tonnes and per_m > cb.green_brand_tonnes:

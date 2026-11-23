@@ -123,17 +123,21 @@ def segment_value(data: GameData, category: str, segment: str, region: str, home
 def value_per_customer(
     state: GameState, data: GameData, home: str
 ) -> dict[tuple[str, str, str], float]:
-    """(category, segment, region) -> segment_value, once per state."""
-    return derived(
-        state,
-        ("market_value_per_customer", id(data), home),
-        lambda: {
+    """(category, segment, region) -> segment_value, once per state and rules (the rules kept
+    with the value and checked, M43r: a reused id never answers for other rules)."""
+
+    def compute() -> dict[tuple[str, str, str], float]:
+        return {
             (cat.key, m.segment, r.key): segment_value(data, cat.key, m.segment, r.key, home)
             for cat in data.categories
             for m in cat.markets
             for r in data.regions
-        },
+        }
+
+    kept: tuple[GameData, dict[tuple[str, str, str], float]] = derived(
+        state, ("market_value_per_customer", id(data), home), lambda: (data, compute())
     )
+    return kept[1] if kept[0] is data else compute()
 
 
 def market_values(
@@ -151,13 +155,19 @@ def market_values(
 def ceilings(
     state: GameState, balance: Balance, data: GameData, keys: Iterable[Key]
 ) -> dict[Key, float]:
-    """C for each (category, region), once per state."""
+    """C for each (category, region), once per state and rules (kept with the value and
+    checked, M43r)."""
     wanted = tuple(sorted(set(keys)))
-    return derived(
+
+    def compute() -> dict[Key, float]:
+        return {k: ceiling_cents(state, balance, data, *k) for k in wanted}
+
+    kept: tuple[Balance, GameData, dict[Key, float]] = derived(
         state,
         ("market_ceilings", id(data), id(balance), wanted),
-        lambda: {k: ceiling_cents(state, balance, data, *k) for k in wanted},
+        lambda: (balance, data, compute()),
     )
+    return kept[2] if kept[0] is balance and kept[1] is data else compute()
 
 
 def factor(value: float, ceiling: float) -> float:

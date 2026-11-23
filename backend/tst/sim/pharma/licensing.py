@@ -351,14 +351,14 @@ def month(
             continue
         if d.kind == "in_license":
             entries += _royalty(
-                turn, d.company_id, None, round(sales * d.royalty), f"Royalty: {p.name}"
+                turn, d.company_id, None, times(sales, d.royalty), f"Royalty: {p.name}"
             )
         elif d.kind == "out_license" and d.counterparty_id is not None:
             entries += _royalty(
                 turn,
                 d.counterparty_id,
                 d.company_id,
-                round(sales * d.royalty),
+                times(sales, d.royalty),
                 f"Royalty: {p.name}",
             )
         elif d.kind == "co_develop" and d.counterparty_id is not None:
@@ -366,7 +366,7 @@ def month(
                 turn,
                 p.company_id,
                 d.counterparty_id,
-                round(sales * d.share),
+                times(sales, d.share),
                 f"Partner's share: {p.name}",
             )
     return replace(state, pharma_deals=tuple(deals)), entries, logs

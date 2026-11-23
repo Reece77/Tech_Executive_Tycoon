@@ -284,6 +284,7 @@ def test_delivery_books_and_performance(loaded: LoadedData, kind: str) -> None:
     c = Contract(
         id=1,
         tender_id=900,
+        clearance="none",
         company_id=PLAYER,
         product_id=pid,
         government="us",
@@ -326,6 +327,7 @@ def test_options_exercised_or_declined(loaded: LoadedData) -> None:
     base = Contract(
         id=1,
         tender_id=900,
+        clearance="none",
         company_id=PLAYER,
         product_id=pid,
         government="us",
@@ -484,6 +486,7 @@ def _consumer(loaded: LoadedData) -> tuple[GameState, int, Contract]:
     c = Contract(
         id=1,
         tender_id=900,
+        clearance="none",
         company_id=PLAYER,
         product_id=app,
         government="us",

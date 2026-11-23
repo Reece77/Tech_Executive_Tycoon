@@ -53,7 +53,7 @@ from tst.sim.ledger import (
 from tst.sim.mna import antitrust, valuation
 from tst.sim.mna import formulas as mf
 from tst.sim.mna.deals import monthly_costs_cents
-from tst.sim.money import Cents, exact, format_money
+from tst.sim.money import Cents, exact, format_money, times
 from tst.sim.products.models import SELLING
 from tst.sim.rivals.models import INCUMBENT_KEY
 from tst.sim.rng import RngFactory
@@ -132,7 +132,7 @@ def chain_value_cents(
     net_debt = -account_balance(balances, company_id, DEBT) - account_balance(
         balances, company_id, CASH
     )
-    return max(0, round(year * balance.world.ev_multiple) - net_debt)
+    return max(0, times(year, balance.world.ev_multiple) - net_debt)
 
 
 def value_cents(
@@ -506,6 +506,7 @@ def _security(state: GameState, balance: Balance, data: GameData) -> tuple[GameS
             continue
         demand = wo.baseline(state, good, turn, balance, data)
         for c in rivals:
+            # money-exact: ratio: a volume, demand x the rival's revenue share
             need = gb.security_need * demand * revenue[c.id] / total
             if need <= 0:
                 continue

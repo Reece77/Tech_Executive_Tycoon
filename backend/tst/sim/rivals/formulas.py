@@ -43,6 +43,7 @@ def need_enter(unserved_fraction: float, cash_months: float, need: RivalNeedBala
 
 def need_cut_costs(cash_months: float, need: RivalNeedBalance) -> float:
     """(12 - months) / 6 while cash covers fewer than 12 months of costs."""
+    # money-exact: ratio: a need score from months of cash
     return clamp01((need.cut_costs_months - cash_months) / need.cut_costs_span)
 
 

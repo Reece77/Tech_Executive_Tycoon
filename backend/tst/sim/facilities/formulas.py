@@ -32,6 +32,7 @@ def monthly_cost_cents(units: int, capex: Cents, life_months: int, opex_per_unit
 
 def cost_per_used_unit_cents(monthly_cost: Cents, used: float) -> float | None:
     """The month's cost per unit used; None when nothing is used (22.8)."""
+    # money-exact: rate: cents a used unit
     return monthly_cost / used if used > 0 else None
 
 

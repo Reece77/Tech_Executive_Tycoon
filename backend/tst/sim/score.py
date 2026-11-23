@@ -101,6 +101,7 @@ def trailing_margin(state: GameState, company_id: int) -> float | None:
     revenue = sum(company.mrr_history[-n:])
     if revenue <= 0:
         return None
+    # money-exact: ratio: trailing operating margin, a score input
     return sum(company.op_history[-n:]) / revenue
 
 
@@ -180,6 +181,7 @@ def company_score(
     markets = markets if markets is not None else market_revenue(state, data, balance)
     lead = leadership_part(company_id, markets)
     rep = reputation_part(state, company_id, balance)
+    # money-exact: ratio: value in dollars as a score input, never posted
     points = score_points(value / CENTS, g, p, lead, rep, balance)
     return CompanyScore(
         company_id=company_id,

@@ -254,6 +254,7 @@ def coverage(state: GameState, region: str, balance: Balance, data: GameData) ->
     if sales <= TINY:
         return 0.0
     chargers = charging.public_chargers(state, region, balance, data)
+    # money-exact: ratio: `sales` is cars a year; chargers per car sold
     return min(1.0, chargers / sales / balance.vehicles.charging.coverage_ref)
 
 
@@ -263,4 +264,5 @@ def subsidy_share(state: GameState, region: str, balance: Balance, data: GameDat
     from tst.sim.vehicles import subsidies
 
     ref = data.category(balance.vehicles.category).market("consumer").reference_price_cents
+    # money-exact: ratio: the subsidy as a share of the reference price
     return subsidies.region_amount(state, region, data) / ref if ref else 0.0

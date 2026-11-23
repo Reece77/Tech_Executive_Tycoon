@@ -5,7 +5,7 @@ fractional cents (they are rounded once, when a month's cost posts)."""
 from __future__ import annotations
 
 from tst.sim.facilities import formulas as ff
-from tst.sim.money import Cents
+from tst.sim.money import Cents, exact
 
 SKILL_MAX = 20.0  # tunable-exempt: the attribute scale
 
@@ -24,12 +24,13 @@ def device_unit_cents(bom: float, chip: float, assembly: float) -> float:
 def contract_fee_cents(base_fee: int, manufacturer_mult: float, city_mult: float) -> float:
     """A contract manufacturer's fee a unit: the base (Shenzhen) x the manufacturer's and
     city's multipliers (26.2)."""
+    # money-exact: rate: a fee a unit in float cents
     return base_fee * manufacturer_mult * city_mult
 
 
 def take_or_pay_cents(unused_units: float, fee: float, share: float) -> Cents:
     """share of the fee on each unused unit of a month's volume (26.2: 50%)."""
-    return round(max(0.0, unused_units) * fee * share)
+    return round(exact(max(0.0, unused_units)) * exact(fee) * exact(share))
 
 
 def plant_yield(base: float, skill_share: float, mean_skill: float) -> float:

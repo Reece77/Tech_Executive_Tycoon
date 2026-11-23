@@ -121,6 +121,7 @@ def margin_surprise_points(actual_bp: int, guided_bp: int) -> float:
 
 def earnings_jump(s: float, sm: float, eb: EarningsBalance) -> float:
     """clamp(3 s + 0.02 sm, -0.25, +0.20): sentiment x (1 + this) (25.4)."""
+    # money-exact: ratio: weighted surprises, a share-price jump
     return eb.jump.clamp(eb.revenue_weight * s + eb.margin_weight * sm)
 
 

@@ -28,6 +28,7 @@ from tst.sim.founder.personal import cash_cents
 from tst.sim.founder.wealth import family_office_cents, personal_wealth_cents, post
 from tst.sim.ledger import LedgerBalances
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
     GameState,
@@ -175,6 +176,7 @@ def monthly_return(
         + (1 - m.index) * cash_r
         + fb.alpha * (skill - fb.alpha_mid)
         + m.vol * z
+        # money-exact: ratio: the annual fee rate a month, a return
         - fb.fee / MONTHS_A_YEAR
     )
 
@@ -193,7 +195,7 @@ def office_month(
         r = monthly_return(index_return(state), cash_r, skill, z, office.mandate, balance)
         returns = (*office.returns, (state.turn, r))[-balance.family_office.index_months :]
         state = with_family_office(state, replace(office, returns=returns))
-        gain = round(held * r)
+        gain = times(held, r)
         if held <= 0 or not gain:
             continue
         memo = "Family office returns"

@@ -88,10 +88,12 @@ def ratio(
                 if regime.turnover_scope == "world"
                 else round(v.region_year(owner, reg.region) * rdata.part_share(data, reg))
             )
+            # money-exact: ratio: turnover against its threshold, a designation test
             money = have / turnover
         if value is not None and balances is not None:
             cap = market_cap_cents(state, owner, balances, balance, data)
             if cap is not None:
+                # money-exact: ratio: market cap against its threshold
                 money = max(money, cap / value)
     return min(u, money)
 

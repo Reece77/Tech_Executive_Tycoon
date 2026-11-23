@@ -233,12 +233,14 @@ def review(
             f"revenue growth {growth:.0%} (target {mb.grow_target:.0%})",
         )
     elif mandate.kind == "margin":
+        # money-exact: ratio: operating margin, compared with a target
         margin = op / revenue if revenue > 0 else 0.0
         met, words = (
             margin >= mb.margin_target,
             f"operating margin {margin:.0%} (target {mb.margin_target:.0%})",
         )
     else:
+        # money-exact: ratio: payout share of profit, compared with a target
         payout = paid / op if op > 0 else 0.0
         met, words = (
             payout >= mb.payout_target,

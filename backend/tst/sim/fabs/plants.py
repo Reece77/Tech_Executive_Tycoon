@@ -431,6 +431,7 @@ def settle_fabs(
                 )
             )
         total = max(0, dep) + cash + staff
+        # money-exact: rate: cents a wafer start, rounded once where posted
         per_start = total / run if run > 0 else 0.0
         group, more = _group_supply(
             state, fab, own, per_start, market, buyers or {}, name, balance, data

@@ -117,6 +117,7 @@ def effective_fee(
         sub = renewal_share * rate + (1 - renewal_share) * base if sub_after_year else rate
     fee = (1 - subscription_share) * base + subscription_share * sub
     for share, rate in regulated:
+        # money-exact: ratio: the effective fee rate on revenue, not money
         fee = (1 - share) * fee + share * min(rate, fee)
     return fee
 

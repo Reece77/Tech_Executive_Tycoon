@@ -107,6 +107,7 @@ def dynasty(
         )
     value = family_value_cents(state, balances, balance, data)
     unit = fb.dynasty_unit_dollars * CENTS_A_DOLLAR
+    # money-exact: ratio: value in score units, a score
     value_points = fb.dynasty_points * dmath.log10(1 + max(0, value) / unit)
     loss = fb.control_loss_points * family.control_losses
     legacies = sum(g.legacy for g in gens)

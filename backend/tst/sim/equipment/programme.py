@@ -61,6 +61,7 @@ def stage_index(data: GameData, stage: str) -> int:
 def reference_cents(p: ProgrammeDef, balance: Balance) -> float:
     """A stage's reference budget a month: its cost estimate over its middle months."""
     mid = (p.months[0] + p.months[1]) / 2 * balance.equipment.programme.work_scale
+    # money-exact: rate: a stage's cents a month, rounded once where posted
     return p.cost / mid
 
 

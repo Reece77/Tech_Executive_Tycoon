@@ -56,3 +56,27 @@ Two sessions, each in its **own clone or worktree** (never a shared folder):
 7. **Finding 14, how M37 is disabled.** The reference arm loads a copy of `backend/data` with `dynasty.start_year` and `end_year` moved `REFERENCE_SHIFT` (200) years on, so every M37 rule keyed on the start year, at run time or at load (maturity, slowdown, successor nodes), lies past the horizon; turn-0 states are equal across the arms. A rule hard-coded to a year rather than keyed on `dynasty.start_year` would be in both arms; every M37 rule today is keyed on it. The nightly target 1 now runs the reference arm (nine more 360-month runs) and keeps mode parity; the fast mutation test (in `make check`) replays 2039 from a jumped state.
 8. **Fixtures.** `tools/m37_targets.py --write-reference` re-records `m37_pre_2040_hashes.json` only when both settings and the reference arm agree (M43 had re-recorded it by hand).
 
+## Decisions made (lane B)
+
+- **Finding 5, where the requirement lives:** the contract keeps its awarded tender's clearance (`Contract.clearance`, in the contract's JSON record; no migration). A contract saved before M43r takes its tender's clearance on load while the tender is still saved (`government_io.load_government`); one whose tender was already pruned needs the **strictest level its buyer's tenders are drawn at** (`tenders.clearance_mix`: `top_secret` for defence, `secret` for civil; `delivery.requirement`), since the awarded level can't be known and the old reading (`none`) is the bug. Tender pruning is unchanged.
+- **Finding 7:** a grounded line's owed launches wait untouched (no draw, no flight, no history) until `grounded_until`; they fly that month.
+- **Finding 8:** a rival holding a licensed programme files with every drug regulator `can_file` allows once its trials have read out, through `approval.file` (the player's path), in the pipeline phase. A rival doesn't resubmit after a refusal (a complete response letter is final for it). Milestones reached before the licence still pay in the deal's first month, as before (see Follow-ups).
+- **Finding 9:** vehicle incidents are keyed `(1, product_id, region_index)`, one generator a region; a bought launch is keyed `(1, 0, constellation_id, n)` with n the constellation's own launch that month (its launch loop's index). ADR-0013's table updated.
+- **Finding 10, the guard:** a name is money when it contains `cents` or one of its `_`-separated words is `revenue(s)`, `sales`, `cost(s)`, `amount`, `fee(s)`, `spend` or `payout`; a local assigned money is money; `x[k]` and `x.get(k)` read through money and float mappings; tuple-unpacked assignments, `for` targets and comprehension targets take floatness from the value (a float mapping's `.values()`, the last element of its `.items()`, a float sequence's items). Each line it then found in `tst/sim/` is fixed with the exact helpers when it posts or stores cents, or carries a `# money-exact:` reason when it doesn't (audit table below).
+- **Finding 12:** every cache keyed on an input's `id()` keeps the input with its value and checks identity before answering, as payroll's cache does: `eras.arrived`, `saturation.value_per_customer` and `saturation.ceilings` (named by the review), and the audit's module caches `platforms.fees.fee_drag` (which also left `balance` out of its key), `fabs.nodes.timeline`, and `fabs.market`'s China overlay, EUV ratios (also missing `balance` and `data`) and EUV-gated timeline.
+- **Finding 13:** a fixed-price month earns installment i = round(V x (i + 1) / term) - round(V x i / term), i = months since the start; a month the company can't deliver forfeits its installment. Cost-plus and IDIQ are unchanged (their revenue is drawn work, not a price).
+
+### Finding 10's audit (the upgraded guard over `tst/sim/`)
+
+About 135 lines: about 55 fixed with the exact helpers (they post or store cents), about 75 carry a `# money-exact:` reason (rates in float cents rounded where posted, ratios, estimates only compared or shown), and 4 in lane A's files waited in `DEFERRED` until lane A merged (rule 8) and were then done the same way: `founder/personal.py`'s secondary fee and `pharma/demand.py`'s COGS exact (`times`), `group/conglomerate.py`'s two margins given `ratio` reasons. `DEFERRED` is empty.
+
+| Area | Fixed: posted or stored cents now exact |
+| --- | --- |
+| Payroll | pool salaries and tools and travel (`times` with the float headcount) |
+| Pharma | rival costs (the review's 27,500,016 case), royalties and co-development shares, stage cost, redesign, partner share, quality supply cost |
+| Rivals and startups | prices, poach offers, funding rounds, entrant cash |
+| Founder and finance | family office gains, scandal fines, share trade costs, dividends, secondary fees (capital), fundraising values, the insolvency bridge cap |
+| Chain and mining | world rivals' COGS, interest, debt repayment, expansion capex, opening cash, capex and debt; mine cash cost, unit cost, in-group sales; refinery mine payments; power rivals' plant capex |
+| Other | regulation fines and FX amounts, hardware take-or-pay and COGS, CRO reference price, hosting savings, CMO marketing budgets, shared-cost allocation, constellation waiting value, car connectivity revenue, analyst targets, family answers' rounding, exploration sale price |
+
+The five lines M36r deferred to M32 (mining sustaining capex, refinery quotes) are resolved: the posted one exact, the quote and the display figure given reasons.

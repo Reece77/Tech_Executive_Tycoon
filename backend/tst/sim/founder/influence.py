@@ -20,6 +20,7 @@ from tst.sim.founder.persona import raise_trait, strong
 from tst.sim.founder.stress import add_stress
 from tst.sim.ledger import CASH, GENERAL_ADMIN, LOBBYING, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.press.moments import adjust_credibility
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -132,6 +133,7 @@ def lobbying_month(
                     )
                 )
             value = min(ib.cap, record.value * (1 - ib.decay) + _gain(spend, balance))
+            # money-exact: ratio: lobbying spend as a risk score
             risk_gain = spend / CENTS_A_DOLLAR / DOLLARS_A_K * ib.risk_rate
             if ruthless:
                 risk_gain *= ib.risk_ruthless
@@ -165,7 +167,7 @@ def break_scandal(
     )
     state = _hit(state, cid, balance)
     revenue = sum(state.company(cid).mrr_history[-TRAILING_MONTHS:])
-    fine = round(revenue * ib.scandal_fine)
+    fine = times(revenue, ib.scandal_fine)
     entries = []
     if fine > 0:
         entries.append(

@@ -44,6 +44,7 @@ from tst.sim.founder import influence
 from tst.sim.founder.persona import strong
 from tst.sim.ledger import CASH, FINES, LOBBYING, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.platforms import data as pdata
 from tst.sim.regulation import data as rdata
 from tst.sim.regulation import draws
@@ -567,7 +568,7 @@ def settle(
     if case.stage == "objections":
         lo, hi = balance.regulation.fine.share
         full = fine_cents(state, case, reg, MIDDLE, balance, data) if hi > lo else 0
-        cents = round(full * balance.regulation.fine.settle_share)
+        cents = times(full, balance.regulation.fine.settle_share)
         if cents > 0:
             entries.append(_fine(state, case, cents, "Settlement"))
             case = replace(case, fine_cents=cents)

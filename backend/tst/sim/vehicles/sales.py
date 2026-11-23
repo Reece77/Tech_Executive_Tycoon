@@ -193,8 +193,8 @@ def software_month(
         assert product is not None
         spec = vs.spec_of(state, product, data)
         sb = vb.software
-        connectivity = attach_rate(state, spec.platform, balance, data) * sb.price_cents.get(
-            spec.platform, 0.0
+        connectivity = exact(attach_rate(state, spec.platform, balance, data)) * exact(
+            sb.price_cents.get(spec.platform, 0.0)
         )
         capable = vs.capable_level(state, spec, product.company_id, balance)
         total = exact(0)

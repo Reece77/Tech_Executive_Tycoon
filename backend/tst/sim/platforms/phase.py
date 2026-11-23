@@ -291,6 +291,7 @@ def _goodwill_target(
     pb = balance.platforms
     lo, hi = pb.goodwill
     sched = pdata.schedule(platform, region, state.turn, balance, data, state.rival_stores)
+    # money-exact: ratio: a goodwill score from the fee rate, not money
     target = 1 - pb.goodwill_fee * (sched.standard - 0.30)  # tunable-exempt: the 2008 norm
     target -= pb.goodwill_self_pref[platform.self_pref]
     target -= pb.review.player_goodwill[platform.strictness] if not platform.historical else 0.0

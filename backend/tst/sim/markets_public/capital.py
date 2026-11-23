@@ -13,7 +13,7 @@ from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.markets_public import formulas as pf
 from tst.sim.markets_public.ipo import PUBLIC_HOLDERS
 from tst.sim.markets_public.models import PublicCompany
-from tst.sim.money import exact
+from tst.sim.money import exact, times
 from tst.sim.state import GameState, public_of, with_cap_entry, with_public
 
 
@@ -100,7 +100,7 @@ def secondary(
         )
     price = round(public.price_cents * (1 - exact(cb.secondary_discount)))
     gross = shares * price
-    net = gross - round(gross * cb.secondary_fee)
+    net = gross - times(gross, cb.secondary_fee)
     entry = _float_entry(state, company_id)
     if entry is not None:
         state = with_cap_entry(state, replace(entry, shares=entry.shares + shares))

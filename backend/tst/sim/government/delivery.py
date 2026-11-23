@@ -13,16 +13,21 @@ row is a default. At the base's end the options are exercised when performance i
 `option_threshold`, else the contract completes. Completed and defaulted contracts are the
 company's past performance (57.2).
 
+A fixed-price month's revenue is its installment: the price x months / term rounded, less the
+same for the months before (so a contract delivered every month books its price exactly).
+
 Books: revenue 4070 against cash, delivery cost 5300 against cash, in integer cents (rounded
 half to even once each), in the product's division."""
 
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.government import draws
+from tst.sim.government.config import LEVELS, Level
 from tst.sim.government.data import PCT, file
 from tst.sim.government.models import (
     Bid,
@@ -62,6 +67,7 @@ def start(
         base_end_turn=begin + tender.base_months,
         end_turn=begin + tender.term_months,
         awards=tender.awards,
+        clearance=tender.clearance,
     )
     state = replace(
         state,
@@ -82,6 +88,25 @@ def start(
             ),
         )
     return state, contract
+
+
+def _entitled(value_cents: int, months: int, term: int) -> int:
+    """Cents of a fixed price earned over its first `months` of `term`, rounded half to even."""
+    return round(Fraction(value_cents * months, term))
+
+
+def requirement(state: GameState, c: Contract, balance: Balance) -> Level:
+    """The clearance the contract's delivery needs: the awarded tender's, kept on the contract.
+    A contract from before M43r has it from its tender while the tender is kept (the loader
+    copies it); one whose tender was already pruned needs the strictest level its buyer's
+    tenders are drawn at, since the awarded one cannot be known (M43r decision)."""
+    if c.clearance is not None:
+        return c.clearance
+    tender = state.tender(c.tender_id)
+    if tender is not None:
+        return tender.clearance
+    mix = balance.government.tenders.clearance_mix[c.buyer]
+    return next((lv for lv in reversed(LEVELS) if mix.get(lv, 0.0) > 0), "none")
 
 
 def _able(state: GameState, c: Contract, clearance: str, balance: Balance) -> bool:
@@ -123,8 +148,7 @@ def month(
                     inbox_item(turn, c.company_id, "contract_options_declined", contract=str(c.id))
                 )
                 continue
-        tender = state.tender(c.tender_id)
-        clearance = tender.clearance if tender is not None else "none"
+        clearance = requirement(state, c, balance)
         g = draws.gen(rng, turn, draws.DELIVERY, c.id, turn)
         overrun = max(
             OVERRUN_FLOOR, db.overrun_mean + db.overrun_sd[c.contract] * float(g.normal())
@@ -155,7 +179,14 @@ def month(
             work *= exact(orders)
         cost = work * exact(db.cost_share[c.area]) * (1 + exact(overrun))
         revenue = cost * (1 + exact(db.cost_plus_fee)) if c.contract == "cost_plus" else work
-        rev_c, cost_c = round(revenue), round(cost)
+        cost_c = round(cost)
+        if c.contract == "fixed_price":
+            # installment i is the difference of the rounded cumulative entitlements, so the
+            # months delivered settle the accepted price exactly (M43r, review 9 finding 13)
+            i = turn - c.start_turn
+            rev_c = _entitled(c.value_cents, i + 1, term) - _entitled(c.value_cents, i, term)
+        else:
+            rev_c = round(revenue)
         month_perf = max(0.0, min(PCT, PCT - db.perf_per_overrun * max(0.0, overrun) * PCT))
         perf = (c.performance * c.months + month_perf) / (c.months + 1)
         product = state.product(c.product_id)

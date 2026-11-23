@@ -28,6 +28,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.ledger import CASH, LICENSE_REVENUE, RESEARCH, LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact, times
 from tst.sim.pharma import data as pd
 from tst.sim.pharma import draws
 from tst.sim.pharma.config import TRIALS, Design
@@ -142,8 +143,12 @@ def stage_cost_cents(
     factors, plus fixed (discovery and preclinical: fixed a month)."""
     sd = pd.file(data).stages.of(stage)
     if stage in TRIALS:
-        mult = pd.area(data, p.area).cost_mult * pd.modality(data, p.modality).cost_mult
-        return pd.cents(patients * sd.cost_per_patient * mult + sd.fixed, balance)
+        # Exact real USD (ADR-0003), as pd.cents converts it: x 100 x pharma.scale, rounded once.
+        mult = exact(pd.area(data, p.area).cost_mult) * exact(
+            pd.modality(data, p.modality).cost_mult
+        )
+        real = patients * exact(sd.cost_per_patient) * mult + exact(sd.fixed)
+        return round(real * pd.CENTS * exact(balance.pharma.scale))
     return pd.cents(sd.fixed * months, balance)
 
 
@@ -316,7 +321,7 @@ def begin_stage(
     months = stage_months(p, stage, design, balance, data)
     cost = stage_cost_cents(p, stage, patients, months, balance, data)
     if redo:
-        cost = round(cost * (1 + balance.pharma.redesign_cost_share))
+        cost = round(cost * (1 + exact(balance.pharma.redesign_cost_share)))
     return replace(
         p,
         stage=stage,  # type: ignore[arg-type]
@@ -358,7 +363,7 @@ def _spend(state: GameState, p: Programme) -> tuple[Programme, list[LedgerEntry]
         )
     ]
     if p.partner_id is not None and p.partner_share > 0:
-        share = round(amount * p.partner_share)
+        share = times(amount, p.partner_share)
         entries += [
             LedgerEntry.transfer(
                 turn=state.turn,
@@ -470,14 +475,28 @@ def month(
                 state, lg = read_out(state, p, rng, balance, data)
                 logs += lg
         elif p.company_id not in players:
-            state = _rival_step(state, p, balance, data)
+            state = _rival_step(state, p, rng, balance, data)
     return state, entries, logs
 
 
-def _rival_step(state: GameState, p: Programme, balance: Balance, data: GameData) -> GameState:
-    """A rival's licensed programme: the next trial at the standard design, or stop."""
+def _rival_step(
+    state: GameState, p: Programme, rng: RngFactory, balance: Balance, data: GameData
+) -> GameState:
+    """A rival's licensed programme: the next trial at the standard design, or stop; once its
+    trials have read out, it files with every drug regulator it may file with and has not
+    (55.3's path, the player's own; M43r, Codex review 9 finding 8). A refusal is final for a
+    rival: it does not resubmit."""
     if p.status == "failed":
         return with_programme(state, replace(p, status="stopped", ended_turn=state.turn))
     if p.status == "ready" and (nxt := next_trial(p)) is not None:
         return with_programme(state, begin_stage(state, p, nxt, "standard", balance, data))
+    if p.status in ("ready", "marketed"):
+        from tst.sim.pharma import approval  # approval imports this module
+
+        tried = {r.regulator for r in state.pharma_reviews if r.programme_id == p.id}
+        for reg in pd.regulators(data):
+            current = next(q for q in state.pharma_programmes if q.id == p.id)
+            if reg.key in tried or approval.can_file(current, data, balance, reg.key) is not None:
+                continue
+            state, _ = approval.file(state, current, reg.key, rng, balance, data)
     return state

@@ -114,15 +114,15 @@ No P1. All fourteen findings go to **M43r** (`docs/tasks/M43r-review-9-fixes.md`
 | 2 | P2 | An inherited foundation returns under the deceased founder after a cold reload | A: fixed (`test_m43r_estate.py::test_an_inherited_foundation_survives_a_cold_reload_once`) |
 | 3 | P2 | The conglomerate view exposes hidden construction overruns | A: fixed (`test_m43r_conglomerate_capital.py::test_planned_capital_never_moves_with_a_hidden_overrun`) |
 | 4 | P2 | The conglomerate view and letter include gaps in ownership | A: fixed (`test_m43r_ownership_gaps.py::test_a_gap_in_ownership_reaches_neither_the_view_nor_the_letter`, `::test_overlapping_runs_count_once`) |
-| 5 | P2 | Classified contracts lose their clearance requirement when the tender is pruned | B |
+| 5 | P2 | Classified contracts lose their clearance requirement when the tender is pruned | B: fixed (`test_m43r_b_government.py::test_a_classified_contract_needs_its_clearance_after_the_tender_is_pruned`, `::test_a_save_from_before_m43r_is_handled_explicitly`) |
 | 6 | P2 | Pharma sales use the previous month's ceiling adjustment | A: fixed (`test_m43r_pharma_ceiling.py`, four tests: Codex's 99.9 boundary, a later near-ceiling month, the clamp, a market already over) |
-| 7 | P2 | Customer flights launch while their vehicle is grounded | B |
-| 8 | P2 | A successful out-licensed programme stalls before approval | B |
-| 9 | P2 | Unrelated activity changes vehicle-incident and bought-launch draws | B |
-| 10 | P2 | The money guard misses binary-float arithmetic under other names | B |
+| 7 | P2 | Customer flights launch while their vehicle is grounded | B: fixed (`test_m43r_b.py::test_a_grounded_line_holds_its_backlog_until_cleared`) |
+| 8 | P2 | A successful out-licensed programme stalls before approval | B: fixed (`test_m43r_b.py::test_an_out_licensed_programme_is_filed_approved_and_pays_its_licensor`) |
+| 9 | P2 | Unrelated activity changes vehicle-incident and bought-launch draws | B: fixed (`test_m43r_b.py::test_a_regions_incident_draw_ignores_exposure_elsewhere`, `::test_a_constellations_bought_launch_key_ignores_earlier_constellations`) |
+| 10 | P2 | The money guard misses binary-float arithmetic under other names | B: fixed (`test_money_guard.py::test_the_scan_follows_money_aliases_unpacking_and_mapping_iteration`, `::test_no_float_money_arithmetic_in_the_sim`; postings `test_m43r_b.py::test_a_generic_rivals_cogs_posts_exact_half_even_cents`, `::test_royalties_post_exact_half_even_cents`) |
 | 11 | P3 | Space history opens a service after its first month's sales | A: fixed (`test_m43r_space_opening.py::test_starlink_sells_from_its_opening_month`) |
-| 12 | P3 | Derived caches key on object ids without keeping the objects alive | B |
-| 13 | P3 | Fixed-price delivery settles a different total from the price | B |
+| 12 | P3 | Derived caches key on object ids without keeping the objects alive | B: fixed (`test_m43r_b.py::test_arrived_eras_recompute_for_other_rules_under_a_reused_id`, `::test_saturation_caches_recompute_for_other_rules_under_a_reused_id`, `::test_fee_drag_recomputes_for_other_rules_under_a_reused_id`, `::test_the_node_timeline_recomputes_for_other_rules_under_a_reused_id`) |
+| 13 | P3 | Fixed-price delivery settles a different total from the price | B: fixed (`test_m43r_b.py::test_a_fixed_price_contract_settles_its_exact_price`) |
 | 14 | P3 | The pre-2040 guard can accept a change shared by both settings | A: fixed (`test_m43r_pre_2040_guard.py::test_a_rule_moved_across_january_2040_is_caught_at_its_first_month`; nightly `test_m37_balance.py::test_52_5_target_1_same_code_differential`) |
 
 Lane A holds every change to the turn's phase order (findings 1, 6 and 11) so they don't conflict.

@@ -33,7 +33,7 @@ from tst.sim.finance.models import (
 )
 from tst.sim.ledger import CASH, GENERAL_ADMIN, PREFERRED_EQUITY, SAFES, LedgerEntry
 from tst.sim.log import LinkKind, LogItem, inbox_item
-from tst.sim.money import BP_DENOMINATOR, Cents
+from tst.sim.money import BP_DENOMINATOR, Cents, times
 from tst.sim.org.executives import CFO, multiplier
 from tst.sim.rng import RngFactory
 from tst.sim.state import (
@@ -85,7 +85,7 @@ def base_value(state: GameState, company_id: int, balance: Balance, data: GameDa
         balance.finance,
     )
     cfo = multiplier(state, company_id, CFO, balance)  # M8 (18.3): 1 before stage 3
-    return value if cfo == 1 else round(value * cfo)
+    return value if cfo == 1 else times(value, cfo)
 
 
 # --- SAFEs -----------------------------------------------------------------------------------
