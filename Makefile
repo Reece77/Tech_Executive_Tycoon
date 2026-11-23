@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture weekly-v2-table
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -70,6 +70,13 @@ weekly-v6-integrator:
 # FIXTURE m30, m32, m37 or m45). Dispatch weekly.yml with parts ["record-fixture FIXTURE=m30", ...].
 record-fixture:
 	uv run --project backend python tools/record_state_fixtures.py $(FIXTURE)
+
+# M46: M27a's 40.10 targets and M46's target with balance overrides (SET=key=value,key=value),
+# and the V6 save's board through 2042 (tools/m46_lift_sweep.py, tools/m46_board_trace.py)
+m46-lift:
+	uv run --project backend python tools/m46_lift_sweep.py $(SET)
+m46-board-trace:
+	uv run --project backend python tools/m46_board_trace.py $(SET)
 
 # M45 (sub-task 1): M37's dynasty game on seeds 1-3 for 720 months, every month's full-state
 # digest against the one recorded before any M45 change (tests/fixtures/m45_dynasty_hashes.json).
