@@ -15,7 +15,7 @@ from tst.sim.people.relationships import clamp_relationship
 from tst.sim.press import moments
 from tst.sim.press.config import PROMISE_KINDS, REMINDER
 from tst.sim.press.draws import press_gen
-from tst.sim.press.models import Promise
+from tst.sim.press.models import Promise, PromiseStatus
 from tst.sim.press.shares import shown_lead, shown_prices, shown_quality
 from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
@@ -30,6 +30,8 @@ from tst.sim.state import (
 
 MORALE_MAX = 100  # tunable-exempt: the morale scale
 TIMED = ("ship", "beat", "research")
+MEETING_KINDS = ("commitment", "guidance")  # M48 (59): made in a board meeting or on a call
+QUARTER = 3  # tunable-exempt: months in a quarter
 HALF = 0.5  # tunable-exempt: ambition is half the target's distance, half the deadline's
 
 
@@ -44,6 +46,8 @@ def promise_words(state: GameState, p: Promise, data: GameData) -> str:
     by = format_turn(p.deadline_turn)
     product = state.product(p.product_id) if p.product_id is not None else None
     name = product.name if product is not None else "the product"
+    if p.kind in MEETING_KINDS:
+        return meeting_words(p)
     match p.kind:
         case "ship":
             return f"ship {name} by {by}"
@@ -55,6 +59,32 @@ def promise_words(state: GameState, p: Promise, data: GameData) -> str:
         case "no_layoffs":
             return f"make no layoffs until {by}"
     return f"not raise {name}'s price until {by}"
+
+
+def meeting_words(p: Promise) -> str:
+    """M48: 'deliver revenue of at least $12.0M in the quarter to Jun 2024'."""
+    from tst.sim.calendar import format_turn
+    from tst.sim.meetings.agenda import money_words, pct_words
+
+    level = p.level or 0
+    what = (
+        f"revenue of at least {money_words(level)}"
+        if p.domain == "revenue"
+        else f"an operating margin of at least {pct_words(level)}"
+    )
+    said = "guide to" if p.kind == "guidance" else "deliver"
+    return f"{said} {what} in the quarter to {format_turn(p.deadline_turn)}"
+
+
+def _quarter_actual(state: GameState, p: Promise) -> int:
+    """The quarter's displayed revenue (cents) or operating margin (bp) at its end."""
+    from tst.sim.markets_public.formulas import margin_bp
+
+    company = state.company(p.company_id)
+    revenue = sum(company.mrr_history[-QUARTER:])
+    if p.domain == "revenue":
+        return revenue
+    return margin_bp(sum(company.op_history[-QUARTER:]), revenue)
 
 
 def _time_ambition(months: int, balance: Balance) -> float:
@@ -93,7 +123,8 @@ def make(
         raise InvalidActionError("a promise is made in a press moment answered this month")
     if any(p.moment_id == moment.id for p in state.promises):
         raise InvalidActionError("one promise a press moment")
-    if len(open_promises(state, company_id)) >= pb.max_open:
+    press_open = [p for p in open_promises(state, company_id) if p.kind in PROMISE_KINDS]
+    if len(press_open) >= pb.max_open:
         raise InvalidActionError(f"at most {pb.max_open} promises open at once")
     lo, hi = pb.months
     if kind in TIMED:
@@ -164,6 +195,10 @@ def make(
 def verdict(state: GameState, p: Promise) -> str | None:
     """'kept', 'broken' or None (still open), from displayed values only."""
     due = state.turn >= p.deadline_turn
+    if p.kind in MEETING_KINDS:  # M48 (59): judged at the quarter's end on displayed figures
+        if not due:
+            return None
+        return "kept" if _quarter_actual(state, p) >= (p.level or 0) else "broken"
     product = state.product(p.product_id) if p.product_id is not None else None
     match p.kind:
         case "ship":
@@ -224,6 +259,12 @@ def check(
         result = verdict(state, p)
         if result is None:
             continue
+        if p.kind in MEETING_KINDS:  # M48: no reminder, so no press draw
+            state, logged = _resolve_meeting(
+                state, p, result, promise_words(state, p, data), balance
+            )
+            logs += logged
+            continue
         if p.company_id not in gens:  # stream press, the player key: one a month (29.4)
             owner = state.company(p.company_id)
             gens[p.company_id] = press_gen(rng, state.turn, *player_key(owner.id, owner.rival_key))
@@ -250,6 +291,8 @@ def resolve(
     cid = p.company_id
     a = p.audience
     words = promise_words(state, p, data)
+    if p.kind in MEETING_KINDS:
+        return _resolve_meeting(state, p, result, words, balance)
     if result == "kept":
         cf = moments.cred_factor(state, cid, balance)
         state = moments.brand_modifier(
@@ -282,6 +325,33 @@ def resolve(
         replace(p, status="broken", resolved_turn=state.turn, reminder_turn=state.turn + months),
     )
     return state, [inbox_item(state.turn, cid, "promise_broken", promise=words)]
+
+
+def _resolve_meeting(
+    state: GameState, p: Promise, result: str, words: str, balance: Balance
+) -> tuple[GameState, list[LogItem]]:
+    """M48 (59.1-59.2): a board commitment kept lifts every voting director's confidence and a
+    broken one costs `commitment_broken_mult` x as much; guidance given on a call kept or broken
+    moves credibility. No brand change and no press reminder."""
+    from tst.sim.state import with_seat
+
+    mb = balance.meetings
+    cid = p.company_id
+    kept = result == "kept"
+    if p.kind == "commitment":
+        delta = mb.board.commitment_kept * (1 if kept else -mb.board.commitment_broken_mult)
+        for seat in state.board(cid):
+            if seat.confidence is not None:
+                value = max(0.0, min(float(MORALE_MAX), seat.confidence + delta))
+                state = with_seat(state, replace(seat, confidence=value))
+    else:
+        cred = mb.credibility.guidance_kept if kept else -mb.credibility.guidance_broken
+        cause = f"{'kept' if kept else 'broken'}: {words}"
+        state = moments.adjust_credibility(state, cid, cred, cause, balance)
+    status: PromiseStatus = "kept" if kept else "broken"
+    state = with_promise(state, replace(p, status=status, resolved_turn=state.turn))
+    template = f"{p.kind}_{status}"
+    return state, [inbox_item(state.turn, cid, template, promise=words)]
 
 
 def _morale_all(state: GameState, company_id: int, delta: float) -> GameState:

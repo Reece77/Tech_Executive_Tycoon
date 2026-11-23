@@ -326,6 +326,8 @@ from tst.sim.medical.actions import (
     SubmitDevice,
     apply_medical,
 )
+from tst.sim.meetings.actions import ACTION_TYPES as MEETING_ACTION_TYPES
+from tst.sim.meetings.actions import MeetingOutcome, apply_meeting
 from tst.sim.mining.actions import ACTION_TYPES as MINING_ACTION_TYPES
 from tst.sim.mining.actions import (
     AnswerRivalBid,
@@ -471,6 +473,7 @@ type Action = (
     | SpaceAction  # M40
     | GovernmentAction  # M44
     | NegotiationAction  # M47
+    | MeetingOutcome  # M48
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -496,6 +499,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **SPACE_ACTION_TYPES,  # M40 (56)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
+    **MEETING_ACTION_TYPES,  # M48 (59)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -1062,6 +1066,8 @@ def apply_action(
             out = apply_government(state, action, rng, ledger_balances, balance, data)  # M44 (57)
         case AgreeRetention() | AgreeContractValue() | AgreeSettlement() | WalkAway():  # M47
             out = apply_negotiation(state, action, balance, data, ledger_balances)
+        case MeetingOutcome():  # M48 (59)
+            out = apply_meeting(state, action, balance, data)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():
