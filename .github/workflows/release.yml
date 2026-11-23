@@ -1,0 +1,170 @@
+# Builds the Windows installer (M58 sub-task 5): PyInstaller bundles Python, the backend, the
+# data and the built front end; Inno Setup wraps it; packaging/smoke.ps1 installs it on this
+# clean windows-latest runner and plays a turn, opens the window, updates over it, uninstalls
+# and reinstalls (the save must survive each).
+#
+# - A pushed version tag (v6.0.0, ...) or a manual run with a version publishes a GitHub
+#   release with the installer, its .sha256 and notes from CHANGELOG.md (the "What's new" the
+#   game shows). A manual run creates the tag on the commit it built.
+# - A pull request touching the packaging builds and smoke-tests without publishing.
+name: release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 6.0.0 (the tag will be v6.0.0)"
+        required: true
+  pull_request:
+    paths:
+      - "packaging/**"
+      - "backend/tst/desktop/**"
+      - "backend/tst/api/routers/desktop.py"
+      - "backend/pyproject.toml"
+      - "backend/uv.lock"
+      - ".github/workflows/release.yml"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version
+        id: version
+        shell: pwsh
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if ($env:EVENT -eq 'workflow_dispatch') { $v = $env:INPUT_VERSION }
+          elseif ($env:EVENT -eq 'push') { $v = $env:REF_NAME }
+          else { $v = '0.0.${{ github.run_number }}' }
+          $v = $v.Trim().TrimStart('v')
+          if ($v -notmatch '^\d+\.\d+\.\d+$') { throw "not a version: $v" }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Set-Content -Path packaging/version.txt -Value $v -NoNewline
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          uv sync --project backend --locked --group desktop --group packaging
+          cd frontend
+          pnpm install --frozen-lockfile
+
+      - name: Build the front end
+        working-directory: frontend
+        run: pnpm build
+
+      - name: Bundle (PyInstaller)
+        run: uv run --project backend --locked --group desktop --group packaging pyinstaller packaging/tst.spec --noconfirm --distpath packaging/dist --workpath packaging/build
+
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          if (-not (Test-Path $iscc)) {
+            Write-Host 'Inno Setup is not on this runner image; installing it with Chocolatey'
+            choco install innosetup --no-progress -y
+            $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          }
+          & $iscc "/DAppVersion=${{ steps.version.outputs.version }}" packaging/installer.iss
+          if ($LASTEXITCODE -ne 0) { throw "iscc exited $LASTEXITCODE" }
+          $exe = "packaging/out/TechStartupTycoon-Setup-${{ steps.version.outputs.version }}.exe"
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  $(Split-Path $exe -Leaf)" | Set-Content -Path "$exe.sha256" -NoNewline -Encoding ascii
+          Get-ChildItem packaging/out | Format-Table Name, Length
+
+      - name: Smoke test on this clean machine
+        shell: pwsh
+        run: pwsh packaging/smoke.ps1 -Installer "packaging/out/TechStartupTycoon-Setup-${{ steps.version.outputs.version }}.exe" -Version "${{ steps.version.outputs.version }}"
+
+      - name: Logs
+        if: always()
+        shell: pwsh
+        run: |
+          $logs = Join-Path $env:APPDATA 'Tech Startup Tycoon\logs'
+          if (Test-Path $logs) { Get-ChildItem $logs | ForEach-Object { Write-Host "== $($_.Name)"; Get-Content $_.FullName -Tail 200 } }
+
+      - name: Release notes
+        shell: pwsh
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $prev = git tag --list 'v*.*.*' --sort=-v:refname | Where-Object { $_ -ne "v$v" } | Select-Object -First 1
+          $extra = @()
+          if ($prev) {
+            git show "${prev}:CHANGELOG.md" > previous-changelog.md
+            $extra = @('--previous-changelog', 'previous-changelog.md')
+          }
+          python packaging/release_notes.py $v @extra --out packaging/out/notes.md
+          if ($LASTEXITCODE -ne 0) { throw "release_notes.py exited $LASTEXITCODE" }
+          Get-Content packaging/out/notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: |
+            packaging/out/*.exe
+            packaging/out/*.sha256
+            packaging/out/notes.md
+          retention-days: 14
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: installer
+          path: out
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Tech Startup Tycoon $VERSION" \
+            --notes-file out/notes.md \
+            "out/TechStartupTycoon-Setup-$VERSION.exe" \
+            "out/TechStartupTycoon-Setup-$VERSION.exe.sha256"
