@@ -213,7 +213,9 @@ def test_a_critical_follow_up_waits_for_the_critical_slot(loaded: LoadedData) ->
     gap = loaded.balance.events.critical_gap_turns
     base = _staffed(loaded, turn=40)
     base = _past(base, severity="critical", turn=base.turn - 2, template_id="key_exit_crisis")
-    base = with_queued(base, QueuedEvent(1, 1, "activist_stake", base.turn + 1, source_event_id=None))
+    base = with_queued(
+        base, QueuedEvent(1, 1, "activist_stake", base.turn + 1, source_event_id=None)
+    )
     state, requests = direct(
         base, base, RngFactory(4), loaded.balance, loaded.game_data, 400_000_000, 0, ()
     )
@@ -232,8 +234,12 @@ def test_a_critical_follow_up_waits_for_the_critical_slot(loaded: LoadedData) ->
 
 def test_two_critical_follow_ups_due_together_arrive_months_apart(loaded: LoadedData) -> None:
     state = _staffed(loaded, turn=40)
-    state = with_queued(state, QueuedEvent(1, 1, "activist_stake", state.turn + 1, source_event_id=None))
-    state = with_queued(state, QueuedEvent(2, 1, "ipo_pricing_strong", state.turn + 1, source_event_id=None))
+    state = with_queued(
+        state, QueuedEvent(1, 1, "activist_stake", state.turn + 1, source_event_id=None)
+    )
+    state = with_queued(
+        state, QueuedEvent(2, 1, "ipo_pricing_strong", state.turn + 1, source_event_id=None)
+    )
     state, requests = direct(
         state, state, RngFactory(4), loaded.balance, loaded.game_data, 400_000_000, 0, ()
     )
