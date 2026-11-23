@@ -3,9 +3,10 @@
 The state fixtures take hours to play (M30's nine 360-month runs, M37's nine runs with M37's
 fields left out, M45's three 720-month dynasty runs, M32's history to 2025), longer than a
 local session should run (CLAUDE.md §9 rule 7). CI's weekly workflow runs
-`make record-fixture FIXTURE=<name>` as a part (the `parts` input); this writes the fixture and prints it between BEGIN and END marker lines,
-so a session can copy it from the job log into backend/tests/fixtures/. Re-record only for an
-intentional result change, with the reason in CHANGELOG.md (CLAUDE.md §6).
+`make record-fixture FIXTURE=<name>` as a part (the `parts` input); this writes the fixture
+and prints it between BEGIN and END marker lines, so a session can copy it from the job log
+into backend/tests/fixtures/. Re-record only for an intentional result change, with the reason
+in CHANGELOG.md (CLAUDE.md §6).
 
     uv run --project backend python tools/record_state_fixtures.py m30|m32|m37|m45
 """

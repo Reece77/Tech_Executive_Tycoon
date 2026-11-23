@@ -45,7 +45,8 @@ def main(paths: list[str]) -> int:
         measured |= parse(Path(p).read_text(encoding="utf-8", errors="replace"))
     existing = json.loads(DURATIONS.read_text()) if DURATIONS.exists() else {}
     DURATIONS.write_text(json.dumps(merge(existing, measured), indent=1) + "\n")
-    print(f"{len(measured)} tests, {sum(measured.values()) / 60:.0f} minutes, merged into {DURATIONS}")
+    minutes = sum(measured.values()) / 60
+    print(f"{len(measured)} tests, {minutes:.0f} minutes, merged into {DURATIONS}")
     return 0
 
 
