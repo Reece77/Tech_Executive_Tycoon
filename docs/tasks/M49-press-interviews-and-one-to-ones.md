@@ -61,7 +61,11 @@ Engineering and design choices the spec, ADR-0023 and this brief left open (CLAU
 
 ### 61.3 targets (`python -m tst.balance.m49`, seeds 1-10)
 
-TARGETS
+1. Skip is today's game: a game that holds no talk runs no talk code and the state gains no field; golden snapshots and M30's state cache unchanged (see the pull request's runs); `tests/integration/test_m49_talks.py::test_skip_changes_nothing` (an interview and a one-to-one opened, answered in part and skipped leave the state and the decision log as they were, and the press event still waits): **met**.
+2. Talks retain people: of the approached people the rival wins when the founder skips, the talking founder keeps **100%** (median; at least 30%); overall kept 95.1% skipping, 99.6% talking; 678 approaches, 678 talks costing 2,712 founder energy (2.26 a month, with the raises); per seed (lost on skip, lost talking) (1: 0, 0), (2: 2, 1), (3: 4, 0), (4: 7, 2), (5: 6, 0), (6: 4, 0), (7: 6, 0), (8: 2, 0), (9: 2, 0), (10: 0, 0): **met** (on decision 11's reading).
+3. Promises bite: a promotion promised at month 24 to the best non-executive and never given (10/10 seeds) costs them **8.0** morale at its judging (at least 8) and multiplies their monthly resignation chance by **2.14** at least (at least 2): **met**.
+4. Crises reward candour: after a class I recall (a 9.5-10.0 point brand hit), apologising and taking responsibility regain **1.32x** the brand deflection does in 12 months (median; at least 1.25x; every seed 1.24-1.42x); a deflection's inspection chance 30%, candour's 0%: **met** (tuned, decision 12).
+5. No leak: `tests/integration/test_m49_talks.py` plants receptiveness, the founder's factor and personality factors, and checks every prompt and API response for them and for the rival's offer, with adversarial text asking for them: **met**.
 
 ## Follow-ups
 
