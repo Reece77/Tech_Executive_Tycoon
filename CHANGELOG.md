@@ -2,6 +2,18 @@
 
 All notable changes to this project are recorded here. Golden snapshot regenerations must be listed with their reason.
 
+## v6.0.0
+
+The first installable release of Tech Startup Tycoon. Install it from GitHub Releases; the game opens in its own window, keeps your saves in Documents\Tech Startup Tycoon, and checks for updates when it starts.
+
+- **Run your whole group, or let your people run it.** Hand any area to an executive or a specialist, set their money limits, and read a monthly digest. One-off decisions always come to you.
+- **A living world to 2069.** Rivals build, buy and bid as you do; markets have realistic ceilings; dynasty mode carries your family past 2039, with heirs, succession and estate tax.
+- **The whole tech economy.** Software, cloud and AI; phones and platforms with app stores; chips, fabs and ASML's queue; mines, refineries and power plants; electric cars, robots and robotaxis; satellites and launch; medical devices and medicines; government and defence contracts.
+- **Regulation with teeth.** Gatekeeper rules, investigations in visible stages, fines and, rarely, break-ups with years of warning.
+- **Talk your way through deals and boardrooms.** Negotiate acquisitions, hires and contracts in conversation, take quarterly board meetings and earnings calls, or skip any of them for the usual outcome.
+- **Start in 2008 or 2010,** with the financial crisis, the App Store and the cloud arriving on their real dates.
+- **The conglomerate view** shows returns and capital across every industry you're in, with a shareholder letter each January.
+
 ## Unreleased
 
 - M48 board meetings, earnings calls and investor days (v6, lane B; no migration; golden snapshots and M30's state cache unchanged; `docs/tasks/M48-board-meetings-and-earnings-calls.md`'s decisions):
