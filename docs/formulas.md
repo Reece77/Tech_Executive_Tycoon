@@ -482,13 +482,13 @@ mk = \frac{budget_{\$}}{1000} + 5\,\mu, \qquad B^{*} = 100 \cdot \frac{mk}{mk + 
 
 Brand is per product and kept in [0, 100]. With no marketing, brand drifts toward 0.
 
-**Marketers direct a large budget (M46).** Budget points above `marketer_lift_from_mk` (100, a $100,000 monthly budget) are multiplied by `1 + min(0.5, 0.05 μ)`:
+**Marketers direct a large budget (M46).** Budget points above `marketer_lift_from_mk` (200, a $200,000 monthly budget) are multiplied by `1 + min(0.3, 0.03 μ)`:
 
 ```latex
-mk = b + 5\,\mu + \max(0,\; b - 100) \cdot \min(0.5,\; 0.05\,\mu), \qquad b = \frac{budget_{\$}}{1000}
+mk = b + 5\,\mu + \max(0,\; b - 200) \cdot \min(0.3,\; 0.03\,\mu), \qquad b = \frac{budget_{\$}}{1000}
 ```
 
-A startup's budget sits below the threshold, so nothing changes there; at a listed company's budget (thousands of points) the fixed `5 μ` was negligible, and a marketing team had no work. One average marketer (μ ≈ 1) now adds 5% to the budget above the threshold, and ten reach the cap. Why (M46 sub-task 1): a listed steady founder could not put IPO cash to work, because builders saturate (the feature score stops at 100 and Q_cap follows the team's average skill, not its size) and sellers only serve the small sales-led segments.
+A startup's budget sits below the threshold, so nothing changes there; at a listed company's budget (thousands of points) the fixed `5 μ` was negligible, and a marketing team had no work. One average marketer (μ ≈ 1) now adds 3% to the budget above the threshold, and ten reach the cap. Why (M46 sub-task 1): a listed steady founder could not put IPO cash to work, because builders saturate (the feature score stops at 100 and Q_cap follows the team's average skill, not its size) and sellers only serve the small sales-led segments.
 
 ### 11.6 Appeal (phase 5)
 
@@ -706,7 +706,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `products.dev_noise_sd` / `.maverick_noise_sd` / `.dev_noise_sd_cap` | 0.15 / 0.10 / 0.40 | multiplier sd | §11.3 |
 | `products.seller_rate.<segment>` | mid-market 2, enterprise 0.3 | customers per month per 10 sell | §11.3 |
 | `products.marketer_mk` / `.budget_mk_unit_cents` | 5 / 100000 | mk points / cents per mk point | §11.5 |
-| `products.marketer_lift` / `.marketer_lift_cap` / `.marketer_lift_from_mk` | 0.05 / 0.5 / 100 (M46) | fraction per unit of μ / fraction / mk points | §11.5 |
+| `products.marketer_lift` / `.marketer_lift_cap` / `.marketer_lift_from_mk` | 0.03 / 0.3 / 200 (M46) | fraction per unit of μ / fraction / mk points | §11.5 |
 | `products.qcap_per_skill` / `.quality_rate` / `.overcap_decay` / `.rot_threshold` / `.rot_per_month` | 5 / 0.15 / 0.01 / 0.25 / 0.5 | quality points / fraction / fraction / fraction of σ / quality points | §11.4 |
 | `products.brand_rate` | 0.10 | fraction per month | §11.5 |
 | `products.tag.<tag>.output` / `.perfectionist_qcap_bonus` | see §11.10 / 3 | multiplier / attribute points | §11.10 |

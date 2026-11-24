@@ -12,16 +12,16 @@ from tst.sim.products import formulas as f
 
 def test_below_the_threshold_nothing_changes(loaded: LoadedData) -> None:
     pb = loaded.balance.products
-    # $100,000 a month and four marketers: the old formula exactly
-    assert f.marketing_points(10_000_000, 4.0, pb) == pytest.approx(100 + 5 * 4)
+    # $200,000 a month and four marketers: the old formula exactly
+    assert f.marketing_points(20_000_000, 4.0, pb) == pytest.approx(200 + 5 * 4)
 
 
 def test_worked_example(loaded: LoadedData) -> None:
     pb = loaded.balance.products
-    # $1.1M a month (1,100 points): two marketers lift the 1,000 above 100 by 10%
-    assert f.marketing_points(110_000_000, 2.0, pb) == pytest.approx(1_100 + 10 + 1_000 * 0.10)
-    # twenty marketers stop at the cap, +50%
-    assert f.marketing_points(110_000_000, 20.0, pb) == pytest.approx(1_100 + 100 + 1_000 * 0.5)
+    # $1.2M a month (1,200 points): two marketers lift the 1,000 above 200 by 6%
+    assert f.marketing_points(120_000_000, 2.0, pb) == pytest.approx(1_200 + 10 + 1_000 * 0.06)
+    # twenty marketers stop at the cap, +30%
+    assert f.marketing_points(120_000_000, 20.0, pb) == pytest.approx(1_200 + 100 + 1_000 * 0.3)
 
 
 @given(
