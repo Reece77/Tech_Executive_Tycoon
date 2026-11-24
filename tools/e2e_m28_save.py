@@ -106,7 +106,17 @@ def _bid_month(game: Game) -> int:
     """The first month from now in which a rival bids (41.4): the draws are the world's."""
     b = game.loaded.balance
     rng = RngFactory(SEED)
+    gap = b.events.critical_gap_turns
+    criticals = [
+        e.turn
+        for e in game.state.events
+        if e.company_id == game.state.player.id and e.severity == "critical"
+    ]
     for t in range(game.state.turn, game.state.turn + BID_SEARCH):
+        # M46 (16.1): the bid's critical event waits for the director's critical slot, so the
+        # next Continue brings it only where no critical event fell in the gap before it
+        if any(turn > t + 1 - gap for turn in criticals):
+            continue
         state = replace(game.state, turn=t)
         probe, _ = bids.bids_month(state, rng, b, game.loaded.game_data, game.balances)
         if probe.world_bids != state.world_bids:
