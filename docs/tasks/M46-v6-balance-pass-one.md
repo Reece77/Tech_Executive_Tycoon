@@ -61,8 +61,8 @@
     | M27a 40.10 T1 (0.85-1.2) | 1.19 | passes | met |
     | M46 target (>= 1.05x) | 1.063x | - | met |
     | V2.wins (research_heavy <= 4 of 10) | 5/10 | 4/10 | 30 seeds: 22/30 on both (V1 table): seed luck on main's seeds 1-10, rule 4; recorded, not a known miss |
-    | V5.T1.ev_integrator (0.90-1.40x) | 0.84x seeds 1-10; 0.95x 11-20; 0.91x 21-30; 0.91x all 30 | 0.86x seeds 6-10, 0.91x 21-25 | misses on seeds 1-10 only; main comparison over 30 seeds pending at writing |
-    | V5.T2 (<= 4 wins) | 3, 4, 3 per ten seeds | - | the 30-seed row's cap does not scale with seeds (`v5.t2_row`), a tool follow-up |
+    | V5.T1.ev_integrator (0.90-1.40x) | 0.84x seeds 1-10, 0.95x 11-20, 0.91x 21-30; **0.91x all 30** | 0.96x, 0.96x, 0.94x; **0.95x all 30** (main weekly 45316801127) | passes over 30 seeds on both; misses on seeds 1-10 on the branch (seeds 1-5 0.86x, main 1.12x), and main's own seeds 6-10 part fails (0.86x, identical in two runs): rule 4, recorded. The comparison arm moves, not ev_integrator: full_integrator's December 2039 revenue rises with the lift (seed 4 $2.66B to $3.34B a month, seed 8 $2.20B to $3.26B) while ev_integrator, which also funds a car line, stays near main |
+    | V5.T2 (<= 4 wins) | 3, 4, 3 per ten seeds; 8 of 30 | 4, 3, 2; 8 of 30 | the 30-seed row's cap does not scale with seeds (`v5.t2_row`), a tool follow-up |
     | M30 2039 month (400 ms adjusted) | 403 ms (V6), 497 ms (v6-integrator) | 422, 485 ms | fails on main too, rule 3 (v6 performance pass) |
     | V4 parts, V3 shocks/long/integration, V5 long, M27b, balance | known misses within bounds | - | met |
 
