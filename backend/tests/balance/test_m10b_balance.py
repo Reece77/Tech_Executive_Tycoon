@@ -11,7 +11,7 @@ from tst.balance import m10b
 from tst.balance.known_misses import Reading, known_miss, verdict
 
 CRITICAL_GAP = 6
-SPACING = "M10b.T1.spacing"  # a known miss owned by v6 (M43, PM ruling 2026-11-22)
+SPACING = "M10b.T1.spacing"  # closed in M46: critical follow-ups wait for the slot (16.1)
 
 
 @pytest.mark.nightly

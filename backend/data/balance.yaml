@@ -358,6 +358,14 @@ products:
     government: 0.05 # M40 (56.1, 56.3): agencies buying launches, broadband and imagery (A)
     aviation_maritime: 0.3 # M40 (56.3): airlines and shipping fleets (A)
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
+  # M46 (11.5): marketers direct a large budget. Marketing points above marketer_lift_from_mk
+  # (the first $200k a month needs no team) are multiplied by 1 + min(cap, lift x mu): one
+  # average marketer (mu about 1) adds 3%, ten reach the cap. Before M46, 5 mu was the only term,
+  # negligible next to a listed company's budget of thousands of points. Softened from 0.05 /
+  # 0.5 / 100 so M27a's spread arm (40.10 target 1) stays in its band (M46 decision 3).
+  marketer_lift: 0.03 # fraction of budget points above the threshold added per unit of mu (11.5)
+  marketer_lift_cap: 0.3 # fraction; the lift never exceeds this (11.5)
+  marketer_lift_from_mk: 200 # marketing points ($200k a month of budget) before the lift applies (11.5)
   budget_mk_unit_cents: 100000 # cents of monthly budget per marketing point ($1,000) (11.5)
   qcap_per_skill: 5 # quality points of Q_cap per point of output-weighted development skill (11.4)
   quality_rate: 0.15 # fraction of the gap to Q_cap closed per month at full speed (11.4)

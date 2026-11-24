@@ -44,7 +44,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [balance, "nightly-ci SHARD=1", "nightly-ci SHARD=2", "nightly-ci SHARD=3", "nightly-ci SHARD=4"]
+        # M46: six shards, balanced by the nightly tests' measured durations (tests/durations.json)
+        part: [balance, "nightly-ci SHARD=1", "nightly-ci SHARD=2", "nightly-ci SHARD=3", "nightly-ci SHARD=4", "nightly-ci SHARD=5", "nightly-ci SHARD=6"]
     steps:
       - uses: actions/checkout@v4
 
