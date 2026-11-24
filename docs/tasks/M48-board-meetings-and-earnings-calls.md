@@ -69,7 +69,7 @@ Engineering and design choices the spec, ADR-0023 and this brief left open (CLAU
 ### 59.4 targets (`python -m tst.balance.m48`, seeds 1-10, 60 months from M13's listed company on the steady script)
 
 1. Skip is today's game: a game that holds no meeting runs no meeting code and the state gains no field; golden snapshots and M30's state cache unchanged (see the pull request's runs); `tests/integration/test_m48_meetings.py::test_skip_changes_nothing` (a meeting answered and then skipped leaves the state and the decision log as they were): **met**.
-2. Good communicator (score 16): board confidence **+6.7** points (band 3-10), sentiment **+5.0%** (band 2-6%) against skipping: **met**. Poor communicator (score 6): **1.5** points lower (band 0-8), sentiment -1.2%: **met**.
+2. Good communicator (score 16): board confidence **+6.6** points (band 3-10), sentiment **+5.0%** (band 2-6%) against skipping: **met**. Poor communicator (score 6): **1.5** points lower (band 0-8), sentiment -0.8%: **met** (re-run on the code merged with M46; before it, +6.7, +5.0%, 1.5 lower, -1.2%).
 3. After three broken guidance promises within 24 months (10/10 seeds; credibility 27 on each), the next call's gains are **50%** of the same call's at credibility 50 (at most 50%): **met**.
 4. No leak: `tests/integration/test_m48_meetings.py` plants priorities, receptiveness and the founder's factor and checks every prompt and API response, with adversarial text asking for them: **met**.
 
