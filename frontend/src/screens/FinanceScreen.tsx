@@ -11,6 +11,7 @@ import { DebtTab } from './finance/DebtTab';
 import { DivisionsTab } from './finance/DivisionsTab';
 import { FundraisingTab } from './finance/FundraisingTab';
 import { GroupTab } from './finance/GroupTab';
+import { MeetingsTab } from './finance/MeetingsTab';
 import { StatementsTab } from './finance/StatementsTab';
 import { StockTab } from './finance/StockTab';
 
@@ -22,6 +23,7 @@ const FINANCE_TABS = [
   { key: 'debt', label: 'Debt' }, // M10
   { key: 'stock', label: 'Stock' }, // M13: once public
   { key: 'board', label: 'Board' },
+  { key: 'meetings', label: 'Meetings' }, // M48: board meetings, earnings calls, investor days
   { key: 'deals', label: 'Deals' }, // M14: acquisitions
   { key: 'group', label: 'Group' }, // M16: the holding company and its subsidiaries
   { key: 'conglomerate', label: 'Conglomerate' }, // M43: the group across its industries
@@ -110,6 +112,8 @@ function TabBody({
       return <StockTab saveId={saveId} />;
     case 'board':
       return <BoardTab saveId={saveId} companyId={companyId} />;
+    case 'meetings':
+      return <MeetingsTab saveId={saveId} />;
     case 'deals':
       return <DealsTab saveId={saveId} />;
     case 'group':

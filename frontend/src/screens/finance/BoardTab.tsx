@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { BoardMemberCard } from '../../components/BoardMemberCard';
 import { DataTable } from '../../components/DataTable';
 import { Sparkline } from '../../components/Sparkline';
+import { CredibilityTile } from '../../components/CredibilityTile';
 import { KpiTile } from '../../components/KpiTile';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { useBoard, useNameNominee, type Board, type Director } from '../../hooks/api';
@@ -287,6 +288,7 @@ export function BoardTab({ saveId, companyId }: { saveId: string; companyId?: nu
   return (
     <>
       <Tiles board={board} />
+      <CredibilityTile saveId={saveId} />
       <section aria-label="Directors" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Directors</h2>
         <Directors saveId={saveId} board={board} />

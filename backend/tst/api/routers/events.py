@@ -194,7 +194,7 @@ def get_team_mood(
 
 
 def _settings_out(settings: SettingsDep, data: DataDep) -> LLMSettingsOut:
-    from tst.conversations.service import cap_cents, mode_info
+    from tst.conversations.common import cap_cents, mode_info
 
     save_dir = settings.resolved_save_dir()
     llm = load_settings(save_dir)

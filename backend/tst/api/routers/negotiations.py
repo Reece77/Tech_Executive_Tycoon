@@ -21,14 +21,14 @@ from tst.api.schemas.negotiations import (
     NegotiationSummaryOut,
     NegotiationTermOut,
 )
-from tst.conversations import service
+from tst.conversations import common, service
 from tst.conversations.view import PublicMove
 from tst.sim.calendar import format_turn
 
 router = APIRouter(prefix="/api/saves/{save_id}/negotiations", tags=["negotiations"])
 
 
-def _mode(m: service.ModeInfo) -> NegotiationModeOut:
+def _mode(m: common.ModeInfo) -> NegotiationModeOut:
     return NegotiationModeOut(
         mode=m.mode, reason=m.reason, cap_cents=m.cap_cents, spent_cents=round(m.spent_cents, 4)
     )
@@ -110,7 +110,7 @@ def list_negotiations(save_id: str, settings: SettingsDep, data: DataDep) -> Neg
     path = _path(settings, save_id)
     talks = service.listing(path, data)
     return NegotiationListOut(
-        mode=_mode(service.mode_info(path.parent, data)),
+        mode=_mode(common.mode_info(path.parent, data)),
         items=[
             NegotiationSummaryOut(
                 negotiation_id=t.id,

@@ -4959,3 +4959,74 @@ def negotiate(
         )
     if v.final_shown:
         typer.echo(f"final {'; '.join(v.final_shown)} (opened at {'; '.join(v.opening_shown)})")
+
+
+@app.command()
+def meet(
+    save: Annotated[str, typer.Option(help="Save slug")],
+    kind: Annotated[
+        str | None,
+        typer.Option(help="M48 (59): hold this month's board, call or investor_day"),
+    ] = None,
+    params: Annotated[
+        str,
+        typer.Option(
+            help='An investor day\'s plan as JSON: \'{"plan_kind": "new_industry", ...}\''
+        ),
+    ] = "{}",
+    meeting: Annotated[int | None, typer.Option("--id", help="A meeting's id (tst meet)")] = None,
+    moves: Annotated[
+        str, typer.Option(help="Template-mode moves for the current item (explain:0,commit)")
+    ] = "",
+    skip: Annotated[bool, typer.Option(help="Skip the meeting: today's outcome")] = False,
+) -> None:
+    """Board meetings, earnings calls and investor days (M48, formulas.md 59), headless and in
+    template mode: list this month's meetings, hold one, answer the current item with moves, or
+    skip."""
+    import json
+
+    from tst.conversations import meetings
+    from tst.llm.offline import TemplateAdapter
+
+    settings, data = _context()
+    adapter = TemplateAdapter()
+    try:
+        path = repository.existing_save_path(settings.resolved_save_dir(), save)
+        if kind is not None:
+            t = meetings.open_meeting(path, data, kind, json.loads(params), adapter=adapter)
+        elif meeting is not None and skip:
+            t = meetings.skip(path, data, meeting)
+        elif meeting is not None and moves:
+            picked = []
+            for m in (x for x in moves.split(",") if x):
+                name, _, fact = m.partition(":")
+                picked.append({"kind": name, **({"fact": int(fact)} if fact else {})})
+            t = meetings.answer(path, data, meeting, moves=picked, adapter=adapter)
+        elif meeting is not None:
+            t = meetings.get(path, data, meeting)
+        else:
+            for slot in meetings.availability(path, data):
+                typer.echo(f"{slot.kind}: {'due' if slot.available else slot.reason}")
+            for row in meetings.listing(path, data):
+                typer.echo(f"{row.id} {row.status} {row.view.subject}")
+            return
+    except (SimError, ValueError) as exc:
+        raise _fail(getattr(exc, "message", str(exc))) from exc
+    v = t.view
+    typer.echo(f"{t.id} {v.subject}: {t.status} (credibility {v.credibility:.0f})")
+    for a in v.answers:
+        item = v.items[a.n]
+        typer.echo(
+            f"{item.title}: [{', '.join(m.words for m in a.moves)}] -> {a.reaction}"
+            + (f"; committed to {a.commitment}" if a.commitment else "")
+        )
+    if v.next_item is not None:
+        item = v.items[v.next_item]
+        typer.echo(f"next: {v.speakers[item.speaker].name} asks: {item.question}")
+        for i, f in enumerate(item.facts):
+            typer.echo(f"  fact {i}: {f}")
+        typer.echo(f"  moves: {', '.join(k for k, _ in v.moves if k != 'neutral')}")
+    for e in v.effects:
+        typer.echo(f"effect: {e.words}")
+    for name, backs in v.votes:
+        typer.echo(f"vote: {name} {'backs' if backs else 'does not back'} the plan")

@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CredibilityTile } from '../../components/CredibilityTile';
 import { DataTable } from '../../components/DataTable';
 import { LoadError, Loading, Panel } from '../../components/ScreenState';
 import { Term } from '../../components/Term';
@@ -54,7 +55,12 @@ export function StockTab({ saveId }: { saveId: string }) {
       </Panel>
     );
   }
-  return <StockBody saveId={saveId} stock={stock} />;
+  return (
+    <>
+      <CredibilityTile saveId={saveId} />
+      <StockBody saveId={saveId} stock={stock} />
+    </>
+  );
 }
 
 export function StockBody({ saveId, stock }: { saveId: string; stock: Stock }) {

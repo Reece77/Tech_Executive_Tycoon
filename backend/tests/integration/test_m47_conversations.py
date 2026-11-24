@@ -286,7 +286,9 @@ def test_an_agreement_waits_out_a_busy_save(
             raise SaveBusyError("busy")
         return real(*args, **kwargs)  # type: ignore[arg-type]
 
-    monkeypatch.setattr(service, "BUSY_WAIT_S", 0.0)
+    from tst.conversations import common
+
+    monkeypatch.setattr(common, "BUSY_WAIT_S", 0.0)  # M48: the busy wait moved to common
     monkeypatch.setattr(repository, "run_action", busy_once)
     t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
     done = service.skip(save, loaded, t.id)

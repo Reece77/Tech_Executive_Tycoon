@@ -73,6 +73,18 @@ EVENT_SCHEMA: dict[str, Any] = {
 type ConversationKind = Literal["classify", "suggest", "reply"]
 
 MOVE_NAMES = ("concede", "anchor", "justify", "appeal", "threaten_walk", "package", "close")
+# M48 (59): the meetings' moves too; each kind's validator keeps only its own set
+MEETING_MOVE_NAMES = (
+    "commit",
+    "explain",
+    "defer",
+    "push_back",
+    "reaffirm",
+    "raise",
+    "lower",
+    "deflect",
+    "promise",
+)
 CLASSIFY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -81,7 +93,10 @@ CLASSIFY_SCHEMA: dict[str, Any] = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "move": {"type": "string", "enum": [*MOVE_NAMES, "neutral"]},
+                    "move": {
+                        "type": "string",
+                        "enum": [*MOVE_NAMES, *MEETING_MOVE_NAMES, "neutral"],
+                    },
                     "term": {"type": "integer"},
                     "other": {"type": "integer"},
                     "fact": {"type": "integer"},

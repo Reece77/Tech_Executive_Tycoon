@@ -23656,6 +23656,416 @@
         }
       }
     },
+    "/api/saves/{save_id}/meetings": {
+      "get": {
+        "tags": [
+          "meetings"
+        ],
+        "summary": "List Meetings",
+        "description": "This month's meetings and why any cannot be held, past meetings newest first, the\ncommitments made in meetings and their status, and credibility.",
+        "operationId": "listMeetings",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingListOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "meetings"
+        ],
+        "summary": "Open Meeting",
+        "description": "Hold this month's meeting of a kind (or resume it while it is open).",
+        "operationId": "openMeeting",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingOpenIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/meetings/{meeting_id}": {
+      "get": {
+        "tags": [
+          "meetings"
+        ],
+        "summary": "Get Meeting",
+        "description": "The meeting and, once it is over, its visible effects.",
+        "operationId": "getMeeting",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "meeting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Meeting Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/meetings/{meeting_id}/answers": {
+      "post": {
+        "tags": [
+          "meetings"
+        ],
+        "summary": "Answer Item",
+        "description": "Answer the current item: free text (scored by the LLM into moves) or template moves.",
+        "operationId": "answerMeetingItem",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "meeting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Meeting Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetingAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/meetings/{meeting_id}/skip": {
+      "post": {
+        "tags": [
+          "meetings"
+        ],
+        "summary": "Skip Meeting",
+        "description": "Skip: today's outcome; nothing the meeting would have moved moves (59).",
+        "operationId": "skipMeeting",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "meeting_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Meeting Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world-news": {
       "get": {
         "tags": [
@@ -52854,6 +53264,697 @@
           "precedents"
         ],
         "title": "MedicalOut"
+      },
+      "MeetingAnswerIn": {
+        "properties": {
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "The player's answer (free text)"
+          },
+          "moves": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/MeetingMoveIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moves",
+            "description": "Template mode's moves"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "free | suggested | template",
+            "default": "free"
+          }
+        },
+        "type": "object",
+        "title": "MeetingAnswerIn"
+      },
+      "MeetingAnswerOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "message_source": {
+            "type": "string",
+            "title": "Message Source"
+          },
+          "reply": {
+            "type": "string",
+            "title": "Reply"
+          },
+          "reply_source": {
+            "type": "string",
+            "title": "Reply Source"
+          },
+          "claimed": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingMoveOut"
+            },
+            "type": "array",
+            "title": "Claimed"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingMoveOut"
+            },
+            "type": "array",
+            "title": "Moves"
+          },
+          "reaction": {
+            "type": "string",
+            "title": "Reaction"
+          },
+          "reaction_words": {
+            "type": "string",
+            "title": "Reaction Words"
+          },
+          "commitment": {
+            "type": "string",
+            "title": "Commitment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "message",
+          "message_source",
+          "reply",
+          "reply_source",
+          "claimed",
+          "moves",
+          "reaction",
+          "reaction_words",
+          "commitment"
+        ],
+        "title": "MeetingAnswerOut"
+      },
+      "MeetingAvailabilityOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "meeting_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meeting Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "available",
+          "reason",
+          "meeting_id"
+        ],
+        "title": "MeetingAvailabilityOut"
+      },
+      "MeetingCommitmentOut": {
+        "properties": {
+          "promise_id": {
+            "type": "integer",
+            "title": "Promise Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          },
+          "made_label": {
+            "type": "string",
+            "title": "Made Label"
+          },
+          "deadline_label": {
+            "type": "string",
+            "title": "Deadline Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "promise_id",
+          "kind",
+          "words",
+          "made_label",
+          "deadline_label",
+          "status"
+        ],
+        "title": "MeetingCommitmentOut"
+      },
+      "MeetingEffectOut": {
+        "properties": {
+          "who": {
+            "type": "string",
+            "title": "Who"
+          },
+          "what": {
+            "type": "string",
+            "title": "What"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "who",
+          "what",
+          "change",
+          "words"
+        ],
+        "title": "MeetingEffectOut"
+      },
+      "MeetingItemOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "speaker": {
+            "type": "integer",
+            "title": "Speaker"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "problem": {
+            "type": "boolean",
+            "title": "Problem"
+          },
+          "figure": {
+            "type": "string",
+            "title": "Figure"
+          },
+          "guidance": {
+            "type": "boolean",
+            "title": "Guidance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "speaker",
+          "topic",
+          "title",
+          "question",
+          "facts",
+          "problem",
+          "figure",
+          "guidance"
+        ],
+        "title": "MeetingItemOut"
+      },
+      "MeetingListOut": {
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          },
+          "available": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingAvailabilityOut"
+            },
+            "type": "array",
+            "title": "Available"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "commitments": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingCommitmentOut"
+            },
+            "type": "array",
+            "title": "Commitments"
+          },
+          "credibility": {
+            "type": "number",
+            "title": "Credibility"
+          },
+          "industries": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingMoveChoiceOut"
+            },
+            "type": "array",
+            "title": "Industries",
+            "description": "The industries an investor day can present a new industry in (key, label)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "available",
+          "items",
+          "commitments",
+          "credibility",
+          "industries"
+        ],
+        "title": "MeetingListOut"
+      },
+      "MeetingMoveChoiceOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label"
+        ],
+        "title": "MeetingMoveChoiceOut"
+      },
+      "MeetingMoveIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "board: commit | explain | defer | concede | push_back; call: reaffirm | raise | lower | explain | deflect | promise; investor day: explain | commit | deflect | concede"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact",
+            "description": "The question's fact an explain cites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "MeetingMoveIn"
+      },
+      "MeetingMoveOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "fact",
+          "words"
+        ],
+        "title": "MeetingMoveOut"
+      },
+      "MeetingOpenIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "board | call | investor_day"
+          },
+          "params": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParamValue"
+            },
+            "type": "object",
+            "title": "Params",
+            "description": "An investor day's plan: plan_kind (new_industry | capital_plan | restructuring) and industry (for a new industry)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "MeetingOpenIn"
+      },
+      "MeetingOut": {
+        "properties": {
+          "meeting_id": {
+            "type": "integer",
+            "title": "Meeting Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingSpeakerOut"
+            },
+            "type": "array",
+            "title": "Speakers"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingAnswerOut"
+            },
+            "type": "array",
+            "title": "Answers"
+          },
+          "next_item": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Item"
+          },
+          "opening_line": {
+            "type": "string",
+            "title": "Opening Line"
+          },
+          "move_choices": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingMoveChoiceOut"
+            },
+            "type": "array",
+            "title": "Move Choices"
+          },
+          "credibility": {
+            "type": "number",
+            "title": "Credibility"
+          },
+          "persona": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Persona"
+          },
+          "plan_subject": {
+            "type": "string",
+            "title": "Plan Subject"
+          },
+          "plan_facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Plan Facts"
+          },
+          "effects": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingEffectOut"
+            },
+            "type": "array",
+            "title": "Effects"
+          },
+          "votes": {
+            "items": {
+              "$ref": "#/components/schemas/MeetingVoteOut"
+            },
+            "type": "array",
+            "title": "Votes"
+          },
+          "commitments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Commitments"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meeting_id",
+          "kind",
+          "subject",
+          "status",
+          "opened_turn",
+          "date_label",
+          "error",
+          "speakers",
+          "items",
+          "answers",
+          "next_item",
+          "opening_line",
+          "move_choices",
+          "credibility",
+          "persona",
+          "plan_subject",
+          "plan_facts",
+          "effects",
+          "votes",
+          "commitments",
+          "suggestions",
+          "mode"
+        ],
+        "title": "MeetingOut"
+      },
+      "MeetingSpeakerOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "focus": {
+            "type": "string",
+            "title": "Focus"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "rating": {
+            "type": "string",
+            "title": "Rating"
+          },
+          "target_cents": {
+            "type": "integer",
+            "title": "Target Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "kind",
+          "name",
+          "role",
+          "organisation",
+          "focus",
+          "confidence",
+          "rating",
+          "target_cents"
+        ],
+        "title": "MeetingSpeakerOut"
+      },
+      "MeetingSummaryOut": {
+        "properties": {
+          "meeting_id": {
+            "type": "integer",
+            "title": "Meeting Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Effects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meeting_id",
+          "kind",
+          "subject",
+          "status",
+          "opened_turn",
+          "date_label",
+          "effects"
+        ],
+        "title": "MeetingSummaryOut"
+      },
+      "MeetingVoteOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "backs_plan": {
+            "type": "boolean",
+            "title": "Backs Plan"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "backs_plan"
+        ],
+        "title": "MeetingVoteOut"
       },
       "MentorIn": {
         "properties": {
