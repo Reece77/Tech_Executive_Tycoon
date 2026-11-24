@@ -27,6 +27,7 @@ import { OverviewScreen } from './screens/OverviewScreen';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { PersonScreen } from './screens/PersonScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
+import { PressScreen } from './screens/PressScreen';
 import { ProductScreen } from './screens/ProductScreen';
 import { ProductsScreen } from './screens/ProductsScreen';
 import { RecruitmentScreen } from './screens/RecruitmentScreen';
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="inbox/:itemId?" element={<InboxScreen />} />
           <Route path="events/:eventId" element={<EventRedirect />} />
           <Route path="overview" element={<OverviewScreen />} />
+          <Route path="press" element={<PressScreen />} />
           <Route path="people" element={<PeopleScreen />} />
           <Route path="people/family" element={<FamilyScreen />} />
           <Route path="people/:personId" element={<PersonScreen />} />

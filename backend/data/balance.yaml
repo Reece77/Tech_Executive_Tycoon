@@ -3522,3 +3522,76 @@ meetings: # 59: board meetings, earnings calls and investor days (M48, v6 lane B
   max_reply_words: 60 # words in the speaker's reply
   suggestions: 3 # suggested answers an item (as 58.3)
   history_items: 3 # earlier items quoted in a prompt
+
+talks: # 61: press interviews, crisis conferences and one-to-ones (M49, v6 lane A), on M47's conversation engine. The engine owns every effect, within these bounds; the LLM only scores an answer into moves. Skipping a talk is today's game. A = an assumption for gameplay, tuned only for 61.3
+  energy: { interview: 0, crisis: 1, one_to_one: 2 } # founder energy spent when a talk ends (61.2: a one-to-one 2; an interview's answer costs what the press event's answer does)
+  skill: # the founder's (or a delegate's) communication and leadership scale the effects, as 59.1
+    band: [0.8, 1.2] # the factor at skill score 1 and 20
+    weights: { communication: 0.6, leadership: 0.4 } # the score's skills (A)
+  receptiveness: [0.85, 1.15] # the journalist's or person's drawn factor on the effects at one talk (hidden; A)
+  delegate_noise: 0.1 # share of the skill band; a seat holder's quality draw moves their factor by up to this either way (40, 61.2; A)
+  interview: # 61.1
+    questions: [2, 4] # questions a journalist asks, drawn (61.1)
+    outlets: # the journalists' outlets and beats (public)
+      - { name: TechCrunch, beat: startups }
+      - { name: The Wall Street Journal, beat: business }
+      - { name: Bloomberg, beat: markets }
+      - { name: The Verge, beat: consumer technology }
+      - { name: Wired, beat: technology }
+      - { name: Financial Times, beat: business }
+      - { name: Reuters, beat: companies }
+    stances: { friendly: 1.15, neutral: 1.0, sceptical: 0.85 } # the journalist's public stance toward the company: x on the coverage's gains (A)
+    brand_share: 1.0 # % on every product's brand target a full-strength answer adds beyond the tone's (A)
+    brand_step: 2.0 # % the coverage moves the brand target at most, either way, x the audience (within 29.1's bold 3%)
+    brand_months: 6 # months the coverage's change runs (as 29.1's tones)
+    cred_share: 1.0 # credibility points a full-strength answer earns (A)
+    cred_step: 3.0 # credibility points an interview moves at most, x the audience (A)
+    effects: { bold_claim: 0.5, measured: 0.3, deflect: -0.4, apologise: 0.1, promise: 0.4, attack_rival: 0.2, no_comment: -0.5, neutral: 0.0 } # move -> strength (A)
+  crisis: # 61.1: a class I recall, a robotaxi incident, a breach or an outage
+    questions: [2, 3]
+    window_months: 1 # months after the crisis a conference can still be held (A)
+    brand_share: 6.0 # % on every product's brand target a full-strength answer adds (A; M49 tuned from 3.0 for 61.3 target 4)
+    brand_step: 12.0 # % at most either way, x the audience (A; M49 tuned from 6.0)
+    brand_months: 12 # months it runs (A)
+    cred_share: 2.0 # credibility points a full-strength answer earns (A)
+    cred_step: 6.0 # at most either way, x the audience (A)
+    persona_points: 3.0 # Beloved points for candour, Ruthless for deflection, at full strength (32.4; A)
+    deflect_inspection: 0.3 # chance a deflection on a class I recall brings a for-cause inspection (48, 50; A)
+    effects: { bold_claim: -0.5, measured: 0.2, deflect: -0.7, apologise: 0.6, promise: 0.3, attack_rival: -0.6, no_comment: -0.8, take_responsibility: 0.8, neutral: -0.2 } # (A)
+  one_to_one: # 61.2
+    unhappy_below: 50 # shown morale; under it the People screen flags the person
+    burnout_from: 70 # stress; from here the burnout topic comes up (32.1)
+    morale_step: 6 # morale points one talk moves at most (61.2)
+    morale_points: 4 # morale points a full-strength answer moves (A)
+    loyalty_step: 1.0 # loyalty points one talk moves at most (A)
+    loyalty_points: 0.6 # loyalty points a full-strength answer moves (A)
+    push_stress: 5 # stress points push_harder adds, where stress is tracked (A)
+    raise_share: 0.05 # offer_raise: salary x (1 + this), through give_raise (A)
+    equity_bp: 10 # offer_equity: options of this many bp of fully diluted shares, from the pool (A)
+    retain_base: 0.5 # chance a full-strength answer on a rival's approach keeps the person at once (A)
+    retain_cap: 0.6 # at most (A)
+    trait_weight: # move -> (personality trait, weight): x (1 + weight x (trait - 10.5) / 9.5) on the move's effect (A)
+      praise: [ego, 0.4]
+      promise_promotion: [ambition, 0.6]
+      push_harder: [ambition, -0.8]
+      warn: [ego, 0.5]
+      listen: [loyalty, 0.3]
+      offer_raise: [loyalty, -0.3]
+    trait_band: [0.5, 1.5] # the personality factor's bounds
+    effects: { listen: 0.4, promise_promotion: 0.6, offer_raise: 0.5, offer_equity: 0.5, reassign: 0.2, push_harder: -0.2, praise: 0.4, warn: -0.4, neutral: 0.0 } # move -> strength on morale's question (A)
+    topic_effects: # where a topic's question takes a move differently (A)
+      ambition: { promise_promotion: 0.8, reassign: 0.5, listen: 0.3, push_harder: 0.1 }
+      approach: { listen: 0.3, offer_raise: 0.8, offer_equity: 0.7, promise_promotion: 0.7, praise: 0.3, push_harder: -0.6, warn: -0.8, reassign: 0.2 }
+      burnout: { listen: 0.6, reassign: 0.7, push_harder: -0.9, praise: 0.2 }
+  promises: # 61.2: a promotion promised in a one-to-one, tracked
+    months: 12 # months to give the promotion (61.3 target 3)
+    kept_morale: 4 # morale points when kept (A)
+    kept_loyalty: 0.5 # loyalty points when kept (A)
+    broken_mult: 2.0 # broken, they fall by this x as much (61.2: twice)
+    leave_mult: 2.0 # x the person's resignation chance after a broken promise (61.3 target 3)
+    leave_months: 12 # months the higher chance lasts (A)
+  max_moves: 3 # moves one answer counts at most
+  max_message_chars: 600 # characters in the player's answer
+  max_reply_words: 60 # words in the other side's reply
+  suggestions: 3 # suggested answers a question
+  history_items: 3 # earlier answers quoted in a prompt

@@ -345,6 +345,18 @@ templates:
   meeting_held: # M48 (59)
     title: "You attended {meeting}"
     body: "{summary}"
+  talk_held: # M49 (61)
+    title: "You held {talk}"
+    body: "{summary}"
+  talk_retained: # M49 (61.2)
+    title: "{name} turns {rival} down"
+    body: "After your one-to-one, {name} has told {rival} they are staying."
+  promotion_kept: # M49 (61.2)
+    title: "Promise kept: {promise}"
+    body: "You said you would {promise}, and you did. Their morale and loyalty rise."
+  promotion_broken: # M49 (61.2)
+    title: "Promise broken: {promise}"
+    body: "You said you would {promise}, and it has not happened. Their morale and loyalty fall, and they are more likely to leave."
   board_warning:
     title: "Formal warning from your board"
     body: "Average board confidence has fallen to {confidence}. The board expects growth closer to plan and a safer runway. Directors who stay below {removal} for {months} months will vote to remove you."

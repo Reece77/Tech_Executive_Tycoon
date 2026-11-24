@@ -1,7 +1,9 @@
-import { NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
+import { Button, NativeSelect, TextInput, UnstyledButton } from '@mantine/core';
 import { createColumnHelper, useTable } from '@tanstack/react-table';
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
+import { TalkFlags } from '../components/OneToOnePanel';
+import { useOpenTalk, useTalks, type TalkPerson } from '../hooks/talks';
 import { AttributeRange } from '../components/AttributeRange';
 import { DataTable } from '../components/DataTable';
 import { ViewsMenu } from '../components/ViewsMenu';
@@ -30,14 +32,52 @@ type View = 'overview' | 'skills';
 const helper = createColumnHelper<GameTableFeatures, Person>();
 const TOP_SKILLS = 3;
 
-function overviewColumns(saveId: string) {
+/** A flagged person's badges and the one-to-one action (M49, 61.2). */
+function OneToOneCell({ saveId, person }: { saveId: string; person: TalkPerson | undefined }) {
+  const open = useOpenTalk(saveId);
+  const navigate = useNavigate();
+  if (!person) return null;
+  const flagged = person.flags.some((f) => f === 'unhappy' || f === 'approached');
+  if (!flagged && person.held === '') return null;
+  const blocked = person.held !== '' && person.held !== 'open';
+  return (
+    <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+      <TalkFlags person={person} compact />
+      {blocked ? (
+        <span className="tst-muted" style={{ fontSize: 12 }}>
+          talked
+        </span>
+      ) : (
+        <Button
+          size="compact-xs"
+          variant="light"
+          data-testid="people-one-to-one"
+          loading={open.isPending}
+          onClick={() =>
+            open.mutate(
+              { kind: 'one_to_one', params: { person_id: person.person_id } },
+              {
+                onSuccess: (t) =>
+                  void navigate(`/game/${saveId}/people/${person.person_id}?talk=${t.talk_id}`),
+              },
+            )
+          }
+        >
+          {person.held === 'open' ? 'Resume' : 'One-to-one'}
+        </Button>
+      )}
+    </span>
+  );
+}
+
+function overviewColumns(saveId: string, talkPeople: ReadonlyMap<number, TalkPerson>) {
   return helper.columns([
     helper.accessor('name', {
       header: 'Name',
       sortFn: 'alphanumeric',
       enableHiding: false,
       cell: ({ row }) => (
-        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <Link
             to={`/game/${saveId}/people/${row.original.person_id}`}
             style={{ fontWeight: 600, textDecoration: 'none' }}
@@ -45,6 +85,8 @@ function overviewColumns(saveId: string) {
             {row.original.name}
           </Link>
           {row.original.org?.leads_unit_id != null && <LeadsChip />}
+          {/* M49 (61.2): unhappy or approached people are flagged, with a one-to-one */}
+          <OneToOneCell saveId={saveId} person={talkPeople.get(row.original.person_id)} />
         </span>
       ),
     }),
@@ -231,13 +273,18 @@ function PeopleBody({
   const [view, setView] = useState<View>('overview');
   const [filter, setFilter] = useState('');
   const [unitFilter, setUnitFilter] = useState('');
+  const talks = useTalks(saveId); // M49: who is flagged; the roster loads without it
+  const talkPeople = useMemo(
+    () => new Map((talks.data?.people ?? []).map((p) => [p.person_id, p])),
+    [talks.data],
+  );
   const unitNames = useMemo(
     () => [...new Set(people.map((p) => p.org?.unit_name ?? ''))].filter(Boolean).sort(),
     [people],
   );
   const columns = useMemo(
-    () => (view === 'overview' ? overviewColumns(saveId) : skillColumns(saveId, meta)),
-    [view, saveId, meta],
+    () => (view === 'overview' ? overviewColumns(saveId, talkPeople) : skillColumns(saveId, meta)),
+    [view, saveId, meta, talkPeople],
   );
   const data = useMemo(() => {
     const q = filter.trim().toLowerCase();

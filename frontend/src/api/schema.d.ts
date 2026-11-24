@@ -5364,6 +5364,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/talks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Talks
+         * @description This month's interviews and press conferences, past talks newest first (or one
+         *     person's), the company's people with their flags, and promised promotions.
+         */
+        get: operations["listTalks"];
+        put?: never;
+        /**
+         * Open Talk
+         * @description Take an interview or press conference, or hold a one-to-one (or resume an open one).
+         */
+        post: operations["openTalk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/talks/{talk_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Talk
+         * @description The talk and, once it is over, its visible effects.
+         */
+        get: operations["getTalk"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/talks/{talk_id}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Talk
+         * @description Answer the current question: free text (scored by the LLM into moves) or template
+         *     moves.
+         */
+        post: operations["answerTalk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/talks/{talk_id}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Skip Talk
+         * @description Skip: today's outcome; nothing the talk would have moved moves (61). An interview's
+         *     press event can still be answered as before.
+         */
+        post: operations["skipTalk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/world-news": {
         parameters: {
             query?: never;
@@ -24956,6 +25043,272 @@ export interface components {
              */
             marks: string;
         };
+        /** TalkAnswerIn */
+        TalkAnswerIn: {
+            /**
+             * Message
+             * @description The player's answer (free text)
+             */
+            message?: string | null;
+            /**
+             * Moves
+             * @description Template mode's moves
+             */
+            moves?: components["schemas"]["TalkMoveIn"][] | null;
+            /**
+             * Source
+             * @description free | suggested | template
+             * @default free
+             */
+            source?: string;
+        };
+        /** TalkAnswerOut */
+        TalkAnswerOut: {
+            /** N */
+            n: number;
+            /** Message */
+            message: string;
+            /** Message Source */
+            message_source: string;
+            /** Reply */
+            reply: string;
+            /** Reply Source */
+            reply_source: string;
+            /** Claimed */
+            claimed: components["schemas"]["TalkMoveOut"][];
+            /** Moves */
+            moves: components["schemas"]["TalkMoveOut"][];
+            /** Reaction */
+            reaction: string;
+            /** Reaction Words */
+            reaction_words: string;
+        };
+        /** TalkAvailableOut */
+        TalkAvailableOut: {
+            /** Kind */
+            kind: string;
+            /** Source */
+            source: string;
+            /** Key */
+            key: number;
+            /** Subject */
+            subject: string;
+            /** Talk Id */
+            talk_id: number | null;
+            /** Status */
+            status: string;
+        };
+        /** TalkCounterpartOut */
+        TalkCounterpartOut: {
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+            /** Organisation */
+            organisation: string;
+            /** Person Id */
+            person_id: number | null;
+            /** Beat */
+            beat: string;
+            /**
+             * Stance
+             * @description A journalist's public stance: friendly | neutral | sceptical
+             */
+            stance: string;
+            /**
+             * Morale
+             * @description A person's morale as shown when the talk opened
+             */
+            morale: number | null;
+        };
+        /** TalkEffectOut */
+        TalkEffectOut: {
+            /** What */
+            what: string;
+            /** Change */
+            change: number;
+            /** Words */
+            words: string;
+        };
+        /** TalkListOut */
+        TalkListOut: {
+            mode: components["schemas"]["NegotiationModeOut"];
+            /** Available */
+            available: components["schemas"]["TalkAvailableOut"][];
+            /** Items */
+            items: components["schemas"]["TalkSummaryOut"][];
+            /** People */
+            people: components["schemas"]["TalkPersonOut"][];
+            /** Promises */
+            promises: components["schemas"]["TalkPromiseOut"][];
+            /** Energy */
+            energy: number | null;
+            /** One To One Energy */
+            one_to_one_energy: number;
+        };
+        /** TalkMoveChoiceOut */
+        TalkMoveChoiceOut: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+        };
+        /** TalkMoveIn */
+        TalkMoveIn: {
+            /**
+             * Kind
+             * @description interview: bold_claim | measured | deflect | apologise | promise | attack_rival | no_comment; crisis: those and take_responsibility; one-to-one: listen | promise_promotion | offer_raise | offer_equity | reassign | push_harder | praise | warn
+             */
+            kind: string;
+        };
+        /** TalkMoveOut */
+        TalkMoveOut: {
+            /** Kind */
+            kind: string;
+            /** Words */
+            words: string;
+        };
+        /** TalkOpenIn */
+        TalkOpenIn: {
+            /**
+             * Kind
+             * @description interview | crisis | one_to_one
+             */
+            kind: string;
+            /**
+             * Params
+             * @description An interview or crisis: source (press | recall | robotaxi) and key; a one-to-one: person_id, and delegate_id for a seat holder to hold it
+             */
+            params?: {
+                [key: string]: components["schemas"]["ParamValue"];
+            };
+        };
+        /** TalkOut */
+        TalkOut: {
+            /** Talk Id */
+            talk_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /** Source */
+            source: string;
+            /** Status */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Error */
+            error: string | null;
+            counterpart: components["schemas"]["TalkCounterpartOut"];
+            /** Questions */
+            questions: components["schemas"]["TalkQuestionOut"][];
+            /** Answers */
+            answers: components["schemas"]["TalkAnswerOut"][];
+            /** Next Question */
+            next_question: number | null;
+            /** Opening Line */
+            opening_line: string;
+            /** Move Choices */
+            move_choices: components["schemas"]["TalkMoveChoiceOut"][];
+            /** Offer */
+            offer: string;
+            /** Approached By */
+            approached_by: string;
+            /** Delegated */
+            delegated: boolean;
+            /** Effects */
+            effects: components["schemas"]["TalkEffectOut"][];
+            /** Suggestions */
+            suggestions: string[];
+            mode: components["schemas"]["NegotiationModeOut"];
+        };
+        /**
+         * TalkPersonOut
+         * @description Someone the player might hold a one-to-one with, and why they are flagged.
+         */
+        TalkPersonOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Role Label */
+            role_label: string;
+            /** Morale */
+            morale: number | null;
+            /**
+             * Flags
+             * @description unhappy | approached | seat
+             */
+            flags: string[];
+            /** Approached By */
+            approached_by: string;
+            /**
+             * Held
+             * @description This month's one-to-one status, or empty
+             */
+            held: string;
+            /**
+             * Delegates
+             * @description Seat holders above them who can hold it for you
+             */
+            delegates: number[];
+        };
+        /** TalkPromiseOut */
+        TalkPromiseOut: {
+            /** Promise Id */
+            promise_id: number;
+            /** Person Id */
+            person_id: number;
+            /** Words */
+            words: string;
+            /** Made Label */
+            made_label: string;
+            /** Deadline Label */
+            deadline_label: string;
+            /** Status */
+            status: string;
+        };
+        /** TalkQuestionOut */
+        TalkQuestionOut: {
+            /** N */
+            n: number;
+            /** Topic */
+            topic: string;
+            /** Title */
+            title: string;
+            /** Question */
+            question: string;
+            /** Facts */
+            facts: string[];
+            /**
+             * Offer
+             * @description The promise an answer here can make, in words
+             */
+            offer: string;
+            /** Rival */
+            rival: string;
+        };
+        /** TalkSummaryOut */
+        TalkSummaryOut: {
+            /** Talk Id */
+            talk_id: number;
+            /** Kind */
+            kind: string;
+            /** Subject */
+            subject: string;
+            /** Status */
+            status: string;
+            /** Opened Turn */
+            opened_turn: number;
+            /** Date Label */
+            date_label: string;
+            /** Person Id */
+            person_id: number | null;
+            /** Effects */
+            effects: string[];
+        };
         /** TargetOut */
         TargetOut: {
             /** Company Id */
@@ -44229,6 +44582,309 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listTalks: {
+        parameters: {
+            query?: {
+                person_id?: number | null;
+            };
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TalkListOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    openTalk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalkOpenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TalkOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getTalk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                talk_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TalkOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    answerTalk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                talk_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TalkAnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TalkOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    skipTalk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                talk_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TalkOut"];
                 };
             };
             /** @description Bad Request */

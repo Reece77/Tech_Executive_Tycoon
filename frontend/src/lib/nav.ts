@@ -46,6 +46,7 @@ export interface Screen {
 export const SCREENS: readonly Screen[] = [
   { path: 'inbox', label: 'Inbox', group: 'company', unlock: null, side: true },
   { path: 'overview', label: 'Overview', group: 'company', unlock: null, side: true },
+  { path: 'press', label: 'Press room', group: 'company', unlock: null, side: true }, // M49
   { path: 'history', label: 'History', group: 'company', unlock: null, side: true },
   { path: 'saves', label: 'Saves', group: 'company', unlock: null, side: true },
   { path: 'settings', label: 'Settings', group: 'company', unlock: null, side: true },
