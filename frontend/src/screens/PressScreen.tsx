@@ -39,9 +39,9 @@ export function PressScreen() {
 }
 
 /** How this month's talks run: free text, or template moves (and why). */
-export function ModeLine({ list }: { list: TalkList }) {
+function ModeLine({ list }: { list: TalkList }) {
   return (
-    <p className="tst-muted" style={{ margin: 0, fontSize: 13 }} data-testid="talks-mode">
+    <div className="tst-muted" style={{ fontSize: 13 }} data-testid="talks-mode">
       <Badge variant="outline" mr={6}>
         {list.mode.mode === 'llm'
           ? 'Free text'
@@ -50,7 +50,7 @@ export function ModeLine({ list }: { list: TalkList }) {
       {list.mode.mode === 'llm'
         ? 'Answer in your own words, or pick a suggested reply.'
         : 'Pick your moves from the buttons; the engine is the same.'}
-    </p>
+    </div>
   );
 }
 
