@@ -24066,6 +24066,432 @@
         }
       }
     },
+    "/api/saves/{save_id}/talks": {
+      "get": {
+        "tags": [
+          "talks"
+        ],
+        "summary": "List Talks",
+        "description": "This month's interviews and press conferences, past talks newest first (or one\nperson's), the company's people with their flags, and promised promotions.",
+        "operationId": "listTalks",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "person_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Person Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkListOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "talks"
+        ],
+        "summary": "Open Talk",
+        "description": "Take an interview or press conference, or hold a one-to-one (or resume an open one).",
+        "operationId": "openTalk",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TalkOpenIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/talks/{talk_id}": {
+      "get": {
+        "tags": [
+          "talks"
+        ],
+        "summary": "Get Talk",
+        "description": "The talk and, once it is over, its visible effects.",
+        "operationId": "getTalk",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "talk_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Talk Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/talks/{talk_id}/answers": {
+      "post": {
+        "tags": [
+          "talks"
+        ],
+        "summary": "Answer Talk",
+        "description": "Answer the current question: free text (scored by the LLM into moves) or template\nmoves.",
+        "operationId": "answerTalk",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "talk_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Talk Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TalkAnswerIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/talks/{talk_id}/skip": {
+      "post": {
+        "tags": [
+          "talks"
+        ],
+        "summary": "Skip Talk",
+        "description": "Skip: today's outcome; nothing the talk would have moved moves (61). An interview's\npress event can still be answered as before.",
+        "operationId": "skipTalk",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "talk_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Talk Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TalkOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/world-news": {
       "get": {
         "tags": [
@@ -74501,6 +74927,707 @@
           "marks"
         ],
         "title": "TalentOut"
+      },
+      "TalkAnswerIn": {
+        "properties": {
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "The player's answer (free text)"
+          },
+          "moves": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TalkMoveIn"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moves",
+            "description": "Template mode's moves"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "free | suggested | template",
+            "default": "free"
+          }
+        },
+        "type": "object",
+        "title": "TalkAnswerIn"
+      },
+      "TalkAnswerOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "message_source": {
+            "type": "string",
+            "title": "Message Source"
+          },
+          "reply": {
+            "type": "string",
+            "title": "Reply"
+          },
+          "reply_source": {
+            "type": "string",
+            "title": "Reply Source"
+          },
+          "claimed": {
+            "items": {
+              "$ref": "#/components/schemas/TalkMoveOut"
+            },
+            "type": "array",
+            "title": "Claimed"
+          },
+          "moves": {
+            "items": {
+              "$ref": "#/components/schemas/TalkMoveOut"
+            },
+            "type": "array",
+            "title": "Moves"
+          },
+          "reaction": {
+            "type": "string",
+            "title": "Reaction"
+          },
+          "reaction_words": {
+            "type": "string",
+            "title": "Reaction Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "message",
+          "message_source",
+          "reply",
+          "reply_source",
+          "claimed",
+          "moves",
+          "reaction",
+          "reaction_words"
+        ],
+        "title": "TalkAnswerOut"
+      },
+      "TalkAvailableOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "key": {
+            "type": "integer",
+            "title": "Key"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "talk_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Talk Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "source",
+          "key",
+          "subject",
+          "talk_id",
+          "status"
+        ],
+        "title": "TalkAvailableOut"
+      },
+      "TalkCounterpartOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "organisation": {
+            "type": "string",
+            "title": "Organisation"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "beat": {
+            "type": "string",
+            "title": "Beat"
+          },
+          "stance": {
+            "type": "string",
+            "title": "Stance",
+            "description": "A journalist's public stance: friendly | neutral | sceptical"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale",
+            "description": "A person's morale as shown when the talk opened"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "role",
+          "organisation",
+          "person_id",
+          "beat",
+          "stance",
+          "morale"
+        ],
+        "title": "TalkCounterpartOut"
+      },
+      "TalkEffectOut": {
+        "properties": {
+          "what": {
+            "type": "string",
+            "title": "What"
+          },
+          "change": {
+            "type": "number",
+            "title": "Change"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "what",
+          "change",
+          "words"
+        ],
+        "title": "TalkEffectOut"
+      },
+      "TalkListOut": {
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          },
+          "available": {
+            "items": {
+              "$ref": "#/components/schemas/TalkAvailableOut"
+            },
+            "type": "array",
+            "title": "Available"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TalkSummaryOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/TalkPersonOut"
+            },
+            "type": "array",
+            "title": "People"
+          },
+          "promises": {
+            "items": {
+              "$ref": "#/components/schemas/TalkPromiseOut"
+            },
+            "type": "array",
+            "title": "Promises"
+          },
+          "energy": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Energy"
+          },
+          "one_to_one_energy": {
+            "type": "integer",
+            "title": "One To One Energy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "available",
+          "items",
+          "people",
+          "promises",
+          "energy",
+          "one_to_one_energy"
+        ],
+        "title": "TalkListOut"
+      },
+      "TalkMoveChoiceOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label"
+        ],
+        "title": "TalkMoveChoiceOut"
+      },
+      "TalkMoveIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "interview: bold_claim | measured | deflect | apologise | promise | attack_rival | no_comment; crisis: those and take_responsibility; one-to-one: listen | promise_promotion | offer_raise | offer_equity | reassign | push_harder | praise | warn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "TalkMoveIn"
+      },
+      "TalkMoveOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "words"
+        ],
+        "title": "TalkMoveOut"
+      },
+      "TalkOpenIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "interview | crisis | one_to_one"
+          },
+          "params": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParamValue"
+            },
+            "type": "object",
+            "title": "Params",
+            "description": "An interview or crisis: source (press | recall | robotaxi) and key; a one-to-one: person_id, and delegate_id for a seat holder to hold it"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "TalkOpenIn"
+      },
+      "TalkOut": {
+        "properties": {
+          "talk_id": {
+            "type": "integer",
+            "title": "Talk Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "counterpart": {
+            "$ref": "#/components/schemas/TalkCounterpartOut"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/TalkQuestionOut"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/TalkAnswerOut"
+            },
+            "type": "array",
+            "title": "Answers"
+          },
+          "next_question": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Question"
+          },
+          "opening_line": {
+            "type": "string",
+            "title": "Opening Line"
+          },
+          "move_choices": {
+            "items": {
+              "$ref": "#/components/schemas/TalkMoveChoiceOut"
+            },
+            "type": "array",
+            "title": "Move Choices"
+          },
+          "offer": {
+            "type": "string",
+            "title": "Offer"
+          },
+          "approached_by": {
+            "type": "string",
+            "title": "Approached By"
+          },
+          "delegated": {
+            "type": "boolean",
+            "title": "Delegated"
+          },
+          "effects": {
+            "items": {
+              "$ref": "#/components/schemas/TalkEffectOut"
+            },
+            "type": "array",
+            "title": "Effects"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/NegotiationModeOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "talk_id",
+          "kind",
+          "subject",
+          "source",
+          "status",
+          "opened_turn",
+          "date_label",
+          "error",
+          "counterpart",
+          "questions",
+          "answers",
+          "next_question",
+          "opening_line",
+          "move_choices",
+          "offer",
+          "approached_by",
+          "delegated",
+          "effects",
+          "suggestions",
+          "mode"
+        ],
+        "title": "TalkOut"
+      },
+      "TalkPersonOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role_label": {
+            "type": "string",
+            "title": "Role Label"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "description": "unhappy | approached | seat"
+          },
+          "approached_by": {
+            "type": "string",
+            "title": "Approached By"
+          },
+          "held": {
+            "type": "string",
+            "title": "Held",
+            "description": "This month's one-to-one status, or empty"
+          },
+          "delegates": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Delegates",
+            "description": "Seat holders above them who can hold it for you"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "role_label",
+          "morale",
+          "flags",
+          "approached_by",
+          "held",
+          "delegates"
+        ],
+        "title": "TalkPersonOut",
+        "description": "Someone the player might hold a one-to-one with, and why they are flagged."
+      },
+      "TalkPromiseOut": {
+        "properties": {
+          "promise_id": {
+            "type": "integer",
+            "title": "Promise Id"
+          },
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          },
+          "made_label": {
+            "type": "string",
+            "title": "Made Label"
+          },
+          "deadline_label": {
+            "type": "string",
+            "title": "Deadline Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "promise_id",
+          "person_id",
+          "words",
+          "made_label",
+          "deadline_label",
+          "status"
+        ],
+        "title": "TalkPromiseOut"
+      },
+      "TalkQuestionOut": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "facts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "offer": {
+            "type": "string",
+            "title": "Offer",
+            "description": "The promise an answer here can make, in words"
+          },
+          "rival": {
+            "type": "string",
+            "title": "Rival"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n",
+          "topic",
+          "title",
+          "question",
+          "facts",
+          "offer",
+          "rival"
+        ],
+        "title": "TalkQuestionOut"
+      },
+      "TalkSummaryOut": {
+        "properties": {
+          "talk_id": {
+            "type": "integer",
+            "title": "Talk Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "opened_turn": {
+            "type": "integer",
+            "title": "Opened Turn"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label"
+          },
+          "person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Id"
+          },
+          "effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Effects"
+          }
+        },
+        "type": "object",
+        "required": [
+          "talk_id",
+          "kind",
+          "subject",
+          "status",
+          "opened_turn",
+          "date_label",
+          "person_id",
+          "effects"
+        ],
+        "title": "TalkSummaryOut"
       },
       "TargetOut": {
         "properties": {

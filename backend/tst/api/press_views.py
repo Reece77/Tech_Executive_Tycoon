@@ -76,7 +76,8 @@ def press_out(state: GameState, data: LoadedData) -> PressOut:
     b = data.balance
     cid = state.player.id
     cred = credibility_of(state, cid)
-    mine = [p for p in state.promises if p.company_id == cid]
+    # M49: a promotion promised in a one-to-one is private, shown on the person's profile
+    mine = [p for p in state.promises if p.company_id == cid and p.kind != "promotion"]
     answered = next(
         (
             m

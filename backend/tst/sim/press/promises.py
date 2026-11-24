@@ -31,6 +31,8 @@ from tst.sim.state import (
 MORALE_MAX = 100  # tunable-exempt: the morale scale
 TIMED = ("ship", "beat", "research")
 MEETING_KINDS = ("commitment", "guidance")  # M48 (59): made in a board meeting or on a call
+TALK_KINDS = ("promotion",)  # M49 (61.2): promised to one person in a one-to-one; private
+LADDER = ("junior", "mid", "senior", "staff", "principal")  # 13.8's promotion ladder
 QUARTER = 3  # tunable-exempt: months in a quarter
 HALF = 0.5  # tunable-exempt: ambition is half the target's distance, half the deadline's
 
@@ -48,6 +50,8 @@ def promise_words(state: GameState, p: Promise, data: GameData) -> str:
     name = product.name if product is not None else "the product"
     if p.kind in MEETING_KINDS:
         return meeting_words(p)
+    if p.kind in TALK_KINDS:
+        return talk_words(state, p)
     match p.kind:
         case "ship":
             return f"ship {name} by {by}"
@@ -74,6 +78,31 @@ def meeting_words(p: Promise) -> str:
     )
     said = "guide to" if p.kind == "guidance" else "deliver"
     return f"{said} {what} in the quarter to {format_turn(p.deadline_turn)}"
+
+
+def talk_words(state: GameState, p: Promise) -> str:
+    """M49: 'promote Ada Byrne by Jun 2020' (`level` holds the person's id)."""
+    from tst.sim.calendar import format_turn
+
+    pid = p.level or 0
+    try:
+        person = state.person(pid)
+        name = f"{person.first_name} {person.last_name}"
+    except KeyError:
+        name = "them"
+    return f"promote {name} by {format_turn(p.deadline_turn)}"
+
+
+def _promoted(state: GameState, p: Promise) -> str | None:
+    """M49 (61.2): kept once the person is above the level they were at; broken at the
+    deadline, or when they leave the company before it."""
+    e = state.employment_of(p.level or 0)
+    if e is None or e.company_id != p.company_id or e.status != "active":
+        return "broken"
+    rank = LADDER.index(e.level) if e.level in LADDER else len(LADDER)
+    if rank > p.baseline:
+        return "kept"
+    return "broken" if state.turn >= p.deadline_turn else None
 
 
 def _quarter_actual(state: GameState, p: Promise) -> int:
@@ -195,6 +224,8 @@ def make(
 def verdict(state: GameState, p: Promise) -> str | None:
     """'kept', 'broken' or None (still open), from displayed values only."""
     due = state.turn >= p.deadline_turn
+    if p.kind in TALK_KINDS:
+        return _promoted(state, p)
     if p.kind in MEETING_KINDS:  # M48 (59): judged at the quarter's end on displayed figures
         if not due:
             return None
@@ -259,6 +290,10 @@ def check(
         result = verdict(state, p)
         if result is None:
             continue
+        if p.kind in TALK_KINDS:  # M49: private, no reminder, so no press draw
+            state, logged = _resolve_talk(state, p, result, balance)
+            logs += logged
+            continue
         if p.kind in MEETING_KINDS:  # M48: no reminder, so no press draw
             state, logged = _resolve_meeting(
                 state, p, result, promise_words(state, p, data), balance
@@ -293,6 +328,8 @@ def resolve(
     words = promise_words(state, p, data)
     if p.kind in MEETING_KINDS:
         return _resolve_meeting(state, p, result, words, balance)
+    if p.kind in TALK_KINDS:
+        return _resolve_talk(state, p, result, balance)
     if result == "kept":
         cf = moments.cred_factor(state, cid, balance)
         state = moments.brand_modifier(
@@ -352,6 +389,61 @@ def _resolve_meeting(
     state = with_promise(state, replace(p, status=status, resolved_turn=state.turn))
     template = f"{p.kind}_{status}"
     return state, [inbox_item(state.turn, cid, template, promise=words)]
+
+
+def _resolve_talk(
+    state: GameState, p: Promise, result: str, balance: Balance
+) -> tuple[GameState, list[LogItem]]:
+    """M49 (61.2): a promotion promised in a one-to-one. Kept, the person's morale and loyalty
+    rise; broken, they fall by `broken_mult` x as much (and 61.3's higher chance of leaving
+    follows from the broken record). No brand, credibility or press reminder: it was private."""
+    from tst.sim.state import with_person
+
+    tp = balance.talks.promises
+    kept = result == "kept"
+    sign = 1.0 if kept else -tp.broken_mult
+    pid = p.level or 0
+    e = state.employment_of(pid)
+    if e is not None and e.company_id == p.company_id and e.counts_as_staff:
+        ps = state.person_state(pid)
+        if ps.morale is not None:
+            morale = max(0.0, min(float(MORALE_MAX), ps.morale + sign * tp.kept_morale))
+            state = with_person_state(state, replace(ps, morale=morale))
+        person = state.person(pid)
+        loyalty = person.personality["loyalty"] + sign * tp.kept_loyalty
+        state = with_person(
+            state, replace(person, personality=person.personality.updated({"loyalty": loyalty}))
+        )
+    status: PromiseStatus = "kept" if kept else "broken"
+    words = talk_words(state, p)
+    state = with_promise(state, replace(p, status=status, resolved_turn=state.turn))
+    return state, [
+        inbox_item(
+            state.turn,
+            p.company_id,
+            f"promotion_{status}",
+            link_kind="person",
+            link_id=pid,
+            promise=words,
+        )
+    ]
+
+
+def leave_mult(state: GameState, balance: Balance) -> dict[int, float]:
+    """M49 (61.3 target 3): people whose promised promotion was broken lately, by person id:
+    x `talks.promises.leave_mult` on their resignation chance. Empty in a game without
+    one-to-ones, so the turn is as before."""
+    tp = balance.talks.promises
+    out: dict[int, float] = {}
+    for p in state.promises:
+        if (
+            p.kind in TALK_KINDS
+            and p.status == "broken"
+            and p.resolved_turn is not None
+            and state.turn - p.resolved_turn < tp.leave_months
+        ):
+            out[p.level or 0] = tp.leave_mult
+    return out
 
 
 def _morale_all(state: GameState, company_id: int, delta: float) -> GameState:

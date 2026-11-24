@@ -1558,14 +1558,14 @@ A public promise (29.2), judged on displayed values only. The state holds every 
 | --- | --- | --- | --- |
 | `id` | INTEGER | no | Primary key; max(id) + 1 is the next. |
 | `company_id` | INTEGER FK company | no | The company that promised. |
-| `kind` | VARCHAR(32) | no | `ship`, `beat`, `research`, `no_layoffs` or `no_price_rise`. |
+| `kind` | VARCHAR(32) | no | `ship`, `beat`, `research`, `no_layoffs` or `no_price_rise`; M48's `commitment` and `guidance`; M49's `promotion` (see the M49 section). |
 | `made_turn` | INTEGER | no | When it was made. |
 | `deadline_turn` | INTEGER | no | When it is judged. |
 | `moment_id` | INTEGER | yes | The press moment it was made in (`press_moment.id`, no FK). |
 | `product_id` | INTEGER | yes | Ship, beat, no price rise: the product. |
 | `rival_product_id` | INTEGER | yes | Beat: the rival product. |
 | `domain` | VARCHAR(32) | yes | Research: the domain. |
-| `level` | INTEGER | yes | Research: the displayed lead to reach. |
+| `level` | INTEGER | yes | Research: the displayed lead to reach (M48: a commitment's figure; M49: a promised promotion's person id). |
 | `baseline` | INTEGER | no | The displayed value when made (quality or lead). |
 | `prices` | JSON | no | No price rise: `[segment, price cents]` displayed when made. |
 | `ambition` | FLOAT | no | How ambitious the promise was. |
@@ -2278,3 +2278,13 @@ Meetings (formulas.md 59, ADR-0023, M48) are conversations: they reuse M47's `co
 - `conversation_round.n` is the agenda item (from 0); a row with `n` = -1 holds the opening question (`reply`, `reply_source`) before any answer. `moves` are the scored moves (`kind`, optional `fact`) a replay plays; `offer` is `[]`.
 - The game state gains no field. A meeting's outcome reaches the game through the new action `meeting_outcome` in `decision_log` (directors' confidence by seat, sentiment and analysts' target shares, credibility points, commitments and the quarter's guidance), every value re-checked against `meetings.*`'s bounds; a skipped meeting runs no action. `promise.kind` gains `commitment` (a board commitment to a plan figure) and `guidance` (guidance given on a call), with `domain` the metric (`revenue` or `margin`), `level` the figure (cents or basis points) and `deadline_turn` the quarter's last month. Credibility is 29.3's `credibility` record.
 - RNG stream `meetings` (71): key `(kind index, meeting turn)` for a meeting's priorities, receptiveness, askers and investors; `(call index, 0, analyst index)` at the listing month for an analyst's name and focus. Balance keys `meetings.*`. `llm_call_log.purpose` `meeting`; meetings spend from the conversations' cap (`conversation_cents`).
+
+## Press interviews, crisis conferences and one-to-ones (M49, no migration)
+
+Talks (formulas.md 61, ADR-0023, M49) are conversations: they reuse M47's `conversation` and `conversation_round` tables (`tst/conversations/talks.py`), with no schema change, so `save_meta.schema_version` stays 65 and existing saves need nothing.
+
+- `conversation.kind` gains `interview`, `crisis` and `one_to_one`; `deal_key` is `talk:<kind>:<source>:<subject id>:<turn>` (source `press`, `recall`, `robotaxi` or `person`; one talk on a subject a month, so one one-to-one a person a month); `counterpart_key` is `person:<person id>` for a one-to-one and `press:<outlet>` otherwise; `status` is `open`, `done`, `skipped`, `lapsed` or `failed`, as meetings'; `params` holds the open request (`source` and `key`, or `person_id` and an optional `delegate_id`). `state` holds the engine's record (`tst.sim.talks.models.Talk`): the counterpart's public facts (a journalist's outlet, beat and stance; a person's role and shown morale), the subject (the press moment's event, the recall or incident, the person and a pending rival approach's id), the questions with their displayed facts and the promise on offer in words, the answers with their moves, status and effects, and the HIDDEN `hidden` (the other side's receptiveness at each question, the founder's or delegate's factor, a person's personality factors by move), never returned by the API and never put in a prompt (61.3 target 5). The rival's offer amount is never stored in a talk.
+- `conversation_round.n` is the question (from 0); `n` = -1 holds the opening question. `moves` are the scored moves (`kind`) a replay plays; `message_source` is `delegate` for a seat holder's one-to-one.
+- The game state gains no field. A talk's outcome reaches the game through the new action `talk_outcome` in `decision_log` (the press event's choice by tone, a brand-target change and its months, credibility, a persona trait's points, an inspection's chance; a person's morale, loyalty and stress, a retention chance and the approach it answers, a raise's new salary, options in bp, a reveal, a promise), every value re-checked against `talks.*`'s bounds; a skipped talk runs no action.
+- `press_promise.kind` gains `promotion` (a promotion promised in a one-to-one; private: not on the Press screen and not a persona source), with `level` the person's id, `baseline` their rung on the promotion ladder when promised (0 junior to 4 principal) and `deadline_turn` 12 months on. Kept when they are above that rung; broken at the deadline or when they leave. Broken, their resignation chance is doubled for `talks.promises.leave_months`.
+- RNG stream `talks` (72): key `(kind index, source index, subject id)` at the opening month; `(kind index, source index, subject id, 1)` for the closing draw (retention, inspection). Balance keys `talks.*`. `llm_call_log.purpose` `talk`; talks spend from the conversations' cap (`conversation_cents`). Inbox templates `talk_held`, `talk_retained`, `promotion_kept`, `promotion_broken`.

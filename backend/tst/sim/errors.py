@@ -454,3 +454,14 @@ class MeetingRuleError(SimError):
 
 class UnknownMeetingError(NotFoundError):  # M48
     code = "unknown_meeting"
+
+
+class TalkRuleError(SimError):
+    """A talk step the rules do not allow (M49, formulas.md 61): an interview, a crisis
+    conference or a one-to-one. The message never names a hidden reaction, trait or draw."""
+
+    code = "talk_rule"
+
+
+class UnknownTalkError(NotFoundError):  # M49
+    code = "unknown_talk"

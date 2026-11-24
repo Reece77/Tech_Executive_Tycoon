@@ -1,10 +1,11 @@
 import { Button, Modal } from '@mantine/core';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useChooseEvent, useEvents, type GameEventOut } from '../hooks/api';
 import { IpoEventPricing } from './IpoPanel';
 import { OpenNegotiation } from './NegotiationPanel';
 import { Term } from './Term';
 import { usePress } from '../hooks/press';
+import { useOpenTalk, useTalks } from '../hooks/talks';
 import { returnToDecision, setAside, useSetAside } from '../lib/setAside';
 
 const SEVERITY_STYLE: Record<string, { color: string; background: string; label: string }> = {
@@ -124,6 +125,9 @@ export function EventCard({
           />
         </div>
       )}
+      {open && event.template_id?.startsWith('press_') && (
+        <TakeInterview saveId={saveId} onLook={onLook} />
+      )}
       {choose.error && (
         <span role="alert" style={{ color: 'var(--tst-warn)', fontSize: 13 }}>
           {choose.error.message}
@@ -181,6 +185,51 @@ function PressNote({ saveId, event }: { saveId: string; event: GameEventOut }) {
         </strong>
       )}
     </span>
+  );
+}
+
+/** An open press event (M49, 61.1): take it as a live interview (or press conference) in the
+ * press room, next to its usual choices. The talk answers the event when it ends. */
+function TakeInterview({ saveId, onLook }: { saveId: string; onLook?: () => void }) {
+  const talks = useTalks(saveId);
+  const openTalk = useOpenTalk(saveId);
+  const navigate = useNavigate();
+  const a = talks.data?.available.find((x) => x.source === 'press');
+  if (!a || (a.talk_id !== null && a.status !== 'open')) return null;
+  const crisis = a.kind === 'crisis';
+  const go = () => {
+    onLook?.();
+    openTalk.mutate(
+      { kind: a.kind, params: { source: a.source, key: a.key } },
+      { onSuccess: (t) => void navigate(`/game/${saveId}/press?talk=${t.talk_id}`) },
+    );
+  };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <Button
+        fullWidth
+        h={44}
+        justify="flex-start"
+        variant="light"
+        loading={openTalk.isPending}
+        onClick={go}
+        data-testid="event-take-interview"
+      >
+        {a.talk_id !== null
+          ? `Resume the ${crisis ? 'press conference' : 'interview'}`
+          : crisis
+            ? 'Hold a press conference'
+            : 'Take the interview'}
+      </Button>
+      <span className="tst-muted" style={{ fontSize: 12, paddingLeft: 4 }}>
+        Answer the journalist live in the press room; how you come across answers this event.
+      </span>
+      {openTalk.error && (
+        <span role="alert" style={{ color: 'var(--tst-warn)', fontSize: 13 }}>
+          {openTalk.error.message}
+        </span>
+      )}
+    </div>
   );
 }
 

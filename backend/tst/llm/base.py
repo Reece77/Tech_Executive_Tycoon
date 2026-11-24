@@ -85,6 +85,23 @@ MEETING_MOVE_NAMES = (
     "deflect",
     "promise",
 )
+# M49 (61): the talks' moves (interviews, crisis conferences, one-to-ones)
+TALK_MOVE_NAMES = (
+    "bold_claim",
+    "measured",
+    "apologise",
+    "attack_rival",
+    "no_comment",
+    "take_responsibility",
+    "listen",
+    "promise_promotion",
+    "offer_raise",
+    "offer_equity",
+    "reassign",
+    "push_harder",
+    "praise",
+    "warn",
+)
 CLASSIFY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -95,7 +112,7 @@ CLASSIFY_SCHEMA: dict[str, Any] = {
                 "properties": {
                     "move": {
                         "type": "string",
-                        "enum": [*MOVE_NAMES, *MEETING_MOVE_NAMES, "neutral"],
+                        "enum": [*MOVE_NAMES, *MEETING_MOVE_NAMES, *TALK_MOVE_NAMES, "neutral"],
                     },
                     "term": {"type": "integer"},
                     "other": {"type": "integer"},
