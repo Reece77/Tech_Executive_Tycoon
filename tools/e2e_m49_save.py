@@ -9,6 +9,8 @@ tool). Never used by the game.
   people's ids as JSON.
 - `launch <save dir> <name>`: as `talks`, with a press moment on the device's launch shown this
   month (its press event open): an interview can be taken.
+- `due <save dir> <name>`: an existing save's open promised promotions fall due this month, so
+  the next Continue judges them (broken unless the person has been promoted).
 
 Usage: uv run --project backend python tools/e2e_m49_save.py <mode> <save dir> <name>
 """
@@ -26,8 +28,8 @@ from e2e_m41_save import _product
 from tst.balance import fixtures
 from tst.balance.game import Game, start_game
 from tst.config import Settings
-from tst.db.repository import create_save, ledger_balances, open_session
 from tst.db.events import write_pending
+from tst.db.repository import create_save, ledger_balances, open_session
 from tst.llm.offline import TemplateAdapter
 from tst.loader import LoadedData, load_all
 from tst.sim.calendar import ym_to_turn
@@ -147,11 +149,29 @@ def make(save_dir: Path, name: str, data: LoadedData, mode: str) -> str:
     return json.dumps({"approached": keys})
 
 
+def due(save_dir: Path, name: str) -> None:
+    from e2e_m13_save import _edit
+    from tst.db.repository import existing_save_path
+    from tst.sim.state import with_promise
+
+    def falls_due(state: GameState) -> GameState:
+        out = state
+        for p in state.promises:
+            if p.kind == "promotion" and p.status == "open":
+                out = with_promise(out, replace(p, deadline_turn=state.turn))
+        return out
+
+    _edit(existing_save_path(save_dir, name), falls_due)
+
+
 def main(argv: list[str]) -> int:
-    modes = ("talks", "launch")
+    modes = ("talks", "launch", "due")
     if len(argv) != 4 or argv[1] not in modes:
         print(__doc__)
         return 2
+    if argv[1] == "due":
+        due(Path(argv[2]), argv[3])
+        return 0
     data = load_all(Settings().data_dir)
     print(make(Path(argv[2]), argv[3], data, argv[1]))
     return 0
