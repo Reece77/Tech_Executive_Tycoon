@@ -83,6 +83,9 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M46-v6-balance-pass-one.md](M46-v6-balance-pass-one.md) | v6 balance pass one (lane A, merges first; done 2026-11-24): v5's carried known misses, deploying listed capital at a positive return, critical-event spacing for listed companies, the nightly in six shards | M43r, M47 |
 | [M48-board-meetings-and-earnings-calls.md](M48-board-meetings-and-earnings-calls.md) | Board meetings, earnings calls and investor days (lane B; done 2026-11-23): directors and analysts in conversation, bounded effects on confidence, votes and sentiment, a credibility score (formulas §59) | M47 |
 | [M50-the-2008-start.md](M50-the-2008-start.md) | The 2008 start (lane C, merges last; done 2026-11-23): negative turns (ADR-0024), 2008–2009 history for every system, the financial crisis and the App Store, a 2010 game unchanged (formulas §60) | M43r |
+| [M49-press-interviews-and-one-to-ones.md](M49-press-interviews-and-one-to-ones.md) | Press conferences, interviews and one-to-ones (v6, lane A, merges first): live interviews and crisis conferences, Football Manager-style talks with key people, tracked promises (formulas §61) | M48 |
+| [M53-telecom.md](M53-telecom.md) | Telecom (v6, lane B): mobile and fixed networks, towers, fibre and subsea cables, spectrum auctions, 5G and 6G, equipment and bans, operators and regulation (formulas §62) | M50 |
+| [M51-scenarios-and-challenges.md](M51-scenarios-and-challenges.md) | Scenarios and challenges (v6, lane C, merges last): six new scenarios including the 2008 crash, challenge rules enforced and scored, a Scenarios screen with best results (formulas §63) | M50 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
