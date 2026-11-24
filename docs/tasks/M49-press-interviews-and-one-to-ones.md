@@ -69,4 +69,9 @@ Engineering and design choices the spec, ADR-0023 and this brief left open (CLAU
 
 ## Follow-ups
 
-(filled in by the agent)
+- **Target 2's reading** (decision 11): the PM may prefer another measure (for example, approaches whose shown band is "might go" or worse); the paired measure in `tst.balance.m49` takes a population filter easily.
+- Scandals (the founder's influence scandals) and investigations as press conferences; more press promise kinds an interview can offer (ship, beat, research need figures the player chooses).
+- `reassign` that actually moves the person to a unit or area they want; an option top-up grant for someone who already holds options (14.2 has one grant per employment, so `offer_equity` is offered only to people without one).
+- The talk room's three moves per answer are written into the front end (as the meeting room's); the API could send `talks.max_moves`.
+- The Press room is always in the sidebar; an unlock key could gate it.
+- The existing approaches API (`ApproachOut.offer_cents`, M5) shows a rival's offer amount; talks never do (61.3 target 5). Whether the M5 screen should show it only as a band is the PM's call.
