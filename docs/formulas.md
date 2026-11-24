@@ -4285,3 +4285,94 @@ Every system's data gains 2008–2009 (research `docs/v6-research/start-2008-dos
 2. **The crisis bites:** a 2008 start's venture rounds in Q4 2008 to Q2 2009 are at least 40% scarcer and 20% cheaper than in 2010 (median), and startups with under 12 months of runway in October 2008 fail at least twice as often as in 2010–2011.
 3. **The world arrives at 2010 sensibly:** in a 2008 start, by January 2010, category sizes and the named rivals' revenues sit within 0.7–1.3× the 2010 start's values (median, 10 seeds).
 4. **Every strategy plays:** V1's strategies started in 2008 finish 2037 within their v1 bands, or are reported.
+
+## 61. Press conferences, interviews and one-to-ones (M49; v6)
+
+The last of v6's conversation milestones, on M47's engine (§58, ADR-0023): the engine decides outcomes within bounds, the LLM classifies the player's messages into moves and words the other side, and every conversation can be skipped (today's outcome) or played in template mode.
+
+### 61.1 Press conferences and interviews
+
+- §29.1's press moments (launches, earnings, era arrivals, outages, scandals, recalls, investigations, accidents) become live **interviews** when the player takes them: a journalist (a person with an outlet, a beat and a stance toward the company) asks 2–4 questions from public facts and the moment's subject.
+- Answers score into moves: `bold_claim`, `measured`, `deflect`, `apologise`, `promise` (§29.2's tracked promises), `attack_rival`, `no_comment`. Each maps to §29.1's tone effects (bold, measured, deflect) and promises, so **skip** gives the measured answer as today, and effects stay within §29's caps scaled by §29.1's audience.
+- **Crisis conferences** (a class I recall, a robotaxi incident, a breach, a scandal) add `apologise` and `take_responsibility` moves, with brand and persona effects (Beloved, Ruthless; §32.4) and regulator attention (§48) for `deflect`.
+
+### 61.2 One-to-ones
+
+- The player can hold a **one-to-one** with any direct report or key person (seat holders, area leads, people flagged unhappy or likely to leave, high-potential juniors), costing founder energy (`talks.energy`, 2) and at most once a month per person.
+- **Topics** from the engine's view of the person: morale and its causes (pay, workload, manager, recognition, role fit), ambitions (§2's interests and stated goals: promotion, a seat, a new area, equity), a rival's approach (§13 poaching), burnout risk (§32.1 for staff).
+- Answers score into moves: `listen`, `promise_promotion`, `offer_raise`, `offer_equity`, `reassign`, `push_harder`, `praise`, `warn`. Promises are tracked: kept, morale and loyalty rise; broken, they fall by twice as much. Raises and equity execute through the existing actions with their money rules.
+- **Effects:** morale ±`talks.morale_step` (up to 6) per talk, loyalty and a retention chance when a rival bids, revealed interests and ambitions (§18.8's reveal, faster in talks), and stress for `push_harder`. A person's personality (ego, ambition, loyalty) scales the effects.
+- **Delegated:** a seat holder can hold one-to-ones with their own reports (§40), by skip with their quality draw.
+
+### 61.3 Balance targets (printed)
+
+1. **Skip is today's game:** with every press moment and talk skipped, the game matches pre-M49 `main` (state-cache check).
+2. **Talks retain people:** a scripted founder who holds monthly one-to-ones with flagged staff keeps at least 30% more of the people rivals approach than one who skips (median, 10 seeds), at an energy cost.
+3. **Promises bite:** promising a promotion and not giving it within 12 months costs that person at least 8 morale and doubles their chance of leaving.
+4. **Crises reward candour:** in a class I recall, `apologise` and `take_responsibility` recover brand at least 25% faster than `deflect`, and `deflect` raises the chance of an investigation.
+5. **No leak:** no hidden trait, potential, draw or rival offer amount reaches the API or a prompt.
+
+## 62. Telecom (M53; v6)
+
+Reece (2026-11-22): **telecom first** among v6's new industries, tying devices, satellites (§56), chips and geopolitics (§39) together. **History holds to 2025** (`telecom.yaml`, research `docs/v6-research/telecom-dossier.md`); markets and money at the game's scale (§54).
+
+### 62.1 Networks and generations
+
+- **`telecom`** is a category family: `mobile` (consumer and business subscriptions), `fixed_broadband` (fibre, cable, DSL) and `wholesale` (selling capacity to other operators). Subscribers by region follow the data to 2025, then demand by population, price and quality.
+- **Networks** are facilities by region: **towers** (sites with radio equipment by generation: 3G, 4G, 5G and, from its seeded era, 6G), **fibre** (route kilometres and homes passed), **data centres and core** (shared with §22's), and **subsea cables** (named routes, capacity, landing countries). Coverage and capacity per region come from the sites and spectrum, and quality from capacity per subscriber.
+- **Generations** arrive by data (4G about 2010–2012, 5G about 2019–2020) and seeded after; each needs equipment, spectrum and a buildout, and raises the quality ceiling.
+
+### 62.2 Spectrum
+
+- **Spectrum** is licensed by region in bands (low, mid, high) through **auctions** on the data's dates (US C-band in 2021, and others) and seeded after. Bidding is a multi-round auction against rival operators (stream `telecom`), within the player's limit; licences last 10–20 years.
+- Without spectrum, a region's network can't carry mobile; a satellite link (§56's direct-to-device) partners with or competes against operators.
+
+### 62.3 Equipment and geopolitics
+
+- **Network equipment** (radio, core, optical) is a market good from Ericsson, Nokia, Huawei, ZTE and Samsung, and from the player's own products (a new hardware category `network_equipment`, using its chips).
+- **Bans:** §39's rules exclude named suppliers in named countries from their dates (the US's Huawei and ZTE restrictions from 2019, the UK's removal of Huawei from 5G by 2027, and others), forcing rip-and-replace with costs and deadlines.
+
+### 62.4 Rivals and regulation
+
+- **Operators** by region (Verizon, AT&T, T-Mobile, Vodafone, Deutsche Telekom, Orange, China Mobile, NTT Docomo, Reliance Jio, América Móvil and others) with subscribers, spectrum and networks from the data.
+- **Regulation** through §48's regulators with a telecom kind: licence conditions (coverage obligations), merger review (operator consolidation), net-neutrality rules by region and date.
+
+### 62.5 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company without telecom plays exactly as before).
+2. **Spectrum is scarce and dear:** in a contested auction, the winning price is at least 1.5× the reserve (median), and a player without mid-band spectrum loses at least 20% of its mobile share in that region by the next generation.
+3. **Networks are capital-heavy:** a national mobile network in a large region takes at least 5 years to positive cash flow.
+4. **Bans bite:** an operator on banned equipment pays at least 10% of its network capex to replace it by the deadline.
+5. **Turn time** within the guards.
+
+## 63. Scenarios and challenges (M51; v6)
+
+Reece (2026-11-21): **scenarios** are part of v6's second direction. §30.3 already has five historical scenarios; M51 adds more, challenge rules, and a scenario screen with results kept, using M50's 2008 start where a scenario needs it.
+
+### 63.1 New scenarios
+
+Each is a start (year, company, cash, staff, products, research, rivals' state) and a goal with a deadline in `scenarios.yaml`, built with §30.2's world-building code. **Candidates** (the M51 session confirms each is winnable and losable on seeds 1–10):
+
+| Scenario | Start | Goal |
+| --- | --- | --- |
+| **The crash** | Jan 2008, a seed-stage startup with 14 months of runway | still solvent in Dec 2010 with a Series A raised |
+| **The failing chipmaker** | Jan 2012, a fab-owning chipmaker two nodes behind and losing money | an operating profit and a node within one of the leader by Dec 2020 |
+| **The EV maker** | Jan 2016, a car startup with one prototype and a Series B | 200,000 cars a year by Dec 2023 without going bankrupt |
+| **Under controls** | Jan 2019, a Chinese foundry at 14 nm | 7 nm-class volume by Dec 2027 under export controls |
+| **The platform war** | Jan 2010, a phone maker on a licensed OS | its own OS with 20% of developers in one region by Dec 2020 |
+| **The dynasty** | Jan 2030, a founder aged 64 with three adult children | family control and a successor in place by Dec 2045 (dynasty mode) |
+
+### 63.2 Challenges
+
+- **Challenge rules** a player can add to any new game or scenario: no outside funding (bootstrapped); hardware only; no acquisitions; one region; hard rivals (their quality × 1.2); no automation. Each is a rule the engine enforces (actions refused with a clear reason) and a score multiplier on §30.1's company score (`challenges.<rule>.score_mult`).
+
+### 63.3 The scenario screen and results
+
+- A **Scenarios** screen lists every scenario with its brief, difficulty (from seeds 1–10's win rate), the player's best result and date, and the challenges used. Results are kept across saves (an app-wide results file, not in a save).
+- The result screen (§30.3) adds the score breakdown, the challenge multipliers and a comparison with the player's best.
+
+### 63.4 Balance targets (printed)
+
+1. **Every scenario is winnable and losable:** a scripted sensible player wins each new scenario on 3–8 of 10 seeds, and a passive one on at most 2.
+2. **Challenges are real:** each challenge rule lowers the scripted player's median company score by at least 10% before its multiplier.
+3. **Nothing else moves:** a normal game with no challenge rules plays exactly as before (state-cache check).
