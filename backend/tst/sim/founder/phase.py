@@ -164,8 +164,8 @@ def _sources(
     if poached:
         life = add(life, "poach", turn, balance, poached)
     for p in state.promises:
-        if p.company_id != cid or p.resolved_turn != turn:
-            continue
+        if p.company_id != cid or p.resolved_turn != turn or p.kind == "promotion":
+            continue  # M49: a promotion promised in a one-to-one is private, not public (61.2)
         if p.status == "kept":
             life = add(life, "kept_promise", turn, balance)
         elif p.status == "broken":

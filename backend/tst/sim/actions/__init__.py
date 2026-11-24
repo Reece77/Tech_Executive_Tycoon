@@ -413,6 +413,8 @@ from tst.sim.space.actions import (
     apply_space,
 )
 from tst.sim.state import GameState
+from tst.sim.talks.actions import ACTION_TYPES as TALK_ACTION_TYPES
+from tst.sim.talks.actions import TalkOutcome, apply_talk
 from tst.sim.vehicles.actions import ACTION_TYPES as VEHICLE_ACTION_TYPES
 from tst.sim.vehicles.actions import (
     BuildCellPlant,
@@ -474,6 +476,7 @@ type Action = (
     | GovernmentAction  # M44
     | NegotiationAction  # M47
     | MeetingOutcome  # M48
+    | TalkOutcome  # M49
 )
 
 ACTION_TYPES: dict[str, type[Any]] = {
@@ -500,6 +503,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
     **MEETING_ACTION_TYPES,  # M48 (59)
+    **TALK_ACTION_TYPES,  # M49 (61)
     "form_holding": FormHolding,  # M16 (31.2-31.7)
     "set_mandate": SetMandate,
     "replace_subsidiary_ceo": ReplaceSubsidiaryCeo,
@@ -1068,6 +1072,8 @@ def apply_action(
             out = apply_negotiation(state, action, balance, data, ledger_balances)
         case MeetingOutcome():  # M48 (59)
             out = apply_meeting(state, action, balance, data)
+        case TalkOutcome():  # M49 (61)
+            out = apply_talk(state, action, rng, balance, data)
         case ComplyDuties() | AnswerOrder():  # M34 (48)
             out = apply_regulation(state, action, ledger_balances, balance, data)
         case OrderTools() | PrepayOrder() | StartLitho() | SetLithoFunding() | StopLitho():

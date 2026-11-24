@@ -524,6 +524,11 @@ def morale_and_departures(
     }
     crowds = {c.id: crowded_people(state, c.id) for c in state.companies}  # M9 (19.2)
     moved: list[PersonState] = []
+    # M49 (61.3 target 3): a broken promised promotion doubles the chance of leaving; empty
+    # (and never read) in a game without one-to-ones
+    from tst.sim.press.promises import leave_mult as promise_leave_mult
+
+    broken = promise_leave_mult(state, balance)
     for employment, person in _employees(state):
         company = state.company(employment.company_id)
         target = morale_terms(
@@ -560,6 +565,8 @@ def morale_and_departures(
             retention=retention(state, employment, balance)
             * resign_factor(state, company.id, balance),
         )
+        if person.id in broken:
+            chance = min(chance * broken[person.id], balance.resign.cap_bp)
         reason: str | None = None
         if roll_succeeds(int(resign_gen.integers(0, ROLL_RANGE)), chance):
             reason = "resigned"

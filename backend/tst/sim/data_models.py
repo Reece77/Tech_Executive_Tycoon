@@ -92,6 +92,7 @@ from tst.sim.regulation.config import RegulationBalance, RegulationFile
 from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest_year
 from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
 from tst.sim.space.config import SpaceBalance, SpaceFile
+from tst.sim.talks.config import TalksBalance
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1439,6 +1440,7 @@ class Balance(_Frozen):
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
     llm: LlmBalance  # M47 (ADR-0023): the conversations' own monthly LLM cap
     meetings: MeetingsBalance  # M48 (formulas.md 59): board meetings, earnings calls, investor days
+    talks: TalksBalance  # M49 (formulas.md 61): interviews, crisis conferences, one-to-ones
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

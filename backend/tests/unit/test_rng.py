@@ -118,6 +118,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "defence": 69,
         "negotiation": 70,  # M47
         "meetings": 71,  # M48
+        "talks": 72,  # M49
         "misc": 99,
     }
 

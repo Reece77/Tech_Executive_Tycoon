@@ -151,6 +151,11 @@ STREAM_IDS: Final = MappingProxyType(
         # receptiveness, askers and an investor day's investors; (call index, 0, analyst index)
         # at the listing month, an analyst's name and focus
         "meetings": 71,
+        # M49 (formulas.md 61): (kind index, subject id, turn) a journalist's or person's
+        # hidden reactions, the questions drawn and the founder's or delegate's factor, at the
+        # month the talk opens; (kind index, subject id, turn, 1) a rival approach's retention
+        # draw when a one-to-one ends
+        "talks": 72,
         "misc": 99,
     }
 )
