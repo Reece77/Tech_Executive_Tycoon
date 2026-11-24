@@ -26,6 +26,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import TalkRuleError
 from tst.sim.ledger import LedgerEntry
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import times
 from tst.sim.press import moments
 from tst.sim.press.models import Promise
 from tst.sim.rng import RngFactory
@@ -257,7 +258,7 @@ def _one_to_one(
     person = state.person(pid)
     name = f"{person.first_name} {person.last_name}"
     if a.raise_salary_cents:
-        expected = round(e.salary_cents * (1 + tb.one_to_one.raise_share))
+        expected = times(e.salary_cents, 1 + tb.one_to_one.raise_share)
         if int(a.raise_salary_cents) != expected:
             raise TalkRuleError("the raise offered is out of bounds")
         state = give_raise(state, GiveRaise(a.actor_id, pid, expected), balance).state
@@ -425,7 +426,7 @@ def outcome_action(talk: Talk, actor_id: int, salary_cents: int, raise_share: fl
         stress=e.stress,
         approach_id=s.approach_id if e.retain_chance else None,
         retain_chance=e.retain_chance,
-        raise_salary_cents=round(salary_cents * (1 + raise_share)) if e.offer_raise else 0,
+        raise_salary_cents=times(salary_cents, 1 + raise_share) if e.offer_raise else 0,
         equity_bp=e.equity_bp,
         reveal=e.reveal,
         promise=promise,

@@ -3550,8 +3550,8 @@ talks: # 61: press interviews, crisis conferences and one-to-ones (M49, v6 lane 
   crisis: # 61.1: a class I recall, a robotaxi incident, a breach or an outage
     questions: [2, 3]
     window_months: 1 # months after the crisis a conference can still be held (A)
-    brand_share: 3.0 # % on every product's brand target a full-strength answer adds (A)
-    brand_step: 6.0 # % at most either way, x the audience (A)
+    brand_share: 6.0 # % on every product's brand target a full-strength answer adds (A; M49 tuned from 3.0 for 61.3 target 4)
+    brand_step: 12.0 # % at most either way, x the audience (A; M49 tuned from 6.0)
     brand_months: 12 # months it runs (A)
     cred_share: 2.0 # credibility points a full-strength answer earns (A)
     cred_step: 6.0 # at most either way, x the audience (A)
