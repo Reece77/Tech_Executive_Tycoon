@@ -91,6 +91,7 @@ Found by a sweep of `tst/` and by playing a 2008 game; each fixed as listed (201
 | `db/backup.py`, `db/saves.py` | `turn-(\d{3,})` names | negative turns match |
 | `db/history.py` prune, peaks | from month 0 | from the save's first month |
 | `loader.py` platform shares, vehicle/robot shares, named shares | from 2010 / turn 0 | from 2008 |
+| `sim/meetings/agenda.py` (M48, found at the merge) board and call checks | `turn < 1` and `if state.turn` as the first month | the world's first month (CLAUDE.md §9 rule 8) |
 
 Left as they are (checked, no effect on a 2008 game or by design): `exploration/draws.py` GEOLOGY_TURN 0 and `research/levels.py` stream(0, ...) (fixed seeds, not starts); `fabs/market.py:334` clamps a node's data price month to 2010 (a data month, not the game's); `regulation`, `government` and dynasty draws run from 2026 or 2040; `api/history_views.py` `closed_turn or 0` sorts (labels only); `db/history.py` prune_candidates skips while its cutoff is negative (catches up).
 

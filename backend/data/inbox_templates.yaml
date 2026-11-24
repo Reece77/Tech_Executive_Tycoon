@@ -330,6 +330,21 @@ templates:
   board_meeting:
     title: "Board meeting: confidence {confidence}"
     body: "Your board met for the quarter. Average confidence is {confidence} ({label})."
+  commitment_kept: # M48 (59.1)
+    title: "Commitment kept: {promise}"
+    body: "You told the board you would {promise}, and you did. Every director's confidence rises."
+  commitment_broken: # M48 (59.1)
+    title: "Commitment broken: {promise}"
+    body: "You told the board you would {promise}, and you did not. It costs you double what keeping it would have earned."
+  guidance_kept: # M48 (59.2)
+    title: "Guidance kept: {promise}"
+    body: "You said on the call you would {promise}, and the quarter delivered. Credibility rises."
+  guidance_broken: # M48 (59.2)
+    title: "Guidance broken: {promise}"
+    body: "You said on the call you would {promise}, and the quarter fell short. Credibility falls."
+  meeting_held: # M48 (59)
+    title: "You attended {meeting}"
+    body: "{summary}"
   board_warning:
     title: "Formal warning from your board"
     body: "Average board confidence has fallen to {confidence}. The board expects growth closer to plan and a safer runway. Directors who stay below {removal} for {months} months will vote to remove you."

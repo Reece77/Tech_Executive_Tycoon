@@ -147,6 +147,10 @@ STREAM_IDS: Final = MappingProxyType(
         # M47 (formulas.md 58.2): (kind index, *deal key) a counterpart's hidden zone, patience,
         # priorities, openness and revealed-range offsets, drawn at the month the talks open
         "negotiation": 70,
+        # M48 (formulas.md 59): (kind index, meeting turn) speakers' hidden priorities,
+        # receptiveness, askers and an investor day's investors; (call index, 0, analyst index)
+        # at the listing month, an analyst's name and focus
+        "meetings": 71,
         "misc": 99,
     }
 )

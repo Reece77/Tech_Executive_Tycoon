@@ -443,3 +443,14 @@ class NegotiationRuleError(SimError):
 
 class UnknownNegotiationError(NotFoundError):  # M47
     code = "unknown_negotiation"
+
+
+class MeetingRuleError(SimError):
+    """A meeting step the rules do not allow (M48, formulas.md 59). The message never names a
+    speaker's priorities, receptiveness or a draw (59.5)."""
+
+    code = "meeting_rule"
+
+
+class UnknownMeetingError(NotFoundError):  # M48
+    code = "unknown_meeting"

@@ -15,11 +15,8 @@ as data, never an instruction (prompts.py), and never executed."""
 
 from __future__ import annotations
 
-import os
-import unicodedata
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -27,17 +24,25 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tst.conversations import classifier, prompts, store, templates
+from tst.conversations.common import (
+    ModeInfo,
+    _ask,
+    _log_calls,
+    _now,
+    _run,
+    _spend,
+    _writer,
+    clean_message,
+    mode_info,
+)
 from tst.conversations.view import PublicNegotiation, public
 from tst.db import repository
-from tst.db.events import default_adapter
-from tst.db.models import ConversationRoundRow, ConversationRow, LLMCallLogRow
+from tst.db.models import ConversationRoundRow, ConversationRow
 from tst.events.service import Writer
-from tst.llm.base import ConversationPrompt, LLMAdapter
-from tst.llm.settings import LLMSettings, add_spend, load_settings, month_spend
+from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.errors import (
     NegotiationRuleError,
-    SaveBusyError,
     SimError,
     UnknownNegotiationError,
 )
@@ -48,16 +53,6 @@ from tst.sim.rng import RngFactory
 
 PURPOSE = "negotiation"  # llm_call_log.purpose
 OPEN = "open"
-type Mode = Literal["llm", "template"]
-type ModeReason = Literal["", "setting", "offline", "budget"]
-
-
-@dataclass(frozen=True, slots=True)
-class ModeInfo:
-    mode: Mode
-    reason: ModeReason  # why template mode ("" when the LLM is in use)
-    cap_cents: int
-    spent_cents: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,66 +69,6 @@ class Talks:
     messages: tuple[tuple[int, str, str, str, str], ...]  # (round, said, source, reply, by)
     opening_line: str
     mode: ModeInfo
-
-
-def _now() -> str:
-    return datetime.now(UTC).isoformat(timespec="seconds")
-
-
-def cap_cents(settings: LLMSettings, data: LoadedData) -> int:
-    chosen = settings.conversation_budget_cents
-    return data.balance.llm.conversation_budget_cents if chosen is None else chosen
-
-
-def conversation_adapter(save_dir: Path) -> LLMAdapter:
-    """The adapter conversations use: TST_CONVERSATION_ADAPTER, else the events' adapter."""
-    from tst.config import get_settings
-    from tst.llm.settings import active_adapter
-
-    forced = get_settings().conversation_adapter
-    if forced:
-        settings = get_settings()
-        return active_adapter(load_settings(save_dir), settings.anthropic_api_key, forced)
-    return default_adapter(save_dir)
-
-
-def mode_info(save_dir: Path, data: LoadedData, adapter: LLMAdapter | None = None) -> ModeInfo:
-    """LLM or template mode now (ADR-0023 section 4)."""
-    settings = load_settings(save_dir)
-    cap = cap_cents(settings, data)
-    spent = month_spend(save_dir).conversation_cents
-    live = (adapter or conversation_adapter(save_dir)).name != "template"
-    if settings.conversation_mode == "template":
-        return ModeInfo("template", "setting", cap, spent)
-    if not live:
-        return ModeInfo("template", "offline", cap, spent)
-    if spent >= cap:
-        return ModeInfo("template", "budget", cap, spent)
-    return ModeInfo("llm", "", cap, spent)
-
-
-def _writer(save_dir: Path, data: LoadedData, adapter: LLMAdapter | None) -> Writer:
-    settings = load_settings(save_dir)
-    cap = cap_cents(settings, data)
-    spent = month_spend(save_dir).conversation_cents
-    return Writer(
-        adapter=adapter or conversation_adapter(save_dir),
-        settings=settings,
-        budget_left=lambda: cap - spent,
-        debug=os.environ.get("TST_LLM_DEBUG") == "1",
-    )
-
-
-def clean_message(text: str, max_chars: int) -> str:
-    """The player's message as stored and quoted: control characters removed, whitespace
-    collapsed, at most `max_chars`. It stays untrusted: nothing reads it as an instruction."""
-    kept = "".join(ch for ch in text if unicodedata.category(ch)[0] != "C" or ch == " ")
-    clean = " ".join(kept.split())
-    if not clean:
-        raise NegotiationRuleError("write a message, or pick moves")
-    if len(clean) > max_chars:
-        raise NegotiationRuleError(f"a message has at most {max_chars} characters")
-    return clean
 
 
 def as_kind(kind: str) -> DealKind:
@@ -183,50 +118,6 @@ def _said(rows: Sequence[ConversationRoundRow]) -> list[tuple[str, str]]:
     return [(r.message, r.reply) for r in rows]
 
 
-def _log_calls(session: Session, turn: int, writer: Writer) -> None:
-    now = _now()
-    session.add_all(
-        LLMCallLogRow(
-            turn=turn,
-            purpose=r.purpose,
-            model=r.model,
-            prompt_hash=r.prompt_hash,
-            input_tokens=r.input_tokens,
-            output_tokens=r.output_tokens,
-            cost_cents=r.cost_cents,
-            latency_ms=r.latency_ms,
-            outcome=r.outcome,
-            created_at=now,
-            prompt=r.prompt,
-            response=r.response,
-        )
-        for r in writer.records
-    )
-
-
-def _spend(save_dir: Path, writer: Writer) -> None:
-    calls = sum(1 for r in writer.records if r.outcome != "budget")
-    if writer.spent_cents or calls:
-        add_spend(
-            save_dir,
-            0.0,
-            conversation_cents=writer.spent_cents,
-            conversation_calls=calls,
-        )
-
-
-def _ask(writer: Writer, kind: str, system: str, user: str, fallback: Any) -> Any | None:
-    """One conversation call within the cap; None if over it or it failed."""
-    if not writer.live or not writer.can_spend():
-        return None
-    completion = writer.adapter.generate_conversation(
-        ConversationPrompt(kind, system, user, fallback)  # type: ignore[arg-type]
-    )
-    outcome = "ok" if completion.content is not None and completion.error is None else "error"
-    writer.record(PURPOSE, system + "\n" + user, completion, outcome)
-    return completion.content if outcome == "ok" else None
-
-
 def _suggest(
     writer: Writer | None, view: PublicNegotiation, said: list[tuple[str, str]], data: LoadedData
 ) -> tuple[list[str], str]:
@@ -274,7 +165,7 @@ def get(path: Path, data: LoadedData, conv_id: int) -> Talks:
     with repository.read_session(path) as session:
         state = repository.read_state(session)
         row = session.get(ConversationRow, conv_id)
-        if row is None:
+        if row is None or row.kind not in DEAL_KINDS:
             raise UnknownNegotiationError(f"no negotiation {conv_id}")
         talks = _talks(row, _history(session, conv_id), data, mode_info(path.parent, data))
     return replace(talks, status=_shown_status(row, state.turn))
@@ -284,7 +175,13 @@ def listing(path: Path, data: LoadedData) -> list[Talks]:
     mode = mode_info(path.parent, data)
     with repository.read_session(path) as session:
         state = repository.read_state(session)
-        rows = list(session.scalars(select(ConversationRow).order_by(ConversationRow.id.desc())))
+        rows = list(
+            session.scalars(
+                select(ConversationRow)
+                .where(ConversationRow.kind.in_(DEAL_KINDS))  # M48: meetings are listed apart
+                .order_by(ConversationRow.id.desc())
+            )
+        )
         return [
             replace(
                 _talks(r, _history(session, r.id), data, mode), status=_shown_status(r, state.turn)
@@ -297,7 +194,7 @@ def replayed(path: Path, data: LoadedData, conv_id: int) -> Negotiation:
     """The negotiation rebuilt from its opening and its stored moves: no LLM (ADR-0023)."""
     with repository.open_session(path) as session:
         row = session.get(ConversationRow, conv_id)
-        if row is None:
+        if row is None or row.kind not in DEAL_KINDS:
             raise UnknownNegotiationError(f"no negotiation {conv_id}")
         rounds = _history(session, conv_id)
     neg = store.load(row.state)
@@ -424,7 +321,7 @@ def _parse_moves(raw: Sequence[dict[str, Any]], max_moves: int) -> tuple[Move, .
 def _load_open(session: Session, conv_id: int, turn: int) -> tuple[ConversationRow, Negotiation]:
     _lapse(session, turn)
     row = session.get(ConversationRow, conv_id)
-    if row is None:
+    if row is None or row.kind not in DEAL_KINDS:
         raise UnknownNegotiationError(f"no negotiation {conv_id}")
     if row.status != OPEN:
         raise NegotiationRuleError(f"these talks are over ({row.status})")
@@ -484,25 +381,6 @@ def _conclude(
     except SimError as exc:
         return exc.message, None
     return None, None
-
-
-BUSY_TRIES = 40  # tunable-exempt: about 10 s of a save busy with another write
-BUSY_WAIT_S = 0.25  # tunable-exempt: the front end's own busy retry delay
-
-
-def _run(path: Path, data: LoadedData, action: Any) -> None:
-    """The outcome's action, waiting while another write holds the save (a screen's mark-read,
-    say): the talks have ended, so the outcome must not be lost to a busy save."""
-    import time
-
-    for attempt in range(BUSY_TRIES):
-        try:
-            repository.run_action(path, data, action)
-            return
-        except SaveBusyError:
-            if attempt == BUSY_TRIES - 1:
-                raise
-            time.sleep(BUSY_WAIT_S)
 
 
 def _deal_id(kind: str, params: dict[str, Any]) -> int:

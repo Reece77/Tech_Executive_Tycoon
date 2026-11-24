@@ -64,6 +64,7 @@ from tst.sim.group.conglomerate_config import ConglomerateBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
 from tst.sim.medical.config import MedicalBalance, MedicalFile
+from tst.sim.meetings.config import MeetingsBalance
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
 from tst.sim.modes.config import (
@@ -1437,6 +1438,7 @@ class Balance(_Frozen):
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
     llm: LlmBalance  # M47 (ADR-0023): the conversations' own monthly LLM cap
+    meetings: MeetingsBalance  # M48 (formulas.md 59): board meetings, earnings calls, investor days
 
     @model_validator(mode="after")
     def _check_difficulties(self) -> Balance:

@@ -3464,3 +3464,62 @@ negotiation: # 58: negotiations by conversation (M47, v6 lane A). The engine own
 
 llm: # ADR-0023: the conversations' own budget, apart from events' (Reece, 2026-11-22)
   conversation_budget_cents: 1000 # real cents a calendar month (default $10, a setting); over it conversations run in template mode
+
+meetings: # 59: board meetings, earnings calls and investor days (M48, v6 lane B), on M47's conversation engine. The engine owns every effect, within these bounds; the LLM only scores an answer into moves. Skipping a meeting is today's game. A = an assumption for gameplay, tuned only for 59.4
+  energy: { board: 2, call: 2, investor_day: 4 } # founder energy spent when a meeting ends (not when skipped)
+  skill: # 59.1: the founder's communication and leadership scale the effects
+    band: [0.8, 1.2] # the factor at skill score 1 and 20 (59.1)
+    weights: { communication: 0.5, leadership: 0.5 } # the score's skills
+    persona_mult: 1.10 # x a gain for a beloved founder, / a push-back's loss for a ruthless one (32.4)
+    impression: 12.0 # strength; every answer gains this x (factor - 1): a poor communicator's answers land worse than saying nothing (59.4 target 2; A)
+  priority_traits: { growth: ambition, margin: professionalism, risk: -risk_appetite, governance: integrity } # topic -> the director's personality trait behind its hidden weight ("-": 21 - the trait)
+  priority_noise: 0.30 # share; each meeting's draw moves a raw weight by up to this (A)
+  priority_weight: 0.5 # 0-1; an effect x (1 + this x (4 w - 1)) for the speaker's hidden weight w on the topic (A)
+  receptiveness: [0.85, 1.15] # a speaker's drawn factor on the effects at one meeting (A)
+  board: # 59.1
+    step: 4.0 # confidence points; the most one director's confidence moves in one meeting (59.1)
+    item_points: 2.4 # confidence points a full-strength answer moves the asking director (A)
+    spill: 0.4 # share of an answer's effect each other voting director feels (A)
+    items: 4 # agenda items at most
+    concern_below: 50 # confidence; a director under it raises a concern item (59.1)
+    vote_at: 50 # confidence; a director backs the next quarter's plan from here (A)
+    vote_priority: 10 # confidence points a director's growth weight adds to (or takes from) its vote, x (4 w - 1) (A)
+    commitment_kept: 1.5 # points to every voting director when a commitment is kept (A)
+    commitment_broken_mult: 2.0 # a broken commitment costs this x the kept points (59.1: double)
+    effects: { commit: 0.4, explain: 0.3, defer: -0.3, concede: 0.1, push_back: -0.4, neutral: 0.0 } # move -> strength on an ordinary item (A)
+    problem_effects: { commit: 0.3, explain: 0.2, defer: -0.7, concede: 0.4, push_back: -0.8, neutral: -0.3 } # ...on an item about a real problem (A)
+    push_back_unloved: 0.3 # a push-back's strength when the asker's weight on the topic is under a quarter (A)
+  call: # 59.2
+    step: 0.03 # share of S; the most a call moves sentiment beyond 25.4's jump (59.2)
+    target_step: 0.05 # share; the most a call moves one analyst's target (59.2)
+    item_share: 0.002 # share of S a full-strength answer earns (A)
+    target_share: 0.03 # share of the asker's target a full-strength answer earns (A)
+    questions: 4 # questions a call takes at most
+    guidance_step: 0.03 # share; raise and lower move the quarter's revenue guidance by this (A)
+    deflect_cred: 3 # credibility points a deflection on a real problem costs (59.2)
+    effects: { reaffirm: 0.5, raise: 0.6, lower: -0.4, explain: 0.6, deflect: -0.2, promise: 0.5, neutral: 0.0 } # (A)
+    problem_effects: { reaffirm: 0.2, raise: -0.3, lower: 0.3, explain: 0.4, deflect: -0.7, promise: 0.3, neutral: -0.3 } # (A)
+  investor_day: # 59.3
+    step: 0.08 # share of S; the most an investor day moves sentiment (59.3)
+    cred_step: 10 # credibility points it moves at most (59.3)
+    item_share: 0.008 # share of S a full-strength answer earns (A)
+    item_cred: 1.0 # credibility points a full-strength answer earns (A)
+    economics_share: 0.03 # share of S the plan's economics earn at +1 (and lose at -1) (A)
+    economics_cred: 4.0 # credibility points they earn at +1 (A)
+    hurdle: 0.10 # return on capital; the plan's economics score 0 here (A)
+    span: 0.10 # return on capital above the hurdle that scores +1 (below it, -1) (A)
+    every_months: 12 # an investor day at most once a year (59.3)
+    firms: [Fidelity, Vanguard, BlackRock, T. Rowe Price, Wellington, Capital Group] # the investors who ask
+    questions: 3 # questions an investor day takes
+    effects: { explain: 0.6, commit: 0.6, deflect: -0.3, concede: 0.2, neutral: 0.0 } # (A)
+    problem_effects: { explain: 0.4, commit: 0.3, deflect: -0.7, concede: 0.5, neutral: -0.3 } # (A)
+  credibility: # 59.2: credibility (29.3's score) scales calls' and investor days' gains
+    full_at: 50 # credibility; gains are whole from here
+    half_at: 30 # ...and halved at or below this (59.2: low credibility halves positive moves)
+    guidance_kept: 4 # credibility points for guidance given on a call and kept (A)
+    guidance_broken: 10 # ...lost for guidance broken (A)
+  max_moves: 3 # moves one answer counts at most (duplicates once)
+  max_message_chars: 600 # characters in the player's answer
+  max_reply_words: 60 # words in the speaker's reply
+  suggestions: 3 # suggested answers an item (as 58.3)
+  history_items: 3 # earlier items quoted in a prompt

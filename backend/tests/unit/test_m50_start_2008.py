@@ -231,3 +231,18 @@ def test_an_active_strategy_plays_from_2008_into_2010() -> None:
         assert game.last_result is not None
         assert all(sum(ln.amount for ln in e.lines) == 0 for e in game.last_result.ledger_entries)
     assert game.state.turn == 2 or game.state.ended
+
+
+def test_a_2008_game_holds_board_meetings_before_2010() -> None:
+    """M48's board meeting follows each quarter's end from the world's first month (it read
+    turn 0 as the first); a 2010 game's months are unchanged."""
+    from tests.unit.test_m48_meetings import B, after_report
+    from tst.sim.meetings import agenda
+
+    state = after_report()
+    begun_2008 = GameMode(kind="campaign", start_turn=-24)
+    april_2008 = replace(state, turn=ym_to_turn(2008, 4), mode=begun_2008)
+    assert agenda.problem(april_2008, "board", B) is None
+    first_month = replace(state, turn=-24, mode=begun_2008)
+    assert agenda.problem(first_month, "board", B) is not None
+    assert agenda.problem(replace(state, turn=0), "board", B) is not None  # 2010's first month
