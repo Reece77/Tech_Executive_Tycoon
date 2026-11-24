@@ -4,8 +4,7 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## v6.0.0
 
-The first installable release of Tech Startup Tycoon. Install it from GitHub Releases; the game opens in its own window, keeps your saves in Documents\Tech Startup Tycoon, and checks for updates when it starts.
-
+- **The first installable release.** The game opens in its own window, keeps your saves in Documents\Tech Startup Tycoon, and checks for updates when it starts.
 - **Run your whole group, or let your people run it.** Hand any area to an executive or a specialist, set their money limits, and read a monthly digest. One-off decisions always come to you.
 - **A living world to 2069.** Rivals build, buy and bid as you do; markets have realistic ceilings; dynasty mode carries your family past 2039, with heirs, succession and estate tax.
 - **The whole tech economy.** Software, cloud and AI; phones and platforms with app stores; chips, fabs and ASML's queue; mines, refineries and power plants; electric cars, robots and robotaxis; satellites and launch; medical devices and medicines; government and defence contracts.
