@@ -16,6 +16,6 @@ export const TALK_STATUS: Record<string, string> = {
 
 export const FLAG_LABEL: Record<string, string> = {
   unhappy: 'Unhappy',
-  approached: 'Approached by a rival',
+  approached: 'Approached',
   seat: 'Executive seat',
 };

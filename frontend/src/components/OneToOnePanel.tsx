@@ -10,8 +10,9 @@ import { Term } from './Term';
 // one-to-one (or ask a seat holder above them to hold it), the talk room, past one-to-ones, and
 // the promotions promised to them with their status. The engine decides every effect.
 
-/** A person's flags as badges (unhappy, approached by a rival). */
-export function TalkFlags({ person }: { person: TalkPerson }) {
+/** A person's flags as badges (unhappy, approached by a rival); `compact` names the rival only
+ * in the badge's title (the People table, which must fit at 1440 wide). */
+export function TalkFlags({ person, compact }: { person: TalkPerson; compact?: boolean }) {
   const shown = person.flags.filter((f) => f !== 'seat');
   if (shown.length === 0) return null;
   return (
@@ -23,9 +24,13 @@ export function TalkFlags({ person }: { person: TalkPerson }) {
           color={f === 'approached' ? 'red' : 'yellow'}
           variant="light"
           data-testid={`person-flag-${f}`}
-          title={f === 'approached' && person.approached_by ? person.approached_by : undefined}
+          title={
+            f === 'approached' && person.approached_by
+              ? `Approached by ${person.approached_by}`
+              : undefined
+          }
         >
-          {f === 'approached' && person.approached_by
+          {f === 'approached' && person.approached_by && !compact
             ? `Approached by ${person.approached_by}`
             : (FLAG_LABEL[f] ?? f)}
         </Badge>

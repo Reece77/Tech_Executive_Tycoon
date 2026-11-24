@@ -42,10 +42,10 @@ function OneToOneCell({ saveId, person }: { saveId: string; person: TalkPerson |
   const blocked = person.held !== '' && person.held !== 'open';
   return (
     <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-      <TalkFlags person={person} />
+      <TalkFlags person={person} compact />
       {blocked ? (
         <span className="tst-muted" style={{ fontSize: 12 }}>
-          held this month
+          talked
         </span>
       ) : (
         <Button
@@ -77,7 +77,7 @@ function overviewColumns(saveId: string, talkPeople: ReadonlyMap<number, TalkPer
       sortFn: 'alphanumeric',
       enableHiding: false,
       cell: ({ row }) => (
-        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <Link
             to={`/game/${saveId}/people/${row.original.person_id}`}
             style={{ fontWeight: 600, textDecoration: 'none' }}
@@ -85,6 +85,8 @@ function overviewColumns(saveId: string, talkPeople: ReadonlyMap<number, TalkPer
             {row.original.name}
           </Link>
           {row.original.org?.leads_unit_id != null && <LeadsChip />}
+          {/* M49 (61.2): unhappy or approached people are flagged, with a one-to-one */}
+          <OneToOneCell saveId={saveId} person={talkPeople.get(row.original.person_id)} />
         </span>
       ),
     }),
@@ -191,15 +193,6 @@ function overviewColumns(saveId: string, talkPeople: ReadonlyMap<number, TalkPer
               </span>
             ))}
         </span>
-      ),
-    }),
-    helper.accessor((p) => talkPeople.get(p.person_id)?.flags.join(' ') ?? '', {
-      id: 'one_to_one',
-      header: 'One-to-one',
-      meta: { term: 'talk.one_to_one' },
-      sortFn: 'alphanumeric',
-      cell: ({ row }) => (
-        <OneToOneCell saveId={saveId} person={talkPeople.get(row.original.person_id)} />
       ),
     }),
     helper.accessor((p) => statusOf(p), {
