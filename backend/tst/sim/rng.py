@@ -207,8 +207,9 @@ class RngFactory:
                 raise InvalidSeedError(f"stream key out of range: {key!r}")
         # ADR-0024: a key part may be a month (an approach's, a contract's), negative before
         # 2010; it enters as a turn does, so every key from 0 is unchanged
-        seq = np.random.SeedSequence(
-            entropy=self._master_seed,
-            spawn_key=(turn_key(turn), STREAM_IDS[name], *(turn_key(p) for p in key)),
-        )
+        if turn >= 0 and (not key or min(key) >= 0):  # every draw from 2010: no mapping
+            spawn_key = (turn, STREAM_IDS[name], *key)
+        else:
+            spawn_key = (turn_key(turn), STREAM_IDS[name], *(turn_key(p) for p in key))
+        seq = np.random.SeedSequence(entropy=self._master_seed, spawn_key=spawn_key)
         return np.random.Generator(np.random.PCG64(seq))

@@ -110,6 +110,18 @@ Left as they are (checked, no effect on a 2008 game or by design): `exploration/
 14. **Target 2's failure clause is carried.** Measured at the same age of the world (every world begins with no rival startups, so October 2008 in a 2008 game is compared with October 2010 in a 2010 game; against all of 2010 it read 4/68 vs 63/175), short-runway startups fail *less* often in the crisis. A rival startup that fails to raise cuts its costs instead (15.4) and fails only on insolvency or the small-startup rule, neither of which reads the climate; the climate already makes their rounds 58% scarcer. Meeting the clause needs a change to the startup engine (e.g. a failed raise in a frozen climate closes a startup whose cuts cannot cover its runway), which is outside the brief's "tuning only the 2008-2009 data's calibration": a follow-up.
 15. **Target 4 is reported, measured at V1's year 10.** V1's founder-played strategies from January 2008 (120 months, V1's own measure) give research_heavy 6 wins of 10 against V1's cap of 5 (from 2010 the same run gives 4); after merging m46-done, 7 (from 2010, 5: M46's balance changes moved the 2010 reference too, and a 2010 game is byte-identical to `main`; V2's research_heavy wins are already a known miss owned by M43). Every strategy played 2008-2009 without error after decision 1's key fix. The 360-month run to December 2037 (`m50.strategy_readings(months=360)`) is about 3x this run's 27 minutes on 4 cores and was not run here (decision rule 7): a follow-up for the weekly workflow.
 16. **Tuning (decision rule 1):** only the climate's crisis months (decision 9). No other key was tuned.
+17. **Earlier guards after merging m46-done, m48-done and m49 (rules 3 and 6; weekly 45441656346 on the branch at d9b46a88, weekly 45441649507 on `main` at 8439202a, the same seven parts):**
+
+    | Guard | Branch | `main` | Band | Verdict |
+    | --- | --- | --- | --- | --- |
+    | V2.wins research_heavy | 5/10 | 5/10 | <= 4 | identical, rule 3 (M46 decision 14: 22/30 on both, seed luck) |
+    | V5.T1.ev_integrator (m43-a1, c1, a2) | 0.86x, 0.86x, 0.82x | 0.86x, 0.86x, 0.82x | 0.90-1.40x | identical, rule 3 |
+    | V5.T1.cloud_first / space_and_defence | 0.90x / 0.88x | 0.90x / 0.88x | 0.90-1.40x | identical, rule 3 |
+    | M30 2039 month, V6 save (adjusted) | 434 ms | 356 ms (failed on one 1,396 ms month) | 400 ms | fails on `main`, rule 3 |
+    | M30 2039 month, v6-integrator (adjusted) | 468 ms | 506 ms | 400 ms | fails on `main`, rule 3 |
+    | M37 2069 month (adjusted) | 587 ms (502 ms on 2260a111, the same code) | 538 ms, known miss to 550 ms | 500 ms | runner noise, below |
+
+    Every balance reading is identical, as a 2010 game is byte-identical to `main`. Timing alone (rule 6), the same saves built by `main`, alternating on one machine (raw medians): M30 `main` 624, 631 ms, branch 637, 588 ms; M37 `main` 813, 800 ms, branch 853, 837 ms. Profiled over four 2069 months, functions M50 did not touch ran 15-26% slower in the branch's run with identical call counts (the machine), and M50's own work (`turn_key`, `from_2010`, the stream's mapping) came to about 35 ms of 6.1 s, under 1%. That 1% is now removed: `RngFactory.stream` maps key parts only when one is negative (every draw from 2010 takes the unmapped key, the same key as before). The timing guards are `main`'s, owned by v6's performance pass (`known_misses.py`'s "v6 performance").
 
 ## Follow-ups
 
