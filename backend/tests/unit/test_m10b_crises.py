@@ -167,3 +167,18 @@ def test_spacing_holds_one_critical_in_six_months(loaded: LoadedData) -> None:
     sure = _balance(loaded, breach_chance=1.0, outage_chance=1.0)
     busy = with_event(_live(loaded, 6_000.0, 40.0), earlier)
     assert not [e for e in _queued(busy, sure, loaded) if e.severity == "critical" and e.id != 900]
+
+
+def test_an_ipo_under_way_holds_the_critical_slot(loaded: LoadedData) -> None:
+    """M46 (16.1): while the IPO chain runs, a key exit waits; the pricing step keeps the slot."""
+    from tst.sim.markets_public.models import Listing
+    from tst.sim.state import with_listing
+
+    state = _staffed(loaded)
+    star = min(key_people(state, loaded.game_data, loaded.balance))
+    state = _resign(state, star)
+    for status in ("hired", "filing", "roadshow", "pricing"):
+        held = with_listing(state, Listing(1, "morgan_stanley", state.turn, status=status))  # type: ignore[arg-type]
+        assert not [e for e in _queued(held, loaded.balance, loaded) if e.severity == "critical"]
+    listed = with_listing(state, Listing(1, "morgan_stanley", state.turn, status="listed"))
+    assert [e for e in _queued(listed, loaded.balance, loaded) if e.severity == "critical"]

@@ -482,6 +482,14 @@ mk = \frac{budget_{\$}}{1000} + 5\,\mu, \qquad B^{*} = 100 \cdot \frac{mk}{mk + 
 
 Brand is per product and kept in [0, 100]. With no marketing, brand drifts toward 0.
 
+**Marketers direct a large budget (M46).** Budget points above `marketer_lift_from_mk` (200, a $200,000 monthly budget) are multiplied by `1 + min(0.3, 0.03 μ)`:
+
+```latex
+mk = b + 5\,\mu + \max(0,\; b - 200) \cdot \min(0.3,\; 0.03\,\mu), \qquad b = \frac{budget_{\$}}{1000}
+```
+
+A startup's budget sits below the threshold, so nothing changes there; at a listed company's budget (thousands of points) the fixed `5 μ` was negligible, and a marketing team had no work. One average marketer (μ ≈ 1) now adds 3% to the budget above the threshold, and ten reach the cap. Why (M46 sub-task 1): a listed steady founder could not put IPO cash to work, because builders saturate (the feature score stops at 100 and Q_cap follows the team's average skill, not its size) and sellers only serve the small sales-led segments.
+
 ### 11.6 Appeal (phase 5)
 
 For product `i` in segment `s`, all scores on 0–100:
@@ -698,6 +706,7 @@ With D = 400,000, Salesforce holding 15% and Zoho 10%: churn 3.41% (Salesforce) 
 | `products.dev_noise_sd` / `.maverick_noise_sd` / `.dev_noise_sd_cap` | 0.15 / 0.10 / 0.40 | multiplier sd | §11.3 |
 | `products.seller_rate.<segment>` | mid-market 2, enterprise 0.3 | customers per month per 10 sell | §11.3 |
 | `products.marketer_mk` / `.budget_mk_unit_cents` | 5 / 100000 | mk points / cents per mk point | §11.5 |
+| `products.marketer_lift` / `.marketer_lift_cap` / `.marketer_lift_from_mk` | 0.03 / 0.3 / 200 (M46) | fraction per unit of μ / fraction / mk points | §11.5 |
 | `products.qcap_per_skill` / `.quality_rate` / `.overcap_decay` / `.rot_threshold` / `.rot_per_month` | 5 / 0.15 / 0.01 / 0.25 / 0.5 | quality points / fraction / fraction / fraction of σ / quality points | §11.4 |
 | `products.brand_rate` | 0.10 | fraction per month | §11.5 |
 | `products.tag.<tag>.output` / `.perfectionist_qcap_bonus` | see §11.10 / 3 | multiplier / attribute points | §11.10 |
@@ -1150,6 +1159,7 @@ The engine decides when an event happens, about whom, how severe it is and what 
 - Each month the director draws how many events to queue for next month: 0 with 15%, 1 with 50%, 2 with 28%, 3 with 7% (mean 1.27).
 - **Candidates** are templates (§16.4) whose trigger holds this month (§16.2). Weight = template weight × trigger strength (0–1) × 0.5 if its category was used last month × 0 if the same template ran in the last 24 months or any event named the same person in the last 6 months. Draw without replacement by weight.
 - **Severity** comes from the template and the trigger's strength: minor below 0.5, major from 0.5, critical only for templates marked critical and at most one critical event in any 6 months.
+- **Critical follow-ups wait (M46):** a queued follow-up or moment whose template is critical only (a listed company's IPO pricing, an activist's stake) takes the month's critical slot ahead of storyline steps, crises and drawn events; when the slot is taken (a critical event in the last 6 months), it stays queued and arrives in the first month the slot is free, deferred, never dropped. **While the player's IPO chain is under way** (banks hired, not yet priced) the slot is held for its pricing step: drawn critical events and crises wait, so the pricing (which the listing waits on) is deferred only when a critical event came in the months just before the banks were hired.
 - Events for a company with no employees yet use only founder, market and finance templates. (M7a: the `founder` category holds the `early_days` templates: the founder's own first months, before anything is live; Reece asked for a varied early game for a solo founder, docs/balance-targets.md E3.)
 - **Quiet-month fill (Reece, 2026-10-29, M6.9):** when the drawn count still has slots but every triggered candidate is spent or in cooldown, `quiet_month` templates fill the remaining slots, drawn the same way (weight × the `quiet_month` strength, same cooldowns), at **minor** severity only; never when `quiet_month` holds anyway.
 - **M6.9 tuning** (to meet §16.10 at about 1.2 events a month): count weights [0.08, 0.40, 0.38, 0.14] (mean 1.58; was [0.15, 0.50, 0.28, 0.07]), template cooldown 12 months (was 24), person cooldown 4 (was 6); triggers `underpaid` below 0.95 (was 0.9), `star_performer` top 30% (was 10%), `team_clash` at −25 or below (was −50), `team_bond` at 30 or above (was 60), `board_unhappy` below 50 (was 40); minor `morale_delta` cap 3 (was 5). The values in §16.1–§16.3 below are the original design; `balance.yaml` holds the tuned ones. `low_morale` stays at 35 so the §16.11 director example holds.

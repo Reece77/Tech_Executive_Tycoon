@@ -4,7 +4,8 @@ events next month brings, which templates, about whom, and how severe. Stream `e
 event in queue order (follow-ups, storyline steps, then picks).
 
 Follow-ups and due storyline steps are queued first and always arrive; the drawn count
-fills whatever slots remain.
+fills whatever slots remain. A critical follow-up (a listed company's IPO pricing or activist,
+say) takes the month's critical slot, or waits queued until the slot is free (M46).
 """
 
 from __future__ import annotations
@@ -34,7 +35,7 @@ from tst.sim.press.moments import queue_moment
 from tst.sim.press.names import press_names
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rng import RngFactory
-from tst.sim.state import GameState, with_event, with_queued, with_storyline
+from tst.sim.state import GameState, listing_of, with_event, with_queued, with_storyline
 
 BP = 10_000  # tunable-exempt: basis-point scale
 
@@ -346,6 +347,11 @@ def direct(
     for q in state.queued:
         if q.company_id == cid and not q.done and q.due_turn <= next_month:
             template = data.event_template(q.template_id)
+            severity = _forced_severity(template)
+            if severity == "critical":  # M46: a critical follow-up waits for the slot (16.1)
+                if not critical_free:
+                    continue  # deferred, not dropped: it stays queued until the slot frees
+                critical_free = False
             queue.append(
                 (
                     template,
@@ -357,7 +363,7 @@ def direct(
                         q.rival_id,
                         loan_id=q.loan_id,
                     ),
-                    _forced_severity(template),
+                    severity,
                     1.0,
                     "follow_up",
                     None,
@@ -393,6 +399,12 @@ def direct(
                 )
             )
 
+    # M46: while the player's IPO chain is under way (banks hired, not yet priced), the critical
+    # slot is held for its pricing step, so a drawn critical event or crisis waits instead of
+    # the listing (a deferred pricing would delay the IPO itself).
+    listing = listing_of(state, cid)
+    if listing is not None and listing.status in ("hired", "filing", "roadshow", "pricing"):
+        critical_free = False
     gen = rng.stream(state.turn, "events")
     count = draw_count(gen, balance)
     crisis = _crisis(state, crisis_hits(state, gen, balance, data), data) if critical_free else None

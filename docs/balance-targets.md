@@ -717,3 +717,15 @@ Tuned keys (target 1, from 1.40 at the first full reading; 3.2 before the cadenc
 | T2 2025 served revenue within 0.5-2x published | every category; contract manufacturing 0.02x reported (spare capacity by design) | all | pass |
 | T3 growth through the 2060s | every growing category >= 1%; vehicles 0.21% printed (demand set by M38's data) | >= 1% | pass |
 | T4 largest money value | 1.48e16 cents (`M37.money` closed) | < 1.0e18 | pass |
+
+## M46: v6 balance pass one
+
+`tst/balance/m46.py`, nightly `tests/balance/test_m46_balance.py`, seeds 1-10, 10 years, on the final keys (`products.marketer_lift` 0.03, `marketer_lift_cap` 0.3, `marketer_lift_from_mk` 200; weekly 45286501844 and 45295911564, nightly 45295915764).
+
+| Target | Reading | Band | Result |
+| --- | --- | --- | --- |
+| Listed capital: planner / idle 10-year ARR, median paired | 1.063x (1.037x without the lift) | >= 1.05x | pass |
+| M10b.T1 spacing: shortest critical gap, every seed | 6-8 months | >= 6 | pass (closed) |
+| M27a 40.10 T1 after the lift | 1.19 | 0.85-1.2 | pass |
+
+Known misses after M46 (all owned by M57 unless noted): V4 1.45x, V4.T1.1 0.88-0.90x, V4.T4 +0 months, I1 -0.7 pts, V5.cells 74% / 72%, V5.cats as recorded, M13b.T1 6/10, M22.T2.variant 10.5-20.8%; V3.margin closed (+0.8 pts); V3.ai unmeasured (both AI arms bankrupt, on main too); M37.2069_month owned by the v6 performance pass. Readings that miss on both `main` and M46 (rules 3 and 4) are in the brief's decision 14.
