@@ -53,11 +53,5 @@ def test_v1_over_30_seeds() -> None:
 @pytest.mark.weekly
 def test_v5_thirty_years() -> None:
     runs = v2.run_long(jobs=_jobs())
-    data = _loaded("data").game_data
-    open_ = [
-        c.key
-        for c in data.categories
-        if not (c.capacity_market or c.sells_units or c.assembly_market)
-    ]
-    scheduled = [c.key for c in data.categories if c.key not in open_]
+    open_, scheduled = v2.startup_categories(_loaded("data").game_data)
     _check(v2.long_rows(runs, open_, scheduled))

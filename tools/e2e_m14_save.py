@@ -29,6 +29,7 @@ from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import with_product, with_product_segment
 
 FUNDING_CENTS = 50_000_000_000_00  # $50B
+OFFER_WAIT_MONTHS = 8  # months to wait for the queued offer (a 6-month critical slot, M46)
 
 
 def _company(save_dir: Path, name: str, data: LoadedData) -> Path:
@@ -83,8 +84,16 @@ def exit_offer(save_dir: Path, name: str, data: LoadedData) -> Path:
         before = load_state(session)
         state = ipo.queue_public(before, 1, TAKEOVER_OFFER, before.turn + 1)
         sync_state(session, before, state)
-    run_turn(path, data)  # the offer opens at the next month's start
-    return path
+    # The offer opens at a month's start. M46 (16.1): a queued critical event waits for the
+    # director's critical slot (6 months after the last, and held while an IPO chain runs),
+    # so the chain's own critical events can defer it; play on until it opens.
+    for _ in range(OFFER_WAIT_MONTHS):
+        run_turn(path, data)
+        with open_session(path) as session:
+            state = load_state(session)
+        if any(e.template_id == TAKEOVER_OFFER for e in state.open_events(1)):
+            return path
+    raise SystemExit(f"the takeover offer did not open within {OFFER_WAIT_MONTHS} months")
 
 
 def main(argv: list[str]) -> int:

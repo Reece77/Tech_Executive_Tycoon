@@ -25,6 +25,7 @@ from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.report import SCENARIO, Row, RunResult, _loaded, _runs, winners
 from tst.balance.strategies_v2 import DELEGATED, STRATEGIES
 from tst.sim.calendar import ym_to_turn
+from tst.sim.data_models import GameData
 from tst.sim.state import GameState
 
 SEEDS: Final = tuple(range(1, 11))
@@ -321,6 +322,19 @@ def _missing(runs: Sequence[LongRun], categories: Sequence[str]) -> list[str]:
             if r.launches.get((c, d), 0) == 0
         }
     )
+
+
+def startup_categories(data: GameData) -> tuple[list[str], list[str]]:
+    """(open, scheduled): the categories rival startups may be founded in, as
+    tst.sim.rivals.startups.found_startups skips them (15.4), and the rest (entrants.yaml or a
+    system's own rivals only). M46: medical (M41) and space (M40) are scheduled only; before,
+    V5 counted their six cells a run as open, empty in every run."""
+    open_ = [
+        c.key
+        for c in data.categories
+        if not (c.capacity_market or c.sells_units or c.assembly_market or c.medical or c.space)
+    ]
+    return open_, [c.key for c in data.categories if c.key not in open_]
 
 
 def long_rows(
