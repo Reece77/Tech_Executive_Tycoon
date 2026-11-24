@@ -9,6 +9,7 @@ import { ActiveEffects } from '../components/ActiveEffects';
 import { OwnerRecordPanel } from '../components/OwnerRecord';
 import { FounderPanels } from '../components/FounderPanels';
 import { RelationshipsPanel } from '../components/Relationships';
+import { OneToOnePanel } from '../components/OneToOnePanel';
 import { MoraleBreakdownPanel, PersonActions, UnitManagerLine } from '../components/PersonOrg';
 import { BreakdownTip, Term } from '../components/Term';
 import { LoadError, Loading, Panel } from '../components/ScreenState';
@@ -237,6 +238,7 @@ function ProfileBody({
           {p.pitch_record.tracking > 0 && `, ${p.pitch_record.tracking} still tracked`}.
         </p>
       )}
+      {!p.is_founder && p.employment && <OneToOnePanel saveId={saveId} personId={p.person_id} />}
       {!p.is_founder && p.employment && (
         <RelationshipsPanel saveId={saveId} personId={p.person_id} />
       )}
