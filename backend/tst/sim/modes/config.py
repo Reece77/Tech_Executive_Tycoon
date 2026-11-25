@@ -82,6 +82,7 @@ class ChallengesBalance(_Frozen):
 
     rules: dict[str, ChallengeRule]
     hard_rivals_quality_mult: float = Field(ge=1)  # rivals' quality in their markets, x this
+    difficulty_wins: tuple[int, int]  # sensible wins of 10 at or below: hard, then medium (63.3)
 
 
 class SandboxBalance(_Frozen):
@@ -227,3 +228,5 @@ class HistoricalScenario(_Frozen):
     hq_city: str | None = None  # None: geo.default_hq_city
     family: FamilyStartSpec | None = None  # M51: built in the world's first month, then aged
     length: Literal["standard", "dynasty"] = "standard"  # M51: shown as a dynasty game (52.1)
+    # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py), the difficulty
+    sensible_wins: int | None = Field(default=None, ge=0, le=10)  # tunable-exempt: 10 seeds

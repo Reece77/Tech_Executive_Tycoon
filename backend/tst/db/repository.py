@@ -1044,6 +1044,9 @@ def _after_commit(
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    from tst.profile.results import record_quietly  # M51 (63.3): scenario results, app-wide
+
+    record_quietly(save_path, data)
     settle_memory()
 
 
@@ -1131,6 +1134,9 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    from tst.profile.results import record_quietly  # M51 (63.3): scenario results, app-wide
+
+    record_quietly(save_path, data)
     return result
 
 

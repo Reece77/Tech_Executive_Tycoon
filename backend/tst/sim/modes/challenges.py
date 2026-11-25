@@ -53,6 +53,31 @@ REASONS: Final[dict[Rule, str]] = {
 }
 
 
+LABELS: Final[dict[Rule, tuple[str, str]]] = {  # (label, what it means) for the screens
+    "bootstrapped": (
+        "Bootstrapped",
+        "No outside funding: no rounds, SAFEs, bridges, loans or IPO.",
+    ),
+    "hardware_only": ("Hardware only", "Only products that sell units: devices, chips, cars."),
+    "no_acquisitions": ("No acquisitions", "No takeover bids, stakes or minority buy-outs."),
+    "one_region": ("One region", "Sell only in your home region: no region launches."),
+    "hard_rivals": ("Hard rivals", "Rivals' products weigh in their markets at 1.2x quality."),
+    "no_automation": (
+        "No automation",
+        "No automation areas, seat authority or CEO scopes: every call is yours.",
+    ),
+}
+
+
+def difficulty(wins: int | None, balance: Balance) -> str | None:
+    """A scenario's difficulty from the sensible script's wins on seeds 1-10 (63.3): hard at
+    or below the first band, medium to the second, else easy; None when not rated."""
+    if wins is None:
+        return None
+    hard, medium = balance.challenges.difficulty_wins
+    return "hard" if wins <= hard else "medium" if wins <= medium else "easy"
+
+
 def rules_of(mode: GameMode | None) -> tuple[str, ...]:
     return () if mode is None else mode.challenges
 

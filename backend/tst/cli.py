@@ -155,6 +155,10 @@ def new_game(
     start_year: Annotated[
         int, typer.Option(help="M50 (ADR-0024): the campaign's first January, 2008 or 2010")
     ] = 2010,
+    challenges: Annotated[
+        str | None,
+        typer.Option(help="M51 (63.2): challenge rules, comma-separated (e.g. bootstrapped)"),
+    ] = None,
 ) -> None:
     """Create a new save file at schema head, with a founder built from a background. A
     historical scenario's key as --scenario starts that scenario (30.3); --sandbox starts a
@@ -200,6 +204,11 @@ def new_game(
     family_spec = FamilySpec(family, ages)
     if length not in ("standard", "dynasty"):
         raise _fail("--length is standard|dynasty")
+    rules = tuple(r.strip() for r in (challenges or "").split(",") if r.strip())
+    if mode is not None and rules:
+        from dataclasses import replace as _replace
+
+        mode = _replace(mode, challenges=rules)
     try:
         path = repository.create_save(
             name,
@@ -216,6 +225,7 @@ def new_game(
             family=family_spec,
             length=length,  # type: ignore[arg-type]
             start_year=start_year,
+            challenges=rules if mode is None else (),
         )
     except SimError as exc:
         raise _fail(exc.message) from exc

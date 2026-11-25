@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+from dataclasses import replace
 from pathlib import Path
 
 from fastapi import APIRouter, Response, status
@@ -245,6 +246,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         ),
         length=body.campaign_length,
         start_year=body.start_year,  # M50 (ADR-0024)
+        challenges=tuple(body.challenges),  # M51 (63.2): a campaign's (a mode's are in its spec)
     )
     return _save_out(saves_db.describe(path))
 
@@ -255,13 +257,14 @@ def _mode_spec(body: CreateSaveIn, data: LoadedData) -> ModeSpec | None:
 
     if body.sandbox is not None and body.historical is not None:
         raise InvalidModeError("choose a Sandbox or a scenario, not both")
+    rules = tuple(body.challenges)  # M51 (63.2)
     if body.historical is not None:
-        return scenario_spec(body.historical, data.game_data)
+        return replace(scenario_spec(body.historical, data.game_data), challenges=rules)
     if body.sandbox is None:
         return None
     sb = body.sandbox
     cash = None if sb.cash_dollars is None else sb.cash_dollars * 100
-    return ModeSpec("sandbox", sb.start_year, cash, sb.rivals, sb.eras)
+    return ModeSpec("sandbox", sb.start_year, cash, sb.rivals, sb.eras, challenges=rules)
 
 
 def _existing(settings: SettingsDep, save_id: str) -> Path:

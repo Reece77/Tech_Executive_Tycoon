@@ -1606,6 +1606,7 @@ challenges: # M51 (formulas.md 63.2): challenge rules a new game or scenario may
     hard_rivals: { score_mult: 1.25 } # x the score; rivals' quality x hard_rivals_quality_mult
     no_automation: { score_mult: 1.25 } # x the score; no automation areas, seat authority or CEO scopes
   hard_rivals_quality_mult: 1.2 # x a rival product's quality in its markets (63.2: "their quality x 1.2")
+  difficulty_wins: [3, 6] # wins of 10 (scenarios.yaml sensible_wins) at or below: hard, then medium; above: easy (63.3)
 
 story: # rival CEO storylines (M15b addendum 12): press pieces from engine facts, LLM-worded within the budget (16.8)
   feud_marks: [25, 50] # feud points; crossing one brings a reply from their CEO (addendum 12)
