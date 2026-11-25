@@ -223,7 +223,7 @@ class HistoricalScenario(_Frozen):
     goal: GoalSpec
     deadline: tuple[int, int]  # (year, month): judged at that month's end
     # M51 (63.1): the founder and the company's home, where a scenario sets them
-    founder_age: int | None = Field(default=None, ge=18)  # None: the founder's default age
+    founder_age: int | None = Field(default=None, ge=18)  # tunable-exempt: adult; None: default
     founder_region: str | None = None  # None: founder.default_region
     hq_city: str | None = None  # None: geo.default_hq_city
     family: FamilyStartSpec | None = None  # M51: built in the world's first month, then aged

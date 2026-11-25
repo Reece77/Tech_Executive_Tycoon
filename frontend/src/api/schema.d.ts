@@ -23788,10 +23788,10 @@ export interface components {
             /** Challenges */
             challenges: string[];
             /**
-             * Multiplier
+             * Score Mult
              * @description The challenge rules' score multipliers, multiplied
              */
-            multiplier: number;
+            score_mult: number;
             /**
              * Adjusted
              * @description score x multiplier: what results are compared on

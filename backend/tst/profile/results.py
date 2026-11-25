@@ -23,7 +23,6 @@ from tst.profile.store import profile_name
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance
 from tst.sim.modes.challenges import score_mult
-from tst.sim.score import points
 from tst.sim.state import GameState
 
 log = logging.getLogger(__name__)
@@ -69,6 +68,8 @@ def load(save_dir: Path, name: str | None = None) -> dict[str, dict[str, dict[st
 
 def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] | None:
     """The save's result record, or None before a verdict (or outside a scenario)."""
+    from tst.api.modes_views import score_points
+
     mode = state.mode
     if mode is None or mode.kind != "scenario" or mode.scenario is None or mode.result is None:
         return None
@@ -84,9 +85,9 @@ def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] |
         "turn": mode.result_turn,
         "date_label": format_turn(mode.result_turn if mode.result_turn is not None else state.turn),
         "score": score,
-        "parts": None if snap is None else points(snap, balance),  # 30.1's parts, in points
+        "parts": None if snap is None else score_points(snap, balance),  # 30.1's parts, in points
         "challenges": list(mode.challenges),
-        "multiplier": mult,
+        "score_mult": mult,
         "adjusted": round(score * mult),
         "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
     }

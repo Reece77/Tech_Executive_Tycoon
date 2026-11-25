@@ -89,7 +89,7 @@ def test_the_crash_verdict_is_kept_app_wide(
     over = client.get(f"/api/saves/{save}/finance/game-over").json()
     assert over["scenario_result"] == "failure"  # no Series A
     score = over["scenario_score"]
-    assert score["challenges"] == ["one_region"] and score["multiplier"] == 1.25
+    assert score["challenges"] == ["one_region"] and score["score_mult"] == 1.25
     assert over["scenario_best"] is None  # nothing before this save
     stored = kept.load(save_dir)["the_crash"]
     assert len(stored) == 1

@@ -24,7 +24,7 @@ class ScenarioResultOut(BaseModel):
     date_label: str = Field(description="The game month of the verdict")
     score: int = Field(description="The company score at the verdict (30.1)")
     challenges: list[str]
-    multiplier: float = Field(description="The challenge rules' score multipliers, multiplied")
+    score_mult: float = Field(description="The challenge rules' score multipliers, multiplied")
     adjusted: int = Field(description="score x multiplier: what results are compared on")
     recorded_at: str = Field(description="When the verdict was kept (UTC, ISO 8601)")
     parts: ScorePartsOut | None = None

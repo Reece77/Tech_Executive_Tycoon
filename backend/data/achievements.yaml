@@ -59,3 +59,9 @@ achievements:
   - { key: won_survive_2022, title: "Survivor", description: "Win Survive 2022.", kind: scenario_won, param: survive_2022 }
   - { key: won_chip_startup, title: "The chip startup", description: "Win the chip startup scenario.", kind: scenario_won, param: chip_startup }
   - { key: won_turnaround, title: "Turnaround", description: "Win the turnaround scenario.", kind: scenario_won, param: turnaround }
+  - { key: won_the_crash, title: "Through the crash", description: "Win the crash scenario.", kind: scenario_won, param: the_crash } # M51 (63.1)
+  - { key: won_platform_war, title: "Platform builder", description: "Win the platform war scenario.", kind: scenario_won, param: platform_war } # M51
+  - { key: won_ev_maker, title: "Volume maker", description: "Win the EV maker scenario.", kind: scenario_won, param: ev_maker } # M51
+  - { key: won_failing_chipmaker, title: "Back on the node", description: "Win the failing chipmaker scenario.", kind: scenario_won, param: failing_chipmaker } # M51
+  - { key: won_under_controls, title: "Under controls", description: "Win the under controls scenario.", kind: scenario_won, param: under_controls } # M51
+  - { key: won_the_dynasty, title: "The dynasty", description: "Win the dynasty scenario.", kind: scenario_won, param: the_dynasty } # M51

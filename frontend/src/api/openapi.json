@@ -71813,9 +71813,9 @@
             "type": "array",
             "title": "Challenges"
           },
-          "multiplier": {
+          "score_mult": {
             "type": "number",
-            "title": "Multiplier",
+            "title": "Score Mult",
             "description": "The challenge rules' score multipliers, multiplied"
           },
           "adjusted": {
@@ -71847,7 +71847,7 @@
           "date_label",
           "score",
           "challenges",
-          "multiplier",
+          "score_mult",
           "adjusted",
           "recorded_at"
         ],

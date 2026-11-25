@@ -33,7 +33,7 @@ def result_out(record: dict[str, Any] | None) -> ScenarioResultOut | None:
         date_label=str(record.get("date_label", "")),
         score=int(record.get("score") or 0),
         challenges=[str(c) for c in record.get("challenges") or []],
-        multiplier=float(record.get("multiplier") or 1.0),
+        score_mult=float(record.get("score_mult") or 1.0),
         adjusted=int(record.get("adjusted") or 0),
         recorded_at=str(record.get("recorded_at", "")),
         parts=ScorePartsOut(**parts) if isinstance(parts, dict) else None,

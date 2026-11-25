@@ -47,7 +47,7 @@ MONTHS_A_YEAR: Final = 12  # tunable-exempt: calendar
 DONE: Final = "scenario_done"
 # tunable-exempt: the cash a scenario's start-up fab order is checked against (it is paid for
 # by the starting equity, not cash)
-DEBT_FREE_CASH: Final = 10**15
+DEBT_FREE_CASH: Final = 10**15  # tunable-exempt: a check amount, never posted
 VEHICLES: Final = "vehicles"  # categories.yaml: cars (49)
 
 

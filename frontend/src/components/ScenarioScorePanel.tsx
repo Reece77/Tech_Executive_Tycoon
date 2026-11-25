@@ -25,7 +25,7 @@ export function ScenarioScorePanel({ g }: { g: GameOver }) {
         {mine.challenges.length > 0 && (
           <>
             {' '}
-            × {formatRatio(mine.multiplier)} for {mine.challenges.length} challenge
+            × {formatRatio(mine.score_mult)} for {mine.challenges.length} challenge
             {mine.challenges.length === 1 ? '' : 's'} ={' '}
             <span data-testid="scenario-adjusted">{mine.adjusted}</span>
           </>
