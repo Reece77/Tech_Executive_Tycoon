@@ -302,9 +302,8 @@ historical:
   - key: the_dynasty
     label: The dynasty
     description: >-
-      January 2030. You are 64, your software company is thirty years old in spirit if not in
-      fact, and your three children are grown. Keep it in the family, with one of them at its
-      head.
+      January 2030. You are 64, your software company is a fixture of its market, and your
+      three children are grown. Hand it to one of them, with the family still in control.
     year: 2030
     background: funded_spinout
     cash_dollars: 60000000
