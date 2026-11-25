@@ -44,6 +44,8 @@ class GameMode:
     # M37 (52.1): standard ends in December 2039; dynasty runs to December 2069. A save
     # without a mode is a standard campaign.
     length: CampaignLength = "standard"
+    # M51 (63.2): the challenge rules this game plays under (modes.challenges.RULES)
+    challenges: tuple[str, ...] = ()
 
 
 def began_in(system: str, mode: GameMode | None) -> str:

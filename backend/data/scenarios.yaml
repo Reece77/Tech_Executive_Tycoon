@@ -173,3 +173,161 @@ historical:
         segments: { smb: { price_dollars: 150, customers: 900 }, mid_market: { price_dollars: 1500, customers: 60 } }
     goal: { kind: profit_no_down_round, text: "An operating profit, without a down round" }
     deadline: [2020, 12]
+
+  # M51 (formulas.md 63.1): six more starts. Each was played by a sensible and a passive script
+  # on seeds 1-10 (tst/balance/m51.py); goals and deadlines as tuned there (M51 brief,
+  # Decisions made).
+  - key: the_crash
+    label: The crash
+    description: >-
+      January 2008. A seed-stage SaaS startup with a small paying base and about fourteen
+      months of runway, months before the money stops.
+    year: 2008
+    background: funded_spinout
+    cash_dollars: 500000
+    stage: 1
+    staff:
+      - { role: software_engineer, level: mid, count: 3 }
+      - { role: account_executive, level: mid, count: 1 }
+      - { role: marketer, level: junior, count: 1 }
+    products:
+      - name: Ledgerbase
+        category: b2b_saas
+        quality: 45
+        features: 80
+        brand: 10
+        segments: { smb: { price_dollars: 100, customers: 150 } }
+    goal: { kind: solvent_series, series: a, text: "Still solvent, with a Series A raised" }
+    deadline: [2009, 12] # M51 decision: from Dec 2010, where the sensible script won 10/10
+
+  - key: platform_war
+    label: The platform war
+    description: >-
+      January 2010. A phone maker selling well on a licensed operating system, while two
+      platforms carve up the world's developers. Build your own and win them over.
+    year: 2010
+    background: funded_spinout
+    cash_dollars: 60000000
+    stage: 2
+    staff:
+      - { role: hardware_engineer, level: mid, count: 10 }
+      - { role: software_engineer, level: mid, count: 4 }
+      - { role: designer, level: mid, count: 2 }
+      - { role: marketer, level: mid, count: 3 }
+      - { role: sales_representative, level: mid, count: 2 }
+    products:
+      - name: Kestrel One
+        category: devices
+        quality: 55
+        features: 50
+        brand: 30
+        segments: { consumer: { price_dollars: 350, customers: 1500000 } }
+        contract: { manufacturer: foxconn, city: shenzhen, units: 60000, months: 18 }
+    # M51 decision: from 20%, which no sensible run neared (0.101-0.122 by Dec 2020: an own
+    # store's fee is 30% to 2026, so developers follow users alone)
+    goal: { kind: platform_share, share: 0.11, text: "Your own OS, with 11% of developers in one region" }
+    deadline: [2020, 12]
+
+  - key: ev_maker
+    label: The EV maker
+    description: >-
+      January 2016. A car startup with one prototype, a Series B in the bank and a market
+      that barely exists yet. Build it at scale before the money runs out.
+    year: 2016
+    background: funded_spinout
+    cash_dollars: 400000000
+    stage: 2
+    staff:
+      - { role: hardware_engineer, level: senior, count: 6 }
+      - { role: hardware_engineer, level: mid, count: 14 }
+      - { role: software_engineer, level: mid, count: 6 }
+      - { role: designer, level: mid, count: 3 }
+      - { role: manufacturing_engineer, level: mid, count: 6 }
+      - { role: marketer, level: mid, count: 2 }
+    products:
+      - name: Volta One
+        category: vehicles
+        status: in_development
+        quality: 30
+        features: 50
+        brand: 20
+        segments: { consumer: { price_dollars: 45000, customers: 0 } }
+    # M51 decision: from 200,000, which no sensible run neared (63,000-73,000 by Dec 2023: before
+    # 2026 a new maker sells only into the demand history's makers do not hold, 49.1)
+    goal: { kind: vehicles_year, units: 68500, text: "Sell 68,500 cars a year, without going bankrupt" }
+    deadline: [2023, 12]
+
+  - key: failing_chipmaker
+    label: The failing chipmaker
+    description: >-
+      January 2012. A chipmaker with its own fab, two process nodes behind the leaders and
+      losing money on every wafer. Catch up and make it pay.
+    year: 2012
+    background: funded_spinout
+    cash_dollars: 2000000000
+    stage: 3
+    staff:
+      - { role: fab_engineer, level: mid, count: 10, unit: Fab crew 1 }
+      - { role: manufacturing_engineer, level: senior, count: 6, unit: Process research }
+      - { role: finance_manager, level: mid, count: 1 }
+      - { role: sales_representative, level: mid, count: 2 }
+    research: [{ domain: process, lead: 8 }]
+    fabs: [{ node: n65, region: east_asia, capacity: 25000, age_months: 48, unit: Fab crew 1, country: taiwan }]
+    goal: { kind: fab_catch_up, node_gap: 1, text: "An operating profit, on a node within one of the leader" }
+    # M51 decision: from Dec 2020; the sensible script caught up in Dec 2015-Sep 2016 on 9 of 10
+    # seeds (a 20 nm fab while 16 nm led), so the race is to mid-2016
+    deadline: [2016, 6]
+
+  - key: under_controls
+    label: Under controls
+    description: >-
+      January 2019. A Chinese foundry running 14 nm, with the world's best tools about to be
+      put out of reach. Reach 7 nm-class volume anyway.
+    year: 2019
+    background: funded_spinout
+    cash_dollars: 1500000000
+    stage: 3
+    hq_city: shenzhen
+    founder_region: east_asia
+    staff:
+      - { role: fab_engineer, level: mid, count: 10, unit: Fab crew 1 }
+      - { role: manufacturing_engineer, level: senior, count: 6, unit: Process research }
+      - { role: finance_manager, level: mid, count: 1 }
+      - { role: sales_representative, level: mid, count: 2 }
+    research: [{ domain: process, lead: 6 }]
+    fabs: [{ node: n16, region: east_asia, capacity: 25000, age_months: 12, unit: Fab crew 1, country: china }]
+    goal: { kind: node_volume, node: n7, text: "7 nm-class volume at your own fab" }
+    deadline: [2027, 12]
+
+  - key: the_dynasty
+    label: The dynasty
+    description: >-
+      January 2030. You are 64, your software company is thirty years old in spirit if not in
+      fact, and your three children are grown. Keep it in the family, with one of them at its
+      head.
+    year: 2030
+    background: funded_spinout
+    cash_dollars: 60000000
+    stage: 3
+    founder_age: 64
+    family: { child_ages: [36, 33, 29] }
+    length: dynasty
+    staff:
+      - { role: software_engineer, level: senior, count: 10 }
+      - { role: software_engineer, level: mid, count: 15 }
+      - { role: product_manager, level: senior, count: 3 }
+      - { role: sales_representative, level: mid, count: 10 }
+      - { role: account_executive, level: senior, count: 4 }
+      - { role: marketer, level: mid, count: 4 }
+      - { role: finance_manager, level: senior, count: 2 }
+    products:
+      - name: Ledgerline
+        category: b2b_saas
+        quality: 70
+        features: 900
+        brand: 55
+        segments: { smb: { price_dollars: 300, customers: 4000 }, mid_market: { price_dollars: 3000, customers: 400 } }
+    goal: { kind: family_succession, text: "Family control, with one of your children at the head" }
+    # M51 decision: from Dec 2045; the sensible script hands over on every seed (2030-2031 to an
+    # heir ready early, else 2036-2038 by 72), so the heir must be in charge by the end of 2035
+    deadline: [2035, 12]

@@ -465,3 +465,10 @@ class TalkRuleError(SimError):
 
 class UnknownTalkError(NotFoundError):  # M49
     code = "unknown_talk"
+
+
+class ChallengeRefusedError(SimError):
+    """M51 (formulas.md 63.2): an action a challenge rule of this game forbids. The message
+    names the rule."""
+
+    code = "challenge_refused"

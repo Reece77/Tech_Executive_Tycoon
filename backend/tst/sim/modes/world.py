@@ -19,7 +19,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.decisions import Decisions
 from tst.sim.hiring.models import PersonState
 from tst.sim.ledger import CASH, LedgerBalances, LedgerEntry, LedgerLine, apply_entries
-from tst.sim.modes.models import ErasOption, GameMode, ModeKind, RivalsOption
+from tst.sim.modes.models import CampaignLength, ErasOption, GameMode, ModeKind, RivalsOption
 from tst.sim.people.founder import FounderSpec, build_founder
 from tst.sim.people.reveal import new_reveal_state
 from tst.sim.rng import RngFactory
@@ -41,6 +41,7 @@ class ModeSpec:
     rivals: RivalsOption = "all"
     eras: ErasOption = "historical"
     scenario: str | None = None
+    challenges: tuple[str, ...] = ()  # M51 (63.2): the game's challenge rules
 
 
 def validate(spec: ModeSpec, balance: Balance) -> None:
@@ -220,6 +221,12 @@ def start_mode(
         from tst.sim.modes.scenarios import apply_start
 
         world, extra = apply_start(world, spec.scenario, rng, balance, data)
+    from tst.sim.modes.challenges import validate as valid_challenges
+
+    length: CampaignLength = "standard"
+    if spec.kind == "scenario" and spec.scenario is not None:  # M51: a dynasty scenario
+        historical = data.historical_scenario(spec.scenario)
+        length = historical.length if historical is not None else length
     world = replace(
         world,
         mode=GameMode(
@@ -228,6 +235,8 @@ def start_mode(
             scenario=spec.scenario,
             rivals=spec.rivals,
             eras=spec.eras,
+            length=length,
+            challenges=valid_challenges(spec.challenges),
         ),
     )
     opening = list(opening_entries(world, balances, start_turn))
