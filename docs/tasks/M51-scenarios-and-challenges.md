@@ -47,7 +47,7 @@
 | --- | --- | --- | --- | --- |
 | The crash | deadline Dec 2010 -> Dec 2009 (start cash $500,000: 14 months of runway) | 10/10 (Series A closed Dec 2009-Mar 2010) | 5/10 | 0/10 |
 | The platform war | goal 20% -> 11% of developers in one region | 0/10 (0.101-0.122 by Dec 2020) | 6/10 (reached Oct 2019-Jul 2020; misses 0.101-0.108) | 0/10 |
-| The EV maker | goal 200,000 -> 68,500 cars a year (before 2026 a new maker sells only into demand history's makers do not hold, 49.1), then deadline Dec 2023 -> Aug 2023 | 0/10 (an earlier script: 63,000-73,000 by Dec 2023); with the final script and 68,500, 10/10 (crossed May-Dec 2023) | EVFILL | EVPASS |
+| The EV maker | goal 200,000 -> 68,500 cars a year (before 2026 a new maker sells only into demand history's makers do not hold, 49.1), then deadline Dec 2023 -> Aug 2023 | 0/10 (an earlier script: 63,000-73,000 by Dec 2023); with the final script and 68,500, 10/10 (crossed May-Dec 2023) | 6/10 (Jun-Aug 2023) | 0/10 |
 | The failing chipmaker | deadline Dec 2020 -> Jun 2016 (start: process lead 8, cash $2B, a 25,000-start 65 nm fab four years old) | 9/10 (caught up Dec 2015-Sep 2016, a 20 nm fab while 16 nm led) | 6/10 (Dec 2015-Apr 2016) | 0/10 |
 | Under controls | start cash $3B -> $1.5B (deadline Dec 2027 kept) | 10/10 (7 nm ordered in early 2020, before the controls) | 6/10 (Jul 2024-Apr 2025; four seeds got no tool licence before the 2024 ban) | 0/10 |
 | The dynasty | deadline Dec 2045 -> Dec 2035 | 10/10 (handed over 2030-2031 to an heir ready early, else 2036-2038 by 72) | 4/10 | 0/10 |
