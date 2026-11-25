@@ -45,14 +45,15 @@
 
 | Scenario | Change | Sensible before | after | Passive |
 | --- | --- | --- | --- | --- |
-| The crash | deadline Dec 2010 -> Dec 2009 (start cash $500,000: 14 months of runway) | 10/10 (Series A closed Dec 2009-Mar 2010) | FILL | FILL |
-| The platform war | goal 20% -> 11% of developers in one region | 0/10 (0.101-0.122 by Dec 2020) | FILL | FILL |
-| The EV maker | goal 200,000 -> 68,500 cars a year (before 2026 a new maker sells only into demand history's makers do not hold, 49.1) | 0/10 (63,000-73,000 by Dec 2023) | FILL | FILL |
-| The failing chipmaker | deadline Dec 2020 -> Jun 2016 (start: process lead 8, cash $2B, a 25,000-start 65 nm fab four years old) | 9/10 (caught up Dec 2015-Sep 2016, a 20 nm fab while 16 nm led) | FILL | FILL |
-| Under controls | start cash $3B -> $1.5B (deadline Dec 2027 kept) | 10/10 (7 nm ordered in early 2020, before the controls) | FILL | FILL |
-| The dynasty | deadline Dec 2045 -> Dec 2035 | 10/10 (handed over 2030-2031 to an heir ready early, else 2036-2038 by 72) | FILL | FILL |
+| The crash | deadline Dec 2010 -> Dec 2009 (start cash $500,000: 14 months of runway) | 10/10 (Series A closed Dec 2009-Mar 2010) | 5/10 | 0/10 |
+| The platform war | goal 20% -> 11% of developers in one region | 0/10 (0.101-0.122 by Dec 2020) | 6/10 (reached Oct 2019-Jul 2020; misses 0.101-0.108) | 0/10 |
+| The EV maker | goal 200,000 -> 68,500 cars a year (before 2026 a new maker sells only into demand history's makers do not hold, 49.1), then deadline Dec 2023 -> Aug 2023 | 0/10 (an earlier script: 63,000-73,000 by Dec 2023); with the final script and 68,500, 10/10 (crossed May-Dec 2023) | EVFILL | EVPASS |
+| The failing chipmaker | deadline Dec 2020 -> Jun 2016 (start: process lead 8, cash $2B, a 25,000-start 65 nm fab four years old) | 9/10 (caught up Dec 2015-Sep 2016, a 20 nm fab while 16 nm led) | 6/10 (Dec 2015-Apr 2016) | 0/10 |
+| Under controls | start cash $3B -> $1.5B (deadline Dec 2027 kept) | 10/10 (7 nm ordered in early 2020, before the controls) | 6/10 (Jul 2024-Apr 2025; four seeds got no tool licence before the 2024 ban) | 0/10 |
+| The dynasty | deadline Dec 2045 -> Dec 2035 | 10/10 (handed over 2030-2031 to an heir ready early, else 2036-2038 by 72) | 4/10 | 0/10 |
 
 7. **Challenge rules** (`tst/sim/modes/challenges.py`): refused in `apply_action` for every action (the player's, a delegate's, an automated one) with the rule named. Bootstrapped: rounds, term sheets, SAFEs, bridges, loans, the IPO's banks, secondary offerings. Hardware only: a product in a category whose revenue model is not units. No acquisitions: bids, stakes, minority buy-outs. One region: region launches. No automation: automation areas, seat authority, CEO scopes. Hard rivals refuses nothing: in each market segment's month (11.6) a product of a company outside the player's group weighs in at quality x 1.2 (at most 100), its stored quality unchanged. Each rule's `score_mult` is 1.25. A campaign with rules has a mode record (`kind` campaign); one without has none, as before.
+   The five M15b scenarios (rated only, v1's steady script, seeds 1-10): AI lab 0/10, Mobile first 0/10, Survive 2022 10/10, The chip startup 0/10, The turnaround 10/10 (passive 0, 0, 10, 0, 10: these two are won by holding on), recorded as `sensible_wins`.
 8. **Results** live in `<saves>/results/<profile>.json` beside M25's achievement profile (Documents in the installed game: kept by updates), one record per scenario save (slug and seed) once its verdict is in, written after the committed turn (a cheap check of `save_meta.game_state` first). The best is a success over a failure, then the higher adjusted score, then the earlier. Difficulty bands `challenges.difficulty_wins` (3, 6): hard at 3 wins or fewer, medium to 6, else easy. The five M15b scenarios are rated with v1's steady script (`sensible_wins`).
 9. **Target 2, Reece's decision (2026-11-25): carry three rules.** Measured at December 2014 (60 months; by year 10 the score has saturated) on the scripted player each rule cuts into, median of seeds 1-10:
 

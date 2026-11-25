@@ -81,6 +81,7 @@ historical:
     # playtest 4 (M15r addendum d): $100M ARR is the goal; Transformers first is a bonus
     goal: { kind: arr, arr_dollars: 100000000, text: "Reach $100M ARR", bonus_era: transformers, bonus_text: "Cause the Transformers era first" }
     deadline: [2020, 12]
+    sensible_wins: 0 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: mobile_first
     label: Mobile first
@@ -102,6 +103,7 @@ historical:
         segments: { consumer: { price_dollars: 0.4, customers: 20000 } }
     goal: { kind: customers, category: consumer_apps, segment: consumer, customers: 1000000, text: "Reach 1M consumer customers" }
     deadline: [2014, 12]
+    sensible_wins: 0 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: survive_2022
     label: Survive 2022
@@ -130,6 +132,7 @@ historical:
     loans: [{ lender: svb, principal_dollars: 10000000, rate_bp: 900, term_months: 36, interest_only_months: 12 }]
     goal: { kind: solvent_margin, text: "Still solvent, with a positive operating margin" }
     deadline: [2023, 12]
+    sensible_wins: 10 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: chip_startup
     label: The chip startup
@@ -148,6 +151,7 @@ historical:
     research: [{ domain: chip_design, lead: 10 }]
     goal: { kind: unit_share, category: chips_ai_accelerator, share: 0.10, text: "10% of AI accelerator units" }
     deadline: [2023, 12]
+    sensible_wins: 0 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: turnaround
     label: The turnaround
@@ -173,6 +177,7 @@ historical:
         segments: { smb: { price_dollars: 150, customers: 900 }, mid_market: { price_dollars: 1500, customers: 60 } }
     goal: { kind: profit_no_down_round, text: "An operating profit, without a down round" }
     deadline: [2020, 12]
+    sensible_wins: 10 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   # M51 (formulas.md 63.1): six more starts. Each was played by a sensible and a passive script
   # on seeds 1-10 (tst/balance/m51.py); goals and deadlines as tuned there (M51 brief,
@@ -199,6 +204,7 @@ historical:
         segments: { smb: { price_dollars: 100, customers: 150 } }
     goal: { kind: solvent_series, series: a, text: "Still solvent, with a Series A raised" }
     deadline: [2009, 12] # M51 decision: from Dec 2010, where the sensible script won 10/10
+    sensible_wins: 5 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: platform_war
     label: The platform war
@@ -227,6 +233,7 @@ historical:
     # store's fee is 30% to 2026, so developers follow users alone)
     goal: { kind: platform_share, share: 0.11, text: "Your own OS, with 11% of developers in one region" }
     deadline: [2020, 12]
+    sensible_wins: 6 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: ev_maker
     label: The EV maker
@@ -255,7 +262,10 @@ historical:
     # M51 decision: from 200,000, which no sensible run neared (63,000-73,000 by Dec 2023: before
     # 2026 a new maker sells only into the demand history's makers do not hold, 49.1)
     goal: { kind: vehicles_year, units: 68500, text: "Sell 68,500 cars a year, without going bankrupt" }
-    deadline: [2023, 12]
+    # M51 decision: from Dec 2023; with the goal at 68,500 the sensible script crossed it in
+    # May-Dec 2023 on 10 of 10 seeds, so the deadline is August 2023
+    deadline: [2023, 8]
+    sensible_wins: 6 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: failing_chipmaker
     label: The failing chipmaker
@@ -277,6 +287,7 @@ historical:
     # M51 decision: from Dec 2020; the sensible script caught up in Dec 2015-Sep 2016 on 9 of 10
     # seeds (a 20 nm fab while 16 nm led), so the race is to mid-2016
     deadline: [2016, 6]
+    sensible_wins: 6 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: under_controls
     label: Under controls
@@ -298,6 +309,7 @@ historical:
     fabs: [{ node: n16, region: east_asia, capacity: 25000, age_months: 12, unit: Fab crew 1, country: china }]
     goal: { kind: node_volume, node: n7, text: "7 nm-class volume at your own fab" }
     deadline: [2027, 12]
+    sensible_wins: 6 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
 
   - key: the_dynasty
     label: The dynasty
@@ -330,3 +342,4 @@ historical:
     # M51 decision: from Dec 2045; the sensible script hands over on every seed (2030-2031 to an
     # heir ready early, else 2036-2038 by 72), so the heir must be in charge by the end of 2035
     deadline: [2035, 12]
+    sensible_wins: 4 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
