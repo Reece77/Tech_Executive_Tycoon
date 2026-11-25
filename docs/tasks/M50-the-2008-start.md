@@ -123,6 +123,8 @@ Left as they are (checked, no effect on a 2008 game or by design): `exploration/
 
     Every balance reading is identical, as a 2010 game is byte-identical to `main`. Timing alone (rule 6), the same saves built by `main`, alternating on one machine (raw medians): M30 `main` 624, 631 ms, branch 637, 588 ms; M37 `main` 813, 800 ms, branch 853, 837 ms. Profiled over four 2069 months, functions M50 did not touch ran 15-26% slower in the branch's run with identical call counts (the machine), and M50's own work (`turn_key`, `from_2010`, the stream's mapping) came to about 35 ms of 6.1 s, under 1%. That 1% is now removed: `RngFactory.stream` maps key parts only when one is negative (every draw from 2010 takes the unmapped key, the same key as before). The timing guards are `main`'s, owned by v6's performance pass (`known_misses.py`'s "v6 performance").
 
+18. **A flaky e2e Continue (rule 5):** PR #105's e2e (run 45506433515) failed m38 (a) once with `Continue was refused: 409`; its trace shows `save_busy`, `retryable`, a refusal that committed nothing and that the app re-sends (`retryBusy`, M6). The same commit passed m38 locally twice, and `main`'s last nine e2e runs were green. `pressContinue` (`frontend/e2e/helpers.ts`, M38's lane long merged, rule 8) now waits for the first advance response that is not a retryable busy refusal, as the player sees it; anything else still fails. No retry or sleep added.
+
 ## Follow-ups
 
 - **Target 2's failure clause** (decision 14): a crisis effect on rival startups' failures (the startup engine, 15.4).
