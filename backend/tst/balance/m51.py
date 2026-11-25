@@ -522,7 +522,16 @@ def dynasty_sensible(game: Game) -> None:
         game.act(NameSuccessor(game.founder_id, heir_id=heir))
 
 
+def rated_steady(game: Game) -> None:
+    """The five M15b scenarios' rating script (63.3's difficulty only; target 1 is the six new
+    ones'): v1's steady, the generic sensible player."""
+    steady(game)
+
+
+FIVE: Final = ("ai_lab", "mobile_first", "survive_2022", "chip_startup", "turnaround")
+
 SCRIPTS: Final[dict[str, dict[str, Script]]] = {
+    **{key: {"sensible": rated_steady, "passive": passive} for key in FIVE},
     "the_crash": {"sensible": crash_sensible, "passive": passive},
     "ev_maker": {"sensible": ev_sensible, "passive": passive},
     "failing_chipmaker": {"sensible": chip_sensible, "passive": passive},
@@ -647,7 +656,9 @@ TARGET2_ARMS: Final[dict[str, str]] = {
 }
 
 
-def challenge_score(loaded: LoadedData, strategy: str, rule: str | None, seed: int) -> int:
+def challenge_score(
+    loaded: LoadedData, strategy: str, rule: str | None, seed: int, months: int = TARGET2_MONTHS
+) -> int:
     """The company score in December 2019 of a 2010 campaign played by `strategy`, under
     `rule` (None: no challenge, the normal game)."""
     from tst.balance.game import start_game
@@ -658,7 +669,7 @@ def challenge_score(loaded: LoadedData, strategy: str, rule: str | None, seed: i
     if rule is not None:
         game.state = replace(game.state, mode=GameMode(kind="campaign", challenges=(rule,)))
     script = STRATEGIES[strategy]
-    for _ in range(TARGET2_MONTHS):
+    for _ in range(months):
         if game.state.ended:
             break
         script(game)
@@ -667,27 +678,29 @@ def challenge_score(loaded: LoadedData, strategy: str, rule: str | None, seed: i
     return snap.score if snap is not None else 0
 
 
-def _score_worker(job: tuple[str, str | None, int]) -> tuple[str, str | None, int, int]:
+def _score_worker(job: tuple[str, str | None, int, int]) -> tuple[str, str | None, int, int]:
     from tst.config import get_settings
     from tst.loader import load_all
 
     global _LOADED
     if _LOADED is None:
         _LOADED = load_all(get_settings().data_dir)
-    strategy, rule, seed = job
-    return strategy, rule, seed, challenge_score(_LOADED, strategy, rule, seed)
+    strategy, rule, seed, months = job
+    return strategy, rule, seed, challenge_score(_LOADED, strategy, rule, seed, months)
 
 
 def target_2(
-    seeds: tuple[int, ...] = SEEDS, workers: int = 4
+    seeds: tuple[int, ...] = SEEDS, workers: int = 4, months: int = TARGET2_MONTHS
 ) -> list[tuple[str, float, float, float]]:
     """(rule, median score without, with, drop) per rule (63.4 target 2)."""
     from multiprocessing import get_context
     from statistics import median
 
     arms = sorted(set(TARGET2_ARMS.values()))
-    jobs: list[tuple[str, str | None, int]] = [(a, None, s) for a in arms for s in seeds]
-    jobs += [(TARGET2_ARMS[r], r, s) for r in TARGET2_ARMS for s in seeds]
+    jobs: list[tuple[str, str | None, int, int]] = [
+        (a, None, s, months) for a in arms for s in seeds
+    ]
+    jobs += [(TARGET2_ARMS[r], r, s, months) for r in TARGET2_ARMS for s in seeds]
     with get_context("spawn").Pool(workers) as pool:
         out = list(pool.imap(_score_worker, jobs))
     rows = []
