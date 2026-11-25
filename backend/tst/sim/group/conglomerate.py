@@ -49,7 +49,9 @@ BELOW_OPERATING: Final = frozenset(
     }
 )
 DEBT: Final = frozenset({"2500_debt", "2600_safes"})
-CAPEX: Final = frozenset({"1500_ppe", "1520_mineral_properties", "1530_tool_inventory"})
+CAPEX: Final = frozenset(
+    {"1500_ppe", "1520_mineral_properties", "1530_tool_inventory", "1540_spectrum_licences"}
+)  # M53: spectrum is a network's investment
 FIXED: Final = CAPEX | {"1510_accumulated_depreciation"}  # book values a memo can name
 IN_GROUP: Final = "1810_investment_subsidiaries"  # a parent's claim on a member: counted once
 RETURNED_MEMOS: Final = ("Dividend:", "Buyback:")  # the listed entity's own (25.5)

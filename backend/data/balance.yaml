@@ -357,6 +357,8 @@ products:
     satellite_operators: 0.05 # M40 (56.1): a launch contract a customer (A: a seller closes a launch or two a year)
     government: 0.05 # M40 (56.1, 56.3): agencies buying launches, broadband and imagery (A)
     aviation_maritime: 0.3 # M40 (56.3): airlines and shipping fleets (A)
+    telecom_business: 20 # M53 (62.1): business lines a seller signs a month (A: a small-business account of a few lines)
+    carriers: 0.05 # M53 (62.1, 62.3): a carrier contract or a site-set order a customer (A)
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   # M46 (11.5): marketers direct a large budget. Marketing points above marketer_lift_from_mk
   # (the first $200k a month needs no team) are multiplied by 1 + min(cap, lift x mu): one
@@ -555,6 +557,10 @@ rivals:
     launch: { builder: 0.80, seller: 0.15, marketer: 0.05 } # M40 (56.1): launch providers (A: engineering-led, sold by contract)
     satellite_broadband: { builder: 0.55, seller: 0.20, marketer: 0.25 } # M40 (56.3): constellation operators (A: as cloud and consumer services)
     earth_observation: { builder: 0.65, seller: 0.30, marketer: 0.05 } # M40 (56.3): imagery operators (A: sold to agencies)
+    mobile: { builder: 0.50, seller: 0.20, marketer: 0.30 } # M53 (62.4): operators (A: networks and retail marketing)
+    fixed_broadband: { builder: 0.55, seller: 0.20, marketer: 0.25 } # M53 (A)
+    wholesale: { builder: 0.60, seller: 0.35, marketer: 0.05 } # M53 (A: carrier sales)
+    network_equipment: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M53 (62.3): vendors (A: engineering-led, sold by contract)
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -1175,6 +1181,68 @@ facility:
       staff_skill: manufacturing
       sizes: [5, 10, 25, 50, 100]
       outages: false
+    # M53 (formulas.md 62.1): telecom networks on the generic lifecycle, ordered from Telecom (tst.sim.telecom
+    # prices each order: a tower's civil works and radios, a radio's generation and vendor, fibre's homes,
+    # a cable's km); capex_per_unit_cents below only names a typical unit for validation. Opex a unit a
+    # month (A): a site's lease, power and maintenance about $2,000 (R: US tower leases $1,500-2,500);
+    # radios' power and support $300; fibre $1 a home passed; a cable's operation and repair about 3% of
+    # its cost a year (A).
+    tower:
+      label: Tower sites
+      unit: sites
+      input_good: equipment
+      output_good: network
+      capex_per_unit_cents: 20000000 # $200,000 a site with its radios (A, telecom.yaml site_civil_usd and radio_usd)
+      build_months: 12 # A: permits and construction
+      opex_per_unit_cents: 200000
+      life_months: 240 # 20 years (A)
+      staff_per: 200 # sites a network engineer (A)
+      staff_roles: [devops_engineer, operations_manager]
+      staff_skill: infrastructure
+      sizes: [100, 250, 500, 1000, 2500, 5000]
+      outages: false
+    radio:
+      label: Radios on existing sites
+      unit: sites
+      input_good: equipment
+      output_good: network
+      capex_per_unit_cents: 5000000 # $50,000 a site's radios (A, telecom.yaml radio_usd)
+      build_months: 6 # A
+      opex_per_unit_cents: 30000
+      life_months: 96 # 8 years (A)
+      staff_per: 500
+      staff_roles: [devops_engineer, operations_manager]
+      staff_skill: infrastructure
+      sizes: [100, 250, 500, 1000, 2500, 5000]
+      outages: false
+    fibre:
+      label: Fibre network
+      unit: thousand homes passed
+      input_good: equipment
+      output_good: network
+      capex_per_unit_cents: 120000000 # $1.2M a thousand homes passed (telecom.yaml fibre_home_usd)
+      build_months: 12 # A
+      opex_per_unit_cents: 100000
+      life_months: 360 # 30 years (A)
+      staff_per: 50
+      staff_roles: [devops_engineer, operations_manager]
+      staff_skill: infrastructure
+      sizes: [10, 50, 100, 500, 1000, 5000]
+      outages: false
+    subsea_cable:
+      label: Subsea cable
+      unit: Tbps
+      input_good: equipment
+      output_good: network
+      capex_per_unit_cents: 150000000 # $1.5M a Tbps (A: a 200 Tbps transoceanic cable about $300M, telecom.yaml cable_km_usd)
+      build_months: 24 # A: survey, manufacture and laying (R: two to three years)
+      opex_per_unit_cents: 750000 # $7,500 a Tbps a month (A: about 3% of capex a year)
+      life_months: 300 # 25 years (R)
+      staff_per: 100
+      staff_roles: [devops_engineer, operations_manager]
+      staff_skill: infrastructure
+      sizes: [25, 50, 100, 200, 300]
+      outages: false
     plant: # M32 (46.2): an owned power plant on the shared facility record; its type, capex, build and costs are in power.yaml (module power)
       label: Power plant
       unit: MW
@@ -1242,6 +1310,7 @@ hardware:
     implantables: { good: device_bom, base_cents: 200000, chip_type: mobile_soc, contract_fee_cents: 30000, plant_slots: 1 } # M41: a $2,000 implant BOM, $300 assembly (A: ~30% of $8,000)
     industrial_robots: { good: equipment, base_cents: 1800000, chip_type: mobile_soc, contract_fee_cents: 200000, plant_slots: 25 } # M39 (53.1): a six-axis robot's arm, reducers, servo motors and controller ($18,000 at index 1.0, A: about 55% of a $33,000 robot's price, makers' gross margins 35-45%, R); a contract maker's fee $2,000 (A); one robot takes 25 units of plant capacity (A: hours of assembly and test against a device's)
     humanoid_robots: { good: device_bom, base_cents: 600000, chip_type: ai_accelerator, contract_fee_cents: 150000, plant_slots: 20 } # M39 (53.2): a humanoid's frame, battery, sensors and wiring ($6,000 at index 1.0, A); its actuators are robotics.yaml's learning-curve cost (tst.sim.robotics.humanoids) and its edge AI chip is an ai_accelerator (bought or own); 20 units of plant capacity (A)
+    network_equipment: { good: equipment, base_cents: 2500000, chip_type: server_cpu, contract_fee_cents: 150000, plant_slots: 10 } # M53 (62.3): a site's radios and baseband ($25,000 at index 1.0, A: vendors' gross margins about 40% on a $45,000 set, R), a server CPU as its baseband processor (own chips cut it), $1,500 a set at a contract maker (A); 10 units of plant capacity (A)
     launch: { good: equipment, base_cents: 4000000000, chip_type: mobile_soc, contract_fee_cents: 1, plant_slots: 1 } # M40 (56.1): launches cannot be contract-made (contract_fee_cents is a placeholder);: a launch's cost is its vehicle's flight cost (tst.sim.space.launch, its design and reuse level), not this BOM (base_cents only names a $40M flight for validation); a launch-site unit flies its reuse level's pad_rate launches a month; no chip (avionics are in the vehicle's cost)
   contract:
     energy: 6 # founder energy to sign a contract-manufacturing contract (26.2)
@@ -3297,6 +3366,90 @@ space:
     rebuild_cents: 40000000 # $400,000 a lost satellite rebuilt in a rush (A: about twice a 300 kg satellite's made cost in 2025)
     claim_chance: 0.4 # chance the insurer pays the uninsured part (stream space (3, constellation_id, lost))
     claim_cents: 20000000 # $200,000 of legal costs
+telecom: # 62: telecom (M53, v6 lane B). Data (subscriptions, ARPU, generations, operators, vendors, dated auctions and bans, cables, net neutrality) is telecom.yaml's, cited; these are the game's dials. Nothing here moves anything before `start` but the player's own networks and bids (62.5 target 1). A = an assumption for gameplay, tuned only for 62.5
+  start: "2026-01" # history holds before this month (rivals follow telecom.yaml; seeded auctions, growth and bans from it)
+  mobile: mobile # categories.yaml keys
+  fixed: fixed_broadband
+  wholesale: wholesale
+  equipment: network_equipment
+  scale: 0.085 # the game's economy scale (economy_scale.money 0.0849, as space.scale): subscriptions, sites and auction prices
+  scale_basis: "economy_scale.money (M34), as space.scale and robotics.scale"
+  tower_kind: tower # facility.kinds keys
+  radio_kind: radio
+  fibre_kind: fibre
+  cable_kind: subsea_cable
+  mobile_split: { telecom_consumer: 0.85, telecom_business: 0.15 } # A: business lines about 15% of subscriptions (R: operators' reports)
+  fixed_split: { telecom_consumer: 0.90, telecom_business: 0.10 } # A
+  wholesale_per_sub: 900 # wholesale contracts a million mobile subscriptions (A: carrier services about $100B a year at about $1,000 a contract a month, R/A)
+  equipment_sites_per_sub: 0.0011 # macro site sets a mobile subscription (A: about 7M macro sites worldwide for about 6.5B subscriptions, R)
+  growth_after: # a region's subscriptions a year after 2025, drawn each January within these (A: UN population growth plus adoption, R)
+    north_america: [0.003, 0.012]
+    europe: [0.0, 0.006]
+    east_asia: [0.0, 0.008]
+    south_southeast_asia: [0.01, 0.03]
+    latin_america: [0.0, 0.015]
+    africa: [0.03, 0.06]
+    oceania: [0.005, 0.015]
+  traffic_growth_after: 0.15 # mobile data a subscription grows 15% a year after 2025 (A: Ericsson's forecasts of about 15-20%, R)
+  coverage:
+    exponent: 0.5 # population coverage = (sites / sites a national grid needs) ** this: the first sites cover the cities (A: a quarter of a grid covers half the people)
+    density: { low: 1.0, mid: 1.8, high: 25.0 } # sites a band needs for the same coverage, x low band's (A: C-band on the existing grid reaches about 75% of people, R; mmWave hot spots only)
+  capacity:
+    sectors: 3 # a macro site's sectors
+    utilisation: 0.2 # average use of a site's peak capacity over a month (A)
+    low_mult: 0.8 # low band's spectral efficiency x mid's (A)
+    high_mult: 4.0 # mmWave's x mid's (A: wide channels and beamforming)
+    congestion_k: 1.5 # a mobile line's appeal x (capacity / demand) ** this when over capacity (A)
+    fixed_gb_mult: 20 # a fixed subscription's traffic x a mobile one's (R: about 600 GB against 20-30 GB a month in 2024)
+    gbps_per_contract: 1.0 # a wholesale contract's Gbps in 2010 (A)
+    contract_growth: 0.25 # a contract's Gbps grows this a year (R: international bandwidth about 30x 2010-2024, TeleGeography)
+  fibre:
+    max_take_up: 0.5 # of homes passed that may subscribe (A: mature FTTH take-up 40-60%, R)
+    gb_per_home: 2000 # a home passed's share of its fibre's capacity a month (A: a GPON's 2.5 Gbps shared by 32 homes)
+  cable:
+    km: [500, 45000] # (telecom.yaml cables: 5,536 km for AEConnect to 45,000 km for 2Africa, S)
+    ref_tbps: 200 # a cable's cost a km is telecom.yaml's at this capacity (A: MAREA 160, Dunant 250, S)
+    tbps_exponent: 0.4 # capex x (Tbps / ref) ** this: more fibre pairs cost less than in proportion (A)
+  auction:
+    increment: 0.05 # a clock round's price rise (A: FCC clock auctions' 5-20%, R)
+    max_rounds: 400 # (S: Germany's 2019 auction ran 497 rounds, R; Canada's 2008 331, S)
+    notice_months: 3 # an auction is announced this many months before it runs (A)
+    winner_value: [1.05, 1.5] # a dated auction's named winners value a block at the data's price x this (hidden)
+    loser_value: [0.97, 1.02] # its marginal loser's (hidden): without the player it clears near its real price
+    seeded_value: [1.0, 2.6] # a seeded auction's rivals value a block at the reserve x this (hidden; A: S's records run from 1.1x (Slovakia 2013, France 2015) to 1.9x (Auction 73) and 42x (Sweden 2008))
+    seeded_bidders: [2, 4] # rival operators bidding in a seeded auction
+    seeded_every: [3, 6] # years between an area's seeded auctions (A: the 2008-2025 record)
+    seeded_blocks: [6, 20]
+    seeded_mhz: { low: 40, mid: 200, high: 1000 } # MHz offered (A: 600 MHz, C-band and mmWave auctions' sizes)
+    seeded_reserve_cents_mhz_pop: { low: 25, mid: 10, high: 0.5 } # a reserve a MHz a person, real cents (A: Auction 107 about $0.94 a MHz-pop at its price, R; mmWave $0.017, S)
+    seeded_term_years: 15 # (R: EU minimum 15 years, EECC; US 10-15)
+    seeded_obligation: 0.7 # population coverage owed (A)
+    seeded_obligation_years: 6
+    max_blocks_share: 0.6 # a bidder wins at most this share of an auction's blocks (A: spectrum caps; Verizon took 56% of C-band, S)
+    renewal_share: 0.25 # of a licence's price to renew at its term's end (A: renewal fees and re-auction premiums)
+    deposit_share: 0.1 # of a bid's limit held while registered (shown; A)
+  ban:
+    radio_share: 1.0 # unused (a replacement prices the generation's radios)
+    refuse_share: 0.5 # a vendor whose bans cover this share of a region is refused for new radios there (A)
+    seeded_window: [1, 8] # years after start a seeded ban may come (hidden; A)
+    seeded_chance: 0.08 # an area's chance of a seeded ban on Huawei or ZTE (A)
+    seeded_replace_years: [3, 6] # years from its announcement to its deadline (S: the UK's 2020-2027, Sweden's 2020-2025)
+  regulation:
+    obligation_fine_share: 0.05 # of a licence's price, a year its coverage obligation is missed (A)
+    obligation_grace_years: 3 # missed this many years after its date, the licence is revoked (A)
+    merger_mult: 1.5 # a telecom market's block chance x this (A: four-to-three mobile mergers blocked or remedied, telecom.yaml mergers, S)
+    merger_share: 0.25 # combined share of a telecom market from which a deal is reviewed (A: below M14's 0.35)
+    zero_rating_appeal: 1.04 # a zero-rating line's appeal x this where no neutrality rule is in force (A)
+  satellite:
+    partner_coverage: 0.1 # population a direct-to-device partner adds where a line's own coverage is short (A: rural and remote areas; T-Mobile and Starlink, space.yaml)
+    partner_fee_share: 0.2 # of the line's revenue there the satellite partner keeps (A)
+  g6_window: [2029, 2032] # 6G's first commercial month falls in these years (hidden; 6G: "anticipated in the early 2030s", S)
+  g6_feature_points: 28 # A (telecom.yaml g6)
+  rival_cash_cents: 50000000000 # $500M opening capital for each telecom incumbent's business (A: as vehicles.rival_cash_cents)
+  history_months: 24 # network months kept
+  energy: { build: 4, bid: 3, replace: 2, setting: 1 } # founder energy (A)
+  unlock_year: 2012 # the Telecom screen opens (M29) from 2012 for a stage-3 company that makes devices or chips, or with a telecom line or network
+
 government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
   start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)
   tenders:
@@ -3399,6 +3552,7 @@ conglomerate:
     - { key: medical, label: Medical devices, categories: [wearables_diagnostics, imaging, surgical_robotics, implantables, samd] }
     - { key: pharma, label: Pharmaceuticals, categories: [pharma_oncology, pharma_metabolic, pharma_immunology, pharma_neuroscience, pharma_infectious, pharma_cardiovascular, pharma_rare], accounts: [4060_revenue_drugs] } # M42
     - { key: space, label: Space and satellites, categories: [launch, satellite_broadband, earth_observation], facility_kinds: [launch_site, satellite_plant] } # M40
+    - { key: telecom, label: Telecom, categories: [mobile, fixed_broadband, wholesale, network_equipment], facility_kinds: [tower, radio, fibre, subsea_cable], accounts: [6760_spectrum_amortization] } # M53
     - { key: government, label: Defence and government, accounts: [4070_revenue_government, 5300_contract_costs, 6990_bids_clearances] } # M44: government contracts, their delivery costs and bids
   trend_years: 10 # years of yearly trends the view shows (the brief's ten-year trends)
   risk_years: 5 # years of yearly revenue growth whose spread (standard deviation) is the shown risk

@@ -1,0 +1,1103 @@
+# Telecom (docs/formulas.md 62, M53, v6 lane B). Research: M53 sub-task 1 (2026-11-25) from
+# docs/v6-research/telecom-dossier.md. History holds to December 2025; seeded after (balance.yaml
+# telecom.*). Every value carries a tag and a source, as space.yaml's:
+#   S  a sourced figure, quoted from the named Wikipedia page (this session could open only
+#      en.wikipedia.org: ITU, GSMA, the FCC, Ofcom, OECD, Dell'Oro and the operators' sites did not
+#      resolve; the pages' raw text was read 2026-11-25),
+#   D  derived from sourced figures (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session,
+#   A  an assumption for gameplay where no public series was found (the basis is given).
+# Money is [value, dollar year, tag] under keys ending _usd, converted to the game's 2010 dollars with
+# `cpi` at load. Foreign currencies were converted at annual-average rates (FX below, R). Re-check the
+# R and A rows against ITU's World Telecommunication/ICT Indicators, GSMA Intelligence, the regulators'
+# auction pages and the operators' annual reports when those hosts are reachable (M53 follow-up).
+#
+# Scale (Reece, 2026-11-15: "markets and money at the game's scale", formulas.md 54): subscriptions,
+# sites and auction proceeds here are real-world; the game's markets, networks and auction prices are
+# x balance.yaml telecom.scale (0.085, the game's economy scale, as space.scale), at real prices.
+#
+# Regions follow the game's (platforms.yaml region_parts): north_america is the US, Canada and Mexico;
+# europe includes Russia, Turkey and Ukraine; the Middle East and Central Asia are not game regions and
+# are left out (about 229M and 78M mobile subscriptions around 2017, S-sum below).
+#
+# Corrections to the dossier (M53 brief, Decisions made): US Auction 97's net bids were $41.33B (S),
+# its gross $44.9B (R); Auction 107 raised "over $81 billion" (S; $81.17B R), Verizon $45.5B on the 5G
+# page and $52.9B on Verizon's (the larger with clearing costs, R); India's 2022 total (Rs 1,50,173
+# crore) and Jio's Rs 88,078 crore are R (the India page's 2022 section is empty); the UK's 2018 auction
+# raised GBP 1,369,879,000 (S), not about GBP 1.37B; Germany's 2019 total EUR 6.55B is R (only
+# Telefonica's EUR 1.42B is on a page). The 2024 US net-neutrality order was stayed in July-August 2024
+# and struck down on 2 January 2025 (S); it is not modelled as in force.
+#
+# Sources (Wikipedia pages, fetched 2026-11-25):
+#   MT    Mobile telephony;  MP  Mobile phone;  MB  Mobile broadband;  LCMN  List of countries by number
+#         of mobile numbers in use;  LSBB  List of sovereign states by number of broadband internet
+#         subscriptions (ITU 2000-2017 tables, summed into the game's regions: the S-sum rows);
+#         TBB   Template:Broadband subscriptions (ITU per 100 people by region, 2007/2010/2014/2019)
+#   TIC   Telecommunications in China;  MPIC  Mobile phone industry in China;  TII  Telecommunications in
+#         India;  CUS  Communications in the United States;  TUK  Telecommunications in the United Kingdom
+#   LTE   LTE (telecommunication);  LLTE  List of LTE networks;  5G  5G;  L5G  List of 5G NR networks;
+#         6G  6G;  VZW  Verizon (wireless service);  DCM  NTT Docomo;  TLS  Telstra;  JIO  Jio
+#   LMNO  List of mobile network operators;  each operator's own page (VZ Verizon, ATT AT&T Mobility,
+#         TMO T-Mobile US, SPR Sprint Corporation, ORA Orange Group, CM China Mobile, CT China Telecom,
+#         CU China Unicom, AIR Bharti Airtel, VI Vodafone Idea, AMX America Movil, MTN MTN Group,
+#         XF Xfinity, CHTR Charter Communications)
+#   SA    Spectrum auction;  US08  2008 United States wireless spectrum auction;  US16  2016 United States
+#         wireless spectrum auction;  AWS3  AWS-3 auction;  ITSA  Indian Telecom Spectrum Auction;
+#         FREE  Free Mobile;  TDE  Telefonica Germany;  C700  700 MHz auction in Canada;  ROG  Rogers
+#         Wireless;  TELE2  Tele2
+#   CCI   Concerns over Chinese involvement in 5G wireless networks;  HUA  Huawei;  ZTE  ZTE;  STC
+#         Secure and Trusted Communications Networks Act of 2019;  SEA  Secure Equipment Act;  CN  The
+#         Clean Network;  NOK  Nokia;  ERI  Ericsson
+#   SMC   Submarine communications cable, and each cable's page (MAREA, FASTER (cable system),
+#         AEConnect, SEA-ME-WE 5, Hawaiki Cable, Havfrue, Dunant, Grace Hopper, Equiano, PEACE Cable,
+#         Amitie, 2Africa, Southern Cross Cable);  GF  Google Fiber;  AMT  American Tower;  CS  Cell site
+#   NNUS  Net neutrality in the United States;  NNEU  Net Neutrality Regulation 2015;  NNIN  Net
+#         neutrality in India;  NNBC  Net neutrality by country;  MST  Merger of Sprint Corporation and
+#         T-Mobile US;  O2UK  O2 (UK);  THREE  Three UK
+#   CPI   US BLS CPI-U annual averages (R; 2025 A, preliminary), as space.yaml's
+#   FX    annual averages (R: ECB, Bank of England, RBI, Bank of Canada): EUR 2010 1.327, 2012 1.285,
+#         2015 1.110, 2018 1.181, 2019 1.120, 2020 1.142; GBP 2013 1.564, 2018 1.335, 2021 1.375; INR a
+#         dollar 2010 45.7, 2014 61.0, 2015 64.2, 2021 73.9, 2022 78.6; SEK 2008 6.59; USD a CAD 2008 0.938,
+#         2019 0.754, 2021 0.798; KRW 2018 1,100; USD an AUD 2018 0.748; BRL 2021 5.40
+
+cpi: # R (CPI), as space.yaml
+  2008: 215.303
+  2009: 214.537
+  2010: 218.056
+  2011: 224.939
+  2012: 229.594
+  2013: 232.957
+  2014: 236.736
+  2015: 237.017
+  2016: 240.007
+  2017: 245.120
+  2018: 251.107
+  2019: 255.657
+  2020: 258.811
+  2021: 270.970
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.0
+
+# M50 convention (ADR-0024): a series that starts in 2010 lists 2008 as its 2010 value (A), so a
+# 2008 start has history; a series that starts later (a launch) needs none.
+# --- Regions (62.1) ---------------------------------------------------------------------------------
+# mobile / fixed: subscriptions at year end, millions, real world. 2017 is the S-sum of LSBB's ITU
+# country rows in the game's regions (India's row is TRAI's February 2024; Mexico moved to north_america
+# from the S-sum's latin_america: 114.3M mobile, 17.1M fixed, S). Other years: D from the 2017 sums and
+# the regions' growth in TBB's per-100 series and the named countries' S figures, else R (ITU), as each
+# row says. fibre_share: FTTH/B's share of fixed (R: FTTH Council and OECD, low confidence; A where
+# marked). households: millions (R: UN and national censuses). arpu_*_usd: a subscription's revenue a
+# month, blended across the region's countries (R: operators' reports and GSMA; no Wikipedia page gives
+# ARPU, so every value is R). lte / nr: the region's first commercial 4G and 5G months (S or D from
+# LLTE/L5G's earliest launch by country). nr_coverage: 5G population coverage at year end (R, Ericsson
+# Mobility Report; shown only). sites_full: macro sites one operator's national low-band network needs
+# (R/D, basis given). areas: licence areas and their population shares (R: World Bank 2020 populations,
+# as platforms.yaml's region_parts); `closed` areas assign spectrum administratively (no auctions).
+regions:
+  - key: north_america
+    mobile:
+      2008: [375, R] # ITU: US about 270M (CUS 286M in 2009, S), Canada 22M, Mexico 75M
+      2010: [411, D] # US 300M (CUS 2009 S + growth), Canada 24M, Mexico 91M (R)
+      2015: [507, R] # ITU
+      2017: [541, D] # LSBB S-sum 427.4M (US, Canada) + Mexico 114.3M (S)
+      2020: [562, R] # ITU; LCMN US numbers 380.6M (Oct 2020, S, another basis), Canada 36.1M (S)
+      2025: [615, R] # Verizon 146.8M (VZW S, Mar 2026), AT&T 110.2M ex-wholesale (ATT S), T-Mobile 140M (TMO S) + Canada and Mexico
+    fixed:
+      2008: [99, R]
+      2010: [109, R] # TBB Americas 14 per 100 (S) x about 500M people, less Latin America's share
+      2015: [130, R]
+      2017: [141, D] # LSBB S-sum 123.8M + Mexico 17.1M
+      2020: [154, R]
+      2025: [171, R]
+    fibre_share: { 2008: [0.05, A], 2010: [0.05, R], 2015: [0.10, R], 2020: [0.18, R], 2025: [0.35, R] }
+    households: { 2008: [162, A], 2010: [162, R], 2025: [185, R] } # US 117M (2010) to 131M, Canada 13M to 16M, Mexico 32M to 38M
+    arpu_mobile_usd: { 2008: [40, 2008, A], 2010: [40, 2010, R], 2015: [40, 2015, R], 2020: [39, 2020, R], 2025: [40, 2025, R] } # US postpaid phone about $50-56 (AT&T, Verizon reports, R), prepaid and Mexico about $9-12
+    arpu_fixed_usd: { 2008: [45, 2008, A], 2010: [45, 2010, R], 2015: [52, 2015, R], 2020: [58, 2020, R], 2025: [62, 2025, R] } # US $60-80 (R), Mexico about $25
+    lte: "2010-12" # VZW: Verizon launched LTE on 5 Dec 2010 in 38 markets (S); MetroPCS's first LTE phone Sep 2010 (LTE S)
+    nr: "2019-04" # 5G: "Hours later, Verizon began limited service in select U.S. cities" (3 Apr 2019, S)
+    nr_coverage: { 2020: [0.60, R], 2025: [0.95, R] }
+    sites_full: [70000, R] # a national operator's macro grid: T-Mobile US about 70,000 sites, Verizon about 60,000 (R, operators); US about 140,000-150,000 towers in all (R, CTIA); AMT 42,224 sites in the US and Canada (S)
+    areas:
+      - { key: united_states, label: United States, share: [0.66, R] } # 331M of 498M (WB)
+      - { key: canada, label: Canada, share: [0.08, R] } # 38M
+      - { key: mexico, label: Mexico, share: [0.26, R] } # 129M
+
+  - key: europe
+    mobile:
+      2008: [960, R] # ITU; TUK UK 76M (S)
+      2010: [995, R]
+      2015: [1030, R]
+      2017: [1037, D] # LSBB S-sum (45 countries, Russia, Turkey, Ukraine and Belarus included)
+      2020: [1040, R]
+      2025: [1055, R] # UK 89.6M active (TUK S, Q2 2024)
+    fixed:
+      2008: [150, R] # TBB Europe 18 per 100 in 2007 and 24 in 2010 (S)
+      2010: [176, D] # 24 per 100 (TBB S) x about 735M people
+      2015: [222, D] # 28 per 100 in 2014 (TBB S) and growth
+      2017: [236, D] # LSBB S-sum 235.6M
+      2020: [255, D] # 31.9 per 100 in 2019 (TBB S) x 800M
+      2025: [282, R]
+    fibre_share: { 2008: [0.05, A], 2010: [0.05, R], 2015: [0.12, R], 2020: [0.30, R], 2025: [0.55, R] } # FTTH/B subscribers +16% Sep 2017-Mar 2019 (Fiber to the x, S); 187M premises passed expected by 2025 (S)
+    households: { 2008: [325, A], 2010: [325, R], 2025: [340, R] }
+    arpu_mobile_usd: { 2008: [22, 2008, A], 2010: [22, 2010, R], 2015: [17, 2015, R], 2020: [16, 2020, R], 2025: [16, 2025, R] } # EUR 12-20 (R, operators and GSMA)
+    arpu_fixed_usd: { 2008: [32, 2008, A], 2010: [32, 2010, R], 2015: [29, 2015, R], 2020: [30, 2020, R], 2025: [31, 2025, R] } # UK GBP 25-35 (R)
+    lte: "2009-12" # LTE: TeliaSonera in Stockholm and Oslo on 14 Dec 2009, the first commercial LTE (S)
+    nr: "2019-04" # L5G: Sunrise, Switzerland, Apr 2019 (D, earliest commercial NR by country); EE UK May 2019 (D)
+    nr_coverage: { 2020: [0.15, R], 2025: [0.80, R] }
+    sites_full: [270000, D] # Deutsche Telekom about 30,000 sites for Germany's 83M (R), x Europe's 745M people / 83M
+    areas:
+      - { key: germany, label: Germany, share: [0.11, R] } # 83M of 745M
+      - { key: united_kingdom, label: United Kingdom, share: [0.09, R] } # 67M
+      - { key: france, label: France, share: [0.09, R] } # 68M
+      - { key: italy, label: Italy, share: [0.08, R] } # 59M
+      - { key: spain, label: Spain, share: [0.06, R] } # 47M
+      - { key: sweden, label: Sweden, share: [0.014, R] } # 10.4M
+      - { key: rest_of_eu, label: Rest of the EU, share: [0.24, D] } # EU 447M less the five above and Sweden
+      - { key: rest_of_europe, label: Rest of Europe, share: [0.316, D] } # Russia, Turkey, Ukraine, Switzerland, Norway and the rest (298M less the UK)
+
+  - key: east_asia
+    mobile:
+      2008: [830, R] # China about 641M (MIIT, R), Japan 110M, Korea 46M, Taiwan and Hong Kong 33M
+      2010: [1060, R] # China 859M (MIIT R); TIC 1.01B in Mar 2012 (S)
+      2015: [1550, D] # MPIC: China 1.3B in 2015 (S) + Japan 160M, Korea 58M (2015, S), others 30M
+      2017: [1759, D] # LSBB S-sum (China 1,474M S, Japan 170M S)
+      2020: [1885, R] # China 1,594M (MIIT R; LCMN 1,610M numbers Oct 2020, S) + Japan 190M, Korea 70M, others 30M
+      2025: [2080, D] # LMNO Sep 2024: China Mobile 1,003.9M, China Telecom 423.4M, China Unicom 345.0M (S) + Broadnet, Japan, Korea
+    fixed:
+      2008: [134, R] # China 83M (MIIT R), Japan 30M, Korea 16M
+      2010: [183, R] # China 126M (MIIT R)
+      2015: [300, R] # China 213M (MIIT R) + Japan, Korea, Taiwan
+      2017: [449, D] # LSBB S-sum (China 378.5M S, Japan 40.4M S, Korea 21.2M S)
+      2020: [557, R] # China 484M (MIIT R)
+      2025: [758, R] # China about 670M, over 90% FTTH (MIIT R, end 2024)
+    fibre_share: { 2008: [0.25, A], 2010: [0.25, R], 2015: [0.55, R], 2020: [0.90, R], 2025: [0.94, R] }
+    households: { 2008: [480, A], 2010: [480, R], 2025: [590, R] } # China 400M (2010 census, R) to about 500M
+    arpu_mobile_usd: { 2008: [14, 2008, A], 2010: [14, 2010, R], 2015: [12, 2015, R], 2020: [10, 2020, R], 2025: [10, 2025, R] } # China Mobile RMB 73 (2010) to 48-50 (2024), about $7 (R); Japan about $45 (R)
+    arpu_fixed_usd: { 2008: [16, 2008, A], 2010: [16, 2010, R], 2015: [14, 2015, R], 2020: [13, 2020, R], 2025: [13, 2025, R] } # China about RMB 100 (R)
+    lte: "2010-12" # DCM: Docomo's Xi launched on 24 Dec 2010 (S); China's TD-LTE licences Dec 2013 (LTE S)
+    nr: "2019-04" # 5G: "On April 3, 2019, South Korea launched its national network" (S); China Oct-Nov 2019 (L5G D, R 1 Nov)
+    nr_coverage: { 2020: [0.40, R], 2025: [0.92, R] } # China about 4.25M 5G base stations at end 2024 (MIIT R)
+    sites_full: [1200000, A] # China Mobile's national grid about 1M sites (A from China Tower's about 2M sites shared by three operators, R) + Japan and Korea
+    areas:
+      - { key: china, label: China, share: [0.869, R], method: closed } # 1,411M of 1,624M; MIIT assigns spectrum to the state operators (5G licences 6 Jun 2019, R): no auctions
+      - { key: japan, label: Japan, share: [0.078, R] } # 126M; MIC's comparative screening (R), treated as an auction (A)
+      - { key: south_korea, label: South Korea, share: [0.032, R] } # 52M
+      - { key: rest_of_east_asia, label: "Taiwan, Hong Kong and Mongolia", share: [0.021, R] } # 35M
+
+  - key: south_southeast_asia
+    mobile:
+      2008: [1090, D] # India 392M at Dec 2008 (TII S 375M in Mar 2008, + growth) + the rest about 700M (R)
+      2010: [1700, R] # India 752M (TRAI R) + the rest about 950M (Indonesia 67 per 100 at end 2010, S)
+      2015: [2300, R] # India about 1,000M (TRAI R)
+      2017: [2537, D] # LSBB S-sum (India's row TRAI Feb 2024, 1,160.7M S; India's 2017 count was about the same, R)
+      2020: [2550, R] # India about 1,150M (TRAI R); Pakistan 194M (Jun 2022, S)
+      2025: [2750, R] # India about 1,180M (TII: 1,288.96M wireless in Apr 2026, S, after growth)
+    fixed:
+      2008: [20, R]
+      2010: [25, R]
+      2015: [45, R]
+      2017: [62, D] # LSBB S-sum 83.6M with India's 2024 row 39.5M (S); India's 2017 wireline about 18M (R)
+      2020: [75, R]
+      2025: [110, R] # India 48.1M wireline broadband (TII S, Jul 2026)
+    fibre_share: { 2008: [0.02, A], 2010: [0.02, A], 2015: [0.05, A], 2020: [0.15, A], 2025: [0.40, A] }
+    households: { 2008: [450, A], 2010: [450, R], 2025: [560, R] } # India 247M (2011 census, R)
+    arpu_mobile_usd: { 2008: [3.0, 2008, A], 2010: [3.0, 2010, R], 2015: [2.6, 2015, R], 2020: [2.5, 2020, R], 2025: [2.8, 2025, R] } # Jio Rs 180-195 and Airtel Rs 210-245 a month in FY2025, about $2.2-2.9 (R)
+    arpu_fixed_usd: { 2008: [8, 2008, A], 2010: [8, 2010, R], 2015: [7, 2015, R], 2020: [7, 2020, R], 2025: [7, 2025, R] } # India Rs 500-800 (R)
+    lte: "2011-06" # LLTE: M1 Singapore, Jun 2011 (D); Airtel India Apr 2012 (LTE S); Jio 5 Sep 2016 (JIO S)
+    nr: "2019-06" # 5G: Globe Telecom, the Philippines, Jun 2019 (S); Jio 5 Oct 2022 (JIO S)
+    nr_coverage: { 2020: [0.02, R], 2025: [0.55, R] } # India about 290M 5G subscriptions at end 2024 (Ericsson R)
+    sites_full: [500000, A] # India's Indus Towers 219,736 towers with 342,831 co-locations (S) for about three operators: about 200,000 sites a national operator (D), + the rest of the region
+    areas:
+      - { key: india, label: India, share: [0.56, R] } # 1,396M of about 2,500M
+      - { key: indonesia, label: Indonesia, share: [0.11, R] } # 274M
+      - { key: pakistan, label: Pakistan, share: [0.09, R] } # 225M
+      - { key: rest_of_south_asia, label: Rest of South and Southeast Asia, share: [0.24, D] }
+
+  - key: latin_america
+    mobile:
+      2008: [375, R] # ITU; Mexico in north_america
+      2010: [479, R]
+      2015: [593, R]
+      2017: [577, D] # LSBB S-sum 691.0M less Mexico 114.3M (S)
+      2020: [558, R]
+      2025: [575, R] # Brazil Vivo 98M, Claro 82.8M, TIM 61.7M (1Q2023, S)
+    fixed:
+      2008: [27, R]
+      2010: [34, R]
+      2015: [50, R]
+      2017: [59, D] # LSBB S-sum 75.8M less Mexico 17.1M
+      2020: [68, R]
+      2025: [84, R]
+    fibre_share: { 2008: [0.02, A], 2010: [0.02, A], 2015: [0.08, A], 2020: [0.30, R], 2025: [0.60, R] }
+    households: { 2008: [115, A], 2010: [115, R], 2025: [150, R] }
+    arpu_mobile_usd: { 2008: [13, 2008, A], 2010: [13, 2010, R], 2015: [10, 2015, R], 2020: [7, 2020, R], 2025: [7.5, 2025, R] } # $7-10 (R: GSMA, America Movil)
+    arpu_fixed_usd: { 2008: [25, 2008, A], 2010: [25, 2010, R], 2015: [22, 2015, R], 2020: [18, 2020, R], 2025: [18, 2025, R] }
+    lte: "2011-12" # LLTE: ANTEL, Uruguay, Dec 2011 (D); Claro Brazil Dec 2012 (D)
+    nr: "2019-04" # L5G: ANTEL, Uruguay, Apr 2019 (D); Brazil 3.5 GHz SA Jul 2022 (R)
+    nr_coverage: { 2020: [0.01, R], 2025: [0.40, R] }
+    sites_full: [120000, A] # American Tower 47,081 sites in Latin America (AMT S), one of several tower companies: about 120,000 a national operator across the region (A)
+    areas:
+      - { key: brazil, label: Brazil, share: [0.40, R] } # 213M of about 530M
+      - { key: rest_of_latin_america, label: Rest of Latin America, share: [0.60, D] }
+
+  - key: africa
+    mobile:
+      2008: [400, R] # ITU
+      2010: [560, R]
+      2015: [850, R] # Nigeria 222M connected and 150M active lines (Jul 2016, S)
+      2017: [938, D] # LSBB S-sum (41 countries)
+      2020: [1050, R]
+      2025: [1350, R] # Egypt 106.2M (Dec 2023, S); MTN over 300M customers with Iran's 55M (Oct 2025, S)
+    fixed:
+      2008: [4, R] # TBB Africa 0.1 per 100 in 2007 (S, sub-Saharan); North Africa's DSL
+      2010: [6, R]
+      2015: [13, R]
+      2017: [17, D] # LSBB S-sum 16.6M
+      2020: [22, R]
+      2025: [30, R] # South Africa's fibre passes about 7M homes (Telecommunications in South Africa, S)
+    fibre_share: { 2008: [0.01, A], 2010: [0.01, A], 2015: [0.03, A], 2020: [0.10, A], 2025: [0.25, A] }
+    households: { 2008: [220, A], 2010: [220, R], 2025: [300, R] }
+    arpu_mobile_usd: { 2008: [7, 2008, A], 2010: [7, 2010, R], 2015: [5, 2015, R], 2020: [3.5, 2020, R], 2025: [3, 2025, R] } # sub-Saharan $2-4 (R: GSMA Mobile Economy Africa)
+    arpu_fixed_usd: { 2008: [30, 2008, A], 2010: [30, 2010, R], 2015: [25, 2015, R], 2020: [20, 2020, R], 2025: [20, 2025, R] }
+    lte: "2012-04" # LLTE: Movicel, Angola, Apr 2012 (D)
+    nr: "2019-09" # L5G: Rain, South Africa, Sep 2019 (D)
+    nr_coverage: { 2020: [0.01, R], 2025: [0.18, R] }
+    sites_full: [150000, A] # MTN Nigeria about 25,000 sites (R) for 206M people: about 150,000 for the region's populated areas (A)
+    areas:
+      - { key: nigeria, label: Nigeria, share: [0.15, R] } # 206M of about 1,340M
+      - { key: south_africa, label: South Africa, share: [0.044, R] } # 59M
+      - { key: rest_of_africa, label: Rest of Africa, share: [0.806, D] }
+
+  - key: oceania
+    mobile:
+      2008: [28, R]
+      2010: [30, R]
+      2015: [35, R]
+      2017: [36, D] # LSBB S-sum 35.9M (8 countries)
+      2020: [37, R]
+      2025: [40, R]
+    fixed:
+      2008: [6.5, R]
+      2010: [7.5, R]
+      2015: [9, R]
+      2017: [9.5, D] # LSBB S-sum
+      2020: [10.5, R]
+      2025: [11.5, R]
+    fibre_share: { 2008: [0.02, A], 2010: [0.02, R], 2015: [0.10, R], 2020: [0.35, R], 2025: [0.55, R] } # Australia's NBN (R)
+    households: { 2008: [10, A], 2010: [10, R], 2025: [12, R] }
+    arpu_mobile_usd: { 2008: [42, 2008, A], 2010: [42, 2010, R], 2015: [38, 2015, R], 2020: [36, 2020, R], 2025: [35, 2025, R] } # TLS: Telstra A$26.2B, Optus A$9.0B, TPG A$4.4B revenue in 2020 (S) over about 37M subscriptions with fixed (D)
+    arpu_fixed_usd: { 2008: [50, 2008, A], 2010: [50, 2010, R], 2015: [52, 2015, R], 2020: [55, 2020, R], 2025: [55, 2025, R] }
+    lte: "2011-09" # TLS: Telstra launched its 4G 1800 MHz LTE network on 26 Sep 2011 (S)
+    nr: "2019-05" # L5G: Telstra, May 2019 (D); its 3.5 GHz 5G May 2020 (TLS S)
+    nr_coverage: { 2020: [0.40, R], 2025: [0.90, R] }
+    sites_full: [12000, R] # Telstra about 10,000 mobile sites (R) + New Zealand
+    areas:
+      - { key: australia, label: Australia, share: [0.60, R] } # 26M of about 43M
+      - { key: rest_of_oceania, label: New Zealand and the Pacific, share: [0.40, D] }
+
+# Mobile data a subscription a month, world, GB (R: Ericsson Mobility Reports; MB S: 1.5B mobile
+# broadband subscriptions of 6.6B at end 2012, growing 50% a year).
+traffic_gb:
+  2008: [0.03, R]
+  2010: [0.1, R]
+  2012: [0.3, R]
+  2015: [1.3, R]
+  2018: [4.5, R]
+  2020: [9.0, R]
+  2022: [15.0, R]
+  2025: [21.0, R]
+
+# --- Generations (62.1) -----------------------------------------------------------------------------
+# first: the world's first commercial launch (S). efficiency: bit/s/Hz a sector on mid-band (A: LTE
+# about 1.5-2 and 5G with massive MIMO about 5-10, R from 3GPP targets; 3G HSPA about 0.6). radio_usd: a
+# macro site's radios and baseband of the generation (R: industry estimates of a 5G radio upgrade $30k-70k
+# a site, low confidence; A elsewhere). feature_points: what the generation adds to a mobile line's
+# features where it covers (A, against the categories' features scale).
+generations:
+  - key: g3
+    label: 3G
+    first: "2001-10" # R: NTT Docomo's FOMA, 1 Oct 2001
+    efficiency: [0.6, A]
+    radio_usd: { 2008: [45000, 2008, A], 2015: [30000, 2015, A], 2025: [25000, 2025, A] }
+    feature_points: [0, A]
+  - key: g4
+    label: 4G
+    first: "2009-12" # LTE: TeliaSonera, 14 Dec 2009 (S)
+    efficiency: [1.6, A]
+    radio_usd: { 2008: [55000, 2008, A], 2010: [55000, 2010, A], 2015: [40000, 2015, A], 2025: [30000, 2025, A] }
+    feature_points: [8, A]
+  - key: g5
+    label: 5G
+    first: "2019-04" # 5G: South Korea and Verizon, 3 Apr 2019 (S)
+    efficiency: [5.0, A]
+    radio_usd: { 2019: [70000, 2019, R], 2022: [55000, 2022, R], 2025: [45000, 2025, A] } # R: $30k-70k a site upgrade
+    feature_points: [18, A]
+    mid_band_needed: true # A: 5G's capacity and speeds come from mid-band (C-band, 3.5 GHz); low-band 5G gives 4G-like service
+  - key: g6
+    label: 6G
+    first: "" # seeded: 6G: "Commercial deployment of 6G is anticipated in the early 2030s" (S); balance telecom.g6_window
+    efficiency: [10.0, A]
+    radio_usd: { 2030: [60000, 2025, A], 2040: [40000, 2025, A] }
+    feature_points: [28, A] # also balance telecom.g6_feature_points
+    mid_band_needed: true
+
+# --- Operators (62.4) ---------------------------------------------------------------------------------
+# Subscribers at year end, millions, real world (mobile and fixed broadband); wholesale: the line's share
+# of its region's wholesale market (A: no public series; the largest carriers' and their subsea arms').
+# Each is an incumbents.yaml company whose line in that region and category is pinned to these before
+# telecom.start. first / last: no sales before / from (a launch, a merger). supplier: its main radio
+# vendor (shown; R from the operators' announced 5G contracts).
+operators:
+  - company: Verizon
+    region: north_america
+    mobile: { 2008: [72, R], 2010: [94, R], 2015: [104, S], 2020: [120, R], 2025: [146, S] } # VZW: 103.7M (Aug 2015, S), 146.8M (Mar 2026, S); +13M from Alltel in 2009 (VZ S); 2010 Verizon 10-K (R)
+    fixed: { 2008: [8.4, A], 2010: [8.4, R], 2015: [7.0, R], 2020: [7.0, R], 2025: [7.5, R] } # Fios and DSL (R, 10-K); Frontier from 2026 (VZ S) not counted
+    wholesale: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.18, A] }
+    supplier: ericsson
+  - company: AT&T
+    region: north_america
+    mobile: { 2008: [77, R], 2010: [95.5, R], 2015: [128, R], 2020: [140, R], 2025: [118, D] } # ATT: 110.2M ex-wholesale (Sep 2026, S); LMNO 139.0M (Sep 2024, S, with connected devices); 2010 10-K (R)
+    fixed: { 2008: [16.5, A], 2010: [16.5, R], 2015: [15.8, R], 2020: [15.4, R], 2025: [14.0, R] }
+    wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.22, A] }
+    supplier: ericsson
+  - company: T-Mobile US
+    region: north_america
+    mobile: { 2008: [32.8, R], 2010: [33.7, R], 2013: [41, S], 2015: [63.3, R], 2020: [102, R], 2025: [140, S] } # TMO: 32M + MetroPCS 9M at the 2013 merger (S); 140M (Sep 2025, S); Sprint's from 1 Apr 2020 (MST S)
+    supplier: nokia
+  - company: Sprint
+    region: north_america
+    mobile: { 2008: [48.8, R], 2010: [49.9, R], 2015: [58, R], 2019: [54.3, S] } # SPR: 54.3M (30 Jun 2019, S)
+    last: "2020-04" # MST: the merger closed on 1 April 2020 (S); its customers are T-Mobile's from then
+    supplier: samsung
+  - company: Comcast
+    region: north_america
+    fixed: { 2008: [17, A], 2010: [17, R], 2015: [23.3, R], 2018: [26.5, S], 2020: [30.6, R], 2025: [31.6, R] } # XF: 26.5M high-speed internet customers (26 Jul 2018, S)
+  - company: Charter Communications
+    region: north_america
+    fixed: { 2008: [3.1, A], 2010: [3.1, R], 2015: [5.5, R], 2017: [23, R], 2020: [28.9, R], 2025: [30, R] } # CHTR: Time Warner Cable and Bright House from 18 May 2016 (S); 32M+ customers of all services in 2022 (S)
+  - company: America Movil
+    region: north_america
+    mobile: { 2008: [57, R], 2010: [64, R], 2015: [73, R], 2019: [75.6, S], 2020: [76, R], 2025: [84, R] } # AMX: Telcel 75.611M (Q1 2019, S)
+    fixed: { 2008: [7.5, A], 2010: [7.5, R], 2015: [9.5, R], 2020: [10.5, R], 2025: [11, R] } # Telmex Infinitum (R)
+  - company: America Movil
+    region: latin_america
+    mobile: { 2008: [125, R], 2010: [161, R], 2015: [212, R], 2020: [204, R], 2025: [236, D] } # AMX: 310.1M wireless at 31 Dec 2023 (S) less Telcel; Claro Brazil 56.4M, Colombia 29.9M (Q1 2019, S)
+    fixed: { 2008: [6.5, A], 2010: [6.5, R], 2015: [12.5, R], 2020: [19.5, R], 2025: [21, R] }
+    wholesale: { 2008: [0.30, A], 2010: [0.30, A], 2025: [0.30, A] }
+    supplier: ericsson
+  - company: Vodafone
+    region: europe
+    mobile: { 2008: [115, R], 2010: [121, R], 2015: [111, R], 2020: [110, R], 2025: [95, R] } # Vodafone Europe (R: annual reports; Spain and Italy sold 2024, R)
+    fixed: { 2008: [8, A], 2010: [8, R], 2015: [14, R], 2020: [25, R], 2025: [20, R] } # Kabel Deutschland 2013, Ono 2014, Unitymedia 2019 (R)
+    wholesale: { 2008: [0.12, A], 2010: [0.12, A], 2025: [0.12, A] }
+    supplier: ericsson
+  - company: Vodafone
+    region: south_southeast_asia
+    mobile: { 2008: [68, R], 2010: [125, R], 2015: [190, R], 2017: [210, R] } # Vodafone India (Hutch Essar bought Feb 2007, renamed 21 Sep 2007, S)
+    last: "2018-09" # VI: Vodafone India and Idea merged into Vodafone Idea, completed 31 Aug 2018 (S)
+  - company: Vodafone
+    region: africa
+    mobile: { 2008: [38, R], 2010: [46, R], 2015: [65, R], 2020: [120, R], 2025: [210, R] } # Vodacom Group, Safaricom consolidated from 2017 (R)
+  - company: Vodafone Idea
+    region: south_southeast_asia
+    mobile: { 2018: [375, S], 2020: [270, R], 2025: [199, S] } # VI: about 375M at the merger (S); 198.82M (Jul 2026, S)
+    first: "2018-09"
+  - company: Deutsche Telekom
+    region: europe
+    mobile: { 2008: [92, R], 2010: [95, R], 2015: [90, R], 2020: [95, R], 2025: [100, R] } # Germany and Europe segments (R: annual reports)
+    fixed: { 2008: [16, A], 2010: [16, R], 2015: [18, R], 2020: [21, R], 2025: [22, R] } # DT: "over 9 million broadband lines" (older text, S) in Germany alone
+    wholesale: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
+    supplier: ericsson
+  - company: Orange
+    region: europe
+    mobile: { 2008: [68, R], 2010: [70, D], 2015: [75, R], 2020: [80, R], 2025: [65, R] } # ORA: 150M mobile customers, 17.9% in France (2010, S); Africa and the Middle East about 80M (R)
+    fixed: { 2008: [13, A], 2010: [13, D], 2015: [17, R], 2020: [21, R], 2025: [20, R] } # ORA: 13.7M broadband ADSL customers worldwide (2010, S)
+    wholesale: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
+    supplier: nokia
+  - company: Orange
+    region: africa
+    mobile: { 2008: [55, R], 2010: [70, R], 2015: [120, R], 2020: [130, R], 2025: [160, R] }
+    wholesale: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
+  - company: Telefonica
+    region: europe
+    mobile: { 2008: [95, R], 2010: [100, R], 2015: [105, R], 2020: [100, R], 2025: [85, R] } # Spain, O2 UK (Virgin Media O2 from 1 Jun 2021, S), O2 Germany (R)
+    fixed: { 2008: [8, A], 2010: [8, R], 2015: [7, R], 2020: [6.5, R], 2025: [6, R] }
+    supplier: ericsson
+  - company: Telefonica
+    region: latin_america
+    mobile: { 2008: [140, R], 2010: [170, R], 2015: [215, R], 2020: [190, R], 2025: [140, R] } # Movistar and Vivo; Central America sold 2019-21 and Argentina, Peru, Colombia 2024-25 (R)
+    fixed: { 2008: [8, A], 2010: [8, R], 2015: [10, R], 2020: [12, R], 2025: [11, R] }
+    wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.25, A] } # Telxius
+  - company: China Mobile
+    region: east_asia
+    mobile: { 2008: [457, R], 2010: [584, R], 2015: [826, R], 2021: [945.5, S], 2024: [1003.9, S], 2025: [1004, D] } # CM: 945.50M (Jun 2021, S); LMNO 1,003.9M (Sep 2024, S)
+    fixed: { 2015: [55, R], 2020: [210, R], 2025: [315, R] }
+    wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.25, A] }
+    supplier: huawei
+  - company: China Telecom
+    region: east_asia
+    mobile: { 2008: [28, R], 2010: [91, R], 2015: [198, R], 2021: [362.5, S], 2024: [423.4, S], 2025: [425, D] } # CT: 362.49M (Jun 2021, S); took Unicom's CDMA network in 2008 (R)
+    fixed: { 2008: [64, A], 2010: [64, R], 2015: [113, R], 2020: [158, R], 2025: [197, R] }
+    wholesale: { 2008: [0.30, A], 2010: [0.30, A], 2025: [0.30, A] }
+    supplier: huawei
+  - company: China Unicom
+    region: east_asia
+    mobile: { 2008: [133, D], 2010: [167, R], 2015: [252, R], 2020: [306, R], 2024: [345.0, S], 2025: [345, D] } # CU: 125M GSM + 43M CDMA (Apr 2008, S), the CDMA to China Telecom (R)
+    fixed: { 2008: [47, A], 2010: [47, R], 2015: [75, R], 2020: [86, R], 2025: [120, R] }
+    supplier: huawei
+  - company: NTT Docomo
+    region: east_asia
+    mobile: { 2008: [54, S], 2010: [58, R], 2015: [71, R], 2020: [82, R], 2025: [91.4, S] } # DCM: over 53M (Mar 2008, S); 91.407M (Oct 2025, S)
+    supplier: nokia
+  - company: SK Telecom
+    region: east_asia
+    mobile: { 2008: [23, R], 2010: [26, R], 2015: [29, R], 2020: [29, R], 2023: [23, S], 2025: [23, D] } # SK Telecom: 23M (Q4 2023, S; phones, R)
+    supplier: samsung
+  - company: Reliance Jio
+    region: south_southeast_asia
+    mobile: { 2016: [72, R], 2017: [160, R], 2020: [405, R], 2025: [480, D] } # JIO: launched 5 Sep 2016; 100M on 22 Feb 2017, 130M in Oct 2017 (S); 500.08M active (Jul 2026, TII S)
+    fixed: { 2019: [0.5, R], 2020: [1.5, R], 2025: [12, R] } # JioFiber from Sep 2019 (R)
+    first: "2016-09"
+    supplier: samsung
+  - company: Bharti Airtel
+    region: south_southeast_asia
+    mobile: { 2008: [94, R], 2010: [152, R], 2015: [250, R], 2020: [330, R], 2024: [352, S], 2025: [360, R] } # AIR: India about 352M (Mar 2024, S)
+    wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.25, A] }
+    supplier: ericsson
+  - company: Bharti Airtel
+    region: africa
+    mobile: { 2008: [40, A], 2010: [40, R], 2015: [80, R], 2019: [99, S], 2025: [165, R] } # AIR: Africa 99M+ (Mar 2019, S); Zain Africa bought Jun 2010 (R)
+    first: "2010-06"
+  - company: Telkomsel
+    region: south_southeast_asia
+    mobile: { 2008: [65, R], 2010: [94, R], 2015: [153, R], 2020: [170, R], 2025: [160, R] } # Indonesia (R: Telkom Indonesia reports)
+    supplier: huawei
+  - company: MTN Group
+    region: africa
+    mobile: { 2008: [90, R], 2010: [140, R], 2015: [230, R], 2020: [280, R], 2025: [245, D] } # MTN: over 300M customers (Oct 2025, S) less Iran's 55.1M (S)
+    wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.25, A] }
+    supplier: huawei
+  - company: Telstra
+    region: oceania
+    mobile: { 2008: [9.5, R], 2010: [10, R], 2015: [17, R], 2020: [19, R], 2025: [23, R] } # Telstra FY2010 about 10M (R); TLS: revenue A$26.2B in 2020 (S)
+    fixed: { 2008: [2.4, A], 2010: [2.4, R], 2015: [3.4, R], 2020: [3.5, R], 2025: [3.3, R] }
+    wholesale: { 2008: [0.50, A], 2010: [0.50, A], 2025: [0.50, A] }
+    supplier: ericsson
+  - company: Optus
+    region: oceania
+    mobile: { 2008: [8.5, R], 2010: [9, R], 2015: [10, R], 2020: [10.5, R], 2025: [10.5, R] } # TLS: Optus A$9.0B revenue in 2020 (S)
+    supplier: nokia
+
+# --- Equipment vendors (62.3) -------------------------------------------------------------------------
+# share: of the world RAN market by year (R: Dell'Oro annual press releases, about +-2-5 points; no
+# vendor share is on a Wikipedia page: CCI only says the four held "two-thirds of the overall market" in
+# 2019, S, and 5G that Huawei built about 70% of the world's 5G base stations by 2023, S). Nokia's is
+# Nokia Siemens Networks' to 2015 and, with Alcatel-Lucent from January 2016 (NOK S: the EUR 15.6B
+# acquisition, approved 4 Jan 2016), Nokia's after. price_mult: a radio's price against the market's
+# (A: Chinese vendors' widely reported 15-30% discounts, R). region_mult: x the world share in a region
+# (A: Huawei and ZTE never supplied the large US carriers, CCI and STC; Samsung is Korea's and Jio's).
+vendors:
+  - key: ericsson
+    label: Ericsson
+    company: Ericsson
+    origin: rest_of_eu # Sweden (countries.yaml has no row of its own)
+    share: { 2008: [0.35, R], 2010: [0.36, R], 2015: [0.30, R], 2020: [0.26, R], 2023: [0.235, R], 2025: [0.24, A] }
+    price_mult: [1.0, A]
+    region_mult: { north_america: [1.6, A], east_asia: [0.4, A] }
+  - key: nokia
+    label: Nokia
+    company: Nokia
+    origin: rest_of_eu # Finland
+    share: { 2008: [0.21, R], 2010: [0.20, R], 2015: [0.17, R], 2016: [0.26, D], 2020: [0.20, R], 2023: [0.19, R], 2025: [0.19, A] } # 2016: NSN's + Alcatel-Lucent's about 0.09 (R)
+    price_mult: [0.97, A]
+    region_mult: { north_america: [1.4, A], east_asia: [0.5, A] }
+  - key: huawei
+    label: Huawei
+    company: Huawei
+    origin: china
+    share: { 2008: [0.17, R], 2010: [0.20, R], 2012: [0.24, R], 2015: [0.27, R], 2020: [0.31, R], 2023: [0.33, R], 2025: [0.33, A] } # HUA: "the world's largest telecom equipment maker in 2012" (S)
+    price_mult: [0.85, A]
+    region_mult: { north_america: [0.05, A], east_asia: [1.6, A], europe: [1.1, A] } # CCI: three quarters of the radio access in Britain's 4G network (S)
+  - key: zte
+    label: ZTE
+    company: ZTE
+    origin: china
+    share: { 2008: [0.07, R], 2010: [0.08, R], 2015: [0.11, R], 2020: [0.12, R], 2023: [0.13, R], 2025: [0.13, A] } # ZTE: about 20% of GSM gear sold in 2009 (S)
+    price_mult: [0.80, A]
+    region_mult: { north_america: [0.05, A], east_asia: [1.6, A] }
+  - key: samsung
+    label: Samsung
+    company: Samsung Networks
+    origin: south_korea
+    share: { 2008: [0.03, R], 2010: [0.03, R], 2015: [0.03, R], 2020: [0.04, R], 2023: [0.035, R], 2025: [0.03, A] } # 5G: "Samsung supplied most of the roughly 86,000 sites" in Korea, 2019 (S)
+    price_mult: [0.95, A]
+    region_mult: { east_asia: [1.5, A], south_southeast_asia: [1.8, A] }
+
+# --- Spectrum auctions (62.2) ---------------------------------------------------------------------------
+# One game auction an auction (a multiband auction under its main band by MHz). gross_usd: proceeds
+# (real); reserve_usd: the sum of reserves where published, else half the proceeds (A: Auction 73's
+# aggregate reserve was just over $10B against $19.6B raised, US08 S; Slovakia 2013 15% above, SA S;
+# France's 700 MHz 1.12x, FREE S). blocks: lots (A where not given), winners: blocks won by the game's
+# operators (by their share of the proceeds); the rest went to bidders outside the game. term_years:
+# R (the national rules) unless S. obligation: population coverage owed after obligation_years (A unless
+# S).
+auctions:
+  - key: us_700_2008
+    label: FCC Auction 73 (700 MHz)
+    region: north_america
+    area: united_states
+    band: low
+    mhz: [62, R] # blocks A-E, 698-806 MHz (US08 S); 62 MHz licensed (R)
+    blocks: [10, A]
+    month: "2008-03" # US08: bidding from 24 Jan 2008, concluded Mar 2008 (S)
+    gross_usd: [19.592e9, 2008, S] # US08: "In total, Auction 73 raised $19.592 billion" (S)
+    reserve_usd: [10.0e9, 2008, S] # US08: "just over $10 billion" for all five blocks (S)
+    term_years: [10, R]
+    obligation: [0.4, R] # R: 700 MHz build-out, 35-40% of population in 4 years
+    obligation_years: [4, R]
+    winners: { Verizon: 5, AT&T: 3 } # VZ: Verizon $9.4B; US08: AT&T 227 B-block licences $6.6B (S)
+  - key: ca_aws_2008
+    label: Canada AWS auction
+    region: north_america
+    area: canada
+    band: mid
+    mhz: [105, S] # SA: 105 MHz with 40 MHz set aside for new entrants (S)
+    blocks: [6, A]
+    month: "2008-07" # SA: concluded 23 Jul 2008 after 331 rounds (S)
+    gross_usd: [3.99e9, 2008, D] # C$4.25B (SA S) x 0.938 (FX)
+    reserve_usd: [2.0e9, 2008, A]
+    rounds: [331, S]
+    term_years: [10, R]
+  - key: se_2600_2008
+    label: Sweden 2.6 GHz auction
+    region: europe
+    area: sweden
+    band: mid
+    mhz: [190, S]
+    blocks: [9, S] # SA: nine 15-year 4G licences (S)
+    month: "2008-05" # SA: 16 days, ended 8 May 2008 (S)
+    gross_usd: [0.3186e9, 2008, D] # SEK 2,099,450,000 (SA S) / 6.59 (FX)
+    reserve_usd: [0.0076e9, 2008, D] # SA: total required minimum bids SEK 50 million (S)
+    term_years: [15, S]
+  - key: de_2010
+    label: Germany 2010 multiband auction (800 MHz-2.6 GHz)
+    region: europe
+    area: germany
+    band: mid
+    mhz: [360, R]
+    blocks: [12, A]
+    month: "2010-05" # SA: the highest bid EUR 1,213M for two 800 MHz blocks; the auction ended 20 May 2010 (R)
+    gross_usd: [5.81e9, 2010, D] # EUR 4.38B (R: BNetzA) x 1.327 (FX)
+    reserve_usd: [2.9e9, 2010, A]
+    rounds: [224, R]
+    term_years: [15, R]
+    obligation: [0.9, R] # R: rural 800 MHz coverage first
+    obligation_years: [5, A]
+    winners: { Deutsche Telekom: 4, Vodafone: 4, Telefonica: 3 } # R: each won two 800 MHz blocks
+  - key: in_3g_2010
+    label: India 3G auction (2.1 GHz)
+    region: south_southeast_asia
+    area: india
+    band: mid
+    mhz: [30, A]
+    blocks: [4, A]
+    month: "2010-05" # ITSA: 34 days, 183 rounds (S)
+    gross_usd: [14.81e9, 2010, D] # Rs 677B (ITSA S) / 45.7 (FX)
+    reserve_usd: [7.4e9, 2010, A]
+    rounds: [183, S]
+    term_years: [20, S] # ITSA: "valid for a period of 20 years" (S)
+    winners: { Bharti Airtel: 1, Vodafone: 1 } # ITSA: Airtel Rs 123B in 13 circles (S); Vodafone (R)
+  - key: in_bwa_2010
+    label: India broadband wireless auction (2.3 GHz)
+    region: south_southeast_asia
+    area: india
+    band: mid
+    mhz: [40, A]
+    blocks: [2, A]
+    month: "2010-06" # R: ended 11 Jun 2010
+    gross_usd: [8.42e9, 2010, D] # Rs 385B (ITSA S) / 45.7 (FX)
+    reserve_usd: [4.2e9, 2010, A]
+    term_years: [20, S]
+    winners: { Reliance Jio: 1 } # R: Infotel Broadband (later Jio) won BWA in all 22 circles; Airtel Rs 33.14B in 4 circles (S)
+  - key: nl_2012
+    label: Netherlands 2012 multiband auction
+    region: europe
+    area: rest_of_eu
+    band: low
+    mhz: [255, A]
+    blocks: [8, A]
+    month: "2012-12" # TELE2: concluded 14 Dec 2012 (S)
+    gross_usd: [4.88e9, 2012, D] # EUR 3.8B (TELE2 S) x 1.285 (FX)
+    reserve_usd: [2.4e9, 2012, A]
+    term_years: [17, R]
+    winners: { Vodafone: 3, Deutsche Telekom: 2 } # TELE2: KPN, Vodafone about EUR 1.3B each, T-Mobile EUR 900M, Tele2 EUR 161M (S)
+  - key: uk_4g_2013
+    label: UK 4G auction (800 MHz and 2.6 GHz)
+    region: europe
+    area: united_kingdom
+    band: mid
+    mhz: [250, R]
+    blocks: [6, A]
+    month: "2013-02" # R: results 20 Feb 2013
+    gross_usd: [3.66e9, 2013, D] # GBP 2,341,113,000 (SA S) x 1.564 (FX)
+    reserve_usd: [2.03e9, 2013, R] # R: reserves totalled about GBP 1.3B
+    term_years: [20, R]
+    obligation: [0.98, S] # SA: O2's 800 MHz "coverage obligation lot" (S); R: 98% indoor by 2017
+    obligation_years: [4, R]
+    winners: { Vodafone: 2, Telefonica: 1 } # SA: Vodafone GBP 790.761M, EE 588.876M, O2 550M, Three 225M, BT 186.476M (S)
+  - key: in_2014
+    label: India 2014 auction (900 and 1800 MHz)
+    region: south_southeast_asia
+    area: india
+    band: low
+    mhz: [100, A]
+    blocks: [8, A]
+    month: "2014-02" # ITSA: 10 days, 68 rounds (S)
+    gross_usd: [10.03e9, 2014, D] # Rs 612B (ITSA S) / 61.0 (FX)
+    reserve_usd: [5.0e9, 2014, A]
+    rounds: [68, S]
+    term_years: [20, S]
+    winners: { Bharti Airtel: 3, Vodafone: 2, Reliance Jio: 1 } # ITSA (S: the winners); shares A
+  - key: us_aws3_2015
+    label: FCC Auction 97 (AWS-3)
+    region: north_america
+    area: united_states
+    band: mid
+    mhz: [65, R]
+    blocks: [10, A]
+    month: "2015-01" # AWS3: completed 29 Jan 2015 (S)
+    gross_usd: [44.9e9, 2015, R] # AWS3: net bids $41,329,673,325 (S); gross $44.9B (R)
+    reserve_usd: [22.0e9, 2015, A]
+    rounds: [341, R]
+    term_years: [12, R]
+    winners: { AT&T: 4, Verizon: 2 } # VZ: Verizon $10.4B (S); AT&T about $18.2B (R)
+  - key: in_2015
+    label: India 2015 auction
+    region: south_southeast_asia
+    area: india
+    band: low
+    mhz: [100, A]
+    blocks: [8, A]
+    month: "2015-03" # ITSA: concluded 25 Mar 2015 after 19 days and 115 rounds (S)
+    gross_usd: [17.11e9, 2015, D] # Rs 109,874 crore (ITSA S) / 64.2 (FX)
+    reserve_usd: [8.5e9, 2015, A]
+    rounds: [115, S]
+    term_years: [20, S]
+    winners: { Bharti Airtel: 3, Vodafone: 2, Reliance Jio: 1 }
+  - key: fr_700_2015
+    label: France 700 MHz auction
+    region: europe
+    area: france
+    band: low
+    mhz: [60, S] # FREE: six 5 MHz duplex bands (S)
+    blocks: [6, S]
+    month: "2015-11" # FREE: 16-17 Nov 2015 (S)
+    gross_usd: [3.10e9, 2015, D] # 6 x EUR 466M (FREE S: Free paid EUR 932M for two) = EUR 2.796B x 1.110 (FX)
+    reserve_usd: [2.77e9, 2015, D] # FREE: EUR 416M a band (S) x 6 x 1.110
+    term_years: [20, R]
+    winners: { Orange: 2 } # R: Orange two, SFR two, Free two (S)
+  - key: us_600_2017
+    label: FCC Broadcast incentive auction (600 MHz)
+    region: north_america
+    area: united_states
+    band: low
+    mhz: [70, S] # US16: 84 MHz cleared, 70 MHz licensed (S)
+    blocks: [7, A]
+    month: "2017-03" # US16: bidding ended 30 Mar 2017 (S)
+    gross_usd: [19.8e9, 2017, S] # US16: "The auction raised $19.8 billion" (S)
+    reserve_usd: [9.9e9, 2017, A]
+    term_years: [12, R]
+    obligation: [0.4, R] # R: 47 CFR 27.14, 40% of population in 6 years
+    obligation_years: [6, R]
+    winners: { T-Mobile US: 3 } # US16: T-Mobile almost $8B for 1,525 licences; Dish $6.2B, Comcast $1.7B, AT&T $910M (S)
+  - key: uk_5g_2018
+    label: UK 2018 auction (2.3 and 3.4 GHz)
+    region: europe
+    area: united_kingdom
+    band: mid
+    mhz: [190, S] # SA: 40 MHz at 2.3 GHz and 150 MHz at 3.4 GHz (S)
+    blocks: [6, A]
+    month: "2018-04" # SA: results 13 Apr 2018 (S)
+    gross_usd: [1.83e9, 2018, D] # GBP 1,369,879,000 (SA S) x 1.335 (FX)
+    reserve_usd: [0.9e9, 2018, A]
+    term_years: [20, R]
+    winners: { Telefonica: 2, Vodafone: 2 } # SA: O2 GBP 523.6M, Vodafone 378.24M, EE 303.594M, Three 164.429M (S)
+  - key: kr_5g_2018
+    label: South Korea 5G auction (3.5 and 28 GHz)
+    region: east_asia
+    area: south_korea
+    band: mid
+    mhz: [280, R]
+    blocks: [28, R]
+    month: "2018-06" # R: 15-18 Jun 2018
+    gross_usd: [3.29e9, 2018, D] # KRW 3.62T (R: MSIT) / 1,100 (FX)
+    reserve_usd: [2.98e9, 2018, D] # KRW 3.28T (R) / 1,100
+    term_years: [10, R]
+    winners: { SK Telecom: 10 } # R: SKT 100 MHz for KRW 1.43T
+  - key: it_5g_2018
+    label: Italy 5G auction
+    region: europe
+    area: italy
+    band: mid
+    mhz: [200, R]
+    blocks: [4, R]
+    month: "2018-10" # R: ended 2 Oct 2018
+    gross_usd: [7.74e9, 2018, D] # EUR 6.55B (R: MISE) x 1.181 (FX)
+    reserve_usd: [2.95e9, 2018, D] # the government budgeted about EUR 2.5B (R) x 1.181
+    rounds: [171, R]
+    term_years: [19, R]
+    winners: { Vodafone: 2 } # R: TIM and Vodafone about EUR 2.4B each
+  - key: au_36_2018
+    label: Australia 3.6 GHz auction
+    region: oceania
+    area: australia
+    band: mid
+    mhz: [125, R]
+    blocks: [5, A]
+    month: "2018-12" # R: Nov-Dec 2018
+    gross_usd: [0.638e9, 2018, D] # A$853M (R: ACMA) x 0.748 (FX)
+    reserve_usd: [0.32e9, 2018, A]
+    term_years: [17, R]
+    winners: { Telstra: 2, Optus: 1 } # R: Telstra A$386M, TPG A$263M, Optus A$185M
+  - key: de_5g_2019
+    label: Germany 5G auction (2 and 3.6 GHz)
+    region: europe
+    area: germany
+    band: mid
+    mhz: [420, R]
+    blocks: [41, R]
+    month: "2019-06" # R: 19 Mar-12 Jun 2019
+    gross_usd: [7.34e9, 2019, D] # EUR 6.55B (R: BNetzA) x 1.12 (FX)
+    reserve_usd: [3.6e9, 2019, A]
+    rounds: [497, R]
+    term_years: [21, R]
+    obligation: [0.98, R] # R: 98% of households per state at 100 Mbit/s by end 2022
+    obligation_years: [3, R]
+    winners: { Deutsche Telekom: 14, Vodafone: 12, Telefonica: 9 } # TDE: Telefonica EUR 1.42B (S); DT about EUR 2.17B and Vodafone EUR 1.88B (R)
+  - key: ca_600_2019
+    label: Canada 600 MHz auction
+    region: north_america
+    area: canada
+    band: low
+    mhz: [70, R]
+    blocks: [7, A]
+    month: "2019-04" # R: 12 Mar-4 Apr 2019
+    gross_usd: [2.62e9, 2019, D] # C$3.47B (R: ISED) x 0.754; ROG: Rogers C$1,725,006,000 (S)
+    reserve_usd: [1.3e9, 2019, A]
+    term_years: [20, R]
+  - key: us_mmwave_2020
+    label: FCC Auction 103 (37, 39 and 47 GHz)
+    region: north_america
+    area: united_states
+    band: high
+    mhz: [3400, R]
+    blocks: [34, A]
+    month: "2020-03" # R: 10 Dec 2019-5 Mar 2020
+    gross_usd: [7.56e9, 2020, R]
+    reserve_usd: [3.8e9, 2020, A]
+    term_years: [10, R]
+    winners: { Verizon: 7, AT&T: 5, T-Mobile US: 4 } # R: Verizon about $1.6B, AT&T $1.2B, T-Mobile $0.9B
+  - key: fr_5g_2020
+    label: France 5G auction (3.5 GHz)
+    region: europe
+    area: france
+    band: mid
+    mhz: [310, R]
+    blocks: [31, R]
+    month: "2020-10" # R: main stage 29 Sep-1 Oct 2020
+    gross_usd: [3.19e9, 2020, D] # EUR 2.79B (R: Arcep) x 1.142 (FX)
+    reserve_usd: [2.48e9, 2020, D] # R: four 50 MHz blocks at EUR 350M fixed + eleven 10 MHz at EUR 70M, x 1.142
+    rounds: [17, R]
+    term_years: [15, R]
+    winners: { Orange: 9 } # R: Orange 90 MHz for about EUR 854M
+  - key: us_cband_2021
+    label: FCC Auction 107 (C-band)
+    region: north_america
+    area: united_states
+    band: mid
+    mhz: [280, S] # 3.7-3.98 GHz (C band (IEEE), S)
+    blocks: [14, R] # R: fourteen 20 MHz blocks a partial economic area
+    month: "2021-01" # R: clock phase 8 Dec 2020-15 Jan 2021
+    gross_usd: [81.17e9, 2021, R] # 5G: "The auction raised over $81 billion in total winning bids" (S); $81.17B (R)
+    reserve_usd: [20.0e9, 2021, A] # minimum opening bids not found (A: a quarter of the proceeds)
+    rounds: [97, R]
+    term_years: [15, R]
+    obligation: [0.45, R] # R: 45% of population in 8 years
+    obligation_years: [8, R]
+    winners: { Verizon: 8, AT&T: 4, T-Mobile US: 1 } # 5G: Verizon $45.5B (56%), AT&T $23.4B (28.9%) (S); T-Mobile about $9.3B (R)
+  - key: uk_2021
+    label: UK 2021 auction (700 MHz and 3.6-3.8 GHz)
+    region: europe
+    area: united_kingdom
+    band: mid
+    mhz: [200, R]
+    blocks: [10, A]
+    month: "2021-04" # R: 16 Mar-27 Apr 2021
+    gross_usd: [1.87e9, 2021, D] # GBP 1.36B (R: Ofcom) x 1.375 (FX)
+    reserve_usd: [0.9e9, 2021, A]
+    term_years: [20, R]
+    winners: { Telefonica: 3, Vodafone: 1 } # R: EE about GBP 452M, O2 448M, Three 280M, Vodafone 176M
+  - key: in_2021
+    label: India 2021 auction
+    region: south_southeast_asia
+    area: india
+    band: low
+    mhz: [100, A]
+    blocks: [8, A]
+    month: "2021-03" # R: 1-2 Mar 2021, 6 rounds
+    gross_usd: [10.53e9, 2021, D] # Rs 77,815 crore (R: DoT) / 73.9 (FX)
+    reserve_usd: [5.2e9, 2021, A]
+    rounds: [6, R]
+    term_years: [20, S]
+    winners: { Reliance Jio: 5, Bharti Airtel: 2 } # R: Jio about Rs 57,123 crore
+  - key: ca_3500_2021
+    label: Canada 3500 MHz auction
+    region: north_america
+    area: canada
+    band: mid
+    mhz: [200, R]
+    blocks: [20, A]
+    month: "2021-07" # R: 15 Jun-23 Jul 2021
+    gross_usd: [7.11e9, 2021, D] # C$8.91B (R: ISED) x 0.798; ROG: Rogers C$3,325,600,269 (S)
+    reserve_usd: [3.5e9, 2021, A]
+    term_years: [20, R]
+  - key: br_5g_2021
+    label: Brazil 5G auction
+    region: latin_america
+    area: brazil
+    band: mid
+    mhz: [400, R]
+    blocks: [8, A]
+    month: "2021-11" # R: 4-5 Nov 2021 (Telecommunications in Brazil: "In 2021 ... the auction of the 3.5 GHz spectrum", S)
+    gross_usd: [8.74e9, 2021, D] # R$47.2B (R: Anatel) / 5.40 (FX), mostly investment obligations
+    reserve_usd: [4.3e9, 2021, A]
+    term_years: [20, R]
+    obligation: [0.95, A] # R: coverage obligations made up most of its value
+    obligation_years: [8, A]
+    winners: { America Movil: 2, Telefonica: 2 } # R: Claro, Vivo and TIM
+  - key: in_5g_2022
+    label: India 5G auction
+    region: south_southeast_asia
+    area: india
+    band: mid
+    mhz: [330, A]
+    blocks: [33, A]
+    month: "2022-08" # R: 26 Jul-1 Aug 2022, 40 rounds
+    gross_usd: [19.11e9, 2022, D] # Rs 1,50,173 crore (R: DoT) / 78.6 (FX)
+    reserve_usd: [9.5e9, 2022, A]
+    rounds: [40, R]
+    term_years: [20, R]
+    winners: { Reliance Jio: 19, Bharti Airtel: 9, Vodafone Idea: 4 } # JIO: pan-India 700, 3,500 MHz and 26 GHz licences (S); Jio Rs 88,078 crore, Airtel about 43,084, Vi about 18,799 (R)
+  - key: us_345_2022
+    label: FCC Auction 110 (3.45 GHz)
+    region: north_america
+    area: united_states
+    band: mid
+    mhz: [100, R]
+    blocks: [10, A]
+    month: "2022-01" # R: 5 Oct 2021-4 Jan 2022
+    gross_usd: [22.5e9, 2022, R]
+    reserve_usd: [11.0e9, 2022, A]
+    term_years: [15, R]
+    winners: { AT&T: 4, T-Mobile US: 1 } # TMO: about $3B, second behind AT&T (S); AT&T about $9.1B (R)
+
+# --- Bans (62.3, through 39's rules) --------------------------------------------------------------------
+# scope: the share of the area's networks a ban covers (A where a ban covers 5G and not 4G).
+bans:
+  - key: us_huawei
+    label: US restrictions on Huawei
+    vendor: huawei
+    region: north_america
+    area: united_states
+    announced: "2019-05" # CCI: EO 13873 and the Entity List, 15 May 2019 (S)
+    no_new: "2019-05"
+    replace_by: "2026-06" # R: rip-and-replace deadlines of one year from funding, extended into 2025-26; the $3.08B shortfall funded Dec 2024 (R)
+    scope: [1.0, A] # STC: the Secure Networks Act (12 Mar 2020) and SEA: the FCC's ban of 25 Nov 2022 cover every network (S)
+    reimburse: [0.0, A] # STC: reimbursement for providers with 2 million or fewer customers (S); a national network is larger
+  - key: us_zte
+    label: US restrictions on ZTE
+    vendor: zte
+    region: north_america
+    area: united_states
+    announced: "2020-03" # STC: signed 12 Mar 2020 (S)
+    no_new: "2020-06" # STC: the FCC designated Huawei and ZTE covered companies on 30 Jun 2020 (S)
+    replace_by: "2026-06" # R, as Huawei's
+    scope: [1.0, A]
+  - key: ca_huawei_5g
+    label: Canada's 5G ban on Huawei
+    vendor: huawei
+    region: north_america
+    area: canada
+    announced: "2022-05" # HUA: May 2022 (S)
+    no_new: "2022-05"
+    replace_by: "2024-06" # HUA: remove all Huawei- and ZTE-branded 5G equipment by 28 June 2024 (S)
+    scope: [0.5, A] # the 5G layer
+  - key: ca_huawei_4g
+    label: Canada's 4G ban on Huawei
+    vendor: huawei
+    region: north_america
+    area: canada
+    announced: "2022-05"
+    no_new: "2022-05"
+    replace_by: "2027-12" # R: 4G removed by 31 Dec 2027
+    scope: [0.5, A]
+  - key: uk_huawei
+    label: UK removal of Huawei from 5G
+    vendor: huawei
+    region: europe
+    area: united_kingdom
+    announced: "2020-07" # CCI: Boris Johnson banned Huawei (Jul 2020), at a cost of at least GBP 2 billion (S)
+    no_new: "2021-01" # R: no new Huawei 5G equipment bought after 31 Dec 2020
+    replace_by: "2027-12" # CCI: full removal from the 5G network by 2027 (S); HUA: unchanged in Oct 2022 (S)
+    scope: [0.5, A] # 5G only
+  - key: se_huawei
+    label: Sweden's exclusion of Huawei
+    vendor: huawei
+    region: europe
+    area: sweden
+    announced: "2020-10" # CCI: PTS decided in October 2020 (S)
+    no_new: "2020-10"
+    replace_by: "2025-01" # CCI: removed until January 2025 (S)
+    scope: [1.0, A]
+  - key: se_zte
+    label: Sweden's exclusion of ZTE
+    vendor: zte
+    region: europe
+    area: sweden
+    announced: "2020-10"
+    no_new: "2020-10"
+    replace_by: "2025-01"
+    scope: [1.0, A]
+  - key: fr_huawei
+    label: France's non-renewal of Huawei licences
+    vendor: huawei
+    region: europe
+    area: france
+    announced: "2020-06" # HUA: ANSSI informed operators they would not renew licences for Huawei 5G equipment after 2028 (S)
+    no_new: "2020-06" # A
+    replace_by: "2028-12" # HUA (S)
+    scope: [0.5, A]
+  - key: de_huawei
+    label: Germany's removal of Chinese 5G equipment
+    vendor: huawei
+    region: europe
+    area: germany
+    announced: "2024-07" # HUA: the July 2024 deal to remove Chinese 5G equipment by 2029 (S)
+    no_new: "2024-07" # A
+    replace_by: "2029-12" # HUA (S); R: core by end 2026, management systems by end 2029
+    scope: [0.6, A]
+  - key: de_zte
+    label: Germany's removal of ZTE 5G equipment
+    vendor: zte
+    region: europe
+    area: germany
+    announced: "2024-07"
+    no_new: "2024-07"
+    replace_by: "2029-12"
+    scope: [0.6, A]
+  - key: au_huawei
+    label: Australia's 5G ban
+    vendor: huawei
+    region: oceania
+    area: australia
+    announced: "2018-08" # Criticism of Huawei: a ban in Australia in August 2018 (S)
+    no_new: "2018-08"
+    scope: [1.0, A] # no removal ordered (R: 4G kept)
+  - key: au_zte
+    label: Australia's 5G ban on ZTE
+    vendor: zte
+    region: oceania
+    area: australia
+    announced: "2018-08"
+    no_new: "2018-08"
+    scope: [1.0, A]
+  - key: in_huawei
+    label: India's trusted-sources rules
+    vendor: huawei
+    region: south_southeast_asia
+    area: india
+    announced: "2020-06" # HUA: after the 2020 border clashes, removal and exclusion from India's 5G (S)
+    no_new: "2021-06" # R: DoT's trusted-sources licence amendment from 15 Jun 2021
+    scope: [1.0, A]
+  - key: in_zte
+    label: India's trusted-sources rules (ZTE)
+    vendor: zte
+    region: south_southeast_asia
+    area: india
+    announced: "2020-06"
+    no_new: "2021-06"
+    scope: [1.0, A]
+  - key: tw_huawei
+    label: Taiwan's block on Huawei
+    vendor: huawei
+    region: east_asia
+    area: rest_of_east_asia
+    announced: "2013-01" # HUA: "In 2013, Taiwan blocked mobile network operators ... from using Huawei equipment" (S); month A
+    no_new: "2013-01"
+    scope: [1.0, A]
+
+# --- Subsea cables (62.1; shown) --------------------------------------------------------------------------
+cables:
+  - { key: marea, label: MAREA, rfs: "2018-02", km: [6605, S], tbps: [160, S], regions: [north_america, europe], owners: [Microsoft, Facebook, Telxius] } # MAREA (S)
+  - { key: faster, label: FASTER, rfs: "2016-06", km: [9000, R], tbps: [60, S], regions: [north_america, east_asia], owners: [Google, KDDI, SingTel, China Telecom Global, China Mobile International, Global Transit] } # FASTER (S)
+  - { key: aec1, label: AEConnect, rfs: "2016-01", km: [5536, S], tbps: [52, D], regions: [north_america, europe], owners: [Aqua Comms] } # AEConnect: 13 Tbit/s a fibre pair (S) x 4 (R)
+  - { key: smw5, label: SEA-ME-WE 5, rfs: "2016-12", km: [20000, S], tbps: [24, S], regions: [south_southeast_asia, africa, europe], owners: [consortium] } # SEA-ME-WE 5 (S); 36.6 Tbit/s from Sep 2019 (S)
+  - { key: hawaiki, label: Hawaiki, rfs: "2018-07", km: [15000, S], tbps: [43.8, S], regions: [oceania, north_america], owners: [Hawaiki, BW Digital] } # Hawaiki Cable (S); about US$300M (S)
+  - { key: havfrue, label: Havfrue (AEC-2), rfs: "2020-12", km: [7851, S], tbps: [108, S], regions: [north_america, europe], owners: [Aqua Comms, Meta, Google, Bulk Infrastructure] }
+  - { key: dunant, label: Dunant, rfs: "2020-09", km: [6600, S], tbps: [250, S], regions: [north_america, europe], owners: [Google] }
+  - { key: grace_hopper, label: Grace Hopper, rfs: "2022-09", km: [12550, S], tbps: [352, S], regions: [north_america, europe], owners: [Google] } # 6,250 + 6,300 km (S)
+  - { key: equiano, label: Equiano, rfs: "2022-09", km: [15000, S], tbps: [144, S], regions: [europe, africa], owners: [Google] }
+  - { key: peace, label: PEACE, rfs: "2022-11", km: [15000, S], tbps: [96, D], regions: [south_southeast_asia, africa, europe], owners: [Peace Cable International] } # up to 24 Tbit/s a fibre pair (S) x 4 (R)
+  - { key: amitie, label: Amitie, rfs: "2023-06", km: [6800, S], tbps: [320, S], regions: [north_america, europe], owners: [Meta, Aqua Comms, Vodafone, Microsoft, Orange] } # EUR 250M (S); month A
+  - { key: two_africa, label: 2Africa, rfs: "2025-11", km: [45000, S], tbps: [180, S], regions: [africa, europe, south_southeast_asia], owners: [Meta, China Mobile, MTN, Orange, STC, Telecom Egypt, Vodafone, WIOCC] } # 2Africa (S)
+  - { key: southern_cross, label: Southern Cross, rfs: "2000-11", km: [28900, S], tbps: [92, S], regions: [oceania, north_america], owners: [Spark, Singtel, Telstra, Verizon] } # lit 92 Tbit/s in 2023 (S)
+  - { key: jupiter, label: JUPITER, rfs: "2020-08", km: [14000, R], tbps: [60, R], regions: [east_asia, south_southeast_asia, north_america], owners: [Amazon, Facebook, NTT, PLDT, SoftBank, PCCW] }
+  - { key: southern_cross_next, label: Southern Cross NEXT, rfs: "2022-07", km: [15840, R], tbps: [72, R], regions: [oceania, north_america], owners: [Spark, Singtel, Telstra, Verizon] }
+  - { key: firmina, label: Firmina, rfs: "2024-06", km: [14500, R], tbps: [240, R], regions: [north_america, latin_america], owners: [Google] }
+
+# Content providers' share of used international capacity (R: TeleGeography: under 10% about 2010,
+# about 66% in 2021 and 71% in 2023; SMC: Google "the first non-telecoms company to build subsea
+# cables" with Dunant and Curie, S).
+hyperscaler_share: { 2008: [0.08, A], 2010: [0.08, R], 2015: [0.40, A], 2021: [0.66, R], 2023: [0.71, R], 2025: [0.72, A] }
+
+# --- Net neutrality (62.4) --------------------------------------------------------------------------------
+neutrality:
+  - { key: us_2015, label: US Open Internet Order (2015), region: north_america, area: united_states, start: "2015-06", end: "2018-06" } # NNUS: effective 12 Jun 2015; the Restoring Internet Freedom Order took effect 11 Jun 2018 (S); the 2024 order was stayed and struck down on 2 Jan 2025 (S)
+  - { key: ca, label: Canada's net-neutrality rules, region: north_america, area: canada, start: "2009-10" } # NNBC: Canada enforced (S, no year); R: CRTC's ITMP framework Oct 2009
+  - { key: eu_2015, label: EU open-internet rules (Regulation 2015/2120), region: europe, area: rest_of_eu, start: "2016-04" } # NNEU: Art. 3 (S); applies from 30 Apr 2016 (R)
+  - { key: eu_de, label: EU open-internet rules (Germany), region: europe, area: germany, start: "2016-04" }
+  - { key: eu_fr, label: EU open-internet rules (France), region: europe, area: france, start: "2016-04" }
+  - { key: eu_it, label: EU open-internet rules (Italy), region: europe, area: italy, start: "2016-04" }
+  - { key: eu_es, label: EU open-internet rules (Spain), region: europe, area: spain, start: "2016-04" }
+  - { key: eu_se, label: EU open-internet rules (Sweden), region: europe, area: sweden, start: "2016-04" }
+  - { key: uk, label: UK Open Internet Access Regulations, region: europe, area: united_kingdom, start: "2016-04" } # NNBC: in force through the EU's 2015 legislation (S)
+  - { key: nl_2012, label: Netherlands net-neutrality law, region: europe, area: rest_of_eu, start: "2012-06", end: "2016-04" } # NNBC: 4 Jun 2012 (S), then the EU's
+  - { key: in_2016, label: India's ban on discriminatory tariffs, region: south_southeast_asia, area: india, start: "2016-02" } # NNIN: 8 Feb 2016; net neutrality in effect from 12 Jul 2018 (S)
+  - { key: br_2014, label: Brazil's Marco Civil da Internet, region: latin_america, area: brazil, start: "2014-04" } # NNBC: law on 23 Apr 2014 (S)
+  - { key: cl_2010, label: Chile's net-neutrality law, region: latin_america, area: rest_of_latin_america, start: "2010-08" } # NNBC: amended 13 Jun 2010, published 26 Aug 2010 (S)
+  - { key: kr, label: South Korea's net-neutrality guidelines, region: east_asia, area: south_korea, start: "2012-01" } # NNBC: enforced (S, no year); R: guidelines of Dec 2011
+  - { key: jp, label: Japan's common-carrier neutrality, region: east_asia, area: japan, start: "2008-01" } # NNBC: Japan instantiated in law (S, no year; A: before the game's start)
+
+# --- Operator mergers and reviews (62.4; precedents shown with the telecom regulators) -------------------
+mergers:
+  - { key: att_tmobile, label: AT&T and T-Mobile USA, region: north_america, announced: "2011-03", decided: "2011-12", outcome: abandoned } # T-Mobile US: announced 20 Mar 2011, abandoned 19 Dec 2011 (S)
+  - { key: tmobile_metropcs, label: T-Mobile USA and MetroPCS, region: north_america, announced: "2012-10", decided: "2013-04", outcome: cleared } # T-Mobile US: agreed 3 Oct 2012, approved 24 Apr 2013 (S)
+  - { key: three_o2, label: Hutchison (Three) and O2 UK, region: europe, announced: "2015-01", decided: "2016-05", outcome: blocked } # O2 (UK): blocked by the European Commission on 11 May 2016 (S)
+  - { key: tmobile_sprint, label: T-Mobile and Sprint, region: north_america, announced: "2018-04", decided: "2019-11", outcome: cleared_with_remedies } # MST: FCC approval 5 Nov 2019 with 5G to 97% of Americans in 3 years; Boost to Dish (S)
+  - { key: vodafone_idea, label: Vodafone India and Idea, region: south_southeast_asia, announced: "2017-03", decided: "2018-07", outcome: cleared } # VI: DoT cleared it on 9 Jul 2018 (S)
+  - { key: vmo2, label: Virgin Media and O2, region: europe, announced: "2020-05", decided: "2021-05", outcome: cleared } # Virgin Media O2: announced 7 May 2020, completed 1 Jun 2021 (S)
+  - { key: vodafone_three, label: Vodafone UK and Three UK, region: europe, announced: "2023-06", decided: "2024-12", outcome: cleared_with_remedies } # THREE: CMA approval Dec 2024 with binding 5G and price commitments (S)
+
+# --- Published market sizes (context for 62's calibration; M43a's 54.2 band) ------------------------------
+markets:
+  - { key: mobile, label: Mobile operators' service revenue, year: 2024, size_usd: [1.1e12, 2024, R] } # R: GSMA Mobile Economy
+  - { key: fixed_broadband, label: Fixed broadband service revenue, year: 2024, size_usd: [0.4e12, 2024, R] } # R
+  - { key: wholesale, label: Carrier and wholesale services, year: 2024, size_usd: [0.1e12, 2024, A] }
+  - { key: network_equipment, label: "Telecom equipment (RAN, core, access, optical, routers)", year: 2024, size_usd: [0.095e12, 2024, R] } # R: Dell'Oro about $90-95B; RAN about $35B
+
+# --- Costs (62.1) --------------------------------------------------------------------------------------------
+site_civil_usd: { 2008: [150000, 2008, A], 2010: [150000, 2010, R], 2025: [200000, 2025, R] } # a new macro tower about $150k-300k (R, industry); low end: co-location
+fibre_home_usd: { 2008: [1200, 2008, A], 2010: [1200, 2010, R], 2016: [1500, 2016, D], 2025: [1000, 2025, R] } # GF: 830,000 homes a year for $1.25B a year (S), about $1,500 a home; FTTH $800-1,500 a home passed (R: Fiber Broadband Association)
+cable_km_usd: { 2008: [27800, 2008, D], 2018: [20000, 2018, D], 2023: [40000, 2023, D] } # TIC: Trans-Pacific Express about $500M for 18,000 km (S); Hawaiki about US$300M for 15,000 km (S); Amitie EUR 250M for 6,800 km (S) x 1.08

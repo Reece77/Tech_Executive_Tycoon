@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.cities import home_region, work_region
-from tst.sim.geo.formulas import relative_row
+from tst.sim.geo.formulas import price_ratio, relative_row
 from tst.sim.geo.marketing import awareness_factors
 from tst.sim.products.models import SELLING
 from tst.sim.state import GameState
@@ -30,8 +30,17 @@ class ReachContext:
     # M10b (23.5): (product id, region) -> awareness factor from the marketing split
     marketing: Mapping[tuple[int, str], float] = field(default_factory=dict)
 
-    def price_index(self, region: str) -> float:
-        return 1.0 if region == self.home else self.indexes[region]
+    # M53 (62.1): (category, region) -> a category's own price index relative to the home region
+    category_indexes: Mapping[tuple[str, str], float] = field(default_factory=dict)
+
+    def price_index(self, region: str, category: str | None = None) -> float:
+        if region == self.home:
+            return 1.0
+        if category is not None and self.category_indexes:
+            own = self.category_indexes.get((category, region))
+            if own is not None:
+                return own
+        return self.indexes[region]
 
     def awareness_factor(self, company_id: int, region: str, product_id: int = 0) -> float:
         """x the product's marketing factor in the region (23.5), then x foreign_awareness on
@@ -91,6 +100,12 @@ def reach_context(state: GameState, balance: Balance, data: GameData) -> ReachCo
         present=presence_regions(state, regions_of, balance, data),
         neighbours={m.region: m.neighbour for m in data.region_markets},
         indexes={r: relative_row(r, home, data)[1] for r in data.region_keys},
+        category_indexes={
+            (c.key, r): float(price_ratio(r, home, data, c.key))
+            for c in data.categories
+            if c.price_index is not None
+            for r in data.region_keys
+        },
         foreign_awareness=balance.markets.foreign_awareness,
         neighbour_sellers=balance.markets.neighbour_sellers,
         marketing={

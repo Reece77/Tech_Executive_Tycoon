@@ -439,7 +439,9 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     seg_def = data.segment(seg_key)
     category_def = data.category(products[entries[0].product_id].category)
     base_churn = f.unit_base_churn(category_def, seg_def.base_churn, seg_key)
-    index = geo.price_index(region) if geo is not None and region is not None else 1.0
+    index = (
+        geo.price_index(region, category_def.key) if geo is not None and region is not None else 1.0
+    )
 
     def power(product: Product) -> float:
         return 1.0 if product.is_static else team(product).pricing_power

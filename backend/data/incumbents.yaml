@@ -2113,3 +2113,833 @@ companies:
         segments:
           enterprise: { price_cents: 2000000, share_bp: 0 }
           government: { price_cents: 20000000, share_bp: 0 }
+
+  # --- M53 telecom (formulas.md 62; data and sources: telecom.yaml) ------------------------------------
+  # Operators by region and equipment vendors, appended so earlier ids stay as they were. Before
+  # telecom.start their lines are pinned to telecom.yaml's subscribers (operators) and RAN shares
+  # (vendors), they do not decide and are not ranked (tst.sim.telecom.rivals). A line lists one region
+  # (a company in several regions has a line in each): its price is that region's (telecom.yaml ARPU,
+  # 2010 cents a month; business lines 1.5x, A; carriers' wholesale contract $1,000 in north_america x
+  # the category's index, A; a vendor's site set $45,000 x its price_mult). Quality, features and brand
+  # A (relative standing by reputation, R: J.D. Power, Opensignal). Private (no listed_from): A, follow-up.
+  # A region is one market, so a line priced far from its region's others would empty or flood after
+  # 2025: Docomo and SK Telecom are priced 1.5-1.6x East Asia's (Japan's and Korea's ARPU is about 4x
+  # China's, R) and Telcel and Telmex 0.8x North America's (Mexico's is about a quarter of the US's, R).
+  # Sprint's line stops at its merger with T-Mobile (Apr 2020) and Vodafone India's at Vodafone Idea's
+  # (Sep 2018) by telecom.yaml's last month.
+
+  - name: Verizon
+    stage: 4
+    founded_year: 1983
+    personality: premium
+    builder_skill: 16
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Verizon Wireless
+        category: mobile
+        quality: 82
+        features: 72
+        brand: 85
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 4400, share_bp: 0 }
+          telecom_business: { price_cents: 6600, share_bp: 0 }
+      - name: Fios
+        category: fixed_broadband
+        quality: 80
+        features: 70
+        brand: 75
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 5500, share_bp: 0 }
+          telecom_business: { price_cents: 9900, share_bp: 0 }
+      - name: Verizon Wholesale
+        category: wholesale
+        quality: 78
+        features: 65
+        brand: 70
+        regions: [north_america]
+        segments:
+          carriers: { price_cents: 100000, share_bp: 0 }
+
+  - name: AT&T
+    stage: 4
+    founded_year: 1983
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1300
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: AT&T Mobility
+        category: mobile
+        quality: 78
+        features: 72
+        brand: 82
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 4200, share_bp: 0 }
+          telecom_business: { price_cents: 6300, share_bp: 0 }
+      - name: AT&T Internet
+        category: fixed_broadband
+        quality: 72
+        features: 65
+        brand: 72
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 4750, share_bp: 0 }
+          telecom_business: { price_cents: 8550, share_bp: 0 }
+      - name: AT&T Wholesale
+        category: wholesale
+        quality: 76
+        features: 65
+        brand: 72
+        regions: [north_america]
+        segments:
+          carriers: { price_cents: 100000, share_bp: 0 }
+
+  - name: T-Mobile US
+    stage: 4
+    founded_year: 1994
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: T-Mobile
+        category: mobile
+        quality: 72
+        features: 74
+        brand: 72
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 3520, share_bp: 0 }
+          telecom_business: { price_cents: 5280, share_bp: 0 }
+
+  - name: Sprint
+    stage: 4
+    founded_year: 1899
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Sprint
+        category: mobile
+        quality: 65
+        features: 66
+        brand: 65
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 3680, share_bp: 0 }
+          telecom_business: { price_cents: 5520, share_bp: 0 }
+
+  - name: Comcast
+    stage: 4
+    founded_year: 1963
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Xfinity Internet
+        category: fixed_broadband
+        quality: 76
+        features: 70
+        brand: 70
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 5500, share_bp: 0 }
+          telecom_business: { price_cents: 9900, share_bp: 0 }
+
+  - name: Charter Communications
+    stage: 4
+    founded_year: 1993
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1300
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Spectrum Internet
+        category: fixed_broadband
+        quality: 72
+        features: 66
+        brand: 65
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 5000, share_bp: 0 }
+          telecom_business: { price_cents: 9000, share_bp: 0 }
+
+  - name: America Movil
+    stage: 4
+    founded_year: 2000
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Telcel
+        category: mobile
+        quality: 66
+        features: 62
+        brand: 70
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 3200, share_bp: 0 }
+          telecom_business: { price_cents: 4800, share_bp: 0 }
+      - name: Telmex Infinitum
+        category: fixed_broadband
+        quality: 64
+        features: 60
+        brand: 66
+        regions: [north_america]
+        segments:
+          telecom_consumer: { price_cents: 4000, share_bp: 0 }
+          telecom_business: { price_cents: 7200, share_bp: 0 }
+      - name: Claro
+        category: mobile
+        quality: 70
+        features: 66
+        brand: 74
+        regions: [latin_america]
+        segments:
+          telecom_consumer: { price_cents: 750, share_bp: 0 }
+          telecom_business: { price_cents: 1100, share_bp: 0 }
+      - name: Claro Internet
+        category: fixed_broadband
+        quality: 66
+        features: 62
+        brand: 68
+        regions: [latin_america]
+        segments:
+          telecom_consumer: { price_cents: 1800, share_bp: 0 }
+          telecom_business: { price_cents: 3200, share_bp: 0 }
+      - name: Claro Wholesale
+        category: wholesale
+        quality: 68
+        features: 60
+        brand: 64
+        regions: [latin_america]
+        segments:
+          carriers: { price_cents: 60000, share_bp: 0 }
+
+  - name: Vodafone
+    stage: 4
+    founded_year: 1991
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Vodafone
+        category: mobile
+        quality: 78
+        features: 72
+        brand: 82
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 1680, share_bp: 0 }
+          telecom_business: { price_cents: 2520, share_bp: 0 }
+      - name: Vodafone Broadband
+        category: fixed_broadband
+        quality: 72
+        features: 66
+        brand: 74
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 3000, share_bp: 0 }
+          telecom_business: { price_cents: 5400, share_bp: 0 }
+      - name: Vodafone Carrier Services
+        category: wholesale
+        quality: 74
+        features: 64
+        brand: 70
+        regions: [europe]
+        segments:
+          carriers: { price_cents: 80000, share_bp: 0 }
+      - name: Vodafone India
+        category: mobile
+        quality: 68
+        features: 64
+        brand: 70
+        regions: [south_southeast_asia]
+        segments:
+          telecom_consumer: { price_cents: 260, share_bp: 0 }
+          telecom_business: { price_cents: 400, share_bp: 0 }
+      - name: Vodacom
+        category: mobile
+        quality: 72
+        features: 66
+        brand: 76
+        regions: [africa]
+        segments:
+          telecom_consumer: { price_cents: 385, share_bp: 0 }
+          telecom_business: { price_cents: 605, share_bp: 0 }
+
+  - name: Vodafone Idea
+    stage: 3
+    founded_year: 2018
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 300
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Vi
+        category: mobile
+        quality: 64
+        features: 62
+        brand: 62
+        regions: [south_southeast_asia]
+        launched: [2018, 9]
+        segments:
+          telecom_consumer: { price_cents: 260, share_bp: 0 }
+          telecom_business: { price_cents: 400, share_bp: 0 }
+
+  - name: Deutsche Telekom
+    stage: 4
+    founded_year: 1995
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1300
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Telekom
+        category: mobile
+        quality: 80
+        features: 72
+        brand: 82
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 1760, share_bp: 0 }
+          telecom_business: { price_cents: 2640, share_bp: 0 }
+      - name: Telekom Broadband
+        category: fixed_broadband
+        quality: 76
+        features: 68
+        brand: 78
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 3150, share_bp: 0 }
+          telecom_business: { price_cents: 5670, share_bp: 0 }
+      - name: Telekom Global Carrier
+        category: wholesale
+        quality: 76
+        features: 64
+        brand: 72
+        regions: [europe]
+        segments:
+          carriers: { price_cents: 80000, share_bp: 0 }
+
+  - name: Orange
+    stage: 4
+    founded_year: 1988
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Orange
+        category: mobile
+        quality: 76
+        features: 70
+        brand: 78
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 1600, share_bp: 0 }
+          telecom_business: { price_cents: 2400, share_bp: 0 }
+      - name: Orange Broadband
+        category: fixed_broadband
+        quality: 74
+        features: 68
+        brand: 76
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 3000, share_bp: 0 }
+          telecom_business: { price_cents: 5400, share_bp: 0 }
+      - name: Orange Wholesale
+        category: wholesale
+        quality: 74
+        features: 64
+        brand: 72
+        regions: [europe]
+        segments:
+          carriers: { price_cents: 80000, share_bp: 0 }
+      - name: Orange Africa
+        category: mobile
+        quality: 70
+        features: 64
+        brand: 74
+        regions: [africa]
+        segments:
+          telecom_consumer: { price_cents: 350, share_bp: 0 }
+          telecom_business: { price_cents: 550, share_bp: 0 }
+      - name: Orange Wholesale Africa
+        category: wholesale
+        quality: 66
+        features: 58
+        brand: 66
+        regions: [africa]
+        segments:
+          carriers: { price_cents: 70000, share_bp: 0 }
+
+  - name: Telefonica
+    stage: 4
+    founded_year: 1924
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1100
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Movistar and O2
+        category: mobile
+        quality: 74
+        features: 70
+        brand: 76
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 1568, share_bp: 0 }
+          telecom_business: { price_cents: 2352, share_bp: 0 }
+      - name: Movistar Fibra
+        category: fixed_broadband
+        quality: 72
+        features: 66
+        brand: 72
+        regions: [europe]
+        segments:
+          telecom_consumer: { price_cents: 2850, share_bp: 0 }
+          telecom_business: { price_cents: 5130, share_bp: 0 }
+      - name: Movistar and Vivo
+        category: mobile
+        quality: 72
+        features: 66
+        brand: 74
+        regions: [latin_america]
+        segments:
+          telecom_consumer: { price_cents: 788, share_bp: 0 }
+          telecom_business: { price_cents: 1155, share_bp: 0 }
+      - name: Vivo Fibra
+        category: fixed_broadband
+        quality: 68
+        features: 62
+        brand: 68
+        regions: [latin_america]
+        segments:
+          telecom_consumer: { price_cents: 1800, share_bp: 0 }
+          telecom_business: { price_cents: 3200, share_bp: 0 }
+      - name: Telxius
+        category: wholesale
+        quality: 72
+        features: 62
+        brand: 66
+        regions: [latin_america]
+        segments:
+          carriers: { price_cents: 60000, share_bp: 0 }
+
+  - name: China Mobile
+    stage: 4
+    founded_year: 1997
+    personality: cost_leader
+    builder_skill: 15
+    target_margin_bp: 2000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: China Mobile
+        category: mobile
+        quality: 74
+        features: 68
+        brand: 80
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 1000, share_bp: 0 }
+          telecom_business: { price_cents: 1500, share_bp: 0 }
+      - name: China Mobile Broadband
+        category: fixed_broadband
+        quality: 68
+        features: 62
+        brand: 70
+        regions: [east_asia]
+        launched: [2013, 1]
+        segments:
+          telecom_consumer: { price_cents: 1235, share_bp: 0 }
+          telecom_business: { price_cents: 2185, share_bp: 0 }
+      - name: China Mobile International
+        category: wholesale
+        quality: 70
+        features: 60
+        brand: 66
+        regions: [east_asia]
+        segments:
+          carriers: { price_cents: 60000, share_bp: 0 }
+
+  - name: China Telecom
+    stage: 4
+    founded_year: 2002
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: China Telecom Mobile
+        category: mobile
+        quality: 70
+        features: 64
+        brand: 72
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 950, share_bp: 0 }
+          telecom_business: { price_cents: 1425, share_bp: 0 }
+      - name: China Telecom Broadband
+        category: fixed_broadband
+        quality: 74
+        features: 64
+        brand: 76
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 1300, share_bp: 0 }
+          telecom_business: { price_cents: 2300, share_bp: 0 }
+      - name: China Telecom Global
+        category: wholesale
+        quality: 72
+        features: 60
+        brand: 68
+        regions: [east_asia]
+        segments:
+          carriers: { price_cents: 60000, share_bp: 0 }
+
+  - name: China Unicom
+    stage: 4
+    founded_year: 1994
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: China Unicom
+        category: mobile
+        quality: 68
+        features: 64
+        brand: 70
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 950, share_bp: 0 }
+          telecom_business: { price_cents: 1425, share_bp: 0 }
+      - name: China Unicom Broadband
+        category: fixed_broadband
+        quality: 68
+        features: 60
+        brand: 68
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 1235, share_bp: 0 }
+          telecom_business: { price_cents: 2185, share_bp: 0 }
+
+  - name: NTT Docomo
+    stage: 4
+    founded_year: 1991
+    personality: premium
+    builder_skill: 16
+    target_margin_bp: 2000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: NTT Docomo
+        category: mobile
+        quality: 84
+        features: 74
+        brand: 82
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 1600, share_bp: 0 }
+          telecom_business: { price_cents: 2400, share_bp: 0 }
+
+  - name: SK Telecom
+    stage: 4
+    founded_year: 1984
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: SK Telecom
+        category: mobile
+        quality: 84
+        features: 76
+        brand: 80
+        regions: [east_asia]
+        segments:
+          telecom_consumer: { price_cents: 1500, share_bp: 0 }
+          telecom_business: { price_cents: 2250, share_bp: 0 }
+
+  - name: Reliance Jio
+    stage: 3
+    founded_year: 2007
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Jio
+        category: mobile
+        quality: 74
+        features: 72
+        brand: 70
+        regions: [south_southeast_asia]
+        launched: [2016, 9]
+        segments:
+          telecom_consumer: { price_cents: 195, share_bp: 0 }
+          telecom_business: { price_cents: 300, share_bp: 0 }
+      - name: JioFiber
+        category: fixed_broadband
+        quality: 70
+        features: 64
+        brand: 66
+        regions: [south_southeast_asia]
+        launched: [2019, 9]
+        segments:
+          telecom_consumer: { price_cents: 595, share_bp: 0 }
+          telecom_business: { price_cents: 1105, share_bp: 0 }
+
+  - name: Bharti Airtel
+    stage: 4
+    founded_year: 1995
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Airtel
+        category: mobile
+        quality: 72
+        features: 68
+        brand: 74
+        regions: [south_southeast_asia]
+        segments:
+          telecom_consumer: { price_cents: 273, share_bp: 0 }
+          telecom_business: { price_cents: 420, share_bp: 0 }
+      - name: Airtel Wholesale
+        category: wholesale
+        quality: 68
+        features: 60
+        brand: 64
+        regions: [south_southeast_asia]
+        segments:
+          carriers: { price_cents: 40000, share_bp: 0 }
+      - name: Airtel Africa
+        category: mobile
+        quality: 66
+        features: 62
+        brand: 66
+        regions: [africa]
+        launched: [2010, 6]
+        segments:
+          telecom_consumer: { price_cents: 332, share_bp: 0 }
+          telecom_business: { price_cents: 522, share_bp: 0 }
+
+  - name: Telkomsel
+    stage: 4
+    founded_year: 1995
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Telkomsel
+        category: mobile
+        quality: 70
+        features: 64
+        brand: 74
+        regions: [south_southeast_asia]
+        segments:
+          telecom_consumer: { price_cents: 338, share_bp: 0 }
+          telecom_business: { price_cents: 520, share_bp: 0 }
+
+  - name: MTN Group
+    stage: 4
+    founded_year: 1994
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 2000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: MTN
+        category: mobile
+        quality: 70
+        features: 64
+        brand: 76
+        regions: [africa]
+        segments:
+          telecom_consumer: { price_cents: 350, share_bp: 0 }
+          telecom_business: { price_cents: 550, share_bp: 0 }
+      - name: MTN GlobalConnect
+        category: wholesale
+        quality: 66
+        features: 58
+        brand: 64
+        regions: [africa]
+        segments:
+          carriers: { price_cents: 70000, share_bp: 0 }
+
+  - name: Telstra
+    stage: 4
+    founded_year: 1975
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 2000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Telstra
+        category: mobile
+        quality: 82
+        features: 72
+        brand: 80
+        regions: [oceania]
+        segments:
+          telecom_consumer: { price_cents: 3960, share_bp: 0 }
+          telecom_business: { price_cents: 5940, share_bp: 0 }
+      - name: Telstra Broadband
+        category: fixed_broadband
+        quality: 72
+        features: 66
+        brand: 74
+        regions: [oceania]
+        segments:
+          telecom_consumer: { price_cents: 5500, share_bp: 0 }
+          telecom_business: { price_cents: 9900, share_bp: 0 }
+      - name: Telstra Wholesale
+        category: wholesale
+        quality: 74
+        features: 62
+        brand: 70
+        regions: [oceania]
+        segments:
+          carriers: { price_cents: 90000, share_bp: 0 }
+
+  - name: Optus
+    stage: 4
+    founded_year: 1981
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Optus
+        category: mobile
+        quality: 72
+        features: 68
+        brand: 70
+        regions: [oceania]
+        segments:
+          telecom_consumer: { price_cents: 3240, share_bp: 0 }
+          telecom_business: { price_cents: 4860, share_bp: 0 }
+
+  - name: Ericsson
+    stage: 4
+    founded_year: 1876
+    personality: premium
+    builder_skill: 16
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Ericsson Radio System
+        category: network_equipment
+        quality: 82
+        features: 78
+        brand: 82
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          carriers: { price_cents: 4500000, share_bp: 0 }
+
+  - name: Nokia
+    stage: 4
+    founded_year: 1865
+    personality: fast_follower
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Nokia AirScale
+        category: network_equipment
+        quality: 78
+        features: 74
+        brand: 76
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          carriers: { price_cents: 4370000, share_bp: 0 }
+
+  - name: Huawei
+    stage: 4
+    founded_year: 1987
+    personality: cost_leader
+    builder_skill: 16
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Huawei RAN
+        category: network_equipment
+        quality: 80
+        features: 80
+        brand: 74
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          carriers: { price_cents: 3830000, share_bp: 0 }
+
+  - name: ZTE
+    stage: 4
+    founded_year: 1985
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 800
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: ZTE RAN
+        category: network_equipment
+        quality: 70
+        features: 70
+        brand: 62
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          carriers: { price_cents: 3600000, share_bp: 0 }
+
+  - name: Samsung Networks
+    stage: 3
+    founded_year: 1977
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 800
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Samsung vRAN
+        category: network_equipment
+        quality: 74
+        features: 74
+        brand: 66
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          carriers: { price_cents: 4280000, share_bp: 0 }

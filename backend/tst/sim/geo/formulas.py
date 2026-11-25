@@ -78,9 +78,14 @@ def cross_region_factor(regions: int, balance: Balance) -> float:
     return max(mb.cross_region_floor, 1 - mb.cross_region_step * (regions - 1))
 
 
-def price_ratio(region: str, home: str, data: GameData) -> Fraction:
+def price_ratio(region: str, home: str, data: GameData, category: str | None = None) -> Fraction:
     """`index_region / index_home`, exactly as the data's decimals were written (19.5): money
-    is priced from it, so never from a float quotient (ADR-0003; M10r finding 5)."""
+    is priced from it, so never from a float quotient (ADR-0003; M10r finding 5). M53 (62.1): a
+    category with its own `price_index` uses that instead."""
+    if category is not None:
+        own = data.category(category).price_index
+        if own is not None:
+            return exact(own[region]) / exact(own[home])
     row, base = data.region_market(region), data.region_market(home)
     return exact(row.price_index) / exact(base.price_index)
 
@@ -99,11 +104,17 @@ def regional_d0(home_d0: float, region: str, home: str, data: GameData) -> float
 
 
 def regional_price_cents(
-    reference_cents: Cents, region: str, home: str, data: GameData, factor: float = 1.0
+    reference_cents: Cents,
+    region: str,
+    home: str,
+    data: GameData,
+    factor: float = 1.0,
+    category: str | None = None,
 ) -> Cents:
     """`p_ref x price index` (19.5), times a rival's personality price factor when given
-    (19.6): exact decimals throughout, rounded half-to-even once (M10r finding 5)."""
-    value = exact(reference_cents) * price_ratio(region, home, data) * exact(factor)
+    (19.6): exact decimals throughout, rounded half-to-even once (M10r finding 5). M53: a
+    category's own index when it has one (`price_ratio`)."""
+    value = exact(reference_cents) * price_ratio(region, home, data, category) * exact(factor)
     return max(1, round_cents(value))
 
 
