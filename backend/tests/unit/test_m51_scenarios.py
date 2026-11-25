@@ -26,7 +26,14 @@ from tst.sim.state import GameState, with_company
 from tst.sim.vehicles.models import VehicleMonth
 
 SEED = 51
-NEW = ("the_crash", "failing_chipmaker", "ev_maker", "under_controls", "platform_war", "the_dynasty")
+NEW = (
+    "the_crash",
+    "platform_war",
+    "ev_maker",
+    "failing_chipmaker",
+    "under_controls",
+    "the_dynasty",
+)
 
 
 def _fast_start(loaded: LoadedData, key: str) -> tuple[GameState, dict[tuple[int, str], int]]:
@@ -59,7 +66,7 @@ def starts(loaded: LoadedData) -> dict[str, tuple[GameState, dict[tuple[int, str
 
 def test_the_new_scenarios_follow_the_five(loaded: LoadedData) -> None:
     keys = tuple(h.key for h in loaded.game_data.historical)
-    assert keys[5:] == ("the_crash", "platform_war", "ev_maker", "failing_chipmaker", "under_controls", "the_dynasty")  # fmt: skip
+    assert keys[5:] == NEW
 
 
 @pytest.mark.parametrize("key", NEW)
@@ -103,7 +110,7 @@ def test_under_controls_is_a_chinese_foundry(loaded: LoadedData, starts) -> None
     assert fab.node == "n16"
 
 
-def test_the_phone_maker_has_a_contract_and_the_ev_maker_a_prototype(loaded: LoadedData, starts) -> None:  # type: ignore[no-untyped-def]
+def test_a_phone_contract_and_a_car_prototype(loaded: LoadedData, starts) -> None:  # type: ignore[no-untyped-def]
     phones, _ = starts["platform_war"]
     (phone,) = phones.company_products(phones.player.id)
     (contract,) = [c for c in phones.production_contracts if c.product_id == phone.id]
