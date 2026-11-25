@@ -643,7 +643,7 @@ def target_1(runs: list[Run]) -> list[tuple[str, int, int, bool]]:
 
 # --- Target 2: challenges are real ------------------------------------------------------------
 
-TARGET2_MONTHS: Final = 120  # a campaign's first ten years, to December 2019 (V1's measure)
+TARGET2_MONTHS: Final = 60  # to December 2014 (M51 decision 9: the score saturates by year 10)
 TARGET2_DROP: Final = 0.10  # each rule lowers the median score by at least this share
 # the scripted player whose plan each rule cuts into (strategies_v2, 30.6)
 TARGET2_ARMS: Final[dict[str, str]] = {
@@ -709,3 +709,34 @@ def target_2(
         hit = median(x[3] for x in out if x[0] == arm and x[1] == rule)
         rows.append((rule, float(base), float(hit), 1 - hit / base if base else 0.0))
     return rows
+
+
+# Reece's decision (2026-11-25, M51 decision 9): these rules stand as 63.2 defines them though
+# the scripted players' score does not show them; target 2 is printed and carried for them.
+TARGET2_CARRIED: Final = frozenset({"hard_rivals", "no_acquisitions", "no_automation"})
+
+
+def report(runs: list[Run], rows: list[tuple[str, float, float, float]]) -> str:
+    """63.4's targets 1 and 2 as a table (target 3 is the M30 state cache)."""
+    lines = ["63.4 target 1: sensible wins 3-8 of 10, passive at most 2", ""]
+    lines.append("| Scenario | Sensible | Passive | |")
+    lines.append("| --- | --- | --- | --- |")
+    for key, won, idle, ok in target_1([r for r in runs if r.key in NEW]):
+        lines.append(f"| {key} | {won}/10 | {idle}/10 | {'ok' if ok else 'MISS'} |")
+    lines += ["", "Rated (63.3 difficulty only):"]
+    for key, won, idle, _ in target_1([r for r in runs if r.key in FIVE]):
+        lines.append(f"- {key}: {won}/10 ({idle}/10 passive)")
+    lines += ["", f"63.4 target 2: each rule's median score drop >= {TARGET2_DROP:.0%}", ""]
+    lines.append("| Rule | Arm | Without | With | Drop | |")
+    lines.append("| --- | --- | --- | --- | --- | --- |")
+    for rule, base, hit, drop in rows:
+        verdict = "ok" if drop >= TARGET2_DROP else "carried" if rule in TARGET2_CARRIED else "MISS"
+        arm = TARGET2_ARMS[rule]
+        lines.append(f"| {rule} | {arm} | {base:.1f} | {hit:.1f} | {drop:.1%} | {verdict} |")
+    return "\n".join(lines)
+
+
+def met(runs: list[Run], rows: list[tuple[str, float, float, float]]) -> bool:
+    one = all(ok for *_, ok in target_1([r for r in runs if r.key in NEW]))
+    two = all(d >= TARGET2_DROP for r, _, _, d in rows if r not in TARGET2_CARRIED)
+    return one and two
