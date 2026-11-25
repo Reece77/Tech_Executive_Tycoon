@@ -413,6 +413,13 @@ class RoboticsRuleError(SimError):
     code = "robotics_rule"
 
 
+class TelecomRuleError(SimError):
+    """A telecom action the rules do not allow (M53, formulas.md 62). The message never names a
+    rival's auction value, a seeded auction's or ban's month, or 6G's before it comes."""
+
+    code = "telecom_rule"
+
+
 class SpaceRuleError(SimError):
     """A space action the rules do not allow (M40, formulas.md 56). The message never names a
     licence's decision month, a failure chance's draw or a seeded rule."""

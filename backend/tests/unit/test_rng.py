@@ -119,6 +119,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "negotiation": 70,  # M47
         "meetings": 71,  # M48
         "talks": 72,  # M49
+        "telecom": 73,  # M53
         "misc": 99,
     }
 

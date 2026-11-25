@@ -142,6 +142,10 @@ def insolvency(
 
             if space_holds(state, company, balance, data):  # M40 (56): space companies likewise
                 continue
+            from tst.sim.telecom.rivals import holds as telecom_holds
+
+            if telecom_holds(state, company, balance, data):  # M53 (62.4): operators likewise
+                continue
         months = company.insolvent_months + 1
         state = with_company(state, replace(company, insolvent_months=months))
         if not company.is_player:  # a rival fails after the same months; no bridges (15.1)

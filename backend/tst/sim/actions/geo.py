@@ -218,7 +218,8 @@ def default_regional_price(
 ) -> int:
     """`p_ref x price index`, the default price in a region (19.5)."""
     reference = data.category(category).market(segment).reference_price_cents
-    return gf.regional_price_cents(reference, region, home_region(state, balance, data), data)
+    home = home_region(state, balance, data)
+    return gf.regional_price_cents(reference, region, home, data, category=category)
 
 
 def launch_problem(

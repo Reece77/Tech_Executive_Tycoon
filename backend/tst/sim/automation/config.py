@@ -123,6 +123,12 @@ ONE_OFF_ACTIONS: Final = frozenset(
         "build_plant",
         "build_cell_plant",  # M38 (49.2)
         "build_charging_network",  # M38 (49.5)
+        "build_towers",  # M53 (62.1): networks, bids and rip-and-replace are one-offs
+        "add_radios",
+        "build_fibre",
+        "build_cable",
+        "bid_spectrum",
+        "replace_radios",
         "build_fab",
         "build_mine",
         "build_refinery",

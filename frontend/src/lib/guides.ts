@@ -243,6 +243,15 @@ export const GUIDES: Record<string, Guide> = {
       'A constellation serves a Satellite broadband line: a region opens once a shell is complete over it and you hold a licence there. It is capital-heavy: expect most of a decade to pay back.',
     ],
   },
+  telecom: {
+    title: 'Telecom',
+    path: 'products/telecom',
+    what: "Mobile and fixed broadband networks: subscribers and coverage by region and generation, capacity, spectrum and its auctions, towers, radios, fibre and subsea cables, equipment by vendor and bans, and each network's payback.",
+    start: [
+      "A mobile line sells only where your sites and spectrum reach: win spectrum at auction, build towers with a generation's radios, then make a Mobile line from Products.",
+      'Networks are capital-heavy: a national network takes years to pay back. 5G needs mid-band spectrum, and a ban on a vendor forces you to replace its radios by a deadline.',
+    ],
+  },
   government: {
     title: 'Government',
     path: 'products/government',

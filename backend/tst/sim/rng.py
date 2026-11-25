@@ -156,6 +156,11 @@ STREAM_IDS: Final = MappingProxyType(
         # month the talk opens; (kind index, subject id, turn, 1) a rival approach's retention
         # draw when a one-to-one ends
         "talks": 72,
+        # M53 (formulas.md 62): (0, 0, year, region_index) a region's subscription growth after
+        # 2025; (0, 1) 6G's first month; (0, 2, area, n, ...) an area's seeded auctions; (0, 3,
+        # area) a seeded ban; (1, auction_id) an auction's rivals' values when it runs (never
+        # stored)
+        "telecom": 73,
         "misc": 99,
     }
 )

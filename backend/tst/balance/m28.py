@@ -9,7 +9,8 @@ the guard compares the branch's against it.
 
 M40's space companies (appended incumbents, held to the history before 2026) write their own
 events and books to a series of their own, `space`, and later companies' ids are numbered as
-main numbers them, so the five earlier series still equal main's (56.4 target 1).
+main numbers them, so the five earlier series still equal main's (56.4 target 1). M53's telecom
+companies, appended after them, likewise write to `telecom` (62.5 target 1).
 """
 
 from __future__ import annotations
@@ -39,10 +40,11 @@ HISTORY_FILE: Final = (
 FIRST_YEAR: Final = 2010
 LAST_HISTORY_TURN: Final = 191  # December 2025
 SPACE: Final = "space"  # M40: the space companies' own events and books
-SERIES: Final = ("prices", "wafer", "capacity", "events", "books", SPACE)
+TELECOM: Final = "telecom"  # M53: the telecom companies' own events and books
+SERIES: Final = ("prices", "wafer", "capacity", "events", "books", SPACE, TELECOM)
 
 type Fingerprint = dict[str, dict[str, str]]  # series -> year -> sha256
-type Normalise = Callable[[str, str, tuple[str, ...], int, int], str]
+type Normalise = Callable[..., str]
 
 
 @cache
@@ -104,6 +106,13 @@ def _space_ids(game: Game) -> frozenset[int]:
     return frozenset(c.id for c in game.state.companies if is_space_rival(c, data))
 
 
+def _telecom_ids(game: Game) -> frozenset[int]:
+    from tst.sim.telecom.data import is_telecom_rival
+
+    data = game.loaded.game_data
+    return frozenset(c.id for c in game.state.companies if is_telecom_rival(c, data))
+
+
 def _owner(line: str, series: str) -> int | None:
     """The company id an events or books line belongs to (None for another series)."""
     parts = line.split("|")
@@ -126,6 +135,15 @@ def _numbered(
     return normalise(line, series, names, shift, first)
 
 
+def _keep(game: Game, names: tuple[str, ...]) -> tuple[str, ...]:
+    """M53: other companies' names that begin with a held company's ("Huawei Ascend", an
+    entrant, against M53's Huawei), so their market-news items are not taken for the held one's."""
+    data = game.loaded.game_data
+    held = set(names)
+    others = {c.name for c in data.incumbents} | {e.name for e in data.entrants}
+    return tuple(sorted(n for n in others - held if any(n.startswith(h + " ") for h in names)))
+
+
 def history_fingerprint(seed: int, last_turn: int = LAST_HISTORY_TURN) -> Fingerprint:
     """41.8 target 1: a do-nothing game's series to `last_turn`, hashed by year (module
     docstring for M40's space companies)."""
@@ -133,8 +151,15 @@ def history_fingerprint(seed: int, last_turn: int = LAST_HISTORY_TURN) -> Finger
 
     game = start_game(loaded(), seed)
     space = _space_ids(game)
-    names = tuple(c.name for c in game.state.companies if c.id in space)
-    first = max(space) + 1 if space else 0
+    telecom = _telecom_ids(game)
+    held = space | telecom
+    names = tuple(c.name for c in game.state.companies if c.id in held)
+    first = max(held) + 1 if held else 0
+    keep = _keep(game, names)
+
+    def normalise(line: str, series: str, n: tuple[str, ...], shift: int, f: int) -> str:
+        return _normalise(line, series, n, shift, f, keep)
+
     hashes: dict[str, dict[int, hashlib._Hash]] = {s: {} for s in SERIES}
     while game.state.turn <= last_turn:
         turn = game.state.turn
@@ -144,14 +169,16 @@ def history_fingerprint(seed: int, last_turn: int = LAST_HISTORY_TURN) -> Finger
         for series, lines in _month_lines(game, game.last_result, turn).items():
             h = hashes[series].setdefault(year, hashlib.sha256())
             hs = hashes[SPACE].setdefault(year, hashlib.sha256())
+            ht = hashes[TELECOM].setdefault(year, hashlib.sha256())
             for line in lines:
                 owner = _owner(line, series)
-                if owner in space:
-                    hs.update(f"{series}|{line}".encode())
-                    hs.update(b"\n")
+                if owner in held:
+                    own = hs if owner in space else ht
+                    own.update(f"{series}|{line}".encode())
+                    own.update(b"\n")
                     continue
-                if space and owner is not None:
-                    line = _numbered(line, series, names, len(space), first, _normalise)
+                if held and owner is not None:
+                    line = _numbered(line, series, names, len(held), first, normalise)
                 h.update(line.encode())
                 h.update(b"\n")
     return {s: {str(y): h.hexdigest() for y, h in sorted(ys.items())} for s, ys in hashes.items()}

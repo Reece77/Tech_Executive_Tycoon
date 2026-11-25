@@ -612,7 +612,9 @@ def enter_region(
                     state, ProductSegment(product.id, seg, price, added_turn=state.turn)
                 )
             continue
-        price = gf.regional_price_cents(reference, region, home, data, factor)  # M10r
+        price = gf.regional_price_cents(
+            reference, region, home, data, factor, category=product.category
+        )  # M10r; M53: a category's own index
         state = with_regional_segment(
             state, RegionalSegment(product.id, region, seg, price, added_turn=state.turn)
         )
@@ -685,6 +687,7 @@ def rival_month(
     entries: list[LedgerEntry] = []
     from tst.sim.robotics.rivals import holds as robot_holds
     from tst.sim.space.rivals import holds as space_holds
+    from tst.sim.telecom.rivals import holds as telecom_holds
     from tst.sim.vehicles.rivals import holds
 
     for company in state.rivals():
@@ -699,6 +702,8 @@ def rival_month(
         if pharma_holds(state, company, balance, data):  # M42 (55.5): drug makers likewise
             continue
         if space_holds(state, company, balance, data):  # M40 (56): space companies likewise
+            continue
+        if telecom_holds(state, company, balance, data):  # M53 (62.4): operators likewise
             continue
         gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)

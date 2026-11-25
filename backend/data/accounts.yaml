@@ -8,6 +8,7 @@ accounts:
   - { code: 1200_prepaid, name: Prepaid expenses, type: asset }
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
   - { code: 1520_mineral_properties, name: Mineral properties, type: asset } # M19 (35.2-35.3): a mine's capex and its project's moved exploration spend, less units-of-production depletion credited here
+  - { code: 1540_spectrum_licences, name: Spectrum licences, type: asset } # M53 (62.2): spectrum won at auction and renewals, less straight-line amortization credited here
   - { code: 1530_tool_inventory, name: Tool inventory, type: asset } # M33 (47.2, 47.4): lithography tools held and not yet in a fab: bought from ASML into stock, or made by the player's own tool line at cost
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
@@ -62,6 +63,7 @@ accounts:
   - { code: 6500_research_development, name: Research and development, type: expense }
   - { code: 6600_exploration, name: Exploration, type: expense } # M18 (34.2): desk studies, licences, surveys, sampling, drilling, estimates, feasibility and permits, expensed as spent
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
+  - { code: 6760_spectrum_amortization, name: Spectrum amortization, type: expense } # M53 (62.2): a licence's price over its term
   - { code: 6750_depletion, name: Depletion, type: expense } # M19 (35.3): mineral properties' units-of-production depletion, and write-offs at closure
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900

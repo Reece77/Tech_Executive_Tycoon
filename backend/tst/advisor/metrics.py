@@ -121,6 +121,14 @@ METRICS: dict[str, MetricDef] = {
             "constellation",
             "A constellation's cumulative cash flow",
         ),
+        # v6 (M53): a region's network payback
+        _m(
+            "network_payback",
+            "Network payback",
+            "cents",
+            "region",
+            "A region's network's cumulative cash flow",
+        ),
         # v5 (M44): a bid's score band
         _m("bid_score", "Score band", "points", "bid", "A government bid's weighted score"),
         # v6 (M47): where a counterpart's limit lies, as revealed (58.2)
