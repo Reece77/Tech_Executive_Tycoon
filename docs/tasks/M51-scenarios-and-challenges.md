@@ -70,6 +70,14 @@ At December 2019: 685 -> 31, 25, 633 (8%), 684, and acquirer 678.5 -> 684.5, ceo
 10. **Target 3.** Golden snapshots unchanged; M30's state cache unchanged (nightly run 45611330589 dispatched on the branch: every 360-month run identical to the fixture; its only failure was M51's own target test on a commit before the EV maker's deadline moved, 10/10 there, 6/10 after). `GameMode` gained `challenges`: M45's dynasty digest and M37's pre-2040 digest leave the (empty) field out, as M37 left out `length` (the dynasty campaign carries a mode record); nothing else in their runs changes.
 11. **CI guards met on the way:** `multiplier` is a forbidden API key (hidden multipliers never leave the engine), so the results' field is `score_mult`; the score's points moved from the sim to `tst.api.modes_views.score_points` (the money and platform-maths guards); every historical scenario has a win achievement (six added: 49 in all).
 12. **After merging m53-done** (`tools/m51_targets.py` on the merged code, seeds 1-10): every reading of targets 1 and 2 identical to decision 6's and 9's (the crash 5/10, the platform war 6, the EV maker 6, the chipmaker 6, Under controls 6, the dynasty 4, passive 0 each; the five rated as before; target 2's six drops unchanged). The merged branch's nightly was dispatched again for M30's state cache.
+13. **M9's target 5 (rival spread) fails after merging m53-done, and fails the same on a clean `main`** (CLAUDE.md §9 rule 3). The merged branch's nightly 45682183319 failed only `tests/balance/test_m9_balance.py::test_target_5_rivals_spread`; its other 18 tests in that shard passed, the other shards passed, and M30's state cache is unchanged. Re-run on `main` at 67620891 (M53's merge) in a separate worktree:
+
+    | Code | Seeds fully covered | Missing cell on every seed |
+    | --- | --- | --- |
+    | `main` 67620891 | 0/10 | `('africa', 'fixed_broadband')` |
+    | m51-scenarios 880a8e92 | 0/10 | `('africa', 'fixed_broadband')` |
+
+    M53's new `fixed_broadband` category has no live rival in Africa in a do-nothing 2010 campaign, which M51 does not change. Not M51's: the fix is M53's follow-up (an African fixed-broadband rival, or M9's wanted cells limited to the categories each region sells), for the product manager's post-merge review. Not added to `known_misses.py`.
 
 ## Follow-ups
 
