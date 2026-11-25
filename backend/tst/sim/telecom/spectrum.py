@@ -96,7 +96,7 @@ def _from_def(d: AuctionDef, auction_id: int, scale: float) -> Auction:
         band=d.band,
         mhz=d.mhz,
         blocks=d.blocks,
-        reserve_cents=max(1, round(d.reserve_cents * scale)),
+        reserve_cents=max(1, round(d.reserve_cents * scale / d.blocks)),  # a block
         turn=d.turn,
         term_years=d.term_years,
         obligation=d.obligation,

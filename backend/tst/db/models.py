@@ -23,9 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = (
-    67  # M53: 0067; M50: 0066; M47: 0065; M25: 0040; M17: 0041; M18: 0042; M19: 0043
-)  # M26: 0044; M20: 0045
+SCHEMA_VERSION = 67  # M53: 0067; M50: 0066; M47: 0065; M25: 0040; M17: 0041; M18: 0042; M19: 0043  # M26: 0044; M20: 0045
 # M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
 # M34: 0055; M33: 0056; M32: 0057_m32; M38: 0058_m38; M41: 0059_m41; M37: 0060_m37; M39: 0061_m39

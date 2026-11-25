@@ -213,7 +213,7 @@ regions:
       - { key: india, label: India, share: [0.56, R] } # 1,396M of about 2,500M
       - { key: indonesia, label: Indonesia, share: [0.11, R] } # 274M
       - { key: pakistan, label: Pakistan, share: [0.09, R] } # 225M
-      - { key: rest_of_south_asia, label: Rest of South and Southeast Asia, share: [0.24, D] }
+      - { key: rest_of_south_asia, label: Rest of South and Southeast Asia, share: [0.24, D] } # D: the region's people less India, Indonesia and Pakistan (WB)
 
   - key: latin_america
     mobile:
@@ -240,7 +240,7 @@ regions:
     sites_full: [120000, A] # American Tower 47,081 sites in Latin America (AMT S), one of several tower companies: about 120,000 a national operator across the region (A)
     areas:
       - { key: brazil, label: Brazil, share: [0.40, R] } # 213M of about 530M
-      - { key: rest_of_latin_america, label: Rest of Latin America, share: [0.60, D] }
+      - { key: rest_of_latin_america, label: Rest of Latin America, share: [0.60, D] } # D: the region less Brazil (WB)
 
   - key: africa
     mobile:
@@ -268,7 +268,7 @@ regions:
     areas:
       - { key: nigeria, label: Nigeria, share: [0.15, R] } # 206M of about 1,340M
       - { key: south_africa, label: South Africa, share: [0.044, R] } # 59M
-      - { key: rest_of_africa, label: Rest of Africa, share: [0.806, D] }
+      - { key: rest_of_africa, label: Rest of Africa, share: [0.806, D] } # D: the region less Nigeria and South Africa (WB)
 
   - key: oceania
     mobile:
@@ -295,7 +295,7 @@ regions:
     sites_full: [12000, R] # Telstra about 10,000 mobile sites (R) + New Zealand
     areas:
       - { key: australia, label: Australia, share: [0.60, R] } # 26M of about 43M
-      - { key: rest_of_oceania, label: New Zealand and the Pacific, share: [0.40, D] }
+      - { key: rest_of_oceania, label: New Zealand and the Pacific, share: [0.40, D] } # D: the region less Australia (WB)
 
 # Mobile data a subscription a month, world, GB (R: Ericsson Mobility Reports; MB S: 1.5B mobile
 # broadband subscriptions of 6.6B at end 2012, growing 50% a year).
@@ -552,8 +552,8 @@ auctions:
     mhz: [62, R] # blocks A-E, 698-806 MHz (US08 S); 62 MHz licensed (R)
     blocks: [10, A]
     month: "2008-03" # US08: bidding from 24 Jan 2008, concluded Mar 2008 (S)
-    gross_usd: [19.592e9, 2008, S] # US08: "In total, Auction 73 raised $19.592 billion" (S)
-    reserve_usd: [10.0e9, 2008, S] # US08: "just over $10 billion" for all five blocks (S)
+    gross_usd: [19592000000, 2008, S] # US08: "In total, Auction 73 raised $19.592 billion" (S)
+    reserve_usd: [10000000000, 2008, S] # US08: "just over $10 billion" for all five blocks (S)
     term_years: [10, R]
     obligation: [0.4, R] # R: 700 MHz build-out, 35-40% of population in 4 years
     obligation_years: [4, R]
@@ -566,8 +566,8 @@ auctions:
     mhz: [105, S] # SA: 105 MHz with 40 MHz set aside for new entrants (S)
     blocks: [6, A]
     month: "2008-07" # SA: concluded 23 Jul 2008 after 331 rounds (S)
-    gross_usd: [3.99e9, 2008, D] # C$4.25B (SA S) x 0.938 (FX)
-    reserve_usd: [2.0e9, 2008, A]
+    gross_usd: [3990000000, 2008, D] # C$4.25B (SA S) x 0.938 (FX)
+    reserve_usd: [2000000000, 2008, A]
     rounds: [331, S]
     term_years: [10, R]
   - key: se_2600_2008
@@ -578,8 +578,8 @@ auctions:
     mhz: [190, S]
     blocks: [9, S] # SA: nine 15-year 4G licences (S)
     month: "2008-05" # SA: 16 days, ended 8 May 2008 (S)
-    gross_usd: [0.3186e9, 2008, D] # SEK 2,099,450,000 (SA S) / 6.59 (FX)
-    reserve_usd: [0.0076e9, 2008, D] # SA: total required minimum bids SEK 50 million (S)
+    gross_usd: [318600000, 2008, D] # SEK 2,099,450,000 (SA S) / 6.59 (FX)
+    reserve_usd: [7600000, 2008, D] # SA: total required minimum bids SEK 50 million (S)
     term_years: [15, S]
   - key: de_2010
     label: Germany 2010 multiband auction (800 MHz-2.6 GHz)
@@ -589,8 +589,8 @@ auctions:
     mhz: [360, R]
     blocks: [12, A]
     month: "2010-05" # SA: the highest bid EUR 1,213M for two 800 MHz blocks; the auction ended 20 May 2010 (R)
-    gross_usd: [5.81e9, 2010, D] # EUR 4.38B (R: BNetzA) x 1.327 (FX)
-    reserve_usd: [2.9e9, 2010, A]
+    gross_usd: [5810000000, 2010, D] # EUR 4.38B (R: BNetzA) x 1.327 (FX)
+    reserve_usd: [2900000000, 2010, A]
     rounds: [224, R]
     term_years: [15, R]
     obligation: [0.9, R] # R: rural 800 MHz coverage first
@@ -604,8 +604,8 @@ auctions:
     mhz: [30, A]
     blocks: [4, A]
     month: "2010-05" # ITSA: 34 days, 183 rounds (S)
-    gross_usd: [14.81e9, 2010, D] # Rs 677B (ITSA S) / 45.7 (FX)
-    reserve_usd: [7.4e9, 2010, A]
+    gross_usd: [14810000000, 2010, D] # Rs 677B (ITSA S) / 45.7 (FX)
+    reserve_usd: [7400000000, 2010, A]
     rounds: [183, S]
     term_years: [20, S] # ITSA: "valid for a period of 20 years" (S)
     winners: { Bharti Airtel: 1, Vodafone: 1 } # ITSA: Airtel Rs 123B in 13 circles (S); Vodafone (R)
@@ -617,8 +617,8 @@ auctions:
     mhz: [40, A]
     blocks: [2, A]
     month: "2010-06" # R: ended 11 Jun 2010
-    gross_usd: [8.42e9, 2010, D] # Rs 385B (ITSA S) / 45.7 (FX)
-    reserve_usd: [4.2e9, 2010, A]
+    gross_usd: [8420000000, 2010, D] # Rs 385B (ITSA S) / 45.7 (FX)
+    reserve_usd: [4200000000, 2010, A]
     term_years: [20, S]
     winners: { Reliance Jio: 1 } # R: Infotel Broadband (later Jio) won BWA in all 22 circles; Airtel Rs 33.14B in 4 circles (S)
   - key: nl_2012
@@ -629,8 +629,8 @@ auctions:
     mhz: [255, A]
     blocks: [8, A]
     month: "2012-12" # TELE2: concluded 14 Dec 2012 (S)
-    gross_usd: [4.88e9, 2012, D] # EUR 3.8B (TELE2 S) x 1.285 (FX)
-    reserve_usd: [2.4e9, 2012, A]
+    gross_usd: [4880000000, 2012, D] # EUR 3.8B (TELE2 S) x 1.285 (FX)
+    reserve_usd: [2400000000, 2012, A]
     term_years: [17, R]
     winners: { Vodafone: 3, Deutsche Telekom: 2 } # TELE2: KPN, Vodafone about EUR 1.3B each, T-Mobile EUR 900M, Tele2 EUR 161M (S)
   - key: uk_4g_2013
@@ -641,8 +641,8 @@ auctions:
     mhz: [250, R]
     blocks: [6, A]
     month: "2013-02" # R: results 20 Feb 2013
-    gross_usd: [3.66e9, 2013, D] # GBP 2,341,113,000 (SA S) x 1.564 (FX)
-    reserve_usd: [2.03e9, 2013, R] # R: reserves totalled about GBP 1.3B
+    gross_usd: [3660000000, 2013, D] # GBP 2,341,113,000 (SA S) x 1.564 (FX)
+    reserve_usd: [2030000000, 2013, R] # R: reserves totalled about GBP 1.3B
     term_years: [20, R]
     obligation: [0.98, S] # SA: O2's 800 MHz "coverage obligation lot" (S); R: 98% indoor by 2017
     obligation_years: [4, R]
@@ -655,8 +655,8 @@ auctions:
     mhz: [100, A]
     blocks: [8, A]
     month: "2014-02" # ITSA: 10 days, 68 rounds (S)
-    gross_usd: [10.03e9, 2014, D] # Rs 612B (ITSA S) / 61.0 (FX)
-    reserve_usd: [5.0e9, 2014, A]
+    gross_usd: [10030000000, 2014, D] # Rs 612B (ITSA S) / 61.0 (FX)
+    reserve_usd: [5000000000, 2014, A]
     rounds: [68, S]
     term_years: [20, S]
     winners: { Bharti Airtel: 3, Vodafone: 2, Reliance Jio: 1 } # ITSA (S: the winners); shares A
@@ -668,8 +668,8 @@ auctions:
     mhz: [65, R]
     blocks: [10, A]
     month: "2015-01" # AWS3: completed 29 Jan 2015 (S)
-    gross_usd: [44.9e9, 2015, R] # AWS3: net bids $41,329,673,325 (S); gross $44.9B (R)
-    reserve_usd: [22.0e9, 2015, A]
+    gross_usd: [44900000000, 2015, R] # AWS3: net bids $41,329,673,325 (S); gross $44.9B (R)
+    reserve_usd: [22000000000, 2015, A]
     rounds: [341, R]
     term_years: [12, R]
     winners: { AT&T: 4, Verizon: 2 } # VZ: Verizon $10.4B (S); AT&T about $18.2B (R)
@@ -681,8 +681,8 @@ auctions:
     mhz: [100, A]
     blocks: [8, A]
     month: "2015-03" # ITSA: concluded 25 Mar 2015 after 19 days and 115 rounds (S)
-    gross_usd: [17.11e9, 2015, D] # Rs 109,874 crore (ITSA S) / 64.2 (FX)
-    reserve_usd: [8.5e9, 2015, A]
+    gross_usd: [17110000000, 2015, D] # Rs 109,874 crore (ITSA S) / 64.2 (FX)
+    reserve_usd: [8500000000, 2015, A]
     rounds: [115, S]
     term_years: [20, S]
     winners: { Bharti Airtel: 3, Vodafone: 2, Reliance Jio: 1 }
@@ -694,8 +694,8 @@ auctions:
     mhz: [60, S] # FREE: six 5 MHz duplex bands (S)
     blocks: [6, S]
     month: "2015-11" # FREE: 16-17 Nov 2015 (S)
-    gross_usd: [3.10e9, 2015, D] # 6 x EUR 466M (FREE S: Free paid EUR 932M for two) = EUR 2.796B x 1.110 (FX)
-    reserve_usd: [2.77e9, 2015, D] # FREE: EUR 416M a band (S) x 6 x 1.110
+    gross_usd: [3100000000, 2015, D] # 6 x EUR 466M (FREE S: Free paid EUR 932M for two) = EUR 2.796B x 1.110 (FX)
+    reserve_usd: [2770000000, 2015, D] # FREE: EUR 416M a band (S) x 6 x 1.110
     term_years: [20, R]
     winners: { Orange: 2 } # R: Orange two, SFR two, Free two (S)
   - key: us_600_2017
@@ -706,8 +706,8 @@ auctions:
     mhz: [70, S] # US16: 84 MHz cleared, 70 MHz licensed (S)
     blocks: [7, A]
     month: "2017-03" # US16: bidding ended 30 Mar 2017 (S)
-    gross_usd: [19.8e9, 2017, S] # US16: "The auction raised $19.8 billion" (S)
-    reserve_usd: [9.9e9, 2017, A]
+    gross_usd: [19800000000, 2017, S] # US16: "The auction raised $19.8 billion" (S)
+    reserve_usd: [9900000000, 2017, A]
     term_years: [12, R]
     obligation: [0.4, R] # R: 47 CFR 27.14, 40% of population in 6 years
     obligation_years: [6, R]
@@ -720,8 +720,8 @@ auctions:
     mhz: [190, S] # SA: 40 MHz at 2.3 GHz and 150 MHz at 3.4 GHz (S)
     blocks: [6, A]
     month: "2018-04" # SA: results 13 Apr 2018 (S)
-    gross_usd: [1.83e9, 2018, D] # GBP 1,369,879,000 (SA S) x 1.335 (FX)
-    reserve_usd: [0.9e9, 2018, A]
+    gross_usd: [1830000000, 2018, D] # GBP 1,369,879,000 (SA S) x 1.335 (FX)
+    reserve_usd: [900000000, 2018, A]
     term_years: [20, R]
     winners: { Telefonica: 2, Vodafone: 2 } # SA: O2 GBP 523.6M, Vodafone 378.24M, EE 303.594M, Three 164.429M (S)
   - key: kr_5g_2018
@@ -732,8 +732,8 @@ auctions:
     mhz: [280, R]
     blocks: [28, R]
     month: "2018-06" # R: 15-18 Jun 2018
-    gross_usd: [3.29e9, 2018, D] # KRW 3.62T (R: MSIT) / 1,100 (FX)
-    reserve_usd: [2.98e9, 2018, D] # KRW 3.28T (R) / 1,100
+    gross_usd: [3290000000, 2018, D] # KRW 3.62T (R: MSIT) / 1,100 (FX)
+    reserve_usd: [2980000000, 2018, D] # KRW 3.28T (R) / 1,100
     term_years: [10, R]
     winners: { SK Telecom: 10 } # R: SKT 100 MHz for KRW 1.43T
   - key: it_5g_2018
@@ -744,8 +744,8 @@ auctions:
     mhz: [200, R]
     blocks: [4, R]
     month: "2018-10" # R: ended 2 Oct 2018
-    gross_usd: [7.74e9, 2018, D] # EUR 6.55B (R: MISE) x 1.181 (FX)
-    reserve_usd: [2.95e9, 2018, D] # the government budgeted about EUR 2.5B (R) x 1.181
+    gross_usd: [7740000000, 2018, D] # EUR 6.55B (R: MISE) x 1.181 (FX)
+    reserve_usd: [2950000000, 2018, D] # the government budgeted about EUR 2.5B (R) x 1.181
     rounds: [171, R]
     term_years: [19, R]
     winners: { Vodafone: 2 } # R: TIM and Vodafone about EUR 2.4B each
@@ -757,8 +757,8 @@ auctions:
     mhz: [125, R]
     blocks: [5, A]
     month: "2018-12" # R: Nov-Dec 2018
-    gross_usd: [0.638e9, 2018, D] # A$853M (R: ACMA) x 0.748 (FX)
-    reserve_usd: [0.32e9, 2018, A]
+    gross_usd: [638000000, 2018, D] # A$853M (R: ACMA) x 0.748 (FX)
+    reserve_usd: [320000000, 2018, A]
     term_years: [17, R]
     winners: { Telstra: 2, Optus: 1 } # R: Telstra A$386M, TPG A$263M, Optus A$185M
   - key: de_5g_2019
@@ -769,8 +769,8 @@ auctions:
     mhz: [420, R]
     blocks: [41, R]
     month: "2019-06" # R: 19 Mar-12 Jun 2019
-    gross_usd: [7.34e9, 2019, D] # EUR 6.55B (R: BNetzA) x 1.12 (FX)
-    reserve_usd: [3.6e9, 2019, A]
+    gross_usd: [7340000000, 2019, D] # EUR 6.55B (R: BNetzA) x 1.12 (FX)
+    reserve_usd: [3600000000, 2019, A]
     rounds: [497, R]
     term_years: [21, R]
     obligation: [0.98, R] # R: 98% of households per state at 100 Mbit/s by end 2022
@@ -784,8 +784,8 @@ auctions:
     mhz: [70, R]
     blocks: [7, A]
     month: "2019-04" # R: 12 Mar-4 Apr 2019
-    gross_usd: [2.62e9, 2019, D] # C$3.47B (R: ISED) x 0.754; ROG: Rogers C$1,725,006,000 (S)
-    reserve_usd: [1.3e9, 2019, A]
+    gross_usd: [2620000000, 2019, D] # C$3.47B (R: ISED) x 0.754; ROG: Rogers C$1,725,006,000 (S)
+    reserve_usd: [1300000000, 2019, A]
     term_years: [20, R]
   - key: us_mmwave_2020
     label: FCC Auction 103 (37, 39 and 47 GHz)
@@ -795,8 +795,8 @@ auctions:
     mhz: [3400, R]
     blocks: [34, A]
     month: "2020-03" # R: 10 Dec 2019-5 Mar 2020
-    gross_usd: [7.56e9, 2020, R]
-    reserve_usd: [3.8e9, 2020, A]
+    gross_usd: [7560000000, 2020, R]
+    reserve_usd: [3800000000, 2020, A]
     term_years: [10, R]
     winners: { Verizon: 7, AT&T: 5, T-Mobile US: 4 } # R: Verizon about $1.6B, AT&T $1.2B, T-Mobile $0.9B
   - key: fr_5g_2020
@@ -807,8 +807,8 @@ auctions:
     mhz: [310, R]
     blocks: [31, R]
     month: "2020-10" # R: main stage 29 Sep-1 Oct 2020
-    gross_usd: [3.19e9, 2020, D] # EUR 2.79B (R: Arcep) x 1.142 (FX)
-    reserve_usd: [2.48e9, 2020, D] # R: four 50 MHz blocks at EUR 350M fixed + eleven 10 MHz at EUR 70M, x 1.142
+    gross_usd: [3190000000, 2020, D] # EUR 2.79B (R: Arcep) x 1.142 (FX)
+    reserve_usd: [2480000000, 2020, D] # R: four 50 MHz blocks at EUR 350M fixed + eleven 10 MHz at EUR 70M, x 1.142
     rounds: [17, R]
     term_years: [15, R]
     winners: { Orange: 9 } # R: Orange 90 MHz for about EUR 854M
@@ -820,8 +820,8 @@ auctions:
     mhz: [280, S] # 3.7-3.98 GHz (C band (IEEE), S)
     blocks: [14, R] # R: fourteen 20 MHz blocks a partial economic area
     month: "2021-01" # R: clock phase 8 Dec 2020-15 Jan 2021
-    gross_usd: [81.17e9, 2021, R] # 5G: "The auction raised over $81 billion in total winning bids" (S); $81.17B (R)
-    reserve_usd: [20.0e9, 2021, A] # minimum opening bids not found (A: a quarter of the proceeds)
+    gross_usd: [81170000000, 2021, R] # 5G: "The auction raised over $81 billion in total winning bids" (S); $81.17B (R)
+    reserve_usd: [20000000000, 2021, A] # minimum opening bids not found (A: a quarter of the proceeds)
     rounds: [97, R]
     term_years: [15, R]
     obligation: [0.45, R] # R: 45% of population in 8 years
@@ -835,8 +835,8 @@ auctions:
     mhz: [200, R]
     blocks: [10, A]
     month: "2021-04" # R: 16 Mar-27 Apr 2021
-    gross_usd: [1.87e9, 2021, D] # GBP 1.36B (R: Ofcom) x 1.375 (FX)
-    reserve_usd: [0.9e9, 2021, A]
+    gross_usd: [1870000000, 2021, D] # GBP 1.36B (R: Ofcom) x 1.375 (FX)
+    reserve_usd: [900000000, 2021, A]
     term_years: [20, R]
     winners: { Telefonica: 3, Vodafone: 1 } # R: EE about GBP 452M, O2 448M, Three 280M, Vodafone 176M
   - key: in_2021
@@ -847,8 +847,8 @@ auctions:
     mhz: [100, A]
     blocks: [8, A]
     month: "2021-03" # R: 1-2 Mar 2021, 6 rounds
-    gross_usd: [10.53e9, 2021, D] # Rs 77,815 crore (R: DoT) / 73.9 (FX)
-    reserve_usd: [5.2e9, 2021, A]
+    gross_usd: [10530000000, 2021, D] # Rs 77,815 crore (R: DoT) / 73.9 (FX)
+    reserve_usd: [5200000000, 2021, A]
     rounds: [6, R]
     term_years: [20, S]
     winners: { Reliance Jio: 5, Bharti Airtel: 2 } # R: Jio about Rs 57,123 crore
@@ -860,8 +860,8 @@ auctions:
     mhz: [200, R]
     blocks: [20, A]
     month: "2021-07" # R: 15 Jun-23 Jul 2021
-    gross_usd: [7.11e9, 2021, D] # C$8.91B (R: ISED) x 0.798; ROG: Rogers C$3,325,600,269 (S)
-    reserve_usd: [3.5e9, 2021, A]
+    gross_usd: [7110000000, 2021, D] # C$8.91B (R: ISED) x 0.798; ROG: Rogers C$3,325,600,269 (S)
+    reserve_usd: [3500000000, 2021, A]
     term_years: [20, R]
   - key: br_5g_2021
     label: Brazil 5G auction
@@ -871,8 +871,8 @@ auctions:
     mhz: [400, R]
     blocks: [8, A]
     month: "2021-11" # R: 4-5 Nov 2021 (Telecommunications in Brazil: "In 2021 ... the auction of the 3.5 GHz spectrum", S)
-    gross_usd: [8.74e9, 2021, D] # R$47.2B (R: Anatel) / 5.40 (FX), mostly investment obligations
-    reserve_usd: [4.3e9, 2021, A]
+    gross_usd: [8740000000, 2021, D] # R$47.2B (R: Anatel) / 5.40 (FX), mostly investment obligations
+    reserve_usd: [4300000000, 2021, A]
     term_years: [20, R]
     obligation: [0.95, A] # R: coverage obligations made up most of its value
     obligation_years: [8, A]
@@ -885,8 +885,8 @@ auctions:
     mhz: [330, A]
     blocks: [33, A]
     month: "2022-08" # R: 26 Jul-1 Aug 2022, 40 rounds
-    gross_usd: [19.11e9, 2022, D] # Rs 1,50,173 crore (R: DoT) / 78.6 (FX)
-    reserve_usd: [9.5e9, 2022, A]
+    gross_usd: [19110000000, 2022, D] # Rs 1,50,173 crore (R: DoT) / 78.6 (FX)
+    reserve_usd: [9500000000, 2022, A]
     rounds: [40, R]
     term_years: [20, R]
     winners: { Reliance Jio: 19, Bharti Airtel: 9, Vodafone Idea: 4 } # JIO: pan-India 700, 3,500 MHz and 26 GHz licences (S); Jio Rs 88,078 crore, Airtel about 43,084, Vi about 18,799 (R)
@@ -898,8 +898,8 @@ auctions:
     mhz: [100, R]
     blocks: [10, A]
     month: "2022-01" # R: 5 Oct 2021-4 Jan 2022
-    gross_usd: [22.5e9, 2022, R]
-    reserve_usd: [11.0e9, 2022, A]
+    gross_usd: [22500000000, 2022, R]
+    reserve_usd: [11000000000, 2022, A]
     term_years: [15, R]
     winners: { AT&T: 4, T-Mobile US: 1 } # TMO: about $3B, second behind AT&T (S); AT&T about $9.1B (R)
 
@@ -1045,17 +1045,17 @@ cables:
   - { key: aec1, label: AEConnect, rfs: "2016-01", km: [5536, S], tbps: [52, D], regions: [north_america, europe], owners: [Aqua Comms] } # AEConnect: 13 Tbit/s a fibre pair (S) x 4 (R)
   - { key: smw5, label: SEA-ME-WE 5, rfs: "2016-12", km: [20000, S], tbps: [24, S], regions: [south_southeast_asia, africa, europe], owners: [consortium] } # SEA-ME-WE 5 (S); 36.6 Tbit/s from Sep 2019 (S)
   - { key: hawaiki, label: Hawaiki, rfs: "2018-07", km: [15000, S], tbps: [43.8, S], regions: [oceania, north_america], owners: [Hawaiki, BW Digital] } # Hawaiki Cable (S); about US$300M (S)
-  - { key: havfrue, label: Havfrue (AEC-2), rfs: "2020-12", km: [7851, S], tbps: [108, S], regions: [north_america, europe], owners: [Aqua Comms, Meta, Google, Bulk Infrastructure] }
-  - { key: dunant, label: Dunant, rfs: "2020-09", km: [6600, S], tbps: [250, S], regions: [north_america, europe], owners: [Google] }
+  - { key: havfrue, label: Havfrue (AEC-2), rfs: "2020-12", km: [7851, S], tbps: [108, S], regions: [north_america, europe], owners: [Aqua Comms, Meta, Google, Bulk Infrastructure] } # Havfrue (S)
+  - { key: dunant, label: Dunant, rfs: "2020-09", km: [6600, S], tbps: [250, S], regions: [north_america, europe], owners: [Google] } # Dunant (S)
   - { key: grace_hopper, label: Grace Hopper, rfs: "2022-09", km: [12550, S], tbps: [352, S], regions: [north_america, europe], owners: [Google] } # 6,250 + 6,300 km (S)
-  - { key: equiano, label: Equiano, rfs: "2022-09", km: [15000, S], tbps: [144, S], regions: [europe, africa], owners: [Google] }
+  - { key: equiano, label: Equiano, rfs: "2022-09", km: [15000, S], tbps: [144, S], regions: [europe, africa], owners: [Google] } # Equiano (S); part of Google's $1B Africa plan (S)
   - { key: peace, label: PEACE, rfs: "2022-11", km: [15000, S], tbps: [96, D], regions: [south_southeast_asia, africa, europe], owners: [Peace Cable International] } # up to 24 Tbit/s a fibre pair (S) x 4 (R)
   - { key: amitie, label: Amitie, rfs: "2023-06", km: [6800, S], tbps: [320, S], regions: [north_america, europe], owners: [Meta, Aqua Comms, Vodafone, Microsoft, Orange] } # EUR 250M (S); month A
   - { key: two_africa, label: 2Africa, rfs: "2025-11", km: [45000, S], tbps: [180, S], regions: [africa, europe, south_southeast_asia], owners: [Meta, China Mobile, MTN, Orange, STC, Telecom Egypt, Vodafone, WIOCC] } # 2Africa (S)
   - { key: southern_cross, label: Southern Cross, rfs: "2000-11", km: [28900, S], tbps: [92, S], regions: [oceania, north_america], owners: [Spark, Singtel, Telstra, Verizon] } # lit 92 Tbit/s in 2023 (S)
-  - { key: jupiter, label: JUPITER, rfs: "2020-08", km: [14000, R], tbps: [60, R], regions: [east_asia, south_southeast_asia, north_america], owners: [Amazon, Facebook, NTT, PLDT, SoftBank, PCCW] }
-  - { key: southern_cross_next, label: Southern Cross NEXT, rfs: "2022-07", km: [15840, R], tbps: [72, R], regions: [oceania, north_america], owners: [Spark, Singtel, Telstra, Verizon] }
-  - { key: firmina, label: Firmina, rfs: "2024-06", km: [14500, R], tbps: [240, R], regions: [north_america, latin_america], owners: [Google] }
+  - { key: jupiter, label: JUPITER, rfs: "2020-08", km: [14000, R], tbps: [60, R], regions: [east_asia, south_southeast_asia, north_america], owners: [Amazon, Facebook, NTT, PLDT, SoftBank, PCCW] } # R: TeleGeography (no Wikipedia page)
+  - { key: southern_cross_next, label: Southern Cross NEXT, rfs: "2022-07", km: [15840, R], tbps: [72, R], regions: [oceania, north_america], owners: [Spark, Singtel, Telstra, Verizon] } # R: TeleGeography (a section of Southern Cross Cable, no date or length, S)
+  - { key: firmina, label: Firmina, rfs: "2024-06", km: [14500, R], tbps: [240, R], regions: [north_america, latin_america], owners: [Google] } # R: TeleGeography (no Wikipedia page)
 
 # Content providers' share of used international capacity (R: TeleGeography: under 10% about 2010,
 # about 66% in 2021 and 71% in 2023; SMC: Google "the first non-telecoms company to build subsea
@@ -1092,10 +1092,10 @@ mergers:
 
 # --- Published market sizes (context for 62's calibration; M43a's 54.2 band) ------------------------------
 markets:
-  - { key: mobile, label: Mobile operators' service revenue, year: 2024, size_usd: [1.1e12, 2024, R] } # R: GSMA Mobile Economy
-  - { key: fixed_broadband, label: Fixed broadband service revenue, year: 2024, size_usd: [0.4e12, 2024, R] } # R
-  - { key: wholesale, label: Carrier and wholesale services, year: 2024, size_usd: [0.1e12, 2024, A] }
-  - { key: network_equipment, label: "Telecom equipment (RAN, core, access, optical, routers)", year: 2024, size_usd: [0.095e12, 2024, R] } # R: Dell'Oro about $90-95B; RAN about $35B
+  - { key: mobile, label: Mobile operators' service revenue, year: 2024, size_usd: [1100000000000, 2024, R] } # R: GSMA Mobile Economy
+  - { key: fixed_broadband, label: Fixed broadband service revenue, year: 2024, size_usd: [400000000000, 2024, R] } # R
+  - { key: wholesale, label: Carrier and wholesale services, year: 2024, size_usd: [100000000000, 2024, A] } # A: no public series (carrier services, R order of magnitude)
+  - { key: network_equipment, label: "Telecom equipment (RAN, core, access, optical, routers)", year: 2024, size_usd: [95000000000, 2024, R] } # R: Dell'Oro about $90-95B; RAN about $35B
 
 # --- Costs (62.1) --------------------------------------------------------------------------------------------
 site_civil_usd: { 2008: [150000, 2008, A], 2010: [150000, 2010, R], 2025: [200000, 2025, R] } # a new macro tower about $150k-300k (R, industry); low end: co-location

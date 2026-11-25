@@ -161,6 +161,13 @@ def screen(
     share, market = combined_share(state, deal.acquirer_id, deal.target_id, balance, data)
     deal = replace(deal, combined_share=share, market=_label(market))
     outcome = mf.antitrust_outcome(share, ab)
+    if (
+        outcome == "cleared"
+        and market is not None
+        and market[0] in balance.telecom.categories
+        and share >= balance.telecom.regulation.merger_share
+    ):  # M53 (62.4): operator consolidation is reviewed from a lower share
+        outcome = "review"
     deal, logs = _screened(state, deal, outcome, market, rng, balance)
     if state.company(deal.acquirer_id).is_player:
         logs = [*logs, screening_note(state, deal, balance, data)]
@@ -229,6 +236,15 @@ def review_month(
                 from tst.sim.regulation.strictness import merger_factor
 
                 p = min(1.0, p * merger_factor(state, deal.acquirer_id, region, balance, data))
+            category = deal.market.split("/", 1)[0]
+            if category in balance.telecom.categories:  # M53 (62.4): telecom regulators
+                from tst.sim.telecom.regulation import merger_factor as telecom_factor
+
+                tr = balance.telecom.regulation
+                line = (deal.combined_share - tr.merger_share) / (
+                    balance.antitrust.block - tr.merger_share
+                )
+                p = min(1.0, max(p, line) * telecom_factor(state, category, region, balance, data))
         name = state.company(deal.target_id).name
         if deal.blocked_draw is not None and deal.blocked_draw < p:
             deal = replace(deal, status="refused", resolved_turn=state.turn)

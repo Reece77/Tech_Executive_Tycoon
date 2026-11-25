@@ -16,7 +16,7 @@ networks give it in a region.
   subscription (telecom.yaml). Over capacity, appeal x (capacity / demand) ** congestion_k.
 - **Generations** give their feature points on the covered share they carry: a generation that
   needs mid-band (5G, 6G) gives its points in full only where mid-band coverage reaches, and the
-  low-band generation's points elsewhere.
+  points of the best generation before it that needs none (4G's) elsewhere.
 - **Fibre** passes `capacity x 1,000` homes (game scale); a fixed line sells to the share of the
   region's households it passes and to at most `fibre.max_take_up` of them.
 - **Wholesale** contracts a company can serve in a region are its spare mobile and fibre GB plus
@@ -209,20 +209,20 @@ def feature_points(net: RegionNetwork, balance: Balance, data: GameData) -> floa
         return 0.0
     f = file(data)
     best = 0.0
-    low_points = 0.0
+    low_points = 0.0  # the best generation before it that needs no mid-band (4G for 5G)
     for g in f.generations:
-        cov = net.generation_cov.get(g.key, 0.0)
-        if cov <= TINY:
-            continue
         points = g.feature_points if g.key != "g6" else balance.telecom.g6_feature_points
-        share = min(1.0, cov / net.coverage)
-        if g.mid_band_needed:
-            mid = min(1.0, net.mid_cov.get(g.key, 0.0) / net.coverage)
-            value = points * mid + low_points * max(0.0, share - mid)
-        else:
-            value = points * share
+        cov = net.generation_cov.get(g.key, 0.0)
+        if cov > TINY:
+            share = min(1.0, cov / net.coverage)
+            if g.mid_band_needed:
+                mid = min(1.0, net.mid_cov.get(g.key, 0.0) / net.coverage)
+                value = points * mid + low_points * max(0.0, share - mid)
+            else:
+                value = points * share
+            best = max(best, value)
+        if not g.mid_band_needed:
             low_points = max(low_points, points)
-        best = max(best, value)
     return best
 
 
