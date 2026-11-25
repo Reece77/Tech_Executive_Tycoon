@@ -187,6 +187,32 @@ segments:
     base_churn: 0.03
     adoption: 0.02
     reach: self_serve
+  # M53 (formulas.md 62.1): telecom subscribers and carriers. A: consumers weigh price and the
+  # network (quality: coverage and speed), brand and plans less; business lines the network most.
+  # Churn: mobile operators lose about 1-2% of subscribers a month (R: US postpaid 0.8-1%, prepaid and
+  # emerging markets 2-4%, operators' reports), fixed broadband about 1-1.5% (R). Carriers buy wholesale
+  # capacity and network equipment by contract (sales-led).
+  - key: telecom_consumer
+    label: Subscribers
+    weights: { quality: 0.30, price: 0.35, brand: 0.20, features: 0.15 }
+    outside_option: 30
+    base_churn: 0.015
+    adoption: 0.06
+    reach: self_serve
+  - key: telecom_business
+    label: Business lines
+    weights: { quality: 0.40, price: 0.25, brand: 0.20, features: 0.15 }
+    outside_option: 35
+    base_churn: 0.01
+    adoption: 0.03
+    reach: sales
+  - key: carriers
+    label: Carriers
+    weights: { quality: 0.40, price: 0.40, brand: 0.10, features: 0.10 }
+    outside_option: 40
+    base_churn: 0.02 # equipment uses replacement_months
+    adoption: 0.02
+    reach: sales
 categories:
   - key: b2b_saas
     label: B2B SaaS
@@ -782,3 +808,91 @@ categories:
     markets:
       - { segment: enterprise, addressable: 170, reference_price_cents: 2000000, hosting_cents: 600000 }
       - { segment: government, addressable: 25, reference_price_cents: 20000000, hosting_cents: 6000000 }
+
+  # --- M53 telecom (formulas.md 62.1) ---------------------------------------------------------------
+  # family telecom: scheduled rivals only (operators and vendors, incumbents.yaml), no startups, pitches
+  # or angel starts; a service line sells only where its company's networks and spectrum reach
+  # (tst.sim.telecom). growth 0: telecom.yaml sets the addressable market each month (subscriptions by
+  # region to 2025, then seeded growth; tst.sim.telecom.demand), as vehicles.yaml's, so M43a's ceilings
+  # leave these markets alone (saturation.grows). D0 below is January 2010's north_america from the data
+  # (D: 411M mobile and 109M fixed subscriptions x 0.085 x the segment split). price_index: the
+  # category's own regional index (R: ARPU by region, telecom.yaml; the regions table's 0.35-1.0 is far
+  # too narrow for telecom: India's mobile ARPU is about 1/15 of North America's). Prices a month in 2010
+  # dollars (telecom.yaml arpu: north_america $40 mobile, $45-50 fixed; business lines about 1.5x, A).
+  # hosting_cents: the costs of a subscriber other than the network (care, billing, interconnect, device
+  # subsidies and marketing; A: about 40% of ARPU, operators' EBITDA margins 30-40% with network opex of
+  # 20-25%, R); the network's sites, radios and fibre are the player's facilities.
+  - key: mobile
+    label: Mobile
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (telecom.yaml has 2008)
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 10
+    brand_constant: 150
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.35, software_engineering: 0.25, operations: 0.25, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.40, east_asia: 0.25, south_southeast_asia: 0.065, latin_america: 0.19, africa: 0.088, oceania: 0.90 } # R: telecom.yaml arpu_mobile 2020 over north_america's
+    markets:
+      - { segment: telecom_consumer, addressable: 29695000, reference_price_cents: 4000, hosting_cents: 1600 }
+      - { segment: telecom_business, addressable: 5240000, reference_price_cents: 6000, hosting_cents: 2400 }
+
+  - key: fixed_broadband
+    label: Fixed broadband
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 10
+    brand_constant: 150
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.40, operations: 0.30, software_engineering: 0.15, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.60, east_asia: 0.26, south_southeast_asia: 0.14, latin_america: 0.36, africa: 0.40, oceania: 1.10 } # R: telecom.yaml arpu_fixed 2020 over north_america's
+    markets:
+      - { segment: telecom_consumer, addressable: 8338000, reference_price_cents: 5000, hosting_cents: 2000 }
+      - { segment: telecom_business, addressable: 927000, reference_price_cents: 9000, hosting_cents: 3600 }
+
+  # wholesale (62.1): capacity sold to other operators and content providers by contract. A customer is
+  # a contract (1 Gbps in 2010, growing with telecom.capacity.contract_growth); D0 = 411M mobile
+  # subscriptions x telecom.wholesale_per_sub (900 a million, A: carrier services about $100B a year at
+  # about $1,000 a contract a month, R/A) x 0.085. A line sells where its company's networks and subsea
+  # cables have spare capacity.
+  - key: wholesale
+    label: Wholesale capacity
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 8
+    brand_constant: 100
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.45, operations: 0.30, security: 0.15, software_engineering: 0.10 }
+    price_index: { north_america: 1.0, europe: 0.80, east_asia: 0.60, south_southeast_asia: 0.40, latin_america: 0.60, africa: 0.70, oceania: 0.90 } # A: transit and wavelength prices by region
+    markets:
+      - { segment: carriers, addressable: 31441, reference_price_cents: 100000, hosting_cents: 30000 }
+
+  # network_equipment (62.3): a site's radios and baseband, sold once a replacement cycle (units,
+  # replacement_months 84: radios replaced about every 7 years, A). D0 = 411M mobile subscriptions x
+  # telecom.equipment_sites_per_sub (0.0011 site sets a subscription, A: about 7M macro sites worldwide
+  # for about 6.5B subscriptions, R) x 0.085, set each month from the data like the services'. Price
+  # $45,000 a site set (A: R industry $30k-70k); rivals' cost of goods 60% of their price (A: vendors'
+  # gross margins about 40%, R). The player's own line is a hardware line (hardware.bom) on its chips.
+  - key: network_equipment
+    label: Network equipment
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.6
+    scope: 10
+    brand_constant: 150
+    launch_quality: 35
+    revenue_model: units
+    rival_cost_share: 0.60
+    dev_weights: { hardware_design: 0.35, chip_design: 0.25, software_engineering: 0.25, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.95, east_asia: 0.80, south_southeast_asia: 0.80, latin_america: 0.90, africa: 0.90, oceania: 1.0 } # A: Chinese vendors' prices in Asia
+    markets:
+      - { segment: carriers, addressable: 38429, reference_price_cents: 4500000, hosting_cents: 2700000, replacement_months: 84 }

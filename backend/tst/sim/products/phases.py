@@ -26,6 +26,7 @@ from tst.sim.facilities import cloud, compute
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finance import macro
 from tst.sim.founder.effects import consumer_brand
+from tst.sim.geo.formulas import cost_ratio
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.geopolitics import sales as geo_sales
@@ -440,7 +441,9 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     seg_def = data.segment(seg_key)
     category_def = data.category(products[entries[0].product_id].category)
     base_churn = f.unit_base_churn(category_def, seg_def.base_churn, seg_key)
-    index = geo.price_index(region) if geo is not None and region is not None else 1.0
+    index = (
+        geo.price_index(region, category_def.key) if geo is not None and region is not None else 1.0
+    )
 
     def power(product: Product) -> float:
         return 1.0 if product.is_static else team(product).pricing_power
@@ -875,6 +878,7 @@ def product_costs_by_division(
     if balance is not None and state.company_facilities(company_id):  # M12a (22.2)
         alloc = compute.allocate(state, company_id, balance, data)
         home = compute.home_region_of(state, balance, data)
+    cost_home = home_region_of(state, balance, data) if balance is not None else None
     for product in state.company_products(company_id):
         if product.status == "retired":
             continue
@@ -891,7 +895,12 @@ def product_costs_by_division(
             by_region[None] += round(seg.customers * h)
         for rseg in state.regional_segments_of(product.id):  # other regions (M9)
             h = f.hosting_cents(category, rseg.segment, ai)
-            by_region[rseg.region] = by_region.get(rseg.region, 0) + round(rseg.customers * h)
+            if category.price_index is not None and cost_home is not None:  # M53 (62.1)
+                ratio = cost_ratio(rseg.region, cost_home, data, category.key)
+                cost = round(exact(rseg.customers) * exact(h) * ratio)
+            else:
+                cost = round(rseg.customers * h)
+            by_region[rseg.region] = by_region.get(rseg.region, 0) + cost
         hosting[d] = hosting.get(d, 0) + sum(by_region.values())
         if alloc is not None:
             if category.capacity_market:  # its CU come from the company's own capacity

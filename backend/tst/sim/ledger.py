@@ -75,6 +75,8 @@ GOVERNMENT_REVENUE: Final = "4070_revenue_government"  # government contracts (M
 CONTRACT_COSTS: Final = "5300_contract_costs"  # their delivery cost (M44, 57.2)
 BIDS_CLEARANCES: Final = "6990_bids_clearances"  # proposals, protests, clearances (M44, 57.2-57.4)
 ROYALTIES: Final = "6960_royalties"  # host governments' royalties, state shares (M19, 35.3)
+SPECTRUM: Final = "1540_spectrum_licences"  # spectrum won, less amortization (M53, 62.2)
+SPECTRUM_AMORTIZATION: Final = "6760_spectrum_amortization"  # a licence over its term (M53, 62.2)
 ENGINE_ACCOUNTS: Final = (
     DEBT,
     INTEREST,
@@ -133,6 +135,8 @@ ENGINE_ACCOUNTS: Final = (
     GOVERNMENT_REVENUE,
     CONTRACT_COSTS,
     BIDS_CLEARANCES,
+    SPECTRUM,
+    SPECTRUM_AMORTIZATION,
 )
 
 

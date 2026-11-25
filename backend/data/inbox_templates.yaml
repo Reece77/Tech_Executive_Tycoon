@@ -1080,3 +1080,33 @@ templates:
   defence_letter_answered:
     title: "The open letter: you chose to {step}"
     body: "The Government screen shows the contract's status."
+
+  # M53 (formulas.md 62): telecom. Auctions and bans reach only a company with telecom (a line, a
+  # network, a licence or a bid), so a company without telecom hears nothing.
+  spectrum_auction_announced:
+    title: "Spectrum auction: {auction}"
+    body: "{blocks} blocks ({mhz} MHz in all) in {region} go to auction in {month}, from a reserve of {reserve_cents} a block. Register a bid on the Telecom screen before then."
+  spectrum_auction_result:
+    title: "{auction}: you won {won} of {asked} blocks"
+    body: "The auction ran {rounds} rounds and closed at {price_cents} a block. Blocks won are paid for now and carried as spectrum licences for their term."
+  spectrum_renewed:
+    title: "Spectrum renewed in {region}"
+    body: "Your {mhz} MHz of {band}-band spectrum renewed for another term for {fee_cents}."
+  spectrum_expired:
+    title: "Spectrum expired in {region}"
+    body: "Your {mhz} MHz of {band}-band spectrum lapsed at the end of its term."
+  spectrum_obligation_fine:
+    title: "{regulator} fined you {fine_cents}"
+    body: "Your {band}-band licence in {region} owes {owed} population coverage; your sites reach {coverage}. Build more sites, or the licence is revoked if it keeps missing."
+  spectrum_revoked:
+    title: "{regulator} revoked your licence"
+    body: "Your {band}-band licence in {region} missed its coverage obligation ({coverage} against {owed}) too many years. Its book value was written off."
+  telecom_ban_announced:
+    title: "A ban on {vendor} equipment in {region}"
+    body: "The authorities in {area} will exclude {vendor} equipment. No new radios from it may be bought there, and those you have must be replaced by the deadline shown on the Telecom screen."
+  telecom_sites_dark:
+    title: "{sites} sites switched off in {region}"
+    body: "A ban's deadline passed with {vendor} radios still in place: they are off until you replace them (rip-and-replace on the Telecom screen)."
+  telecom_ordered:
+    title: "{facility} ordered"
+    body: "You ordered {units} in {region} ({what}). Capex of {capex_cents} is paid in equal parts over {months} months; it goes live in {ready}."

@@ -415,6 +415,18 @@ from tst.sim.space.actions import (
 from tst.sim.state import GameState
 from tst.sim.talks.actions import ACTION_TYPES as TALK_ACTION_TYPES
 from tst.sim.talks.actions import TalkOutcome, apply_talk
+from tst.sim.telecom.actions import ACTION_TYPES as TELECOM_ACTION_TYPES
+from tst.sim.telecom.actions import (
+    AddRadios,
+    BidSpectrum,
+    BuildCable,
+    BuildFibre,
+    BuildTowers,
+    ReplaceRadios,
+    SetTelecomLine,
+    TelecomAction,
+    apply_telecom,
+)
 from tst.sim.vehicles.actions import ACTION_TYPES as VEHICLE_ACTION_TYPES
 from tst.sim.vehicles.actions import (
     BuildCellPlant,
@@ -473,6 +485,7 @@ type Action = (
     | RoboticsAction  # M39
     | PharmaAction  # M42
     | SpaceAction  # M40
+    | TelecomAction  # M53
     | GovernmentAction  # M44
     | NegotiationAction  # M47
     | MeetingOutcome  # M48
@@ -500,6 +513,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **ROBOTICS_ACTION_TYPES,  # M39 (53)
     **PHARMA_ACTION_TYPES,  # M42 (55)
     **SPACE_ACTION_TYPES,  # M40 (56)
+    **TELECOM_ACTION_TYPES,  # M53 (62)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
     **MEETING_ACTION_TYPES,  # M48 (59)
@@ -1064,6 +1078,16 @@ def apply_action(
             | SetD2dPartner()
         ):
             out = apply_space(state, action, ledger_balances, balance, data)  # M40 (56)
+        case (
+            BuildTowers()
+            | AddRadios()
+            | BuildFibre()
+            | BuildCable()
+            | BidSpectrum()
+            | ReplaceRadios()
+            | SetTelecomLine()
+        ):
+            out = apply_telecom(state, action, ledger_balances, balance, data)  # M53 (62)
         case (
             PlaceBid()
             | WithdrawBid()

@@ -456,3 +456,65 @@ drug_regulators:
     part: china # platforms.yaml region_parts (WB)
     strictness: { 2008: 0.6, 2010: 0.6, 2017: 0.8 } # A (M50: 2008 as 2010, after the SFDA's 2007 Provisions for Drug Registration): the 2015-2017 drug review reforms and ICH membership (June 2017)
     source: "https://english.nmpa.gov.cn/"
+
+# M53 (formulas.md 62.4): telecom regulators, M34's records with the `telecom` kind. They set licence
+# conditions (coverage obligations), review operator mergers and enforce net-neutrality rules
+# (tst.sim.telecom; the rules and precedents are telecom.yaml's); M34's competition rules, M41's device
+# code and M42's drug code read neither this list nor them. One a region (the region's largest national
+# authority stands for its others, A). strictness: a coverage and merger index by year (A, 1.0 = the
+# FCC; the European Commission's 2016 block of Three and O2 and the CMA's 2024 conditions on Vodafone
+# and Three, telecom.yaml, lift Europe's). formed: S (each regulator's Wikipedia page, 2026-11-25).
+telecom_regulators:
+  - key: fcc
+    kind: telecom
+    name: Federal Communications Commission
+    region: north_america
+    part: united_states # platforms.yaml region_parts (WB)
+    formed: "1934-06" # Federal Communications Commission: 19 Jun 1934 (S)
+    strictness: { 2008: 0.9, 2009: 0.9, 2010: 0.9, 2011: 1.0, 2017: 0.85, 2021: 1.0 } # A: AT&T and T-Mobile abandoned (Dec 2011), Sprint and T-Mobile cleared with conditions (Nov 2019), telecom.yaml
+    source: "https://en.wikipedia.org/wiki/Federal_Communications_Commission"
+  - key: berec
+    kind: telecom
+    name: European Commission and BEREC
+    region: europe
+    part: eu # platforms.yaml region_parts (WB)
+    formed: "2009-11" # BEREC: Regulation 1211/2009 of 25 Nov 2009 (Net Neutrality Regulation 2015, S)
+    strictness: { 2008: 1.0, 2010: 1.0, 2016: 1.2, 2024: 1.1 } # A: Three and O2 blocked on 11 May 2016 (O2 (UK), S); MasOrange cleared with remedies (2024, R)
+    source: "https://en.wikipedia.org/wiki/Body_of_European_Regulators_for_Electronic_Communications"
+  - key: miit
+    kind: telecom
+    name: Ministry of Industry and Information Technology
+    region: east_asia
+    part: china # platforms.yaml region_parts (WB)
+    formed: "2008-03" # Ministry of Industry and Information Technology: March 2008 (S)
+    strictness: { 2008: 1.2, 2010: 1.2 } # A: spectrum assigned administratively to the state operators (5G licences 6 Jun 2019, R)
+    source: "https://en.wikipedia.org/wiki/Ministry_of_Industry_and_Information_Technology"
+  - key: trai
+    kind: telecom
+    name: Telecom Regulatory Authority of India and the Department of Telecommunications
+    region: south_southeast_asia
+    part: india # platforms.yaml region_parts (WB)
+    formed: "1997-02" # Telecom Regulatory Authority of India: 20 Feb 1997 (S)
+    strictness: { 2008: 0.9, 2010: 0.9, 2016: 1.1 } # A: discriminatory tariffs banned 8 Feb 2016 (Net neutrality in India, S)
+    source: "https://en.wikipedia.org/wiki/Telecom_Regulatory_Authority_of_India"
+  - key: anatel
+    kind: telecom
+    name: Anatel
+    region: latin_america
+    formed: "1997-07" # National Telecommunications Agency (Brazil): 16 Jul 1997 (S)
+    strictness: { 2008: 0.9, 2010: 0.9, 2021: 1.0 } # A: the 2021 auction's coverage obligations (R)
+    source: "https://en.wikipedia.org/wiki/National_Telecommunications_Agency_(Brazil)"
+  - key: icasa
+    kind: telecom
+    name: Independent Communications Authority of South Africa
+    region: africa
+    formed: "2000-06" # Independent Communications Authority of South Africa: 1 Jun 2000 (S)
+    strictness: { 2008: 0.7, 2010: 0.7 } # A
+    source: "https://en.wikipedia.org/wiki/Independent_Communications_Authority_of_South_Africa"
+  - key: acma
+    kind: telecom
+    name: Australian Communications and Media Authority
+    region: oceania
+    formed: "2005-07" # Australian Communications and Media Authority: 1 Jul 2005 (S)
+    strictness: { 2008: 0.9, 2010: 0.9 } # A
+    source: "https://en.wikipedia.org/wiki/Australian_Communications_and_Media_Authority"

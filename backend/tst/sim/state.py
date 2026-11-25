@@ -203,6 +203,7 @@ from tst.sim.robotics.models import (
     ZoneMonth,
 )
 from tst.sim.space.models import SpaceState
+from tst.sim.telecom.models import TelecomState
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -618,6 +619,10 @@ class GameState:
     # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
     # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
     space: SpaceState = field(default_factory=SpaceState)
+    # M53 (62): the player's networks, spectrum licences, auctions (announced and run), line
+    # settings, network months and the game-wide telecom world (6G's month, growth, seeded
+    # auctions and bans, hidden until they come)
+    telecom: TelecomState = field(default_factory=TelecomState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

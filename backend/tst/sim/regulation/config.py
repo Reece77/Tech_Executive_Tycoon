@@ -203,6 +203,16 @@ class DrugRegulatorDef(RegulatorDef):
     kind: Literal["drugs"]
 
 
+class TelecomRegulatorDef(RegulatorDef):
+    """M53 (docs/formulas.md 62.4): a telecom regulator, M34's record with the `telecom` kind (the
+    FCC, Ofcom, BEREC and the national authorities, MIIT, MIC, TRAI, Anatel, ICASA, ACMA). It sets
+    licence conditions (coverage obligations), reviews operator mergers and enforces net-neutrality
+    rules (tst.sim.telecom); M34's competition rules and M41's and M42's code never read it."""
+
+    kind: Literal["telecom"]
+    formed: str = ""  # "YYYY-MM" (shown)
+
+
 class RegulationFile(_Frozen):
     """regulation.yaml (48)."""
 
@@ -214,6 +224,7 @@ class RegulationFile(_Frozen):
     precedents: tuple[PrecedentDef, ...] = ()
     health_regulators: tuple[HealthRegulatorDef, ...] = ()  # M41 (50): never in `regulators`
     drug_regulators: tuple[DrugRegulatorDef, ...] = ()  # M42 (55.3): in neither list above
+    telecom_regulators: tuple[TelecomRegulatorDef, ...] = ()  # M53 (62.4): in no list above
 
     @property
     def history_end_turn(self) -> int:

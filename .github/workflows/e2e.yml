@@ -21,7 +21,7 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120 # M53: main ran 85 of 90 minutes; 28 telecom rivals and three flows pushed it past (decision 17)
     steps:
       - uses: actions/checkout@v4
 

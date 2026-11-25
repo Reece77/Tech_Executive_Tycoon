@@ -6434,6 +6434,145 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/telecom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Telecom
+         * @description Subscribers, coverage, capacity, spectrum, equipment, auctions and bans.
+         */
+        get: operations["getTelecom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/towers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Towers */
+        post: operations["buildTowers"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/radios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Radios */
+        post: operations["addRadios"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/fibre": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Fibre */
+        post: operations["buildFibre"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/cables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build Cable */
+        post: operations["buildCable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/auctions/{auction_id}/bid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bid Spectrum */
+        post: operations["bidSpectrum"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/radios/{facility_id}/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace Radios */
+        post: operations["replaceRadios"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/telecom/lines/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Line */
+        post: operations["setTelecomLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/government": {
         parameters: {
             query?: never;
@@ -7982,6 +8121,58 @@ export interface components {
             group: string;
             range: components["schemas"]["RangeOut"];
         };
+        /** AuctionOut */
+        AuctionOut: {
+            /** Id */
+            id: number;
+            /** Label */
+            label: string;
+            /** Region */
+            region: string;
+            /** Area */
+            area: string;
+            /** Area Label */
+            area_label: string;
+            /** Band */
+            band: string;
+            /** Mhz */
+            mhz: number;
+            /** Blocks */
+            blocks: number;
+            /**
+             * Reserve Cents
+             * @description A block
+             */
+            reserve_cents: number;
+            /** Month */
+            month: string;
+            /** Term Years */
+            term_years: number;
+            /** Obligation */
+            obligation: number;
+            /** Obligation Years */
+            obligation_years: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "announced" | "closed";
+            /** Biddable */
+            biddable: boolean;
+            /** My Blocks */
+            my_blocks: number;
+            /** My Limit Cents */
+            my_limit_cents: number;
+            /** Rounds */
+            rounds: number;
+            /**
+             * Price Cents
+             * @description The final price a block (0 before it runs)
+             */
+            price_cents: number;
+            /** Awards */
+            awards: components["schemas"]["AwardOut"][];
+        };
         /**
          * AuthorityIn
          * @description Give, change or withdraw a seat's authority (24.1); guardrails left out keep their
@@ -8097,6 +8288,17 @@ export interface components {
              */
             roles?: components["schemas"]["RoleChoiceOut"][];
         };
+        /** AwardOut */
+        AwardOut: {
+            /** Bidder */
+            bidder: string;
+            /** Blocks */
+            blocks: number;
+            /** Paid Cents */
+            paid_cents: number;
+            /** Yours */
+            yours: boolean;
+        };
         /** BackStartupIn */
         BackStartupIn: {
             /** Founder Id */
@@ -8174,6 +8376,25 @@ export interface components {
             accumulated_result_cents: number;
             /** Total Liabilities And Equity Cents */
             total_liabilities_and_equity_cents: number;
+        };
+        /** BanOut */
+        BanOut: {
+            /** Label */
+            label: string;
+            /** Vendor */
+            vendor: string;
+            /** Region */
+            region: string;
+            /** Area */
+            area: string;
+            /** Announced */
+            announced: string;
+            /** No New */
+            no_new: string;
+            /** Replace By */
+            replace_by: string | null;
+            /** Scope */
+            scope: number;
         };
         /** BankOut */
         BankOut: {
@@ -8600,6 +8821,36 @@ export interface components {
         BuybackIn: {
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** CableIn */
+        CableIn: {
+            /** Name */
+            name: string;
+            /** Regions */
+            regions: string[];
+            /** Km */
+            km: number;
+            /** Tbps */
+            tbps: number;
+        };
+        /** CableOut */
+        CableOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Name */
+            name: string;
+            /** Regions */
+            regions: string[];
+            /** Km */
+            km: number;
+            /** Tbps */
+            tbps: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
+            /** Capex Cents */
+            capex_cents: number;
         };
         /** CampaignActionOut */
         CampaignActionOut: {
@@ -12894,6 +13145,33 @@ export interface components {
             /** Causes */
             causes: components["schemas"]["tst__api__schemas__press__CauseOut"][];
         };
+        /** FibreIn */
+        FibreIn: {
+            /** Region */
+            region: string;
+            /**
+             * Homes
+             * @description Thousands of homes passed
+             */
+            homes: number;
+            /** City */
+            city?: string | null;
+        };
+        /** FibreOut */
+        FibreOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Region */
+            region: string;
+            /** Homes Thousands */
+            homes_thousands: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
+            /** Capex Cents */
+            capex_cents: number;
+        };
         /** FiguresOut */
         FiguresOut: {
             /**
@@ -15676,6 +15954,32 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** LineOut */
+        LineOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Zero Rating */
+            zero_rating: boolean;
+            /** Satellite Partner */
+            satellite_partner: boolean;
+        };
+        /** LineSettingIn */
+        LineSettingIn: {
+            /**
+             * Zero Rating
+             * @default false
+             */
+            zero_rating?: boolean;
+            /**
+             * Satellite Partner
+             * @default false
+             */
+            satellite_partner?: boolean;
+        };
         /** ListedOut */
         ListedOut: {
             /** Company Id */
@@ -17613,6 +17917,48 @@ export interface components {
             /** Own Stake Cents */
             own_stake_cents: number;
         };
+        /** NetworkGenerationOut */
+        NetworkGenerationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Open
+             * @description Commercial somewhere in the world now
+             */
+            open: boolean;
+            /**
+             * First
+             * @description Its first commercial month, once open
+             */
+            first?: string | null;
+            /** Feature Points */
+            feature_points: number;
+        };
+        /** NetworkPaybackOut */
+        NetworkPaybackOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Cash Cents
+             * @description Cumulative cash flow since its first build
+             */
+            cash_cents: number;
+            /**
+             * Capex Cents
+             * @description Capex paid on its sites, radios, fibre and cables
+             */
+            capex_cents: number;
+            /** Last Year Cash Cents */
+            last_year_cash_cents: number;
+            /** Months To Payback */
+            months_to_payback: number | null;
+            /** Paid Back */
+            paid_back: string | null;
+        };
         /** NetworkPersonOut */
         NetworkPersonOut: {
             /** Person Id */
@@ -18082,6 +18428,31 @@ export interface components {
              * @default 0
              */
             price_cents?: number;
+        };
+        /** OperatorOut */
+        OperatorOut: {
+            /** Name */
+            name: string;
+            /** Region */
+            region: string;
+            /**
+             * Mobile
+             * @description Real subscribers, millions, this year (data)
+             */
+            mobile: number;
+            /** Fixed */
+            fixed: number;
+            /** Supplier */
+            supplier: string | null;
+        };
+        /** OperatorShareOut */
+        OperatorShareOut: {
+            /** Name */
+            name: string;
+            /** Subscribers */
+            subscribers: number;
+            /** Share */
+            share: number;
         };
         /** OpinionOut */
         OpinionOut: {
@@ -21049,6 +21420,63 @@ export interface components {
             /** Connected Turn */
             connected_turn: number | null;
         };
+        /** RadioOut */
+        RadioOut: {
+            /** Facility Id */
+            facility_id: number;
+            /** Region */
+            region: string;
+            /** Generation */
+            generation: string;
+            /** Vendor */
+            vendor: string;
+            /** Vendor Label */
+            vendor_label: string;
+            /** Overlay */
+            overlay: boolean;
+            /** Sites */
+            sites: number;
+            /** Live Sites */
+            live_sites: number;
+            /** Status */
+            status: string;
+            /** Ready */
+            ready: string;
+            /** Dark */
+            dark: number;
+            /** Replaced */
+            replaced: number;
+            /**
+             * Owed
+             * @description Sites its bans make it replace by now
+             */
+            owed: number;
+            /**
+             * At Risk
+             * @description Sites announced bans will make it replace
+             */
+            at_risk: number;
+            /**
+             * Replacing
+             * @description The record a rip-and-replace order replaces
+             */
+            replacing?: number | null;
+            /** Capex Cents */
+            capex_cents: number;
+            /** Capex Paid Cents */
+            capex_paid_cents: number;
+        };
+        /** RadiosIn */
+        RadiosIn: {
+            /** Region */
+            region: string;
+            /** Sites */
+            sites: number;
+            /** Generation */
+            generation: string;
+            /** Vendor */
+            vendor: string;
+        };
         /** RaiseIn */
         RaiseIn: {
             /** Salary Cents */
@@ -21658,6 +22086,82 @@ export interface components {
             /** Seeded */
             seeded: boolean;
         };
+        /** RegionNetworkOut */
+        RegionNetworkOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Mobile Market
+             * @description Mobile subscriptions in the region (game scale)
+             */
+            mobile_market: number;
+            /** Fixed Market */
+            fixed_market: number;
+            /**
+             * Mobile Subscribers
+             * @description Yours, every mobile line
+             */
+            mobile_subscribers: number;
+            /** Fixed Subscribers */
+            fixed_subscribers: number;
+            /** Wholesale Contracts */
+            wholesale_contracts: number;
+            /** Sites */
+            sites: number;
+            /**
+             * Coverage
+             * @description Population your network covers (0-1)
+             */
+            coverage: number;
+            /** Coverage By Generation */
+            coverage_by_generation: {
+                [key: string]: number;
+            };
+            /** Best Generation */
+            best_generation: string | null;
+            /**
+             * Capacity Gb
+             * @description Your network's GB a month
+             */
+            capacity_gb: number;
+            /**
+             * Demand Gb
+             * @description Your mobile subscribers' traffic, GB a month
+             */
+            demand_gb: number;
+            /**
+             * Quality
+             * @description Capacity over demand, at most 1
+             */
+            quality: number;
+            /** Homes Passed */
+            homes_passed: number;
+            /** Households */
+            households: number;
+            /**
+             * Licensed
+             * @description Band -> licensed share of the region
+             */
+            licensed: {
+                [key: string]: number;
+            };
+            /**
+             * Mhz
+             * @description Band -> population-weighted MHz you hold
+             */
+            mhz: {
+                [key: string]: number;
+            };
+            /**
+             * Neutrality
+             * @description A net-neutrality rule is in force in the region
+             */
+            neutrality: boolean;
+            /** Rivals */
+            rivals: components["schemas"]["OperatorShareOut"][];
+        };
         /** RegionOut */
         RegionOut: {
             /** Region */
@@ -21899,6 +22403,13 @@ export interface components {
         ReplaceIn: {
             /** Person Id */
             person_id: number;
+        };
+        /** ReplaceRadiosIn */
+        ReplaceRadiosIn: {
+            /** Vendor */
+            vendor: string;
+            /** Sites */
+            sites: number;
         };
         /** ReplaceableOut */
         ReplaceableOut: {
@@ -24390,6 +24901,47 @@ export interface components {
             /** Bought Payload Kg */
             bought_payload_kg: number;
         };
+        /** SpectrumBidIn */
+        SpectrumBidIn: {
+            /** Blocks */
+            blocks: number;
+            /**
+             * Limit Cents
+             * @description The most you pay a block
+             */
+            limit_cents: number;
+        };
+        /** SpectrumLicenceOut */
+        SpectrumLicenceOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Area */
+            area: string;
+            /** Area Label */
+            area_label: string;
+            /** Band */
+            band: string;
+            /** Mhz */
+            mhz: number;
+            /** Paid Cents */
+            paid_cents: number;
+            /** Book Cents */
+            book_cents: number;
+            /** Since */
+            since: string;
+            /** Expires */
+            expires: string;
+            /** Obligation */
+            obligation: number;
+            /** Obligation Due */
+            obligation_due: string | null;
+            /** Status */
+            status: string;
+            /** Fines */
+            fines: number;
+        };
         /** SpinOffIn */
         SpinOffIn: {
             /** Company Id */
@@ -25671,6 +26223,71 @@ export interface components {
              */
             text: string;
         };
+        /** TelecomActionOut */
+        TelecomActionOut: {
+            telecom: components["schemas"]["TelecomScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** TelecomScreenOut */
+        TelecomScreenOut: {
+            /** Month */
+            month: string;
+            /**
+             * History
+             * @description Rivals follow telecom.yaml before January 2026
+             */
+            history: boolean;
+            /** Generations */
+            generations: components["schemas"]["NetworkGenerationOut"][];
+            /** Regions */
+            regions: components["schemas"]["RegionNetworkOut"][];
+            /** Radios */
+            radios: components["schemas"]["RadioOut"][];
+            /** Fibres */
+            fibres: components["schemas"]["FibreOut"][];
+            /** Cables */
+            cables: components["schemas"]["CableOut"][];
+            /** Licences */
+            licences: components["schemas"]["SpectrumLicenceOut"][];
+            /** Auctions */
+            auctions: components["schemas"]["AuctionOut"][];
+            /** Vendors */
+            vendors: components["schemas"]["VendorOut"][];
+            /** Bans */
+            bans: components["schemas"]["BanOut"][];
+            /** Lines */
+            lines: components["schemas"]["LineOut"][];
+            /** Payback */
+            payback: components["schemas"]["NetworkPaybackOut"][];
+            /** Operators */
+            operators: components["schemas"]["OperatorOut"][];
+            /**
+             * Site Civil Cents
+             * @description A new site's mast, power and backhaul now
+             */
+            site_civil_cents: number;
+            /**
+             * Fibre Home Cents
+             * @description Fibre a home passed now
+             */
+            fibre_home_cents: number;
+            /**
+             * Cable Km Cents
+             * @description A subsea cable a km now
+             */
+            cable_km_cents: number;
+            /** Has Own Equipment */
+            has_own_equipment: boolean;
+            /**
+             * Sizes
+             * @description Facility kind -> the sizes it comes in
+             */
+            sizes: {
+                [key: string]: number[];
+            };
+        };
         /** TenderBidIn */
         TenderBidIn: {
             /** Product Id */
@@ -26132,6 +26749,19 @@ export interface components {
              * @description What they cost (tool inventory)
              */
             book_cents: number;
+        };
+        /** TowersIn */
+        TowersIn: {
+            /** Region */
+            region: string;
+            /** Sites */
+            sites: number;
+            /** Generation */
+            generation: string;
+            /** Vendor */
+            vendor: string;
+            /** City */
+            city?: string | null;
         };
         /** TradeIn */
         TradeIn: {
@@ -26645,6 +27275,32 @@ export interface components {
             /** Incidents */
             incidents: components["schemas"]["IncidentOut"][];
             options: components["schemas"]["VehicleOptionsOut"];
+        };
+        /** VendorOut */
+        VendorOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Price Mult */
+            price_mult: number;
+            /**
+             * World Share
+             * @description Its share of the RAN market this year (data)
+             */
+            world_share: number;
+            /**
+             * Radio Cents
+             * @description Generation -> a site's radios from it now
+             */
+            radio_cents: {
+                [key: string]: number;
+            };
+            /**
+             * Refused In
+             * @description Regions whose bans refuse new radios from it
+             */
+            refused_in: string[];
         };
         /** VentureIn */
         VentureIn: {
@@ -48258,6 +48914,501 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SpaceActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getTelecom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildTowers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TowersIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    addRadios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RadiosIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildFibre: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FibreIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buildCable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    bidSpectrum: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                auction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SpectrumBidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    replaceRadios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                facility_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceRadiosIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setTelecomLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LineSettingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TelecomActionOut"];
                 };
             };
             /** @description Bad Request */

@@ -271,6 +271,13 @@ SCREEN_FIELDS: Final[dict[str, dict[str, Covered]]] = {
         "last_year_cash_cents": "constellation_payback",
         "months_to_payback": "constellation_payback",
     },
+    # v6 (M53): the Telecom screen
+    "telecom.NetworkPaybackOut": {
+        "cash_cents": "network_payback",
+        "capex_cents": "network_payback",
+        "last_year_cash_cents": "network_payback",
+        "months_to_payback": "network_payback",
+    },
     "robotics.PlantAutomationOut": {
         "units_month": _CAPACITY,
         "robots": _INPUT,

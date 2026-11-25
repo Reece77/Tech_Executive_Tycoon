@@ -94,6 +94,7 @@ from tst.sim.research.data import ErasFile, RndBalance, TechFrontierFile, latest
 from tst.sim.robotics.config import RoboticsBalance, RoboticsFile
 from tst.sim.space.config import SpaceBalance, SpaceFile
 from tst.sim.talks.config import TalksBalance
+from tst.sim.telecom.config import TelecomBalance, TelecomFile
 from tst.sim.vehicles.config import VehiclesBalance, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile, WorldBalance
 
@@ -1437,6 +1438,7 @@ class Balance(_Frozen):
     robotics: RoboticsBalance  # M39 (formulas.md 53): robotics and robotaxis
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
+    telecom: TelecomBalance  # M53 (formulas.md 62): telecom
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
@@ -1754,6 +1756,10 @@ class CategoryDef(_Frozen):
     # M38 (49.1): a rival's cost of goods a unit is this share of its own price (cars' prices
     # differ too much for one hosting_cents); None = the market's hosting_cents
     rival_cost_share: float | None = Field(default=None, gt=0, lt=1)
+    # M53 (62.1): the category's own price index by region (x the home region's), replacing the
+    # regions table's for its prices and appeal (telecom ARPU differs far more than the table's
+    # 0.35-1.0); None = the regions table's
+    price_index: dict[str, float] | None = None
 
     @property
     def pharma(self) -> bool:
@@ -1770,6 +1776,12 @@ class CategoryDef(_Frozen):
         """M40 (56): launch, satellite broadband or Earth observation (scheduled rivals only;
         a line sells only with vehicles or satellites)."""
         return self.family == "space"
+
+    @property
+    def telecom(self) -> bool:
+        """M53 (62): mobile, fixed broadband, wholesale and network equipment (scheduled rivals
+        only; a service line sells only where its networks and spectrum reach)."""
+        return self.family == "telecom"
 
     @property
     def sells_units(self) -> bool:
@@ -2235,6 +2247,7 @@ class GameData(_Frozen):
     robotics: RoboticsFile | None = None  # M39 (53); None = no robotics markets' history
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
     space: SpaceFile | None = None  # M40 (56); None = no space markets' history
+    telecom: TelecomFile | None = None  # M53 (62); None = no telecom markets' history
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:

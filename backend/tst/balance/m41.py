@@ -369,9 +369,18 @@ def medical_rivals(state: GameState, data: LoadedData) -> frozenset[int]:
     return frozenset(out)
 
 
-def _normalise(line: str, series: str, names: tuple[str, ...], shift: int, first: int) -> str:
+def _normalise(
+    line: str,
+    series: str,
+    names: tuple[str, ...],
+    shift: int,
+    first: int,
+    keep: tuple[str, ...] = (),
+) -> str:
     """A fingerprint line as main would write it: later companies' ids moved back by the medical
-    incumbents' count, and their moves taken out of the shared market-news line."""
+    incumbents' count, and their moves taken out of the shared market-news line. M53: an item
+    starting with a `keep` name (another company whose name begins with a held one's, Huawei
+    Ascend against Huawei) stays."""
 
     def cid(x: str) -> str:
         n = int(x)
@@ -386,7 +395,11 @@ def _normalise(line: str, series: str, names: tuple[str, ...], shift: int, first
         for i, p in enumerate(parts):
             if "lines=" in p:
                 head, _, rest = p.partition("lines=")
-                items = [x for x in rest.split("; ") if not x.startswith(names)]
+                items = [
+                    x
+                    for x in rest.split("; ")
+                    if not x.startswith(names) or (keep and x.startswith(keep))
+                ]
                 kept_lines = "; ".join(items)
                 parts[i] = head + "lines=" + kept_lines
         count = len(kept_lines.split("; ")) if kept_lines else 0

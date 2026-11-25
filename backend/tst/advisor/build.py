@@ -910,6 +910,13 @@ class Builder:
 
         return v5_space.constellation_payback(self, m, entity)
 
+    # --- v6 (M53): telecom ---------------------------------------------------------------------
+
+    def network_payback(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_telecom
+
+        return v6_telecom.network_payback(self, m, entity)
+
     # --- v5 (M44): government ------------------------------------------------------------------
 
     def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:

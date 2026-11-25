@@ -186,7 +186,9 @@ def incumbent_product(
             price = (
                 value.price_cents
                 if spec.regions is not None
-                else regional_price_cents(value.price_cents, region, home or "", data)
+                else regional_price_cents(
+                    value.price_cents, region, home or "", data, category=cat.key
+                )
             )
             abroad.append(
                 RegionalSegment(

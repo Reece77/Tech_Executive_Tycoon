@@ -200,6 +200,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'products',
   }, // M40
   {
+    path: 'products/telecom',
+    label: 'Telecom',
+    group: 'products',
+    unlock: 'telecom',
+    side: true,
+    parent: 'products',
+  }, // M53
+  {
     path: 'products/equipment',
     label: 'Equipment',
     group: 'chain',

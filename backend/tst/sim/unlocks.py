@@ -79,6 +79,7 @@ SYSTEMS: tuple[System, ...] = (
     System(32, "pharma", "Pharma", "products"),  # tunable-exempt: stable id (M42; 31 is M39's)
     System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
     System(34, "government", "Government", "markets"),  # tunable-exempt: stable id (M44)
+    System(35, "telecom", "Telecom", "products"),  # tunable-exempt: stable id (M53)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -308,6 +309,28 @@ def _space(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | No
     return None
 
 
+def _telecom(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M53 (62): a telecom line, a network, a licence or a bid, or the telecom year
+    (telecom.unlock_year) for a stage-3 company that makes chips or devices."""
+    if d.telecom is None:
+        return None
+    tb = b.telecom
+    if any(p.category in tb.categories for p in state.products if p.company_id in ids):
+        return "the company has a telecom line"
+    if any(f.kind in tb.kinds for f in state.facilities if f.company_id in ids):
+        return "the group runs a network"
+    t = state.telecom
+    if any(x.company_id in ids for x in t.licences) or any(
+        a.bid_company_id in ids for a in t.auctions
+    ):
+        return "the group holds or bids for spectrum"
+    if turn_to_ym(state.turn)[0] >= tb.unlock_year and _stage(state) >= STAGE_GROWTH:
+        makes = ("devices", "chips_mobile_soc", "chips_server_cpu", "chips_ai_accelerator")
+        if any(p.category in makes for p in state.products if p.company_id in ids):
+            return f"telecom is open to a stage-3 device or chip company ({tb.unlock_year})"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -423,6 +446,7 @@ CHECKS: dict[str, Check] = {
     "mobility": _mobility,  # M39 (53.3)
     "space": _space,  # M40 (56)
     "government": _government,  # M44 (57)
+    "telecom": _telecom,  # M53 (62)
 }
 
 
