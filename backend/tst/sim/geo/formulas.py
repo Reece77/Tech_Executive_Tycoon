@@ -90,6 +90,15 @@ def price_ratio(region: str, home: str, data: GameData, category: str | None = N
     return exact(row.price_index) / exact(base.price_index)
 
 
+def cost_ratio(region: str, home: str, data: GameData, category: str) -> Fraction:
+    """M53 (62.1): a category with its own `price_index` (telecom) scales its hosting a customer
+    in a region as its prices (a network's running costs are local); any other category's
+    hosting is the same everywhere (1)."""
+    if data.category(category).price_index is None:
+        return Fraction(1)
+    return price_ratio(region, home, data, category)
+
+
 def relative_row(region: str, home: str, data: GameData) -> tuple[float, float]:
     """(size, price index) of `region` relative to the home region's row (19.5). The size is
     not money and may stay a float; the price index is the exact ratio's nearest float, for

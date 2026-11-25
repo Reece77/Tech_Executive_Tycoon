@@ -16,6 +16,7 @@ from tests.helpers import (
     PHARMA_INCUMBENTS,
     ROBOT_INCUMBENTS,
     SPACE_INCUMBENTS,
+    TELECOM_INCUMBENTS,
 )
 from tst.db import migrate
 from tst.db.models import SCHEMA_VERSION, CompanyRow
@@ -48,6 +49,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
             + ROBOT_INCUMBENTS
             + PHARMA_INCUMBENTS
             + SPACE_INCUMBENTS
+            + TELECOM_INCUMBENTS
             + 2,
         )
     )

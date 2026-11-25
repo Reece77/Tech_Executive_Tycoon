@@ -35,6 +35,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, SPECTRUM, LedgerEntry
 from tst.sim.ledger import SPECTRUM_AMORTIZATION as AMORTIZATION
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact, times
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 from tst.sim.telecom import draws
@@ -96,7 +97,7 @@ def _from_def(d: AuctionDef, auction_id: int, scale: float) -> Auction:
         band=d.band,
         mhz=d.mhz,
         blocks=d.blocks,
-        reserve_cents=max(1, round(d.reserve_cents * scale / d.blocks)),  # a block
+        reserve_cents=max(1, round(exact(d.reserve_cents) * exact(scale) / d.blocks)),  # a block
         turn=d.turn,
         term_years=d.term_years,
         obligation=d.obligation,
@@ -131,7 +132,13 @@ def _seeded_auction(
     blocks = round(ab.seeded_blocks.lo + (ab.seeded_blocks.hi - ab.seeded_blocks.lo) * g.random())
     people = r.mobile_at(2025.0) * 1_000_000 * a.share  # tunable-exempt: millions
     mhz = ab.seeded_mhz[band]
-    reserve = ab.seeded_reserve_cents_mhz_pop[band] * mhz * people * balance.telecom.scale / blocks
+    reserve = (
+        exact(ab.seeded_reserve_cents_mhz_pop[band])
+        * exact(mhz)
+        * exact(people)
+        * exact(balance.telecom.scale)
+        / max(1, blocks)
+    )
     year = 2010 + turn // MONTHS  # tunable-exempt: turn 0 is January 2010
     return Auction(
         id=auction_id,
@@ -234,6 +241,7 @@ def _rival_bidders(
     if auction.history:
         d = file(data).auction(auction.key)
         assert d is not None
+        # money-exact: estimate (a rival's hidden value, only compared with the clock price)
         price = d.gross_cents * balance.telecom.scale / d.blocks
         named = 0
         for company, n in sorted(d.winners.items()):
@@ -250,7 +258,7 @@ def _rival_bidders(
             )
             out.append(Bidder(OTHERS, None, rest, v))
         v = price * (ab.loser_value.lo + (ab.loser_value.hi - ab.loser_value.lo) * g.random())
-        out.append(Bidder(MARGINAL, None, max(1, d.blocks // 4), v))
+        out.append(Bidder(MARGINAL, None, max(1, int(d.blocks * ab.marginal_share)), v))
         return out
     f = file(data)
     ops = [o for o in f.operators if o.region == auction.region and o.mobile]
@@ -260,12 +268,17 @@ def _rival_bidders(
     chosen = names[:n] if len(names) >= n else names
     for name in chosen:
         c = next((x for x in state.companies if x.name == name and x.alive), None)
-        want = max(1, round(auction.blocks / max(1, len(chosen)) * (0.8 + 0.8 * g.random())))
+        w = ab.seeded_want
+        want = max(
+            1, round(auction.blocks / max(1, len(chosen)) * (w.lo + (w.hi - w.lo) * g.random()))
+        )
+        # money-exact: estimate (a rival's hidden value, only compared with the clock price)
         v = auction.reserve_cents * (
             ab.seeded_value.lo + (ab.seeded_value.hi - ab.seeded_value.lo) * g.random()
         )
         out.append(Bidder(name, c.id if c else None, min(cap, want), v))
     if not out:
+        # money-exact: estimate (a rival's hidden value, only compared with the clock price)
         v = auction.reserve_cents * ab.seeded_value.lo
         out.append(Bidder(MARGINAL, None, max(1, auction.blocks // 2), v))
     return out
@@ -391,7 +404,7 @@ def licences_month(
             )
             lic = replace(lic, amortized_cents=total)
         if state.turn >= lic.expires_turn - 1:
-            fee = round(lic.paid_cents * ab.renewal_share)
+            fee = times(lic.paid_cents, ab.renewal_share)
             company = state.company(lic.company_id)
             if company is not None and company.alive:
                 if fee > 0:

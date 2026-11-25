@@ -408,6 +408,8 @@ class AuctionBalance(_Frozen):
     loser_value: Range  # x the data's price a block, the marginal loser's value
     seeded_value: Range  # x the reserve, a seeded auction's rivals' values (lognormal-free uniform)
     seeded_bidders: Range  # rival bidders in a seeded auction
+    seeded_want: Range  # x an even split of the blocks, a seeded rival's demand
+    marginal_share: float  # a historical auction's marginal loser bids for this share of the blocks
     seeded_every: Range  # years between an area's seeded auctions
     seeded_blocks: Range
     seeded_mhz: dict[str, float]  # band -> MHz on offer in a seeded auction

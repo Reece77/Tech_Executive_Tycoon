@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
@@ -49,7 +50,7 @@ def growth_factor(state: GameState, region: str, balance: Balance, data: GameDat
         rate = state.telecom.world.rate(year, ri)
         if rate is None:
             rate = balance.telecom.growth_after[region].lo
-        out *= (1.0 + rate) ** (1.0 / MONTHS)
+        out *= float(dmath.pow(1.0 + rate, 1.0 / MONTHS))
     return out
 
 

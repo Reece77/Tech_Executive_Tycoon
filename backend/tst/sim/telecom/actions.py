@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Final, Literal
 
+from tst.sim import dmath
 from tst.sim.actions.hiring import Outcome, acting_company, spend_energy
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance, GameData
@@ -393,7 +394,9 @@ def build_cable(
     )
     index = goods.current(state, "equipment", data).index
     per_km = file(data).cable_km_at(end_year_at(state.turn))
-    capex = action.km * per_km * index * (action.tbps / cb.ref_tbps) ** cb.tbps_exponent
+    capex = (
+        action.km * per_km * index * float(dmath.pow(action.tbps / cb.ref_tbps, cb.tbps_exponent))
+    )
     state, f, total, months = _order(
         state,
         company,

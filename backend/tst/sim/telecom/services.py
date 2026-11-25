@@ -24,6 +24,7 @@ from typing import Final
 from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
+from tst.sim.geo.formulas import cost_ratio
 from tst.sim.ledger import CASH, COGS, LedgerEntry
 from tst.sim.money import exact
 from tst.sim.platforms.phase import Effects
@@ -256,7 +257,11 @@ def books(
         ]
         for region, segment, price, customers in rows:
             cents = round(exact(price or 0) * exact(customers))
-            hosting = round(exact(customers) * category.market(segment).hosting_cents)
+            hosting = round(
+                exact(customers)
+                * category.market(segment).hosting_cents
+                * cost_ratio(region, home, data, p.category)
+            )
             fee = 0
             if p.category == tb.mobile and cents > 0:
                 net = nw.network(state, p.company_id, region, balance, data)
