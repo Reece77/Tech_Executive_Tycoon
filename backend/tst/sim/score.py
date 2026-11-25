@@ -196,6 +196,21 @@ def company_score(
     )
 
 
+def points(s: CompanyScore, balance: Balance) -> dict[str, float]:
+    """The score's five parts in points, as the score card shows them (30.1; M51's results)."""
+    sb = balance.score
+    decades = math.log10(max(s.value_cents / CENTS, sb.value_floor_dollars)) - math.log10(
+        sb.value_floor_dollars
+    )
+    return {
+        "value": round(sb.weight_value * min(max(decades / sb.value_span_decades, 0), 1), 1),
+        "growth": round(sb.weight_growth * s.growth, 1),
+        "profit": round(sb.weight_profit * s.profit, 1),
+        "leadership": round(sb.weight_leadership * s.leadership, 1),
+        "reputation": round(sb.weight_reputation * s.reputation, 1),
+    }
+
+
 def snapshot_scores(
     state: GameState, balances: LedgerBalances, balance: Balance, data: GameData
 ) -> GameState:

@@ -23,6 +23,7 @@ from tst.profile.store import profile_name
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import Balance
 from tst.sim.modes.challenges import score_mult
+from tst.sim.score import points
 from tst.sim.state import GameState
 
 log = logging.getLogger(__name__)
@@ -83,15 +84,7 @@ def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] |
         "turn": mode.result_turn,
         "date_label": format_turn(mode.result_turn if mode.result_turn is not None else state.turn),
         "score": score,
-        "parts": None
-        if snap is None
-        else {
-            "value_cents": snap.value_cents,
-            "growth": snap.growth,
-            "profit": snap.profit,
-            "leadership": snap.leadership,
-            "reputation": snap.reputation,
-        },
+        "parts": None if snap is None else points(snap, balance),  # 30.1's parts, in points
         "challenges": list(mode.challenges),
         "multiplier": mult,
         "adjusted": round(score * mult),

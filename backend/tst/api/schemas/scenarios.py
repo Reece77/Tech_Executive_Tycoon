@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 
 class ScorePartsOut(BaseModel):
-    """The company score's parts at the verdict (30.1): value in cents, the rest 0-1."""
+    """The company score's five parts at the verdict, in points (30.1)."""
 
-    value_cents: int
+    value: float
     growth: float
     profit: float
     leadership: float

@@ -630,3 +630,69 @@ def target_1(runs: list[Run]) -> list[tuple[str, int, int, bool]]:
         )
         out.append((key, won, idle, WIN_BAND[0] <= won <= WIN_BAND[1] and idle <= PASSIVE_MAX))
     return out
+
+
+# --- Target 2: challenges are real ------------------------------------------------------------
+
+TARGET2_MONTHS: Final = 120  # a campaign's first ten years, to December 2019 (V1's measure)
+TARGET2_DROP: Final = 0.10  # each rule lowers the median score by at least this share
+# the scripted player whose plan each rule cuts into (strategies_v2, 30.6)
+TARGET2_ARMS: Final[dict[str, str]] = {
+    "bootstrapped": "steady_regions",
+    "hardware_only": "steady_regions",
+    "no_acquisitions": "acquirer",
+    "one_region": "steady_regions",
+    "hard_rivals": "steady_regions",
+    "no_automation": "ceo",
+}
+
+
+def challenge_score(loaded: LoadedData, strategy: str, rule: str | None, seed: int) -> int:
+    """The company score in December 2019 of a 2010 campaign played by `strategy`, under
+    `rule` (None: no challenge, the normal game)."""
+    from tst.balance.game import start_game
+    from tst.balance.strategies_v2 import STRATEGIES
+    from tst.sim.modes.models import GameMode
+
+    game = start_game(loaded, seed)
+    if rule is not None:
+        game.state = replace(game.state, mode=GameMode(kind="campaign", challenges=(rule,)))
+    script = STRATEGIES[strategy]
+    for _ in range(TARGET2_MONTHS):
+        if game.state.ended:
+            break
+        script(game)
+        game.turn()
+    snap = next((s for s in reversed(game.state.scores) if s.company_id == PLAYER), None)
+    return snap.score if snap is not None else 0
+
+
+def _score_worker(job: tuple[str, str | None, int]) -> tuple[str, str | None, int, int]:
+    from tst.config import get_settings
+    from tst.loader import load_all
+
+    global _LOADED
+    if _LOADED is None:
+        _LOADED = load_all(get_settings().data_dir)
+    strategy, rule, seed = job
+    return strategy, rule, seed, challenge_score(_LOADED, strategy, rule, seed)
+
+
+def target_2(
+    seeds: tuple[int, ...] = SEEDS, workers: int = 4
+) -> list[tuple[str, float, float, float]]:
+    """(rule, median score without, with, drop) per rule (63.4 target 2)."""
+    from multiprocessing import get_context
+    from statistics import median
+
+    arms = sorted(set(TARGET2_ARMS.values()))
+    jobs: list[tuple[str, str | None, int]] = [(a, None, s) for a in arms for s in seeds]
+    jobs += [(TARGET2_ARMS[r], r, s) for r in TARGET2_ARMS for s in seeds]
+    with get_context("spawn").Pool(workers) as pool:
+        out = list(pool.imap(_score_worker, jobs))
+    rows = []
+    for rule, arm in TARGET2_ARMS.items():
+        base = median(x[3] for x in out if x[0] == arm and x[1] is None)
+        hit = median(x[3] for x in out if x[0] == arm and x[1] == rule)
+        rows.append((rule, float(base), float(hit), 1 - hit / base if base else 0.0))
+    return rows

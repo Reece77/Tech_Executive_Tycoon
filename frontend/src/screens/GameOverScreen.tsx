@@ -2,6 +2,7 @@ import { Link, Navigate, useParams } from 'react-router';
 import { CampaignEndPanel } from '../components/CampaignEndPanel';
 import { ExitChoicePanel } from '../components/ExitChoicePanel';
 import { LegacyPanel } from '../components/FounderPanels';
+import { ScenarioScorePanel } from '../components/ScenarioScorePanel';
 import { KpiTile } from '../components/KpiTile';
 import { LoadError, Loading } from '../components/ScreenState';
 import { Sparkline } from '../components/Sparkline';
@@ -232,6 +233,7 @@ export function GameOverScreen() {
               {g.scenario_bonus_reached ? `${g.company_name} did it.` : 'Not achieved.'}
             </span>
           )}
+          <ScenarioScorePanel g={g} />
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <KpiTile

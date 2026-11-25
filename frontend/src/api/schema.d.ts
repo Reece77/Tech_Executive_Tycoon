@@ -4785,6 +4785,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Scenarios
+         * @description Every historical scenario: brief, goal, deadline, difficulty and the best result.
+         */
+        get: operations["getScenarios"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mods": {
         parameters: {
             query?: never;
@@ -9279,6 +9299,23 @@ export interface components {
             share: number;
             owner: components["schemas"]["CompanyRefOut"] | null;
         };
+        /**
+         * ChallengeOut
+         * @description A challenge rule (M51, 63.2).
+         */
+        ChallengeOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /**
+             * Score Mult
+             * @description x the company score the result screen shows
+             */
+            score_mult: number;
+        };
         /** ChangePreviewOut */
         ChangePreviewOut: {
             /** Allowed */
@@ -10553,6 +10590,11 @@ export interface components {
              * @default 2010
              */
             start_year?: number;
+            /**
+             * Challenges
+             * @description M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario
+             */
+            challenges?: string[];
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -13446,6 +13488,15 @@ export interface components {
             scenario_bonus?: string | null;
             /** Scenario Bonus Reached */
             scenario_bonus_reached?: boolean | null;
+            /** @description This game's verdict: the score, its parts and multipliers */
+            scenario_score?: components["schemas"]["ScenarioResultOut"] | null;
+            /** @description The player's best result in this scenario in other saves */
+            scenario_best?: components["schemas"]["ScenarioResultOut"] | null;
+            /**
+             * Challenges
+             * @description M51: the game's rules
+             */
+            challenges?: string[];
             /**
              * Exit Buyer
              * @description Exit (M14, 28.6): who bought it
@@ -14491,6 +14542,16 @@ export interface components {
             goal: string;
             /** Deadline Label */
             deadline_label: string;
+            /**
+             * Difficulty
+             * @description M51 (63.3): easy | medium | hard, from seeds 1-10's wins
+             */
+            difficulty?: string | null;
+            /**
+             * Sensible Wins
+             * @description M51: the sensible script's wins on seeds 1-10
+             */
+            sensible_wins?: number | null;
         };
         /** HistoryIncidentOut */
         HistoryIncidentOut: {
@@ -17581,6 +17642,8 @@ export interface components {
             sandbox?: components["schemas"]["SandboxMetaOut"] | null;
             /** Historical */
             historical?: components["schemas"]["HistoricalOut"][];
+            /** Challenges */
+            challenges?: components["schemas"]["ChallengeOut"][];
             /** Scenarios */
             scenarios: components["schemas"]["ScenarioOut"][];
             /** Difficulties */
@@ -23647,6 +23710,38 @@ export interface components {
             /** Region Label */
             region_label: string;
         };
+        /** ScenarioCardOut */
+        ScenarioCardOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Year */
+            year: number;
+            /** Goal */
+            goal: string;
+            /** Deadline Label */
+            deadline_label: string;
+            /**
+             * Difficulty
+             * @description easy | medium | hard, from seeds 1-10's wins
+             */
+            difficulty: string | null;
+            /**
+             * Sensible Wins
+             * @description The sensible script's wins on seeds 1-10
+             */
+            sensible_wins: number | null;
+            /**
+             * Played
+             * @description Scenario saves with a verdict
+             */
+            played: number;
+            /** @description The best: a success, then the score */
+            best: components["schemas"]["ScenarioResultOut"] | null;
+        };
         /** ScenarioOut */
         ScenarioOut: {
             /** Id */
@@ -23665,6 +23760,56 @@ export interface components {
             starting_cash_by_difficulty: {
                 [key: string]: number;
             };
+        };
+        /**
+         * ScenarioResultOut
+         * @description One scenario save's verdict, from the app-wide results file.
+         */
+        ScenarioResultOut: {
+            /** Save */
+            save: string;
+            /** Company */
+            company: string;
+            /**
+             * Result
+             * @description success | failure
+             */
+            result: string;
+            /**
+             * Date Label
+             * @description The game month of the verdict
+             */
+            date_label: string;
+            /**
+             * Score
+             * @description The company score at the verdict (30.1)
+             */
+            score: number;
+            /** Challenges */
+            challenges: string[];
+            /**
+             * Multiplier
+             * @description The challenge rules' score multipliers, multiplied
+             */
+            multiplier: number;
+            /**
+             * Adjusted
+             * @description score x multiplier: what results are compared on
+             */
+            adjusted: number;
+            /**
+             * Recorded At
+             * @description When the verdict was kept (UTC, ISO 8601)
+             */
+            recorded_at: string;
+            parts?: components["schemas"]["ScorePartsOut"] | null;
+        };
+        /** ScenariosOut */
+        ScenariosOut: {
+            /** Profile */
+            profile: string;
+            /** Scenarios */
+            scenarios: components["schemas"]["ScenarioCardOut"][];
         };
         /** ScoreBandOut */
         ScoreBandOut: {
@@ -23710,6 +23855,22 @@ export interface components {
              * @description The score at the last December, if any
              */
             last_december: number | null;
+        };
+        /**
+         * ScorePartsOut
+         * @description The company score's five parts at the verdict, in points (30.1).
+         */
+        ScorePartsOut: {
+            /** Value */
+            value: number;
+            /** Growth */
+            growth: number;
+            /** Profit */
+            profit: number;
+            /** Leadership */
+            leadership: number;
+            /** Reputation */
+            reputation: number;
         };
         /** ScoutOut */
         ScoutOut: {
@@ -42778,6 +42939,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getScenarios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenariosOut"];
                 };
             };
         };
