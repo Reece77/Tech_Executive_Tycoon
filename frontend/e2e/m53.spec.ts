@@ -41,8 +41,8 @@ test('(a) win a mid-band auction', async ({ page }) => {
   await expect(auction).toContainText('UK 2018 auction');
   await expect(auction).toContainText('mid band');
   const id = (await auction.getAttribute('data-testid'))?.replace('auction-', '') ?? '';
-  await page.getByTestId(`bid-blocks-${id}`).locator('input').fill('2');
-  await page.getByTestId(`bid-limit-${id}`).locator('input').fill('5000000000');
+  await page.getByTestId(`bid-blocks-${id}`).fill('2');
+  await page.getByTestId(`bid-limit-${id}`).fill('5000000000');
   await page.getByTestId(`bid-submit-${id}`).click();
   await expect(page.getByTestId(`bid-registered-${id}`)).toContainText('Registered: 2 blocks');
   tool('advance', save, '4');
@@ -88,6 +88,6 @@ test('(c) a ban forces replacing Huawei equipment', async ({ page }) => {
   tool('advance', save, '7');
   await page.goto(`/game/${save}/products/telecom`);
   const banned = page.getByTestId('radio-row').first();
-  await expect(banned).not.toContainText('0 done');
+  await expect(banned).toContainText('2,500 done');
   await expect(banned).not.toContainText('dark');
 });

@@ -435,6 +435,7 @@ function BuildNetwork({ saveId, t }: { saveId: string; t: Telecom }) {
   return (
     <div style={{ display: 'flex', gap: 6, alignItems: 'end', flexWrap: 'wrap', marginTop: 8 }}>
       <Select
+        allowDeselect={false}
         label="Region"
         size="xs"
         data={regions}
@@ -443,6 +444,7 @@ function BuildNetwork({ saveId, t }: { saveId: string; t: Telecom }) {
         data-testid="build-region"
       />
       <Select
+        allowDeselect={false}
         label="Generation"
         size="xs"
         data={gens}
@@ -451,6 +453,7 @@ function BuildNetwork({ saveId, t }: { saveId: string; t: Telecom }) {
         data-testid="build-generation"
       />
       <Select
+        allowDeselect={false}
         label="Vendor"
         size="xs"
         data={vendors}
@@ -459,6 +462,7 @@ function BuildNetwork({ saveId, t }: { saveId: string; t: Telecom }) {
         data-testid="build-vendor"
       />
       <Select
+        allowDeselect={false}
         label="Sites"
         size="xs"
         data={sizes}
@@ -526,8 +530,22 @@ function Fixed({ saveId, t }: { saveId: string; t: Telecom }) {
         ))}
       </ul>
       <div style={{ display: 'flex', gap: 6, alignItems: 'end', flexWrap: 'wrap' }}>
-        <Select label="Region" size="xs" data={regions} value={region} onChange={setRegion} />
-        <Select label="Homes passed" size="xs" data={homes} value={size} onChange={setSize} />
+        <Select
+          allowDeselect={false}
+          label="Region"
+          size="xs"
+          data={regions}
+          value={region}
+          onChange={setRegion}
+        />
+        <Select
+          allowDeselect={false}
+          label="Homes passed"
+          size="xs"
+          data={homes}
+          value={size}
+          onChange={setSize}
+        />
         <Button
           size="compact-sm"
           disabled={!region || !size || fibre.isPending}
@@ -543,10 +561,31 @@ function Fixed({ saveId, t }: { saveId: string; t: Telecom }) {
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
         />
-        <Select label="From" size="xs" data={regions} value={region} onChange={setRegion} />
-        <Select label="To" size="xs" data={regions} value={to} onChange={setTo} />
+        <Select
+          allowDeselect={false}
+          label="From"
+          size="xs"
+          data={regions}
+          value={region}
+          onChange={setRegion}
+        />
+        <Select
+          allowDeselect={false}
+          label="To"
+          size="xs"
+          data={regions}
+          value={to}
+          onChange={setTo}
+        />
         <NumberInput label="km" size="xs" value={km} onChange={setKm} />
-        <Select label="Capacity" size="xs" data={tbps} value={cap} onChange={setCap} />
+        <Select
+          allowDeselect={false}
+          label="Capacity"
+          size="xs"
+          data={tbps}
+          value={cap}
+          onChange={setCap}
+        />
         <Button
           size="compact-sm"
           disabled={!region || !to || !cap || cable.isPending}
