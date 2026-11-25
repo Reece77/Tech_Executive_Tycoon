@@ -48,10 +48,10 @@ Retail stores; TV bundles; satellite operators beyond M40's.
 
 ## Acceptance criteria
 
-- [ ] `telecom.yaml` cites a source for every value; history to 2025 follows it.
+- [x] `telecom.yaml` cites a source for every value; history to 2025 follows it.
 - [ ] A company without telecom plays exactly as before; every earlier guard is unchanged on the combined code (or explained under rules 1–4).
-- [ ] No rival bid or draw reaches the API or a prompt (hidden-value test).
-- [ ] §62.5 targets 2–5 printed and met, or carried with a recorded decision.
+- [x] No rival bid or draw reaches the API or a prompt (hidden-value test).
+- [x] §62.5 targets 2–5 printed and met, or carried with a recorded decision.
 - [ ] `make check`, `make check-timing`, `determinism` and CI `e2e` green; merged through a pull request per CLAUDE.md §6 with the trailer `Milestone-Tag: m53-done`.
 
 ## Decisions made
@@ -73,6 +73,24 @@ Retail stores; TV bundles; satellite operators beyond M40's.
 15. **A telecom line's running cost a customer follows its region's prices** (engine change, found by CI's serial-founder test). The categories' `hosting_cents` are North American (40% of the reference price, A); applied flat everywhere, China Mobile paid $886M a month to serve $560M of revenue and its cash went negative in month 2 (so it could not pay for the takeover the test accepts). A category with its own `price_index` now scales a regional segment's hosting by `price_ratio` (exact, `geo.formulas.cost_ratio`) in phase 6 and in the network's cash flow; every other category is unchanged.
 16. **Auction draws' constants are keys.** CI's literal guard: a historical auction's marginal loser bids for `auction.marginal_share` 0.25 of the blocks (was `// 4`, the same blocks) and a seeded rival wants `auction.seeded_want` [0.8, 1.6] x an even split (was the literal 0.8 + 0.8 x u, the same draws). Rivals' hidden values are float estimates only compared with the integer clock price (`# money-exact: estimate`); reserves are built with `exact` and renewal fees with `times`.
 
+## Readings (seeds 1-10, `uv run --project backend python tools/m53_targets.py`)
+
+| Target | Band | Reading | Met |
+| --- | --- | --- | --- |
+| 1 history holds | earlier guards unchanged | M28's five earlier series equal `main`'s fixture on seeds 1-10; the new `telecom` series recorded; golden snapshots unchanged | yes |
+| 2a contested auction price | >= 1.5x reserve | 1.80x (median of 550 auctions; 1.34-3.23) | yes |
+| 2b without mid-band | >= 20% less share | 40% less (36-41%; 3.4% against 5.6% in April 2024, from 2.3% at 5G's arrival) | yes |
+| 3 national 5G network payback | >= 60 months | 97 months (94-103; none never by 2039). 62 before decision 15: the player's North American costs are unchanged (ratio 1), so the move comes through the rivals' books (operators elsewhere no longer run out of cash) | yes |
+| 4 rip-and-replace | >= 10% of network capex | 12.9% | yes |
+| 5 turn time | the guards | 375 ms a turn with a national network (2026-2035); `make check-timing` 7 passed | yes |
+
+Tuned (rule 1): only `telecom.auction.seeded_value` [1.0, 2.6] -> [1.3, 3.2] (target 2a: 1.34x on seed 1 before, 1.80x on seeds 1-10 after).
+
 ## Follow-ups
 
-(filled in by the agent)
+- Re-check telecom.yaml's R and A rows (ARPU, vendor RAN shares, auction reserves, rip-and-replace costs) against ITU, GSMA Intelligence, the regulators and filings once those hosts are reachable (decision 2).
+- Acquired operators' networks: model the target's sites, radios and spectrum rather than keeping its data network (decision 13).
+- Listed operators (`listed_from`) and their share prices (decision 8).
+- A facility-opex label of the telecom kinds' own (decision 14).
+- The takeover buyer (`mna.exit.buyer_of`) is the rival with the highest revenue, now often China Mobile; a buyer's region and appetite (and foreign-investment review) could matter.
+- The Middle East and Central Asia are in no game region (decision 3).
