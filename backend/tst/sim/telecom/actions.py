@@ -15,7 +15,8 @@ where its company's networks and spectrum reach (tst.sim.telecom.services).
 - **BidSpectrum** (`bid`): register (or change, or with 0 blocks withdraw) a bid in an announced
   auction: blocks wanted and a limit a block. Refused in an area that assigns spectrum
   administratively.
-- **ReplaceRadios** (`replace`): rip-and-replace: another vendor's radios on a record's sites; when
+- **ReplaceRadios** (`replace`): rip-and-replace: another vendor's radios on a record's sites, at
+  the radios' price x `ban.swap_mult` (removing the old kit and re-integrating a live site); when
   they go live they count as replaced against its bans.
 - **SetTelecomLine** (`setting`): a line's zero-rating and satellite partner.
 """
@@ -485,9 +486,8 @@ def replace_radios(
     state = spend_energy(
         state, action.actor_id, "replace_radios", balance, cost=balance.telecom.energy["replace"]
     )
-    capex = action.sites * eq.radio_cents(
-        state, company, old.generation, action.vendor, balance, data
-    )
+    radio = eq.radio_cents(state, company, old.generation, action.vendor, balance, data)
+    capex = action.sites * radio * balance.telecom.ban.swap_mult  # removal and integration
     state, nf, total, months = _order(
         state,
         company,

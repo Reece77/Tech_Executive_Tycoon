@@ -14,12 +14,12 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.telecom import (
-    SpectrumBidIn,
     CableIn,
     FibreIn,
     LineSettingIn,
     RadiosIn,
     ReplaceRadiosIn,
+    SpectrumBidIn,
     TelecomActionOut,
     TelecomScreenOut,
     TowersIn,

@@ -421,7 +421,7 @@ class AuctionBalance(_Frozen):
 
 
 class BanBalance(_Frozen):
-    radio_share: float = Field(gt=0, le=1)  # unused: a site's radio is the generation's cost
+    swap_mult: float = Field(ge=1)  # a rip-and-replace radio's price x this (removal, integration)
     refuse_share: float = Field(gt=0, le=1)  # a vendor banned in this share of a region is refused
     seeded_window: Range  # years after telecom.start a seeded ban may come (hidden)
     seeded_chance: float = Field(ge=0, le=1)  # an area's chance of a seeded ban in the window

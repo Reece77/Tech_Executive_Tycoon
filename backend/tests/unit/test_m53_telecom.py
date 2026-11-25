@@ -1,5 +1,5 @@
-"""M53 (formulas.md 62.1-62.4): networks and generations, spectrum auctions and licences, equipment and
-bans, regulation, and the gates the player's lines sell through."""
+"""M53 (formulas.md 62.1-62.4): networks and generations, spectrum auctions and licences, equipment
+and bans, regulation, and the gates the player's lines sell through."""
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ def _at(loaded: LoadedData, year: int, month: int = 1) -> GameState:
     return replace(fresh_game(loaded), turn=ym_to_turn(year, month))
 
 
-# --- 62.1 networks ---------------------------------------------------------------------------------
+# --- 62.1 networks -------------------------------------------------------------------------------
 
 
 def test_coverage_follows_sites_and_is_capped_by_licensed_areas(loaded: LoadedData) -> None:
@@ -137,7 +137,7 @@ def test_generations_open_by_their_dates(loaded: LoadedData) -> None:
     assert not generation_open(_at(loaded, 2040), "g6", d)  # seeded: no month drawn yet
 
 
-# --- 62.2 spectrum ---------------------------------------------------------------------------------
+# --- 62.2 spectrum -------------------------------------------------------------------------------
 
 
 def test_the_clock_stops_when_demand_fits() -> None:
@@ -239,7 +239,7 @@ def test_bids_are_refused_in_closed_areas_and_below_the_reserve(loaded: LoadedDa
         apply_telecom(state, BidSpectrum(founder, 2, 1, 10), {}, b, d)
 
 
-# --- 62.3 equipment and bans -------------------------------------------------------------------
+# --- 62.3 equipment and bans ---------------------------------------------------------------------
 
 
 def test_bans_refuse_new_radios_and_switch_sites_off_after_the_deadline(loaded: LoadedData) -> None:
@@ -293,7 +293,7 @@ def test_towers_are_refused_for_a_banned_vendor_or_a_closed_generation(loaded: L
     assert f.capex_cents == round(want)
 
 
-# --- 62.4 regulation -------------------------------------------------------------------------------
+# --- 62.4 regulation -----------------------------------------------------------------------------
 
 
 def test_a_missed_coverage_obligation_is_fined_then_revoked(loaded: LoadedData) -> None:
@@ -304,7 +304,7 @@ def test_a_missed_coverage_obligation_is_fined_then_revoked(loaded: LoadedData) 
     fines = 0
     for year in range(b.telecom.regulation.obligation_grace_years + 1):
         state = replace(state, turn=lic.obligation_turn + 12 * year)  # type: ignore[operator]
-        state, entries, logs = regulation.obligations_month(state, b, d)
+        state, entries, _ = regulation.obligations_month(state, b, d)
         fines += len([e for e in entries if e.memo.startswith("Coverage obligation fine")])
         for e in entries:
             assert sum(x.amount for x in e.lines) == 0

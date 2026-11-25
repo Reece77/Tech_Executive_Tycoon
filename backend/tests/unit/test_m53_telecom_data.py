@@ -1,7 +1,7 @@
-"""M53 sub-task 1 (formulas.md 62, 62.5 target 1): telecom.yaml cites a source for every value (each
-number is tagged S, D, R or A; money carries its dollar year), it loads and cross-checks, and history
-to 2025 follows it: operators hold their subscribers, vendors their RAN shares, lines open and close
-on their dates, and the markets' size is the data's at the game's scale."""
+"""M53 sub-task 1 (formulas.md 62, 62.5 target 1): telecom.yaml cites a source for every value
+(each number is tagged S, D, R or A; money carries its dollar year), it loads and cross-checks,
+and history to 2025 follows it: operators hold their subscribers, vendors their RAN shares, lines
+open and close on their dates, and the markets' size is the data's at the game's scale."""
 
 from __future__ import annotations
 

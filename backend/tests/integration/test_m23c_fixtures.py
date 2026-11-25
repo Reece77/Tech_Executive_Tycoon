@@ -50,6 +50,7 @@ V3 = [
     ("e2e_m47_save", "negotiate", "/negotiations", True),  # M47: the practice save pt-negotiate
     ("e2e_m48_save", "boardroom", "/meetings", False),  # M48: the practice save pt-boardroom
     ("e2e_m49_save", "talks", "/talks", True),  # M49: the practice save pt-talks
+    ("e2e_m53_save", "telecom", "/telecom", True),  # M53: the practice save pt-telecom
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

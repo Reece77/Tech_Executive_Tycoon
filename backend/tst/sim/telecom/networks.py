@@ -2,18 +2,20 @@
 networks give it in a region.
 
 - **Sites** are a region's live `tower` facilities' units; **radios** of a generation are those
-  of its `tower` and `radio` records (a radio record adds a generation to sites the company already
-  has, at most its sites), less sites switched off after a ban's deadline (`dark`).
+  of its `tower` and `radio` records (a radio record adds a generation to sites the company
+  already has, at most its sites), less sites switched off after a ban's deadline (`dark`).
 - **Spectrum:** a band's licensed share of the region is the sum of its licence areas' shares
   where the company holds that band; its MHz is the licences' MHz x their area's share.
-- **Coverage** on band b from n sites carrying a generation:
-  `min(licensed share_b, (n / (sites_full x scale x density_b)) ** exponent)`; a network's coverage
-  is its best band's (none without spectrum: a mobile line can't sell there, but a satellite
-  partner adds `satellite.partner_coverage` from direct-to-device's opening).
-- **Capacity** (GB a month): for each radio record and band held, sites x MHz x the generation's
-  efficiency (x `low_mult` on low band, `high_mult` on high) x sectors x seconds a month x
-  utilisation / 8,000. **Demand** is the company's mobile subscribers there x the year's traffic a
-  subscription (telecom.yaml). Over capacity, appeal x (capacity / demand) ** congestion_k.
+- **Coverage** on band b from n sites carrying a generation: `min(licensed share_b, (n /
+  (sites_full x scale x density_b)) ** exponent)`; a network's coverage is its best band's (none
+  without spectrum: a mobile line can't sell there, but a satellite partner adds
+  `satellite.partner_coverage` from direct-to-device's opening).
+- **Capacity** (GB a month): for each band held, each site carries it once, at the best
+  efficiency its radios reach on it (a generation needing mid-band, 5G or 6G, reaches its own on
+  mid and high band and 4G's on low band): sites x MHz x efficiency (x `low_mult` on low band,
+  `high_mult` on high) x sectors x seconds a month x utilisation / 8,000. **Demand** is the
+  company's mobile subscribers there x the year's traffic a subscription (telecom.yaml). Over
+  capacity, appeal x (capacity / demand) ** congestion_k.
 - **Generations** give their feature points on the covered share they carry: a generation that
   needs mid-band (5G, 6G) gives its points in full only where mid-band coverage reaches, and the
   points of the best generation before it that needs none (4G's) elsewhere.
@@ -123,6 +125,23 @@ def _band_mult(band: str, balance: Balance) -> float:
     return cap.low_mult if band == "low" else cap.high_mult if band == "high" else 1.0
 
 
+def band_efficiency(generation: str, band: str, data: GameData) -> float:
+    """A generation's spectral efficiency on a band: a generation that needs mid-band (5G, 6G)
+    reaches its own only on mid and high band; on low band, that of the best generation before
+    it that needs none (low-band 5G is 4G-like)."""
+    f = file(data)
+    g = f.generation(generation)
+    if not g.mid_band_needed or band != "low":
+        return g.efficiency
+    before = []
+    for x in f.generations:
+        if x.key == generation:
+            break
+        if not x.mid_band_needed:
+            before.append(x.efficiency)
+    return max(before, default=g.efficiency)
+
+
 def site_gb(mhz: float, efficiency: float, band: str, balance: Balance) -> float:
     """One site's GB a month on `mhz` of a band at a generation's efficiency."""
     cap = balance.telecom.capacity
@@ -163,10 +182,20 @@ def network(
         )
         gen_cov[g] = cov
         mid_cov[g] = min(licensed["mid"], site_coverage(n, "mid", region, balance, data))
-        eff = f.generation(g).efficiency
-        for b in BANDS:
-            if mhz[b] > 0:
-                capacity += n * site_gb(mhz[b], eff, b, balance)
+    for b in BANDS:
+        if mhz[b] <= 0:
+            continue
+        # a site carries a band once, at the best efficiency its radios reach on it
+        left = sites
+        for g, eff in sorted(
+            ((g, band_efficiency(g, b, data)) for g in order if radios.get(g, 0) > 0),
+            key=lambda x: -x[1],
+        ):
+            n = min(radios[g], left)
+            capacity += n * site_gb(mhz[b], eff, b, balance)
+            left -= n
+            if left <= 0:
+                break
     total_working = sum(working(state, r) for r in records if not r.overlay)
     coverage = max(
         (min(licensed[b], site_coverage(total_working, b, region, balance, data)) for b in BANDS),
