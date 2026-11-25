@@ -18,6 +18,7 @@ from tst.sim.events.formulas import effect_cap
 from tst.sim.events.models import GameEvent
 from tst.sim.events.render import full_name
 from tst.sim.founder.persona import public_words
+from tst.sim.modes.models import began_in
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState
 
@@ -204,8 +205,9 @@ def build_prompt(
         "this_storyline": {"title": story.title, "summary": story.summary} if story else None,
         "template_idea": {"title": template.title, "body": " ".join(template.body.split())},
     }
-    system = SYSTEM.format(
-        body_words=ev.body_words, tone=LIGHT if event.tone == "light" else GROUNDED
+    system = began_in(  # M50: a 2008 game began in January 2008
+        SYSTEM.format(body_words=ev.body_words, tone=LIGHT if event.tone == "light" else GROUNDED),
+        state.mode,
     )
     if story is not None:
         system += (

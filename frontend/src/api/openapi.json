@@ -23010,7 +23010,7 @@
               "anyOf": [
                 {
                   "type": "integer",
-                  "minimum": 0
+                  "minimum": -24
                 },
                 {
                   "type": "null"
@@ -39597,6 +39597,12 @@
             "title": "Campaign Length",
             "description": "Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069",
             "default": "standard"
+          },
+          "start_year": {
+            "type": "integer",
+            "title": "Start Year",
+            "description": "M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2008 or 2010); a Sandbox or scenario keeps its own year",
+            "default": 2010
           }
         },
         "type": "object",
@@ -57078,6 +57084,14 @@
       },
       "NewGameMetaOut": {
         "properties": {
+          "start_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Start Years",
+            "description": "M50 (ADR-0024): the years a campaign can start in, earliest first"
+          },
           "sandbox": {
             "anyOf": [
               {

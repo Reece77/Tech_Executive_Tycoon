@@ -170,6 +170,8 @@ def _year_points(f: FoundryDef) -> list[tuple[int, float]]:
 def history_capacity(f: FoundryDef, turn: int) -> float:
     """Thousand wafer starts a month, linear between the year points (held at the ends)."""
     pts = _year_points(f)
+    if turn >= 0:  # M50: from 2010 the points from 2010 only, exactly as before
+        pts = [p for p in pts if p[0] >= 0] or pts
     if turn <= pts[0][0]:
         return pts[0][1]
     for (t0, v0), (t1, v1) in itertools.pairwise(pts):

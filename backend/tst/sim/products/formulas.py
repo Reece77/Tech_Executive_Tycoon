@@ -146,8 +146,13 @@ def seller_capacity(rate: float, contributions: Iterable[float]) -> float:
 
 
 def expected_features(category: CategoryDef, turn: int) -> float:
-    """F_exp(t) = F0 + dF x t."""
-    return category.features_at_start + category.features_per_month * max(turn, 0)
+    """F_exp(t) = F0 + dF x t. Before 2010 (M50, ADR-0024) the line would fall below zero, so
+    it runs back geometrically at 2010's own yearly ratio: F0 x (F0 / F_exp(12))^(-t / 12)."""
+    f0, df = category.features_at_start, category.features_per_month
+    if turn >= 0:
+        return f0 + df * turn
+    ratio = f0 / (f0 + df * MONTHS_PER_YEAR)
+    return float(f0 * dmath.pow(ratio, -turn / MONTHS_PER_YEAR))
 
 
 def feature_score(points: float, category: CategoryDef, turn: int) -> float:

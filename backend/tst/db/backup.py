@@ -27,7 +27,8 @@ def backup_dir(save_path: Path) -> Path:
 
 
 def _periodic_re(slug: str) -> re.Pattern[str]:
-    return re.compile(rf"^{re.escape(slug)}\.turn-(\d{{3,}})\.sqlite$")
+    # M50: a 2008-2009 turn is negative ("turn--12")
+    return re.compile(rf"^{re.escape(slug)}\.turn-(-\d{{2,}}|\d{{3,}})\.sqlite$")
 
 
 def _copy(src: Path, dst: Path) -> Path:

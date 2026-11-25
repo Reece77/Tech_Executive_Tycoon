@@ -80,7 +80,7 @@ def key_drug_b(d: RivalDrug, t: float, data: GameData) -> float:
     mid = 0.5  # tunable-exempt: a year's value sits at its middle
     if t < d.approved:
         return 0.0
-    points = dict(d.revenue)
+    points = pd.from_2010(dict(d.revenue), t)  # M50: 2010 on reads as before
     first = min(points)
     if d.approved < first:
         points.setdefault(d.approved, 0.0)

@@ -32,7 +32,7 @@ IRONMAN = "ironman"
 NAME_MAX = 80  # characters in a display name (save_meta.display_name)
 SLUG_MAX = 48  # characters taken from a display name for a new save's slug
 _BACKUP_RE = re.compile(
-    r"^(?P<slug>.+)\.turn-(?P<turn>\d{3,})"
+    r"^(?P<slug>.+)\.turn-(?P<turn>-\d{2,}|\d{3,})"  # M50: negative turns before 2010
     r"(?:\.pre-migration-(?P<rev>.+)|\.manual-(?P<manual>\d{8}T\d{6}))?\.sqlite$"
 )
 

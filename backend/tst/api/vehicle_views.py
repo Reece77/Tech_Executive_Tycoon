@@ -37,6 +37,7 @@ from tst.sim.facilities.compute import home_region_of
 from tst.sim.facilities.config import month_to_turn
 from tst.sim.facilities.lifecycle import facility_name, staffing
 from tst.sim.group.assets import group_ids
+from tst.sim.modes.models import world_start_turn
 from tst.sim.products.models import Product
 from tst.sim.state import GameState
 from tst.sim.vehicles import cells, charging, demand, sales, subsidies
@@ -44,14 +45,14 @@ from tst.sim.vehicles import spec as vs
 from tst.sim.vehicles.config import CHEMISTRIES, LEVELS, PLATFORM_CHOICES
 from tst.sim.vehicles.data import file, in_history, is_vehicle, rival_def, year_at
 
-FIRST_YEAR: Final = 2010  # tunable-exempt: the game's first year
 DECEMBER: Final = 12  # tunable-exempt: calendar
 
 
 def _year_turns(state: GameState) -> list[tuple[int, int]]:
     """(year, the turn read for it): every December to the last one played, and now."""
     year, _ = turn_to_ym(state.turn)
-    out = [(y, ym_to_turn(y, DECEMBER)) for y in range(FIRST_YEAR, year)]
+    first = turn_to_ym(world_start_turn(state.mode))[0]  # M50: 2008 in a 2008 game
+    out = [(y, ym_to_turn(y, DECEMBER)) for y in range(first, year)]
     out.append((year, state.turn))
     return out
 

@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym, ym_to_turn
-from tst.sim.data_models import GameData, incumbent_regions
+from tst.sim.data_models import GameData, IncumbentProduct, incumbent_regions
 from tst.sim.geo.formulas import regional_d0, regional_growth, regional_price_cents
 from tst.sim.geo.models import ProductRegion, RegionalMarket, RegionalSegment
 from tst.sim.hiring.models import INCUMBENT_PRODUCT_BLOCK, INCUMBENT_PRODUCT_IDS_FROM
@@ -45,6 +45,8 @@ def addressable_at(data: GameData, category: str, segment: str, turn: int) -> fl
         return value * dmath.pow(monthly_growth(cat, 0), turn)
     for t in range(turn):
         value *= monthly_growth(cat, turn_to_ym(t)[0])
+    for t in range(turn, 0):  # ADR-0024: before 2010, D0 shrunk by each earlier month's growth
+        value /= monthly_growth(cat, turn_to_ym(t)[0])
     return value
 
 
@@ -57,6 +59,8 @@ def regional_addressable_at(
     value = regional_d0(cat.market(segment).addressable, region, home, data)
     for t in range(turn):
         value *= regional_monthly_growth(data, category, region, turn_to_ym(t)[0])
+    for t in range(turn, 0):  # ADR-0024: before 2010, shrunk by each earlier month's growth
+        value /= regional_monthly_growth(data, category, region, turn_to_ym(t)[0])
     return value
 
 
@@ -67,6 +71,134 @@ def regional_monthly_growth(
     month with era boosts (M11, 21.4), else categories.yaml's for the year."""
     g = data.category(category).growth_in(year) if growth is None else growth
     return float(dmath.pow(1 + regional_growth(g, region, data), 1 / 12))
+
+
+@dataclass(frozen=True, slots=True)
+class BuiltProduct:
+    """One incumbent product as it starts: the product, its home segments, and its regions'
+    launches and segments (19.5)."""
+
+    product: Product
+    segments: tuple[ProductSegment, ...]
+    regions: tuple[ProductRegion, ...]
+    abroad: tuple[RegionalSegment, ...]
+
+
+def launch_turn(spec: IncumbentProduct) -> int | None:
+    """The month an incumbent product joins a game begun before it (M50, ADR-0024): its real
+    launch, or January 2010 for one launched during 2010 or later (a 2010 game has it from
+    turn 0). None: on sale before the earliest start."""
+    if spec.launched is None:
+        return None
+    return min(ym_to_turn(*spec.launched), 0)
+
+
+def pending_launch(spec: IncumbentProduct, turn: int) -> bool:
+    """Not yet on sale in a game begun at `turn` (only ever true before 2010)."""
+    joins = launch_turn(spec)
+    return joins is not None and joins > turn
+
+
+def early_scale(spec: IncumbentProduct, turn: int) -> float | None:
+    """A game begun before 2010: the product's customers then over its 2010 customers, if
+    listed for the start year (M50, 60.2); None keeps its share of the market then."""
+    if turn >= 0:
+        return None
+    return spec.early_scale.get(turn_to_ym(turn)[0])
+
+
+def incumbent_product(
+    data: GameData,
+    spec: IncumbentProduct,
+    company_id: int,
+    product_id: int,
+    turn: int,
+    home: str | None,
+    regional: bool,
+    demand: dict[tuple[str, str], float],
+    regional_demand: dict[tuple[str, str, str], float],
+    scale: float | None = None,
+    empty: bool = False,
+) -> BuiltProduct:
+    """An incumbent product on sale from `turn` (11.9, 19.5) with its share of `demand`, or
+    (M50) `scale` x its share of the 2010 market, or no customers when `empty`."""
+    cat = data.category(spec.category)
+    product = Product(
+        id=product_id,
+        company_id=company_id,
+        category=spec.category,
+        name=spec.name,
+        status="live",
+        quality=spec.quality,
+        feature_points=held_feature_points(spec.features, cat, turn),
+        brand=spec.brand,
+        marketing_budget_cents=0,
+        created_turn=turn,
+        launched_turn=turn,
+        held_feature=spec.features,
+    )
+
+    def home_customers(seg: str, share_bp: int) -> float:
+        if empty:
+            return 0.0
+        base = cat.market(seg).addressable if scale is not None else demand[(cat.key, seg)]
+        return base * share_bp / BP_DENOMINATOR * (scale if scale is not None else 1.0)
+
+    def abroad_customers(seg: str, region: str, share_bp: int) -> float:
+        if empty:
+            return 0.0
+        if scale is not None:
+            base = regional_addressable_at(data, cat.key, seg, region, home or "", 0)
+        else:
+            base = regional_demand[(cat.key, seg, region)]
+        return base * share_bp / BP_DENOMINATOR * (scale if scale is not None else 1.0)
+
+    segments: list[ProductSegment] = []
+    launches: list[ProductRegion] = []
+    abroad: list[RegionalSegment] = []
+    regions = incumbent_regions(spec)
+    # v1 incumbents (no regions listed) sell at home whatever the home region is
+    # (19.5: the home region's markets are exactly v1's); regional incumbents only
+    # where they are listed.
+    at_home = home is None or spec.regions is None or home in regions
+    for seg in cat.segment_keys:  # categories.yaml order
+        if seg not in spec.segments or not at_home:
+            continue
+        value = spec.segments[seg]
+        segments.append(
+            ProductSegment(
+                product_id=product_id,
+                segment=seg,
+                price_cents=value.price_cents,
+                customers=home_customers(seg, value.share_bp),
+                added_turn=turn,
+            )
+        )
+    for region in regions if regional else ():
+        if region == home:
+            continue
+        launches.append(ProductRegion(product_id, region, turn, turn))
+        for seg in cat.segment_keys:
+            if seg not in spec.segments:
+                continue
+            value = spec.segments[seg]
+            # A regional incumbent's prices are already its region's (incumbents.yaml).
+            price = (
+                value.price_cents
+                if spec.regions is not None
+                else regional_price_cents(value.price_cents, region, home or "", data)
+            )
+            abroad.append(
+                RegionalSegment(
+                    product_id=product_id,
+                    region=region,
+                    segment=seg,
+                    price_cents=price,
+                    customers=abroad_customers(seg, region, value.share_bp),
+                    added_turn=turn,
+                )
+            )
+    return BuiltProduct(product, tuple(segments), tuple(launches), tuple(abroad))
 
 
 def initial_market(
@@ -132,67 +264,23 @@ def initial_market(
         if incumbent_blocks:  # ADR-0013 amendment (M12a): ids by position in the data
             product_id = INCUMBENT_PRODUCT_IDS_FROM + index * INCUMBENT_PRODUCT_BLOCK
         for spec in inc.products:
-            cat = data.category(spec.category)
-            products.append(
-                Product(
-                    id=product_id,
-                    company_id=company_id,
-                    category=spec.category,
-                    name=spec.name,
-                    status="live",
-                    quality=spec.quality,
-                    feature_points=held_feature_points(spec.features, cat, turn),
-                    brand=spec.brand,
-                    marketing_budget_cents=0,
-                    created_turn=turn,
-                    launched_turn=turn,
-                    held_feature=spec.features,
+            if not pending_launch(spec, turn):  # M50: a later launch joins in its month
+                built = incumbent_product(
+                    data,
+                    spec,
+                    company_id,
+                    product_id,
+                    turn,
+                    home,
+                    bool(regional),
+                    demand,
+                    regional_demand,
+                    early_scale(spec, turn),
                 )
-            )
-            regions = incumbent_regions(spec)
-            # v1 incumbents (no regions listed) sell at home whatever the home region is
-            # (19.5: the home region's markets are exactly v1's); regional incumbents only
-            # where they are listed.
-            at_home = home is None or spec.regions is None or home in regions
-            for seg in cat.segment_keys:  # categories.yaml order
-                if seg not in spec.segments or not at_home:
-                    continue
-                value = spec.segments[seg]
-                segments.append(
-                    ProductSegment(
-                        product_id=product_id,
-                        segment=seg,
-                        price_cents=value.price_cents,
-                        customers=demand[(spec.category, seg)] * value.share_bp / BP_DENOMINATOR,
-                        added_turn=turn,
-                    )
-                )
-            for region in regions if regional else ():
-                if region == home:
-                    continue
-                launches.append(ProductRegion(product_id, region, turn, turn))
-                for seg in cat.segment_keys:
-                    if seg not in spec.segments:
-                        continue
-                    value = spec.segments[seg]
-                    # A regional incumbent's prices are already its region's (incumbents.yaml).
-                    price = (
-                        value.price_cents
-                        if spec.regions is not None
-                        else regional_price_cents(value.price_cents, region, home or "", data)
-                    )
-                    abroad.append(
-                        RegionalSegment(
-                            product_id=product_id,
-                            region=region,
-                            segment=seg,
-                            price_cents=price,
-                            customers=regional_demand[(spec.category, seg, region)]
-                            * value.share_bp
-                            / BP_DENOMINATOR,
-                            added_turn=turn,
-                        )
-                    )
+                products.append(built.product)
+                segments += built.segments
+                launches += built.regions
+                abroad += built.abroad
             product_id += 1
     return InitialMarket(
         companies=tuple(companies),

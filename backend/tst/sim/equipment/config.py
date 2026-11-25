@@ -11,6 +11,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import TURN_ZERO, from_2010
 from tst.sim.facilities.config import Range, month_to_turn
 
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0 is January 2010 (CLAUDE.md 7)
@@ -25,7 +26,8 @@ class _Frozen(BaseModel):
 
 
 def year_series(points: dict[int, float], year: float) -> float:
-    """Linear between year points, held at the ends."""
+    """Linear between year points, held at the ends; from 2010 without 2008-2009 (M50)."""
+    points = from_2010(points, year, TURN_ZERO[0])
     ys = sorted(points)
     if year <= ys[0]:
         return float(points[ys[0]])

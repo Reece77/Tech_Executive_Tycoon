@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from tst.sim.calendar import MONTHS_PER_YEAR, ym_to_turn
+from tst.sim.calendar import MONTHS_PER_YEAR, turn_to_ym, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.research.data import DomainDef, EraDef, rate_in
 from tst.sim.rng import RngFactory
@@ -38,6 +38,9 @@ def accrued(domain: DomainDef, turn: int) -> float:
     value = domain.baseline.start
     year = START_YEAR
     left = turn
+    for t in range(turn, 0):  # M50 (ADR-0024): before 2010, run back at that year's rate
+        value -= rate_in(domain.baseline.per_year, turn_to_ym(t)[0]) / MONTHS_PER_YEAR
+    value = max(value, 0.0) if turn < 0 else value  # a domain new in 2010 starts at 0
     while left > 0:
         months = min(left, MONTHS_PER_YEAR)
         value += rate_in(domain.baseline.per_year, year) * months / MONTHS_PER_YEAR

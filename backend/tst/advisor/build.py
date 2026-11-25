@@ -31,6 +31,7 @@ from tst.db.models import (
 )
 from tst.loader import LoadedData
 from tst.sim.errors import NotFoundError, SimError
+from tst.sim.modes.models import world_start_turn
 from tst.sim.people.reveal import revealed_range
 from tst.sim.state import GameState, company_cash
 
@@ -82,7 +83,8 @@ class Builder:
         self.company = state.player.id
         self.played = state.turn - 1  # the last closed month
         self.months = data.advisor.explain.history_months
-        self.since = max(0, state.turn - self.months)
+        self.begun = world_start_turn(state.mode)  # M50: January 2008 in a 2008 game
+        self.since = max(self.begun, state.turn - self.months)
         self._prev: dict[int, list[ProductMonthRow]] = {}
 
     # --- shared reads -----------------------------------------------------------------------
@@ -100,7 +102,7 @@ class Builder:
         """A month's cash effects by category (cash) or by cost line (burn, before
         financing and counting money out as positive): tst.api.breakdowns' own split."""
         lines: dict[str, float] = defaultdict(float)
-        if turn < 0:
+        if turn < self.begun:
             return lines
         for code, name, memo, cents in bd.cash_effects(self.session, self.company, turn):
             category = bd._category(code, memo)
@@ -197,7 +199,7 @@ class Builder:
 
     def _revenue_by_product(self, turn: int) -> dict[str, float]:
         own = {p.id: p.name for p in self.state.company_products(self.company)}
-        if not own or turn < 0:
+        if not own or turn < self.begun:
             return {}
         out: dict[str, float] = defaultdict(float)
         for pid, cents in self.session.execute(
@@ -238,7 +240,7 @@ class Builder:
         return self._out(m, None, value, items, note, trend, drivers)
 
     def _accounts(self, turn: int, codes: Iterable[str] | None = None) -> dict[str, float]:
-        if turn < 0:
+        if turn < self.begun:
             return {}
         wanted = set(codes) if codes is not None else None
         return {
@@ -411,7 +413,9 @@ class Builder:
         self._prev = months
         peers = [p.id for p in self.state.products if p.category == product.category]
         rivals: dict[tuple[int, str], float] = {}
-        for r in self.product_months([p for p in peers if p != pid], since=max(0, self.played - 1)):
+        for r in self.product_months(
+            [p for p in peers if p != pid], since=max(self.begun, self.played - 1)
+        ):
             if r.appeal is not None and r.customers > 0:
                 key = (r.turn, r.segment)
                 rivals[key] = max(rivals.get(key, 0.0), r.appeal)
@@ -740,7 +744,7 @@ class Builder:
         return self._out(m, entity, value, items, note, trend, drivers, account.name)
 
     def _memo_lines(self, turn: int, code: str) -> list[tuple[str, str, int]]:
-        if turn < 0:
+        if turn < self.begun:
             return []
         stmt = (
             select(LedgerEntryRow.memo, LedgerLineRow.account_code, LedgerLineRow.amount_cents)

@@ -34,6 +34,7 @@ from fractions import Fraction
 from typing import Final
 
 from tst.sim import dmath
+from tst.sim.calendar import TURN_ZERO
 from tst.sim.commodities import commodity
 from tst.sim.commodities.offtake import usd_per_unit
 from tst.sim.data_models import Balance, GameData
@@ -76,7 +77,8 @@ def market_cents(state: GameState, balance: Balance, data: GameData) -> float:
 def history_cumulative_gwh(data: GameData) -> float:
     """The world's EV cells made 2010-2025, GWh (vehicles.yaml, linear between its years)."""
     points = file(data).world_cells_gwh
-    return sum(interp(points, y) for y in range(min(points), max(points) + 1))
+    first = max(min(points), TURN_ZERO[0])  # M50: from 2010, as the history's definition
+    return sum(interp(points, y) for y in range(first, max(points) + 1))
 
 
 def year_gwh(state: GameState, balance: Balance, data: GameData) -> float:

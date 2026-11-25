@@ -24,7 +24,7 @@ from tst.api.schemas.org import OrgMetaOut
 from tst.api.schemas.products import ProductsMetaOut
 from tst.api.schemas.saves import FounderIn
 from tst.sim.actions.org import DEPARTMENT_STAGE, PROMOTION_LADDER
-from tst.sim.calendar import format_turn, ym_to_turn
+from tst.sim.calendar import START_YEARS, format_turn, ym_to_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.hiring.phases import ONE_BATCH
@@ -65,6 +65,7 @@ def new_game_meta(data: DataDep) -> NewGameMetaOut:
     game, founder = data.game_data, data.balance.founder
     sb = data.balance.sandbox
     return NewGameMetaOut(
+        start_years=list(START_YEARS),  # M50
         sandbox=SandboxMetaOut(
             year_min=sb.years[0],
             year_max=sb.years[1],

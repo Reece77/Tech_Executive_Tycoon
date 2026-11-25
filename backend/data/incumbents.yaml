@@ -28,6 +28,15 @@
 #   only their own region; their price_cents are already that region's prices, and their
 #   share_bp come from the M3a steady-state method run on the regional market (M9 brief,
 #   "Decisions made").
+# - M50 (ADR-0024, formulas.md 60.2), read only by a game begun before 2010 (a 2010 game is
+#   unchanged): `launched` [year, month] a product went on sale after January 2008, so it joins
+#   that month with no customers (one launched in 2010 joins in January 2010 with its share, as
+#   a 2010 game has it); `early_scale` {start year: its customers that January over its January
+#   2010 customers}, from its revenue (or users) then against 2010's. A product without one
+#   keeps its share of the smaller 2008 market. Companies themselves all exist from the start
+#   (their founding year is shown only). Tags: R recalled from the named filing or report (not
+#   re-read in this session), A an assumption with its basis. The car, robot, medical, pharma
+#   and space makers' 2008-2009 positions are their own systems' data (vehicles.yaml and the rest).
 companies:
   - name: Salesforce
     stage: 4
@@ -39,6 +48,7 @@ companies:
     cash_months: 24
     products:
       - name: Sales Cloud
+        early_scale: { 2008: 0.65 } # M50 (60.2): R: Salesforce revenue $1.08B (FY Jan 2009) against $1.66B (FY Jan 2011)
         category: b2b_saas
         quality: 70
         features: 80
@@ -58,6 +68,7 @@ companies:
     cash_months: 60
     products:
       - name: CRM On Demand
+        early_scale: { 2008: 0.85 } # M50 (60.2): R: Oracle revenue $22.4B (FY May 2008) against $26.8B (FY May 2010)
         category: b2b_saas
         quality: 60
         features: 75
@@ -75,6 +86,7 @@ companies:
     cash_months: 18
     products:
       - name: Zoho CRM
+        early_scale: { 2008: 0.7 } # M50 (60.2): A: private; about Salesforce's pace
         category: b2b_saas
         quality: 55
         features: 60
@@ -93,6 +105,7 @@ companies:
     cash_months: 24
     products:
       - name: JIRA
+        early_scale: { 2008: 0.6 } # M50 (60.2): R: Atlassian revenue about $35M (FY June 2008) against $59M (FY June 2010)
         category: dev_tools
         quality: 70
         features: 75
@@ -112,6 +125,7 @@ companies:
     cash_months: 60
     products:
       - name: Team Foundation Server
+        early_scale: { 2008: 0.89 } # M50 (60.2): R: Microsoft server and tools revenue $13.2B (FY2008) against $14.9B (FY2010)
         category: dev_tools
         quality: 65
         features: 80
@@ -129,6 +143,7 @@ companies:
     cash_months: 12
     products:
       - name: GitHub
+        launched: [2008, 4] # M50 (60.2): R: GitHub opened to the public on 10 April 2008
         category: dev_tools
         quality: 75
         features: 60
@@ -147,6 +162,7 @@ companies:
     cash_months: 36
     products:
       - name: Facebook
+        early_scale: { 2008: 0.17 } # M50 (60.2): R: about 60M active users in January 2008 against 350M in January 2010
         category: consumer_apps
         quality: 65
         features: 80
@@ -164,6 +180,7 @@ companies:
     cash_months: 18
     products:
       - name: FarmVille
+        launched: [2009, 6] # M50 (60.2): R: FarmVille launched on Facebook on 19 June 2009
         category: consumer_apps
         quality: 55
         features: 60
@@ -180,6 +197,7 @@ companies:
     cash_months: 12
     products:
       - name: Evernote
+        launched: [2008, 6] # M50 (60.2): R: Evernote left its private beta on 24 June 2008
         category: consumer_apps
         quality: 70
         features: 55
@@ -197,6 +215,7 @@ companies:
     cash_months: 36
     products:
       - name: Norton
+        early_scale: { 2008: 0.93 } # M50 (60.2): R: Symantec consumer revenue $1.87B (FY Mar 2009) against $2.0B (FY Mar 2011)
         category: cybersecurity
         quality: 60
         features: 80
@@ -216,6 +235,7 @@ companies:
     cash_months: 24
     products:
       - name: McAfee Total Protection
+        early_scale: { 2008: 0.8 } # M50 (60.2): R: McAfee revenue $1.6B (2008) against about $2.0B (2010)
         category: cybersecurity
         quality: 55
         features: 75
@@ -235,6 +255,7 @@ companies:
     cash_months: 48
     products:
       - name: Check Point
+        early_scale: { 2008: 0.73 } # M50 (60.2): R: Check Point revenue $808M (2008) against $1.10B (2010)
         category: cybersecurity
         quality: 70
         features: 70
@@ -257,6 +278,7 @@ companies:
     cash_months: 24
     products:
       - name: PayPal
+        early_scale: { 2008: 0.7 } # M50 (60.2): R: PayPal revenue $2.4B (2008) against $3.4B (2010), eBay 10-K
         category: fintech
         quality: 62
         features: 70
@@ -275,6 +297,7 @@ companies:
     cash_months: 36
     products:
       - name: QuickBooks Online
+        early_scale: { 2008: 0.55 } # M50 (60.2): R: QuickBooks Online subscribers roughly doubled 2008-2010 (Intuit 10-K)
         category: fintech
         quality: 68
         features: 75
@@ -293,6 +316,7 @@ companies:
     cash_months: 36
     products:
       - name: Fiserv Banking
+        early_scale: { 2008: 1.07 } # M50 (60.2): R: Fiserv revenue $4.74B (2008) against $4.43B (2010)
         category: fintech
         quality: 58
         features: 72
@@ -329,6 +353,7 @@ companies:
     cash_months: 18
     products:
       - name: Dragon
+        early_scale: { 2008: 0.78 } # M50 (60.2): R: Nuance revenue $868M (FY Sep 2008) against $1.12B (FY Sep 2010)
         category: ai_models
         quality: 50
         features: 45
@@ -349,6 +374,7 @@ companies:
     cash_months: 48
     products:
       - name: SAP Business ByDesign
+        early_scale: { 2008: 0.5 } # M50 (60.2): A: ByDesign's limited release from 2007; general release in 2010
         category: b2b_saas
         regions: [europe]
         quality: 62
@@ -367,6 +393,7 @@ companies:
     cash_months: 24
     products:
       - name: Kaspersky
+        early_scale: { 2008: 0.67 } # M50 (60.2): R: Kaspersky revenue $361M (2008) against $538M (2010)
         category: cybersecurity
         regions: [europe]
         quality: 62
@@ -386,6 +413,7 @@ companies:
     cash_months: 36
     products:
       - name: QQ
+        early_scale: { 2008: 0.55 } # M50 (60.2): R: QQ active accounts about 300M (Q1 2008) against 568M (Q1 2010), Tencent reports
         category: consumer_apps
         regions: [east_asia]
         quality: 62
@@ -404,6 +432,7 @@ companies:
     cash_months: 36
     products:
       - name: Alipay
+        early_scale: { 2008: 0.35 } # M50 (60.2): R: Alipay users about 100M (early 2008) against 300M (early 2010)
         category: fintech
         regions: [east_asia]
         quality: 60
@@ -442,6 +471,7 @@ companies:
     cash_months: 36
     products:
       - name: Finacle
+        early_scale: { 2008: 0.87 } # M50 (60.2): R: Infosys revenue $4.18B (FY Mar 2008) against $4.80B (FY Mar 2010)
         category: fintech
         regions: [south_southeast_asia]
         quality: 58
@@ -464,6 +494,7 @@ companies:
     cash_months: 120 # Amazon's balance sheet behind it (M12a: 24 went bankrupt in price wars)
     products:
       - name: AWS EC2
+        early_scale: { 2008: 0.35 } # M50 (60.2): R: analysts' AWS revenue estimates about $0.4B (2008) against $1.1B (2010)
         category: cloud_hosting
         quality: 72
         features: 75
@@ -484,6 +515,7 @@ companies:
     cash_months: 36
     products:
       - name: Windows Azure
+        launched: [2010, 2] # M50 (60.2): R: Windows Azure became generally available on 1 February 2010
         category: cloud_hosting
         quality: 55
         features: 55
@@ -504,6 +536,7 @@ companies:
     cash_months: 60 # M12a: 12 went bankrupt in AWS's price wars
     products:
       - name: Rackspace Cloud
+        early_scale: { 2008: 0.68 } # M50 (60.2): R: Rackspace revenue $532M (2008) against $781M (2010)
         category: cloud_hosting
         quality: 62
         features: 50
@@ -522,6 +555,7 @@ companies:
     cash_months: 24
     products:
       - name: SoftLayer
+        early_scale: { 2008: 0.6 } # M50 (60.2): A: private; its 2005-2010 growth
         category: cloud_hosting
         quality: 66
         features: 55
@@ -550,6 +584,7 @@ companies:
     key_people: 4
     products:
       - name: NVIDIA Tesla
+        early_scale: { 2008: 0.3 } # M50 (60.2): R: Tesla GPU revenue was tens of millions in 2008, about $100M by 2010 (NVIDIA)
         category: chips_ai_accelerator
         quality: 80
         features: 80
@@ -569,6 +604,7 @@ companies:
     key_people: 4
     products:
       - name: Intel Xeon
+        early_scale: { 2008: 0.8 } # M50 (60.2): R: Intel server platform revenue about $7B (2008) against $8.7B (2010)
         category: chips_server_cpu
         quality: 78
         features: 75
@@ -588,6 +624,7 @@ companies:
     key_people: 4
     products:
       - name: AMD Opteron
+        early_scale: { 2008: 1.3 } # M50 (60.2): R: Opteron's server share fell from about 13% (2008) to 7% (2010), Mercury Research
         category: chips_server_cpu
         quality: 60
         features: 60
@@ -596,6 +633,7 @@ companies:
           device_oems: { price_cents: 33000, share_bp: 1500 }
           hyperscalers: { price_cents: 30000, share_bp: 1500 }
       - name: AMD FireStream
+        early_scale: { 2008: 0.5 } # M50 (60.2): A: GPU compute was new
         category: chips_ai_accelerator
         quality: 55
         features: 55
@@ -615,6 +653,7 @@ companies:
     key_people: 4
     products:
       - name: Snapdragon
+        launched: [2008, 11] # M50 (60.2): R: the first Snapdragon devices shipped in November 2008
         category: chips_mobile_soc
         quality: 75
         features: 75
@@ -633,6 +672,7 @@ companies:
     key_people: 4
     products:
       - name: iPhone
+        early_scale: { 2008: 0.25 } # M50 (60.2): R: iPhone sales 13.7M (calendar 2008) against 47.5M (calendar 2010), Apple 10-Q
         category: devices
         quality: 78
         features: 80
@@ -652,6 +692,7 @@ companies:
     key_people: 4
     products:
       - name: Galaxy
+        launched: [2009, 6] # M50 (60.2): R: Samsung's first Galaxy (i7500) went on sale in June 2009
         category: devices
         quality: 66
         features: 70
@@ -672,6 +713,7 @@ companies:
     key_people: 4
     products:
       - name: ThinkPad
+        early_scale: { 2008: 0.69 } # M50 (60.2): R: Lenovo revenue $14.9B (FY Mar 2009) against $21.6B (FY Mar 2011)
         category: devices
         quality: 56
         features: 55
@@ -692,6 +734,7 @@ companies:
     key_people: 4
     products:
       - name: PowerEdge
+        early_scale: { 2008: 0.85 } # M50 (60.2): R: Dell server revenue about $6B (2008) against $7B (2010)
         category: servers
         quality: 65
         features: 65
@@ -711,6 +754,7 @@ companies:
     key_people: 4
     products:
       - name: ProLiant
+        early_scale: { 2008: 0.9 } # M50 (60.2): R: HP industry-standard server revenue about $12B (2008) against $13.5B (2010)
         category: servers
         quality: 70
         features: 68
@@ -730,6 +774,7 @@ companies:
     key_people: 4
     products:
       - name: SuperServer
+        early_scale: { 2008: 0.75 } # M50 (60.2): R: Supermicro revenue $540M (FY June 2008) against $721M (FY June 2010)
         category: servers
         quality: 58
         features: 58
@@ -749,6 +794,7 @@ companies:
     key_people: 4
     products:
       - name: Foxconn EMS
+        early_scale: { 2008: 0.6 } # M50 (60.2): R: Hon Hai revenue NT$1.77T (2008) against NT$2.99T (2010)
         category: contract_manufacturing
         quality: 70
         features: 60
@@ -767,6 +813,7 @@ companies:
     key_people: 4
     products:
       - name: Pegatron EMS
+        early_scale: { 2008: 0.8 } # M50 (60.2): A: spun off from ASUS in January 2008; its first years
         category: contract_manufacturing
         quality: 62
         features: 55

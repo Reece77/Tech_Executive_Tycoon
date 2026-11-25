@@ -11,7 +11,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from tst.sim.calendar import MONTHS_PER_YEAR
+from tst.sim.calendar import MONTHS_PER_YEAR, TURN_ZERO
 from tst.sim.chips.config import ChipsBalance
 from tst.sim.commodities.config import (
     CommoditiesFile,
@@ -870,6 +870,7 @@ class PoachBalance(_Frozen):
 
 
 class RivalsBalance(_Frozen):
+    prelaunch_cash_months: float = Field(ge=0)  # M50 (60.2)
     act_threshold: float
     noise_sd: float = Field(ge=0)
     cooldown_turns: int = Field(ge=0)
@@ -1734,6 +1735,9 @@ class CategoryDef(_Frozen):
     launch_quality: float | None = Field(default=None, ge=0, le=SCORE_MAX)  # M8: compliance
     # M8 (18.6): annual growth from each listed year on, instead of `growth`
     growth_by_year: dict[int, float] | None = None
+    # ADR-0024 (M50, 60.2): annual growth in each year before 2010, for a game begun then;
+    # the loader requires every year from calendar.HISTORY_START_YEAR to 2009
+    early_growth: dict[int, float] = Field(default_factory=dict)
     compute_indexed: bool = False  # M8: hosting x compute_index(year)
     capacity_market: bool = False  # M12a (22.3): sells spare data-centre capacity
     # M12b (26.1-26.3): `units` sells units once per customer in play (subscription: monthly)
@@ -1771,7 +1775,9 @@ class CategoryDef(_Frozen):
 
     def growth_in(self, year: int) -> float:
         """Annual demand growth in a calendar year: the latest growth_by_year entry at or
-        before it, else `growth` (18.6)."""
+        before it, else `growth` (18.6); before 2010, `early_growth`'s (ADR-0024)."""
+        if year < TURN_ZERO[0] and year in self.early_growth:
+            return self.early_growth[year]
         if not self.growth_by_year:
             return self.growth
         key = latest_year(self.growth_by_year, year)  # M37: a sorted, cached lookup
@@ -1783,6 +1789,8 @@ class CategoryDef(_Frozen):
             raise ValueError(f"category {self.key!r}: needs at least one market")
         if self.growth_by_year is not None and any(g < 0 for g in self.growth_by_year.values()):
             raise ValueError(f"category {self.key!r}: growth_by_year must be >= 0")
+        if any(g <= -1 for g in self.early_growth.values()):
+            raise ValueError(f"category {self.key!r}: early_growth must be above -1")
         if any(w < 0 for w in self.dev_weights.values()) or not _sums_to_one(
             self.dev_weights.values()
         ):
@@ -1836,6 +1844,20 @@ class IncumbentProduct(_Frozen):
     brand: float = Field(ge=0, le=SCORE_MAX)
     segments: dict[str, IncumbentSegment] = Field(min_length=1)
     regions: tuple[str, ...] | None = None  # M9 (19.5): None = north_america and europe
+    # M50 (ADR-0024, 60.2), read only by a game begun before 2010. `launched` (year, month):
+    # the product went on sale after that start, so it joins then (with no customers before
+    # 2010; with its share of the market from January 2010, as a 2010 game has it). None: on
+    # sale before the earliest start. `early_scale` start year -> its customers in that
+    # January over its January 2010 customers (its revenue then over 2010's); a year not
+    # listed keeps its share of the smaller market.
+    launched: tuple[int, int] | None = None
+    early_scale: dict[int, float] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _check_early(self) -> IncumbentProduct:
+        if any(v <= 0 for v in self.early_scale.values()):
+            raise ValueError(f"{self.name!r}: early_scale must be positive")
+        return self
 
 
 class IncumbentCompany(_Frozen):
@@ -1916,6 +1938,10 @@ class InvestorsFile(_Frozen):
 MONTHLY = 12  # tunable-exempt: months in a year, for the monthly history lists
 
 
+def _months(value: float | tuple[float, ...]) -> tuple[float, ...]:
+    return value if isinstance(value, tuple) else (value,)
+
+
 class MacroHistory(_Frozen):
     """macro_history.yaml (M10, formulas.md 20.1): the base rate and consumer confidence by
     month and the venture climate by year, from `first_year` through the last year listed.
@@ -1923,7 +1949,8 @@ class MacroHistory(_Frozen):
 
     first_year: int
     confidence_base_years: tuple[int, int]
-    climate: dict[int, float]
+    # a year's multiplier, or (M50, ADR-0024) twelve monthly ones for the crisis years
+    climate: dict[int, float | tuple[float, ...]]
     base_rate: dict[int, tuple[float, ...]]
     confidence: dict[int, tuple[float, ...]]
     # M43a (54.1): region -> listed year -> nominal GDP, trillions of dollars
@@ -1946,7 +1973,9 @@ class MacroHistory(_Frozen):
         for name, monthly in (("base_rate", self.base_rate), ("confidence", self.confidence)):
             if any(len(v) != MONTHLY for v in monthly.values()):
                 raise ValueError(f"{name} needs 12 monthly values a year")
-        if any(v <= 0 for v in self.climate.values()) or any(
+        if any(isinstance(v, tuple) and len(v) != MONTHLY for v in self.climate.values()):
+            raise ValueError("a monthly climate year needs 12 values")
+        if any(x <= 0 for v in self.climate.values() for x in _months(v)) or any(
             x <= 0 for v in self.confidence.values() for x in v
         ):
             raise ValueError("climate and confidence must be positive")
@@ -1960,6 +1989,11 @@ class MacroHistory(_Frozen):
     @property
     def last_year(self) -> int:
         return max(self.climate)
+
+    def climate_at(self, year: int, month: int) -> float:
+        """The venture climate in a month: the year's value, or its month's (M50)."""
+        v = self.climate[year]
+        return v[month - 1] if isinstance(v, tuple) else v
 
     @property
     def confidence_base(self) -> float:
@@ -1987,6 +2021,13 @@ class ComputeIndexFile(_Frozen):
         return self
 
     def of(self, year: int) -> float:
+        """The index in `year`; before `base_year` (M50, ADR-0024) the base divided back by
+        each later year's change, so 2008 and 2009 continue the fall at default_change."""
+        if year < self.base_year:
+            value = self.base
+            for y in range(year + 1, self.base_year + 1):
+                value /= self.changes.get(y, self.default_change)
+            return value
         value = self.base
         for y in range(self.base_year + 1, year + 1):
             value *= self.changes.get(y, self.default_change)
@@ -2009,6 +2050,9 @@ class EntrantDef(_Frozen):
     # M23a: an established group's new unit launches at its founding with this quality (0-100)
     # and the category's starting features, instead of building from scratch
     quality: float | None = Field(default=None, ge=0, le=100)  # tunable-exempt: quality scale
+    # M50 (ADR-0024, 60.2): (year, month) its real founding, when that is before `year`/`month`
+    # (Square: February 2009); a game begun before it founds it then instead
+    early: tuple[int, int] | None = None
 
 
 class EntrantsFile(_Frozen):

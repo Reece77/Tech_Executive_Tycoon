@@ -38,6 +38,7 @@ from tst.sim.automation.actions import (
     SetHeadcountTarget,
     TakeBackArea,
 )
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.errors import InvalidActionError
 from tst.sim.state import GameState, company_cash
 
@@ -228,7 +229,7 @@ def get_digest(
     save_id: str,
     settings: SettingsDep,
     data: DataDep,
-    turn: Annotated[int | None, Query(ge=0)] = None,
+    turn: Annotated[int | None, Query(ge=HISTORY_START_TURN)] = None,  # M50: from 2008
 ) -> DigestOut | None:
     """A month's digest (40.4): the last month played unless `turn` names one; null when no
     area was automated that month."""

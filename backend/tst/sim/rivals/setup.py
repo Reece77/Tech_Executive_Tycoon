@@ -283,6 +283,12 @@ def setup_incumbents(
                 state, WorkforcePool(company.id, fn, heads, float(skill), rv.pool_morale)
             )
         cash = opening_cash_cents(state, company.id, data)
+        if not cash and not state.company_products(company.id) and spec.products:
+            # M50: every product launches after a 2008 start: runway for its key people
+            cash = round(
+                key_people_monthly_cents(state, company.id, balance)
+                * exact(rv.prelaunch_cash_months)
+            )
         if cash:
             entries.append(
                 LedgerEntry.transfer(

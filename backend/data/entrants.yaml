@@ -5,7 +5,7 @@
 # append new entries and never reorder. listed_from (M14, formulas.md 28.1, optional): [year,
 # month] the company is listed from, following history; private companies have no field.
 entrants:
-  - { name: Square, year: 2010, month: 3, personality: aggressive, cash_cents: 1000000000, staff: 8, category: fintech, segments: [smb], listed_from: [2015, 11] }
+  - { name: Square, year: 2010, month: 3, personality: aggressive, cash_cents: 1000000000, staff: 8, category: fintech, segments: [smb], listed_from: [2015, 11], early: [2009, 2] } # M50: founded February 2009 (R: Square's S-1); a 2010 game keeps March 2010
   - { name: Stripe, year: 2011, month: 9, personality: aggressive, cash_cents: 200000000, staff: 6, category: fintech, segments: [smb, mid_market] }
   - { name: Plaid, year: 2013, month: 5, personality: fast_follower, cash_cents: 300000000, staff: 6, category: fintech, segments: [mid_market, enterprise] }
   - { name: OpenAI, year: 2015, month: 12, personality: aggressive, cash_cents: 5000000000, staff: 12, category: ai_models, segments: [consumer, smb, enterprise] }
@@ -21,3 +21,14 @@ entrants:
   # Ascend line (Ascend 310 announced October 2018, R; the team, cash and quality 55 A: a large
   # chip group's unit launching a product behind NVIDIA's 80, not a startup). Appended: list order is the stream key.
   - { name: Huawei Ascend, year: 2018, month: 10, personality: cost_leader, cash_cents: 200000000000, staff: 60, category: chips_ai_accelerator, segments: [hyperscalers], region: east_asia, quality: 55 }
+  # M50 (ADR-0024, formulas.md 60.2): companies founded in 2008-2009, entering only a game begun
+  # before them (a 2010 game never reaches their months, so it is unchanged). Months and first
+  # money R (recalled from the companies' histories and S-1s, not re-read in this session):
+  # Airbnb August 2008 (about $0.6M by its April 2009 seed), Groupon November 2008 ($1M from
+  # Eric Lefkofsky), WhatsApp February 2009 ($0.25M angel round), Uber (UberCab) March 2009
+  # (about $0.2M), Tiny Speck (later Slack) 2009 (about $1.5M, A). Staff A (a founding team).
+  - { name: Airbnb, year: 2008, month: 8, personality: aggressive, cash_cents: 60000000, staff: 3, category: consumer_apps, segments: [consumer], listed_from: [2020, 12] }
+  - { name: Groupon, year: 2008, month: 11, personality: aggressive, cash_cents: 100000000, staff: 5, category: consumer_apps, segments: [consumer], listed_from: [2011, 11] }
+  - { name: WhatsApp, year: 2009, month: 2, personality: cost_leader, cash_cents: 25000000, staff: 2, category: consumer_apps, segments: [consumer] }
+  - { name: Uber, year: 2009, month: 3, personality: aggressive, cash_cents: 20000000, staff: 3, category: consumer_apps, segments: [consumer], listed_from: [2019, 5] }
+  - { name: Tiny Speck, year: 2009, month: 6, personality: premium, cash_cents: 150000000, staff: 4, category: consumer_apps, segments: [consumer] }

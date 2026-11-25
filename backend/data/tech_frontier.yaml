@@ -10,57 +10,63 @@
 # - budget_cents: a project's monthly budget per researcher, cents (21.3), posted to
 #   6500_research_development. compute_indexed: x the AI compute index (20.1).
 # - feeds: label only; which categories a domain feeds is `tech_weights` below.
+#
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: each per_year gained a 2008 key at its 2010 rate (A: the
+# world's diffusion pace in 2008-2009 as in 2010; nothing in those years changed a rate: deep learning
+# (2012, felt from 2016), Falcon 9's landing (2015) and AlphaFold 2 (2021) come later; Intel's 45 nm was in
+# volume in 2008, TSMC's 40 nm ramped 2008-2009 and Intel's 32 nm shipped January 2010, the steady node
+# cadence the 2010 process and chip-design rates already assume). `start` stays the January 2010 level.
 domains:
   - key: software_platform
     label: Software platform
-    baseline: { start: 20, per_year: { 2010: 2.0 } }
+    baseline: { start: 20, per_year: { 2008: 2.0, 2010: 2.0 } }
     research_skill: { software_engineering: 0.5, data: 0.3, product: 0.2 }
     budget_cents: 200000 # $2,000 a researcher a month
   - key: ai
     label: AI
-    baseline: { start: 10, per_year: { 2010: 1.5, 2016: 3.0 } } # +1.5 a year through 2015, then +3
+    baseline: { start: 10, per_year: { 2008: 1.5, 2010: 1.5, 2016: 3.0 } } # +1.5 a year through 2015, then +3
     research_skill: { ml_research: 0.6, data: 0.25, software_engineering: 0.15 }
     budget_cents: 600000 # $6,000 a researcher a month, x the AI compute index
     compute_indexed: true
   - key: infrastructure
     label: Infrastructure
-    baseline: { start: 20, per_year: { 2010: 2.0 } }
+    baseline: { start: 20, per_year: { 2008: 2.0, 2010: 2.0 } }
     research_skill: { infrastructure: 0.6, software_engineering: 0.25, security: 0.15 }
     budget_cents: 300000 # $3,000
   - key: chip_design
     label: Chip design
-    baseline: { start: 30, per_year: { 2010: 1.5 } }
+    baseline: { start: 30, per_year: { 2008: 1.5, 2010: 1.5 } }
     research_skill: { chip_design: 0.7, hardware_design: 0.3 }
     budget_cents: 1200000 # $12,000; chip products come in M12b, the level counts for nothing yet
   - key: devices
     label: Devices
-    baseline: { start: 25, per_year: { 2010: 1.5 } }
+    baseline: { start: 25, per_year: { 2008: 1.5, 2010: 1.5 } }
     research_skill: { hardware_design: 0.6, manufacturing: 0.2, design: 0.2 }
     budget_cents: 800000 # $8,000; device products come in M12b
   - key: process # M20 (36.3): refining and, from M21, fab process nodes
     label: Process
-    baseline: { start: 25, per_year: { 2010: 1.0 } } # 40 (refining.semi_min_level) by 2025 without research (M20 decision)
+    baseline: { start: 25, per_year: { 2008: 1.0, 2010: 1.0 } } # 40 (refining.semi_min_level) by 2025 without research (M20 decision)
     research_skill: { manufacturing: 0.6, data: 0.25, operations: 0.15 }
     budget_cents: 800000 # $8,000 a researcher a month
   - key: lithography # M33 (47.4): the player's own lithography programme (optics, precision mechanics, light source)
     label: Lithography
-    baseline: { start: 0, per_year: { 2010: 0.0 } } # A: none diffused: only ASML (outside the game's companies) holds it
+    baseline: { start: 0, per_year: { 2008: 0.0, 2010: 0.0 } } # A: none diffused: only ASML (outside the game's companies) holds it
     research_skill: { hardware_design: 0.4, manufacturing: 0.35, chip_design: 0.25 } # A: optics and precision mechanics (hardware design), the light source and assembly (manufacturing), and what the chip needs (chip design); the brief's "research" weight is not a skill (skills.yaml)
     budget_cents: 2500000 # A: $25,000 a researcher a month (optics, vacuum and laser labs; the programme's own budget is on top)
   - key: autonomy # M38 (49.4): driver assistance to driverless; levels need lead points over this baseline (vehicles.levels)
     label: Autonomy
-    baseline: { start: 10, per_year: { 2010: 1.0, 2016: 2.0 } } # A: the world's diffused driver-assistance know-how; faster with deep learning from 2016 (as the AI domain)
+    baseline: { start: 10, per_year: { 2008: 1.0, 2010: 1.0, 2016: 2.0 } } # A: the world's diffused driver-assistance know-how; faster with deep learning from 2016 (as the AI domain)
     research_skill: { ml_research: 0.45, software_engineering: 0.25, hardware_design: 0.15, data: 0.15 } # A: perception models, the driving stack, sensors and fleet data
     budget_cents: 1000000 # A: $10,000 a researcher a month (test fleets and compute)
     compute_indexed: true
   - key: drug_discovery # M42 (55.1): the player's drug discovery; its lead raises discovery throughput and the hidden efficacy distribution's mean (pharma.discovery, pharma.efficacy)
     label: Drug discovery
-    baseline: { start: 20, per_year: { 2010: 1.0, 2021: 2.0 } } # A: the world's diffused medicinal chemistry and biology; faster after AlphaFold 2 (2021)
+    baseline: { start: 20, per_year: { 2008: 1.0, 2010: 1.0, 2021: 2.0 } } # A: the world's diffused medicinal chemistry and biology; faster after AlphaFold 2 (2021)
     research_skill: { data: 0.45, ml_research: 0.35, manufacturing: 0.20 } # A: assays and biology data, computational models, process chemistry and CMC (no research or science skill exists: skills.yaml)
     budget_cents: 1500000 # A: $15,000 a researcher a month (wet labs, assays and compute)
   - key: reusability # M40 (56.1): recovering and reflying launch vehicles; reuse levels need lead points over this baseline (space.reuse)
     label: Reusability
-    baseline: { start: 0, per_year: { 2010: 0.5, 2016: 1.5 } } # A: little diffused know-how before Falcon 9's first landing (December 2015, S), then faster as others followed (New Glenn's first landing 2025, S)
+    baseline: { start: 0, per_year: { 2008: 0.5, 2010: 0.5, 2016: 1.5 } } # A: little diffused know-how before Falcon 9's first landing (December 2015, S), then faster as others followed (New Glenn's first landing 2025, S)
     research_skill: { hardware_design: 0.45, manufacturing: 0.30, software_engineering: 0.25 } # A: propulsion and structures, refurbishment, guidance and landing software
     budget_cents: 2000000 # A: $20,000 a researcher a month (test stands, landing trials)
 

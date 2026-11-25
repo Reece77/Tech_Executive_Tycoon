@@ -11,13 +11,18 @@ from tst.sim.dynasty import mode
 from tst.sim.state import GameState
 
 DECEMBER = 12  # tunable-exempt: calendar month
-STANDARD_END_YEAR = 2039  # tunable-exempt: the standard campaign's last year (52.1)
 
 
 def campaign_out(state: GameState, data: LoadedData) -> CampaignOut:
     b, g = data.balance, data.game_data
     dynasty = mode.length(state) == "dynasty"
-    end_year = b.dynasty.end_year if dynasty or not mode.is_campaign(state) else STANDARD_END_YEAR
+    # ADR-0024: a standard campaign's last month is 359 turns after its start (December 2039,
+    # or December 2037 for a 2008 start)
+    end_turn = (
+        ym_to_turn(b.dynasty.end_year, DECEMBER)
+        if dynasty or not mode.is_campaign(state)
+        else mode.standard_end_turn(state, b) - 1
+    )
     founder = state.founder_of(state.player.id)
     late = mode.in_dynasty_years(state, b)
     eras = []
@@ -60,7 +65,7 @@ def campaign_out(state: GameState, data: LoadedData) -> CampaignOut:
     ]
     return CampaignOut(
         length=mode.length(state),
-        end_label=format_turn(ym_to_turn(end_year, DECEMBER)),
+        end_label=format_turn(end_turn),
         at_end=mode.at_standard_end(state, b),
         can_switch=mode.is_campaign(state) and not dynasty and not state.ended,
         game_state=mode.outcome(state, b),

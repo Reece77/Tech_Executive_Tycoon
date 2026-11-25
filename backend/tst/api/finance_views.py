@@ -93,6 +93,7 @@ from tst.sim.group.statements import member_input
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import CASH
 from tst.sim.mna.exit import sale_of
+from tst.sim.modes.models import world_start_turn
 from tst.sim.modes.scenarios import bonus_reached
 from tst.sim.money import Cents
 from tst.sim.snapshot import CompanySnapshot
@@ -143,7 +144,8 @@ def statements_out(
     data: LoadedData,
     members: Sequence[tuple[GroupMember, Lines]] = (),
 ) -> StatementsOut:
-    """Every closed month, quarter or year from January 2010, oldest first; with subsidiaries,
+    """Every closed month, quarter or year from January 2010 (January 2008 in a game begun
+    then, M50), oldest first; with subsidiaries,
     the group's consolidated statements, each company over the periods it was inside the
     group, at any depth, and a column per subsidiary (M14, 28.5; M16, 31.1)."""
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
@@ -156,9 +158,10 @@ def statements_out(
     names = {a.code: a.name for a in data.game_data.accounts}
     last_closed = state.turn - 1
     periods = []
-    if last_closed >= 0:
+    begun = world_start_turn(state.mode)
+    if last_closed >= begun:
         size = {"month": 1, "quarter": fs.QUARTER_MONTHS, "year": MONTHS_PER_YEAR}[period]
-        for first, last in fs.period_bounds(period, last_closed):
+        for first, last in fs.period_bounds(period, last_closed, begun):
             pnl = fs.profit_and_loss(lines, types, first, last)
             flow = fs.cash_flow(lines, types, first, last)
             sheet = fs.balance_sheet(lines, types, last)

@@ -7,6 +7,10 @@
 # points: index at anchor months (YYYY-MM), 1.0 in January 2010; months between anchors are
 # geometric interpolation (a constant monthly rate). allocation: the share of a build's
 # components delivered on time in those months (100% outside them).
+#
+# M50 (ADR-0024, formulas.md 60.2; 2026-11-23): a 2008-01 anchor added to every good (and a few
+# real 2008-2009 anchors) before 2010-01, so the path from January 2010 is unchanged. Tags as the
+# comments above: D the good's own trend held back two years, A an assumption with its basis, R recalled.
 goods:
   # Server components (general data centres): -8% a year to the chip shortage, +30% from
   # Q2 2021 to Q2 2022, back on the -8% trend by January 2023, then -8% a year.
@@ -14,6 +18,7 @@ goods:
     label: Server components
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.1815 # M50 D: the -8% trend held back, 1 / 0.92 ^ 2 (DRAM and HDD prices kept falling through 2008-2009)
       "2010-01": 1.0
       "2021-04": 0.3914 # 0.92 ^ (135 / 12)
       "2022-04": 0.5088 # x 1.30, the chip shortage
@@ -28,6 +33,7 @@ goods:
     label: GPUs
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.2346 # M50 D: the -10% trend held back, 1 / 0.9 ^ 2
       "2010-01": 1.0
       "2017-01": 0.4783 # 0.9 ^ 7
       "2019-01": 0.6887 # x 1.2 x 1.2, crypto
@@ -44,6 +50,7 @@ goods:
     label: Device components
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.0851 # M50 D: the -4% trend held back, 1 / 0.96 ^ 2
       "2010-01": 1.0
       "2021-01": 0.6382 # 0.96 ^ 11
       "2022-04": 0.7978 # x 1.25, the chip shortage
@@ -57,6 +64,7 @@ goods:
     label: Server components
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.1080 # M50 D: the -5% trend held back, 1 / 0.95 ^ 2
       "2010-01": 1.0
       "2021-01": 0.5688 # 0.95 ^ 11
       "2022-04": 0.7395 # x 1.30
@@ -70,6 +78,7 @@ goods:
     label: Assembly equipment
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.0412 # M50 D: the -2% trend held back, 1 / 0.98 ^ 2
       "2010-01": 1.0
       "2025-12": 0.7250 # 0.98 ^ (191 / 12)
 
@@ -79,6 +88,8 @@ goods:
     label: Foundry wafers
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 0.9426 # M50 D: the +3% trend held back, 1 / 1.03 ^ 2
+      "2009-03": 0.8900 # M50 A: the 2009 slump (foundry utilisation near 40% in Q1 2009, TSMC, R), about 7% under the trend
       "2010-01": 1.0
       "2021-01": 1.3842 # 1.03 ^ 11
       "2022-06": 1.6900 # x 1.2 on the trend
@@ -96,6 +107,7 @@ goods:
     label: EUV tools
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.0 # M50 A: flat before 2010 (EUV pre-production tools only; NXE:3100 shipped 2010, R)
       "2010-01": 1.0
       "2020-06": 1.0 # $120M a tool (dossier 3.4, V)
       "2022-06": 1.25 # NXE:3600D, about $150M (R)
@@ -112,6 +124,9 @@ goods:
     label: Vehicle components
     unit: index (January 2010 = 1.0)
     points:
+      "2008-01": 1.0152 # M50 D: the -0.75% trend held back, 1 / 0.9925 ^ 2
+      "2008-08": 1.0500 # M50 A: steel and metals peak of mid-2008 (hot-rolled coil about doubled, R), about +3% on the BOM
+      "2009-06": 0.9950 # M50 A: back under the trend after the crash
       "2010-01": 1.0
       "2021-01": 0.9205 # 0.9925 ^ 11
       "2022-06": 1.0400 # the shortage and metals

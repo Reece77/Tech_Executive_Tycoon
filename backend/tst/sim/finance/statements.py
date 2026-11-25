@@ -210,11 +210,15 @@ def cash_before_financing(lines: Lines, types: Mapping[AccountCode, AccountType]
     return flow.operating + flow.investing
 
 
-def period_bounds(period: Period, last_turn: int) -> list[tuple[int, int]]:
-    """(first, last) turn of every month, quarter or calendar year from turn 0 to last_turn,
-    the newest possibly partial. Turn 0 is January 2010, so quarters and years align."""
+def period_bounds(period: Period, last_turn: int, first_turn: int = 0) -> list[tuple[int, int]]:
+    """(first, last) turn of every month, quarter or calendar year from `first_turn` (a
+    January: turn 0, or -24 for a 2008 game, M50) to last_turn, the newest possibly partial.
+    Turn 0 is January 2010, so quarters and years align."""
     size = {"month": 1, "quarter": QUARTER_MONTHS, "year": MONTHS_PER_YEAR}[period]
-    return [(start, min(start + size - 1, last_turn)) for start in range(0, last_turn + 1, size)]
+    return [
+        (start, min(start + size - 1, last_turn))
+        for start in range(first_turn, last_turn + 1, size)
+    ]
 
 
 def projected_net_burn(

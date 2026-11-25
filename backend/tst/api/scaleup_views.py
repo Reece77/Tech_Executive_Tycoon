@@ -40,6 +40,7 @@ from tst.sim.data_models import AUTHORITY_SEATS, AccountType, Balance
 from tst.sim.finance import statements as fs
 from tst.sim.finance.divisions import DivisionLines, DivisionStatement, division_report
 from tst.sim.hiring.formulas import energy_cost
+from tst.sim.modes.models import world_start_turn
 from tst.sim.org import executives as ex
 from tst.sim.org.divisions import (
     company_divisions,
@@ -444,18 +445,19 @@ def division_statements_out(
     names = {u.id: u.name for u in company_divisions(state, state.player.id)}
     last_closed = state.turn - 1
     periods = []
-    if last_closed >= 0:
-        for first, last in reversed(fs.period_bounds(period, last_closed)):
+    begun = world_start_turn(state.mode)  # M50: a 2008 game's statements from January 2008
+    if last_closed >= begun:
+        for first, last in reversed(fs.period_bounds(period, last_closed, begun)):
             report = division_report(lines, months, types, first, last, names)
             prior = (
                 division_report(
                     lines,
                     months,
                     types,
-                    max(0, last - 2 * MONTHS_PER_YEAR + 1),
+                    max(begun, last - 2 * MONTHS_PER_YEAR + 1),
                     last - MONTHS_PER_YEAR,
                 )
-                if last >= 2 * MONTHS_PER_YEAR - 1
+                if last >= begun + 2 * MONTHS_PER_YEAR - 1
                 else None
             )
             year = division_report(lines, months, types, last - MONTHS_PER_YEAR + 1, last)
@@ -485,7 +487,7 @@ def last_month_profit(
     lines: DivisionLines, months: Sequence[DivisionMonth], state: GameState, data: LoadedData
 ) -> dict[int, int]:
     """Each division's operating profit in the last closed month (Org cards)."""
-    if state.turn < 1:
+    if state.turn < world_start_turn(state.mode) + 1:
         return {}
     types: dict[str, AccountType] = {a.code: a.type for a in data.game_data.accounts}
     report = division_report(lines, months, types, state.turn - 1, state.turn - 1)

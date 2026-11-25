@@ -69,16 +69,25 @@ export async function continueMonth(page: Page) {
 }
 
 /** Press Continue as it stands (nothing answered first) and wait until that month is played:
- * its advance response, then the top bar showing the month it names. */
+ * its advance response, then the top bar showing the month it names.
+ *
+ * A `save_busy` refusal marked `retryable` committed nothing and the app sends it again
+ * (M6, `retryBusy` in src/hooks/api.ts), so the response that counts is the first one that
+ * is not such a refusal (M50: PR #105's e2e met one while the reload's reads held the save). */
 export async function pressContinue(page: Page) {
   const button = page.getByTestId('continue');
   await expect(button).toBeEnabled();
   const [response] = await Promise.all([
-    page.waitForResponse(
-      (r) =>
-        r.request().method() === 'POST' &&
-        /^\/api\/saves\/[^/]+\/advance$/.test(new URL(r.url()).pathname),
-    ),
+    page.waitForResponse(async (r) => {
+      if (
+        r.request().method() !== 'POST' ||
+        !/^\/api\/saves\/[^/]+\/advance$/.test(new URL(r.url()).pathname)
+      )
+        return false;
+      if (r.status() !== 409) return true;
+      const body = (await r.json().catch(() => ({}))) as { code?: string; retryable?: boolean };
+      return !(body.code === 'save_busy' && body.retryable === true);
+    }),
     button.click(),
   ]);
   expect(response.ok(), `Continue was refused: ${response.status()}`).toBe(true);

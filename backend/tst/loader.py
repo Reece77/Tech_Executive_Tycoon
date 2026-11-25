@@ -15,8 +15,10 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
+from tst.history_coverage import coverage_problems
 from tst.mods.overlay import canonical_hash, merge
 from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR, TURN_ZERO
 from tst.sim.commodities.config import (
     CommoditiesFile,
     CommoditiesHistoryFile,
@@ -85,7 +87,7 @@ from tst.sim.world.config import ChainCompaniesFile
 
 POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
 SHARE_TOLERANCE = 1e-6  # tunable-exempt: shares that split 1
-FIRST_HISTORY_YEAR = 2010  # tunable-exempt: the game's first year
+FIRST_HISTORY_YEAR = HISTORY_START_YEAR  # M50: the data's first year (the earliest start)
 LAST_HISTORY_YEAR = 2025  # tunable-exempt: history holds to December 2025
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
 CELL_PRICE_TOLERANCE = (
@@ -704,7 +706,7 @@ def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     regions = set(data.region_keys)
     categories = {c.key: c for c in (*data.categories, *data.pseudo_categories)}
     owners = {c.name for c in data.incumbents}
-    first, last = 2010, 2010 + pf.history_end_turn // 12
+    first, last = HISTORY_START_YEAR, 2010 + pf.history_end_turn // 12  # M50: from 2008
     for p in pf.platforms:
         if p.owner is not None and p.owner not in owners:
             problems.append(f"platform {p.key}: owner {p.owner!r} is not in incumbents.yaml")
@@ -859,7 +861,7 @@ def world_problems(balance: Balance, data: GameData) -> list[str]:
     if bad := sorted(set(balance.world.groups.security_goods) - goods):
         problems.append(f"world.groups.security_goods not commodities: {bad}")
     for good in sorted(goods):
-        for turn in range(0, balance.world.start_turn):
+        for turn in range(HISTORY_START_TURN, balance.world.start_turn):  # M50: from 2008
             if sum(named_shares(data, good, turn).values()) > 1.0 + 1e-9:
                 problems.append(f"{good}: named shares above 1 in turn {turn}")
                 break
@@ -1062,6 +1064,11 @@ def load_all(
             parsed[name] = merge(parsed[name], changes)
         mod_hash = canonical_hash({name: parsed[name] for name in DATA_FILES})
 
+    # M50 (ADR-0024 decision 4): every series covering 2010 reaches back to the earliest start
+    gaps = [g for name in DATA_FILES for g in coverage_problems(parsed[name], name)]
+    if gaps:
+        raise DataLoadError("history before 2010: " + "; ".join(gaps))
+
     event_templates: list[EventTemplate] = []
     for file in sorted((path / EVENTS_DIR).glob("*.yaml")):
         name = f"{EVENTS_DIR}/{file.name}"
@@ -1108,6 +1115,9 @@ def load_all(
     names = _validate(NamesFile, parsed[NAMES_FILE], NAMES_FILE)
     inbox = _validate(InboxTemplatesFile, parsed[INBOX_FILE], INBOX_FILE)
     categories = _validate(CategoriesFile, parsed[CATEGORIES_FILE], CATEGORIES_FILE)
+    early = list(range(HISTORY_START_YEAR, TURN_ZERO[0]))  # M50 (ADR-0024): growth before 2010
+    if short := [c.key for c in categories.categories if sorted(c.early_growth) != early]:
+        raise DataLoadError(f"{CATEGORIES_FILE}: early_growth must list exactly {early}: {short}")
     incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
     investors = _validate(InvestorsFile, parsed[INVESTORS_FILE], INVESTORS_FILE)
     macro_history = _validate(MacroHistory, parsed[MACRO_HISTORY_FILE], MACRO_HISTORY_FILE)

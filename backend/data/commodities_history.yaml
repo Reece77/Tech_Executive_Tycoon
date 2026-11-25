@@ -13,12 +13,22 @@
 #   value; outside, the annual value holds. The loader rejects a year without a value.
 # allocation: months a good was short (spot buyers get that share; 100% outside them).
 # Prices are in each good's `unit`; commodities.yaml converts a unit to dollars per volume unit.
+# M50 (ADR-0024, formulas.md 60.2; 2026-11-23): 2008 and 2009 years added to every good, and
+#   2008-2009 shocks (the mid-2008 peak and Q4 crash) for copper, tin, nickel, cobalt and
+#   polysilicon, appended after any existing shock (shock order is not a stream key; they never
+#   overlap and end by December 2009, so 2010 onward is unchanged). Same tags: V read this session
+#   from USGS Mineral Commodity Summaries 2010-2012 (https://d9-wret.s3.us-west-2.amazonaws.com/
+#   assets/palladium/production/mineral-pubs/<mineral>/mcs-<year>-<abbr>.pdf) or FRED's IMF
+#   series (PCOPPUSDM, PTINUSDM, PNICKUSDM: https://fred.stlouisfed.org/graph/fredgraph.csv?id=<id>),
+#   D derived (as each row says), R recalled from the named source.
 goods:
   # High-purity quartz (crucible grade). No public series (dossier 1.2): USGS ground HPQ
   # ranges 2021-2025, midpoint (D); flat at the 2021 level before (formulas 33.1).
   - key: quartz_hp
     unit: $/t
     years:
+      2008: [8250, D] # M50: the 2021 level held back (33.1)
+      2009: [8250, D]
       2010: [8250, D] # 2021 level held back (33.1)
       2011: [8250, D]
       2012: [8250, D]
@@ -45,6 +55,8 @@ goods:
   - key: silicon_metal
     unit: ¢/lb
     years:
+      2008: [162, V] # M50: USGS MCS 2012 silicon metal, US dealer import price
+      2009: [116, V]
       2010: [140, V]
       2011: [158, V]
       2012: [127, V]
@@ -68,6 +80,8 @@ goods:
   - key: polysilicon
     unit: $/kg
     years:
+      2008: [400, R] # M50: Bernreuter solar-grade spot, about $400-475/kg through 2008 (peak $475)
+      2009: [110, R] # M50: spot collapsed through 2009 to about $55 by December (Bernreuter)
       2010: [60, V]
       2011: [56, V]
       2012: [22, V]
@@ -89,11 +103,15 @@ goods:
       - { label: Polysilicon glut, source: V, points: { "2011-01": 60, "2011-03": 79, "2011-12": 30, "2012-12": 15.6 } }
       # dual-control power curbs: about $10 to $41.65 (Oct 2021), peak $39 (Aug 2022), V
       - { label: Dual-control power curbs, source: V, points: { "2021-01": 10, "2021-10": 41.65, "2022-08": 39, "2022-12": 25 } }
+      # M50: Bernreuter spot (recalled): $475/kg peak in 2008, about $55 by December 2009
+      - { label: 2008 polysilicon peak and crash, source: R, points: { "2008-01": 400, "2008-06": 475, "2008-09": 450, "2008-12": 300, "2009-03": 150, "2009-06": 90, "2009-12": 55 } }
 
   # Gallium, high-purity refined (USGS). 2010-2014 are year-end prices used as annual (33.1).
   - key: gallium
     unit: $/kg
     years:
+      2008: [579, V] # M50: USGS MCS 2011-2012 year-end 99.99999%
+      2009: [449, V]
       2010: [600, V]
       2011: [688, V]
       2012: [529, V]
@@ -118,6 +136,8 @@ goods:
   - key: germanium
     unit: $/kg
     years:
+      2008: [1490, V] # M50: USGS MCS 2011-2012 year-end zone-refined
+      2009: [940, V]
       2010: [1200, V]
       2011: [1450, V]
       2012: [1640, V]
@@ -142,6 +162,8 @@ goods:
   - key: copper
     unit: ¢/lb
     years:
+      2008: [315.5, V] # M50: USGS MCS 2012 LME high grade; the year's months are the shock below
+      2009: [233.6, V]
       2010: [341.7, V]
       2011: [399.8, V]
       2012: [360.6, V]
@@ -158,11 +180,16 @@ goods:
       2023: [384.8, V]
       2024: [414.7, V]
       2025: [440, e]
+    shocks:
+      # M50: IMF monthly means via FRED PCOPPUSDM / 22.0462 (V): the peak in April 2008, the crash to December
+      - { label: 2008 boom and crash, source: V, points: { "2008-01": 321.1, "2008-04": 395.3, "2008-07": 381.3, "2008-09": 316.4, "2008-10": 222.0, "2008-12": 140.8, "2009-03": 171.0, "2009-06": 227.5, "2009-09": 281.0, "2009-12": 316.5 } }
 
   # Tin, IMF global price (via FRED).
   - key: tin
     unit: $/t
     years:
+      2008: [18467, V] # M50: IMF via FRED PTINUSDM annual mean; the months are the shock below
+      2009: [13599, V]
       2010: [20367, V]
       2011: [26051, V]
       2012: [21109, V]
@@ -179,11 +206,16 @@ goods:
       2023: [25912, V]
       2024: [30059, V]
       2025: [34058, V]
+    shocks:
+      # M50: IMF monthly means via FRED PTINUSDM (V)
+      - { label: 2008 boom and crash, source: V, points: { "2008-01": 16311, "2008-05": 23854, "2008-07": 22956, "2008-09": 18307, "2008-10": 14423, "2008-12": 11292, "2009-03": 10689, "2009-06": 15005, "2009-12": 15589 } }
 
   # Tantalite ore (USGS: Ryan's Notes to 2013, CRU from 2014). The 2011 spike is in the annual values.
   - key: tantalum
     unit: $/kg Ta2O5
     years:
+      2008: [97, D] # M50: USGS MCS 2012 (Ryan's Notes) $44/lb Ta2O5 x 2.2046
+      2009: [88, D] # $40/lb x 2.2046
       2010: [120, V]
       2011: [275, V]
       2012: [239, V]
@@ -205,6 +237,8 @@ goods:
   - key: cobalt
     unit: $/lb
     years:
+      2008: [39.01, V] # M50: USGS MCS 2012 spot cathode; the months are the shock below
+      2009: [17.86, V]
       2010: [20.85, V]
       2011: [17.99, V]
       2012: [14.07, V]
@@ -224,6 +258,8 @@ goods:
     shocks:
       # DRC export ban, February 2025 (V): $16.77 (2024) to $21 (2025e)
       - { label: DRC cobalt export ban, source: V, points: { "2025-01": 16.77, "2025-02": 18, "2025-06": 22.5, "2025-12": 22.5 } }
+      # M50: about $50/lb in March 2008 to about $13 in early 2009 (Metal Bulletin, recalled); annual means near USGS's
+      - { label: 2008 boom and crash, source: R, points: { "2008-01": 40, "2008-03": 50, "2008-06": 46, "2008-09": 40, "2008-10": 32, "2008-12": 15, "2009-02": 13, "2009-06": 17, "2009-09": 22, "2009-12": 21 } }
     allocation:
       - { start: "2025-02", end: "2025-12", share: 0.85 } # A: the ban's months
 
@@ -231,6 +267,8 @@ goods:
   - key: lithium_carbonate
     unit: $/t
     years:
+      2008: [6500, R] # M50: battery-grade carbonate about $6,000-7,000/t in 2008 (Industrial Minerals, recalled)
+      2009: [6475, D] # M50: MCS 2011: SQM cut prices 20% for 2010, 5,180 / 0.8
       2010: [5180, V]
       2011: [5180, V]
       2012: [6060, V]
@@ -259,6 +297,8 @@ goods:
   - key: ndpr_oxide
     unit: $/kg
     years:
+      2008: [30, R] # M50: Nd oxide FOB China about $30/kg before the Q4 2008 fall (Lynas and Metal-Pages reports, recalled)
+      2009: [18, R] # about $14-22/kg through 2009 (recalled)
       2010: [87.5, D] # 86-89 year-end
       2011: [195, D] # 190-200 year-end
       2012: [77.5, D]
@@ -288,6 +328,8 @@ goods:
   - key: neon
     unit: index
     years:
+      2008: [1.0, A] # M50: the pre-2022 level held back
+      2009: [1.0, A]
       2010: [1.0, A]
       2011: [1.0, A]
       2012: [1.0, A]
@@ -317,6 +359,8 @@ goods:
   - key: nickel
     unit: $/t
     years:
+      2008: [21141, V] # M50: IMF via FRED PNICKUSDM annual mean (its 2010, 21,810, is this file's); the months are the shock below
+      2009: [14667, V]
       2010: [21809, V]
       2011: [22910, V]
       2012: [17548, V]
@@ -333,6 +377,9 @@ goods:
       2023: [21521, V]
       2024: [16814, V]
       2025: [15162, V]
+    shocks:
+      # M50: IMF monthly means via FRED PNICKUSDM (V)
+      - { label: 2008 boom and crash, source: V, points: { "2008-01": 27775, "2008-03": 31093, "2008-06": 22563, "2008-09": 17782, "2008-10": 12145, "2008-12": 9847, "2009-03": 9711, "2009-06": 14944, "2009-08": 19376, "2009-12": 17122 } }
   # Manganese ore, 44% Mn, CIF China, $ a dry metric ton unit (CRU via USGS Mineral Commodity
   # Summaries: 2021-2025 V from MCS 2026 as cited, 2025 the USGS estimate e; 2010-2011 and 2015-2016
   # R from earlier MCS editions; the rest A between them):
@@ -340,6 +387,8 @@ goods:
   - key: manganese
     unit: $/dmtu
     years:
+      2008: [10.6, D] # M50: MCS 2012 CIF US ports 46-48% (12.15, 7.95, 9.18 in 2008-2010) as ratios to this file's 2010
+      2009: [6.9, D]
       2010: [8.0, R]
       2011: [8.0, R]
       2012: [5.0, A]
@@ -361,6 +410,8 @@ goods:
   - key: graphite
     unit: $/t
     years:
+      2008: [1250, D] # M50: MCS 2012 flake import value (753, 694, 720 in 2008-2010) as ratios to this file's 2010
+      2009: [1160, D]
       2010: [1200, A]
       2011: [1800, R]
       2012: [1700, R]
@@ -383,6 +434,8 @@ goods:
   - key: battery_cells
     unit: $/kWh
     years:
+      2008: [801.5, D] # M50: vehicles.yaml battery.pack_usd x cell_share / 100 in 2010 dollars, as 2010's
+      2009: [751.4, D]
       2010: [701.3, D]
       2011: [544.9, D]
       2012: [429.1, D]

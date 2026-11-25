@@ -10,9 +10,11 @@ from dataclasses import dataclass
 from typing import Any
 
 from tst.events.context import _person
+from tst.sim.calendar import format_turn
 from tst.sim.coo import Issue
 from tst.sim.data_models import GameData
 from tst.sim.events.render import full_name
+from tst.sim.modes.models import began_in
 from tst.sim.state import GameState
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -76,7 +78,7 @@ def coo_prompt(
     context: dict[str, Any] = {
         "company": company.name,
         "stage": company.stage,
-        "date": kpis[-1].date_label if kpis else "January 2010",
+        "date": kpis[-1].date_label if kpis else format_turn(state.turn),  # M50: its month
         "people": [_person(state, company.id, e.person_id, data) for e in staff],
         "products": [
             {"name": p.name, "status": p.status} for p in state.company_products(company.id)
@@ -98,7 +100,7 @@ def coo_prompt(
     }
     briefing = "\n".join(f"- {i.text}" for i in issues) or "- Nothing urgent."
     who = speaker(state, person_id, data)
-    system = SYSTEM.format(speaker=who, company=company.name, words=words)
+    system = began_in(SYSTEM.format(speaker=who, company=company.name, words=words), state.mode)
     mine = f"Your last quarterly report (answer from it first):\n{report}\n\n" if report else ""
     user = (
         f"{mine}Briefing:\n{briefing}\n\nContext:\n{json.dumps(context, indent=1)}\n\n"

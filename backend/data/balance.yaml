@@ -494,6 +494,7 @@ bankruptcy:
 
 # --- Rivals (formulas.md section 15, M5) -------------------------------------------------
 rivals:
+  prelaunch_cash_months: 36 # months; M50 (60.2): an incumbent whose products all launch after a 2008 start opens with this many months of its key people's costs (it raised money to build them; GitHub, Evernote)
   act_threshold: 0.5 # utility; a rival acts only if its best action scores at least this (15.3)
   noise_sd: 0.1 # utility; sd of Normal noise added to each action's utility (15.3)
   cooldown_turns: 6 # turns; the same action on the same product and segment waits this long (15.3)
@@ -1591,7 +1592,7 @@ rank:
   news_top: 5 # companies; January's news item names each list's top this many (playtest 4, M15r addendum b)
 
 sandbox:
-  years: [2010, 2025] # start years offered (30.2)
+  years: [2008, 2025] # start years offered (30.2); M50: from 2008 (2008-2009 build on the 2008 world)
   cash_dollars: [100000, 100000000] # starting cash offered, dollars (M15b decision)
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
@@ -2902,7 +2903,7 @@ vehicles:
     charge_kw: [7, 400]
     usable: 0.92 # usable share of a pack (R: 90-95% buffers)
   bom:
-    drive_cents: { 2010: 300000, 2015: 220000, 2020: 160000, 2024: 130000 } # motors, inverter, onboard charger and thermal system, 2010 dollars (A: falling with volume; ICCT's 2019 cost study puts electric powertrain parts near $2,000 in 2020, R)
+    drive_cents: { 2008: 330000, 2010: 300000, 2015: 220000, 2020: 160000, 2024: 130000 } # motors, inverter, onboard charger and thermal system, 2010 dollars (A: falling with volume; ICCT's 2019 cost study puts electric powertrain parts near $2,000 in 2020, R); M50: 2008 runs the 2010-2015 fall back two years (A)
   levels: # 49.4: what each autonomy level needs and gives (A unless noted)
     none: { label: None, lead: 0, ai_quality: 0, chips: { mobile_soc: 1 }, features: 0, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }
     l2: { label: L2 driver assistance, lead: 0, ai_quality: 0, chips: { mobile_soc: 2 }, features: 4, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }

@@ -34,6 +34,7 @@ from tst.sim.meetings.config import (
     Topic,
 )
 from tst.sim.meetings.models import Figure, Item, Meeting, MeetingHidden, Plan, Speaker
+from tst.sim.modes.models import world_start_turn
 from tst.sim.negotiation.deals import negotiator
 from tst.sim.people.generator import draw_name
 from tst.sim.press.moments import credibility
@@ -86,7 +87,11 @@ def board_problem(state: GameState, balance: Balance) -> str | None:
     cid = state.player.id
     if not any(s.votes and s.person_id is not None for s in state.board(cid)):
         return "there is no board with voting directors yet"
-    if state.turn < 1 or turn_to_ym(state.turn - 1)[1] not in balance.board.meeting_months:
+    # M50: no month has passed in the game's first month (-24 in a 2008 game, 0 in a 2010 one)
+    if (
+        state.turn <= world_start_turn(state.mode)
+        or turn_to_ym(state.turn - 1)[1] not in balance.board.meeting_months
+    ):
         return "the board meets in the month after each quarter's end"
     return None
 
@@ -97,7 +102,8 @@ def call_problem(state: GameState) -> str | None:
     public = public_of(state, cid)
     if public is None:
         return "earnings calls start once the company is listed"
-    g = guidance_for(state, cid, quarter_start(state.turn - 1)) if state.turn else None
+    begun = state.turn > world_start_turn(state.mode)  # M50: no quarter before the first month
+    g = guidance_for(state, cid, quarter_start(state.turn - 1)) if begun else None
     if g is None or not g.reported or state.turn % QUARTER:
         return "an earnings call follows a quarterly report, in the quarter's first month"
     if not public.analysts:

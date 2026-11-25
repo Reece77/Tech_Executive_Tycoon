@@ -14,6 +14,7 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import FROM_2010_READ, HISTORY_START_TURN, HISTORY_START_YEAR, from_2010
 from tst.sim.facilities.config import Range, month_to_turn
 
 BASE_YEAR: Final = 2010  # tunable-exempt: the game's money is in 2010 dollars
@@ -33,8 +34,8 @@ class _Frozen(BaseModel):
 
 
 def interp(points: dict[int, float], year: float) -> float:
-    """Linear between year points, held at the ends."""
-    pts = sorted(points.items())
+    """Linear between year points, held at the ends; from 2010 without 2008-2009 (M50)."""
+    pts = sorted(from_2010(points, year).items())
     if year <= pts[0][0]:
         return pts[0][1]
     for (y0, v0), (y1, v1) in itertools.pairwise(pts):
@@ -146,12 +147,13 @@ class RivalCarsDef(_Frozen):
     company: str  # incumbents.yaml name
     origin: str  # countries.yaml key of its main production (tariffs, subsidies)
     cells: str  # cell maker key its cars use (subsidy sourcing rules)
-    launch: str | None = None  # "YYYY-MM" of its first sales; None: selling in January 2010
+    # "YYYY-MM" of its first sales; None: selling since before the earliest start (M50)
+    launch: str | None = None
     share_points: dict[str, dict[int, float]] = Field(alias="shares")  # region -> year -> share
 
     @property
     def launch_turn(self) -> int:
-        return 0 if self.launch is None else month_to_turn(self.launch)
+        return HISTORY_START_TURN if self.launch is None else month_to_turn(self.launch)
 
     def share_at(self, region: str, year: float, turn: int | None = None) -> float:
         """The share at a fractional year: linear between points, held after the last, and
@@ -159,13 +161,14 @@ class RivalCarsDef(_Frozen):
         points = self.share_points.get(region)
         if not points or (turn is not None and turn < self.launch_turn):
             return 0.0
+        points = from_2010(points, year)  # M50: from 2010 as a 2010 game reads it
         first = min(points)
+        # a series that begins later ramps up from 0; one there from the start holds back
+        # (M50: the start is 2008 for a read before 2010, else 2010 as before)
+        start = HISTORY_START_YEAR if year < FROM_2010_READ else BASE_YEAR
         if year < first:
-            return (
-                max(0.0, points[first] * (1 - (first - year)))
-                if first > BASE_YEAR
-                else points[first]
-            )
+            ramp = max(0.0, points[first] * (1 - (first - year)))
+            return ramp if first > start else points[first]
         return interp(points, year)
 
 

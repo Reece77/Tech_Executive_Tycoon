@@ -111,7 +111,10 @@ def markets(draw: st.DrawFn) -> GameState:
         cat = LOADED.game_data.category(category)
         segs = draw(st.lists(st.sampled_from(cat.segment_keys), min_size=1, unique=True))
         prices = {s: draw(st.integers(min_value=1, max_value=2_000_000)) for s in segs}
-        demand = {s: cat.market(s).addressable for s in segs}
+        # the state's own demand (a market with none, humanoids in 2010, gets no customers: the
+        # invariant below must hold at the start; M50 found D0 there, and so a 1e-159 tail)
+        demand = {s: market.addressable for s in segs if (market := state.market(category, s))}
+        demand = {s: demand.get(s, 0.0) for s in segs}
         state = with_product(
             state,
             category=category,
