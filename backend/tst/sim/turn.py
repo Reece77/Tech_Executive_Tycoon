@@ -60,6 +60,7 @@ from tst.sim.ledger import (
 )
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.markets_public.public import public_month
+from tst.sim.media import phase as media_phase
 from tst.sim.medical.month import medical_month
 from tst.sim.medical.recurring import recurring_month
 from tst.sim.mining import phase as mining
@@ -341,6 +342,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M53 (62.4): telecom lines whose dated opening is this month sell from it
     ctx = replace(ctx, state=telecom_phase.open_month(ctx.state, ctx.balance, ctx.data))
+    # M55 (65.1, 65.7): media lines whose dated opening is this month sell from it; ad prices
+    ctx = replace(ctx, state=media_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
@@ -353,6 +356,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     platform_effects = space_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     # M53 (62.1-62.4): the player's telecom lines' gates (coverage, spectrum, capacity, homes)
     platform_effects = telecom_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
+    # M55 (65.1-65.5): catalogue engagement, ad tiers, network effects, formats, moderation
+    platform_effects = media_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -381,6 +386,11 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*tel_entries).log(*tel_logs)
+    # M55 (65.1-65.6): titles, ads, payouts, licences, moderation, live service, deals, laws
+    state, media_entries, media_logs = media_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*media_entries).log(*media_logs)
     # M44 (57): tenders, awards, protests, government contracts' delivery, clearances
     state, gov_entries, gov_logs = government_phase.month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*gov_entries).log(*gov_logs)
@@ -537,7 +547,8 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state = robotics_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M39 (53)
     state, space_logs = space_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M40 (56)
     state, tel_logs = telecom_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M53 (62)
-    space_logs = [*space_logs, *tel_logs]
+    state, media_logs = media_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M55
+    space_logs = [*space_logs, *tel_logs, *media_logs]
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)

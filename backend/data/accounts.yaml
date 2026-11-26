@@ -9,6 +9,7 @@ accounts:
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
   - { code: 1520_mineral_properties, name: Mineral properties, type: asset } # M19 (35.2-35.3): a mine's capex and its project's moved exploration spend, less units-of-production depletion credited here
   - { code: 1540_spectrum_licences, name: Spectrum licences, type: asset } # M53 (62.2): spectrum won at auction and renewals, less straight-line amortization credited here
+  - { code: 1560_content_assets, name: Content assets, type: asset } # M55 (65.2): series, films and games capitalised in production, less amortization and write-offs credited here
   - { code: 1530_tool_inventory, name: Tool inventory, type: asset } # M33 (47.2, 47.4): lithography tools held and not yet in a fab: bought from ASML into stock, or made by the player's own tool line at cost
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
@@ -32,6 +33,8 @@ accounts:
   - { code: 4050_revenue_consumables, name: Consumables and service revenue, type: revenue } # M41 (50.1): medical devices' recurring revenue a month per installed unit (robotic instruments and service, sensors, service contracts)
   - { code: 4060_revenue_drugs, name: Drug sales, type: revenue } # M42 (55.4): marketed drugs' net sales by region, and generic makers' sales of off-patent molecules
   - { code: 4070_revenue_government, name: Government contracts, type: revenue } # M44 (57.2): government contracts' revenue: fixed-price and IDIQ task orders as delivered, cost-plus as cost plus the fee
+  - { code: 4080_revenue_advertising, name: Advertising revenue, type: revenue } # M55 (65.1): impressions sold by social networks, streaming ad tiers and consumer apps with ad pricing
+  - { code: 4090_revenue_content, name: Content revenue, type: revenue } # M55 (65.2-65.4): box office, licences out, game sales and in-app spending
   - { code: 4150_platform_fees, name: Platform fees, type: revenue } # M31 (44.4): a platform owner's fees on other companies' app sales through its store (a group company's go to 4300)
   - { code: 4400_revenue_commodities, name: Commodity sales, type: revenue } # M19 (35.3): a mine's output sold at spot, into contracts and offtakes
   - { code: 4300_intercompany_sales, name: Intercompany sales, type: revenue } # M16 (31.6): a group company's supply to another at the transfer price; consolidation removes it
@@ -51,6 +54,8 @@ accounts:
   - { code: 5110_local_partner_share, name: Local partner's share, type: expense } # M22 (39.3): a local partner's share of the revenue from a partner market (cloud in China); cost of revenue
   - { code: 5150_platform_fees, name: Platform fees and licences, type: expense } # M31 (44.4, 44.1): store fees on app sales and per-unit platform licences on devices; cost of revenue (a group store's go to 5900)
   - { code: 5950_energy, name: Energy (plants and contracts), type: expense } # M32 (46.2, ADR-0022 3): the month's power settlement, cost of revenue: own plants' fuel, operating cost, carbon and grid charges and PPAs' payments, less the grid energy they replaced (facilities post that at the grid price); negative when owning saves
+  - { code: 5160_content_royalties, name: Rights holders' royalties, type: expense } # M55 (65.3): music streaming's payout to rights holders; cost of revenue
+  - { code: 5170_media_operations, name: Media operations, type: expense } # M55 (65.3-65.5): licences in, live-service updates and moderation; cost of revenue
   - { code: 5300_contract_costs, name: Government contract costs, type: expense } # M44 (57.2): delivering government contracts, overruns included; cost of revenue
   - { code: 5200_tool_cost, name: Cost of tools sold, type: expense } # M33 (47.4): the made cost of own tools sold; cost of revenue
   - { code: 5900_intercompany_purchases, name: Intercompany purchases, type: expense } # M16 (31.6): what a group company pays another at the transfer price; consolidation removes it
@@ -64,6 +69,7 @@ accounts:
   - { code: 6600_exploration, name: Exploration, type: expense } # M18 (34.2): desk studies, licences, surveys, sampling, drilling, estimates, feasibility and permits, expensed as spent
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
   - { code: 6760_spectrum_amortization, name: Spectrum amortization, type: expense } # M53 (62.2): a licence's price over its term
+  - { code: 6770_content_amortization, name: Content amortization, type: expense } # M55 (65.2): a released title's cost on its accelerated schedule, and write-offs of cancelled and failed titles
   - { code: 6750_depletion, name: Depletion, type: expense } # M19 (35.3): mineral properties' units-of-production depletion, and write-offs at closure
   - { code: 6900_general_admin, name: General and administrative, type: expense }
   - { code: 6950_lobbying, name: Lobbying, type: expense } # M24 (32.5): a company's monthly lobbying by region; scandal fines post to 6900

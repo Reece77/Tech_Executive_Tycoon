@@ -109,6 +109,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.media.models import MediaState
 from tst.sim.medical.models import (
     Adoption,
     Clearance,
@@ -623,6 +624,10 @@ class GameState:
     # settings, network months and the game-wide telecom world (6G's month, growth, seeded
     # auctions and bans, hidden until they come)
     telecom: TelecomState = field(default_factory=TelecomState)
+    # M55 (65): titles (content assets), creative leads and leads on offer, line settings,
+    # licences, divest-or-ban laws, service months, the ad market's months and the game-wide
+    # draws (growth, eras, generations, strikes; hidden until they come)
+    media: MediaState = field(default_factory=MediaState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

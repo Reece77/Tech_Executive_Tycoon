@@ -705,6 +705,10 @@ def rival_month(
             continue
         if telecom_holds(state, company, balance, data):  # M53 (62.4): operators likewise
             continue
+        from tst.sim.media.rivals import holds as media_holds
+
+        if media_holds(state, company, balance, data):  # M55 (65.7): media rivals likewise
+            continue
         gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)
         if company.is_startup:

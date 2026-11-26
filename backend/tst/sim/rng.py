@@ -161,6 +161,13 @@ STREAM_IDS: Final = MappingProxyType(
         # area) a seeded ban; (1, auction_id) an auction's rivals' values when it runs (never
         # stored)
         "telecom": 73,
+        # M55 (formulas.md 65): (0, title id) a title's audience at release (never stored before
+        # it); (1, person id, title id, n) a lead's reaction to the title's n-th overrule, cut or
+        # move; (2, region index, year) seeded strikes and divest-or-ban laws after 2025; (3, 0,
+        # year) a format era's arrival, (3, 1, year) a console generation's, (3, 2, year, ...)
+        # yearly growth; (4, year, n) the n-th creative lead on offer that year (the person, then
+        # creative, vision and the hidden ego and loyalty)
+        "media": 76,
         "misc": 99,
     }
 )

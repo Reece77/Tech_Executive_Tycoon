@@ -364,6 +364,7 @@ def back_startup(
         or category.medical
         or category.space
         or category.telecom
+        or category.media
     ):
         raise InvalidActionError(f"a new startup cannot start in {category.label}")
     taken = {c.name for c in state.companies}

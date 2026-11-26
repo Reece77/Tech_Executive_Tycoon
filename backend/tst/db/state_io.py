@@ -91,6 +91,7 @@ from tst.db.mappers import (
     unit_from_row,
     unit_to_row,
 )
+from tst.db.media_io import load_media, sync_media
 from tst.db.medical_io import load_medical, sync_medical
 from tst.db.mining_io import load_mining, sync_mining
 from tst.db.mna_io import load_mna, sync_mna
@@ -618,6 +619,7 @@ def load_state(session: Session) -> GameState:
     state = load_pharma(session, state, has_table)  # M42 (0062_m42)
     state = load_space(session, state, has_table)  # M40 (0063_m40)
     state = load_telecom(session, state, has_table)  # M53 (0067_m53)
+    state = load_media(session, state, has_table)  # M55 (0068_m55)
     state = load_government(session, state, has_table)  # M44 (0064_m44)
     state = load_regulation(session, state, has_table)  # M34 (0055)
     state = load_medical(session, state, has_table)  # M41 (0058)
@@ -2315,6 +2317,7 @@ def sync_state(session: Session, old: GameState | None, new: GameState) -> None:
     sync_pharma(session, old, new, has_table)  # M42 (0062_m42)
     sync_space(session, old, new, has_table)  # M40 (0063_m40)
     sync_telecom(session, old, new, has_table)  # M53 (0067_m53)
+    sync_media(session, old, new, has_table)  # M55 (0068_m55)
     sync_government(session, old, new, has_table)  # M44 (0064_m44)
     sync_regulation(session, old, new, has_table)  # M34 (0055)
     sync_medical(session, old, new, has_table)  # M41 (0058)

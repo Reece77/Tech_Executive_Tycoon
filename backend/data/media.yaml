@@ -1,0 +1,413 @@
+# Media and entertainment (docs/formulas.md 65, M55, v6 lane B). Research: M55 sub-task 1 (2026-11-26)
+# from docs/v6-research/media-dossier.md. History holds to December 2025; seeded after (balance.yaml
+# media.*). Every value carries a tag and a source, as telecom.yaml's:
+#   S  a sourced figure fetched by the product manager for the dossier (GroupM, Newzoo; links there),
+#   D  derived from other figures here (the derivation is in the comment),
+#   R  widely reported and recalled from the named source, not re-read in this session,
+#   A  an assumption for gameplay where no public series was found (the basis is given).
+# Values are [value, tag]; money is [value, dollar year, tag] under keys ending _usd and becomes the game's
+# 2010 cents with `cpi` at load (robotics.yaml's conversion). Re-check the R and A rows against GroupM's This
+# Year Next Year, Newzoo, Antenna, Ampere and the companies' filings when those hosts are reachable (M55
+# follow-up).
+#
+# Scale (Reece, 2026-11-15, formulas.md 54): users, subscribers and money here are real-world; the game's
+# markets are x balance.yaml media.scale (0.085, the economy scale, as telecom.scale), at real prices.
+#
+# Regions follow the game's (platforms.yaml region_parts): north_america is the US, Canada and Mexico;
+# europe includes Russia and Turkey; Meta's "Asia-Pacific" is split over east_asia, south_southeast_asia and
+# oceania, and its "Rest of world" over latin_america and africa (D, by internet users).
+#
+# Sources (named; R unless tagged S):
+#   GM    GroupM This Year Next Year (global and regional ad revenue; 2024-2025 S, the dossier's link)
+#   NZ    Newzoo Global Games Market Report (2024 S, the dossier's link)
+#   ITU   ITU Facts and Figures (internet users by region)
+#   META  Meta Platforms 10-K and quarterly reports (monthly users, ARPU by region)
+#   NFLX  Netflix shareholder letters and 10-K (paid memberships by region, content cash spend)
+#   DIS   Disney 10-K (Disney+, Hulu);  WBD  Warner Bros. Discovery reports (HBO Max, Max);
+#   PARA  Paramount reports (CBS All Access, Paramount+);  CMCSA  Comcast reports (Peacock)
+#   AMZN  Amazon releases (Prime Video);  GOOG  Alphabet releases (YouTube users, YouTube Premium and Music)
+#   SPOT  Spotify reports;  SNAP  Snap reports (daily users);  TWTR  Twitter reports to 2022, X's claims after
+#   BD    ByteDance and press reports (TikTok, Douyin);  TME  Tencent reports (WeChat, Tencent Video, games)
+#   EA, ATVI, TTWO, UBI, NTDO, SONY, MSFT, NTES, RBLX  the publishers' annual reports (games revenue)
+#   ANT   Antenna (streaming churn);  DTVR  Digital TV Research (SVOD subscriptions by region)
+#   MPA   the MPA's THEME reports and Gower Street (global box office)
+#   CPI   US BLS CPI-U annual averages (R; 2025 A, preliminary), as telecom.yaml
+
+cpi: # R (CPI), as telecom.yaml
+  2008: 215.303
+  2009: 214.537
+  2010: 218.056
+  2011: 224.939
+  2012: 229.594
+  2013: 232.957
+  2014: 236.736
+  2015: 237.017
+  2016: 240.007
+  2017: 245.120
+  2018: 251.107
+  2019: 255.657
+  2020: 258.811
+  2021: 270.970
+  2022: 292.655
+  2023: 304.702
+  2024: 313.689
+  2025: 322.000
+
+# --- 65.1 advertising ------------------------------------------------------------------------------------
+ads:
+  # Global ad revenue ($B, nominal): GM. 2008-2009 R (GroupM: about $480B in 2008, down to about $445B in 2009)
+  spend_usd:
+    2008: [480, 2008, R]
+    2009: [445, 2009, R]
+    2010: [490, 2010, R]
+    2015: [560, 2015, R]
+    2020: [630, 2020, R]
+    2024: [1040, 2024, S] # GM: "$1.04 trillion", up 9.5%
+    2025: [1100, 2025, S] # GM forecast
+  digital_share: # GM
+    2008: [0.11, R]
+    2010: [0.16, R]
+    2015: [0.30, R]
+    2020: [0.60, R]
+    2024: [0.72, R]
+    2025: [0.729, S]
+  # Regional shares of global ad spend (GM by region, R; Asia-Pacific split by D as above). Each year sums to 1.
+  region_share:
+    2008: { north_america: [0.38, R], europe: [0.27, R], east_asia: [0.19, R], south_southeast_asia: [0.04, R], latin_america: [0.07, R], africa: [0.02, R], oceania: [0.03, R] }
+    2020: { north_america: [0.36, R], europe: [0.21, R], east_asia: [0.27, R], south_southeast_asia: [0.06, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
+    2025: { north_america: [0.35, R], europe: [0.20, R], east_asia: [0.28, R], south_southeast_asia: [0.07, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
+  # The share of a region's people on iOS (A from StatCounter's mobile OS shares around 2021, R): the users
+  # App Tracking Transparency's cut reaches
+  ios_share: { north_america: [0.55, R], europe: [0.30, R], east_asia: [0.25, R], south_southeast_asia: [0.05, R], latin_america: [0.12, R], africa: [0.05, R], oceania: [0.55, R] }
+  # Privacy events (65.1): a cut to targeting quality from the month, in the listed regions. ATT is iOS-only
+  # (x ios_share) and spares a company that owns a platform (on its own platform's users).
+  privacy:
+    - { key: gdpr, label: "GDPR", month: "2018-05", regions: [europe], cut: [0.10, A], source: "R: in force 25 May 2018 (EU); A: about a tenth of targeting lost to consent (Meta's 2018 European ARPU flat)" }
+    - { key: att, label: "App Tracking Transparency", month: "2021-04", regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania], cut: [0.30, A], ios_only: true, source: "R: iOS 14.5, April 2021; Meta put the 2022 cost at about $10B (Q4 2021 call), about 8% of revenue: a 30% cut on iOS's share (D)" }
+    - { key: dsa, label: "Digital Services Act", month: "2023-08", regions: [europe], cut: [0.05, A], source: "R: very large platforms from 25 August 2023, all platforms 17 February 2024 (EU)" }
+
+# --- 65.5 social networks: internet users and multi-homing ----------------------------------------------
+internet_users: # millions (ITU, R; regions summed from ITU's regional rows, D)
+  north_america: { 2008: [270, R], 2010: [290, R], 2015: [330, R], 2020: [360, R], 2024: [380, R], 2025: [384, D] }
+  europe: { 2008: [400, R], 2010: [470, R], 2015: [600, R], 2020: [700, R], 2024: [745, R], 2025: [750, D] }
+  east_asia: { 2008: [360, R], 2010: [520, R], 2015: [830, R], 2020: [1150, R], 2024: [1260, R], 2025: [1275, D] }
+  south_southeast_asia: { 2008: [130, R], 2010: [200, R], 2015: [500, R], 2020: [1150, R], 2024: [1550, R], 2025: [1600, D] }
+  latin_america: { 2008: [130, R], 2010: [180, R], 2015: [300, R], 2020: [440, R], 2024: [500, R], 2025: [510, D] }
+  africa: { 2008: [50, R], 2010: [90, R], 2015: [250, R], 2020: [450, R], 2024: [600, R], 2025: [630, D] }
+  oceania: { 2008: [20, R], 2010: [22, R], 2015: [27, R], 2020: [32, R], 2024: [36, R], 2025: [37, D] }
+# networks a user is on and counted (A: GWI's 6-7 platforms a user by 2024 include messaging; counted
+# networks here are the large ad-funded ones): the social market is internet users x this
+multi_home: { 2008: [1.0, A], 2010: [1.3, A], 2015: [1.8, A], 2020: [2.3, A], 2024: [2.6, A], 2025: [2.6, A] }
+# The social market's ad revenue a user a year by region (META's ARPU, R; 2008-2009 R from the S-1): the
+# history's price of a social line (x the line's arpu_mult), and the impression price behind it (D: ARPU over
+# hours x ad load x impressions an hour, balance.yaml media.social)
+arpu_usd:
+  north_america: { 2008: [3.5, 2008, R], 2010: [18, 2010, R], 2015: [46, 2015, R], 2020: [160, 2020, R], 2024: [228, 2024, R], 2025: [240, 2025, A] }
+  europe: { 2008: [1.5, 2008, R], 2010: [6, 2010, R], 2015: [15, 2015, R], 2020: [51, 2020, R], 2024: [75, 2024, R], 2025: [78, 2025, A] }
+  east_asia: { 2008: [0.5, 2008, R], 2010: [2, 2010, R], 2015: [4, 2015, R], 2020: [13, 2020, R], 2024: [19, 2024, R], 2025: [20, 2025, A] }
+  south_southeast_asia: { 2008: [0.3, 2008, R], 2010: [1.2, 2010, R], 2015: [2.5, 2015, R], 2020: [7, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
+  latin_america: { 2008: [0.4, 2008, R], 2010: [1.5, 2010, R], 2015: [3, 2015, R], 2020: [9, 2020, R], 2024: [15, 2024, R], 2025: [16, 2025, A] }
+  africa: { 2008: [0.3, 2008, R], 2010: [1.0, 2010, R], 2015: [2, 2015, R], 2020: [6, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
+  oceania: { 2008: [2.0, 2008, R], 2010: [8, 2010, R], 2015: [20, 2015, R], 2020: [70, 2020, R], 2024: [100, 2024, R], 2025: [105, 2025, A] }
+
+# Format eras (65.5): a new format draws users from the incumbents on older ones. Dated to 2025; seeded
+# after (balance.yaml media.social.format_every, stream media (3, 0, year)).
+formats:
+  - { key: feed, label: "News feed", month: "2006-09", source: "R: Facebook's News Feed, 5 September 2006" }
+  - { key: photo, label: "Photos", month: "2010-10", source: "R: Instagram's launch, 6 October 2010" }
+  - { key: stories, label: "Stories", month: "2013-10", source: "R: Snapchat Stories, 3 October 2013 (Instagram's August 2016)" }
+  - { key: short_video, label: "Short video", month: "2018-08", source: "R: TikTok merged with Musical.ly, 2 August 2018 (BD)" }
+
+# Divest-or-ban laws (65.5): history (no effect before 2026: the line is pinned); seeded after for a network
+# whose owner's home bloc differs from the region's (balance.yaml media.social.divest_*)
+divest_laws:
+  - { company: ByteDance, region: north_america, month: "2024-04", deadline: "2025-01", enforced: false, source: "R: Protecting Americans from Foreign Adversary Controlled Applications Act, signed 24 April 2024, deadline 19 January 2025; enforcement deferred by executive orders through 2025 (Wikipedia)" }
+
+# --- 65.3 streaming ---------------------------------------------------------------------------------------
+# Paid video streaming subscriptions a region can hold (millions; D: DTVR's SVOD subscriptions, R, over a
+# served share of about 0.8, A): the streaming market
+streaming_market:
+  north_america: { 2008: [12, D], 2010: [25, D], 2015: [110, D], 2020: [330, D], 2024: [420, D], 2025: [430, D] }
+  europe: { 2008: [1, D], 2010: [3, D], 2015: [35, D], 2020: [210, D], 2024: [330, D], 2025: [345, D] }
+  east_asia: { 2008: [1, D], 2010: [2, D], 2015: [40, D], 2020: [300, D], 2024: [380, D], 2025: [390, D] }
+  south_southeast_asia: { 2008: [0.2, D], 2010: [0.5, D], 2015: [5, D], 2020: [90, D], 2024: [190, D], 2025: [205, D] }
+  latin_america: { 2008: [0.3, D], 2010: [0.6, D], 2015: [20, D], 2020: [80, D], 2024: [130, D], 2025: [135, D] }
+  africa: { 2008: [0.05, D], 2010: [0.1, D], 2015: [1, D], 2020: [8, D], 2024: [16, D], 2025: [17, D] }
+  oceania: { 2008: [0.2, D], 2010: [0.4, D], 2015: [4, D], 2020: [18, D], 2024: [24, D], 2025: [25, D] }
+# Paid music streaming subscriptions a region can hold (millions; D: IFPI's paid subscription accounts, R,
+# about 40M in 2010 to 750M in 2024, over 0.8, A)
+music_market:
+  north_america: { 2008: [2, D], 2010: [4, D], 2015: [30, D], 2020: [120, D], 2024: [170, D], 2025: [175, D] }
+  europe: { 2008: [2, D], 2010: [6, D], 2015: [35, D], 2020: [130, D], 2024: [210, D], 2025: [220, D] }
+  east_asia: { 2008: [10, D], 2010: [25, D], 2015: [35, D], 2020: [120, D], 2024: [260, D], 2025: [270, D] }
+  south_southeast_asia: { 2008: [0.5, D], 2010: [1, D], 2015: [5, D], 2020: [40, D], 2024: [100, D], 2025: [110, D] }
+  latin_america: { 2008: [0.5, D], 2010: [1, D], 2015: [10, D], 2020: [55, D], 2024: [110, D], 2025: [115, D] }
+  africa: { 2008: [0.1, D], 2010: [0.2, D], 2015: [1, D], 2020: [6, D], 2024: [15, D], 2025: [16, D] }
+  oceania: { 2008: [0.3, D], 2010: [0.5, D], 2015: [3, D], 2020: [12, D], 2024: [18, D], 2025: [19, D] }
+# Ad tiers (65.3): a service may run one from this month (R: Netflix's Basic with Ads, 3 November 2022; Hulu's
+# limited-commercials plan from 2010 is an ad-supported service, not a tier of an ad-free one)
+ad_tier_from: "2022-11" # R
+# The share of a video service's catalogue value licensed titles keep (65.3): the 2019-2020 pull-back of
+# licences to the studios' own services (R: Disney's titles left Netflix from 2019, WarnerMedia's Friends
+# and Comcast's The Office from 2020, NFLX; A: values)
+licence_availability: { 2008: [1.0, A], 2018: [1.0, A], 2019: [0.85, A], 2020: [0.7, A], 2021: [0.6, A], 2025: [0.6, A] }
+
+# --- 65.4 games ------------------------------------------------------------------------------------------
+# Global games revenue ($B): NZ (2024 S; others R); split by region (NZ's regional shares, R)
+games_market_usd: { 2008: [55, 2008, R], 2010: [67, 2010, R], 2015: [92, 2015, R], 2020: [178, 2020, R], 2024: [182.7, 2024, S], 2025: [189, 2025, A] }
+games_region_share:
+  2008: { north_america: [0.30, R], europe: [0.28, R], east_asia: [0.30, R], south_southeast_asia: [0.04, R], latin_america: [0.04, R], africa: [0.01, R], oceania: [0.03, R] }
+  2020: { north_america: [0.25, R], europe: [0.18, R], east_asia: [0.40, R], south_southeast_asia: [0.08, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.02, R] }
+  2025: { north_america: [0.27, R], europe: [0.18, R], east_asia: [0.37, R], south_southeast_asia: [0.09, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.02, R] }
+# Console generations (65.4): titles on a new generation sell more for media.games.gen_lift_months; titles on
+# the old one sell less from it. Seeded after 2025 (media.games.console_every)
+console_generations:
+  - { key: gen8, label: "PS4 and Xbox One", month: "2013-11", source: "R: 15 and 22 November 2013 (Sony, Microsoft)" }
+  - { key: switch, label: "Nintendo Switch", month: "2017-03", source: "R: 3 March 2017 (Nintendo)" }
+  - { key: gen9, label: "PS5 and Xbox Series X/S", month: "2020-11", source: "R: 10 and 12 November 2020 (Sony, Microsoft)" }
+# Store fees (65.4): 30% everywhere; Epic's 12% on PC from December 2018 (R: Valve, Epic, the app stores)
+store_fees:
+  default: [0.30, R]
+  epic: [0.12, R]
+  epic_from: "2018-12" # R: the Epic Games Store, 6 December 2018
+  epic_reach: [0.35, A] # A: the share of PC players a title on Epic's store alone reaches (Epic's 230M PC users against Steam's about 130M monthly, R, many on both)
+# Loot-box rules (65.4): free-to-play in-app spending in the region x (1 - cut x share of the region's players)
+loot_box_rules:
+  - { key: belgium, label: "Belgium's loot-box ban", month: "2018-04", region: europe, share: [0.02, D], cut: [0.5, A], source: "R: the Belgian Gaming Commission's ruling, 25 April 2018; D: Belgium's share of Europe's players about 2%" }
+  - { key: netherlands, label: "Dutch loot-box ruling", month: "2018-04", until: "2022-03", region: europe, share: [0.03, D], cut: [0.5, A], source: "R: the Kansspelautoriteit's April 2018 ruling, overturned by the Council of State in March 2022" }
+  - { key: china_odds, label: "China's odds disclosure", month: "2017-05", region: east_asia, share: [0.8, D], cut: [0.05, A], source: "R: the Ministry of Culture's disclosure rule, 1 May 2017" }
+
+# --- 65.6 talent: strikes ---------------------------------------------------------------------------------
+strikes:
+  - { key: wga2023, label: "Writers Guild strike", region: north_america, from: "2023-05", to: "2023-09", source: "R: the WGA's strike, 2 May to 27 September 2023 (Wikipedia)" }
+  - { key: sag2023, label: "SAG-AFTRA strike", region: north_america, from: "2023-07", to: "2023-11", source: "R: SAG-AFTRA's strike, 14 July to 9 November 2023 (Wikipedia)" }
+
+# --- 65.7 rivals' lines ------------------------------------------------------------------------------------
+# Each line is an incumbents.yaml line (company, name) with its worldwide customers (millions, real; games:
+# revenue $B instead, customers = revenue / (12 x the line's price) by region), its split by region (shares,
+# interpolated by year) and optional first and last months. Before media.start a line's customers are pinned
+# to customers x 10^6 x media.scale x split (at most the market not held by others).
+lines:
+  # video streaming (customers: paid subscriptions)
+  - company: Netflix
+    line: Netflix
+    category: streaming
+    customers: { 2008: [9.4, R], 2010: [20.0, R], 2015: [74.8, R], 2020: [203.7, R], 2024: [301.6, R], 2025: [320, A] } # NFLX (2010 mostly US, DVD and streaming)
+    split:
+      2008: { north_america: [1.0, R] }
+      2015: { north_america: [0.60, R], europe: [0.20, R], latin_america: [0.12, R], east_asia: [0.03, D], south_southeast_asia: [0.02, D], oceania: [0.03, D] }
+      2020: { north_america: [0.37, R], europe: [0.33, R], latin_america: [0.18, R], east_asia: [0.06, D], south_southeast_asia: [0.04, D], oceania: [0.02, D] }
+      2024: { north_america: [0.30, R], europe: [0.33, R], latin_america: [0.17, R], east_asia: [0.09, D], south_southeast_asia: [0.08, D], oceania: [0.02, D], africa: [0.01, D] }
+    content_usd: { 2011: [1.5, 2011, R], 2015: [6.0, 2015, R], 2020: [11.8, 2020, R], 2024: [17.0, 2024, R] } # NFLX content cash spend ($B)
+  - company: Disney
+    line: Hulu
+    category: streaming
+    customers: { 2008: [0.1, A], 2010: [0.5, R], 2015: [12, R], 2020: [39, R], 2024: [52, R], 2025: [54, A] } # DIS (Hulu Plus from November 2010; Disney's majority from March 2019, A: on Disney throughout)
+    split: { 2008: { north_america: [1.0, R] } }
+  - company: Disney
+    line: Disney+
+    category: streaming
+    first: "2019-11" # R: 12 November 2019, 10M sign-ups the first day (DIS)
+    customers: { 2019: [26.5, R], 2020: [94.9, R], 2022: [161.8, R], 2024: [124.6, R], 2025: [128, A] } # DIS (2020-2022 with Hotstar)
+    split:
+      2020: { north_america: [0.40, R], europe: [0.20, R], south_southeast_asia: [0.30, R], latin_america: [0.07, R], oceania: [0.03, R] }
+      2024: { north_america: [0.45, R], europe: [0.27, R], south_southeast_asia: [0.12, R], latin_america: [0.10, R], east_asia: [0.03, R], oceania: [0.03, R] }
+  - company: Warner Bros. Discovery
+    line: HBO Max
+    category: streaming
+    first: "2015-04" # R: HBO Now, 7 April 2015; HBO Max from 27 May 2020; Max from 23 May 2023 (WBD)
+    customers: { 2015: [0.8, R], 2018: [5, R], 2020: [41, R], 2022: [96, R], 2024: [117, R], 2025: [125, A] } # WBD (with HBO's own US subscribers from 2020)
+    split:
+      2016: { north_america: [1.0, R] }
+      2024: { north_america: [0.50, R], europe: [0.20, R], latin_america: [0.22, R], south_southeast_asia: [0.05, R], oceania: [0.03, R] }
+  - company: NBCUniversal
+    line: Peacock
+    category: streaming
+    first: "2020-07" # R: 15 July 2020 (CMCSA)
+    customers: { 2020: [3, R], 2022: [20, R], 2024: [36, R], 2025: [41, A] } # CMCSA paid subscribers
+    split: { 2020: { north_america: [1.0, R] } }
+  - company: Paramount
+    line: Paramount+
+    category: streaming
+    first: "2014-10" # R: CBS All Access, 28 October 2014; Paramount+ from 4 March 2021 (PARA)
+    customers: { 2015: [1, R], 2018: [4, R], 2020: [30, R], 2022: [56, R], 2024: [77.5, R], 2025: [79, A] } # PARA (with Showtime from 2021)
+    split:
+      2015: { north_america: [1.0, R] }
+      2024: { north_america: [0.70, R], europe: [0.15, R], latin_america: [0.10, R], oceania: [0.05, R] }
+  - company: Amazon Prime Video
+    line: Prime Video
+    category: streaming
+    first: "2011-02" # R: with Prime in the US, 22 February 2011; worldwide from 14 December 2016 (AMZN)
+    customers: { 2011: [5, A], 2015: [40, A], 2020: [150, R], 2024: [200, R], 2025: [205, A] } # AMZN: "over 200 million" monthly viewers 2024 (Prime members with video, A)
+    split:
+      2012: { north_america: [0.9, A], europe: [0.1, A] }
+      2020: { north_america: [0.55, A], europe: [0.20, A], south_southeast_asia: [0.12, A], east_asia: [0.06, A], latin_america: [0.05, A], oceania: [0.02, A] }
+  - company: Tencent Media
+    line: Tencent Video
+    category: streaming
+    first: "2011-04" # R: Tencent Video's launch, April 2011 (TME)
+    customers: { 2012: [2, A], 2015: [20, R], 2020: [123, R], 2024: [113, R], 2025: [115, A] } # TME paid video subscriptions
+    split: { 2012: { east_asia: [1.0, R] } }
+  - company: Sony
+    line: Crunchyroll
+    category: streaming
+    first: "2021-08" # R: Sony's purchase from AT&T, 9 August 2021 (SONY)
+    customers: { 2021: [5, R], 2024: [15, R], 2025: [17, A] }
+    split: { 2021: { north_america: [0.45, A], europe: [0.25, A], latin_america: [0.20, A], south_southeast_asia: [0.05, A], oceania: [0.05, A] } }
+  # music streaming (customers: paying subscribers)
+  - company: Spotify
+    line: Spotify
+    category: music_streaming
+    customers: { 2008: [0.1, R], 2010: [1, R], 2015: [28, R], 2020: [155, R], 2024: [263, R], 2025: [281, A] } # SPOT premium subscribers
+    split:
+      2008: { europe: [1.0, R] }
+      2015: { europe: [0.45, R], north_america: [0.33, R], latin_america: [0.18, R], oceania: [0.04, R] }
+      2024: { europe: [0.38, R], north_america: [0.26, R], latin_america: [0.22, R], south_southeast_asia: [0.10, R], oceania: [0.04, R] }
+  - company: YouTube
+    line: YouTube Premium
+    category: music_streaming
+    first: "2015-10" # R: YouTube Red, 28 October 2015; Premium and Music from 22 May 2018 (GOOG)
+    customers: { 2016: [1.5, A], 2018: [10, A], 2020: [30, R], 2024: [125, R], 2025: [130, A] } # GOOG: YouTube Music and Premium subscribers
+    split: { 2016: { north_america: [0.55, A], europe: [0.25, A], latin_america: [0.10, A], south_southeast_asia: [0.05, A], oceania: [0.05, A] } }
+  - company: Tencent Media
+    line: QQ Music
+    category: music_streaming
+    customers: { 2008: [3, A], 2010: [5, A], 2016: [15, R], 2020: [56, R], 2024: [121, R], 2025: [124, A] } # TME paying users (Tencent Music)
+    split: { 2008: { east_asia: [1.0, R] } }
+  # social networks (customers: monthly users)
+  - company: Meta Platforms
+    line: Facebook Feed
+    category: social
+    customers: { 2008: [140, R], 2010: [608, R], 2015: [1591, R], 2020: [2797, R], 2024: [3070, R], 2025: [3100, A] } # META monthly users (December)
+    split:
+      2008: { north_america: [0.30, R], europe: [0.30, R], south_southeast_asia: [0.14, D], latin_america: [0.15, D], africa: [0.04, D], oceania: [0.02, D], east_asia: [0.05, D] }
+      2020: { north_america: [0.09, R], europe: [0.15, R], south_southeast_asia: [0.40, D], latin_america: [0.16, D], africa: [0.12, D], oceania: [0.01, D], east_asia: [0.07, D] }
+      2024: { north_america: [0.09, R], europe: [0.13, R], south_southeast_asia: [0.42, D], latin_america: [0.15, D], africa: [0.14, D], oceania: [0.01, D], east_asia: [0.06, D] }
+    arpu_mult: [1.0, D] # META's ARPU is the series above
+    format: feed
+  - company: Meta Platforms
+    line: Instagram
+    category: social
+    first: "2010-10" # R: 6 October 2010; bought by Facebook, April 2012, $1B (filings)
+    customers: { 2011: [10, R], 2013: [150, R], 2015: [400, R], 2018: [1000, R], 2020: [1300, A], 2024: [2000, R], 2025: [2050, A] }
+    split:
+      2012: { north_america: [0.45, A], europe: [0.30, A], latin_america: [0.12, A], south_southeast_asia: [0.08, A], oceania: [0.03, A], east_asia: [0.02, A] }
+      2024: { north_america: [0.10, A], europe: [0.17, A], latin_america: [0.18, A], south_southeast_asia: [0.40, A], africa: [0.08, A], oceania: [0.02, A], east_asia: [0.05, A] }
+    arpu_mult: [0.6, A] # A: Instagram's ad revenue about $32B of 2021's $115B over 1.3-2B users (R)
+    format: stories # photos to August 2016, then stories (A: the line's current format)
+  - company: Twitter
+    line: Twitter
+    category: social
+    first: "2008-01" # R: (founded 2006; R)
+    customers: { 2008: [10, R], 2010: [50, R], 2015: [305, R], 2020: [330, R], 2022: [368, R], 2024: [400, A], 2025: [390, A] } # TWTR monthly users; X's after 2022 (A)
+    split:
+      2008: { north_america: [0.50, R], europe: [0.20, R], east_asia: [0.10, R], latin_america: [0.10, R], south_southeast_asia: [0.08, R], oceania: [0.02, R] }
+      2020: { north_america: [0.22, R], europe: [0.22, R], east_asia: [0.16, R], latin_america: [0.12, R], south_southeast_asia: [0.20, R], africa: [0.06, R], oceania: [0.02, R] }
+    arpu_mult: [0.35, A] # A: Twitter's 2020 ad revenue $3.2B over 330M users ($10) against Meta's $32 (R)
+    format: feed
+  - company: Snap
+    line: Snapchat
+    category: social
+    first: "2011-09" # R: Snapchat, September 2011 (SNAP)
+    customers: { 2012: [5, A], 2014: [46, R], 2016: [158, R], 2020: [265, R], 2024: [453, R], 2025: [470, A] } # SNAP daily users
+    split:
+      2014: { north_america: [0.60, R], europe: [0.30, R], oceania: [0.05, R], latin_america: [0.05, R] }
+      2024: { north_america: [0.22, R], europe: [0.21, R], south_southeast_asia: [0.40, D], latin_america: [0.07, D], africa: [0.07, D], oceania: [0.03, D] }
+    arpu_mult: [0.30, A] # A: Snap's 2024 revenue $5.4B over 453M (about $12) against Meta's $49 (R)
+    format: stories
+  - company: ByteDance
+    line: TikTok
+    category: social
+    first: "2017-09" # R: TikTok outside China, September 2017; with Musical.ly from August 2018 (BD)
+    customers: { 2018: [270, R], 2019: [500, R], 2020: [690, R], 2021: [1000, R], 2024: [1600, R], 2025: [1650, A] }
+    split:
+      2019: { north_america: [0.15, A], europe: [0.20, A], south_southeast_asia: [0.45, A], latin_america: [0.12, A], oceania: [0.02, A], africa: [0.06, A] }
+      2024: { north_america: [0.12, A], europe: [0.18, A], south_southeast_asia: [0.38, A], latin_america: [0.15, A], africa: [0.12, A], oceania: [0.02, A], east_asia: [0.03, A] }
+    arpu_mult: [0.25, A] # A: TikTok's ad revenue about $20B in 2024 outside China (R) over 1.6B
+    format: short_video
+  - company: ByteDance
+    line: Douyin
+    category: social
+    first: "2016-09" # R: Douyin, September 2016 (BD)
+    customers: { 2017: [150, R], 2018: [400, R], 2020: [600, R], 2024: [755, R], 2025: [760, A] } # BD daily users
+    split: { 2017: { east_asia: [1.0, R] } }
+    arpu_mult: [3.0, A] # A: Douyin's ads about $40B (R) over 755M (about $50) against East Asia's $19
+    format: short_video
+  - company: Tencent Media
+    line: WeChat
+    category: social
+    first: "2011-01" # R: Weixin, 21 January 2011 (TME)
+    customers: { 2011: [50, R], 2013: [355, R], 2015: [697, R], 2020: [1225, R], 2024: [1385, R], 2025: [1400, A] } # TME combined monthly users
+    split: { 2011: { east_asia: [1.0, R] }, 2015: { east_asia: [0.95, R], south_southeast_asia: [0.05, R] } }
+    arpu_mult: [0.6, A] # A: Tencent's social ads about $11B (R) over 1.3B
+    format: feed
+  - company: YouTube
+    line: YouTube
+    category: social
+    customers: { 2008: [300, A], 2010: [800, A], 2013: [1000, R], 2019: [2000, R], 2024: [2500, R], 2025: [2550, A] } # GOOG: "over 1 billion" monthly users (2013), 2 billion (2019), 2.5 billion (2024)
+    split:
+      2008: { north_america: [0.25, A], europe: [0.30, A], south_southeast_asia: [0.18, A], latin_america: [0.14, A], east_asia: [0.06, A], africa: [0.04, A], oceania: [0.03, A] }
+      2024: { north_america: [0.12, A], europe: [0.18, A], south_southeast_asia: [0.40, A], latin_america: [0.14, A], east_asia: [0.06, A], africa: [0.08, A], oceania: [0.02, A] }
+    arpu_mult: [0.45, A] # A: YouTube's ads $36B (2024, R) over 2.5B (about $14) against Meta's $49 a user; (2010 $1.3B over 800M)
+    format: short_video # A: Shorts from 2020 (the line's current format)
+  # games (revenue $B a year, R from each publisher's reports; customers are revenue / (12 x price))
+  - company: Electronic Arts
+    line: EA Games
+    category: games
+    revenue_usd: { 2008: [4.0, 2008, R], 2010: [3.6, 2010, R], 2015: [4.5, 2015, R], 2020: [5.6, 2020, R], 2024: [7.5, 2024, R], 2025: [7.4, 2025, A] }
+    split: { 2008: { north_america: [0.50, R], europe: [0.40, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+  - company: Activision Blizzard
+    line: Activision Blizzard
+    category: games
+    last: "2023-10" # R: Microsoft's purchase closed 13 October 2023 ($68.7B, after the UK CMA's review)
+    revenue_usd: { 2008: [3.0, 2008, R], 2010: [4.4, 2010, R], 2015: [4.7, 2015, R], 2020: [8.1, 2020, R], 2022: [7.5, 2022, R], 2023: [8.0, 2023, A] }
+    split: { 2008: { north_america: [0.50, R], europe: [0.35, R], east_asia: [0.08, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+  - company: Microsoft Gaming
+    line: Xbox
+    category: games
+    revenue_usd: { 2008: [2.5, 2008, A], 2010: [3.0, 2010, A], 2015: [5.0, 2015, R], 2020: [11.0, 2020, R], 2023: [15.0, 2023, R], 2024: [21.0, 2024, D], 2025: [22.0, 2025, A] } # MSFT Xbox content and services (2024 with Activision Blizzard, D)
+    split: { 2008: { north_america: [0.55, A], europe: [0.35, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+  - company: Take-Two
+    line: Take-Two
+    category: games
+    revenue_usd: { 2008: [1.5, 2008, R], 2010: [1.2, 2010, R], 2015: [1.4, 2015, R], 2020: [3.1, 2020, R], 2022: [3.5, 2022, R], 2024: [5.3, 2024, R], 2025: [5.6, 2025, A] } # TTWO (with Zynga from May 2022, $12.7B)
+    split: { 2008: { north_america: [0.55, R], europe: [0.35, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+  - company: Ubisoft
+    line: Ubisoft
+    category: games
+    revenue_usd: { 2008: [1.5, 2008, R], 2010: [1.4, 2010, R], 2015: [1.6, 2015, R], 2020: [2.5, 2020, R], 2024: [2.0, 2024, R], 2025: [1.9, 2025, A] }
+    split: { 2008: { europe: [0.45, R], north_america: [0.45, R], east_asia: [0.04, A], latin_america: [0.03, A], oceania: [0.03, A] } }
+  - company: Nintendo
+    line: Nintendo
+    category: games
+    revenue_usd: { 2008: [7.0, 2008, D], 2010: [6.0, 2010, D], 2015: [2.5, 2015, D], 2020: [8.0, 2020, D], 2024: [7.0, 2024, D], 2025: [7.5, 2025, A] } # D: NTDO's software and digital sales, about 45% of revenue
+    split: { 2008: { north_america: [0.40, R], europe: [0.30, R], east_asia: [0.25, R], oceania: [0.03, R], latin_america: [0.02, R] } }
+  - company: Sony
+    line: PlayStation Studios
+    category: games
+    revenue_usd: { 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2020: [15.0, 2020, D], 2024: [20.0, 2024, D], 2025: [21.0, 2025, A] } # D: SONY's G&NS software, network services and add-ons, about 60% of the segment
+    split: { 2008: { north_america: [0.35, R], europe: [0.35, R], east_asia: [0.22, R], latin_america: [0.04, A], oceania: [0.04, A] } }
+  - company: Tencent Media
+    line: Tencent Games
+    category: games
+    revenue_usd: { 2008: [1.0, 2008, R], 2010: [2.8, 2010, R], 2015: [9.5, 2015, R], 2020: [30.0, 2020, R], 2024: [27.0, 2024, R], 2025: [28.0, 2025, A] } # TME online games (domestic and international)
+    split: { 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.75, R], north_america: [0.08, A], europe: [0.08, A], south_southeast_asia: [0.07, A], latin_america: [0.02, A] } }
+  - company: NetEase
+    line: NetEase Games
+    category: games
+    revenue_usd: { 2008: [0.4, 2008, R], 2010: [0.8, 2010, R], 2015: [2.6, 2015, R], 2020: [8.5, 2020, R], 2024: [11.5, 2024, R], 2025: [12.0, 2025, A] }
+    split: { 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.90, R], north_america: [0.04, A], europe: [0.03, A], south_southeast_asia: [0.03, A] } }
+  - company: Roblox
+    line: Roblox
+    category: games
+    revenue_usd: { 2008: [0.005, 2008, A], 2010: [0.01, 2010, A], 2015: [0.06, 2015, A], 2018: [0.33, 2018, R], 2020: [0.92, 2020, R], 2024: [3.6, 2024, R], 2025: [4.2, 2025, A] } # RBLX (listed 10 March 2021)
+    split: { 2008: { north_america: [0.80, A], europe: [0.15, A], oceania: [0.05, A] }, 2024: { north_america: [0.62, R], europe: [0.18, R], south_southeast_asia: [0.08, A], latin_america: [0.07, A], oceania: [0.05, A] } }
+  - company: Disney
+    line: Disney Interactive
+    category: games
+    last: "2016-05" # R: Disney closed its games publishing (Disney Infinity) in May 2016 and licenses since
+    revenue_usd: { 2008: [0.7, 2008, R], 2010: [0.8, 2010, R], 2014: [1.3, 2014, R], 2016: [1.0, 2016, A] } # DIS Interactive segment
+    split: { 2008: { north_america: [0.6, A], europe: [0.3, A], east_asia: [0.05, A], latin_america: [0.05, A] } }
+
+# Box office (65.2: a film's first revenue window; shown, and a film title's base revenue a viewer follows it)
+box_office_usd: { 2008: [27.7, 2008, R], 2010: [31.8, 2010, R], 2015: [38.3, 2015, R], 2019: [42.5, 2019, R], 2020: [12.0, 2020, R], 2022: [26.0, 2022, R], 2024: [30.0, 2024, R], 2025: [33.0, 2025, A] } # MPA, Gower Street

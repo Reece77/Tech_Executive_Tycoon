@@ -213,6 +213,33 @@ segments:
     base_churn: 0.02 # equipment uses replacement_months
     adoption: 0.02
     reach: sales
+  # M55 (formulas.md 65): media audiences, all self-serve. Viewers subscribe to video and music
+  # services: the catalogue (quality) and price weigh most; base churn 4% a month sits between the
+  # leader's 2-3% and others' 5-7% (R: Antenna), and media.streaming.churn_* moves it by catalogue
+  # engagement. Players buy games (in a rival's line, revenue a player a month). Users join social
+  # networks: price is the ad load (a social line's price is its ad revenue a user), and churn is low
+  # (R: Meta's monthly users rarely fall).
+  - key: viewers
+    label: Viewers
+    weights: { quality: 0.35, price: 0.30, brand: 0.20, features: 0.15 }
+    outside_option: 35
+    base_churn: 0.04
+    adoption: 0.05
+    reach: self_serve
+  - key: players
+    label: Players
+    weights: { quality: 0.40, price: 0.20, brand: 0.25, features: 0.15 }
+    outside_option: 35
+    base_churn: 0.05
+    adoption: 0.04
+    reach: self_serve
+  - key: users
+    label: Users
+    weights: { quality: 0.25, price: 0.25, brand: 0.25, features: 0.25 }
+    outside_option: 35
+    base_churn: 0.02
+    adoption: 0.04
+    reach: self_serve
 categories:
   - key: b2b_saas
     label: B2B SaaS
@@ -896,3 +923,73 @@ categories:
     price_index: { north_america: 1.0, europe: 0.95, east_asia: 0.80, south_southeast_asia: 0.80, latin_america: 0.90, africa: 0.90, oceania: 1.0 } # A: Chinese vendors' prices in Asia
     markets:
       - { segment: carriers, addressable: 38429, reference_price_cents: 4500000, hosting_cents: 2700000, replacement_months: 84 }
+
+  # --- M55 (formulas.md 65): media and entertainment, family media ---
+  # Demand is set by media.yaml (as telecom's): addressable customers are the data's paid video and music
+  # subscriptions, games revenue over a player's monthly price, and internet users x multi-homing for
+  # social, x media.scale, and from 2026 grown by a yearly draw (media.growth_after). Rivals are
+  # scheduled only (a startup never enters media). Each category has its own regional price index
+  # (R: Netflix's ARPU by region 2020; Meta's ARPU by region 2024; Spotify's; A for games). Prices are
+  # 2010 cents a customer a month: streaming's is a subscription, music's too (media.streaming
+  # .music_payout of it goes to rights holders), games' is a player's spend a month (rivals' lines only:
+  # the player's games are titles, 65.4), and social's is ad revenue a user (65.1: set by the ad market,
+  # not by the player). hosting_cents: delivery and care a customer (A: CDN and support about 15% of
+  # streaming's price; a social user's servers about 5% of ARPU).
+  - key: streaming
+    label: Video streaming
+    family: media
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (media.yaml has 2008)
+    features_at_start: 40
+    features_per_month: 1.5
+    scope: 6
+    brand_constant: 200
+    launch_quality: 25
+    dev_weights: { software_engineering: 0.35, infrastructure: 0.25, design: 0.20, product: 0.10, data: 0.10 }
+    price_index: { north_america: 1.0, europe: 0.77, east_asia: 0.65, south_southeast_asia: 0.30, latin_america: 0.50, africa: 0.40, oceania: 0.80 } # R: Netflix ARPU by region 2020 (UCAN $13.5, EMEA $10.5, LATAM $7.1, APAC $9.2; India's plans below $5)
+    markets:
+      - { segment: viewers, addressable: 2125000, reference_price_cents: 900, hosting_cents: 130 }
+
+  - key: music_streaming
+    label: Music streaming
+    family: media
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 1.5
+    scope: 5
+    brand_constant: 200
+    launch_quality: 25
+    dev_weights: { software_engineering: 0.35, data: 0.25, design: 0.20, product: 0.10, infrastructure: 0.10 }
+    price_index: { north_america: 1.0, europe: 0.85, east_asia: 0.40, south_southeast_asia: 0.20, latin_america: 0.35, africa: 0.30, oceania: 0.90 } # R: Spotify's ARPU by region and Tencent Music's
+    markets:
+      - { segment: viewers, addressable: 340000, reference_price_cents: 800, hosting_cents: 40 }
+
+  - key: games
+    label: Games
+    family: media
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 1.0
+    scope: 8
+    brand_constant: 200
+    dev_weights: { software_engineering: 0.40, design: 0.30, product: 0.15, data: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.90, east_asia: 0.80, south_southeast_asia: 0.30, latin_america: 0.40, africa: 0.30, oceania: 0.90 } # A: games' spend a player by region (Newzoo's revenue over players, R)
+    markets:
+      - { segment: players, addressable: 14240000, reference_price_cents: 1000, hosting_cents: 100 }
+
+  - key: social
+    label: Social networks
+    family: media
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 3.0
+    scope: 6
+    brand_constant: 300
+    launch_quality: 20
+    dev_weights: { software_engineering: 0.30, data: 0.25, design: 0.20, product: 0.15, infrastructure: 0.10 }
+    price_index: { north_america: 1.0, europe: 0.33, east_asia: 0.083, south_southeast_asia: 0.044, latin_america: 0.066, africa: 0.044, oceania: 0.44 } # R: Meta's ARPU by region 2024 over US and Canada's (media.yaml arpu_usd)
+    markets:
+      - { segment: users, addressable: 32045000, reference_price_cents: 1500, hosting_cents: 60 }

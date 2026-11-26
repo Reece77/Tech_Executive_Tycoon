@@ -63,6 +63,7 @@ from tst.sim.group.config import GroupBalance
 from tst.sim.group.conglomerate_config import ConglomerateBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
+from tst.sim.media.config import MediaBalance, MediaFile
 from tst.sim.medical.config import MedicalBalance, MedicalFile
 from tst.sim.meetings.config import MeetingsBalance
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
@@ -1439,6 +1440,7 @@ class Balance(_Frozen):
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     telecom: TelecomBalance  # M53 (formulas.md 62): telecom
+    media: MediaBalance  # M55 (formulas.md 65): media and entertainment
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
@@ -1776,6 +1778,12 @@ class CategoryDef(_Frozen):
         """M40 (56): launch, satellite broadband or Earth observation (scheduled rivals only;
         a line sells only with vehicles or satellites)."""
         return self.family == "space"
+
+    @property
+    def media(self) -> bool:
+        """M55 (65): video and music streaming, games and social networks (scheduled rivals only;
+        a startup never enters them)."""
+        return self.family == "media"
 
     @property
     def telecom(self) -> bool:
@@ -2248,6 +2256,7 @@ class GameData(_Frozen):
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
     space: SpaceFile | None = None  # M40 (56); None = no space markets' history
     telecom: TelecomFile | None = None  # M53 (62); None = no telecom markets' history
+    media: MediaFile | None = None  # M55 (65); None = no media markets' history
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:

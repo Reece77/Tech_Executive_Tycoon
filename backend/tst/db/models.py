@@ -2336,6 +2336,18 @@ class RoboticsRecordRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
 
+class MediaRecordRow(Base):
+    """One media record (65; 0068_m55): `kind` names its MediaState collection (titles, leads,
+    offers, settings, licences, laws, months, ad_months, draws, ad_refs, rival_formats,
+    rival_bonus, paid_back) and `data` its fields; rows keep each collection's order."""
+
+    __tablename__ = "media_record"
+
+    n: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 class TelecomRecordRow(Base):
     """One telecom record (62; 0067_m53): `kind` names its TelecomState collection (radios,
     fibres, cables, licences, auctions, settings, months, cash, paid_back, telecom_world) and

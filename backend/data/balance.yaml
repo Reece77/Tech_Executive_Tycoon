@@ -561,6 +561,10 @@ rivals:
     fixed_broadband: { builder: 0.55, seller: 0.20, marketer: 0.25 } # M53 (A)
     wholesale: { builder: 0.60, seller: 0.35, marketer: 0.05 } # M53 (A: carrier sales)
     network_equipment: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M53 (62.3): vendors (A: engineering-led, sold by contract)
+    streaming: { builder: 0.50, seller: 0.0, marketer: 0.50 } # M55 (65.7): media rivals (A: content is the media module's; marketing-led consumer services)
+    music_streaming: { builder: 0.55, seller: 0.0, marketer: 0.45 }
+    games: { builder: 0.75, seller: 0.0, marketer: 0.25 }
+    social: { builder: 0.70, seller: 0.0, marketer: 0.30 }
   function_roles: { builder: software_engineer, seller: account_executive, marketer: marketer } # roles.yaml key whose mid-level pay prices each pool (15.1)
   pool_morale: 60 # morale points of every pool (15.1)
   pool_skill_other: 12 # attribute points; seller and marketer pool skill (15.1)
@@ -3463,6 +3467,157 @@ telecom: # 62: telecom (M53, v6 lane B). Data (subscriptions, ARPU, generations,
   energy: { build: 4, bid: 3, replace: 2, setting: 1 } # founder energy (A)
   unlock_year: 2012 # the Telecom screen opens (M29) from 2012 for a stage-3 company that makes devices or chips, or with a telecom line or network
 
+media: # 65: media and entertainment (M55, v6 lane B). Data (ad spend, internet users, ARPU, streaming and music markets, games revenue, generations, formats, strikes, rivals' lines) is media.yaml's, cited; these are the game's dials. Nothing here moves anything before `start` but the player's own titles, services and networks (65.8 target 1). A = an assumption for gameplay, tuned only for 65.8
+  start: "2026-01" # history holds before this month (rivals follow media.yaml; seeded eras, generations, strikes, laws and growth from it)
+  streaming: streaming # categories.yaml keys
+  music: music_streaming
+  games: games
+  social: social
+  consumer_apps: consumer_apps # 65.1: may opt into ad pricing from ads.consumer_apps_from
+  scale: 0.085 # the game's economy scale (economy_scale.money, as telecom.scale): markets and title budgets
+  scale_basis: "economy_scale.money (M34), as telecom.scale and space.scale"
+  growth_after: # a region's market a year after 2025, drawn each January within these (A: Ampere and Newzoo forecasts of low single digits, R)
+    streaming: [0.02, 0.06]
+    music_streaming: [0.02, 0.06]
+    games: [0.01, 0.05]
+    social: [0.0, 0.02]
+  ads: # 65.1
+    digital_ceiling: 0.85 # digital's share of ad spend approaches this after 2025 (A: GroupM's 72.9% in 2025, S, rising about a point a year)
+    digital_approach: 0.15 # of the gap to the ceiling closed a year (A)
+    growth_after: [0.02, 0.07] # ad spend's yearly growth after 2025, drawn each January (A: GroupM's 2010-2024 nominal growth about 5% a year, D)
+    confidence_exponent: 1.0 # x (consumer confidence / 100) ** this: ads follow the cycle (A: ad spend fell about 8% in 2009, R)
+    impressions_per_hour: 30 # ads a user sees an hour at load 1 (A: about one ad every two minutes in a feed)
+    hours: { social: 30, streaming: 40, consumer_apps: 8 } # hours a user (an ad-tier subscriber) spends a month (R: about an hour a day on a main network, two on video)
+    ad_load: { social: 1.0, streaming: 0.5, consumer_apps: 0.6 } # the default load (A: an ad tier's 4-5 minutes an hour)
+    load_range: [0.5, 1.5] # a player's ad load setting on a social network
+    targeting_base: 0.5 # targeting quality = base + quality_weight x the line's quality / 100 (A)
+    targeting_quality_weight: 0.5
+    consumer_apps_from: "2026-01" # the brief: consumer apps may opt into ad pricing only from 2026
+  kinds: # 65.2: a title's kind. Budgets real (2010 cents), x scale in the game; audience millions, real
+    series:
+      dev_months: 14 # (R: a season's development and production about 12-18 months)
+      typical_budget_cents: 6000000000 # $60M a season (R: $3-15M an episode, 8-10 episodes)
+      min_budget_share: 0.2
+      max_budget_mult: 5.0
+      revenue_mult: 1.25 # expected revenue at quality 1 x the typical budget (A: licences' cost-plus 20-30%, R)
+      hit_sigma: 1.2 # the audience draw's lognormal sigma (A: most titles underperform, 65.8 target 2)
+      tau_months: 18 # licence revenue's time constant (A)
+      tail_months: 72
+      amortisation: [0.45, 0.25, 0.12, 0.08, 0.06, 0.04] # by year from release (NFLX: about 90% within four years, R)
+      audience_m: 8.0 # a typical season's viewers (A)
+    film:
+      dev_months: 24 # (R: two years from green light to release)
+      typical_budget_cents: 7000000000 # $70M (R: the studios' median about $60-100M)
+      min_budget_share: 0.05
+      max_budget_mult: 4.0
+      revenue_mult: 1.3 # box office, home and licences at quality 1 (A)
+      hit_sigma: 1.3
+      tau_months: 4 # box office, then home and licences
+      tail_months: 48
+      amortisation: [0.45, 0.25, 0.12, 0.08, 0.06, 0.04]
+      audience_m: 12.0 # a typical film's tickets and views (A)
+    game:
+      dev_months: 36 # (R: 3-5 years for AAA)
+      typical_budget_cents: 10000000000 # $100M (R: $50-100M in 2010, $200-300M in the 2020s)
+      min_budget_share: 0.02
+      max_budget_mult: 3.0
+      revenue_mult: 1.4
+      hit_sigma: 1.4 # (R: on Steam the top 1% of titles earn about half of revenue, VG Insights)
+      tau_months: 5
+      tail_months: 36
+      amortisation: [0.55, 0.25, 0.12, 0.08] # by expected sales (A)
+      audience_m: 3.9 # a typical game's copies on all platforms (D: $140M over $51 a copy x 0.7 after fees)
+  quality: # 65.2: a title's quality multiplier
+    lead_exponent: 0.8 # ((creative + vision) / 2 / 10) ** this (A)
+    no_lead: 0.6 # without a creative lead (A)
+    team_exponent: 0.3 # (the assigned unit's development skill / 10) ** this (A)
+    no_team: 0.85 # without a unit (A: the budget pays freelance crews)
+    budget_exponent: 0.35 # (budget / typical) ** this: diminishing (A)
+    franchise_k: 0.5 # a sequel x (1 + k x (the last title's audience ratio - 1) x exp(-years / franchise_years)) (A)
+    franchise_years: 4
+    franchise_range: [0.6, 2.0]
+    morale_floor: 0.7 # x (floor + span x the lead's morale / 100), as builders' (11.3)
+    morale_span: 0.6
+    range: [0.2, 3.0]
+    impairment_ratio: 0.3 # a released title's audience under this of expected writes its book down to the ratio's share (A)
+    strike_slip: true # a strike pauses production (65.6)
+  streaming_service: # 65.3
+    recency_months: 30 # a title's catalogue value decays with this time constant (A: Netflix's catalogue turns over in about three years)
+    appeal_k: 0.4 # a service's appeal x (catalogue value / the median service's) ** this
+    appeal_range: [0.3, 1.6]
+    churn_k: 0.35 # churn x (the median's / value) ** this
+    churn_range: [0.6, 2.0] # (R: Antenna's 2-3% a month for the leader, 5-7% for others, against 4% base)
+    rival_content_share: 0.45 # of a rival service's revenue spent on content a year after 2025 (R: Netflix's content amortization about 45-50% of revenue)
+    licence_value: 0.6 # catalogue value a licensed dollar a year keeps, x media.yaml's availability (A)
+    licence_years: [1, 5] # a licence's term
+    music_payout: 0.68 # of a music line's revenue to rights holders (R: Spotify's about 68-70%)
+    ad_tier_take: 0.4 # subscribers who take an ad tier (R: about 40-55% of new Netflix sign-ups where offered, 2024)
+    ad_tier_price: 0.55 # x the line's price (R: Netflix's $6.99 against $15.49)
+    cash_months: 36
+  game_titles: # 65.4
+    price_cents: { pc: 5000, console: 6000, mobile: 500 } # a premium copy (R: $50-60, mobile $1-10)
+    platform_share: { pc: 0.35, console: 0.55, mobile: 0.10 } # of a typical game's copies on each platform (A: Newzoo's premium split)
+    payer_share: 0.05 # free-to-play players who pay in a month (R: 2-5% on mobile)
+    spend_cents: 2000 # a paying player's spend a month (A)
+    f2p_audience_mult: 4.0 # a free-to-play title's first players x its premium audience (A)
+    decay: 0.08 # players lost a month without updates (A)
+    live_decay: 0.025 # with live-service updates (A)
+    live_cost_share: 0.015 # of the budget a month, a live-service update team (A)
+    gen_lift: 1.25 # a console title released within gen_lift_months of a generation sells x this (A)
+    gen_lift_months: 24
+    old_gen_cut: 0.7 # a console title from before a generation sells x this after it (A)
+    console_every: [6, 8] # years between seeded console generations after 2025 (S/R: 2013, 2020)
+  social_network: # 65.5
+    network_k: 0.5 # appeal x (users / the region's internet users / share_ref) ** this (A)
+    share_ref: 0.10 # (65.8 target 4: under 10% a network shrinks without a format advantage)
+    appeal_range: [0.2, 1.5]
+    churn_k: 0.4 # churn x (share_ref / share) ** this
+    churn_range: [0.8, 2.5]
+    format_advantage: 2.5 # appeal x this on the newest format for advantage_years from its arrival (A: TikTok's growth 2018-2021)
+    advantage_years: 4
+    old_format: 0.8 # appeal x this a format era behind the newest (A)
+    format_every: [4, 7] # years between seeded format eras after 2025 (R: 2006, 2010, 2013, 2018)
+    rival_adopt_years: [1, 3] # a rival network moves to a new format this long after it arrives (A: Instagram's Stories three years after Snapchat's)
+    switch_quality_cut: 0.15 # a network's quality x (1 - this) when it switches format (A)
+    moderation_cents: 0.4 # a user's moderation a month, real (R: Meta's about $5B a year of safety over 3B users)
+    moderation_mult: { light: 0.5, standard: 1.0, strong: 1.6 }
+    dsa_from: "2023-08" # (R: the DSA for very large platforms from 25 August 2023)
+    dsa_mult: 2.0 # Europe's moderation x this from then (A)
+    light_fine_chance: 0.3 # a year in Europe from dsa_from, light moderation's chance of a fine (A)
+    fine_share: 0.04 # of the region's revenue a year (R: the DSA's maximum 6% of turnover)
+    strong_appeal: 1.03 # strong moderation's appeal x this (A)
+    divest_chance: 0.05 # a year after 2025, a seeded divest-or-ban law against a network whose owner's bloc differs from the region's (A)
+    divest_min_share: 0.05 # of the region's users, for a law to come (A)
+    divest_notice_months: 9 # (R: the US law's nine months, April 2024 to January 2025)
+    divest_revenue_mult: 2.0 # a forced sale's price: years of the region's revenue (A: a discount on a social network's 4-8x)
+  talent: # 65.6
+    pool_size: 6 # creative leads on offer each January (A)
+    pool_months: 12
+    attribute_mean: 11 # creative and vision (1-20) are drawn N(mean, sd), clamped (A)
+    attribute_sd: 3.5
+    trait_sd: 3 # hidden ego and loyalty: the person's ego and loyalty + N(0, this) (A: shown traits hint at the hidden ones)
+    reveal_hw: 3 # creative and vision shown +/- this before a released title together (A)
+    base_fee_cents: 300000000 # an average lead's overall deal a year, real (A: top showrunners' $20-60M a year, R)
+    fee_exponent: 2.0 # x ((creative + vision) / 20) ** this
+    reputation_fee: 0.5 # x (1 + this x reputation)
+    upfront_share: 0.2 # of the deal's total paid at signing (A)
+    deal_years: [2, 5]
+    overrule_morale: 30 # morale lost by an overrule at ego 20 (x ego / 20) (A: 65.8 target 5)
+    cut_morale: 15 # a budget cut's
+    move_morale: 8 # a moved date's
+    overrule_reach: 0.05 # an overrule's audience gain: the broader cut the player wanted (A)
+    walk_morale: 35 # below this an overrule, cut or move may make the lead walk
+    walk_chance: 0.8 # x (21 - loyalty) / 20 x (walk_morale - morale) / walk_morale (A)
+    hit_reputation: 0.3 # reputation += this x (audience ratio - 1) at release
+    reputation_range: [0.0, 3.0]
+    strike_chance: 0.04 # a region's seeded strike a year after 2025 (A: the 2007-08 and 2023 strikes)
+    strike_months: [2, 6]
+  rival_cash_cents: 50000000000 # $500M opening capital for each media incumbent's business (A: as telecom.rival_cash_cents)
+  history_months: 36 # service and network months kept
+  energy: { greenlight: 3, sign: 2, overrule: 1, license: 2, setting: 1 } # founder energy (A)
+  unlock_year: 2010 # the Studio, Streaming, Games and Social screens open (M29) for a stage-2 company with a consumer app, or with a media line or title
+  lead_role: creative_lead # roles.yaml
+
 government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
   start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)
   tenders:
@@ -3566,6 +3721,7 @@ conglomerate:
     - { key: pharma, label: Pharmaceuticals, categories: [pharma_oncology, pharma_metabolic, pharma_immunology, pharma_neuroscience, pharma_infectious, pharma_cardiovascular, pharma_rare], accounts: [4060_revenue_drugs] } # M42
     - { key: space, label: Space and satellites, categories: [launch, satellite_broadband, earth_observation], facility_kinds: [launch_site, satellite_plant] } # M40
     - { key: telecom, label: Telecom, categories: [mobile, fixed_broadband, wholesale, network_equipment], facility_kinds: [tower, radio, fibre, subsea_cable], accounts: [6760_spectrum_amortization] } # M53
+    - { key: media, label: Media and entertainment, categories: [streaming, music_streaming, games, social], accounts: [4080_revenue_advertising, 4090_revenue_content, 5160_content_royalties, 5170_media_operations, 6770_content_amortization] } # M55
     - { key: government, label: Defence and government, accounts: [4070_revenue_government, 5300_contract_costs, 6990_bids_clearances] } # M44: government contracts, their delivery costs and bids
   trend_years: 10 # years of yearly trends the view shows (the brief's ten-year trends)
   risk_years: 5 # years of yearly revenue growth whose spread (standard deviation) is the shown risk
