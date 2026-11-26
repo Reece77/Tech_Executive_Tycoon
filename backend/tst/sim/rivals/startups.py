@@ -96,6 +96,8 @@ def found_startups(
             continue
         if category.telecom:  # M53 (62.4): operators and vendors are scheduled only
             continue
+        if category.finance:  # M54 (64.5): banks, networks and insurers are scheduled only
+            continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
         chance = sb.found_rate * mood * (1 + growth)

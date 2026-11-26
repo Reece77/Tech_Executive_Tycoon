@@ -275,6 +275,8 @@ from tst.sim.fabs.actions import BuildFab, FabAction, UpgradeFab, apply_fab
 from tst.sim.fabs.foundry import ACTION_TYPES as FOUNDRY_ACTION_TYPES
 from tst.sim.fabs.foundry import SignFoundryContract
 from tst.sim.fabs.foundry import sign as sign_foundry_contract
+from tst.sim.fx.actions import ACTION_TYPES as FX_ACTION_TYPES
+from tst.sim.fx.actions import BuyForward, FxAction, SetHedgeProgramme, apply_fx
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics.actions import ACTION_TYPES as GEOPOLITICS_ACTION_TYPES
 from tst.sim.geopolitics.actions import (
@@ -486,6 +488,7 @@ type Action = (
     | PharmaAction  # M42
     | SpaceAction  # M40
     | TelecomAction  # M53
+    | FxAction  # M54 (64.4)
     | GovernmentAction  # M44
     | NegotiationAction  # M47
     | MeetingOutcome  # M48
@@ -514,6 +517,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **PHARMA_ACTION_TYPES,  # M42 (55)
     **SPACE_ACTION_TYPES,  # M40 (56)
     **TELECOM_ACTION_TYPES,  # M53 (62)
+    **FX_ACTION_TYPES,  # M54 (64.4)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
     **MEETING_ACTION_TYPES,  # M48 (59)
@@ -1088,6 +1092,8 @@ def apply_action(
             | SetTelecomLine()
         ):
             out = apply_telecom(state, action, ledger_balances, balance, data)  # M53 (62)
+        case BuyForward() | SetHedgeProgramme():
+            out = apply_fx(state, action, balance, data)  # M54 (64.4)
         case (
             PlaceBid()
             | WithdrawBid()

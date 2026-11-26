@@ -3587,6 +3587,7 @@ finserv: # 64.1-64.3 and 64.5: banking, payments and insurance (M54, v6 lane A).
   growth_after: [0.0, 0.02] # accounts' and policies' yearly growth after 2025, drawn each January a region (A)
   rival_cash_cents: 2000000000000 # $20B: a finance incumbent's opening capital at game scale (A: big banks' and insurers' equity x scale)
   history_months: 36 # bank, network and insurer months kept (the screens' charts)
+  energy: { charter: 4, partner: 2, setting: 1, capital: 1, network: 4, licence: 3, hedge: 1 } # founder energy a finance or currency action spends
   unlock_year: 2014 # finance opens to a stage-3 fintech from this year (A: neobanks from 2013-2015)
 government: # 57: defence and government contracts (M44, v5 lane K). Data (budgets, named tenders, rules, clearance times, protests, primes) is government.yaml's, cited; these are the game's dials. A = an assumption for gameplay
   start: "2026-01" # budgets follow government.yaml to 2025, seeded growth from this month (57.1)

@@ -37,9 +37,11 @@ from tst.sim.finance.board import average_confidence, board_month, vacate_depart
 from tst.sim.finance.captable import founder_bp
 from tst.sim.finance.options import settle_leavers, vest
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss
+from tst.sim.finserv import phase as finserv_phase
 from tst.sim.founder import personal
 from tst.sim.founder.investing import investing_month
 from tst.sim.founder.phase import founder_month, next_budget
+from tst.sim.fx import phase as fx_phase
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics import phase as geopolitics
 from tst.sim.government import phase as government_phase
@@ -341,6 +343,9 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M53 (62.4): telecom lines whose dated opening is this month sell from it
     ctx = replace(ctx, state=telecom_phase.open_month(ctx.state, ctx.balance, ctx.data))
+    # M54 (64.4): the indexes' month, translation marks and the month's translated prices
+    state, fx_prices = fx_phase.before_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state)
     # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
@@ -353,6 +358,9 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     platform_effects = space_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     # M53 (62.1-62.4): the player's telecom lines' gates (coverage, spectrum, capacity, homes)
     platform_effects = telecom_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
+    platform_effects = fx_phase.with_effects(platform_effects, fx_prices)  # M54 (64.4)
+    # M54 (64.1-64.3): where the player's banks, networks and insurers may win customers
+    platform_effects = finserv_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -381,6 +389,14 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data
     )
     ctx = replace(ctx, state=state).post(*tel_entries).log(*tel_logs)
+    # M54 (64.4): foreign money by region, hedging programmes, forwards' fair value and settlements
+    state, fx_entries = fx_phase.after_sales(ctx.state, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state).post(*fx_entries)
+    # M54 (64.1-64.3): banks, payments and insurers' month; rivals' interest, interchange, claims
+    state, fin_entries, fin_logs = finserv_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*fin_entries).log(*fin_logs)
     # M44 (57): tenders, awards, protests, government contracts' delivery, clearances
     state, gov_entries, gov_logs = government_phase.month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*gov_entries).log(*gov_logs)
@@ -410,6 +426,7 @@ def payroll_and_operating_costs(ctx: TurnContext) -> TurnContext:
     # before a January death (phase 10) settles the estate (M43r, Codex review 9 finding 1).
     state = personal.salary_month(ctx.state, ctx.balance)
     ctx = replace(ctx, state=state, payroll=payroll, division_months=months).post(*entries)
+    ctx = ctx.post(*fx_phase.cost_entries(ctx.state, ctx.balance, ctx.data))  # M54 (64.4)
     state, outage_logs = outages_month(ctx.state, ctx.rng, ctx.balance, ctx.data)  # M12a (22.5)
     ctx = replace(ctx, state=state).log(*outage_logs)
     # M32 (46.2, ADR-0022 3): the power settlement, after every facility posted its energy
@@ -537,7 +554,8 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state = robotics_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M39 (53)
     state, space_logs = space_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M40 (56)
     state, tel_logs = telecom_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M53 (62)
-    space_logs = [*space_logs, *tel_logs]
+    state, fin_logs = finserv_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M54
+    space_logs = [*space_logs, *tel_logs, *fin_logs]
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)

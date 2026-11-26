@@ -685,6 +685,7 @@ def rival_month(
     moves: list[RivalMove] = []
     logs: list[LogItem] = []
     entries: list[LedgerEntry] = []
+    from tst.sim.finserv.rivals import holds as finance_holds
     from tst.sim.robotics.rivals import holds as robot_holds
     from tst.sim.space.rivals import holds as space_holds
     from tst.sim.telecom.rivals import holds as telecom_holds
@@ -704,6 +705,8 @@ def rival_month(
         if space_holds(state, company, balance, data):  # M40 (56): space companies likewise
             continue
         if telecom_holds(state, company, balance, data):  # M53 (62.4): operators likewise
+            continue
+        if finance_holds(state, company, balance, data):  # M54 (64.5): finance rivals likewise
             continue
         gen = rng.stream(state.turn, "rivals", *stream_key(company.id, company.rival_key))
         chosen = choose(state, company, gen, balances, balance, data)

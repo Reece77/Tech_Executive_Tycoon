@@ -392,6 +392,7 @@ class FinservBalance(_Frozen):
     growth_after: Range  # accounts' and policies' yearly growth after 2025 (seeded, a region)
     rival_cash_cents: int = Field(ge=0)
     history_months: int = Field(ge=1)
+    energy: dict[str, int]  # founder energy a finance or currency action spends
     unlock_year: int
 
     @property

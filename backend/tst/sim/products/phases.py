@@ -370,7 +370,7 @@ def run_markets(
         if trimmed in flows:
             flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
     state, entries_out, revenue, flows, more_logs = _revenue(
-        state, flows, data, regional_units, plan, effects
+        state, flows, data, regional_units, plan, effects, home_region_of(state, balance, data)
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
     deals = any(d.status == "active" for d in state.commodity_deals)  # M17 (33.3)
@@ -713,6 +713,7 @@ def _revenue(
     regional_units: Mapping[tuple[int, str, str], float] | None = None,
     plan: production.ProductionPlan | None = None,
     effects: Effects | None = None,
+    home: str = "",
 ) -> tuple[
     GameState, tuple[LedgerEntry, ...], dict[int, Cents], dict[FlowKey, Flow], list[LogItem]
 ]:
@@ -724,6 +725,13 @@ def _revenue(
     turn = state.turn
     entries: list[LedgerEntry] = []
     revenue: dict[int, Cents] = {c.id: 0 for c in state.ledger_companies()}
+    fx_price = effects.fx_price if effects is not None else {}  # M54 (64.4): translated prices
+
+    def booked_price(product_id: int, region: str, segment: str, price: int | None) -> int:
+        if price is None:
+            return 0
+        return fx_price.get((product_id, region, segment), price) if fx_price else price
+
     logs: list[LogItem] = []
     for product in state.products:
         if product.status not in SELLING:
@@ -738,21 +746,24 @@ def _revenue(
         if product.company_id in revenue:
             for seg in segments:
                 key = (product.id, seg.segment)
+                # M54 (64.4): the price translated at this month's index (as set otherwise)
+                price = booked_price(product.id, home, seg.segment, seg.price_cents)
                 if category.sells_units:
                     sold = flows.get(key, Flow()).units
                     units_sold += sold
-                    amount = times(seg.price_cents or 0, sold)
+                    amount = times(price, sold)
                 else:
-                    amount = times(seg.price_cents or 0, seg.customers, paid)
+                    amount = times(price, seg.customers, paid)
                 booked += amount
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
+                price = booked_price(product.id, rseg.region, rseg.segment, rseg.price_cents)
                 if category.sells_units:
                     sold = regional_units.get((product.id, rseg.region, rseg.segment), 0.0)
                     units_sold += sold
-                    booked += times(rseg.price_cents or 0, sold)
+                    booked += times(price, sold)
                 else:
-                    booked += times(rseg.price_cents or 0, rseg.customers, paid)
+                    booked += times(price, rseg.customers, paid)
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
                 share = category.rival_cost_share  # M38 (49.1): a share of its own price
                 cogs = round(
