@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
@@ -59,7 +60,9 @@ from tst.sim.exploration.config import GeologyFile
 from tst.sim.fabs import nodes as nd
 from tst.sim.fabs.config import NodesFile
 from tst.sim.facilities.config import ComponentsHistoryFile
+from tst.sim.finserv.config import BANK_SEGMENTS, INS_SEGMENTS, PAY_SEGMENTS, FinservFile
 from tst.sim.founder.models import PERSONAL_ACCOUNTS, PERSONAL_PREFIX
+from tst.sim.fx.config import FxFile
 from tst.sim.geopolitics.config import (
     BLOCS,
     CountriesFile,
@@ -147,6 +150,8 @@ GOVERNMENT_FILE = "government.yaml"  # M44 (formulas.md 57)
 PHARMA_FILE = "pharma.yaml"  # M42 (formulas.md 55)
 SPACE_FILE = "space.yaml"  # M40 (formulas.md 56)
 TELECOM_FILE = "telecom.yaml"  # M53 (formulas.md 62)
+FINSERV_FILE = "finance_services.yaml"  # M54 (formulas.md 64.1-64.3, 64.5)
+FX_FILE = "fx_history.yaml"  # M54 (formulas.md 64.4, ADR-0025)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -176,6 +181,8 @@ DATA_FILES = (
     PHARMA_FILE,
     SPACE_FILE,
     TELECOM_FILE,
+    FINSERV_FILE,
+    FX_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -1175,6 +1182,8 @@ def load_all(
     pharma = _validate(PharmaFile, parsed[PHARMA_FILE], PHARMA_FILE)
     space = _validate(SpaceFile, parsed[SPACE_FILE], SPACE_FILE)
     telecom = _validate(TelecomFile, parsed[TELECOM_FILE], TELECOM_FILE)
+    finserv = _validate(FinservFile, parsed[FINSERV_FILE], FINSERV_FILE)
+    fx = _validate(FxFile, parsed[FX_FILE], FX_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1239,6 +1248,8 @@ def load_all(
             "pharma": pharma,
             "space": space,
             "telecom": telecom,
+            "finserv": finserv,
+            "fx": fx,
         },
         "seed data cross-check",
     )
@@ -1280,6 +1291,10 @@ def load_all(
         raise DataLoadError(f"{SPACE_FILE}, {BALANCE_FILE} space: " + "; ".join(problems))
     if problems := telecom_problems(balance, game_data):
         raise DataLoadError(f"{TELECOM_FILE}, {BALANCE_FILE} telecom: " + "; ".join(problems))
+    if problems := finserv_problems(balance, game_data):
+        raise DataLoadError(
+            f"{FINSERV_FILE}, {FX_FILE}, {BALANCE_FILE} finserv, fx: " + "; ".join(problems)
+        )
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1625,6 +1640,70 @@ def robotics_problems(balance: Balance, data: GameData) -> list[str]:
     for size in rb.robotaxi.zone_sizes:
         if size not in ("small", "medium", "large"):
             out.append(f"robotaxi.zone_sizes: unknown size {size!r}")
+    return out
+
+
+def finserv_problems(balance: Balance, data: GameData) -> list[str]:
+    """M54 (64): finance_services.yaml and fx_history.yaml cover the game's regions and reach 2025;
+    finserv.* names categories of the right segments; fx.* covers every region; rivals are
+    incumbents; loan mixes sum to 1."""
+    out: list[str] = []
+    f, x = data.finserv, data.fx
+    fb, xb = balance.finserv, balance.fx
+    if f is None or x is None:
+        return ["finance_services.yaml and fx_history.yaml are required"]
+    regions = set(data.region_keys)
+    if set(x.regions) != regions:
+        out.append("fx_history.yaml regions must be exactly the game's")
+    if x.last_year < 2025:  # tunable-exempt: the history's last year
+        out.append("fx_history.yaml must reach 2025")
+    if xb.home not in regions:
+        out.append(f"fx.home {xb.home!r} is not a region")
+    for name, table in (("sigma", xb.sigma), ("drift", xb.drift), ("spread_bp", xb.spread_bp)):
+        if set(table) != regions:
+            out.append(f"fx.{name} must list every region")
+    segs = {
+        fb.banking_category: BANK_SEGMENTS,
+        fb.payments_category: PAY_SEGMENTS,
+        fb.insurance_category: INS_SEGMENTS,
+    }
+    for key, want in segs.items():
+        try:
+            cat = data.category(key)
+        except KeyError:
+            out.append(f"finserv category {key!r} is not in categories.yaml")
+            continue
+        if cat.family != "finance":
+            out.append(f"{key} must be family finance")
+        if tuple(m.segment for m in cat.markets) != want:
+            out.append(f"{key}'s segments must be {list(want)}")
+    tables: tuple[tuple[str, Mapping[str, object]], ...] = (
+        ("accounts", f.banking.accounts),
+        ("deposit_index", f.banking.deposit_index),
+        ("payments volume_bn", f.payments.volume_bn),
+        ("interchange_bp", f.payments.interchange_bp),
+        ("insurance region_share", f.insurance.region_share),
+        ("regulators bank", f.regulators.bank),
+        ("regulators insurance", f.regulators.insurance),
+        ("stress_from", f.banking.stress_from),
+    )
+    for table_name, rows in tables:
+        if set(rows) != regions:
+            out.append(f"finance_services.yaml {table_name} must list every region")
+    if set(fb.payments.growth_after) != regions:
+        out.append("finserv.payments.growth_after must list every region")
+    kinds = {k.key for k in f.banking.loan_kinds}
+    if set(fb.bank.loan_mix) != kinds or abs(sum(fb.bank.loan_mix.values()) - 1.0) > 1e-9:
+        out.append("finserv.bank.loan_mix must cover every loan kind and sum to 1")
+    names = {c.name for c in data.incumbents}
+    for r in f.rivals:
+        if r.name not in names:
+            out.append(f"finance rival {r.name!r} is not in incumbents.yaml")
+        if r.region not in regions:
+            out.append(f"finance rival {r.name!r}: unknown region {r.region!r}")
+    for n in f.payments.networks:
+        if n.name not in names:
+            out.append(f"network {n.name!r} is not in incumbents.yaml")
     return out
 
 
