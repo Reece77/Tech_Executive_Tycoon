@@ -37,7 +37,8 @@ LEGACY_FILE: Final = (
 # the fields M37 added: left out, so a digest is what it was before M37
 SKIP: Final[Mapping[type, frozenset[str]]] = {
     GameState: frozenset({"dynasty"}),
-    GameMode: frozenset({"length", "challenges"}),  # M51: challenges (empty), after the fixture
+    # M51: challenges (empty), after the fixture; M52: scenario_sha256 (None), growth_delta (empty)
+    GameMode: frozenset({"length", "challenges", "scenario_sha256", "growth_delta"}),
 }
 
 type Hashes = dict[str, list[str]]
@@ -121,8 +122,8 @@ _REFERENCE: dict[str, LoadedData] = {}
 
 
 def reference_loaded(data_dir: Path | None = None) -> LoadedData:
-    """The game's data with M37 disabled: a copy whose dynasty.start_year and end_year are
-    REFERENCE_SHIFT years later, loaded once a process."""
+    """The game's data with M37 disabled: a copy whose dynasty.start_year and end_year (and
+    M52's dynasty.beyond years) are REFERENCE_SHIFT years later, loaded once a process."""
     import re
     import shutil
     import tempfile
@@ -143,7 +144,10 @@ def reference_loaded(data_dir: Path | None = None) -> LoadedData:
         block = re.compile(r"(?ms)^dynasty:.*?(?=^\S)")
         head = block.search(text)
         assert head is not None, "balance.yaml has no dynasty block"
-        moved = re.sub(r"(?m)^(  (?:start|end)_year: )(\d+)", shift, head.group(0), count=2)
+        # M52: and dynasty.beyond's two years (sandbox past 2069), so the arm stays valid
+        moved = re.sub(
+            r"(?m)^( {2}(?: {2})?(?:start|end)_year: )(\d+)", shift, head.group(0), count=4
+        )
         path.write_text(text[: head.start()] + moved + text[head.end() :], encoding="utf-8")
         loaded = load_all(target)
         b = loaded.balance.dynasty

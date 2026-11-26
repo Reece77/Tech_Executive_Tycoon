@@ -1666,6 +1666,36 @@ sandbox:
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
 
+editor: # M52 (formulas.md 66.1, ADR-0026): every field a custom scenario may set, with its range; a field outside its range is refused with the reason
+  start_years: [2008, 2030] # calendar years a custom start may begin in (M50's 2008 world to M51's latest scenario, The dynasty's 2030)
+  macro_from_year: 2026 # macro and commodity starting levels are editable from this year: before it both are history (20.1, 33.1), the same on every seed
+  cash_dollars: [0, 10000000000] # dollars of starting cash (up to $10bn: a funded giant, still far inside int64 cents)
+  debt_dollars: [0, 5000000000] # dollars: the starting loans' summed principal
+  staff_count: [1, 500] # people in one staff line (role and level)
+  staff_total: [0, 2000] # people in every staff line together (a start's hiring is one month's draws: kept to a mid-size company)
+  products: [0, 12] # products at the start
+  quality: [0, 100] # points, a product's quality (the scale's bounds)
+  features: [0, 2000] # feature points (M51's scenarios give 25-400)
+  brand: [0, 100] # points, a product's brand (the scale's bounds)
+  customers: [0, 100000000] # customers in one segment at the start
+  price_dollars: [0, 1000000] # dollars a month (or a unit) in one segment
+  research_lead: [0, 60] # points, a research lead (M51's scenarios give 5-30)
+  fabs: [0, 4] # fabs running at the start (38.2's start builder; data centres, plants and mines have none yet)
+  founder_age: [18, 80] # years at the start (M51's The dynasty: 64)
+  child_age: [0, 50] # years at the start
+  children: [1, 6] # children in a family at the start
+  rival_cash_mult_range: [0.25, 4.0] # x an incumbent's cash at the start
+  rival_quality_range: [-30, 30] # + points on each of an incumbent's products' quality (then clamped to 0-100)
+  added_rivals: [1, 5] # generic rivals added in one category at the start
+  market_mult_range: [0.5, 2.0] # x a category's addressable market at the start (54.1's ceilings still bind from 2026)
+  growth_delta_range: [-0.10, 0.10] # + a category's annual demand growth, fraction a year, from the start (never below 0 a year)
+  confidence: [60, 130] # consumer confidence at the start, index (100 = 2010-2019; history spans about 70-115)
+  policy_rate_pct: [0.0, 10.0] # the base rate at the start, % a year
+  commodity_mult_range: [0.5, 2.0] # x a commodity's price level at the start (it then reverts by 33.1's AR(1))
+  deadline_years: [1, 40] # years from the start to a goal's deadline
+  preview_seeds: [1, 2, 3] # the difficulty estimate: the sensible script on these seeds (66.1)
+  preview_months: 120 # months the estimate plays at most (a goal's verdict ends it sooner)
+
 challenges: # M51 (formulas.md 63.2): challenge rules a new game or scenario may add; each refuses its actions and multiplies the company score shown
   rules:
     bootstrapped: { score_mult: 1.25 } # x the score; no rounds, SAFEs, bridges, loans or listing (63.4 target 2 sets it)
@@ -3054,6 +3084,10 @@ medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, app
 dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here runs before start_year, with the mode on or off (52.5 target 1)
   start_year: 2040 # the first year past the standard campaign (December 2039, 360 turns; 52.1)
   end_year: 2069 # a dynasty game's last year: its final summary follows December (52.1)
+  beyond: # M52 (formulas.md 66.3): sandbox past 2069. Nothing here changes a month before January 2070
+    start_year: 2070 # the first sandbox year (a dynasty game continued in sandbox, or a sandbox begun endless); eras.yaml's beyond_2069 wave is in play from its January
+    end_year: 2120 # series 52.2 continues by rule (research baselines by decade, category growth's maturity) are extended at load to this year; a later year reads the last rate (A: eras.yaml's third wave ends here)
+    nodes: 4 # process-node successors past dynasty.nodes.count, nodes.yaml's atomic5-atomic8: windows about 2076-2117 as the gaps keep growing 20% a step (52.2's rule)
   nodes: # 52.2: seeded successors to nodes.yaml's last future node (A3), stream dynasty (0, series, step)
     count: 6 # successors generated: their windows run past 2069 (A)
     gap_years: 3.0 # years from the last future node's window midpoint to the first successor's (A: IRDS's 2-3 year cadence, slowing)

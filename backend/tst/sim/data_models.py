@@ -76,6 +76,7 @@ from tst.sim.modes.config import (
     SerialBalance,
     StoryBalance,
 )
+from tst.sim.modes.custom_config import EditorBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.negotiation.config import LlmBalance, NegotiationBalance
 from tst.sim.org.voice_data import Voice
@@ -1401,6 +1402,7 @@ class Balance(_Frozen):
     rank: RankBalance  # M15b (formulas.md 30.4)
     sandbox: SandboxBalance  # M15b (formulas.md 30.2)
     challenges: ChallengesBalance  # M51 (formulas.md 63.2)
+    editor: EditorBalance  # M52 (formulas.md 66.1): the editor's ranges
     story: StoryBalance  # M15b addendum 12: rival CEO storylines
     serial: SerialBalance  # M15b addendum 10: founding again after an exit
     promise: PromiseBalance  # M14b (formulas.md 29.2)

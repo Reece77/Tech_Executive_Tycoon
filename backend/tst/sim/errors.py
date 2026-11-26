@@ -479,3 +479,22 @@ class ChallengeRefusedError(SimError):
     names the rule."""
 
     code = "challenge_refused"
+
+
+class InvalidCustomScenarioError(SimError):
+    """A custom scenario file the editor refuses: bad YAML, an unknown field or a value outside
+    its range (M52, ADR-0026 points 2 and 7). The message names every reason."""
+
+    code = "invalid_custom_scenario"
+
+
+class UnknownCustomScenarioError(NotFoundError):
+    """No custom scenario of that name in `<saves>/scenarios/` (M52)."""
+
+    code = "unknown_custom_scenario"
+
+
+class CustomScenarioExistsError(SimError):
+    """A custom scenario of that name already exists (M52): import or save as another name."""
+
+    code = "custom_scenario_exists"

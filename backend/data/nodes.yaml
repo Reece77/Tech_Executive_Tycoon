@@ -137,6 +137,12 @@ successors:
   - { key: atomic2, label: Atomic-scale 2 }
   - { key: atomic3, label: Atomic-scale 3 }
   - { key: atomic4, label: Atomic-scale 4 }
+  # M52 (66.3): sandbox past 2069, dynasty.beyond.nodes more (windows after 2069, so no game to
+  # December 2069 is offered one)
+  - { key: atomic5, label: Atomic-scale 5 }
+  - { key: atomic6, label: Atomic-scale 6 }
+  - { key: atomic7, label: Atomic-scale 7 }
+  - { key: atomic8, label: Atomic-scale 8 }
 
 foundries:
   - key: tsmc

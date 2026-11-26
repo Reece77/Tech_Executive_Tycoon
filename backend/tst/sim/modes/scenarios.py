@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+import numpy as np
+
 from tst.sim.calendar import HISTORY_START_YEAR, TURN_ZERO, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidModeError
@@ -49,6 +51,12 @@ DONE: Final = "scenario_done"
 # by the starting equity, not cash)
 DEBT_FREE_CASH: Final = 10**15  # tunable-exempt: a check amount, never posted
 VEHICLES: Final = "vehicles"  # categories.yaml: cars (49)
+
+
+def scenario_draw(rng: RngFactory, turn: int, *key: int) -> np.random.Generator:
+    """Stream `scenario` (43), the one call site (ADR-0013): M15b's staff, key (index,), and
+    M52's added rivals, keys past them (tst.sim.modes.custom)."""
+    return rng.stream(turn, "scenario", *key)
 
 
 def scenario(data: GameData, key: str) -> HistoricalScenario:
@@ -121,7 +129,7 @@ def apply_start(
             pid, ids = state.next_ids.take("person")
             eid, ids = ids.take("employment")
             state = replace(state, next_ids=ids)
-            draw = rng.stream(turn, "scenario", gen)
+            draw = scenario_draw(rng, turn, gen)
             gen += 1
             person = generate_person(
                 draw,
@@ -560,6 +568,8 @@ def judge(
     if mode is None or mode.kind != "scenario" or mode.result is not None or mode.scenario is None:
         return state
     h = scenario(data, mode.scenario)
+    if h.goal is None:  # M52 (66.1): a custom scenario with no goal is open play, no verdict
+        return state
     meta = state.save_meta
     if meta.game_state != "active":
         return replace(state, mode=replace(mode, result="failure", result_turn=state.turn))

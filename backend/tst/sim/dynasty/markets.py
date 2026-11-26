@@ -24,7 +24,7 @@ def _path(last: float, mature: float, rule: DynastyBalance) -> dict[int, float]:
     hl = rule.markets.half_life_years
     return {
         y: target + (last - target) * dmath.pow(HALF, (y - rule.start_year + 1) / hl)
-        for y in range(rule.start_year, rule.end_year + 1)
+        for y in range(rule.start_year, rule.beyond.end_year + 1)  # M52: on past 2069
     }
 
 

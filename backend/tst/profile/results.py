@@ -32,8 +32,14 @@ VERSION: Final = 1
 _LOCK = threading.Lock()
 
 
-def results_path(save_dir: Path, name: str | None = None) -> Path:
-    return save_dir / RESULTS_DIR / f"{name or profile_name()}.json"
+CUSTOM_SUFFIX: Final = ".custom"  # M52 (66.2): custom scenarios' results, kept apart
+
+
+def results_path(save_dir: Path, name: str | None = None, *, custom: bool = False) -> Path:
+    """M51's results file, or (M52, 66.2) the custom scenarios' own beside it: a custom
+    game's result never counts toward M51's results."""
+    suffix = CUSTOM_SUFFIX if custom else ""
+    return save_dir / RESULTS_DIR / f"{name or profile_name()}{suffix}.json"
 
 
 def _read(path: Path) -> dict[str, dict[str, dict[str, Any]]]:
@@ -61,9 +67,11 @@ def _write(path: Path, name: str, results: dict[str, dict[str, dict[str, Any]]])
         raise
 
 
-def load(save_dir: Path, name: str | None = None) -> dict[str, dict[str, dict[str, Any]]]:
+def load(
+    save_dir: Path, name: str | None = None, *, custom: bool = False
+) -> dict[str, dict[str, dict[str, Any]]]:
     with _LOCK:
-        return _read(results_path(save_dir, name))
+        return _read(results_path(save_dir, name, custom=custom))
 
 
 def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] | None:
@@ -90,6 +98,7 @@ def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] |
         "score_mult": mult,
         "adjusted": round(score * mult),
         "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        **({"sha256": mode.scenario_sha256} if mode.custom else {}),  # M52: the file's hash
     }
 
 
@@ -125,7 +134,8 @@ def record(save_path: Path, data: LoadedData) -> bool:
     entry = record_of(state, slug, data.balance)
     if entry is None:
         return False
-    path = results_path(save_path.parent)
+    custom = state.mode is not None and state.mode.custom  # M52: kept apart (66.2)
+    path = results_path(save_path.parent, custom=custom)
     with _LOCK:
         results = _read(path)
         mine = results.setdefault(str(entry["scenario"]), {})

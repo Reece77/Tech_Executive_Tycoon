@@ -4805,6 +4805,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/editor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Editor
+         * @description Every option the Editor screen offers: ranges, starts and the loaded data's lists (M54's
+         *     and M55's categories and incumbents included, as data).
+         */
+        get: operations["getEditor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/open/{start}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open Start
+         * @description A start to edit: `blank_<year>` or any scenarios.yaml entry (M51's included), with no
+         *     overrides.
+         */
+        get: operations["openEditorStart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Custom
+         * @description Every reason the editor refuses the spec (66.1), without saving it.
+         */
+        post: operations["checkCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Custom */
+        get: operations["listCustom"];
+        put?: never;
+        /**
+         * Create Custom
+         * @description Save (or save as) a new custom scenario; 409 if the name exists, 400 with every reason
+         *     if refused.
+         */
+        post: operations["createCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Custom */
+        get: operations["getCustom"];
+        /**
+         * Update Custom
+         * @description Save over an existing custom scenario (its name is the route's).
+         */
+        put: operations["updateCustom"];
+        post?: never;
+        /**
+         * Delete Custom
+         * @description Delete the file; games started from it keep their own copy (ADR-0026 point 4).
+         */
+        delete: operations["deleteCustom"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Custom
+         * @description A shared file validated and saved; refused with every reason, nothing written.
+         */
+        post: operations["importCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom/{slug}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Custom */
+        get: operations["exportCustom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Custom
+         * @description The start month's summary (66.1): the world built to the start in memory (no turn is
+         *     played, nothing is saved).
+         */
+        post: operations["previewCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/difficulty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Difficulty
+         * @description Start (or rejoin) the difficulty estimate in the background (66.1).
+         */
+        post: operations["startDifficulty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/difficulty/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Difficulty */
+        get: operations["getDifficulty"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mods": {
         parameters: {
             query?: never;
@@ -6145,6 +6349,26 @@ export interface paths {
          * @description At December 2039: end the standard campaign with its summary.
          */
         post: operations["endCampaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/campaign/sandbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Sandbox
+         * @description M52 (66.3): a game over after December 2069 plays on in sandbox, with no end.
+         */
+        post: operations["continueSandbox"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7678,6 +7902,16 @@ export interface components {
              */
             car_product_id?: number | null;
         };
+        /**
+         * AddedRivals
+         * @description Generic rivals added in a category, drawn as entrants are (52.3).
+         */
+        AddedRivals: {
+            /** Category */
+            category: string;
+            /** Count */
+            count: number;
+        };
         /** AdoptIn */
         AdoptIn: {
             /** Product Id */
@@ -8119,7 +8353,7 @@ export interface components {
             short_label: string;
             /** Group */
             group: string;
-            range: components["schemas"]["RangeOut"];
+            range: components["schemas"]["tst__api__schemas__people__RangeOut"];
         };
         /** AuctionOut */
         AuctionOut: {
@@ -8860,14 +9094,26 @@ export interface components {
         CampaignOut: {
             /**
              * Length
-             * @description standard | dynasty
+             * @description standard | dynasty | endless (M52)
              */
             length: string;
             /**
              * End Label
-             * @description The month the game ends after
+             * @description The month the game ends after, or 'no end'
              */
             end_label: string;
+            /**
+             * Endless
+             * @description M52 (66.3): a sandbox with no end
+             * @default false
+             */
+            endless?: boolean;
+            /**
+             * Can Continue Sandbox
+             * @description M52 (66.3): over after December 2069: continue in sandbox
+             * @default false
+             */
+            can_continue_sandbox?: boolean;
             /**
              * At End
              * @description A standard campaign at December 2039: end or continue
@@ -9206,13 +9452,6 @@ export interface components {
              * @description -(operating) when negative, else 0 (14.1)
              */
             burn_cents: number;
-        };
-        /** CategoryOptionOut */
-        CategoryOptionOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
         };
         /** CategoryOut */
         CategoryOut: {
@@ -10396,6 +10635,14 @@ export interface components {
              */
             intercompany_cents: number;
         };
+        /**
+         * CompanyOverride
+         * @description The player's company beyond the scenario fields (66.1): its name.
+         */
+        CompanyOverride: {
+            /** Name */
+            name?: string | null;
+        };
         /** CompanyRefOut */
         CompanyRefOut: {
             /** Company Id */
@@ -10631,6 +10878,20 @@ export interface components {
             /** Settled Cents */
             settled_cents: number;
         };
+        /**
+         * ContractSpec
+         * @description M51: a contract-manufacturing deal running at the start (26.2), signed that month.
+         */
+        ContractSpec: {
+            /** Manufacturer */
+            manufacturer: string;
+            /** City */
+            city: string;
+            /** Units */
+            units: number;
+            /** Months */
+            months: number;
+        };
         /** CooAnswerOut */
         CooAnswerOut: {
             /** Answer Id */
@@ -10846,6 +11107,11 @@ export interface components {
              * @description M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario
              */
             challenges?: string[];
+            /**
+             * Custom
+             * @description M52 (66.2): a custom scenario's name in saves/scenarios; its own rules and challenges apply (`challenges` must then be empty)
+             */
+            custom?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -10884,6 +11150,157 @@ export interface components {
              * @description The move that removes the factor
              */
             fix: string;
+        };
+        /**
+         * CustomCardOut
+         * @description A custom scenario on the Scenarios screen's Custom section (66.2).
+         */
+        CustomCardOut: {
+            /** Slug */
+            slug: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Year */
+            year: number;
+            /** Goal */
+            goal: string | null;
+            /** Deadline Label */
+            deadline_label: string | null;
+            /** Opened From */
+            opened_from: string | null;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Played
+             * @description Custom games with a verdict (kept apart from M51's)
+             */
+            played: number;
+            best: components["schemas"]["ScenarioResultOut"] | null;
+        };
+        /**
+         * CustomCheckOut
+         * @description A spec's refusals (empty: valid) and its hash.
+         */
+        CustomCheckOut: {
+            /** Valid */
+            valid: boolean;
+            /** Reasons */
+            reasons: string[];
+            /**
+             * Sha256
+             * @description The canonical text's SHA-256 when valid
+             */
+            sha256: string | null;
+        };
+        /** CustomImportIn */
+        CustomImportIn: {
+            /**
+             * Text
+             * @description A custom scenario file's YAML
+             */
+            text: string;
+            /**
+             * Slug
+             * @description Save under this name; omit for its own
+             */
+            slug?: string | null;
+            /**
+             * Overwrite
+             * @default false
+             */
+            overwrite?: boolean;
+        };
+        /**
+         * CustomScenario
+         * @description A custom scenario file's body (ADR-0026 point 1): a historical entry, whose goal and
+         *     deadline may both be left out (no goal: open play), plus `overrides`. `key` is the file's
+         *     slug; `opened_from` names what the editor started from (shown only).
+         */
+        CustomScenario: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Description
+             * @default
+             */
+            description?: string;
+            /** Year */
+            year: number;
+            /** Background */
+            background: string;
+            /** Cash Dollars */
+            cash_dollars: number;
+            /** Stage */
+            stage: number;
+            /**
+             * Staff
+             * @default []
+             */
+            staff?: components["schemas"]["StaffSpec"][];
+            /**
+             * Products
+             * @default []
+             */
+            products?: components["schemas"]["ProductSpec"][];
+            /**
+             * Research
+             * @default []
+             */
+            research?: components["schemas"]["LeadSpec"][];
+            /**
+             * Loans
+             * @default []
+             */
+            loans?: components["schemas"]["LoanSpec"][];
+            /**
+             * Fabs
+             * @default []
+             */
+            fabs?: components["schemas"]["FabSpec"][];
+            goal?: components["schemas"]["GoalSpec"] | null;
+            /** Deadline */
+            deadline?: [
+                number,
+                number
+            ] | null;
+            /** Founder Age */
+            founder_age?: number | null;
+            /** Founder Region */
+            founder_region?: string | null;
+            /** Hq City */
+            hq_city?: string | null;
+            family?: components["schemas"]["FamilyStartSpec"] | null;
+            /** @default standard */
+            length?: components["schemas"]["Length"];
+            /** Sensible Wins */
+            sensible_wins?: number | null;
+            /** Opened From */
+            opened_from?: string | null;
+            /**
+             * @default {
+             *       "company": {},
+             *       "rivals": {},
+             *       "added_rivals": [],
+             *       "markets": {},
+             *       "world": {
+             *         "commodities": {},
+             *         "eras": "historical"
+             *       },
+             *       "rules": {
+             *         "challenges": []
+             *       }
+             *     }
+             */
+            overrides?: components["schemas"]["Overrides"];
+            /**
+             * Format
+             * @default 1
+             */
+            format?: number;
         };
         /** D2dPartnerIn */
         D2dPartnerIn: {
@@ -11231,6 +11648,32 @@ export interface components {
             product_id: number;
             /** Platform Id */
             platform_id: number;
+        };
+        /**
+         * DifficultyOut
+         * @description The sensible script's estimate on `editor.preview_seeds`, run in the background.
+         */
+        DifficultyOut: {
+            /** Job Id */
+            job_id: string;
+            /**
+             * Status
+             * @description running | done | failed
+             */
+            status: string;
+            /** Seeds */
+            seeds: number[];
+            /** Results */
+            results: components["schemas"]["SeedResultOut"][];
+            /** Wins */
+            wins: number;
+            /**
+             * Difficulty
+             * @description easy | medium | hard; None without a goal
+             */
+            difficulty: string | null;
+            /** Error */
+            error?: string | null;
         };
         /** DigestAreaOut */
         DigestAreaOut: {
@@ -11680,6 +12123,54 @@ export interface components {
             /** Label */
             label: string;
         };
+        /**
+         * EditorOut
+         * @description Everything the Editor screen offers, from the loaded data and `editor.*`.
+         */
+        EditorOut: {
+            /**
+             * Ranges
+             * @description Each editable field's range (editor.*)
+             */
+            ranges: {
+                [key: string]: components["schemas"]["tst__api__schemas__editor__RangeOut"];
+            };
+            /** Macro From Year */
+            macro_from_year: number;
+            /** Starts */
+            starts: components["schemas"]["StartOptionOut"][];
+            /** Backgrounds */
+            backgrounds: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Roles */
+            roles: components["schemas"]["RoleOptionOut"][];
+            /** Categories */
+            categories: components["schemas"]["tst__api__schemas__editor__CategoryOptionOut"][];
+            /** Incumbents */
+            incumbents: components["schemas"]["IncumbentOptionOut"][];
+            /** Domains */
+            domains: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Lenders */
+            lenders: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Nodes */
+            nodes: components["schemas"]["NodeOptionOut"][];
+            /** Regions */
+            regions: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Cities */
+            cities: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Commodities */
+            commodities: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Challenges */
+            challenges: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /**
+             * Goal Kinds
+             * @description Each goal kind's required fields
+             */
+            goal_kinds: {
+                [key: string]: string[];
+            };
+            /** Lengths */
+            lengths: string[];
+        };
         /** EducateIn */
         EducateIn: {
             /** Person Id */
@@ -11901,6 +12392,8 @@ export interface components {
             /** Arrived Label */
             arrived_label?: string | null;
         };
+        /** @enum {string} */
+        Eras: "historical" | "seeded";
         /**
          * ErrorOut
          * @description Stable error body for every 4xx response.
@@ -12462,6 +12955,16 @@ export interface components {
              */
             gate: string[];
         };
+        /** ExportOut */
+        ExportOut: {
+            /** Filename */
+            filename: string;
+            /**
+             * Text
+             * @description The canonical YAML (ADR-0026 point 7)
+             */
+            text: string;
+        };
         /**
          * FabCountryOut
          * @description M33: a country a fab may sit in (an EUV fab's tools follow the controls there).
@@ -12727,6 +13230,25 @@ export interface components {
              * @description A start's cost at full use: depreciation, fixed, materials and power
              */
             cost_per_start_cents: number;
+        };
+        /**
+         * FabSpec
+         * @description M51: a fab the company already runs at the start (38.2), built `age_months` before it:
+         *     live, its yield mature, its capex on the books less the depreciation since.
+         */
+        FabSpec: {
+            /** Node */
+            node: string;
+            /** Region */
+            region: string;
+            /** Wafer Starts */
+            wafer_starts: number;
+            /** Age Months */
+            age_months: number;
+            /** Unit */
+            unit: string;
+            /** Country */
+            country?: string | null;
         };
         /** FabsActionOut */
         FabsActionOut: {
@@ -13106,6 +13628,14 @@ export interface components {
             notes: components["schemas"]["NoteOut"][];
             /** Trust Since */
             trust_since: string | null;
+        };
+        /**
+         * FamilyStartSpec
+         * @description M51: the founder's family at the start (45.1): a partner and children of these ages.
+         */
+        FamilyStartSpec: {
+            /** Child Ages */
+            child_ages: number[];
         };
         /** FamilyTimeIn */
         FamilyTimeIn: {
@@ -14013,6 +14543,40 @@ export interface components {
             terms: {
                 [key: string]: string;
             };
+        };
+        /** @enum {string} */
+        GoalKind: "arr" | "customers" | "solvent_margin" | "unit_share" | "profit_no_down_round" | "solvent_series" | "platform_share" | "vehicles_year" | "fab_catch_up" | "node_volume" | "family_succession";
+        /** GoalSpec */
+        GoalSpec: {
+            kind: components["schemas"]["GoalKind"];
+            /** Text */
+            text: string;
+            /** Era */
+            era?: string | null;
+            /** Arr Dollars */
+            arr_dollars?: number | null;
+            /** Category */
+            category?: string | null;
+            /** Segment */
+            segment?: string | null;
+            /** Customers */
+            customers?: number | null;
+            /** Share */
+            share?: number | null;
+            /** Bonus Era */
+            bonus_era?: string | null;
+            /** Bonus Text */
+            bonus_text?: string | null;
+            /** Series */
+            series?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Units */
+            units?: number | null;
+            /** Node */
+            node?: string | null;
+            /** Node Gap */
+            node_gap?: number | null;
         };
         /** GovBuyerOut */
         GovBuyerOut: {
@@ -15164,6 +15728,13 @@ export interface components {
             /** Cost Cents */
             cost_cents: number;
         };
+        /** IncumbentOptionOut */
+        IncumbentOptionOut: {
+            /** Name */
+            name: string;
+            /** Categories */
+            categories: string[];
+        };
         /** IndustryOut */
         IndustryOut: {
             /** Key */
@@ -15362,7 +15933,7 @@ export interface components {
              * Categories
              * @description Where a new startup can start
              */
-            categories: components["schemas"]["CategoryOptionOut"][];
+            categories: components["schemas"]["tst__api__schemas__investing__CategoryOptionOut"][];
             /** Holdings */
             holdings: components["schemas"]["HoldingOut"][];
             /** Listed */
@@ -15704,6 +16275,13 @@ export interface components {
             /** Reuse */
             reuse: string;
         };
+        /** LeadSpec */
+        LeadSpec: {
+            /** Domain */
+            domain: string;
+            /** Lead */
+            lead: number;
+        };
         /** LeaderChangeOut */
         LeaderChangeOut: {
             /** Company Id */
@@ -15840,6 +16418,8 @@ export interface components {
              */
             net_worth_cents?: number;
         };
+        /** @enum {string} */
+        Length: "standard" | "dynasty" | "endless";
         /** LetterOut */
         LetterOut: {
             /**
@@ -16184,6 +16764,19 @@ export interface components {
             /** Warrant Shares */
             warrant_shares: number;
         };
+        /** LoanSpec */
+        LoanSpec: {
+            /** Lender */
+            lender: string;
+            /** Principal Dollars */
+            principal_dollars: number;
+            /** Rate Bp */
+            rate_bp: number;
+            /** Term Months */
+            term_months: number;
+            /** Interest Only Months */
+            interest_only_months: number;
+        };
         /** LoanTermsOut */
         LoanTermsOut: {
             /** Instrument */
@@ -16526,6 +17119,22 @@ export interface components {
              * @description Arrived eras of the category (27.3)
              */
             era_marks?: components["schemas"]["EraMarkOut"][];
+        };
+        /**
+         * MarketOverride
+         * @description A category's addressable market and annual growth.
+         */
+        MarketOverride: {
+            /**
+             * Market Mult
+             * @default 1
+             */
+            market_mult?: number;
+            /**
+             * Growth Delta
+             * @default 0
+             */
+            growth_delta?: number;
         };
         /** MarketProductOut */
         MarketProductOut: {
@@ -18062,6 +18671,18 @@ export interface components {
             /** Hint */
             hint: string;
         };
+        /** NodeOptionOut */
+        NodeOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * First Year
+             * @description The year it first ran in volume anywhere
+             */
+            first_year: number;
+        };
         /** NodeOut */
         NodeOut: {
             /** Key */
@@ -18701,6 +19322,37 @@ export interface components {
             facility: string;
             /** Customers Lost */
             customers_lost: number;
+        };
+        /** Overrides */
+        Overrides: {
+            /** @default {} */
+            company?: components["schemas"]["CompanyOverride"];
+            /** Rivals */
+            rivals?: {
+                [key: string]: components["schemas"]["RivalOverride"];
+            };
+            /**
+             * Added Rivals
+             * @default []
+             */
+            added_rivals?: components["schemas"]["AddedRivals"][];
+            /** Markets */
+            markets?: {
+                [key: string]: components["schemas"]["MarketOverride"];
+            };
+            /**
+             * @default {
+             *       "eras": "historical",
+             *       "commodities": {}
+             *     }
+             */
+            world?: components["schemas"]["WorldOverride"];
+            /**
+             * @default {
+             *       "challenges": []
+             *     }
+             */
+            rules?: components["schemas"]["RulesOverride"];
         };
         /**
          * OverviewBreakdownsOut
@@ -20504,6 +21156,42 @@ export interface components {
             moments: components["schemas"]["MomentOut"][];
             form: components["schemas"]["PromiseFormOut"];
         };
+        /**
+         * PreviewOut
+         * @description The start month's summary (66.1): built in memory, no turn played, nothing saved.
+         */
+        PreviewOut: {
+            /** Label */
+            label: string;
+            /** Start Label */
+            start_label: string;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Debt Cents */
+            debt_cents: number;
+            /** Staff */
+            staff: {
+                [key: string]: number;
+            };
+            /** Products */
+            products: components["schemas"]["ProductLineOut"][];
+            /** Research */
+            research: {
+                [key: string]: number;
+            };
+            /** Rivals */
+            rivals: components["schemas"]["RivalLineOut"][];
+            /** Removed */
+            removed: string[];
+            /** Goal */
+            goal: string | null;
+            /** Deadline Label */
+            deadline_label: string | null;
+            /** Challenges */
+            challenges: string[];
+            /** Length */
+            length: string;
+        };
         /** PriceIn */
         PriceIn: {
             /** Segment */
@@ -20645,6 +21333,19 @@ export interface components {
         ProductIn: {
             /** Product Id */
             product_id: number;
+        };
+        /** ProductLineOut */
+        ProductLineOut: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Customers */
+            customers: number;
         };
         /** ProductMonthOut */
         ProductMonthOut: {
@@ -21048,6 +21749,30 @@ export interface components {
             name: string;
             /** Points */
             points: components["schemas"]["ProductPointOut"][];
+        };
+        /** ProductSpec */
+        ProductSpec: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Quality */
+            quality: number;
+            /** Features */
+            features: number;
+            /** Brand */
+            brand: number;
+            /** Segments */
+            segments: {
+                [key: string]: components["schemas"]["SegmentSpec"];
+            };
+            /**
+             * Status
+             * @default live
+             * @enum {string}
+             */
+            status?: "live" | "in_development";
+            contract?: components["schemas"]["ContractSpec"] | null;
         };
         /**
          * ProductTotalMonthOut
@@ -21493,15 +22218,8 @@ export interface components {
             label: string;
             /** Group */
             group: string;
-            before: components["schemas"]["RangeOut"];
-            after: components["schemas"]["RangeOut"];
-        };
-        /** RangeOut */
-        RangeOut: {
-            /** Min */
-            min: number;
-            /** Max */
-            max: number;
+            before: components["schemas"]["tst__api__schemas__people__RangeOut"];
+            after: components["schemas"]["tst__api__schemas__people__RangeOut"];
         };
         /** RankingEntryOut */
         RankingEntryOut: {
@@ -22655,6 +23373,19 @@ export interface components {
             statements: components["schemas"]["StatementOut"][];
             feud: components["schemas"]["FeudOut"];
         };
+        /** RivalLineOut */
+        RivalLineOut: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Quality */
+            quality: number;
+            /** Customers */
+            customers: number;
+            /** Added */
+            added: boolean;
+        };
         /** RivalMinerOut */
         RivalMinerOut: {
             /** Supplier */
@@ -22705,6 +23436,28 @@ export interface components {
             date_label: string;
             /** Market */
             market: string;
+        };
+        /**
+         * RivalOverride
+         * @description One incumbent (incumbents.yaml, by name): present or removed, its cash and its products'
+         *     quality.
+         */
+        RivalOverride: {
+            /**
+             * Present
+             * @default true
+             */
+            present?: boolean;
+            /**
+             * Cash Mult
+             * @default 1
+             */
+            cash_mult?: number;
+            /**
+             * Quality Delta
+             * @default 0
+             */
+            quality_delta?: number;
         };
         /**
          * RivalProductMarketOut
@@ -23114,6 +23867,15 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** RoleOptionOut */
+        RoleOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Levels */
+            levels: string[];
+        };
         /** RoleOut */
         RoleOut: {
             /** Key */
@@ -23373,6 +24135,17 @@ export interface components {
             source: string;
             /** Seeded */
             seeded: boolean;
+        };
+        /**
+         * RulesOverride
+         * @description M51's challenge rules (63.2). The campaign length is the entry's own `length`.
+         */
+        RulesOverride: {
+            /**
+             * Challenges
+             * @default []
+             */
+            challenges?: string[];
         };
         /** RxAssetOut */
         RxAssetOut: {
@@ -24071,6 +24844,12 @@ export interface components {
              * @enum {string}
              */
             eras?: "historical" | "seeded";
+            /**
+             * Endless
+             * @description M52 (66.3): a sandbox with no end (past December 2069)
+             * @default false
+             */
+            endless?: boolean;
         };
         /**
          * SandboxMetaOut
@@ -24141,7 +24920,7 @@ export interface components {
             busy: boolean;
             /**
              * Mode
-             * @description campaign | sandbox | scenario (M15b)
+             * @description campaign | sandbox | scenario (M15b) | custom (M52)
              * @default campaign
              */
             mode?: string;
@@ -24526,6 +25305,17 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** SeedResultOut */
+        SeedResultOut: {
+            /** Seed */
+            seed: number;
+            /** Result */
+            result: string | null;
+            /** Month Label */
+            month_label: string;
+            /** Score */
+            score: number | null;
+        };
         /** SeenIn */
         SeenIn: {
             /** Keys */
@@ -24535,6 +25325,13 @@ export interface components {
         SegmentIn: {
             /** Segment */
             segment: string;
+        };
+        /** SegmentSpec */
+        SegmentSpec: {
+            /** Price Dollars */
+            price_dollars: number;
+            /** Customers */
+            customers: number;
         };
         /** SellSharesIn */
         SellSharesIn: {
@@ -24999,6 +25796,17 @@ export interface components {
             /** Unit Id */
             unit_id: number | null;
         };
+        /** StaffSpec */
+        StaffSpec: {
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+            /** Count */
+            count: number;
+            /** Unit */
+            unit?: string | null;
+        };
         /** StageIn */
         StageIn: {
             /**
@@ -25100,6 +25908,18 @@ export interface components {
              * @description The group's products on the losing format
              */
             yours_on_loser: number[];
+        };
+        /** StartOptionOut */
+        StartOptionOut: {
+            /**
+             * Key
+             * @description A scenarios.yaml key, or blank_<year>
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** Year */
+            year: number;
         };
         /** StartProjectIn */
         StartProjectIn: {
@@ -27605,6 +28425,22 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /**
+         * WorldOverride
+         * @description The macro start, eras and commodity price levels (66.1).
+         */
+        WorldOverride: {
+            /** Confidence */
+            confidence?: number | null;
+            /** Policy Rate Pct */
+            policy_rate_pct?: number | null;
+            /** @default historical */
+            eras?: components["schemas"]["Eras"];
+            /** Commodities */
+            commodities?: {
+                [key: string]: number;
+            };
+        };
         /** YearPointOut */
         YearPointOut: {
             /** Year */
@@ -27708,6 +28544,34 @@ export interface components {
             unit_id: number;
             /** Name */
             name: string;
+        };
+        /** CategoryOptionOut */
+        tst__api__schemas__editor__CategoryOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Segments */
+            segments: string[];
+            /**
+             * Market Editable
+             * @description False: its market follows its own data
+             */
+            market_editable: boolean;
+        };
+        /** OptionOut */
+        tst__api__schemas__editor__OptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** RangeOut */
+        tst__api__schemas__editor__RangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
         };
         /**
          * EventLinkOut
@@ -27838,6 +28702,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** CategoryOptionOut */
+        tst__api__schemas__investing__CategoryOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
         /** IndexPointOut */
         tst__api__schemas__investing__IndexPointOut: {
             /** Turn */
@@ -27890,6 +28761,13 @@ export interface components {
             event_id: number;
             /** Label */
             label: string;
+        };
+        /** RangeOut */
+        tst__api__schemas__people__RangeOut: {
+            /** Min */
+            min: number;
+            /** Max */
+            max: number;
         };
         /** ListingOut */
         tst__api__schemas__platforms__ListingOut: {
@@ -43619,6 +44497,696 @@ export interface operations {
             };
         };
     };
+    getEditor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorOut"];
+                };
+            };
+        };
+    };
+    openEditorStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                start: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    checkCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCheckOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCardOut"][];
+                };
+            };
+        };
+    };
+    createCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    updateCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    deleteCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    importCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    exportCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startDifficulty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DifficultyOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getDifficulty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DifficultyOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     listMods: {
         parameters: {
             query?: {
@@ -47912,6 +49480,64 @@ export interface operations {
         };
     };
     endCampaign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    continueSandbox: {
         parameters: {
             query?: never;
             header?: never;

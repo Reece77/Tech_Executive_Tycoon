@@ -106,7 +106,10 @@ def in_play(era: EraDef, turn: int, balance: Balance) -> bool:
     dynasty.start_year) cannot arrive, be aimed at or be shown before January of that year."""
     if era.window is None or era.window[0][0] < balance.dynasty.start_year:
         return True
-    return turn >= ym_to_turn(balance.dynasty.start_year, 1)
+    # M52 (66.3): eras.yaml's beyond_2069 wave (windows from 2070) only from January 2070
+    first = balance.dynasty.beyond.start_year
+    gate = first if era.window[0][0] >= first else balance.dynasty.start_year
+    return turn >= ym_to_turn(gate, 1)
 
 
 def eras_in(data: GameData, domain: str) -> tuple[EraDef, ...]:

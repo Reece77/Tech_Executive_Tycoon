@@ -7,6 +7,7 @@ import { LoadError, Loading, Panel } from '../components/ScreenState';
 import { useNewGameMeta } from '../hooks/api';
 import { useScenarios, type ScenarioCard } from '../hooks/scenarios';
 import { gameTableFeatures, type GameTableFeatures } from '../lib/table';
+import { CustomScenarios } from './CustomScenarios';
 
 // The Scenarios screen (M51, formulas.md 63.3): every scenario with its brief, its difficulty
 // (from the sensible script's wins on seeds 1-10), and the best result and challenges across
@@ -116,9 +117,14 @@ export function ScenariosScreen() {
       <Stack gap="lg">
         <Group justify="space-between">
           <Title order={2}>Scenarios</Title>
-          <Button component={Link} to="/" variant="default">
-            Main menu
-          </Button>
+          <Group>
+            <Button component={Link} to="/editor" variant="default" data-testid="open-editor">
+              Scenario editor
+            </Button>
+            <Button component={Link} to="/" variant="default">
+              Main menu
+            </Button>
+          </Group>
         </Group>
         {isPending ? (
           <Loading />
@@ -134,6 +140,7 @@ export function ScenariosScreen() {
             <Panel title="Every scenario" testId="scenarios">
               <DataTable table={table} label="Scenarios" rowTestId="scenario-row" />
             </Panel>
+            <CustomScenarios />
           </>
         )}
       </Stack>

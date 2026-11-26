@@ -173,7 +173,9 @@ def get_game_over(save_id: str, settings: SettingsDep, data: DataDep) -> GameOve
 
         mode = state.mode
         assert mode is not None and mode.scenario is not None
-        stored = kept.load(settings.resolved_save_dir()).get(mode.scenario, {})
+        stored = kept.load(settings.resolved_save_dir(), custom=mode.custom).get(  # M52
+            mode.scenario, {}
+        )
         out.scenario_best = result_out(kept.best(stored, without=save_id))
     return out
 

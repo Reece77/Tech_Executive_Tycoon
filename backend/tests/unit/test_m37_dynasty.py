@@ -83,10 +83,12 @@ def test_loader_rejects_an_end_before_the_start(tmp_path: Path) -> None:
 
 def test_dynasty_eras_have_windows_from_2040_and_stay_out_before(loaded: LoadedData) -> None:
     b = loaded.balance
+    # M52 (66.3): the third wave (windows from 2070) is tests/unit/test_m52_sandbox.py's
     late = [
         e
         for e in loaded.game_data.eras.eras
-        if e.window is not None and e.window[0][0] >= b.dynasty.start_year
+        if e.window is not None
+        and b.dynasty.start_year <= e.window[0][0] < b.dynasty.beyond.start_year
     ]
     assert len(late) >= 6
     for era in late:
@@ -99,7 +101,9 @@ def test_dynasty_eras_have_windows_from_2040_and_stay_out_before(loaded: LoadedD
 
 def test_successor_nodes_slow_down_and_start_in_2040(loaded: LoadedData) -> None:
     nf = loaded.game_data.nodes
-    assert nf is not None and len(nf.dynasty_future) == loaded.balance.dynasty.nodes.count
+    # M52 (66.3): dynasty.beyond.nodes more after 2069, by the same rule
+    rule = loaded.balance.dynasty
+    assert nf is not None and len(nf.dynasty_future) == rule.nodes.count + rule.beyond.nodes
     mids = [n.start_turn + n.months // 2 for n in nf.dynasty_future]
     gaps = [b - a for a, b in itertools.pairwise(mids)]
     assert all(later > earlier for earlier, later in itertools.pairwise(gaps))

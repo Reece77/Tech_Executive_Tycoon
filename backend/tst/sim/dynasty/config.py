@@ -120,9 +120,19 @@ class MortalityRule(_Frozen):
         return self.by_age[keys[-1]] if keys else 0.0
 
 
+class BeyondRule(_Frozen):
+    """M52 (66.3): sandbox past 2069. Series continued by 52.2's rules at load are extended to
+    `end_year` (a year looked up after it reads its last rate); `nodes` more successors."""
+
+    start_year: int  # the first sandbox year past a dynasty game's end (2070)
+    end_year: int  # the year series are extended to at load
+    nodes: int = Field(ge=0)  # successors past dynasty.nodes.count (nodes.yaml lists them)
+
+
 class DynastyBalance(_Frozen):
     start_year: int
     end_year: int
+    beyond: BeyondRule  # M52 (66.3)
     nodes: NodesRule
     frontier: FrontierRule
     markets: MarketsRule
@@ -134,4 +144,6 @@ class DynastyBalance(_Frozen):
     def _years(self) -> DynastyBalance:
         if self.end_year <= self.start_year:
             raise ValueError("dynasty.end_year must be after start_year")
+        if self.beyond.start_year != self.end_year + 1 or self.beyond.end_year < self.end_year:
+            raise ValueError("dynasty.beyond starts the year after end_year and ends later")
         return self
