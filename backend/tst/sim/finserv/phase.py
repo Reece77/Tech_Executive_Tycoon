@@ -20,7 +20,7 @@ from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
-from tst.sim.finserv import banks, demand, gates, history, insurance, payments
+from tst.sim.finserv import banks, demand, gates, history, insurance, payments, regulation
 from tst.sim.finserv.config import series_at
 from tst.sim.finserv.data import MONTHS, PCT, enabled, file, is_finance_rival, year_at
 from tst.sim.finserv.models import Bank, BankMonth, FinservState, InsuranceMonth, Insurer
@@ -197,6 +197,9 @@ def after_sales(
                             region=data.region(cat.region).label,
                         )
                     )
+    state, review_logs = regulation.group_review_month(state, balance, data)
+    logs += review_logs
+    logs += regulation.news_month(state, balance, data)
     bank_records: list[BankMonth] = []
     if state.finserv.banks:
         state, more, more_logs, bank_records = _banks_month(state, rng, balance, data)

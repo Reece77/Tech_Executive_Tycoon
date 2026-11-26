@@ -320,6 +320,7 @@ class BankBalance(_Frozen):
     charter_capital_cents: int = Field(ge=0)  # minimum capital to apply for a charter (game scale)
     charter_fee_cents: int = Field(ge=0)  # legal and application costs
     strict_months: int = Field(ge=0)  # months a strict regulator adds to a charter
+    strict_line: float = Field(ge=0)  # a regulator is strict at or above this strictness
     beta_range: Range  # the deposit beta the player may choose
     default_beta: float = Field(ge=0, le=1)
     market_beta: float = Field(ge=0, le=1)  # the market's deposit rate = policy x this

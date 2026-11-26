@@ -1134,6 +1134,12 @@ templates:
   bank_failed: # M54 (64.1)
     title: "Your bank in {region} has failed"
     body: "Its capital is gone and its regulator has taken it over, with its deposits, loans and accounts. Whatever the group had put into it is lost."
+  bank_group_review: # M54 (64.5)
+    title: "{regulator} reviews your bank in {region}"
+    body: "A bank inside a technology group draws its supervisor's scrutiny. Its dividends to the group are blocked for the year; its capital stays its own."
+  finance_history: # M54 (64.5)
+    title: "Financial news"
+    body: "{text}."
   network_launched: # M54 (64.2)
     title: "Your card network opens in {region}"
     body: "Card issuers can now put it on their cards. Merchants take a network as more cards carry it: acceptance starts near zero and grows with its share."

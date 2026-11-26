@@ -3517,7 +3517,8 @@ finserv: # 64.1-64.3 and 64.5: banking, payments and insurance (M54, v6 lane A).
   bank:
     charter_capital_cents: 200000000 # $2M: a de novo bank's minimum capital, about $20-30M (R: FDIC de novo guidance) x scale
     charter_fee_cents: 50000000 # $500K: application, legal and compliance build-out (A)
-    strict_months: 6 # months a strict regulator (regulation strictness above 0.6) adds to a charter (A)
+    strict_months: 6 # months a strict regulator adds to a charter (A)
+    strict_line: 1.15 # a bank regulator is strict at or above this strictness index (regulation.yaml finance_regulators)
     beta_range: [0.10, 0.90] # the deposit beta the player may choose (64.1)
     default_beta: 0.40 # R: about 0.3 in 2016-2019's rises, 0.4-0.5 in 2022-2023's (the dossier)
     market_beta: 0.35 # the market's deposit rate = policy rate x this (R: the dossier's betas)
