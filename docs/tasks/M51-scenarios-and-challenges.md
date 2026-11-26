@@ -79,6 +79,8 @@ At December 2019: 685 -> 31, 25, 633 (8%), 684, and acquirer 678.5 -> 684.5, ceo
 
     M53's new `fixed_broadband` category has no live rival in Africa in a do-nothing 2010 campaign, which M51 does not change. Not M51's: the fix is M53's follow-up (an African fixed-broadband rival, or M9's wanted cells limited to the categories each region sells), for the product manager's post-merge review. Not added to `known_misses.py`.
 
+- **PM ruling 2026-11-26 (M54 decision 23): the EV maker's sensible script reprices abroad.** M54's currencies translate the player's regional prices from the start (ADR-0025), and a script holding one $35,000 price in every region won 0 of 10. `ev_sensible` (`tst/balance/m51.py`) now reprices each foreign region each January back to the region's $35,000 reference at that month's rate (at most +/-10% a year) and runs a 50% rolling hedge 12 months ahead. On the combined code (seeds 1-10) it wins 6 and the passive script none, as before M54; the goal (68,500 cars by August 2023) and 63.4's band are unchanged.
+
 ## Follow-ups
 
 - v3's `_process_research` (foundry, full_integrator) staffs `process_engineer`, which researches nothing (decision 4): staff builders, then re-measure V3/V5's guards.
