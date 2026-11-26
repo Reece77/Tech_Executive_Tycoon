@@ -3083,7 +3083,7 @@ companies:
         quality: 80
         features: 72
         brand: 85
-        regions: [north_america, europe, east_asia, latin_america, oceania]
+        regions: [north_america, europe, east_asia, latin_america, africa, oceania] # R: PlayStation sold officially in South Africa since the 1990s
         segments:
           players: { price_cents: 1000, share_bp: 0 }
 
@@ -3405,7 +3405,7 @@ companies:
         quality: 66
         features: 64
         brand: 80
-        regions: [north_america, europe, south_southeast_asia, latin_america, oceania]
+        regions: [north_america, europe, south_southeast_asia, latin_america, africa, oceania] # R: YouTube Music Premium in South Africa, Nigeria, Kenya and others (2020-21)
         segments:
           viewers: { price_cents: 800, share_bp: 0 }
       - name: YouTube

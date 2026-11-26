@@ -268,7 +268,7 @@ lines:
     category: music_streaming
     first: "2015-10" # R: YouTube Red, 28 October 2015; Premium and Music from 22 May 2018 (GOOG)
     customers: { 2016: [1.5, A], 2018: [10, A], 2020: [30, R], 2024: [125, R], 2025: [130, A] } # GOOG: YouTube Music and Premium subscribers
-    split: { 2016: { north_america: [0.55, A], europe: [0.25, A], latin_america: [0.10, A], south_southeast_asia: [0.05, A], oceania: [0.05, A] } }
+    split: { 2016: { north_america: [0.53, A], europe: [0.25, A], latin_america: [0.10, A], south_southeast_asia: [0.05, A], africa: [0.02, A], oceania: [0.05, A] } }
   - company: Tencent Media
     line: QQ Music
     category: music_streaming
@@ -386,7 +386,7 @@ lines:
     line: PlayStation Studios
     category: games
     revenue_usd: { 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2020: [15.0, 2020, D], 2024: [20.0, 2024, D], 2025: [21.0, 2025, A] } # D: SONY's G&NS software, network services and add-ons, about 60% of the segment
-    split: { 2008: { north_america: [0.35, R], europe: [0.35, R], east_asia: [0.22, R], latin_america: [0.04, A], oceania: [0.04, A] } }
+    split: { 2008: { north_america: [0.35, R], europe: [0.33, R], east_asia: [0.22, R], latin_america: [0.04, A], africa: [0.02, A], oceania: [0.04, A] } }
   - company: Tencent Media
     line: Tencent Games
     category: games
