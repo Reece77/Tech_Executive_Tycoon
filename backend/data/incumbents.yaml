@@ -3024,7 +3024,7 @@ companies:
         quality: 72
         features: 70
         brand: 80
-        regions: [north_america]
+        regions: [north_america, africa, oceania] # R: Citi's consumer banks in Africa and Australia (sold 2021-2022); no customers there before 2026 (the data's share is North America's)
         segments:
           bank_consumer: { price_cents: 800, share_bp: 0 }
           bank_business: { price_cents: 6000, share_bp: 0 }
@@ -3313,7 +3313,7 @@ companies:
         quality: 74
         features: 66
         brand: 82
-        regions: [europe]
+        regions: [europe, south_southeast_asia, latin_america, africa, oceania] # R: Allianz writes in about 70 countries; no customers outside Europe before 2026
         segments:
           ins_property: { price_cents: 9000, share_bp: 0 }
           ins_life: { price_cents: 22500, share_bp: 0 }
