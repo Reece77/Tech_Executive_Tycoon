@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, replace
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from tst.sim.calendar import ym_to_turn
 from tst.sim.data_models import Balance, GameData
@@ -24,6 +24,9 @@ from tst.sim.people.founder import FounderSpec, build_founder
 from tst.sim.people.reveal import new_reveal_state
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_company, with_employment, with_person
+
+if TYPE_CHECKING:
+    from tst.sim.modes.custom_config import CustomScenario
 
 CENTS_A_DOLLAR: Final = 100  # tunable-exempt: cents in a dollar
 DORMANT_CASH: Final = 10**15  # tunable-exempt: the dormant player's cash while the world plays
@@ -42,6 +45,8 @@ class ModeSpec:
     eras: ErasOption = "historical"
     scenario: str | None = None
     challenges: tuple[str, ...] = ()  # M51 (63.2): the game's challenge rules
+    scenario_sha256: str | None = None  # M52 (ADR-0026): a custom scenario's file hash
+    length: CampaignLength | None = None  # M52 (66.3): a Sandbox begun endless; None: standard
 
 
 def validate(spec: ModeSpec, balance: Balance) -> None:
@@ -203,10 +208,18 @@ def start_mode(
     rng: RngFactory,
     balance: Balance,
     data: GameData,
+    custom: CustomScenario | None = None,
 ) -> tuple[GameState, tuple[LedgerEntry, ...]]:
     """A new game's turn-0 state and entries turned into a Sandbox or scenario start: the
-    world played to January of the start year, the company founded then with its cash."""
+    world played to January of the start year, the company founded then with its cash.
+
+    `custom` (M52, 66.1): a validated custom scenario, `spec.scenario` its "custom/<slug>"
+    key; its entry is the historical start and its overrides are applied after it."""
     validate(spec, balance)
+    if custom is not None:
+        from tst.sim.modes.custom import with_custom
+
+        data = with_custom(data, custom)
     start_turn = ym_to_turn(spec.start_year, JANUARY)
     player = state.player.id
     starting = [e for e in entries if e.company_id == player]
@@ -221,12 +234,19 @@ def start_mode(
         from tst.sim.modes.scenarios import apply_start
 
         world, extra = apply_start(world, spec.scenario, rng, balance, data)
+    if custom is not None:  # M52 (66.1): rivals, markets, world and rules
+        from tst.sim.modes.custom import apply_overrides
+
+        world, balances, added = apply_overrides(world, balances, custom, rng, balance, data)
+        extra = (*extra, *added)
     from tst.sim.modes.challenges import validate as valid_challenges
 
     length: CampaignLength = "standard"
     if spec.kind == "scenario" and spec.scenario is not None:  # M51: a dynasty scenario
         historical = data.historical_scenario(spec.scenario)
         length = historical.length if historical is not None else length
+    if spec.length is not None:  # M52 (66.3): a Sandbox begun endless
+        length = spec.length
     world = replace(
         world,
         mode=GameMode(
@@ -237,6 +257,8 @@ def start_mode(
             eras=spec.eras,
             length=length,
             challenges=valid_challenges(spec.challenges),
+            scenario_sha256=spec.scenario_sha256,
+            growth_delta=_growth_delta(custom),
         ),
     )
     opening = list(opening_entries(world, balances, start_turn))
@@ -254,3 +276,14 @@ def start_mode(
             ),
         )
     return world, (*opening, *extra)
+
+
+def _growth_delta(custom: CustomScenario | None) -> tuple[tuple[str, float], ...]:
+    """A custom scenario's growth changes, by category key (M52, 66.1)."""
+    if custom is None:
+        return ()
+    return tuple(
+        (key, m.growth_delta)
+        for key, m in sorted(custom.overrides.markets.items())
+        if m.growth_delta != 0
+    )
