@@ -15962,7 +15962,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/tst__api__schemas__investing__MoveIn"
+                "$ref": "#/components/schemas/MoveIn"
               }
             }
           }
@@ -30030,7 +30030,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/tst__api__schemas__media__MoveIn"
+                "$ref": "#/components/schemas/MoveReleaseIn"
               }
             }
           }
@@ -30285,7 +30285,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/tst__api__schemas__media__LicenceIn"
+                "$ref": "#/components/schemas/MediaLicenceIn"
               }
             }
           }
@@ -35364,7 +35364,7 @@
             "title": "Group"
           },
           "range": {
-            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
+            "$ref": "#/components/schemas/RangeOut"
           }
         },
         "type": "object",
@@ -40659,6 +40659,29 @@
         ],
         "title": "ConglomerateOut"
       },
+      "ConsoleGenerationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "month"
+        ],
+        "title": "ConsoleGenerationOut"
+      },
       "ConstellationIn": {
         "properties": {
           "name": {
@@ -43514,7 +43537,7 @@
         "properties": {
           "generations": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__dynasty__GenerationOut"
+              "$ref": "#/components/schemas/GenerationOut"
             },
             "type": "array",
             "title": "Generations"
@@ -44877,7 +44900,8 @@
               "zone",
               "constellation",
               "bid",
-              "negotiation"
+              "negotiation",
+              "title"
             ],
             "title": "Scope"
           },
@@ -49275,7 +49299,7 @@
           },
           "generations": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__media__GenerationOut"
+              "$ref": "#/components/schemas/ConsoleGenerationOut"
             },
             "type": "array",
             "title": "Generations"
@@ -49302,6 +49326,58 @@
           "epic_open"
         ],
         "title": "GamesOut"
+      },
+      "GenerationOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "from_label": {
+            "type": "string",
+            "title": "From Label"
+          },
+          "to_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Label"
+          },
+          "legacy": {
+            "type": "integer",
+            "title": "Legacy"
+          },
+          "how": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "How"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "from_label",
+          "to_label",
+          "legacy",
+          "how"
+        ],
+        "title": "GenerationOut"
       },
       "GeoActionOut": {
         "properties": {
@@ -52696,7 +52772,7 @@
           },
           "kinds": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__facilities__KindOut"
+              "$ref": "#/components/schemas/KindOut"
             },
             "type": "array",
             "title": "Kinds"
@@ -53357,6 +53433,55 @@
         ],
         "title": "KeyPersonOut"
       },
+      "KindOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "input_good": {
+            "type": "string",
+            "title": "Input Good"
+          },
+          "build_months": {
+            "type": "integer",
+            "title": "Build Months"
+          },
+          "life_months": {
+            "type": "integer",
+            "title": "Life Months"
+          },
+          "opex_per_unit_cents": {
+            "type": "integer",
+            "title": "Opex Per Unit Cents"
+          },
+          "capex_per_unit_cents": {
+            "type": "integer",
+            "title": "Capex Per Unit Cents",
+            "description": "At this month's index"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "unit",
+          "input_good",
+          "build_months",
+          "life_months",
+          "opex_per_unit_cents",
+          "capex_per_unit_cents"
+        ],
+        "title": "KindOut"
+      },
       "KnowledgeOut": {
         "properties": {
           "channel": {
@@ -53954,10 +54079,10 @@
             "title": "Region"
           },
           "creative": {
-            "$ref": "#/components/schemas/tst__api__schemas__media__RangeOut"
+            "$ref": "#/components/schemas/MediaRangeOut"
           },
           "vision": {
-            "$ref": "#/components/schemas/tst__api__schemas__media__RangeOut"
+            "$ref": "#/components/schemas/MediaRangeOut"
           },
           "fee_cents": {
             "type": "integer",
@@ -54003,10 +54128,10 @@
             "title": "Level"
           },
           "creative": {
-            "$ref": "#/components/schemas/tst__api__schemas__media__RangeOut"
+            "$ref": "#/components/schemas/MediaRangeOut"
           },
           "vision": {
-            "$ref": "#/components/schemas/tst__api__schemas__media__RangeOut"
+            "$ref": "#/components/schemas/MediaRangeOut"
           },
           "reputation": {
             "type": "number",
@@ -54447,6 +54572,81 @@
           "approved"
         ],
         "title": "LevelRegionOut"
+      },
+      "LicenceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "company_id": {
+            "type": "integer",
+            "title": "Company Id"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "product": {
+            "type": "string",
+            "title": "Product"
+          },
+          "rule_key": {
+            "type": "string",
+            "title": "Rule Key"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country"
+          },
+          "country_label": {
+            "type": "string",
+            "title": "Country Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "company_id",
+          "product_id",
+          "product",
+          "rule_key",
+          "rule",
+          "country",
+          "country_label",
+          "status",
+          "requested",
+          "decision",
+          "until"
+        ],
+        "title": "LicenceOut"
       },
       "LicenseIn": {
         "properties": {
@@ -55992,6 +56192,57 @@
         ],
         "title": "MediaActionOut"
       },
+      "MediaLicenceIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "fee_cents",
+          "years"
+        ],
+        "title": "MediaLicenceIn"
+      },
+      "MediaLicenceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "from_month": {
+            "type": "string",
+            "title": "From Month"
+          },
+          "to_month": {
+            "type": "string",
+            "title": "To Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "fee_cents",
+          "from_month",
+          "to_month"
+        ],
+        "title": "MediaLicenceOut"
+      },
       "MediaLineIn": {
         "properties": {
           "ad_tier": {
@@ -56029,6 +56280,24 @@
         "type": "object",
         "title": "MediaLineIn"
       },
+      "MediaRangeOut": {
+        "properties": {
+          "lo": {
+            "type": "integer",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "integer",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "MediaRangeOut"
+      },
       "MediaScreenOut": {
         "properties": {
           "studio": {
@@ -56052,6 +56321,110 @@
           "social"
         ],
         "title": "MediaScreenOut"
+      },
+      "MediaServiceOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionCustomersOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "churn_mult": {
+            "type": "number",
+            "title": "Churn Mult",
+            "description": "Its churn x this (catalogue engagement)"
+          },
+          "engagement": {
+            "type": "number",
+            "title": "Engagement",
+            "description": "Catalogue value over the median service's"
+          },
+          "ad_tier": {
+            "type": "boolean",
+            "title": "Ad Tier"
+          },
+          "ad_revenue_cents": {
+            "type": "integer",
+            "title": "Ad Revenue Cents",
+            "description": "Last month"
+          },
+          "content_cents": {
+            "type": "integer",
+            "title": "Content Cents",
+            "description": "Last month: own titles in production and licences"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "Cumulative since launch"
+          },
+          "paid_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Back"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/MediaLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "status",
+          "regions",
+          "customers",
+          "churn_mult",
+          "engagement",
+          "ad_tier",
+          "ad_revenue_cents",
+          "content_cents",
+          "cash_cents",
+          "paid_back",
+          "months",
+          "licences"
+        ],
+        "title": "MediaServiceOut"
       },
       "MedicalActionOut": {
         "properties": {
@@ -58098,7 +58471,7 @@
           },
           "services": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__robotics__ServiceOut"
+              "$ref": "#/components/schemas/ServiceOut"
             },
             "type": "array",
             "title": "Services"
@@ -58463,6 +58836,20 @@
         ],
         "title": "MoraleTermOut"
       },
+      "MoveIn": {
+        "properties": {
+          "cents": {
+            "type": "integer",
+            "title": "Cents",
+            "description": "Into the office if positive, out of it if negative"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cents"
+        ],
+        "title": "MoveIn"
+      },
       "MovePersonIn": {
         "properties": {
           "unit_id": {
@@ -58483,6 +58870,19 @@
           "unit_id"
         ],
         "title": "MovePersonIn"
+      },
+      "MoveReleaseIn": {
+        "properties": {
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "months"
+        ],
+        "title": "MoveReleaseIn"
       },
       "MoveUnitIn": {
         "properties": {
@@ -67972,10 +68372,10 @@
             "title": "Group"
           },
           "before": {
-            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
+            "$ref": "#/components/schemas/RangeOut"
           },
           "after": {
-            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
+            "$ref": "#/components/schemas/RangeOut"
           }
         },
         "type": "object",
@@ -67988,6 +68388,24 @@
         ],
         "title": "RangeChangeOut",
         "description": "One displayed range an action narrowed (M4c): what the viewer saw before and after."
+      },
+      "RangeOut": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "RangeOut"
       },
       "RankingEntryOut": {
         "properties": {
@@ -75514,6 +75932,39 @@
         ],
         "title": "ServiceMonthOut"
       },
+      "ServiceOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "brand": {
+            "type": "number",
+            "title": "Brand"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "quality",
+          "brand"
+        ],
+        "title": "ServiceOut"
+      },
       "SetLeaderIn": {
         "properties": {
           "person_id": {
@@ -77355,7 +77806,7 @@
         "properties": {
           "services": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__media__ServiceOut"
+              "$ref": "#/components/schemas/MediaServiceOut"
             },
             "type": "array",
             "title": "Services"
@@ -77498,7 +77949,7 @@
           },
           "kinds": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__media__KindOut"
+              "$ref": "#/components/schemas/TitleKindOut"
             },
             "type": "array",
             "title": "Kinds"
@@ -80444,6 +80895,39 @@
         ],
         "title": "TimelineOut"
       },
+      "TitleKindOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "typical_budget_cents": {
+            "type": "integer",
+            "title": "Typical Budget Cents"
+          },
+          "min_budget_cents": {
+            "type": "integer",
+            "title": "Min Budget Cents"
+          },
+          "max_budget_cents": {
+            "type": "integer",
+            "title": "Max Budget Cents"
+          },
+          "dev_months": {
+            "type": "integer",
+            "title": "Dev Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "typical_budget_cents",
+          "min_budget_cents",
+          "max_budget_cents",
+          "dev_months"
+        ],
+        "title": "TitleKindOut"
+      },
       "TitleOut": {
         "properties": {
           "id": {
@@ -83154,7 +83638,7 @@
           },
           "licences": {
             "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__geopolitics__LicenceOut"
+              "$ref": "#/components/schemas/LicenceOut"
             },
             "type": "array",
             "title": "Licences"
@@ -83505,58 +83989,6 @@
         ],
         "title": "UnitChoiceOut"
       },
-      "tst__api__schemas__dynasty__GenerationOut": {
-        "properties": {
-          "person_id": {
-            "type": "integer",
-            "title": "Person Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "from_label": {
-            "type": "string",
-            "title": "From Label"
-          },
-          "to_label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Label"
-          },
-          "legacy": {
-            "type": "integer",
-            "title": "Legacy"
-          },
-          "how": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "How"
-          }
-        },
-        "type": "object",
-        "required": [
-          "person_id",
-          "name",
-          "from_label",
-          "to_label",
-          "legacy",
-          "how"
-        ],
-        "title": "GenerationOut"
-      },
       "tst__api__schemas__events__EventLinkOut": {
         "properties": {
           "path": {
@@ -83635,55 +84067,6 @@
           "allocation"
         ],
         "title": "IndexPointOut"
-      },
-      "tst__api__schemas__facilities__KindOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "unit": {
-            "type": "string",
-            "title": "Unit"
-          },
-          "input_good": {
-            "type": "string",
-            "title": "Input Good"
-          },
-          "build_months": {
-            "type": "integer",
-            "title": "Build Months"
-          },
-          "life_months": {
-            "type": "integer",
-            "title": "Life Months"
-          },
-          "opex_per_unit_cents": {
-            "type": "integer",
-            "title": "Opex Per Unit Cents"
-          },
-          "capex_per_unit_cents": {
-            "type": "integer",
-            "title": "Capex Per Unit Cents",
-            "description": "At this month's index"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label",
-          "unit",
-          "input_good",
-          "build_months",
-          "life_months",
-          "opex_per_unit_cents",
-          "capex_per_unit_cents"
-        ],
-        "title": "KindOut"
       },
       "tst__api__schemas__facilities__RegionOptionOut": {
         "properties": {
@@ -83804,81 +84187,6 @@
           "country"
         ],
         "title": "LicenceIn"
-      },
-      "tst__api__schemas__geopolitics__LicenceOut": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "company_id": {
-            "type": "integer",
-            "title": "Company Id"
-          },
-          "product_id": {
-            "type": "integer",
-            "title": "Product Id"
-          },
-          "product": {
-            "type": "string",
-            "title": "Product"
-          },
-          "rule_key": {
-            "type": "string",
-            "title": "Rule Key"
-          },
-          "rule": {
-            "type": "string",
-            "title": "Rule"
-          },
-          "country": {
-            "type": "string",
-            "title": "Country"
-          },
-          "country_label": {
-            "type": "string",
-            "title": "Country Label"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "requested": {
-            "type": "string",
-            "title": "Requested"
-          },
-          "decision": {
-            "type": "string",
-            "title": "Decision"
-          },
-          "until": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Until"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "company_id",
-          "product_id",
-          "product",
-          "rule_key",
-          "rule",
-          "country",
-          "country_label",
-          "status",
-          "requested",
-          "decision",
-          "until"
-        ],
-        "title": "LicenceOut"
       },
       "tst__api__schemas__geopolitics__ListingOut": {
         "properties": {
@@ -84019,262 +84327,6 @@
         ],
         "title": "IndexPointOut"
       },
-      "tst__api__schemas__investing__MoveIn": {
-        "properties": {
-          "cents": {
-            "type": "integer",
-            "title": "Cents",
-            "description": "Into the office if positive, out of it if negative"
-          }
-        },
-        "type": "object",
-        "required": [
-          "cents"
-        ],
-        "title": "MoveIn"
-      },
-      "tst__api__schemas__media__GenerationOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          },
-          "month": {
-            "type": "string",
-            "title": "Month"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label",
-          "month"
-        ],
-        "title": "GenerationOut"
-      },
-      "tst__api__schemas__media__KindOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "typical_budget_cents": {
-            "type": "integer",
-            "title": "Typical Budget Cents"
-          },
-          "min_budget_cents": {
-            "type": "integer",
-            "title": "Min Budget Cents"
-          },
-          "max_budget_cents": {
-            "type": "integer",
-            "title": "Max Budget Cents"
-          },
-          "dev_months": {
-            "type": "integer",
-            "title": "Dev Months"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "typical_budget_cents",
-          "min_budget_cents",
-          "max_budget_cents",
-          "dev_months"
-        ],
-        "title": "KindOut"
-      },
-      "tst__api__schemas__media__LicenceIn": {
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "title": "Product Id"
-          },
-          "fee_cents": {
-            "type": "integer",
-            "title": "Fee Cents"
-          },
-          "years": {
-            "type": "integer",
-            "title": "Years"
-          }
-        },
-        "type": "object",
-        "required": [
-          "product_id",
-          "fee_cents",
-          "years"
-        ],
-        "title": "LicenceIn"
-      },
-      "tst__api__schemas__media__LicenceOut": {
-        "properties": {
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "fee_cents": {
-            "type": "integer",
-            "title": "Fee Cents"
-          },
-          "from_month": {
-            "type": "string",
-            "title": "From Month"
-          },
-          "to_month": {
-            "type": "string",
-            "title": "To Month"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "fee_cents",
-          "from_month",
-          "to_month"
-        ],
-        "title": "LicenceOut"
-      },
-      "tst__api__schemas__media__MoveIn": {
-        "properties": {
-          "months": {
-            "type": "integer",
-            "title": "Months"
-          }
-        },
-        "type": "object",
-        "required": [
-          "months"
-        ],
-        "title": "MoveIn"
-      },
-      "tst__api__schemas__media__RangeOut": {
-        "properties": {
-          "lo": {
-            "type": "integer",
-            "title": "Lo"
-          },
-          "hi": {
-            "type": "integer",
-            "title": "Hi"
-          }
-        },
-        "type": "object",
-        "required": [
-          "lo",
-          "hi"
-        ],
-        "title": "RangeOut"
-      },
-      "tst__api__schemas__media__ServiceOut": {
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "title": "Product Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "category": {
-            "type": "string",
-            "title": "Category"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "regions": {
-            "items": {
-              "$ref": "#/components/schemas/RegionCustomersOut"
-            },
-            "type": "array",
-            "title": "Regions"
-          },
-          "customers": {
-            "type": "number",
-            "title": "Customers"
-          },
-          "churn_mult": {
-            "type": "number",
-            "title": "Churn Mult",
-            "description": "Its churn x this (catalogue engagement)"
-          },
-          "engagement": {
-            "type": "number",
-            "title": "Engagement",
-            "description": "Catalogue value over the median service's"
-          },
-          "ad_tier": {
-            "type": "boolean",
-            "title": "Ad Tier"
-          },
-          "ad_revenue_cents": {
-            "type": "integer",
-            "title": "Ad Revenue Cents",
-            "description": "Last month"
-          },
-          "content_cents": {
-            "type": "integer",
-            "title": "Content Cents",
-            "description": "Last month: own titles in production and licences"
-          },
-          "cash_cents": {
-            "type": "integer",
-            "title": "Cash Cents",
-            "description": "Cumulative since launch"
-          },
-          "paid_back": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Paid Back"
-          },
-          "months": {
-            "items": {
-              "$ref": "#/components/schemas/ServiceMonthOut"
-            },
-            "type": "array",
-            "title": "Months"
-          },
-          "licences": {
-            "items": {
-              "$ref": "#/components/schemas/tst__api__schemas__media__LicenceOut"
-            },
-            "type": "array",
-            "title": "Licences"
-          }
-        },
-        "type": "object",
-        "required": [
-          "product_id",
-          "name",
-          "category",
-          "status",
-          "regions",
-          "customers",
-          "churn_mult",
-          "engagement",
-          "ad_tier",
-          "ad_revenue_cents",
-          "content_cents",
-          "cash_cents",
-          "paid_back",
-          "months",
-          "licences"
-        ],
-        "title": "ServiceOut"
-      },
       "tst__api__schemas__mna__SubsidiaryOut": {
         "properties": {
           "company_id": {
@@ -84370,24 +84422,6 @@
           "label"
         ],
         "title": "EventLinkOut"
-      },
-      "tst__api__schemas__people__RangeOut": {
-        "properties": {
-          "min": {
-            "type": "integer",
-            "title": "Min"
-          },
-          "max": {
-            "type": "integer",
-            "title": "Max"
-          }
-        },
-        "type": "object",
-        "required": [
-          "min",
-          "max"
-        ],
-        "title": "RangeOut"
       },
       "tst__api__schemas__platforms__ListingOut": {
         "properties": {
@@ -84593,39 +84627,6 @@
           "researchers"
         ],
         "title": "UnitChoiceOut"
-      },
-      "tst__api__schemas__robotics__ServiceOut": {
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "title": "Product Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "quality": {
-            "type": "number",
-            "title": "Quality"
-          },
-          "brand": {
-            "type": "number",
-            "title": "Brand"
-          }
-        },
-        "type": "object",
-        "required": [
-          "product_id",
-          "name",
-          "status",
-          "quality",
-          "brand"
-        ],
-        "title": "ServiceOut"
       },
       "tst__api__schemas__saves__CostLineOut": {
         "properties": {

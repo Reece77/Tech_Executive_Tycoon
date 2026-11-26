@@ -129,6 +129,9 @@ METRICS: dict[str, MetricDef] = {
             "region",
             "A region's network's cumulative cash flow",
         ),
+        # v6 (M55): a title's result and a creative lead's walk
+        _m("title_result", "Audience", "count", "title", "A title's audience against expected"),
+        _m("lead_walk", "Morale", "points", "person", "Why a creative lead walked"),
         # v5 (M44): a bid's score band
         _m("bid_score", "Score band", "points", "bid", "A government bid's weighted score"),
         # v6 (M47): where a counterpart's limit lies, as revealed (58.2)

@@ -208,6 +208,38 @@ export const SCREENS: readonly Screen[] = [
     parent: 'products',
   }, // M53
   {
+    path: 'products/studio',
+    label: 'Studio',
+    group: 'products',
+    unlock: 'studio',
+    side: true,
+    parent: 'products',
+  }, // M55
+  {
+    path: 'products/streaming',
+    label: 'Streaming',
+    group: 'products',
+    unlock: 'streaming',
+    side: true,
+    parent: 'products',
+  }, // M55
+  {
+    path: 'products/games',
+    label: 'Games',
+    group: 'products',
+    unlock: 'games',
+    side: true,
+    parent: 'products',
+  }, // M55
+  {
+    path: 'products/social',
+    label: 'Social',
+    group: 'products',
+    unlock: 'social',
+    side: true,
+    parent: 'products',
+  }, // M55
+  {
     path: 'products/equipment',
     label: 'Equipment',
     group: 'chain',

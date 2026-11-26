@@ -120,6 +120,8 @@ def test_media_routes_actions_and_hidden_values(tmp_path: Path, loaded: LoadedDa
             api.post(f"{base}/advance")
             texts.append(json.dumps(api.get(f"{base}/media")))
         media = api.get(f"{base}/media")
+        explain = api.get(f"{base}/explain/title_result?entity={title['id']}")
+        assert explain["value"] is not None and explain["items"]
         with open_session(path) as session:
             state = load_state(session)
     released = media["studio"]["released"]

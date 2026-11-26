@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from tst.api.schemas.people import EnergyOut
 
 
-class RangeOut(BaseModel):
+class MediaRangeOut(BaseModel):
     lo: int
     hi: int
 
@@ -55,8 +55,8 @@ class LeadOut(BaseModel):
     person_id: int
     name: str
     level: str
-    creative: RangeOut
-    vision: RangeOut
+    creative: MediaRangeOut
+    vision: MediaRangeOut
     reputation: float
     fee_cents: int = Field(description="A year")
     deal_to: str | None
@@ -71,14 +71,14 @@ class LeadOfferOut(BaseModel):
     name: str
     level: str
     region: str
-    creative: RangeOut
-    vision: RangeOut
+    creative: MediaRangeOut
+    vision: MediaRangeOut
     fee_cents: int = Field(description="A year at signing")
     upfront_share: float
     expires: str
 
 
-class KindOut(BaseModel):
+class TitleKindOut(BaseModel):
     key: str
     typical_budget_cents: int
     min_budget_cents: int
@@ -93,7 +93,7 @@ class StudioOut(BaseModel):
     catalogue_value_cents: int = Field(description="Own titles' revenue equivalent, decayed")
     leads: list[LeadOut]
     offers: list[LeadOfferOut]
-    kinds: list[KindOut]
+    kinds: list[TitleKindOut]
     strikes: list[str] = Field(description="Regions on strike this month")
     deal_years: list[int]
 
@@ -117,14 +117,14 @@ class RegionCustomersOut(BaseModel):
     share: float = Field(description="Of the region's market (social: of its internet users)")
 
 
-class LicenceOut(BaseModel):
+class MediaLicenceOut(BaseModel):
     id: int
     fee_cents: int
     from_month: str
     to_month: str
 
 
-class ServiceOut(BaseModel):
+class MediaServiceOut(BaseModel):
     product_id: int
     name: str
     category: str
@@ -139,11 +139,11 @@ class ServiceOut(BaseModel):
     cash_cents: int = Field(description="Cumulative since launch")
     paid_back: str | None
     months: list[ServiceMonthOut]
-    licences: list[LicenceOut]
+    licences: list[MediaLicenceOut]
 
 
 class StreamingOut(BaseModel):
-    services: list[ServiceOut]
+    services: list[MediaServiceOut]
     ad_tier_open: bool
     ad_tier_from: str
     music_payout: float
@@ -155,7 +155,7 @@ class GameTitleOut(BaseModel):
     decay: float = Field(description="Players lost a month now")
 
 
-class GenerationOut(BaseModel):
+class ConsoleGenerationOut(BaseModel):
     key: str
     label: str
     month: str
@@ -163,7 +163,7 @@ class GenerationOut(BaseModel):
 
 class GamesOut(BaseModel):
     titles: list[GameTitleOut]
-    generations: list[GenerationOut]
+    generations: list[ConsoleGenerationOut]
     store_fee: float
     epic_fee: float
     epic_open: bool
@@ -257,7 +257,7 @@ class CutIn(BaseModel):
     budget_cents: int
 
 
-class MoveIn(BaseModel):
+class MoveReleaseIn(BaseModel):
     months: int
 
 
@@ -271,7 +271,7 @@ class SignIn(BaseModel):
     years: int
 
 
-class LicenceIn(BaseModel):
+class MediaLicenceIn(BaseModel):
     product_id: int
     fee_cents: int
     years: int

@@ -46,6 +46,7 @@ import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screen
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
 import { SpaceScreen } from './screens/SpaceScreen';
+import { GamesScreen, SocialScreen, StreamingScreen, StudioScreen } from './screens/MediaScreens';
 import { TelecomScreen } from './screens/TelecomScreen';
 import { GovernmentScreen } from './screens/GovernmentScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
@@ -92,6 +93,10 @@ export default function App() {
           <Route path="products/mobility" element={<MobilityScreen />} />
           <Route path="products/space" element={<SpaceScreen />} />
           <Route path="products/telecom" element={<TelecomScreen />} />
+          <Route path="products/studio" element={<StudioScreen />} />
+          <Route path="products/streaming" element={<StreamingScreen />} />
+          <Route path="products/games" element={<GamesScreen />} />
+          <Route path="products/social" element={<SocialScreen />} />
           <Route path="products/government" element={<GovernmentScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />

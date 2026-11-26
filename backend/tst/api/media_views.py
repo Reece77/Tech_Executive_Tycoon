@@ -11,25 +11,25 @@ from __future__ import annotations
 
 from tst.api.schemas.media import (
     AdMarketOut,
+    ConsoleGenerationOut,
     ConsumerAppOut,
     FormatOut,
     GamesOut,
     GameTitleOut,
-    GenerationOut,
-    KindOut,
     LawOut,
     LeadOfferOut,
     LeadOut,
-    LicenceOut,
+    MediaLicenceOut,
+    MediaRangeOut,
     MediaScreenOut,
+    MediaServiceOut,
     NetworkOut,
-    RangeOut,
     RegionCustomersOut,
     ServiceMonthOut,
-    ServiceOut,
     SocialOut,
     StreamingOut,
     StudioOut,
+    TitleKindOut,
     TitleOut,
 )
 from tst.loader import LoadedData
@@ -113,8 +113,8 @@ def _studio(state: GameState, data: LoadedData) -> StudioOut:
                 person_id=x.person_id,
                 name=f"{person.first_name} {person.last_name}",
                 level=job.level if job is not None else (person.level or ""),
-                creative=RangeOut(lo=c[0], hi=c[1]),
-                vision=RangeOut(lo=v[0], hi=v[1]),
+                creative=MediaRangeOut(lo=c[0], hi=c[1]),
+                vision=MediaRangeOut(lo=v[0], hi=v[1]),
                 reputation=round(x.reputation, 2),
                 fee_cents=x.fee_cents,
                 deal_to=format_turn(x.deal_to) if x.deal_to is not None else None,
@@ -139,8 +139,8 @@ def _studio(state: GameState, data: LoadedData) -> StudioOut:
                 name=f"{cand.person.first_name} {cand.person.last_name}",
                 level=cand.person.level or "",
                 region=d.region(cand.person.region).label,
-                creative=RangeOut(lo=c[0], hi=c[1]),
-                vision=RangeOut(lo=v[0], hi=v[1]),
+                creative=MediaRangeOut(lo=c[0], hi=c[1]),
+                vision=MediaRangeOut(lo=v[0], hi=v[1]),
                 fee_cents=talent.fee_cents(cand.creative, cand.vision, 0.0, b),
                 upfront_share=tb.upfront_share,
                 expires=format_turn(o.turn + tb.pool_months),
@@ -150,7 +150,7 @@ def _studio(state: GameState, data: LoadedData) -> StudioOut:
     for key, k in b.media.kinds.items():
         typical = titles.typical_budget_cents(k, b)
         kinds.append(
-            KindOut(
+            TitleKindOut(
                 key=key,
                 typical_budget_cents=typical,
                 min_budget_cents=times(typical, k.min_budget_share),
@@ -201,12 +201,12 @@ def _regions(
     return out
 
 
-def _service(state: GameState, p: Product, data: LoadedData) -> ServiceOut:
+def _service(state: GameState, p: Product, data: LoadedData) -> MediaServiceOut:
     b, d = data.balance, data.game_data
     months = [m for m in state.media.months if m.product_id == p.id]
     last = months[-1] if months else None
     pb = next((x.turn for x in state.media.paid_back if x.product_id == p.id), None)
-    return ServiceOut(
+    return MediaServiceOut(
         product_id=p.id,
         name=p.name,
         category=p.category,
@@ -233,7 +233,7 @@ def _service(state: GameState, p: Product, data: LoadedData) -> ServiceOut:
             for m in months
         ],
         licences=[
-            LicenceOut(
+            MediaLicenceOut(
                 id=x.id,
                 fee_cents=x.fee_cents,
                 from_month=format_turn(x.from_turn),
@@ -264,12 +264,12 @@ def _games(state: GameState, data: LoadedData) -> GamesOut:
     gb = b.media.game_titles
     mine = [t for t in state.media.titles if t.company_id == state.player.id and t.kind == "game"]
     gens = [
-        GenerationOut(key=g.key, label=g.label, month=format_turn(g.turn))
+        ConsoleGenerationOut(key=g.key, label=g.label, month=format_turn(g.turn))
         for g in file(d).console_generations
         if g.turn <= state.turn
     ]
     gens += [
-        GenerationOut(
+        ConsoleGenerationOut(
             key=x.key, label=x.key.replace("_", " ").capitalize(), month=format_turn(int(x.value))
         )
         for x in state.media.draws

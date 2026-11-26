@@ -8327,7 +8327,7 @@ export interface components {
             short_label: string;
             /** Group */
             group: string;
-            range: components["schemas"]["tst__api__schemas__people__RangeOut"];
+            range: components["schemas"]["RangeOut"];
         };
         /** AuctionOut */
         AuctionOut: {
@@ -10668,6 +10668,15 @@ export interface components {
             /** Letters */
             letters: components["schemas"]["LetterOut"][];
         };
+        /** ConsoleGenerationOut */
+        ConsoleGenerationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Month */
+            month: string;
+        };
         /** ConstellationIn */
         ConstellationIn: {
             /** Name */
@@ -11850,7 +11859,7 @@ export interface components {
         /** DynastyOut */
         DynastyOut: {
             /** Generations */
-            generations: components["schemas"]["tst__api__schemas__dynasty__GenerationOut"][];
+            generations: components["schemas"]["GenerationOut"][];
             /** Legacies */
             legacies: number;
             /** Family Value Cents */
@@ -12420,7 +12429,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "title";
             /** Entity */
             entity?: string | null;
             /**
@@ -14108,13 +14117,28 @@ export interface components {
             /** Titles */
             titles: components["schemas"]["GameTitleOut"][];
             /** Generations */
-            generations: components["schemas"]["tst__api__schemas__media__GenerationOut"][];
+            generations: components["schemas"]["ConsoleGenerationOut"][];
             /** Store Fee */
             store_fee: number;
             /** Epic Fee */
             epic_fee: number;
             /** Epic Open */
             epic_open: boolean;
+        };
+        /** GenerationOut */
+        GenerationOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** From Label */
+            from_label: string;
+            /** To Label */
+            to_label: string | null;
+            /** Legacy */
+            legacy: number;
+            /** How */
+            how: string | null;
         };
         /** GeoActionOut */
         GeoActionOut: {
@@ -15543,7 +15567,7 @@ export interface components {
             contracts: components["schemas"]["ContractOut"][];
             cloud: components["schemas"]["CloudOut"];
             /** Kinds */
-            kinds: components["schemas"]["tst__api__schemas__facilities__KindOut"][];
+            kinds: components["schemas"]["KindOut"][];
             /** Sizes */
             sizes: number[];
             /** Regions */
@@ -15780,6 +15804,28 @@ export interface components {
             /** Potential Phrase */
             potential_phrase: string;
         };
+        /** KindOut */
+        KindOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Unit */
+            unit: string;
+            /** Input Good */
+            input_good: string;
+            /** Build Months */
+            build_months: number;
+            /** Life Months */
+            life_months: number;
+            /** Opex Per Unit Cents */
+            opex_per_unit_cents: number;
+            /**
+             * Capex Per Unit Cents
+             * @description At this month's index
+             */
+            capex_per_unit_cents: number;
+        };
         /**
          * KnowledgeOut
          * @description How the viewing company has come to know someone (not what it knows).
@@ -15991,8 +16037,8 @@ export interface components {
             level: string;
             /** Region */
             region: string;
-            creative: components["schemas"]["tst__api__schemas__media__RangeOut"];
-            vision: components["schemas"]["tst__api__schemas__media__RangeOut"];
+            creative: components["schemas"]["MediaRangeOut"];
+            vision: components["schemas"]["MediaRangeOut"];
             /**
              * Fee Cents
              * @description A year at signing
@@ -16011,8 +16057,8 @@ export interface components {
             name: string;
             /** Level */
             level: string;
-            creative: components["schemas"]["tst__api__schemas__media__RangeOut"];
-            vision: components["schemas"]["tst__api__schemas__media__RangeOut"];
+            creative: components["schemas"]["MediaRangeOut"];
+            vision: components["schemas"]["MediaRangeOut"];
             /** Reputation */
             reputation: number;
             /**
@@ -16211,6 +16257,33 @@ export interface components {
             level: string;
             /** Approved */
             approved: string[];
+        };
+        /** LicenceOut */
+        LicenceOut: {
+            /** Id */
+            id: number;
+            /** Company Id */
+            company_id: number;
+            /** Product Id */
+            product_id: number;
+            /** Product */
+            product: string;
+            /** Rule Key */
+            rule_key: string;
+            /** Rule */
+            rule: string;
+            /** Country */
+            country: string;
+            /** Country Label */
+            country_label: string;
+            /** Status */
+            status: string;
+            /** Requested */
+            requested: string;
+            /** Decision */
+            decision: string;
+            /** Until */
+            until: string | null;
         };
         /** LicenseIn */
         LicenseIn: {
@@ -16945,6 +17018,26 @@ export interface components {
             /** Unread Inbox */
             unread_inbox: number;
         };
+        /** MediaLicenceIn */
+        MediaLicenceIn: {
+            /** Product Id */
+            product_id: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /** Years */
+            years: number;
+        };
+        /** MediaLicenceOut */
+        MediaLicenceOut: {
+            /** Id */
+            id: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /** From Month */
+            from_month: string;
+            /** To Month */
+            to_month: string;
+        };
         /** MediaLineIn */
         MediaLineIn: {
             /**
@@ -16970,12 +17063,67 @@ export interface components {
              */
             ad_pricing?: boolean;
         };
+        /** MediaRangeOut */
+        MediaRangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
+        };
         /** MediaScreenOut */
         MediaScreenOut: {
             studio: components["schemas"]["StudioOut"];
             streaming: components["schemas"]["StreamingOut"];
             games: components["schemas"]["GamesOut"];
             social: components["schemas"]["SocialOut"];
+        };
+        /** MediaServiceOut */
+        MediaServiceOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Status */
+            status: string;
+            /** Regions */
+            regions: components["schemas"]["RegionCustomersOut"][];
+            /** Customers */
+            customers: number;
+            /**
+             * Churn Mult
+             * @description Its churn x this (catalogue engagement)
+             */
+            churn_mult: number;
+            /**
+             * Engagement
+             * @description Catalogue value over the median service's
+             */
+            engagement: number;
+            /** Ad Tier */
+            ad_tier: boolean;
+            /**
+             * Ad Revenue Cents
+             * @description Last month
+             */
+            ad_revenue_cents: number;
+            /**
+             * Content Cents
+             * @description Last month: own titles in production and licences
+             */
+            content_cents: number;
+            /**
+             * Cash Cents
+             * @description Cumulative since launch
+             */
+            cash_cents: number;
+            /** Paid Back */
+            paid_back: string | null;
+            /** Months */
+            months: components["schemas"]["ServiceMonthOut"][];
+            /** Licences */
+            licences: components["schemas"]["MediaLicenceOut"][];
         };
         /** MedicalActionOut */
         MedicalActionOut: {
@@ -17712,7 +17860,7 @@ export interface components {
             /** History Incidents */
             history_incidents: components["schemas"]["HistoryIncidentOut"][];
             /** Services */
-            services: components["schemas"]["tst__api__schemas__robotics__ServiceOut"][];
+            services: components["schemas"]["ServiceOut"][];
             /** Zones */
             zones: components["schemas"]["ZoneOut"][];
             /** Depots */
@@ -17855,6 +18003,14 @@ export interface components {
             /** Value */
             value: number;
         };
+        /** MoveIn */
+        MoveIn: {
+            /**
+             * Cents
+             * @description Into the office if positive, out of it if negative
+             */
+            cents: number;
+        };
         /** MovePersonIn */
         MovePersonIn: {
             /**
@@ -17862,6 +18018,11 @@ export interface components {
              * @description Null moves them to the company root
              */
             unit_id: number | null;
+        };
+        /** MoveReleaseIn */
+        MoveReleaseIn: {
+            /** Months */
+            months: number;
         };
         /** MoveUnitIn */
         MoveUnitIn: {
@@ -21868,8 +22029,15 @@ export interface components {
             label: string;
             /** Group */
             group: string;
-            before: components["schemas"]["tst__api__schemas__people__RangeOut"];
-            after: components["schemas"]["tst__api__schemas__people__RangeOut"];
+            before: components["schemas"]["RangeOut"];
+            after: components["schemas"]["RangeOut"];
+        };
+        /** RangeOut */
+        RangeOut: {
+            /** Min */
+            min: number;
+            /** Max */
+            max: number;
         };
         /** RankingEntryOut */
         RankingEntryOut: {
@@ -24990,6 +25158,19 @@ export interface components {
             /** Cash Cents */
             cash_cents: number;
         };
+        /** ServiceOut */
+        ServiceOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Brand */
+            brand: number;
+        };
         /** SetLeaderIn */
         SetLeaderIn: {
             /**
@@ -25723,7 +25904,7 @@ export interface components {
         /** StreamingOut */
         StreamingOut: {
             /** Services */
-            services: components["schemas"]["tst__api__schemas__media__ServiceOut"][];
+            services: components["schemas"]["MediaServiceOut"][];
             /** Ad Tier Open */
             ad_tier_open: boolean;
             /** Ad Tier From */
@@ -25788,7 +25969,7 @@ export interface components {
             /** Offers */
             offers: components["schemas"]["LeadOfferOut"][];
             /** Kinds */
-            kinds: components["schemas"]["tst__api__schemas__media__KindOut"][];
+            kinds: components["schemas"]["TitleKindOut"][];
             /**
              * Strikes
              * @description Regions on strike this month
@@ -27053,6 +27234,19 @@ export interface components {
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
         };
+        /** TitleKindOut */
+        TitleKindOut: {
+            /** Key */
+            key: string;
+            /** Typical Budget Cents */
+            typical_budget_cents: number;
+            /** Min Budget Cents */
+            min_budget_cents: number;
+            /** Max Budget Cents */
+            max_budget_cents: number;
+            /** Dev Months */
+            dev_months: number;
+        };
         /** TitleOut */
         TitleOut: {
             /** Id */
@@ -28142,7 +28336,7 @@ export interface components {
             /** Rules */
             rules: components["schemas"]["RuleOut"][];
             /** Licences */
-            licences: components["schemas"]["tst__api__schemas__geopolitics__LicenceOut"][];
+            licences: components["schemas"]["LicenceOut"][];
             /** Variants */
             variants: components["schemas"]["VariantOut"][];
             /** Listings */
@@ -28268,21 +28462,6 @@ export interface components {
             /** Name */
             name: string;
         };
-        /** GenerationOut */
-        tst__api__schemas__dynasty__GenerationOut: {
-            /** Person Id */
-            person_id: number;
-            /** Name */
-            name: string;
-            /** From Label */
-            from_label: string;
-            /** To Label */
-            to_label: string | null;
-            /** Legacy */
-            legacy: number;
-            /** How */
-            how: string | null;
-        };
         /**
          * EventLinkOut
          * @description A screen the event is about (M23c): look before answering.
@@ -28318,28 +28497,6 @@ export interface components {
             index: number;
             /** Allocation */
             allocation: number;
-        };
-        /** KindOut */
-        tst__api__schemas__facilities__KindOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /** Unit */
-            unit: string;
-            /** Input Good */
-            input_good: string;
-            /** Build Months */
-            build_months: number;
-            /** Life Months */
-            life_months: number;
-            /** Opex Per Unit Cents */
-            opex_per_unit_cents: number;
-            /**
-             * Capex Per Unit Cents
-             * @description At this month's index
-             */
-            capex_per_unit_cents: number;
         };
         /** RegionOptionOut */
         tst__api__schemas__facilities__RegionOptionOut: {
@@ -28386,33 +28543,6 @@ export interface components {
             product_id: number;
             /** Country */
             country: string;
-        };
-        /** LicenceOut */
-        tst__api__schemas__geopolitics__LicenceOut: {
-            /** Id */
-            id: number;
-            /** Company Id */
-            company_id: number;
-            /** Product Id */
-            product_id: number;
-            /** Product */
-            product: string;
-            /** Rule Key */
-            rule_key: string;
-            /** Rule */
-            rule: string;
-            /** Country */
-            country: string;
-            /** Country Label */
-            country_label: string;
-            /** Status */
-            status: string;
-            /** Requested */
-            requested: string;
-            /** Decision */
-            decision: string;
-            /** Until */
-            until: string | null;
         };
         /** ListingOut */
         tst__api__schemas__geopolitics__ListingOut: {
@@ -28470,116 +28600,6 @@ export interface components {
             /** Level */
             level: number;
         };
-        /** MoveIn */
-        tst__api__schemas__investing__MoveIn: {
-            /**
-             * Cents
-             * @description Into the office if positive, out of it if negative
-             */
-            cents: number;
-        };
-        /** GenerationOut */
-        tst__api__schemas__media__GenerationOut: {
-            /** Key */
-            key: string;
-            /** Label */
-            label: string;
-            /** Month */
-            month: string;
-        };
-        /** KindOut */
-        tst__api__schemas__media__KindOut: {
-            /** Key */
-            key: string;
-            /** Typical Budget Cents */
-            typical_budget_cents: number;
-            /** Min Budget Cents */
-            min_budget_cents: number;
-            /** Max Budget Cents */
-            max_budget_cents: number;
-            /** Dev Months */
-            dev_months: number;
-        };
-        /** LicenceIn */
-        tst__api__schemas__media__LicenceIn: {
-            /** Product Id */
-            product_id: number;
-            /** Fee Cents */
-            fee_cents: number;
-            /** Years */
-            years: number;
-        };
-        /** LicenceOut */
-        tst__api__schemas__media__LicenceOut: {
-            /** Id */
-            id: number;
-            /** Fee Cents */
-            fee_cents: number;
-            /** From Month */
-            from_month: string;
-            /** To Month */
-            to_month: string;
-        };
-        /** MoveIn */
-        tst__api__schemas__media__MoveIn: {
-            /** Months */
-            months: number;
-        };
-        /** RangeOut */
-        tst__api__schemas__media__RangeOut: {
-            /** Lo */
-            lo: number;
-            /** Hi */
-            hi: number;
-        };
-        /** ServiceOut */
-        tst__api__schemas__media__ServiceOut: {
-            /** Product Id */
-            product_id: number;
-            /** Name */
-            name: string;
-            /** Category */
-            category: string;
-            /** Status */
-            status: string;
-            /** Regions */
-            regions: components["schemas"]["RegionCustomersOut"][];
-            /** Customers */
-            customers: number;
-            /**
-             * Churn Mult
-             * @description Its churn x this (catalogue engagement)
-             */
-            churn_mult: number;
-            /**
-             * Engagement
-             * @description Catalogue value over the median service's
-             */
-            engagement: number;
-            /** Ad Tier */
-            ad_tier: boolean;
-            /**
-             * Ad Revenue Cents
-             * @description Last month
-             */
-            ad_revenue_cents: number;
-            /**
-             * Content Cents
-             * @description Last month: own titles in production and licences
-             */
-            content_cents: number;
-            /**
-             * Cash Cents
-             * @description Cumulative since launch
-             */
-            cash_cents: number;
-            /** Paid Back */
-            paid_back: string | null;
-            /** Months */
-            months: components["schemas"]["ServiceMonthOut"][];
-            /** Licences */
-            licences: components["schemas"]["tst__api__schemas__media__LicenceOut"][];
-        };
         /** SubsidiaryOut */
         tst__api__schemas__mna__SubsidiaryOut: {
             /** Company Id */
@@ -28623,13 +28643,6 @@ export interface components {
             event_id: number;
             /** Label */
             label: string;
-        };
-        /** RangeOut */
-        tst__api__schemas__people__RangeOut: {
-            /** Min */
-            min: number;
-            /** Max */
-            max: number;
         };
         /** ListingOut */
         tst__api__schemas__platforms__ListingOut: {
@@ -28711,19 +28724,6 @@ export interface components {
              * @description Members in builder roles who would research
              */
             researchers: number;
-        };
-        /** ServiceOut */
-        tst__api__schemas__robotics__ServiceOut: {
-            /** Product Id */
-            product_id: number;
-            /** Name */
-            name: string;
-            /** Status */
-            status: string;
-            /** Quality */
-            quality: number;
-            /** Brand */
-            brand: number;
         };
         /** CostLineOut */
         tst__api__schemas__saves__CostLineOut: {
@@ -40284,7 +40284,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["tst__api__schemas__investing__MoveIn"];
+                "application/json": components["schemas"]["MoveIn"];
             };
         };
         responses: {
@@ -50515,7 +50515,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["tst__api__schemas__media__MoveIn"];
+                "application/json": components["schemas"]["MoveReleaseIn"];
             };
         };
         responses: {
@@ -50702,7 +50702,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["tst__api__schemas__media__LicenceIn"];
+                "application/json": components["schemas"]["MediaLicenceIn"];
             };
         };
         responses: {

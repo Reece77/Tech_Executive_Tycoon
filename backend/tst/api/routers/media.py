@@ -15,12 +15,12 @@ from tst.api.routers.saves import ERRORS
 from tst.api.schemas.media import (
     CutIn,
     GreenlightIn,
-    LicenceIn,
     LiveServiceIn,
     MediaActionOut,
+    MediaLicenceIn,
     MediaLineIn,
     MediaScreenOut,
-    MoveIn,
+    MoveReleaseIn,
     SignIn,
 )
 from tst.db import inbox, repository
@@ -135,7 +135,7 @@ def cut_budget(
     operation_id="moveTitleRelease",
 )
 def move_release(
-    save_id: str, title_id: int, body: MoveIn, settings: SettingsDep, data: DataDep
+    save_id: str, title_id: int, body: MoveReleaseIn, settings: SettingsDep, data: DataDep
 ) -> MediaActionOut:
     path = _path(settings, save_id)
     return _act(path, data, MoveRelease(_founder_id(_state(path)), title_id, body.months))
@@ -166,7 +166,7 @@ def sign_lead(save_id: str, body: SignIn, settings: SettingsDep, data: DataDep) 
     "/media/licences", response_model=MediaActionOut, responses=ERRORS, operation_id="licenseTitles"
 )
 def license_titles(
-    save_id: str, body: LicenceIn, settings: SettingsDep, data: DataDep
+    save_id: str, body: MediaLicenceIn, settings: SettingsDep, data: DataDep
 ) -> MediaActionOut:
     path = _path(settings, save_id)
     action = LicenseTitles(_founder_id(_state(path)), body.product_id, body.fee_cents, body.years)
