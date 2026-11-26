@@ -349,9 +349,12 @@ def _finserv(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | 
         or any(x.company_id in ids for x in fs.insurers)
     ):
         return "the group runs a bank, a network or an insurer"
-    if turn_to_ym(state.turn)[0] >= fb.unlock_year and _stage(state) >= STAGE_GROWTH:
-        if any(p.category == "fintech" for p in state.products if p.company_id in ids):
-            return f"banking is open to a stage-3 fintech ({fb.unlock_year})"
+    if (
+        turn_to_ym(state.turn)[0] >= fb.unlock_year
+        and _stage(state) >= STAGE_GROWTH
+        and any(p.category == "fintech" for p in state.products if p.company_id in ids)
+    ):
+        return f"banking is open to a stage-3 fintech ({fb.unlock_year})"
     return None
 
 

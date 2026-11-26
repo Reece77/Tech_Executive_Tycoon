@@ -5,25 +5,25 @@ no stress shock or catastrophe before it happens, no index beyond this month."""
 from __future__ import annotations
 
 from tst.api.schemas.finserv import (
+    BankLoanOut,
     BankMonthOut,
-    OwnBankOut,
+    BankRunOut,
     BankScreenOut,
+    BankStressOut,
     CatastropheOut,
     CurrencyRegionOut,
     CurrencyScreenOut,
+    FinRegionOptionOut,
     FinservScreenOut,
     HedgeOut,
-    InsuranceScreenOut,
     InsuranceLicenceOut,
+    InsuranceScreenOut,
     LineMonthOut,
-    BankLoanOut,
     NetworkOut,
+    OwnBankOut,
     PaymentsRegionOut,
     PaymentsScreenOut,
     ProgrammeOut,
-    FinRegionOptionOut,
-    BankRunOut,
-    BankStressOut,
 )
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
