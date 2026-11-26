@@ -13241,8 +13241,8 @@ export interface components {
             node: string;
             /** Region */
             region: string;
-            /** Capacity */
-            capacity: number;
+            /** Wafer Starts */
+            wafer_starts: number;
             /** Age Months */
             age_months: number;
             /** Unit */

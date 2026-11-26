@@ -65,9 +65,11 @@ def specs(draw: st.DrawFn) -> CustomScenario:
         world["policy_rate_pct"] = draw(_in(ED.policy_rate_pct))
     raw = base.model_dump(mode="json")
     raw["cash_dollars"] = draw(st.integers(int(ED.cash_dollars.lo), int(ED.cash_dollars.hi)))
-    raw["label"] = draw(st.text(min_size=1, max_size=40).filter(lambda t: t.strip() != ""))
+    raw["label"] = draw(
+        st.text(min_size=1, max_size=40).filter(lambda t: t.strip() != "" and t.isprintable())
+    )
     raw["overrides"] = {
-        "company": {"name": draw(st.text(min_size=1, max_size=30))},
+        "company": {"name": draw(st.text(min_size=1, max_size=30).filter(str.isprintable))},
         "rivals": rivals,
         "markets": markets,
         "added_rivals": [{"category": c, "count": draw(st.integers(1, 5))} for c in added],
@@ -163,3 +165,16 @@ def test_a_field_outside_its_range_is_refused(which: int, above: bool, by: float
     except sf.InvalidCustomScenarioError:
         return  # refused by the schema
     assert custom.refusals(spec, B, D), (setter.__name__, value)
+
+
+@settings(max_examples=40, deadline=None)
+@given(st.text(min_size=1, max_size=20).filter(lambda t: not t.isprintable()))
+def test_a_control_character_in_a_name_is_refused(name: str) -> None:
+    raw = custom.blank(2010, B, D).model_dump(mode="json")
+    raw["overrides"] = {"company": {"name": name}}
+    try:
+        sf.from_dict(raw)
+    except sf.InvalidCustomScenarioError as exc:
+        assert "printable" in str(exc)
+    else:
+        raise AssertionError(repr(name))

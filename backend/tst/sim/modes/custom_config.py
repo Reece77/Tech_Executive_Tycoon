@@ -163,6 +163,18 @@ class CustomScenario(HistoricalScenario):
     format: int = FORMAT
 
     @model_validator(mode="after")
+    def _text(self) -> CustomScenario:
+        """Names and texts are printable (a brief may break lines): a control character would
+        not survive the file's YAML unchanged."""
+        texts = [("label", self.label), ("overrides.company.name", self.overrides.company.name)]
+        for where, text in texts:
+            if text is not None and not text.isprintable():
+                raise ValueError(f"{where} may hold only printable characters")
+        if not self.description.replace("\n", " ").isprintable():
+            raise ValueError("description may hold only printable characters and line breaks")
+        return self
+
+    @model_validator(mode="after")
     def _goal(self) -> CustomScenario:
         if (self.goal is None) != (self.deadline is None):
             raise ValueError("a goal needs a deadline, and a deadline a goal")

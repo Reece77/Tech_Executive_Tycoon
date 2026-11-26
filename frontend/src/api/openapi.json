@@ -46895,10 +46895,10 @@
             "type": "string",
             "title": "Region"
           },
-          "capacity": {
+          "wafer_starts": {
             "type": "integer",
             "exclusiveMinimum": 0.0,
-            "title": "Capacity"
+            "title": "Wafer Starts"
           },
           "age_months": {
             "type": "integer",
@@ -46926,7 +46926,7 @@
         "required": [
           "node",
           "region",
-          "capacity",
+          "wafer_starts",
           "age_months",
           "unit"
         ],
