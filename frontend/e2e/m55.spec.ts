@@ -67,7 +67,9 @@ test('(b) overrule a lead and see the morale warning', async ({ page }) => {
   await page.getByTestId('slate-row').first().locator('[data-testid^="overrule-"]').click();
   await expect(page.getByTestId('slate-row').first()).toContainText('1');
   await page.goto(`/game/${save}/inbox`);
-  await expect(page.getByText(/Morale warning: .* is unhappy about Harbour Lights/)).toBeVisible();
+  await expect(
+    page.getByText(/Morale warning: .* is unhappy about Harbour Lights/).first(),
+  ).toBeVisible();
 });
 
 test('(c) launch an ad tier and see ad revenue on the Streaming screen', async ({ page }) => {
@@ -79,9 +81,20 @@ test('(c) launch an ad tier and see ad revenue on the Streaming screen', async (
   await expect(service).toContainText('Reel Stream');
   const id = ((await service.getAttribute('data-testid')) ?? '').replace('service-', '');
   await expect(page.getByTestId(`ad-revenue-${id}`)).toContainText('ad revenue $0');
-  await page.getByTestId(`ad-tier-${id}`).check();
+  await page.getByTestId(`ad-tier-${id}`).click(); // controlled: checked once the save answers
   await expect(page.getByTestId(`ad-tier-${id}`)).toBeChecked();
   tool('advance', save, '2');
   await page.goto(`/game/${save}/products/streaming`);
   await expect(page.getByTestId(`ad-revenue-${id}`)).not.toContainText('ad revenue $0');
+});
+
+test('(d) the Games and Social screens open', async ({ page }) => {
+  test.setTimeout(600_000);
+  const save = `m55-screens-${stamp}`;
+  tool('stream', save);
+  await page.goto(`/game/${save}/products/games`);
+  await expect(page.getByTestId('games-titles')).toContainText('No games yet');
+  await page.goto(`/game/${save}/products/social`);
+  await expect(page.getByTestId('social-ads')).toContainText('North America');
+  await expect(page.getByTestId('social-apps')).toContainText('Reel Moments');
 });

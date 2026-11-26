@@ -28,9 +28,9 @@ test('(a) open Competitors and a rival profile', async ({ page, request }) => {
   await page.goto(`/game/${COMPS}/overview`);
   await page.keyboard.press('8');
   await expect(page).toHaveURL(/\/competitors$/);
-  await expect(page.getByTestId('rival-counts')).toContainText('133 established'); // M53's 28 telecom operators and vendors + 17 + M9's six regional + M12a's four cloud + M12b's twelve hardware and chip incumbents + M38's thirteen car makers, M41's twelve device makers, M39's twelve robot makers, M42's sixteen pharma rivals, M40's thirteen space companies + M41's twelve medical device makers + M39's twelve robot makers + M42's sixteen pharma companies
+  await expect(page.getByTestId('rival-counts')).toContainText('155 established'); // M55's 22 media rivals + M53's 28 telecom operators and vendors + 17 + M9's six regional + M12a's four cloud + M12b's twelve hardware and chip incumbents + M38's thirteen car makers, M41's twelve device makers, M39's twelve robot makers, M42's sixteen pharma rivals, M40's thirteen space companies + M41's twelve medical device makers + M39's twelve robot makers + M42's sixteen pharma companies
   const rows = page.getByTestId('rival-row');
-  await expect(rows).toHaveCount(133);
+  await expect(rows).toHaveCount(155);
   await expect(page.getByTestId('news-line').first()).toBeVisible();
   await page.getByRole('link', { name: 'Salesforce' }).click();
   await expect(page).toHaveURL(/\/competitors\/\d+$/);
