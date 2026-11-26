@@ -1,5 +1,6 @@
 """The same game on every platform (M35a sub-task 1): play M30's three strategies on seeds 1-3
-for 120 months in memory and record every month's full-state digest (tst.balance.m30's
+for 120 months in memory (M52: and one custom scenario, the edited EV maker, for its first 24
+months: formulas.md 66.4 target 3) and record every month's full-state digest (tst.balance.m30's
 canonical digest), with a digest of each top-level state field, so two platforms' records name
 the first month and the first part of the state that differ. CI
 (.github/workflows/determinism.yml) runs `run` on Linux and Windows and `compare` on the two.
@@ -74,14 +75,26 @@ def _tree(digester: Any, root: object, prefix: str) -> dict[str, str]:
     return out
 
 
+CUSTOM = "custom_ev"  # M52 (66.4 target 3): one custom scenario, its first CUSTOM_MONTHS months
+CUSTOM_SEED = 1
+CUSTOM_MONTHS = 24
+
+
 def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
     from tst.balance import m30
     from tst.balance.game import start_game
     from tst.balance.report import SCENARIO
 
     name, seed, turns, dumps = job
-    game = start_game(m30.loaded(), seed, SCENARIO)
-    script = m30.strategy(name)
+    if name == CUSTOM:  # M52: the edited EV maker (tst.balance.m52.determinism_spec)
+        from tst.balance import m51, m52
+
+        game = m52.custom_game(seed)
+        script = m51.ev_sensible
+        turns = game.state.turn + min(turns, CUSTOM_MONTHS)
+    else:
+        game = start_game(m30.loaded(), seed, SCENARIO)
+        script = m30.strategy(name)
     digester = m30.Digester()
     months: list[dict[str, Any]] = []
     dumped: dict[str, dict[str, str]] = {}
@@ -104,7 +117,8 @@ def run(out: Path, turns: int, workers: int, dumps: list[str]) -> int:
     for item in dumps:
         job, _, turn = item.partition("@")
         wanted.setdefault(job, set()).add(int(turn))
-    todo = [(n, s, turns, tuple(sorted(wanted.get(m30.key(n, s), ())))) for n, s in m30.jobs()]
+    jobs = [*m30.jobs(), (CUSTOM, CUSTOM_SEED)]  # M52: and one custom scenario
+    todo = [(n, s, turns, tuple(sorted(wanted.get(m30.key(n, s), ())))) for n, s in jobs]
     started = time.perf_counter()
     with ProcessPoolExecutor(max_workers=max(1, workers)) as pool:
         results = list(pool.map(run_job, todo))

@@ -196,6 +196,48 @@ eras:
       - { category: consumer_apps, growth: 0.03, months: 36 }
       - { category: b2b_saas, growth: 0.03, months: 36 }
 
+# --- M52 (formulas.md 66.3): the third wave, for sandbox play past 2069. Windows 2070-2120, the
+# same domain, boost and acceleration fields; the loader appends them after every era above (so
+# no earlier era's stream key moves) and none can arrive, be aimed at or be shown before January
+# 2070 (dynasty.beyond.start_year). Plausible rather than predicted (A); growth points are
+# renewals of mature markets, as the second wave's (0.02-0.04).
+beyond_2069:
+  - key: room_temperature_superconductors
+    label: Room-temperature superconductors
+    domain: infrastructure
+    window: [[2070, 1], [2082, 12]] # A: a materials breakthrough a generation after fusion
+    boosts:
+      - { category: cloud_hosting, growth: 0.03, months: 48 }
+      - { category: devices, growth: 0.02, months: 36 }
+  - key: synthetic_biology_compute
+    label: Biological computing
+    domain: chip_design
+    window: [[2074, 1], [2088, 12]] # A: DNA and cell-based logic past atomic-scale silicon
+    boosts:
+      - { category: chips_ai_accelerator, growth: 0.03, months: 48 }
+      - { category: ai_models, growth: 0.02, months: 36 }
+  - key: autonomous_science
+    label: Autonomous science
+    domain: ai
+    window: [[2078, 1], [2094, 12]] # A: AI that designs and runs its own experiments
+    boosts:
+      - { category: ai_models, growth: 0.04, months: 48 }
+      - { category: b2b_saas, segments: [enterprise], growth: 0.02, months: 36 }
+  - key: orbital_industry
+    label: Orbital industry
+    domain: devices
+    window: [[2084, 1], [2102, 12]] # A: manufacturing in orbit after the space industry era
+    boosts:
+      - { category: devices, growth: 0.03, months: 48 }
+      - { category: cloud_hosting, growth: 0.02, months: 36 }
+  - key: post_scarcity_software
+    label: Self-writing software
+    domain: ai
+    window: [[2092, 1], [2116, 12]] # A: software that maintains itself, the least certain
+    boosts:
+      - { category: dev_tools, growth: 0.03, months: 48 }
+      - { category: consumer_apps, growth: 0.02, months: 36 }
+
 # Base demand growth (fraction a year) for categories whose eras' boosts are already in the
 # curves M8-M10 were tuned on (21.4, 21.8 target 1): it replaces categories.yaml's `growth`
 # and `growth_by_year` for demand. By calendar year, the latest year at or before the month.

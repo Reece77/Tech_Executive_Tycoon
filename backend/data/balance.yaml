@@ -3084,6 +3084,10 @@ medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, app
 dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here runs before start_year, with the mode on or off (52.5 target 1)
   start_year: 2040 # the first year past the standard campaign (December 2039, 360 turns; 52.1)
   end_year: 2069 # a dynasty game's last year: its final summary follows December (52.1)
+  beyond: # M52 (formulas.md 66.3): sandbox past 2069. Nothing here changes a month before January 2070
+    start_year: 2070 # the first sandbox year (a dynasty game continued in sandbox, or a sandbox begun endless); eras.yaml's beyond_2069 wave is in play from its January
+    end_year: 2120 # series 52.2 continues by rule (research baselines by decade, category growth's maturity) are extended at load to this year; a later year reads the last rate (A: eras.yaml's third wave ends here)
+    nodes: 4 # process-node successors past dynasty.nodes.count, nodes.yaml's atomic5-atomic8: windows about 2076-2117 as the gaps keep growing 20% a step (52.2's rule)
   nodes: # 52.2: seeded successors to nodes.yaml's last future node (A3), stream dynasty (0, series, step)
     count: 6 # successors generated: their windows run past 2069 (A)
     gap_years: 3.0 # years from the last future node's window midpoint to the first successor's (A: IRDS's 2-3 year cadence, slowing)

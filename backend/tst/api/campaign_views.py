@@ -8,6 +8,7 @@ from tst.api.schemas.campaign import CampaignOut, DeathOut, EraWindowOut, Leader
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn, ym_to_turn
 from tst.sim.dynasty import mode
+from tst.sim.research import levels
 from tst.sim.state import GameState
 
 DECEMBER = 12  # tunable-exempt: calendar month
@@ -29,6 +30,8 @@ def campaign_out(state: GameState, data: LoadedData) -> CampaignOut:
     if late:
         for era in g.eras.eras:
             if era.window is None or era.window[0][0] < b.dynasty.start_year:
+                continue
+            if not levels.in_play(era, state.turn, b):  # M52: the third wave from 2070
                 continue
             (y1, _), (y2, _) = era.window
             a = state.era_arrival(era.key)
@@ -63,11 +66,14 @@ def campaign_out(state: GameState, data: LoadedData) -> CampaignOut:
         )
         for x in (d.deaths if d else ())
     ]
+    endless = mode.length(state) == "endless"  # M52 (66.3): a sandbox with no end
     return CampaignOut(
         length=mode.length(state),
-        end_label=format_turn(end_turn),
+        end_label="no end" if endless else format_turn(end_turn),
+        endless=endless,
+        can_continue_sandbox=state.save_meta.game_state == "dynasty_end",
         at_end=mode.at_standard_end(state, b),
-        can_switch=mode.is_campaign(state) and not dynasty and not state.ended,
+        can_switch=mode.is_campaign(state) and not dynasty and not endless and not state.ended,
         game_state=mode.outcome(state, b),
         founder_age=founder.age(state.turn) if founder is not None else None,
         dynasty_years=late,

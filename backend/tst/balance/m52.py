@@ -193,3 +193,105 @@ def determinism_spec(loaded: LoadedData) -> CustomScenario:
 def custom_game(seed: int = DETERMINISM_SEED) -> Game:
     loaded = m30.loaded()
     return start_custom(loaded, determinism_spec(loaded), seed)
+
+
+# --- Target 4: sandbox past 2069 (66.3, sub-task 5) --------------------------------------------
+
+INT64: Final = 2**63 - 1  # SQLite's INTEGER: every money column holds a signed 64-bit integer
+ECONOMY_MARGIN: Final = 1000  # 66.3: the 2100 economy at least this many times below the limit
+SANDBOX_END: Final = 1092  # the turn after December 2100 (January 2101)
+LATE_MONTHS: Final = 12  # the late months timed: the year to December 2100
+
+
+@dataclass(frozen=True, slots=True)
+class LongPlay:
+    seed: int
+    reached: str  # the last month played
+    error: str | None
+    largest_int: int  # the largest integer anywhere in the state or the balances
+    largest_balance: int  # the largest ledger balance (cents)
+    revenue_2100: int  # every company's revenue in 2100, cents (the economy's size)
+    late_ms: tuple[int, ...]  # each of 2100's months in memory, ms
+    ended: str  # the game state at the end
+
+
+def _largest_int(value: object) -> int:
+    """The largest absolute integer in a state (every field, tuple and mapping walked)."""
+    import dataclasses
+
+    best = 0
+    stack = [value]
+    seen: set[int] = set()
+    while stack:
+        v = stack.pop()
+        if isinstance(v, bool) or v is None or isinstance(v, float | str):
+            continue
+        if isinstance(v, int):
+            best = max(best, abs(v))
+            continue
+        if id(v) in seen:
+            continue
+        seen.add(id(v))
+        if dataclasses.is_dataclass(v) and not isinstance(v, type):
+            stack.extend(getattr(v, f.name) for f in dataclasses.fields(v))
+        elif isinstance(v, tuple | list | frozenset | set):
+            stack.extend(v)
+        elif isinstance(v, dict):
+            stack.extend(v.keys())
+            stack.extend(v.values())
+    return best
+
+
+def _revenue(game: Game) -> int:
+    """Every company's revenue so far (credits on revenue accounts), cents."""
+    kinds = {a.code: a.type for a in game.loaded.game_data.accounts}
+    return -sum(v for (_, a), v in game.balances.items() if kinds.get(a) == "revenue")
+
+
+def sandbox_2100(seed: int, until: int = SANDBOX_END) -> LongPlay:
+    """M45's dynasty game (full_integrator with a family) to December 2069, continued in
+    sandbox (`ContinueSandbox`) and played to December 2100, in memory."""
+    import time
+
+    from tst.balance import m37
+    from tst.sim.calendar import format_turn
+    from tst.sim.dynasty.mode import continue_dynasty, continue_sandbox, final_turn
+
+    loaded = m30.loaded()
+    game = m37._family_game(seed)
+    game.state = continue_dynasty(game.state, loaded.balance)
+    script = m30.strategy(m37.STRATEGY)
+    error = None
+    late: list[int] = []
+    revenue_start = 0
+    try:
+        while game.state.turn < until:
+            if game.state.turn == final_turn(loaded.balance) and game.state.ended:
+                game.state = continue_sandbox(game.state, loaded.balance)
+            if game.state.ended:
+                break
+            if game.state.turn == until - LATE_MONTHS:
+                revenue_start = _revenue(game)
+            script(game)
+            started = time.perf_counter()
+            game.turn()
+            if game.state.turn > until - LATE_MONTHS:
+                late.append(round((time.perf_counter() - started) * 1000))
+    except Exception as exc:  # the run reports the error rather than stopping the table
+        log.exception("sandbox_2100 seed %s", seed)
+        error = f"{type(exc).__name__}: {exc}"
+    return LongPlay(
+        seed=seed,
+        reached=format_turn(game.state.turn - 1),
+        error=error,
+        largest_int=max(_largest_int(game.state), max(map(abs, game.balances.values()))),
+        largest_balance=max(map(abs, game.balances.values())),
+        revenue_2100=_revenue(game) - revenue_start,
+        late_ms=tuple(late),
+        ended=game.state.save_meta.game_state,
+    )
+
+
+def long_play(seeds: Sequence[int] = SEEDS, workers: int = 3) -> list[LongPlay]:
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        return list(pool.map(sandbox_2100, seeds))

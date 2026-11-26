@@ -243,6 +243,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.dynasty.lifetime import RetireFounder, retire_founder
 from tst.sim.dynasty.mode import (
     ContinueDynasty,
+    ContinueSandbox,
     EndCampaign,
     apply_mode_action,
     check_can_play,
@@ -459,6 +460,7 @@ type Action = (
     | FoundAgain  # M15b addendum 10
     | Retire
     | ContinueDynasty  # M37 (52.1)
+    | ContinueSandbox  # M52 (66.3)
     | RetireFounder  # M37 (52.4)
     | EndCampaign
     | PressAction
@@ -615,6 +617,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "found_again": FoundAgain,  # M15b addendum 10
     "retire": Retire,
     "continue_dynasty": ContinueDynasty,  # M37 (52.1)
+    "continue_sandbox": ContinueSandbox,  # M52 (66.3)
     "end_campaign": EndCampaign,
     "retire_founder": RetireFounder,
 }
@@ -811,7 +814,7 @@ def apply_action(
             state, action.company_name, action.keep_cents, rng, balance, data
         )
         return ActionResult(new, entries, logs)
-    if isinstance(action, ContinueDynasty | EndCampaign):  # M37 (52.1): before or at the end
+    if isinstance(action, ContinueDynasty | EndCampaign | ContinueSandbox):  # M37, M52
         return ActionResult(apply_mode_action(state, action, balance), (), ())
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")

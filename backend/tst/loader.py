@@ -1139,6 +1139,8 @@ def load_all(
     tech = _validate(TechFrontierFile, parsed[TECH_FILE], TECH_FILE)
     tech = with_slowdown(tech, balance.dynasty)  # M37 (52.2): the 2040s on
     eras = _validate(ErasFile, parsed[ERAS_FILE], ERAS_FILE)
+    # M52 (66.3): the third wave after every other era (no earlier era's index moves)
+    eras = eras.model_copy(update={"eras": (*eras.eras, *eras.beyond_2069), "beyond_2069": ()})
     # M43a (54.1): growth after 2030 decays toward the economy's plus a premium
     grown, eras = with_long_run(
         categories.categories, eras, balance.markets, balance.dynasty.start_year - 1

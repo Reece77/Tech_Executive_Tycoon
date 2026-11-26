@@ -7,8 +7,9 @@ allowed: end it (`EndCampaign`, game state `campaign_end`) or continue in dynast
 (`ContinueDynasty`), which a standard game can also choose at any time before.
 
 A **dynasty** game runs to December 2069; after that month it is over (`dynasty_end`), the
-save open for browsing. Every game that reaches 2070 ends there (a Sandbox too): no system's
-data continues past it (52.2; sandbox after 2069 is out of scope).
+save open for browsing. Every game that reaches 2070 ends there (a Sandbox too), unless it is
+`endless` (M52, 66.3): begun so (a Sandbox or a custom scenario), or continued in sandbox after
+December 2069 (`ContinueSandbox`); then it plays on with no end date.
 
 ADR-0024 (M50): a campaign begun before 2010 is also 360 turns, so one started in January 2008
 reaches its standard end after December 2037. The dynasty years still begin in January 2040.
@@ -44,7 +45,16 @@ class EndCampaign:
     kind: Literal["end_campaign"] = "end_campaign"
 
 
-type DynastyModeAction = ContinueDynasty | EndCampaign
+@dataclass(frozen=True, slots=True)
+class ContinueSandbox:
+    """M52 (66.3): a game over at December 2069 (`dynasty_end`) plays on in sandbox, with no
+    end: its length becomes `endless` and its score is kept out of comparisons."""
+
+    actor_id: int
+    kind: Literal["continue_sandbox"] = "continue_sandbox"
+
+
+type DynastyModeAction = ContinueDynasty | EndCampaign | ContinueSandbox
 
 
 def start_turn(balance: Balance) -> int:
@@ -116,6 +126,8 @@ def continue_dynasty(state: GameState, balance: Balance) -> GameState:
         raise InvalidActionError("only a campaign has a dynasty mode")
     if length(state) == "dynasty":
         raise InvalidActionError("this game is already in dynasty mode")
+    if length(state) == "endless":  # M52
+        raise InvalidActionError("this game is a sandbox with no end")
     mode = state.mode if state.mode is not None else GameMode(kind="campaign")
     return replace(state, mode=replace(mode, length="dynasty"))
 
@@ -129,15 +141,30 @@ def end_campaign(state: GameState, balance: Balance) -> GameState:
     return replace(state, save_meta=meta)
 
 
+def continue_sandbox(state: GameState, balance: Balance) -> GameState:
+    """M52 (66.3): after December 2069, play on with no end (`dynasty_end` only)."""
+    if state.save_meta.game_state != "dynasty_end":
+        raise InvalidActionError(
+            f"a game continues in sandbox only after December {balance.dynasty.end_year}"
+        )
+    mode = state.mode if state.mode is not None else GameMode(kind="campaign")
+    meta = replace(state.save_meta, game_state="active", ended_turn=None)
+    return replace(state, save_meta=meta, mode=replace(mode, length="endless"))
+
+
 def apply_mode_action(state: GameState, action: DynastyModeAction, balance: Balance) -> GameState:
     if isinstance(action, ContinueDynasty):
         return continue_dynasty(state, balance)
+    if isinstance(action, ContinueSandbox):
+        return continue_sandbox(state, balance)
     return end_campaign(state, balance)
 
 
 def close_at_final(state: GameState, balance: Balance) -> GameState:
     """After December 2069's turn (the new state's turn is final_turn): the game is over."""
     if state.turn < final_turn(balance) or state.save_meta.game_state != "active":
+        return state
+    if length(state) == "endless":  # M52 (66.3): a sandbox with no end
         return state
     meta = replace(state.save_meta, game_state="dynasty_end", ended_turn=state.turn - 1)
     return replace(state, save_meta=meta)
