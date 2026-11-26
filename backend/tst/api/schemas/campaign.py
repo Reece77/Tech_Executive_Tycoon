@@ -31,8 +31,12 @@ class DeathOut(BaseModel):
 
 
 class CampaignOut(BaseModel):
-    length: str = Field(description="standard | dynasty")
-    end_label: str = Field(description="The month the game ends after")
+    length: str = Field(description="standard | dynasty | endless (M52)")
+    end_label: str = Field(description="The month the game ends after, or 'no end'")
+    endless: bool = Field(default=False, description="M52 (66.3): a sandbox with no end")
+    can_continue_sandbox: bool = Field(
+        default=False, description="M52 (66.3): over after December 2069: continue in sandbox"
+    )
     at_end: bool = Field(description="A standard campaign at December 2039: end or continue")
     can_switch: bool = Field(description="A standard campaign may still switch to dynasty")
     game_state: str

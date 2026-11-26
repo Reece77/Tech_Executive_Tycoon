@@ -207,6 +207,20 @@ export const SCREENS: readonly Screen[] = [
     side: true,
     parent: 'products',
   }, // M53
+  ...(
+    [
+      ['bank', 'Bank'],
+      ['payments', 'Payments'],
+      ['insurance', 'Insurance'],
+    ] as const
+  ).map(([key, label]): Screen => ({
+    path: `products/${key}`,
+    label,
+    group: 'products',
+    unlock: 'finserv',
+    side: true,
+    parent: 'products',
+  })), // M54
   {
     path: 'products/studio',
     label: 'Studio',
@@ -267,6 +281,14 @@ export const SCREENS: readonly Screen[] = [
     side: false,
     parent: 'finance',
   })),
+  {
+    path: 'finance/currency',
+    label: 'Currency',
+    group: 'finance',
+    unlock: 'currency',
+    side: true,
+    parent: 'finance',
+  }, // M54
   {
     path: 'finance/group',
     label: 'Group',

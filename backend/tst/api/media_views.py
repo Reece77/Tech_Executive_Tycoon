@@ -23,7 +23,7 @@ from tst.api.schemas.media import (
     MediaRangeOut,
     MediaScreenOut,
     MediaServiceOut,
-    NetworkOut,
+    SocialNetworkOut,
     RegionCustomersOut,
     ServiceMonthOut,
     SocialOut,
@@ -305,7 +305,7 @@ def _social(state: GameState, data: LoadedData) -> SocialOut:
         shares = social.shares(state, p, b, d)
         top = max(shares.values(), default=0.0)
         networks.append(
-            NetworkOut(
+            SocialNetworkOut(
                 product_id=p.id,
                 name=p.name,
                 status=p.status,

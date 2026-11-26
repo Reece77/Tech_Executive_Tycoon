@@ -21563,6 +21563,845 @@
         }
       }
     },
+    "/api/editor": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Editor",
+        "description": "Every option the Editor screen offers: ranges, starts and the loaded data's lists (M54's\nand M55's categories and incumbents included, as data).",
+        "operationId": "getEditor",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/open/{start}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Open Start",
+        "description": "A start to edit: `blank_<year>` or any scenarios.yaml entry (M51's included), with no\noverrides.",
+        "operationId": "openEditorStart",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Start"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/editor/check": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Check Custom",
+        "description": "Every reason the editor refuses the spec (66.1), without saving it.",
+        "operationId": "checkCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomCheckOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "List Custom",
+        "operationId": "listCustom",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomCardOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listcustom"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Create Custom",
+        "description": "Save (or save as) a new custom scenario; 409 if the name exists, 400 with every reason\nif refused.",
+        "operationId": "createCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom/{slug}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Custom",
+        "operationId": "getCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Update Custom",
+        "description": "Save over an existing custom scenario (its name is the route's).",
+        "operationId": "updateCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Delete Custom",
+        "description": "Delete the file; games started from it keep their own copy (ADR-0026 point 4).",
+        "operationId": "deleteCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom-import": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Import Custom",
+        "description": "A shared file validated and saved; refused with every reason, nothing written.",
+        "operationId": "importCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom/{slug}/export": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Export Custom",
+        "operationId": "exportCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/editor/preview": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Preview Custom",
+        "description": "The start month's summary (66.1): the world built to the start in memory (no turn is\nplayed, nothing is saved).",
+        "operationId": "previewCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/difficulty": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Start Difficulty",
+        "description": "Start (or rejoin) the difficulty estimate in the background (66.1).",
+        "operationId": "startDifficulty",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DifficultyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/difficulty/{job_id}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Difficulty",
+        "operationId": "getDifficulty",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DifficultyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/mods": {
       "get": {
         "tags": [
@@ -27560,6 +28399,79 @@
         }
       }
     },
+    "/api/saves/{save_id}/campaign/sandbox": {
+      "post": {
+        "tags": [
+          "campaign"
+        ],
+        "summary": "Continue Sandbox",
+        "description": "M52 (66.3): a game over after December 2069 plays on in sandbox, with no end.",
+        "operationId": "continueSandbox",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/robotics": {
       "get": {
         "tags": [
@@ -29543,6 +30455,835 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv": {
+      "get": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Get Finserv",
+        "description": "Banks, payments, the insurer and currency exposure (the four screens).",
+        "operationId": "getFinserv",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/charter": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Apply Charter",
+        "operationId": "applyCharter",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/partner": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Partner Bank",
+        "operationId": "partnerBank",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/settings": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Set Bank",
+        "operationId": "setBank",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "bank_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Bank Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankSettingsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/capital": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Bank Capital",
+        "operationId": "bankCapital",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "bank_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Bank Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmountIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/networks": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Launch Network",
+        "operationId": "launchNetwork",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/insurance/licence": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Apply Licence",
+        "operationId": "applyInsuranceLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/insurance/capital": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Insurer Capital",
+        "operationId": "insurerCapital",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmountIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/forwards": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Buy Forward",
+        "operationId": "buyForward",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForwardIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/programme": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Set Programme",
+        "operationId": "setHedgeProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgrammeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
                 }
               }
             }
@@ -34257,6 +35998,27 @@
         ],
         "title": "AddCarsIn"
       },
+      "AddedRivals": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "count"
+        ],
+        "title": "AddedRivals",
+        "description": "Generic rivals added in a category, drawn as entrants are (52.3)."
+      },
       "AdoptIn": {
         "properties": {
           "product_id": {
@@ -34385,6 +36147,19 @@
           "planned"
         ],
         "title": "AllocationOut"
+      },
+      "AmountIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents"
+        ],
+        "title": "AmountIn"
       },
       "AnalystOut": {
         "properties": {
@@ -35364,7 +37139,7 @@
             "title": "Group"
           },
           "range": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           }
         },
         "type": "object",
@@ -36027,6 +37802,103 @@
         ],
         "title": "BanOut"
       },
+      "BankLoanOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "title": "Balance Cents"
+          },
+          "risk_weight": {
+            "type": "number",
+            "title": "Risk Weight"
+          },
+          "yield_rate": {
+            "type": "number",
+            "title": "Yield Rate",
+            "description": "% a year: the policy rate plus the kind's spread"
+          },
+          "loss_rate": {
+            "type": "number",
+            "title": "Loss Rate",
+            "description": "% a year charged off this year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "balance_cents",
+          "risk_weight",
+          "yield_rate",
+          "loss_rate"
+        ],
+        "title": "BankLoanOut"
+      },
+      "BankMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "deposits_cents": {
+            "type": "integer",
+            "title": "Deposits Cents"
+          },
+          "loans_cents": {
+            "type": "integer",
+            "title": "Loans Cents"
+          },
+          "nii_cents": {
+            "type": "integer",
+            "title": "Nii Cents",
+            "description": "Net interest income this month"
+          },
+          "profit_cents": {
+            "type": "integer",
+            "title": "Profit Cents",
+            "description": "Net interest income less charge-offs"
+          },
+          "nim": {
+            "type": "number",
+            "title": "Nim",
+            "description": "Net interest margin, a year, of earning assets"
+          },
+          "ratio": {
+            "type": "number",
+            "title": "Ratio",
+            "description": "CET1 / risk-weighted assets"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "deposit_rate": {
+            "type": "number",
+            "title": "Deposit Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "deposits_cents",
+          "loans_cents",
+          "nii_cents",
+          "profit_cents",
+          "nim",
+          "ratio",
+          "policy_rate",
+          "deposit_rate"
+        ],
+        "title": "BankMonthOut"
+      },
       "BankOut": {
         "properties": {
           "key": {
@@ -36056,6 +37928,165 @@
           "reputation"
         ],
         "title": "BankOut"
+      },
+      "BankRunOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "withdrawn_cents": {
+            "type": "integer",
+            "title": "Withdrawn Cents"
+          },
+          "realised_loss_cents": {
+            "type": "integer",
+            "title": "Realised Loss Cents"
+          },
+          "failed": {
+            "type": "boolean",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "withdrawn_cents",
+          "realised_loss_cents",
+          "failed"
+        ],
+        "title": "BankRunOut"
+      },
+      "BankScreenOut": {
+        "properties": {
+          "can_charter": {
+            "type": "boolean",
+            "title": "Can Charter",
+            "description": "The company has a fintech or banking line"
+          },
+          "has_banking_line": {
+            "type": "boolean",
+            "title": "Has Banking Line"
+          },
+          "charter_capital_cents": {
+            "type": "integer",
+            "title": "Charter Capital Cents"
+          },
+          "charter_fee_cents": {
+            "type": "integer",
+            "title": "Charter Fee Cents"
+          },
+          "beta_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Beta Range"
+          },
+          "duration_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Duration Range"
+          },
+          "reserve_min": {
+            "type": "number",
+            "title": "Reserve Min"
+          },
+          "partner_share": {
+            "type": "number",
+            "title": "Partner Share"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/FinRegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "banks": {
+            "items": {
+              "$ref": "#/components/schemas/OwnBankOut"
+            },
+            "type": "array",
+            "title": "Banks"
+          },
+          "charters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Charters",
+            "description": "Fintechs that took charters (history)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_charter",
+          "has_banking_line",
+          "charter_capital_cents",
+          "charter_fee_cents",
+          "beta_range",
+          "duration_range",
+          "reserve_min",
+          "partner_share",
+          "regions",
+          "banks",
+          "charters"
+        ],
+        "title": "BankScreenOut"
+      },
+      "BankSettingsIn": {
+        "properties": {
+          "beta": {
+            "type": "number",
+            "title": "Beta"
+          },
+          "loan_to_deposit": {
+            "type": "number",
+            "title": "Loan To Deposit"
+          },
+          "securities_share": {
+            "type": "number",
+            "title": "Securities Share"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration"
+          }
+        },
+        "type": "object",
+        "required": [
+          "beta",
+          "loan_to_deposit",
+          "securities_share",
+          "duration"
+        ],
+        "title": "BankSettingsIn"
+      },
+      "BankStressOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "ratio_after": {
+            "type": "number",
+            "title": "Ratio After"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "ratio_after",
+          "passed"
+        ],
+        "title": "BankStressOut"
       },
       "BatteryOut": {
         "properties": {
@@ -37153,12 +39184,24 @@
           "length": {
             "type": "string",
             "title": "Length",
-            "description": "standard | dynasty"
+            "description": "standard | dynasty | endless (M52)"
           },
           "end_label": {
             "type": "string",
             "title": "End Label",
-            "description": "The month the game ends after"
+            "description": "The month the game ends after, or 'no end'"
+          },
+          "endless": {
+            "type": "boolean",
+            "title": "Endless",
+            "description": "M52 (66.3): a sandbox with no end",
+            "default": false
+          },
+          "can_continue_sandbox": {
+            "type": "boolean",
+            "title": "Can Continue Sandbox",
+            "description": "M52 (66.3): over after December 2069: continue in sandbox",
+            "default": false
           },
           "at_end": {
             "type": "boolean",
@@ -37947,11 +39990,15 @@
         ],
         "title": "CashFlowOut"
       },
-      "CategoryOptionOut": {
+      "CatastropheOut": {
         "properties": {
-          "key": {
+          "month": {
             "type": "string",
-            "title": "Key"
+            "title": "Month"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
           },
           "label": {
             "type": "string",
@@ -37960,10 +40007,11 @@
         },
         "type": "object",
         "required": [
-          "key",
+          "month",
+          "region",
           "label"
         ],
-        "title": "CategoryOptionOut"
+        "title": "CatastropheOut"
       },
       "CategoryOut": {
         "properties": {
@@ -40507,6 +42555,27 @@
         ],
         "title": "CompanyFiguresOut"
       },
+      "CompanyOverride": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CompanyOverride",
+        "description": "The player's company beyond the scenario fields (66.1): its name."
+      },
       "CompanyRefOut": {
         "properties": {
           "company_id": {
@@ -41133,6 +43202,38 @@
         ],
         "title": "ContractOut"
       },
+      "ContractSpec": {
+        "properties": {
+          "manufacturer": {
+            "type": "string",
+            "title": "Manufacturer"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "units": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Units"
+          },
+          "months": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Months"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "manufacturer",
+          "city",
+          "units",
+          "months"
+        ],
+        "title": "ContractSpec",
+        "description": "M51: a contract-manufacturing deal running at the start (26.2), signed that month."
+      },
       "CooAnswerOut": {
         "properties": {
           "answer_id": {
@@ -41630,6 +43731,18 @@
             "type": "array",
             "title": "Challenges",
             "description": "M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario"
+          },
+          "custom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom",
+            "description": "M52 (66.2): a custom scenario's name in saves/scenarios; its own rules and challenges apply (`challenges` must then be empty)"
           }
         },
         "type": "object",
@@ -41730,6 +43843,561 @@
           "fix"
         ],
         "title": "CrossDivisionOut"
+      },
+      "CurrencyRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Its basket"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "US dollars a unit now over January 2010's"
+          },
+          "change_12m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 12M"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "This month, translated"
+          },
+          "untranslated_revenue_cents": {
+            "type": "integer",
+            "title": "Untranslated Revenue Cents",
+            "description": "At the indexes prices were set at"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "net_cents": {
+            "type": "integer",
+            "title": "Net Cents"
+          },
+          "exposure_cents": {
+            "type": "integer",
+            "title": "Exposure Cents",
+            "description": "The next 12 months' net revenue at today's index"
+          },
+          "hedged_cents": {
+            "type": "integer",
+            "title": "Hedged Cents",
+            "description": "Open forwards' notional"
+          },
+          "unhedged_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unhedged Share"
+          },
+          "what_if_cents": {
+            "type": "integer",
+            "title": "What If Cents",
+            "description": "A year's net revenue change if the dollar rises"
+          },
+          "forward_12m_index": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward 12M Index"
+          },
+          "spread_bp": {
+            "type": "integer",
+            "title": "Spread Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "currency",
+          "index",
+          "change_12m",
+          "policy_rate",
+          "revenue_cents",
+          "untranslated_revenue_cents",
+          "cost_cents",
+          "net_cents",
+          "exposure_cents",
+          "hedged_cents",
+          "unhedged_share",
+          "what_if_cents",
+          "forward_12m_index",
+          "spread_bp"
+        ],
+        "title": "CurrencyRegionOut"
+      },
+      "CurrencyScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "what_if_move": {
+            "type": "number",
+            "title": "What If Move"
+          },
+          "term_range": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Term Range"
+          },
+          "max_hedge_share": {
+            "type": "number",
+            "title": "Max Hedge Share"
+          },
+          "foreign_share": {
+            "type": "number",
+            "title": "Foreign Share",
+            "description": "Foreign revenue over all revenue this month"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "hedges": {
+            "items": {
+              "$ref": "#/components/schemas/HedgeOut"
+            },
+            "type": "array",
+            "title": "Hedges"
+          },
+          "programme": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProgrammeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fx_result_12m_cents": {
+            "type": "integer",
+            "title": "Fx Result 12M Cents",
+            "description": "Currency gains less losses, last 12 months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "what_if_move",
+          "term_range",
+          "max_hedge_share",
+          "foreign_share",
+          "regions",
+          "hedges",
+          "programme",
+          "fx_result_12m_cents"
+        ],
+        "title": "CurrencyScreenOut"
+      },
+      "CustomCardOut": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline Label"
+          },
+          "opened_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened From"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "played": {
+            "type": "integer",
+            "title": "Played",
+            "description": "Custom games with a verdict (kept apart from M51's)"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "label",
+          "description",
+          "year",
+          "goal",
+          "deadline_label",
+          "opened_from",
+          "sha256",
+          "played",
+          "best"
+        ],
+        "title": "CustomCardOut",
+        "description": "A custom scenario on the Scenarios screen's Custom section (66.2)."
+      },
+      "CustomCheckOut": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256",
+            "description": "The canonical text's SHA-256 when valid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "reasons",
+          "sha256"
+        ],
+        "title": "CustomCheckOut",
+        "description": "A spec's refusals (empty: valid) and its hash."
+      },
+      "CustomImportIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "A custom scenario file's YAML"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug",
+            "description": "Save under this name; omit for its own"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "Overwrite",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "CustomImportIn"
+      },
+      "CustomScenario": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,47}$",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 600,
+            "title": "Description",
+            "default": ""
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "background": {
+            "type": "string",
+            "title": "Background"
+          },
+          "cash_dollars": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cash Dollars"
+          },
+          "stage": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Stage"
+          },
+          "staff": {
+            "items": {
+              "$ref": "#/components/schemas/StaffSpec"
+            },
+            "type": "array",
+            "title": "Staff",
+            "default": []
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSpec"
+            },
+            "type": "array",
+            "title": "Products",
+            "default": []
+          },
+          "research": {
+            "items": {
+              "$ref": "#/components/schemas/LeadSpec"
+            },
+            "type": "array",
+            "title": "Research",
+            "default": []
+          },
+          "loans": {
+            "items": {
+              "$ref": "#/components/schemas/LoanSpec"
+            },
+            "type": "array",
+            "title": "Loans",
+            "default": []
+          },
+          "fabs": {
+            "items": {
+              "$ref": "#/components/schemas/FabSpec"
+            },
+            "type": "array",
+            "title": "Fabs",
+            "default": []
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          },
+          "founder_age": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 18.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Age"
+          },
+          "founder_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Region"
+          },
+          "hq_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hq City"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyStartSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "length": {
+            "$ref": "#/components/schemas/Length",
+            "default": "standard"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins"
+          },
+          "opened_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened From"
+          },
+          "overrides": {
+            "$ref": "#/components/schemas/Overrides",
+            "default": {
+              "company": {},
+              "rivals": {},
+              "added_rivals": [],
+              "markets": {},
+              "world": {
+                "commodities": {},
+                "eras": "historical"
+              },
+              "rules": {
+                "challenges": []
+              }
+            }
+          },
+          "format": {
+            "type": "integer",
+            "title": "Format",
+            "default": 1
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "year",
+          "background",
+          "cash_dollars",
+          "stage"
+        ],
+        "title": "CustomScenario",
+        "description": "A custom scenario file's body (ADR-0026 point 1): a historical entry, whose goal and\ndeadline may both be left out (no goal: open play), plus `overrides`. `key` is the file's\nslug; `opened_from` names what the editor started from (shown only)."
       },
       "CutIn": {
         "properties": {
@@ -42634,6 +45302,71 @@
           "platform_id"
         ],
         "title": "DevicePlatformIn"
+      },
+      "DifficultyOut": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "running | done | failed"
+          },
+          "seeds": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Seeds"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SeedResultOut"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "wins": {
+            "type": "integer",
+            "title": "Wins"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "easy | medium | hard; None without a goal"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "seeds",
+          "results",
+          "wins",
+          "difficulty"
+        ],
+        "title": "DifficultyOut",
+        "description": "The sensible script's estimate on `editor.preview_seeds`, run in the background."
       },
       "DigestAreaOut": {
         "properties": {
@@ -43641,6 +46374,145 @@
         ],
         "title": "EditorFileRefOut"
       },
+      "EditorOut": {
+        "properties": {
+          "ranges": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__RangeOut"
+            },
+            "type": "object",
+            "title": "Ranges",
+            "description": "Each editable field's range (editor.*)"
+          },
+          "macro_from_year": {
+            "type": "integer",
+            "title": "Macro From Year"
+          },
+          "starts": {
+            "items": {
+              "$ref": "#/components/schemas/StartOptionOut"
+            },
+            "type": "array",
+            "title": "Starts"
+          },
+          "backgrounds": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Backgrounds"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOptionOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__CategoryOptionOut"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "incumbents": {
+            "items": {
+              "$ref": "#/components/schemas/IncumbentOptionOut"
+            },
+            "type": "array",
+            "title": "Incumbents"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Domains"
+          },
+          "lenders": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Lenders"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NodeOptionOut"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "commodities": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Commodities"
+          },
+          "challenges": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "goal_kinds": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Goal Kinds",
+            "description": "Each goal kind's required fields"
+          },
+          "lengths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lengths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ranges",
+          "macro_from_year",
+          "starts",
+          "backgrounds",
+          "roles",
+          "categories",
+          "incumbents",
+          "domains",
+          "lenders",
+          "nodes",
+          "regions",
+          "cities",
+          "commodities",
+          "challenges",
+          "goal_kinds",
+          "lengths"
+        ],
+        "title": "EditorOut",
+        "description": "Everything the Editor screen offers, from the loaded data and `editor.*`."
+      },
       "EducateIn": {
         "properties": {
           "person_id": {
@@ -44200,6 +47072,13 @@
           "window_label"
         ],
         "title": "EraWindowOut"
+      },
+      "Eras": {
+        "type": "string",
+        "enum": [
+          "historical",
+          "seeded"
+        ]
       },
       "ErrorOut": {
         "properties": {
@@ -44901,6 +47780,7 @@
               "constellation",
               "bid",
               "negotiation",
+              "bank",
               "title"
             ],
             "title": "Scope"
@@ -45655,6 +48535,25 @@
         ],
         "title": "ExplorerOut"
       },
+      "ExportOut": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The canonical YAML (ADR-0026 point 7)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "text"
+        ],
+        "title": "ExportOut"
+      },
       "FabCountryOut": {
         "properties": {
           "key": {
@@ -46318,6 +49217,54 @@
           "cost_per_start_cents"
         ],
         "title": "FabQuoteOut"
+      },
+      "FabSpec": {
+        "properties": {
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "wafer_starts": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Wafer Starts"
+          },
+          "age_months": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Age Months"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "node",
+          "region",
+          "wafer_starts",
+          "age_months",
+          "unit"
+        ],
+        "title": "FabSpec",
+        "description": "M51: a fab the company already runs at the start (38.2), built `age_months` before it:\nlive, its yield mature, its capex on the books less the depreciation since."
       },
       "FabsActionOut": {
         "properties": {
@@ -47276,6 +50223,25 @@
         ],
         "title": "FamilyOut"
       },
+      "FamilyStartSpec": {
+        "properties": {
+          "child_ages": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Child Ages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "child_ages"
+        ],
+        "title": "FamilyStartSpec",
+        "description": "M51: the founder's family at the start (45.1): a partner and children of these ages."
+      },
       "FamilyTimeIn": {
         "properties": {
           "energy": {
@@ -47532,6 +50498,41 @@
         ],
         "title": "FiguresOut"
       },
+      "FinRegionOptionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months to a charter or licence there"
+          },
+          "strict": {
+            "type": "boolean",
+            "title": "Strict",
+            "description": "A strict regulator (adds months to a charter)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "regulator",
+          "months",
+          "strict"
+        ],
+        "title": "FinRegionOptionOut"
+      },
       "FinanceActionOut": {
         "properties": {
           "energy": {
@@ -47723,6 +50724,62 @@
           "ebitda_range"
         ],
         "title": "FinancialsOut"
+      },
+      "FinservActionOut": {
+        "properties": {
+          "finserv": {
+            "$ref": "#/components/schemas/FinservScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "finserv",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FinservActionOut"
+      },
+      "FinservScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "history": {
+            "type": "boolean",
+            "title": "History",
+            "description": "Before 2026: rivals follow the history"
+          },
+          "bank": {
+            "$ref": "#/components/schemas/BankScreenOut"
+          },
+          "payments": {
+            "$ref": "#/components/schemas/PaymentsScreenOut"
+          },
+          "insurance": {
+            "$ref": "#/components/schemas/InsuranceScreenOut"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyScreenOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "history",
+          "bank",
+          "payments",
+          "insurance",
+          "currency"
+        ],
+        "title": "FinservScreenOut"
       },
       "FireOut": {
         "properties": {
@@ -48152,6 +51209,30 @@
         ],
         "title": "FormerProfileOut",
         "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
+      },
+      "ForwardIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "notional_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Notional Cents"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "notional_cents",
+          "months"
+        ],
+        "title": "ForwardIn"
       },
       "FoundAgainIn": {
         "properties": {
@@ -49671,6 +52752,183 @@
         ],
         "title": "GlossaryOut",
         "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
+      },
+      "GoalKind": {
+        "type": "string",
+        "enum": [
+          "arr",
+          "customers",
+          "solvent_margin",
+          "unit_share",
+          "profit_no_down_round",
+          "solvent_series",
+          "platform_share",
+          "vehicles_year",
+          "fab_catch_up",
+          "node_volume",
+          "family_succession"
+        ]
+      },
+      "GoalSpec": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/GoalKind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Era"
+          },
+          "arr_dollars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arr Dollars"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "segment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment"
+          },
+          "customers": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customers"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
+          },
+          "bonus_era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonus Era"
+          },
+          "bonus_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonus Text"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          },
+          "node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node"
+          },
+          "node_gap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Gap"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "text"
+        ],
+        "title": "GoalSpec"
       },
       "GovBuyerOut": {
         "properties": {
@@ -51290,6 +54548,74 @@
         ],
         "title": "HealthRegulatorOut"
       },
+      "HedgeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "notional_cents": {
+            "type": "integer",
+            "title": "Notional Cents"
+          },
+          "bought": {
+            "type": "string",
+            "title": "Bought"
+          },
+          "settles": {
+            "type": "string",
+            "title": "Settles"
+          },
+          "spot_index": {
+            "type": "number",
+            "title": "Spot Index"
+          },
+          "forward_index": {
+            "type": "number",
+            "title": "Forward Index"
+          },
+          "fair_value_cents": {
+            "type": "integer",
+            "title": "Fair Value Cents"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "settled_cents": {
+            "type": "integer",
+            "title": "Settled Cents"
+          },
+          "programme": {
+            "type": "boolean",
+            "title": "Programme"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "notional_cents",
+          "bought",
+          "settles",
+          "spot_index",
+          "forward_index",
+          "fair_value_cents",
+          "status",
+          "settled_cents",
+          "programme"
+        ],
+        "title": "HedgeOut"
+      },
       "HireBanksIn": {
         "properties": {
           "bank": {
@@ -52554,6 +55880,27 @@
         ],
         "title": "IncidentOut"
       },
+      "IncumbentOptionOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "categories"
+        ],
+        "title": "IncumbentOptionOut"
+      },
       "IndustryOut": {
         "properties": {
           "key": {
@@ -52924,6 +56271,137 @@
         ],
         "title": "InstallRobotsIn"
       },
+      "InsuranceLicenceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "status",
+          "decided"
+        ],
+        "title": "InsuranceLicenceOut"
+      },
+      "InsuranceScreenOut": {
+        "properties": {
+          "can_apply": {
+            "type": "boolean",
+            "title": "Can Apply",
+            "description": "The company has an insurance line"
+          },
+          "licence_capital_cents": {
+            "type": "integer",
+            "title": "Licence Capital Cents"
+          },
+          "licence_fee_cents": {
+            "type": "integer",
+            "title": "Licence Fee Cents"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/FinRegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "has_insurer": {
+            "type": "boolean",
+            "title": "Has Insurer"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/InsuranceLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "investments_cents": {
+            "type": "integer",
+            "title": "Investments Cents"
+          },
+          "float_cents": {
+            "type": "integer",
+            "title": "Float Cents"
+          },
+          "own_funds_cents": {
+            "type": "integer",
+            "title": "Own Funds Cents"
+          },
+          "required_cents": {
+            "type": "integer",
+            "title": "Required Cents"
+          },
+          "solvent": {
+            "type": "boolean",
+            "title": "Solvent"
+          },
+          "premiums_by_line": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Premiums By Line",
+            "description": "This month's premiums by line"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/LineMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          },
+          "catastrophes": {
+            "items": {
+              "$ref": "#/components/schemas/CatastropheOut"
+            },
+            "type": "array",
+            "title": "Catastrophes",
+            "description": "Those that have happened"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_apply",
+          "licence_capital_cents",
+          "licence_fee_cents",
+          "regions",
+          "has_insurer",
+          "licences",
+          "investments_cents",
+          "float_cents",
+          "own_funds_cents",
+          "required_cents",
+          "solvent",
+          "premiums_by_line",
+          "months",
+          "catastrophes"
+        ],
+        "title": "InsuranceScreenOut"
+      },
       "InvestingRulesOut": {
         "properties": {
           "join_energy": {
@@ -53038,7 +56516,7 @@
           },
           "categories": {
             "items": {
-              "$ref": "#/components/schemas/CategoryOptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__investing__CategoryOptionOut"
             },
             "type": "array",
             "title": "Categories",
@@ -54190,6 +57668,26 @@
         ],
         "title": "LeadOut"
       },
+      "LeadSpec": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "lead": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Lead"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "domain",
+          "lead"
+        ],
+        "title": "LeadSpec"
+      },
       "LeaderChangeOut": {
         "properties": {
           "company_id": {
@@ -54478,6 +57976,14 @@
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
       },
+      "Length": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "dynasty",
+          "endless"
+        ]
+      },
       "LetterOut": {
         "properties": {
           "year": {
@@ -54729,6 +58235,59 @@
           "signed"
         ],
         "title": "LicenseOut"
+      },
+      "LineMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "premiums_cents": {
+            "type": "integer",
+            "title": "Premiums Cents"
+          },
+          "claims_cents": {
+            "type": "integer",
+            "title": "Claims Cents"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          },
+          "investment_income_cents": {
+            "type": "integer",
+            "title": "Investment Income Cents"
+          },
+          "float_cents": {
+            "type": "integer",
+            "title": "Float Cents"
+          },
+          "own_funds_cents": {
+            "type": "integer",
+            "title": "Own Funds Cents"
+          },
+          "required_cents": {
+            "type": "integer",
+            "title": "Required Cents"
+          },
+          "catastrophe": {
+            "type": "boolean",
+            "title": "Catastrophe"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "premiums_cents",
+          "claims_cents",
+          "combined_ratio",
+          "investment_income_cents",
+          "float_cents",
+          "own_funds_cents",
+          "required_cents",
+          "catastrophe"
+        ],
+        "title": "LineMonthOut"
       },
       "LineOptionOut": {
         "properties": {
@@ -55317,6 +58876,44 @@
           "warrant_shares"
         ],
         "title": "LoanPreviewOut"
+      },
+      "LoanSpec": {
+        "properties": {
+          "lender": {
+            "type": "string",
+            "title": "Lender"
+          },
+          "principal_dollars": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Principal Dollars"
+          },
+          "rate_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Rate Bp"
+          },
+          "term_months": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Term Months"
+          },
+          "interest_only_months": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Interest Only Months"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lender",
+          "principal_dollars",
+          "rate_bp",
+          "term_months",
+          "interest_only_months"
+        ],
+        "title": "LoanSpec"
       },
       "LoanTermsOut": {
         "properties": {
@@ -55973,6 +59570,24 @@
           "segments"
         ],
         "title": "MarketOut"
+      },
+      "MarketOverride": {
+        "properties": {
+          "market_mult": {
+            "type": "number",
+            "title": "Market Mult",
+            "default": 1.0
+          },
+          "growth_delta": {
+            "type": "number",
+            "title": "Growth Delta",
+            "default": 0.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "MarketOverride",
+        "description": "A category's addressable market and annual growth."
       },
       "MarketProductOut": {
         "properties": {
@@ -59931,97 +63546,47 @@
       },
       "NetworkOut": {
         "properties": {
-          "product_id": {
+          "id": {
             "type": "integer",
-            "title": "Product Id"
+            "title": "Id"
           },
-          "name": {
+          "region": {
             "type": "string",
-            "title": "Name"
+            "title": "Region"
           },
-          "status": {
+          "label": {
             "type": "string",
-            "title": "Status"
+            "title": "Label"
           },
-          "regions": {
-            "items": {
-              "$ref": "#/components/schemas/RegionCustomersOut"
-            },
-            "type": "array",
-            "title": "Regions"
-          },
-          "users": {
-            "type": "number",
-            "title": "Users"
-          },
-          "format": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Format"
-          },
-          "format_label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Format Label"
-          },
-          "advantage": {
-            "type": "boolean",
-            "title": "Advantage",
-            "description": "On the newest format within its window"
-          },
-          "network_effect": {
-            "type": "number",
-            "title": "Network Effect",
-            "description": "Appeal x this in its largest region"
-          },
-          "ad_load": {
-            "type": "number",
-            "title": "Ad Load"
-          },
-          "moderation": {
+          "since": {
             "type": "string",
-            "title": "Moderation"
+            "title": "Since"
           },
-          "ad_revenue_cents": {
+          "acceptance": {
+            "type": "number",
+            "title": "Acceptance",
+            "description": "Share of merchants that take it"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Its share of the region's card programmes"
+          },
+          "volume_cents": {
             "type": "integer",
-            "title": "Ad Revenue Cents",
-            "description": "Last month: users x their ad revenue a user"
-          },
-          "laws": {
-            "items": {
-              "$ref": "#/components/schemas/LawOut"
-            },
-            "type": "array",
-            "title": "Laws"
+            "title": "Volume Cents",
+            "description": "Card volume it carries this month"
           }
         },
         "type": "object",
         "required": [
-          "product_id",
-          "name",
-          "status",
-          "regions",
-          "users",
-          "format",
-          "format_label",
-          "advantage",
-          "network_effect",
-          "ad_load",
-          "moderation",
-          "ad_revenue_cents",
-          "laws"
+          "id",
+          "region",
+          "label",
+          "since",
+          "acceptance",
+          "share",
+          "volume_cents"
         ],
         "title": "NetworkOut"
       },
@@ -60386,6 +63951,30 @@
           "hint"
         ],
         "title": "NextGuidanceOut"
+      },
+      "NodeOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "first_year": {
+            "type": "integer",
+            "title": "First Year",
+            "description": "The year it first ran in volume anywhere"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "first_year"
+        ],
+        "title": "NodeOptionOut"
       },
       "NodeOut": {
         "properties": {
@@ -61859,6 +65448,52 @@
         ],
         "title": "OutageOut"
       },
+      "Overrides": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/CompanyOverride",
+            "default": {}
+          },
+          "rivals": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RivalOverride"
+            },
+            "type": "object",
+            "title": "Rivals"
+          },
+          "added_rivals": {
+            "items": {
+              "$ref": "#/components/schemas/AddedRivals"
+            },
+            "type": "array",
+            "title": "Added Rivals",
+            "default": []
+          },
+          "markets": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MarketOverride"
+            },
+            "type": "object",
+            "title": "Markets"
+          },
+          "world": {
+            "$ref": "#/components/schemas/WorldOverride",
+            "default": {
+              "eras": "historical",
+              "commodities": {}
+            }
+          },
+          "rules": {
+            "$ref": "#/components/schemas/RulesOverride",
+            "default": {
+              "challenges": []
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Overrides"
+      },
       "OverviewBreakdownsOut": {
         "properties": {
           "cash": {
@@ -62216,6 +65851,246 @@
           "active_effects"
         ],
         "title": "OverviewOut"
+      },
+      "OwnBankOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "applying, chartered, partner or failed"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "charter_month": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charter Month",
+            "description": "When the regulator decides (applying)"
+          },
+          "beta": {
+            "type": "number",
+            "title": "Beta"
+          },
+          "loan_to_deposit": {
+            "type": "number",
+            "title": "Loan To Deposit"
+          },
+          "securities_share": {
+            "type": "number",
+            "title": "Securities Share"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration"
+          },
+          "deposits_cents": {
+            "type": "integer",
+            "title": "Deposits Cents"
+          },
+          "consumer_deposits_cents": {
+            "type": "integer",
+            "title": "Consumer Deposits Cents"
+          },
+          "business_deposits_cents": {
+            "type": "integer",
+            "title": "Business Deposits Cents"
+          },
+          "loans_cents": {
+            "type": "integer",
+            "title": "Loans Cents"
+          },
+          "loans": {
+            "items": {
+              "$ref": "#/components/schemas/BankLoanOut"
+            },
+            "type": "array",
+            "title": "Loans"
+          },
+          "securities_cents": {
+            "type": "integer",
+            "title": "Securities Cents"
+          },
+          "securities_value_cents": {
+            "type": "integer",
+            "title": "Securities Value Cents",
+            "description": "Market value at today's rate"
+          },
+          "unrealised_loss_cents": {
+            "type": "integer",
+            "title": "Unrealised Loss Cents"
+          },
+          "reserves_cents": {
+            "type": "integer",
+            "title": "Reserves Cents"
+          },
+          "cet1_cents": {
+            "type": "integer",
+            "title": "Cet1 Cents"
+          },
+          "rwa_cents": {
+            "type": "integer",
+            "title": "Rwa Cents"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio",
+            "description": "CET1 / RWA (null without loans)"
+          },
+          "requirement": {
+            "type": "number",
+            "title": "Requirement",
+            "description": "Minimum plus buffers (and the size surcharge)"
+          },
+          "minimum": {
+            "type": "number",
+            "title": "Minimum"
+          },
+          "nim": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nim",
+            "description": "The last 12 months' net interest margin"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "deposit_rate": {
+            "type": "number",
+            "title": "Deposit Rate"
+          },
+          "market_deposit_rate": {
+            "type": "number",
+            "title": "Market Deposit Rate"
+          },
+          "uninsured_share": {
+            "type": "number",
+            "title": "Uninsured Share"
+          },
+          "insured_limit_cents": {
+            "type": "integer",
+            "title": "Insured Limit Cents"
+          },
+          "run_risk": {
+            "type": "string",
+            "title": "Run Risk",
+            "description": "low, elevated or high: a band, never the chance"
+          },
+          "restricted": {
+            "type": "boolean",
+            "title": "Restricted"
+          },
+          "dividends_frozen_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dividends Frozen Until"
+          },
+          "capital_in_cents": {
+            "type": "integer",
+            "title": "Capital In Cents"
+          },
+          "stress": {
+            "items": {
+              "$ref": "#/components/schemas/BankStressOut"
+            },
+            "type": "array",
+            "title": "Stress"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/BankRunOut"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/BankMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "status",
+          "regulator",
+          "charter_month",
+          "beta",
+          "loan_to_deposit",
+          "securities_share",
+          "duration",
+          "deposits_cents",
+          "consumer_deposits_cents",
+          "business_deposits_cents",
+          "loans_cents",
+          "loans",
+          "securities_cents",
+          "securities_value_cents",
+          "unrealised_loss_cents",
+          "reserves_cents",
+          "cet1_cents",
+          "rwa_cents",
+          "ratio",
+          "requirement",
+          "minimum",
+          "nim",
+          "policy_rate",
+          "deposit_rate",
+          "market_deposit_rate",
+          "uninsured_share",
+          "insured_limit_cents",
+          "run_risk",
+          "restricted",
+          "dividends_frozen_until",
+          "capital_in_cents",
+          "stress",
+          "runs",
+          "months"
+        ],
+        "title": "OwnBankOut"
       },
       "OwnSupplyOut": {
         "properties": {
@@ -62682,6 +66557,124 @@
           "balance_after_cents"
         ],
         "title": "PaymentOut"
+      },
+      "PaymentsRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "acquired_cents": {
+            "type": "integer",
+            "title": "Acquired Cents",
+            "description": "Your merchants' card volume this month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Your payments lines' revenue there this month"
+          },
+          "take_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Take Rate",
+            "description": "Revenue over volume carried"
+          },
+          "interchange_cents": {
+            "type": "integer",
+            "title": "Interchange Cents"
+          },
+          "fraud_cents": {
+            "type": "integer",
+            "title": "Fraud Cents"
+          },
+          "interchange_bp": {
+            "type": "number",
+            "title": "Interchange Bp"
+          },
+          "rails_share": {
+            "type": "number",
+            "title": "Rails Share",
+            "description": "Real-time rails' share of the region's volume"
+          },
+          "networks": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Networks",
+            "description": "The listed networks' shares (history)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "acquired_cents",
+          "revenue_cents",
+          "take_rate",
+          "interchange_cents",
+          "fraud_cents",
+          "interchange_bp",
+          "rails_share",
+          "networks"
+        ],
+        "title": "PaymentsRegionOut"
+      },
+      "PaymentsScreenOut": {
+        "properties": {
+          "can_launch": {
+            "type": "boolean",
+            "title": "Can Launch",
+            "description": "The company has a payments line"
+          },
+          "network_cost_cents": {
+            "type": "integer",
+            "title": "Network Cost Cents"
+          },
+          "network_fee_bp": {
+            "type": "number",
+            "title": "Network Fee Bp"
+          },
+          "fraud_bp": {
+            "type": "number",
+            "title": "Fraud Bp"
+          },
+          "networks": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkOut"
+            },
+            "type": "array",
+            "title": "Networks"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentsRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_launch",
+          "network_cost_cents",
+          "network_fee_bp",
+          "fraud_bp",
+          "networks",
+          "regions"
+        ],
+        "title": "PaymentsScreenOut"
       },
       "PeakOut": {
         "properties": {
@@ -66140,6 +70133,112 @@
         ],
         "title": "PressOut"
       },
+      "PreviewOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "start_label": {
+            "type": "string",
+            "title": "Start Label"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "debt_cents": {
+            "type": "integer",
+            "title": "Debt Cents"
+          },
+          "staff": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Staff"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLineOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "research": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Research"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalLineOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline Label"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "length": {
+            "type": "string",
+            "title": "Length"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "start_label",
+          "cash_cents",
+          "debt_cents",
+          "staff",
+          "products",
+          "research",
+          "rivals",
+          "removed",
+          "goal",
+          "deadline_label",
+          "challenges",
+          "length"
+        ],
+        "title": "PreviewOut",
+        "description": "The start month's summary (66.1): built in memory, no turn played, nothing saved."
+      },
       "PriceIn": {
         "properties": {
           "segment": {
@@ -66461,6 +70560,39 @@
           "product_id"
         ],
         "title": "ProductIn"
+      },
+      "ProductLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "status",
+          "quality",
+          "customers"
+        ],
+        "title": "ProductLineOut"
       },
       "ProductMonthOut": {
         "properties": {
@@ -67338,6 +71470,72 @@
         ],
         "title": "ProductSeriesOut"
       },
+      "ProductSpec": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Quality"
+          },
+          "features": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Features"
+          },
+          "brand": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Brand"
+          },
+          "segments": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SegmentSpec"
+            },
+            "type": "object",
+            "title": "Segments"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "live",
+              "in_development"
+            ],
+            "title": "Status",
+            "default": "live"
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "quality",
+          "features",
+          "brand",
+          "segments"
+        ],
+        "title": "ProductSpec"
+      },
       "ProductTotalMonthOut": {
         "properties": {
           "turn": {
@@ -67593,6 +71791,49 @@
           "net_result_cents"
         ],
         "title": "ProfitAndLossOut"
+      },
+      "ProgrammeIn": {
+        "properties": {
+          "share": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months",
+            "default": 12
+          }
+        },
+        "type": "object",
+        "required": [
+          "share"
+        ],
+        "title": "ProgrammeIn"
+      },
+      "ProgrammeOut": {
+        "properties": {
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "by_cfo": {
+            "type": "boolean",
+            "title": "By Cfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "share",
+          "term_months",
+          "by_cfo"
+        ],
+        "title": "ProgrammeOut"
       },
       "ProjectBudgetIn": {
         "properties": {
@@ -68372,10 +72613,10 @@
             "title": "Group"
           },
           "before": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           },
           "after": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           }
         },
         "type": "object",
@@ -68388,24 +72629,6 @@
         ],
         "title": "RangeChangeOut",
         "description": "One displayed range an action narrowed (M4c): what the viewer saw before and after."
-      },
-      "RangeOut": {
-        "properties": {
-          "min": {
-            "type": "integer",
-            "title": "Min"
-          },
-          "max": {
-            "type": "integer",
-            "title": "Max"
-          }
-        },
-        "type": "object",
-        "required": [
-          "min",
-          "max"
-        ],
-        "title": "RangeOut"
       },
       "RankingEntryOut": {
         "properties": {
@@ -69866,6 +74089,19 @@
         ],
         "title": "RegionEventOut"
       },
+      "RegionIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "title": "RegionIn"
+      },
       "RegionNetworkOut": {
         "properties": {
           "region": {
@@ -71207,6 +75443,39 @@
         ],
         "title": "RivalLeaderOut"
       },
+      "RivalLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "added": {
+            "type": "boolean",
+            "title": "Added"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "quality",
+          "customers",
+          "added"
+        ],
+        "title": "RivalLineOut"
+      },
       "RivalMinerOut": {
         "properties": {
           "supplier": {
@@ -71322,6 +75591,29 @@
           "market"
         ],
         "title": "RivalOutlastedOut"
+      },
+      "RivalOverride": {
+        "properties": {
+          "present": {
+            "type": "boolean",
+            "title": "Present",
+            "default": true
+          },
+          "cash_mult": {
+            "type": "number",
+            "title": "Cash Mult",
+            "default": 1.0
+          },
+          "quality_delta": {
+            "type": "number",
+            "title": "Quality Delta",
+            "default": 0.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RivalOverride",
+        "description": "One incumbent (incumbents.yaml, by name): present or removed, its cash and its products'\nquality."
       },
       "RivalProductMarketOut": {
         "properties": {
@@ -72334,6 +76626,32 @@
         ],
         "title": "RoleChoiceOut"
       },
+      "RoleOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "levels"
+        ],
+        "title": "RoleOptionOut"
+      },
       "RoleOut": {
         "properties": {
           "key": {
@@ -73016,6 +77334,22 @@
           "seeded"
         ],
         "title": "RuleOut"
+      },
+      "RulesOverride": {
+        "properties": {
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RulesOverride",
+        "description": "M51's challenge rules (63.2). The campaign length is the entry's own `length`."
       },
       "RxAssetOut": {
         "properties": {
@@ -74649,6 +78983,12 @@
             ],
             "title": "Eras",
             "default": "historical"
+          },
+          "endless": {
+            "type": "boolean",
+            "title": "Endless",
+            "description": "M52 (66.3): a sandbox with no end (past December 2069)",
+            "default": false
           }
         },
         "type": "object",
@@ -74763,7 +79103,7 @@
           "mode": {
             "type": "string",
             "title": "Mode",
-            "description": "campaign | sandbox | scenario (M15b)",
+            "description": "campaign | sandbox | scenario (M15b) | custom (M52)",
             "default": "campaign"
           },
           "score": {
@@ -75714,6 +80054,48 @@
         ],
         "title": "SecondaryIn"
       },
+      "SeedResultOut": {
+        "properties": {
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "month_label": {
+            "type": "string",
+            "title": "Month Label"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seed",
+          "result",
+          "month_label",
+          "score"
+        ],
+        "title": "SeedResultOut"
+      },
       "SeenIn": {
         "properties": {
           "keys": {
@@ -75742,6 +80124,27 @@
           "segment"
         ],
         "title": "SegmentIn"
+      },
+      "SegmentSpec": {
+        "properties": {
+          "price_dollars": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Price Dollars"
+          },
+          "customers": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Customers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "price_dollars",
+          "customers"
+        ],
+        "title": "SegmentSpec"
       },
       "SellSharesIn": {
         "properties": {
@@ -76450,11 +80853,107 @@
         ],
         "title": "SnapshotPointOut"
       },
+      "SocialNetworkOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionCustomersOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "users": {
+            "type": "number",
+            "title": "Users"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "format_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format Label"
+          },
+          "advantage": {
+            "type": "boolean",
+            "title": "Advantage",
+            "description": "On the newest format within its window"
+          },
+          "network_effect": {
+            "type": "number",
+            "title": "Network Effect",
+            "description": "Appeal x this in its largest region"
+          },
+          "ad_load": {
+            "type": "number",
+            "title": "Ad Load"
+          },
+          "moderation": {
+            "type": "string",
+            "title": "Moderation"
+          },
+          "ad_revenue_cents": {
+            "type": "integer",
+            "title": "Ad Revenue Cents",
+            "description": "Last month: users x their ad revenue a user"
+          },
+          "laws": {
+            "items": {
+              "$ref": "#/components/schemas/LawOut"
+            },
+            "type": "array",
+            "title": "Laws"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "regions",
+          "users",
+          "format",
+          "format_label",
+          "advantage",
+          "network_effect",
+          "ad_load",
+          "moderation",
+          "ad_revenue_cents",
+          "laws"
+        ],
+        "title": "SocialNetworkOut"
+      },
       "SocialOut": {
         "properties": {
           "networks": {
             "items": {
-              "$ref": "#/components/schemas/NetworkOut"
+              "$ref": "#/components/schemas/SocialNetworkOut"
             },
             "type": "array",
             "title": "Networks"
@@ -77065,6 +81564,42 @@
         ],
         "title": "StaffRefineryIn"
       },
+      "StaffSpec": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Count"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "level",
+          "count"
+        ],
+        "title": "StaffSpec"
+      },
       "StageIn": {
         "properties": {
           "stage": {
@@ -77303,6 +81838,30 @@
           "yours_on_loser"
         ],
         "title": "StandardOut"
+      },
+      "StartOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "A scenarios.yaml key, or blank_<year>"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "year"
+        ],
+        "title": "StartOptionOut"
       },
       "StartProjectIn": {
         "properties": {
@@ -83713,6 +88272,47 @@
         ],
         "title": "WorldOut"
       },
+      "WorldOverride": {
+        "properties": {
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "policy_rate_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Rate Pct"
+          },
+          "eras": {
+            "$ref": "#/components/schemas/Eras",
+            "default": "historical"
+          },
+          "commodities": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Commodities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "WorldOverride",
+        "description": "The macro start, eras and commodity price levels (66.1)."
+      },
       "YearPointOut": {
         "properties": {
           "year": {
@@ -83988,6 +88588,74 @@
           "name"
         ],
         "title": "UnitChoiceOut"
+      },
+      "tst__api__schemas__editor__CategoryOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "segments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "market_editable": {
+            "type": "boolean",
+            "title": "Market Editable",
+            "description": "False: its market follows its own data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "segments",
+          "market_editable"
+        ],
+        "title": "CategoryOptionOut"
+      },
+      "tst__api__schemas__editor__OptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "OptionOut"
+      },
+      "tst__api__schemas__editor__RangeOut": {
+        "properties": {
+          "lo": {
+            "type": "number",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "number",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "RangeOut"
       },
       "tst__api__schemas__events__EventLinkOut": {
         "properties": {
@@ -84304,6 +88972,24 @@
         ],
         "title": "NamedOut"
       },
+      "tst__api__schemas__investing__CategoryOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "CategoryOptionOut"
+      },
       "tst__api__schemas__investing__IndexPointOut": {
         "properties": {
           "turn": {
@@ -84422,6 +89108,24 @@
           "label"
         ],
         "title": "EventLinkOut"
+      },
+      "tst__api__schemas__people__RangeOut": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "RangeOut"
       },
       "tst__api__schemas__platforms__ListingOut": {
         "properties": {

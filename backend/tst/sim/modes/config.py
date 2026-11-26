@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 
 class _Frozen(BaseModel):
@@ -116,7 +116,13 @@ class FabSpec(_Frozen):
 
     node: str  # nodes.yaml key
     region: str
-    capacity: int = Field(gt=0)  # wafer starts a month (fab.sizes)
+    # wafer starts a month (fab.sizes); M52: the API names it wafer_starts (its name guard
+    # keeps "capacity" for products' hidden sales capacity), the files keep `capacity`
+    capacity: int = Field(
+        gt=0,
+        validation_alias=AliasChoices("wafer_starts", "capacity"),
+        serialization_alias="wafer_starts",
+    )
     age_months: int = Field(ge=0)
     unit: str  # the team (a StaffSpec unit) that staffs it
     country: str | None = None  # None: the region's default (countries.yaml)

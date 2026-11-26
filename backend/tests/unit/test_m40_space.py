@@ -401,10 +401,9 @@ def test_space_companies_are_not_ranked_while_they_hold(
     b, d = loaded.balance, loaded.game_data
     state = _state(loaded, ym_to_turn(2015, 1))
     space = {c.id for c in state.companies if is_space_rival(c, d)}
-    # M55: the space companies' revenue tops the list (with M55's 22 rivals after them, the 50
-    # highest ids alone no longer reach theirs)
+    # the space companies the largest (M54: later companies' ids no longer push them out of 50)
     monkeypatch.setattr(
-        rankings, "_revenue", lambda state, cid: 10**12 * (2 if cid in space else 1) + cid
+        rankings, "_revenue", lambda state, cid: 10**12 + cid + (10**6 if cid in space else 0)
     )
     assert space
     for listed in rankings.lists(state, b, d).values():

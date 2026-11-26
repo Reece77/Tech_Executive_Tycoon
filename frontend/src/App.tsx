@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { DesktopPrompts } from './components/DesktopPrompts';
 import { AchievementsScreen } from './screens/AchievementsScreen';
 import { ScenariosScreen } from './screens/ScenariosScreen';
+import { EditorScreen } from './screens/EditorScreen';
 import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
@@ -48,6 +49,12 @@ import { MobilityScreen } from './screens/MobilityScreen';
 import { SpaceScreen } from './screens/SpaceScreen';
 import { GamesScreen, SocialScreen, StreamingScreen, StudioScreen } from './screens/MediaScreens';
 import { TelecomScreen } from './screens/TelecomScreen';
+import {
+  BankScreen,
+  CurrencyScreen,
+  InsuranceScreen,
+  PaymentsScreen,
+} from './screens/FinserviceScreens';
 import { GovernmentScreen } from './screens/GovernmentScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
@@ -61,6 +68,7 @@ export default function App() {
         <Route path="/new" element={<NewGameScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
         <Route path="/scenarios" element={<ScenariosScreen />} />
+        <Route path="/editor" element={<EditorScreen />} />
         <Route path="/mods" element={<DataEditorScreen />} />
         <Route path="/saves" element={<MainMenu />} />
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />
@@ -93,6 +101,10 @@ export default function App() {
           <Route path="products/mobility" element={<MobilityScreen />} />
           <Route path="products/space" element={<SpaceScreen />} />
           <Route path="products/telecom" element={<TelecomScreen />} />
+          <Route path="products/bank" element={<BankScreen />} />
+          <Route path="products/payments" element={<PaymentsScreen />} />
+          <Route path="products/insurance" element={<InsuranceScreen />} />
+          <Route path="finance/currency" element={<CurrencyScreen />} />
           <Route path="products/studio" element={<StudioScreen />} />
           <Route path="products/streaming" element={<StreamingScreen />} />
           <Route path="products/games" element={<GamesScreen />} />

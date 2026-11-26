@@ -93,6 +93,9 @@ def test_categories_and_markets(setup: tuple[Client, Path]) -> None:
         "fixed_broadband",
         "wholesale",
         "network_equipment",
+        "banking",  # M54
+        "payments",
+        "insurance",
         "streaming",  # M55
         "music_streaming",
         "games",

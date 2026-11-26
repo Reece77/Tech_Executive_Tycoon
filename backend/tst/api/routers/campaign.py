@@ -1,5 +1,6 @@
 """Save-scoped routes for the campaign's length (M37, formulas.md 52.1): what it is, and the
-choice to continue in dynasty mode (before or at December 2039) or end the campaign there."""
+choice to continue in dynasty mode (before or at December 2039) or end the campaign there; and
+(M52, 66.3) after December 2069, to continue in sandbox with no end."""
 
 from __future__ import annotations
 
@@ -11,7 +12,7 @@ from tst.api.routers.game import _founder_id, _path, _state
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.campaign import CampaignActionOut, CampaignOut
 from tst.db import repository
-from tst.sim.dynasty.mode import ContinueDynasty, EndCampaign
+from tst.sim.dynasty.mode import ContinueDynasty, ContinueSandbox, EndCampaign
 
 router = APIRouter(prefix="/api/saves/{save_id}", tags=["campaign"])
 
@@ -42,4 +43,17 @@ def end_campaign(save_id: str, settings: SettingsDep, data: DataDep) -> Campaign
     """At December 2039: end the standard campaign with its summary."""
     path = _path(settings, save_id)
     state = repository.run_action(path, data, EndCampaign(_founder_id(_state(path))))
+    return CampaignActionOut(campaign=campaign_views.campaign_out(state.new_state, data))
+
+
+@router.post(
+    "/campaign/sandbox",
+    response_model=CampaignActionOut,
+    responses=ERRORS,
+    operation_id="continueSandbox",
+)
+def continue_sandbox(save_id: str, settings: SettingsDep, data: DataDep) -> CampaignActionOut:
+    """M52 (66.3): a game over after December 2069 plays on in sandbox, with no end."""
+    path = _path(settings, save_id)
+    state = repository.run_action(path, data, ContinueSandbox(_founder_id(_state(path))))
     return CampaignActionOut(campaign=campaign_views.campaign_out(state.new_state, data))

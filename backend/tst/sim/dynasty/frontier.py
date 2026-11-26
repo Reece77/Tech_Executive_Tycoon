@@ -22,7 +22,9 @@ def with_slowdown(tech: TechFrontierFile, rule: DynastyBalance) -> TechFrontierF
             domains.append(d)
             continue
         last = rate_in(table, rule.start_year - 1)
-        for k, year in enumerate(range(rule.start_year, rule.end_year + 1, DECADE), start=1):
+        # M52 (66.3): on through the sandbox years, the same rule decade by decade
+        last_year = rule.beyond.end_year
+        for k, year in enumerate(range(rule.start_year, last_year + 1, DECADE), start=1):
             table[year] = last * dmath.pow(rule.frontier.slowdown, k)
         baseline = d.baseline.model_copy(update={"per_year": table})
         domains.append(d.model_copy(update={"baseline": baseline}))

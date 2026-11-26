@@ -9,6 +9,10 @@ accounts:
   - { code: 1500_ppe, name: "Property, plant and equipment", type: asset }
   - { code: 1520_mineral_properties, name: Mineral properties, type: asset } # M19 (35.2-35.3): a mine's capex and its project's moved exploration spend, less units-of-production depletion credited here
   - { code: 1540_spectrum_licences, name: Spectrum licences, type: asset } # M53 (62.2): spectrum won at auction and renewals, less straight-line amortization credited here
+  - { code: 1060_bank_reserves, name: Bank reserves, type: asset } # M54 (64.1): a bank's cash and central-bank reserves, held apart from the company's cash: deposits, loans, securities and the parent's capital move through it
+  - { code: 1310_bank_loans, name: Loans, type: asset } # M54 (64.1): a bank's loans outstanding, less repayments and charge-offs
+  - { code: 1320_bank_securities, name: Securities, type: asset } # M54 (64.1): a bank's fixed-rate securities at amortised cost (their market value is shown, not booked, until sold)
+  - { code: 1330_insurer_investments, name: Insurer investments, type: asset } # M54 (64.3): an insurer's capital and float, invested; premiums less claims and expenses move through it
   - { code: 1560_content_assets, name: Content assets, type: asset } # M55 (65.2): series, films and games capitalised in production, less amortization and write-offs credited here
   - { code: 1530_tool_inventory, name: Tool inventory, type: asset } # M33 (47.2, 47.4): lithography tools held and not yet in a fab: bought from ASML into stock, or made by the player's own tool line at cost
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
@@ -22,6 +26,8 @@ accounts:
   - { code: 2500_debt, name: Debt, type: liability }
   - { code: 2600_safes, name: SAFEs and convertible notes, type: liability }
   - { code: 2610_asset_retirement_obligation, name: Asset retirement obligation, type: liability } # M19 (35.3): mines' reclamation, provisioned a tonne from first output, paid over mining.reclamation_months after closure (35.3's '2600': SAFEs already hold 2600)
+  - { code: 2310_deposits, name: Customer deposits, type: liability } # M54 (64.1): a bank's deposits
+  - { code: 2320_claims_reserves, name: Claims reserves, type: liability } # M54 (64.3): claims incurred and not yet paid (the float)
   # Equity
   - { code: 3000_common_equity, name: Common equity, type: equity }
   - { code: 3100_preferred_equity, name: Preferred equity, type: equity }
@@ -48,6 +54,12 @@ accounts:
   - { code: 4920_fair_value_gains, name: Fair-value gains and losses, type: revenue } # M16 (31.3): December marks of stakes under 20%; below the operating result
   - { code: 4990_nci_share_of_profit, name: Attributable to non-controlling interest, type: expense } # M16 (31.3): outside holders' share of consolidated subsidiaries' profit; consolidated statements only, shown below the net result
   - { code: 4930_gain_on_disposal, name: Gain or loss on disposal, type: revenue } # M16 (31.1): a subsidiary leaving the group (failed, sold, spun off): what was received less the investment and its goodwill; below the operating result
+  - { code: 4500_interest_income, name: Interest income, type: revenue } # M54 (64.1): a bank's loans and securities, and rivals' net interest income
+  - { code: 4510_interchange, name: Interchange, type: revenue } # M54 (64.2): an issuer's interchange on its cards' volume
+  - { code: 4520_investment_income, name: Investment income, type: revenue } # M54 (64.3): an insurer's float and capital invested
+  - { code: 4530_securities_gains, name: Securities gains and losses, type: revenue } # M54 (64.1): securities sold below or above amortised cost (a run's forced sales)
+  - { code: 4940_fx_gains, name: Currency gains, type: revenue } # M54 (64.4, ADR-0025): hedges' fair-value gains and settlements; below the operating result
+  - { code: 4945_fx_losses, name: Currency losses, type: expense } # M54 (64.4, ADR-0025): hedges' fair-value losses and settlements; below the operating result
   # Expenses
   - { code: 5000_cogs, name: Cost of goods sold, type: expense }
   - { code: 5100_tariffs, name: Tariffs, type: expense } # M22 (39.3): tariffs on devices, servers and chips made in a taxed bloc and sold in the taxing one; cost of revenue
@@ -57,6 +69,10 @@ accounts:
   - { code: 5160_content_royalties, name: Rights holders' royalties, type: expense } # M55 (65.3): music streaming's payout to rights holders; cost of revenue
   - { code: 5170_media_operations, name: Media operations, type: expense } # M55 (65.3-65.5): licences in, live-service updates and moderation; cost of revenue
   - { code: 5300_contract_costs, name: Government contract costs, type: expense } # M44 (57.2): delivering government contracts, overruns included; cost of revenue
+  - { code: 5500_deposit_interest, name: Deposit interest, type: expense } # M54 (64.1): interest a bank pays on its deposits
+  - { code: 5510_claims, name: Claims, type: expense } # M54 (64.3): claims incurred on policies written
+  - { code: 5520_interchange_fees, name: Interchange and network fees, type: expense } # M54 (64.2): what an acquirer pays issuers and networks on its merchants' volume
+  - { code: 5530_fraud_losses, name: Fraud and chargebacks, type: expense } # M54 (64.2): a payments line's fraud losses
   - { code: 5200_tool_cost, name: Cost of tools sold, type: expense } # M33 (47.4): the made cost of own tools sold; cost of revenue
   - { code: 5900_intercompany_purchases, name: Intercompany purchases, type: expense } # M16 (31.6): what a group company pays another at the transfer price; consolidation removes it
   - { code: 6000_salaries, name: Salaries, type: expense }
@@ -69,6 +85,7 @@ accounts:
   - { code: 6600_exploration, name: Exploration, type: expense } # M18 (34.2): desk studies, licences, surveys, sampling, drilling, estimates, feasibility and permits, expensed as spent
   - { code: 6700_depreciation, name: Depreciation, type: expense } # M12a: data centres (22.2)
   - { code: 6760_spectrum_amortization, name: Spectrum amortization, type: expense } # M53 (62.2): a licence's price over its term
+  - { code: 6800_loan_losses, name: Loan losses, type: expense } # M54 (64.1): loans charged off
   - { code: 6770_content_amortization, name: Content amortization, type: expense } # M55 (65.2): a released title's cost on its accelerated schedule, and write-offs of cancelled and failed titles
   - { code: 6750_depletion, name: Depletion, type: expense } # M19 (35.3): mineral properties' units-of-production depletion, and write-offs at closure
   - { code: 6900_general_admin, name: General and administrative, type: expense }

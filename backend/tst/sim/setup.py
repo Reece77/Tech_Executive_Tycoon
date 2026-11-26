@@ -203,6 +203,10 @@ def new_game(
 
     state, telecom_cash = telecom_new_game(state, balance, data)  # M53 (62): history to 2025
     rival_cash = (*rival_cash, *telecom_cash)
+    from tst.sim.finserv.phase import new_game as finserv_new_game
+
+    state, finserv_cash = finserv_new_game(state, balance, data)  # M54 (64): history to 2025
+    rival_cash = (*rival_cash, *finserv_cash)
     from tst.sim.media.phase import new_game as media_new_game
 
     state, media_cash = media_new_game(state, balance, data)  # M55 (65): history to 2025

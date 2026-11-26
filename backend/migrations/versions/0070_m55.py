@@ -4,8 +4,8 @@ months, the game-wide draws and the ad market's calibration), one row each: `kin
 collection and `data` the record's fields (data-dictionary.md). Existing saves have none, and no
 media markets: like M53's telecom, media comes only with a new game.
 
-Revision ID: 0068_m55
-Revises: 0067_m53
+Revision ID: 0070_m55
+Revises: 0069_m54
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0068_m55"
-down_revision: str | None = "0067_m53"
+revision: str = "0070_m55"
+down_revision: str | None = "0069_m54"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

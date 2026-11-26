@@ -24,6 +24,7 @@ type Scope = Literal[
     "constellation",  # M40: a satellite constellation
     "bid",  # M44: a government bid
     "negotiation",  # M47: a negotiation's revealed range
+    "bank",  # M54: a bank's profit
     "title",  # M55: a series, film or game
 ]
 

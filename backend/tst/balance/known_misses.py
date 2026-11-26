@@ -90,10 +90,13 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
         target="M22.T2.variant",  # formulas 39.4 T2: revenue lost with a variant 5-15%, every seed
         owner=NEXT,  # M46: from M43 (M43a decision 10)
-        # score: the largest seed's loss; known while at most 21% (M46: was 22%)
-        worse_than=0.21,
+        # score: the largest seed's loss; known while at most 21.5% (M46: was 22%, then 21%;
+        # M54: 21.5%, PM ruling 2026-11-26)
+        worse_than=0.215,
         reason="10.5-20.8% on M46 (unchanged since M43a): one seed out; the chip markets the "
-        "variant sells into follow cloud and servers, both recalibrated before 2026",
+        "variant sells into follow cloud and servers, both recalibrated before 2026. M54 "
+        "currencies: East Asia's 2022-23 exchange rates lift every seed by 0.16-0.17 points "
+        "(PM ruling 2026-11-26)",
     ),
     KnownMiss(
         target="V4.T1.1",  # formulas 51 T1: platform_owner ARR / devices_regions, 0.90-1.40x
@@ -128,6 +131,32 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.550,
         reason="535 ms adjusted on M46 (main 467 ms the same day; 172 staff against 136): "
         "the listings leave a larger 2069 group, so the existing phases do more",
+    ),
+    KnownMiss(
+        target="M54.T5",  # formulas 64.6 T5: an 80% hedge cuts yearly profit's spread >= 15%
+        owner=NEXT,  # M54: carried, PM ruling 2026-11-26 (M54 decision 13)
+        # score: the shortfall, 15% less the median cut; known while the median cut is >= 5%
+        worse_than=0.10,
+        reason="6.9% median (0.0-12.9%) on M54: forwards run at most 12 months (ADR-0025) and "
+        "a year's total already averages a year of rates; M57 decides on 24-month forwards or "
+        "the band for a 12-month hedge",
+    ),
+    # M52 (Reece, 2026-11-26): both of 66.4 target 4's misses are known misses
+    KnownMiss(
+        target="M52.2100_month",  # tests/integration/test_m52_perf.py: 550 ms runner-adjusted
+        owner="v6 performance",  # as M37.2069_month: the same cause
+        # score: the adjusted median in seconds; known up to 650 ms
+        worse_than=0.650,
+        reason="610 ms adjusted on CI (544 ms locally) after rule 6's telecom fix (700 ms "
+        "before): 365 companies by 2100 against about 170 in 2069, every phase does more",
+    ),
+    KnownMiss(
+        target="M52.economy_2100",  # tests/balance/test_m52_balance.py: 1,000x below int64
+        owner=NEXT,  # v6 balance and polish: mines' sales compounding after 2069 (no M52 key)
+        # score: 2100 revenue x 1,000 / int64 (1 is the target); known up to 4 (250x below)
+        worse_than=4.0,
+        reason="2100 revenue 359-442x below int64 on seeds 1-3 (2069: 3,786x); commodity "
+        "sales dominate; every value stays within int64 (59-79x below)",
     ),
 )
 

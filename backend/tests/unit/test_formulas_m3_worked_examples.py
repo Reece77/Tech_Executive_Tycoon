@@ -37,6 +37,12 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "telecom_consumer",  # M53 (62)
         "telecom_business",
         "carriers",
+        "bank_consumer",  # M54 (64)
+        "bank_business",
+        "pay_merchants",
+        "pay_networks",
+        "ins_property",
+        "ins_life",
         "viewers",  # M55 (65)
         "players",
         "users",
@@ -68,6 +74,9 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "aviation_maritime",
         "telecom_business",  # M53
         "carriers",
+        "bank_business",  # M54
+        "pay_merchants",
+        "pay_networks",
     ]
     assert data.segment("smb").weights.price == 0.35
 

@@ -176,6 +176,10 @@ def _mode_and_score(session: Any) -> tuple[str, int | None]:
         return "campaign", None
     row = session.get(GameModeRow, 1)
     mode = str(row.data.get("kind", "campaign")) if row is not None else "campaign"
+    if row is not None and row.data.get("scenario_sha256"):  # M52: a custom scenario's game
+        return "custom", None
+    if row is not None and row.data.get("length") == "endless":  # M52: sandbox past 2069
+        return "sandbox", None
     if mode == "sandbox":
         return mode, None
     player = session.scalar(  # the operating company, not a holding company (M16)

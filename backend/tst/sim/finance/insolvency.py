@@ -146,6 +146,10 @@ def insolvency(
 
             if telecom_holds(state, company, balance, data):  # M53 (62.4): operators likewise
                 continue
+            from tst.sim.finserv.rivals import holds as finance_holds
+
+            if finance_holds(state, company, balance, data):  # M54 (64.5): finance likewise
+                continue
             from tst.sim.media.rivals import holds as media_holds
 
             if media_holds(state, company, balance, data):  # M55 (65.7): media rivals likewise

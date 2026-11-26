@@ -42,6 +42,7 @@ from tst.sim.facilities.config import (
     SupplyBalance,
 )
 from tst.sim.family.config import EstateRegion, FamilyBalance
+from tst.sim.finserv.config import FinservBalance, FinservFile
 from tst.sim.founder.config import (
     AngelBalance,
     FamilyOfficeBalance,
@@ -51,6 +52,7 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
+from tst.sim.fx.config import FxBalance, FxFile
 from tst.sim.geopolitics.config import (
     CountriesFile,
     ExportControlsFile,
@@ -77,6 +79,7 @@ from tst.sim.modes.config import (
     SerialBalance,
     StoryBalance,
 )
+from tst.sim.modes.custom_config import EditorBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.negotiation.config import LlmBalance, NegotiationBalance
 from tst.sim.org.voice_data import Voice
@@ -1402,6 +1405,7 @@ class Balance(_Frozen):
     rank: RankBalance  # M15b (formulas.md 30.4)
     sandbox: SandboxBalance  # M15b (formulas.md 30.2)
     challenges: ChallengesBalance  # M51 (formulas.md 63.2)
+    editor: EditorBalance  # M52 (formulas.md 66.1): the editor's ranges
     story: StoryBalance  # M15b addendum 12: rival CEO storylines
     serial: SerialBalance  # M15b addendum 10: founding again after an exit
     promise: PromiseBalance  # M14b (formulas.md 29.2)
@@ -1440,6 +1444,8 @@ class Balance(_Frozen):
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     telecom: TelecomBalance  # M53 (formulas.md 62): telecom
+    fx: FxBalance  # M54 (formulas.md 64.4, ADR-0025): currencies and hedging
+    finserv: FinservBalance  # M54 (formulas.md 64.1-64.3, 64.5): banking, payments, insurance
     media: MediaBalance  # M55 (formulas.md 65): media and entertainment
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
@@ -1778,6 +1784,12 @@ class CategoryDef(_Frozen):
         """M40 (56): launch, satellite broadband or Earth observation (scheduled rivals only;
         a line sells only with vehicles or satellites)."""
         return self.family == "space"
+
+    @property
+    def finance(self) -> bool:
+        """M54 (64): banking, payments and insurance (scheduled rivals only; a bank line takes
+        deposits only with a charter or a partner bank, an insurer writes only where licensed)."""
+        return self.family == "finance"
 
     @property
     def media(self) -> bool:
@@ -2256,6 +2268,8 @@ class GameData(_Frozen):
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
     space: SpaceFile | None = None  # M40 (56); None = no space markets' history
     telecom: TelecomFile | None = None  # M53 (62); None = no telecom markets' history
+    finserv: FinservFile | None = None  # M54 (64.1-64.3); None = no financial services' history
+    fx: FxFile | None = None  # M54 (64.4); None = every region's index is 1 (no translation)
     media: MediaFile | None = None  # M55 (65); None = no media markets' history
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 

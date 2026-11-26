@@ -4805,6 +4805,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/editor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Editor
+         * @description Every option the Editor screen offers: ranges, starts and the loaded data's lists (M54's
+         *     and M55's categories and incumbents included, as data).
+         */
+        get: operations["getEditor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/open/{start}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open Start
+         * @description A start to edit: `blank_<year>` or any scenarios.yaml entry (M51's included), with no
+         *     overrides.
+         */
+        get: operations["openEditorStart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Custom
+         * @description Every reason the editor refuses the spec (66.1), without saving it.
+         */
+        post: operations["checkCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Custom */
+        get: operations["listCustom"];
+        put?: never;
+        /**
+         * Create Custom
+         * @description Save (or save as) a new custom scenario; 409 if the name exists, 400 with every reason
+         *     if refused.
+         */
+        post: operations["createCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Custom */
+        get: operations["getCustom"];
+        /**
+         * Update Custom
+         * @description Save over an existing custom scenario (its name is the route's).
+         */
+        put: operations["updateCustom"];
+        post?: never;
+        /**
+         * Delete Custom
+         * @description Delete the file; games started from it keep their own copy (ADR-0026 point 4).
+         */
+        delete: operations["deleteCustom"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom-import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Custom
+         * @description A shared file validated and saved; refused with every reason, nothing written.
+         */
+        post: operations["importCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenarios/custom/{slug}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Custom */
+        get: operations["exportCustom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Custom
+         * @description The start month's summary (66.1): the world built to the start in memory (no turn is
+         *     played, nothing is saved).
+         */
+        post: operations["previewCustom"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/difficulty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Difficulty
+         * @description Start (or rejoin) the difficulty estimate in the background (66.1).
+         */
+        post: operations["startDifficulty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/difficulty/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Difficulty */
+        get: operations["getDifficulty"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/mods": {
         parameters: {
             query?: never;
@@ -6151,6 +6355,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/campaign/sandbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Continue Sandbox
+         * @description M52 (66.3): a game over after December 2069 plays on in sandbox, with no end.
+         */
+        post: operations["continueSandbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/robotics": {
         parameters: {
             query?: never;
@@ -6567,6 +6791,179 @@ export interface paths {
         put?: never;
         /** Set Line */
         post: operations["setTelecomLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Finserv
+         * @description Banks, payments, the insurer and currency exposure (the four screens).
+         */
+        get: operations["getFinserv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/charter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Charter */
+        post: operations["applyCharter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/partner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Partner Bank */
+        post: operations["partnerBank"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Bank */
+        post: operations["setBank"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/capital": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bank Capital */
+        post: operations["bankCapital"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/networks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Launch Network */
+        post: operations["launchNetwork"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/insurance/licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Licence */
+        post: operations["applyInsuranceLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/insurance/capital": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Insurer Capital */
+        post: operations["insurerCapital"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/forwards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Buy Forward */
+        post: operations["buyForward"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/programme": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Programme */
+        post: operations["setHedgeProgramme"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7886,6 +8283,16 @@ export interface components {
              */
             car_product_id?: number | null;
         };
+        /**
+         * AddedRivals
+         * @description Generic rivals added in a category, drawn as entrants are (52.3).
+         */
+        AddedRivals: {
+            /** Category */
+            category: string;
+            /** Count */
+            count: number;
+        };
         /** AdoptIn */
         AdoptIn: {
             /** Product Id */
@@ -7931,6 +8338,11 @@ export interface components {
             /** Risk */
             risk: string;
             planned: components["schemas"]["PlannedOut"];
+        };
+        /** AmountIn */
+        AmountIn: {
+            /** Amount Cents */
+            amount_cents: number;
         };
         /** AnalystOut */
         AnalystOut: {
@@ -8327,7 +8739,7 @@ export interface components {
             short_label: string;
             /** Group */
             group: string;
-            range: components["schemas"]["RangeOut"];
+            range: components["schemas"]["tst__api__schemas__people__RangeOut"];
         };
         /** AuctionOut */
         AuctionOut: {
@@ -8604,6 +9016,60 @@ export interface components {
             /** Scope */
             scope: number;
         };
+        /** BankLoanOut */
+        BankLoanOut: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Balance Cents */
+            balance_cents: number;
+            /** Risk Weight */
+            risk_weight: number;
+            /**
+             * Yield Rate
+             * @description % a year: the policy rate plus the kind's spread
+             */
+            yield_rate: number;
+            /**
+             * Loss Rate
+             * @description % a year charged off this year
+             */
+            loss_rate: number;
+        };
+        /** BankMonthOut */
+        BankMonthOut: {
+            /** Month */
+            month: string;
+            /** Deposits Cents */
+            deposits_cents: number;
+            /** Loans Cents */
+            loans_cents: number;
+            /**
+             * Nii Cents
+             * @description Net interest income this month
+             */
+            nii_cents: number;
+            /**
+             * Profit Cents
+             * @description Net interest income less charge-offs
+             */
+            profit_cents: number;
+            /**
+             * Nim
+             * @description Net interest margin, a year, of earning assets
+             */
+            nim: number;
+            /**
+             * Ratio
+             * @description CET1 / risk-weighted assets
+             */
+            ratio: number;
+            /** Policy Rate */
+            policy_rate: number;
+            /** Deposit Rate */
+            deposit_rate: number;
+        };
         /** BankOut */
         BankOut: {
             /** Key */
@@ -8620,6 +9086,68 @@ export interface components {
              * @description How the bank's name helps the price, in words
              */
             reputation: string;
+        };
+        /** BankRunOut */
+        BankRunOut: {
+            /** Month */
+            month: string;
+            /** Withdrawn Cents */
+            withdrawn_cents: number;
+            /** Realised Loss Cents */
+            realised_loss_cents: number;
+            /** Failed */
+            failed: boolean;
+        };
+        /** BankScreenOut */
+        BankScreenOut: {
+            /**
+             * Can Charter
+             * @description The company has a fintech or banking line
+             */
+            can_charter: boolean;
+            /** Has Banking Line */
+            has_banking_line: boolean;
+            /** Charter Capital Cents */
+            charter_capital_cents: number;
+            /** Charter Fee Cents */
+            charter_fee_cents: number;
+            /** Beta Range */
+            beta_range: number[];
+            /** Duration Range */
+            duration_range: number[];
+            /** Reserve Min */
+            reserve_min: number;
+            /** Partner Share */
+            partner_share: number;
+            /** Regions */
+            regions: components["schemas"]["FinRegionOptionOut"][];
+            /** Banks */
+            banks: components["schemas"]["OwnBankOut"][];
+            /**
+             * Charters
+             * @description Fintechs that took charters (history)
+             */
+            charters: string[];
+        };
+        /** BankSettingsIn */
+        BankSettingsIn: {
+            /** Beta */
+            beta: number;
+            /** Loan To Deposit */
+            loan_to_deposit: number;
+            /** Securities Share */
+            securities_share: number;
+            /** Duration */
+            duration: number;
+        };
+        /** BankStressOut */
+        BankStressOut: {
+            /** Month */
+            month: string;
+            /** Ratio After */
+            ratio_after: number;
+            /** Passed */
+            passed: boolean;
         };
         /** BatteryOut */
         BatteryOut: {
@@ -9068,14 +9596,26 @@ export interface components {
         CampaignOut: {
             /**
              * Length
-             * @description standard | dynasty
+             * @description standard | dynasty | endless (M52)
              */
             length: string;
             /**
              * End Label
-             * @description The month the game ends after
+             * @description The month the game ends after, or 'no end'
              */
             end_label: string;
+            /**
+             * Endless
+             * @description M52 (66.3): a sandbox with no end
+             * @default false
+             */
+            endless?: boolean;
+            /**
+             * Can Continue Sandbox
+             * @description M52 (66.3): over after December 2069: continue in sandbox
+             * @default false
+             */
+            can_continue_sandbox?: boolean;
             /**
              * At End
              * @description A standard campaign at December 2039: end or continue
@@ -9415,10 +9955,12 @@ export interface components {
              */
             burn_cents: number;
         };
-        /** CategoryOptionOut */
-        CategoryOptionOut: {
-            /** Key */
-            key: string;
+        /** CatastropheOut */
+        CatastropheOut: {
+            /** Month */
+            month: string;
+            /** Region */
+            region: string;
             /** Label */
             label: string;
         };
@@ -10604,6 +11146,14 @@ export interface components {
              */
             intercompany_cents: number;
         };
+        /**
+         * CompanyOverride
+         * @description The player's company beyond the scenario fields (66.1): its name.
+         */
+        CompanyOverride: {
+            /** Name */
+            name?: string | null;
+        };
         /** CompanyRefOut */
         CompanyRefOut: {
             /** Company Id */
@@ -10857,6 +11407,20 @@ export interface components {
             /** Settled Cents */
             settled_cents: number;
         };
+        /**
+         * ContractSpec
+         * @description M51: a contract-manufacturing deal running at the start (26.2), signed that month.
+         */
+        ContractSpec: {
+            /** Manufacturer */
+            manufacturer: string;
+            /** City */
+            city: string;
+            /** Units */
+            units: number;
+            /** Months */
+            months: number;
+        };
         /** CooAnswerOut */
         CooAnswerOut: {
             /** Answer Id */
@@ -11072,6 +11636,11 @@ export interface components {
              * @description M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario
              */
             challenges?: string[];
+            /**
+             * Custom
+             * @description M52 (66.2): a custom scenario's name in saves/scenarios; its own rules and challenges apply (`challenges` must then be empty)
+             */
+            custom?: string | null;
         };
         /** CreateUnitIn */
         CreateUnitIn: {
@@ -11110,6 +11679,239 @@ export interface components {
              * @description The move that removes the factor
              */
             fix: string;
+        };
+        /** CurrencyRegionOut */
+        CurrencyRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Currency
+             * @description Its basket
+             */
+            currency: string;
+            /**
+             * Index
+             * @description US dollars a unit now over January 2010's
+             */
+            index: number;
+            /** Change 12M */
+            change_12m: number | null;
+            /** Policy Rate */
+            policy_rate: number;
+            /**
+             * Revenue Cents
+             * @description This month, translated
+             */
+            revenue_cents: number;
+            /**
+             * Untranslated Revenue Cents
+             * @description At the indexes prices were set at
+             */
+            untranslated_revenue_cents: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Net Cents */
+            net_cents: number;
+            /**
+             * Exposure Cents
+             * @description The next 12 months' net revenue at today's index
+             */
+            exposure_cents: number;
+            /**
+             * Hedged Cents
+             * @description Open forwards' notional
+             */
+            hedged_cents: number;
+            /** Unhedged Share */
+            unhedged_share: number | null;
+            /**
+             * What If Cents
+             * @description A year's net revenue change if the dollar rises
+             */
+            what_if_cents: number;
+            /** Forward 12M Index */
+            forward_12m_index: number | null;
+            /** Spread Bp */
+            spread_bp: number;
+        };
+        /** CurrencyScreenOut */
+        CurrencyScreenOut: {
+            /** Month */
+            month: string;
+            /** What If Move */
+            what_if_move: number;
+            /** Term Range */
+            term_range: number[];
+            /** Max Hedge Share */
+            max_hedge_share: number;
+            /**
+             * Foreign Share
+             * @description Foreign revenue over all revenue this month
+             */
+            foreign_share: number;
+            /** Regions */
+            regions: components["schemas"]["CurrencyRegionOut"][];
+            /** Hedges */
+            hedges: components["schemas"]["HedgeOut"][];
+            programme: components["schemas"]["ProgrammeOut"] | null;
+            /**
+             * Fx Result 12M Cents
+             * @description Currency gains less losses, last 12 months
+             */
+            fx_result_12m_cents: number;
+        };
+        /**
+         * CustomCardOut
+         * @description A custom scenario on the Scenarios screen's Custom section (66.2).
+         */
+        CustomCardOut: {
+            /** Slug */
+            slug: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Year */
+            year: number;
+            /** Goal */
+            goal: string | null;
+            /** Deadline Label */
+            deadline_label: string | null;
+            /** Opened From */
+            opened_from: string | null;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Played
+             * @description Custom games with a verdict (kept apart from M51's)
+             */
+            played: number;
+            best: components["schemas"]["ScenarioResultOut"] | null;
+        };
+        /**
+         * CustomCheckOut
+         * @description A spec's refusals (empty: valid) and its hash.
+         */
+        CustomCheckOut: {
+            /** Valid */
+            valid: boolean;
+            /** Reasons */
+            reasons: string[];
+            /**
+             * Sha256
+             * @description The canonical text's SHA-256 when valid
+             */
+            sha256: string | null;
+        };
+        /** CustomImportIn */
+        CustomImportIn: {
+            /**
+             * Text
+             * @description A custom scenario file's YAML
+             */
+            text: string;
+            /**
+             * Slug
+             * @description Save under this name; omit for its own
+             */
+            slug?: string | null;
+            /**
+             * Overwrite
+             * @default false
+             */
+            overwrite?: boolean;
+        };
+        /**
+         * CustomScenario
+         * @description A custom scenario file's body (ADR-0026 point 1): a historical entry, whose goal and
+         *     deadline may both be left out (no goal: open play), plus `overrides`. `key` is the file's
+         *     slug; `opened_from` names what the editor started from (shown only).
+         */
+        CustomScenario: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Description
+             * @default
+             */
+            description?: string;
+            /** Year */
+            year: number;
+            /** Background */
+            background: string;
+            /** Cash Dollars */
+            cash_dollars: number;
+            /** Stage */
+            stage: number;
+            /**
+             * Staff
+             * @default []
+             */
+            staff?: components["schemas"]["StaffSpec"][];
+            /**
+             * Products
+             * @default []
+             */
+            products?: components["schemas"]["ProductSpec"][];
+            /**
+             * Research
+             * @default []
+             */
+            research?: components["schemas"]["LeadSpec"][];
+            /**
+             * Loans
+             * @default []
+             */
+            loans?: components["schemas"]["LoanSpec"][];
+            /**
+             * Fabs
+             * @default []
+             */
+            fabs?: components["schemas"]["FabSpec"][];
+            goal?: components["schemas"]["GoalSpec"] | null;
+            /** Deadline */
+            deadline?: [
+                number,
+                number
+            ] | null;
+            /** Founder Age */
+            founder_age?: number | null;
+            /** Founder Region */
+            founder_region?: string | null;
+            /** Hq City */
+            hq_city?: string | null;
+            family?: components["schemas"]["FamilyStartSpec"] | null;
+            /** @default standard */
+            length?: components["schemas"]["Length"];
+            /** Sensible Wins */
+            sensible_wins?: number | null;
+            /** Opened From */
+            opened_from?: string | null;
+            /**
+             * @default {
+             *       "company": {},
+             *       "rivals": {},
+             *       "added_rivals": [],
+             *       "markets": {},
+             *       "world": {
+             *         "commodities": {},
+             *         "eras": "historical"
+             *       },
+             *       "rules": {
+             *         "challenges": []
+             *       }
+             *     }
+             */
+            overrides?: components["schemas"]["Overrides"];
+            /**
+             * Format
+             * @default 1
+             */
+            format?: number;
         };
         /** CutIn */
         CutIn: {
@@ -11462,6 +12264,32 @@ export interface components {
             product_id: number;
             /** Platform Id */
             platform_id: number;
+        };
+        /**
+         * DifficultyOut
+         * @description The sensible script's estimate on `editor.preview_seeds`, run in the background.
+         */
+        DifficultyOut: {
+            /** Job Id */
+            job_id: string;
+            /**
+             * Status
+             * @description running | done | failed
+             */
+            status: string;
+            /** Seeds */
+            seeds: number[];
+            /** Results */
+            results: components["schemas"]["SeedResultOut"][];
+            /** Wins */
+            wins: number;
+            /**
+             * Difficulty
+             * @description easy | medium | hard; None without a goal
+             */
+            difficulty: string | null;
+            /** Error */
+            error?: string | null;
         };
         /** DigestAreaOut */
         DigestAreaOut: {
@@ -11911,6 +12739,54 @@ export interface components {
             /** Label */
             label: string;
         };
+        /**
+         * EditorOut
+         * @description Everything the Editor screen offers, from the loaded data and `editor.*`.
+         */
+        EditorOut: {
+            /**
+             * Ranges
+             * @description Each editable field's range (editor.*)
+             */
+            ranges: {
+                [key: string]: components["schemas"]["tst__api__schemas__editor__RangeOut"];
+            };
+            /** Macro From Year */
+            macro_from_year: number;
+            /** Starts */
+            starts: components["schemas"]["StartOptionOut"][];
+            /** Backgrounds */
+            backgrounds: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Roles */
+            roles: components["schemas"]["RoleOptionOut"][];
+            /** Categories */
+            categories: components["schemas"]["tst__api__schemas__editor__CategoryOptionOut"][];
+            /** Incumbents */
+            incumbents: components["schemas"]["IncumbentOptionOut"][];
+            /** Domains */
+            domains: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Lenders */
+            lenders: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Nodes */
+            nodes: components["schemas"]["NodeOptionOut"][];
+            /** Regions */
+            regions: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Cities */
+            cities: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Commodities */
+            commodities: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /** Challenges */
+            challenges: components["schemas"]["tst__api__schemas__editor__OptionOut"][];
+            /**
+             * Goal Kinds
+             * @description Each goal kind's required fields
+             */
+            goal_kinds: {
+                [key: string]: string[];
+            };
+            /** Lengths */
+            lengths: string[];
+        };
         /** EducateIn */
         EducateIn: {
             /** Person Id */
@@ -12132,6 +13008,8 @@ export interface components {
             /** Arrived Label */
             arrived_label?: string | null;
         };
+        /** @enum {string} */
+        Eras: "historical" | "seeded";
         /**
          * ErrorOut
          * @description Stable error body for every 4xx response.
@@ -12429,7 +13307,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "title";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "bank" | "title";
             /** Entity */
             entity?: string | null;
             /**
@@ -12692,6 +13570,16 @@ export interface components {
              * @description What stands between it and exploring; empty: it may
              */
             gate: string[];
+        };
+        /** ExportOut */
+        ExportOut: {
+            /** Filename */
+            filename: string;
+            /**
+             * Text
+             * @description The canonical YAML (ADR-0026 point 7)
+             */
+            text: string;
         };
         /**
          * FabCountryOut
@@ -12958,6 +13846,25 @@ export interface components {
              * @description A start's cost at full use: depreciation, fixed, materials and power
              */
             cost_per_start_cents: number;
+        };
+        /**
+         * FabSpec
+         * @description M51: a fab the company already runs at the start (38.2), built `age_months` before it:
+         *     live, its yield mature, its capex on the books less the depreciation since.
+         */
+        FabSpec: {
+            /** Node */
+            node: string;
+            /** Region */
+            region: string;
+            /** Wafer Starts */
+            wafer_starts: number;
+            /** Age Months */
+            age_months: number;
+            /** Unit */
+            unit: string;
+            /** Country */
+            country?: string | null;
         };
         /** FabsActionOut */
         FabsActionOut: {
@@ -13338,6 +14245,14 @@ export interface components {
             /** Trust Since */
             trust_since: string | null;
         };
+        /**
+         * FamilyStartSpec
+         * @description M51: the founder's family at the start (45.1): a partner and children of these ages.
+         */
+        FamilyStartSpec: {
+            /** Child Ages */
+            child_ages: number[];
+        };
         /** FamilyTimeIn */
         FamilyTimeIn: {
             /** Energy */
@@ -13430,6 +14345,25 @@ export interface components {
              */
             return_on_capital: number | null;
         };
+        /** FinRegionOptionOut */
+        FinRegionOptionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Regulator */
+            regulator: string;
+            /**
+             * Months
+             * @description Months to a charter or licence there
+             */
+            months: number;
+            /**
+             * Strict
+             * @description A strict regulator (adds months to a charter)
+             */
+            strict: boolean;
+        };
         /** FinanceActionOut */
         FinanceActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -13497,6 +14431,27 @@ export interface components {
             /** @description Private: an estimate */
             revenue_range: components["schemas"]["MoneyRangeOut"] | null;
             ebitda_range: components["schemas"]["MoneyRangeOut"] | null;
+        };
+        /** FinservActionOut */
+        FinservActionOut: {
+            finserv: components["schemas"]["FinservScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** FinservScreenOut */
+        FinservScreenOut: {
+            /** Month */
+            month: string;
+            /**
+             * History
+             * @description Before 2026: rivals follow the history
+             */
+            history: boolean;
+            bank: components["schemas"]["BankScreenOut"];
+            payments: components["schemas"]["PaymentsScreenOut"];
+            insurance: components["schemas"]["InsuranceScreenOut"];
+            currency: components["schemas"]["CurrencyScreenOut"];
         };
         /** FireOut */
         FireOut: {
@@ -13681,6 +14636,15 @@ export interface components {
              * @description Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)
              */
             led: components["schemas"]["LedOut"][];
+        };
+        /** ForwardIn */
+        ForwardIn: {
+            /** Region */
+            region: string;
+            /** Notional Cents */
+            notional_cents: number;
+            /** Months */
+            months: number;
         };
         /**
          * FoundAgainIn
@@ -14275,6 +15239,40 @@ export interface components {
             terms: {
                 [key: string]: string;
             };
+        };
+        /** @enum {string} */
+        GoalKind: "arr" | "customers" | "solvent_margin" | "unit_share" | "profit_no_down_round" | "solvent_series" | "platform_share" | "vehicles_year" | "fab_catch_up" | "node_volume" | "family_succession";
+        /** GoalSpec */
+        GoalSpec: {
+            kind: components["schemas"]["GoalKind"];
+            /** Text */
+            text: string;
+            /** Era */
+            era?: string | null;
+            /** Arr Dollars */
+            arr_dollars?: number | null;
+            /** Category */
+            category?: string | null;
+            /** Segment */
+            segment?: string | null;
+            /** Customers */
+            customers?: number | null;
+            /** Share */
+            share?: number | null;
+            /** Bonus Era */
+            bonus_era?: string | null;
+            /** Bonus Text */
+            bonus_text?: string | null;
+            /** Series */
+            series?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Units */
+            units?: number | null;
+            /** Node */
+            node?: string | null;
+            /** Node Gap */
+            node_gap?: number | null;
         };
         /** GovBuyerOut */
         GovBuyerOut: {
@@ -14959,6 +15957,33 @@ export interface components {
              */
             share: number;
         };
+        /** HedgeOut */
+        HedgeOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Notional Cents */
+            notional_cents: number;
+            /** Bought */
+            bought: string;
+            /** Settles */
+            settles: string;
+            /** Spot Index */
+            spot_index: number;
+            /** Forward Index */
+            forward_index: number;
+            /** Fair Value Cents */
+            fair_value_cents: number;
+            /** Status */
+            status: string;
+            /** Settled Cents */
+            settled_cents: number;
+            /** Programme */
+            programme: boolean;
+        };
         /** HireBanksIn */
         HireBanksIn: {
             /** Bank */
@@ -15470,6 +16495,13 @@ export interface components {
             /** Cost Cents */
             cost_cents: number;
         };
+        /** IncumbentOptionOut */
+        IncumbentOptionOut: {
+            /** Name */
+            name: string;
+            /** Categories */
+            categories: string[];
+        };
         /** IndustryOut */
         IndustryOut: {
             /** Key */
@@ -15620,6 +16652,59 @@ export interface components {
              */
             product_id?: number | null;
         };
+        /** InsuranceLicenceOut */
+        InsuranceLicenceOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Status */
+            status: string;
+            /** Decided */
+            decided: string | null;
+        };
+        /** InsuranceScreenOut */
+        InsuranceScreenOut: {
+            /**
+             * Can Apply
+             * @description The company has an insurance line
+             */
+            can_apply: boolean;
+            /** Licence Capital Cents */
+            licence_capital_cents: number;
+            /** Licence Fee Cents */
+            licence_fee_cents: number;
+            /** Regions */
+            regions: components["schemas"]["FinRegionOptionOut"][];
+            /** Has Insurer */
+            has_insurer: boolean;
+            /** Licences */
+            licences: components["schemas"]["InsuranceLicenceOut"][];
+            /** Investments Cents */
+            investments_cents: number;
+            /** Float Cents */
+            float_cents: number;
+            /** Own Funds Cents */
+            own_funds_cents: number;
+            /** Required Cents */
+            required_cents: number;
+            /** Solvent */
+            solvent: boolean;
+            /**
+             * Premiums By Line
+             * @description This month's premiums by line
+             */
+            premiums_by_line: {
+                [key: string]: number;
+            };
+            /** Months */
+            months: components["schemas"]["LineMonthOut"][];
+            /**
+             * Catastrophes
+             * @description Those that have happened
+             */
+            catastrophes: components["schemas"]["CatastropheOut"][];
+        };
         /** InvestingRulesOut */
         InvestingRulesOut: {
             /** Join Energy */
@@ -15668,7 +16753,7 @@ export interface components {
              * Categories
              * @description Where a new startup can start
              */
-            categories: components["schemas"]["CategoryOptionOut"][];
+            categories: components["schemas"]["tst__api__schemas__investing__CategoryOptionOut"][];
             /** Holdings */
             holdings: components["schemas"]["HoldingOut"][];
             /** Listed */
@@ -16078,6 +17163,13 @@ export interface components {
              */
             busy: boolean;
         };
+        /** LeadSpec */
+        LeadSpec: {
+            /** Domain */
+            domain: string;
+            /** Lead */
+            lead: number;
+        };
         /** LeaderChangeOut */
         LeaderChangeOut: {
             /** Company Id */
@@ -16214,6 +17306,8 @@ export interface components {
              */
             net_worth_cents?: number;
         };
+        /** @enum {string} */
+        Length: "standard" | "dynasty" | "endless";
         /** LetterOut */
         LetterOut: {
             /**
@@ -16320,6 +17414,27 @@ export interface components {
             royalty_months_left: number;
             /** Signed */
             signed: string;
+        };
+        /** LineMonthOut */
+        LineMonthOut: {
+            /** Month */
+            month: string;
+            /** Premiums Cents */
+            premiums_cents: number;
+            /** Claims Cents */
+            claims_cents: number;
+            /** Combined Ratio */
+            combined_ratio: number;
+            /** Investment Income Cents */
+            investment_income_cents: number;
+            /** Float Cents */
+            float_cents: number;
+            /** Own Funds Cents */
+            own_funds_cents: number;
+            /** Required Cents */
+            required_cents: number;
+            /** Catastrophe */
+            catastrophe: boolean;
         };
         /** LineOptionOut */
         LineOptionOut: {
@@ -16562,6 +17677,19 @@ export interface components {
             rate_bp: number;
             /** Warrant Shares */
             warrant_shares: number;
+        };
+        /** LoanSpec */
+        LoanSpec: {
+            /** Lender */
+            lender: string;
+            /** Principal Dollars */
+            principal_dollars: number;
+            /** Rate Bp */
+            rate_bp: number;
+            /** Term Months */
+            term_months: number;
+            /** Interest Only Months */
+            interest_only_months: number;
         };
         /** LoanTermsOut */
         LoanTermsOut: {
@@ -16905,6 +18033,22 @@ export interface components {
              * @description Arrived eras of the category (27.3)
              */
             era_marks?: components["schemas"]["EraMarkOut"][];
+        };
+        /**
+         * MarketOverride
+         * @description A category's addressable market and annual growth.
+         */
+        MarketOverride: {
+            /**
+             * Market Mult
+             * @default 1
+             */
+            market_mult?: number;
+            /**
+             * Growth Delta
+             * @default 0
+             */
+            growth_delta?: number;
         };
         /** MarketProductOut */
         MarketProductOut: {
@@ -18436,41 +19580,29 @@ export interface components {
         };
         /** NetworkOut */
         NetworkOut: {
-            /** Product Id */
-            product_id: number;
-            /** Name */
-            name: string;
-            /** Status */
-            status: string;
-            /** Regions */
-            regions: components["schemas"]["RegionCustomersOut"][];
-            /** Users */
-            users: number;
-            /** Format */
-            format: string | null;
-            /** Format Label */
-            format_label: string | null;
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Since */
+            since: string;
             /**
-             * Advantage
-             * @description On the newest format within its window
+             * Acceptance
+             * @description Share of merchants that take it
              */
-            advantage: boolean;
+            acceptance: number;
             /**
-             * Network Effect
-             * @description Appeal x this in its largest region
+             * Share
+             * @description Its share of the region's card programmes
              */
-            network_effect: number;
-            /** Ad Load */
-            ad_load: number;
-            /** Moderation */
-            moderation: string;
+            share: number;
             /**
-             * Ad Revenue Cents
-             * @description Last month: users x their ad revenue a user
+             * Volume Cents
+             * @description Card volume it carries this month
              */
-            ad_revenue_cents: number;
-            /** Laws */
-            laws: components["schemas"]["LawOut"][];
+            volume_cents: number;
         };
         /** NetworkPaybackOut */
         NetworkPaybackOut: {
@@ -18597,6 +19729,18 @@ export interface components {
             energy: number;
             /** Hint */
             hint: string;
+        };
+        /** NodeOptionOut */
+        NodeOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * First Year
+             * @description The year it first ran in volume anywhere
+             */
+            first_year: number;
         };
         /** NodeOut */
         NodeOut: {
@@ -19238,6 +20382,37 @@ export interface components {
             /** Customers Lost */
             customers_lost: number;
         };
+        /** Overrides */
+        Overrides: {
+            /** @default {} */
+            company?: components["schemas"]["CompanyOverride"];
+            /** Rivals */
+            rivals?: {
+                [key: string]: components["schemas"]["RivalOverride"];
+            };
+            /**
+             * Added Rivals
+             * @default []
+             */
+            added_rivals?: components["schemas"]["AddedRivals"][];
+            /** Markets */
+            markets?: {
+                [key: string]: components["schemas"]["MarketOverride"];
+            };
+            /**
+             * @default {
+             *       "eras": "historical",
+             *       "commodities": {}
+             *     }
+             */
+            world?: components["schemas"]["WorldOverride"];
+            /**
+             * @default {
+             *       "challenges": []
+             *     }
+             */
+            rules?: components["schemas"]["RulesOverride"];
+        };
         /**
          * OverviewBreakdownsOut
          * @description The top bar's and Overview's driver tooltips, fetched when one first opens.
@@ -19407,6 +20582,104 @@ export interface components {
              * @description Every running event modifier (23.2, M10b)
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
+        };
+        /** OwnBankOut */
+        OwnBankOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @description applying, chartered, partner or failed
+             */
+            status: string;
+            /** Regulator */
+            regulator: string;
+            /**
+             * Charter Month
+             * @description When the regulator decides (applying)
+             */
+            charter_month: string | null;
+            /** Beta */
+            beta: number;
+            /** Loan To Deposit */
+            loan_to_deposit: number;
+            /** Securities Share */
+            securities_share: number;
+            /** Duration */
+            duration: number;
+            /** Deposits Cents */
+            deposits_cents: number;
+            /** Consumer Deposits Cents */
+            consumer_deposits_cents: number;
+            /** Business Deposits Cents */
+            business_deposits_cents: number;
+            /** Loans Cents */
+            loans_cents: number;
+            /** Loans */
+            loans: components["schemas"]["BankLoanOut"][];
+            /** Securities Cents */
+            securities_cents: number;
+            /**
+             * Securities Value Cents
+             * @description Market value at today's rate
+             */
+            securities_value_cents: number;
+            /** Unrealised Loss Cents */
+            unrealised_loss_cents: number;
+            /** Reserves Cents */
+            reserves_cents: number;
+            /** Cet1 Cents */
+            cet1_cents: number;
+            /** Rwa Cents */
+            rwa_cents: number;
+            /**
+             * Ratio
+             * @description CET1 / RWA (null without loans)
+             */
+            ratio: number | null;
+            /**
+             * Requirement
+             * @description Minimum plus buffers (and the size surcharge)
+             */
+            requirement: number;
+            /** Minimum */
+            minimum: number;
+            /**
+             * Nim
+             * @description The last 12 months' net interest margin
+             */
+            nim: number | null;
+            /** Policy Rate */
+            policy_rate: number;
+            /** Deposit Rate */
+            deposit_rate: number;
+            /** Market Deposit Rate */
+            market_deposit_rate: number;
+            /** Uninsured Share */
+            uninsured_share: number;
+            /** Insured Limit Cents */
+            insured_limit_cents: number;
+            /**
+             * Run Risk
+             * @description low, elevated or high: a band, never the chance
+             */
+            run_risk: string;
+            /** Restricted */
+            restricted: boolean;
+            /** Dividends Frozen Until */
+            dividends_frozen_until: string | null;
+            /** Capital In Cents */
+            capital_in_cents: number;
+            /** Stress */
+            stress: components["schemas"]["BankStressOut"][];
+            /** Runs */
+            runs: components["schemas"]["BankRunOut"][];
+            /** Months */
+            months: components["schemas"]["BankMonthOut"][];
         };
         /** OwnSupplyOut */
         OwnSupplyOut: {
@@ -19644,6 +20917,64 @@ export interface components {
             principal_cents: number;
             /** Balance After Cents */
             balance_after_cents: number;
+        };
+        /** PaymentsRegionOut */
+        PaymentsRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Acquired Cents
+             * @description Your merchants' card volume this month
+             */
+            acquired_cents: number;
+            /**
+             * Revenue Cents
+             * @description Your payments lines' revenue there this month
+             */
+            revenue_cents: number;
+            /**
+             * Take Rate
+             * @description Revenue over volume carried
+             */
+            take_rate: number | null;
+            /** Interchange Cents */
+            interchange_cents: number;
+            /** Fraud Cents */
+            fraud_cents: number;
+            /** Interchange Bp */
+            interchange_bp: number;
+            /**
+             * Rails Share
+             * @description Real-time rails' share of the region's volume
+             */
+            rails_share: number;
+            /**
+             * Networks
+             * @description The listed networks' shares (history)
+             */
+            networks: {
+                [key: string]: number;
+            };
+        };
+        /** PaymentsScreenOut */
+        PaymentsScreenOut: {
+            /**
+             * Can Launch
+             * @description The company has a payments line
+             */
+            can_launch: boolean;
+            /** Network Cost Cents */
+            network_cost_cents: number;
+            /** Network Fee Bp */
+            network_fee_bp: number;
+            /** Fraud Bp */
+            fraud_bp: number;
+            /** Networks */
+            networks: components["schemas"]["NetworkOut"][];
+            /** Regions */
+            regions: components["schemas"]["PaymentsRegionOut"][];
         };
         /** PeakOut */
         PeakOut: {
@@ -21040,6 +22371,42 @@ export interface components {
             moments: components["schemas"]["MomentOut"][];
             form: components["schemas"]["PromiseFormOut"];
         };
+        /**
+         * PreviewOut
+         * @description The start month's summary (66.1): built in memory, no turn played, nothing saved.
+         */
+        PreviewOut: {
+            /** Label */
+            label: string;
+            /** Start Label */
+            start_label: string;
+            /** Cash Cents */
+            cash_cents: number;
+            /** Debt Cents */
+            debt_cents: number;
+            /** Staff */
+            staff: {
+                [key: string]: number;
+            };
+            /** Products */
+            products: components["schemas"]["ProductLineOut"][];
+            /** Research */
+            research: {
+                [key: string]: number;
+            };
+            /** Rivals */
+            rivals: components["schemas"]["RivalLineOut"][];
+            /** Removed */
+            removed: string[];
+            /** Goal */
+            goal: string | null;
+            /** Deadline Label */
+            deadline_label: string | null;
+            /** Challenges */
+            challenges: string[];
+            /** Length */
+            length: string;
+        };
         /** PriceIn */
         PriceIn: {
             /** Segment */
@@ -21181,6 +22548,19 @@ export interface components {
         ProductIn: {
             /** Product Id */
             product_id: number;
+        };
+        /** ProductLineOut */
+        ProductLineOut: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Status */
+            status: string;
+            /** Quality */
+            quality: number;
+            /** Customers */
+            customers: number;
         };
         /** ProductMonthOut */
         ProductMonthOut: {
@@ -21585,6 +22965,30 @@ export interface components {
             /** Points */
             points: components["schemas"]["ProductPointOut"][];
         };
+        /** ProductSpec */
+        ProductSpec: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Quality */
+            quality: number;
+            /** Features */
+            features: number;
+            /** Brand */
+            brand: number;
+            /** Segments */
+            segments: {
+                [key: string]: components["schemas"]["SegmentSpec"];
+            };
+            /**
+             * Status
+             * @default live
+             * @enum {string}
+             */
+            status?: "live" | "in_development";
+            contract?: components["schemas"]["ContractSpec"] | null;
+        };
         /**
          * ProductTotalMonthOut
          * @description One month end across every segment of a product (the 12-month chart).
@@ -21718,6 +23122,25 @@ export interface components {
              * @default 0
              */
             net_to_owners_cents?: number;
+        };
+        /** ProgrammeIn */
+        ProgrammeIn: {
+            /** Share */
+            share: number;
+            /**
+             * Term Months
+             * @default 12
+             */
+            term_months?: number;
+        };
+        /** ProgrammeOut */
+        ProgrammeOut: {
+            /** Share */
+            share: number;
+            /** Term Months */
+            term_months: number;
+            /** By Cfo */
+            by_cfo: boolean;
         };
         /** ProjectBudgetIn */
         ProjectBudgetIn: {
@@ -22029,15 +23452,8 @@ export interface components {
             label: string;
             /** Group */
             group: string;
-            before: components["schemas"]["RangeOut"];
-            after: components["schemas"]["RangeOut"];
-        };
-        /** RangeOut */
-        RangeOut: {
-            /** Min */
-            min: number;
-            /** Max */
-            max: number;
+            before: components["schemas"]["tst__api__schemas__people__RangeOut"];
+            after: components["schemas"]["tst__api__schemas__people__RangeOut"];
         };
         /** RankingEntryOut */
         RankingEntryOut: {
@@ -22640,6 +24056,11 @@ export interface components {
             /** Seeded */
             seeded: boolean;
         };
+        /** RegionIn */
+        RegionIn: {
+            /** Region */
+            region: string;
+        };
         /** RegionNetworkOut */
         RegionNetworkOut: {
             /** Region */
@@ -23209,6 +24630,19 @@ export interface components {
             statements: components["schemas"]["StatementOut"][];
             feud: components["schemas"]["FeudOut"];
         };
+        /** RivalLineOut */
+        RivalLineOut: {
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Quality */
+            quality: number;
+            /** Customers */
+            customers: number;
+            /** Added */
+            added: boolean;
+        };
         /** RivalMinerOut */
         RivalMinerOut: {
             /** Supplier */
@@ -23259,6 +24693,28 @@ export interface components {
             date_label: string;
             /** Market */
             market: string;
+        };
+        /**
+         * RivalOverride
+         * @description One incumbent (incumbents.yaml, by name): present or removed, its cash and its products'
+         *     quality.
+         */
+        RivalOverride: {
+            /**
+             * Present
+             * @default true
+             */
+            present?: boolean;
+            /**
+             * Cash Mult
+             * @default 1
+             */
+            cash_mult?: number;
+            /**
+             * Quality Delta
+             * @default 0
+             */
+            quality_delta?: number;
         };
         /**
          * RivalProductMarketOut
@@ -23668,6 +25124,15 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** RoleOptionOut */
+        RoleOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Levels */
+            levels: string[];
+        };
         /** RoleOut */
         RoleOut: {
             /** Key */
@@ -23927,6 +25392,17 @@ export interface components {
             source: string;
             /** Seeded */
             seeded: boolean;
+        };
+        /**
+         * RulesOverride
+         * @description M51's challenge rules (63.2). The campaign length is the entry's own `length`.
+         */
+        RulesOverride: {
+            /**
+             * Challenges
+             * @default []
+             */
+            challenges?: string[];
         };
         /** RxAssetOut */
         RxAssetOut: {
@@ -24625,6 +26101,12 @@ export interface components {
              * @enum {string}
              */
             eras?: "historical" | "seeded";
+            /**
+             * Endless
+             * @description M52 (66.3): a sandbox with no end (past December 2069)
+             * @default false
+             */
+            endless?: boolean;
         };
         /**
          * SandboxMetaOut
@@ -24695,7 +26177,7 @@ export interface components {
             busy: boolean;
             /**
              * Mode
-             * @description campaign | sandbox | scenario (M15b)
+             * @description campaign | sandbox | scenario (M15b) | custom (M52)
              * @default campaign
              */
             mode?: string;
@@ -25080,6 +26562,17 @@ export interface components {
             /** Shares */
             shares: number;
         };
+        /** SeedResultOut */
+        SeedResultOut: {
+            /** Seed */
+            seed: number;
+            /** Result */
+            result: string | null;
+            /** Month Label */
+            month_label: string;
+            /** Score */
+            score: number | null;
+        };
         /** SeenIn */
         SeenIn: {
             /** Keys */
@@ -25089,6 +26582,13 @@ export interface components {
         SegmentIn: {
             /** Segment */
             segment: string;
+        };
+        /** SegmentSpec */
+        SegmentSpec: {
+            /** Price Dollars */
+            price_dollars: number;
+            /** Customers */
+            customers: number;
         };
         /** SellSharesIn */
         SellSharesIn: {
@@ -25361,10 +26861,48 @@ export interface components {
              */
             board_confidence: number | null;
         };
+        /** SocialNetworkOut */
+        SocialNetworkOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Regions */
+            regions: components["schemas"]["RegionCustomersOut"][];
+            /** Users */
+            users: number;
+            /** Format */
+            format: string | null;
+            /** Format Label */
+            format_label: string | null;
+            /**
+             * Advantage
+             * @description On the newest format within its window
+             */
+            advantage: boolean;
+            /**
+             * Network Effect
+             * @description Appeal x this in its largest region
+             */
+            network_effect: number;
+            /** Ad Load */
+            ad_load: number;
+            /** Moderation */
+            moderation: string;
+            /**
+             * Ad Revenue Cents
+             * @description Last month: users x their ad revenue a user
+             */
+            ad_revenue_cents: number;
+            /** Laws */
+            laws: components["schemas"]["LawOut"][];
+        };
         /** SocialOut */
         SocialOut: {
             /** Networks */
-            networks: components["schemas"]["NetworkOut"][];
+            networks: components["schemas"]["SocialNetworkOut"][];
             /** Formats */
             formats: components["schemas"]["FormatOut"][];
             /** Ads */
@@ -25594,6 +27132,17 @@ export interface components {
             /** Unit Id */
             unit_id: number | null;
         };
+        /** StaffSpec */
+        StaffSpec: {
+            /** Role */
+            role: string;
+            /** Level */
+            level: string;
+            /** Count */
+            count: number;
+            /** Unit */
+            unit?: string | null;
+        };
         /** StageIn */
         StageIn: {
             /**
@@ -25695,6 +27244,18 @@ export interface components {
              * @description The group's products on the losing format
              */
             yours_on_loser: number[];
+        };
+        /** StartOptionOut */
+        StartOptionOut: {
+            /**
+             * Key
+             * @description A scenarios.yaml key, or blank_<year>
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** Year */
+            year: number;
         };
         /** StartProjectIn */
         StartProjectIn: {
@@ -28358,6 +29919,22 @@ export interface components {
              */
             tool_licensable: string[];
         };
+        /**
+         * WorldOverride
+         * @description The macro start, eras and commodity price levels (66.1).
+         */
+        WorldOverride: {
+            /** Confidence */
+            confidence?: number | null;
+            /** Policy Rate Pct */
+            policy_rate_pct?: number | null;
+            /** @default historical */
+            eras?: components["schemas"]["Eras"];
+            /** Commodities */
+            commodities?: {
+                [key: string]: number;
+            };
+        };
         /** YearPointOut */
         YearPointOut: {
             /** Year */
@@ -28461,6 +30038,34 @@ export interface components {
             unit_id: number;
             /** Name */
             name: string;
+        };
+        /** CategoryOptionOut */
+        tst__api__schemas__editor__CategoryOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Segments */
+            segments: string[];
+            /**
+             * Market Editable
+             * @description False: its market follows its own data
+             */
+            market_editable: boolean;
+        };
+        /** OptionOut */
+        tst__api__schemas__editor__OptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** RangeOut */
+        tst__api__schemas__editor__RangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
         };
         /**
          * EventLinkOut
@@ -28591,6 +30196,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** CategoryOptionOut */
+        tst__api__schemas__investing__CategoryOptionOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+        };
         /** IndexPointOut */
         tst__api__schemas__investing__IndexPointOut: {
             /** Turn */
@@ -28643,6 +30255,13 @@ export interface components {
             event_id: number;
             /** Label */
             label: string;
+        };
+        /** RangeOut */
+        tst__api__schemas__people__RangeOut: {
+            /** Min */
+            min: number;
+            /** Max */
+            max: number;
         };
         /** ListingOut */
         tst__api__schemas__platforms__ListingOut: {
@@ -44372,6 +45991,696 @@ export interface operations {
             };
         };
     };
+    getEditor: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorOut"];
+                };
+            };
+        };
+    };
+    openEditorStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                start: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    checkCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCheckOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    listCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomCardOut"][];
+                };
+            };
+        };
+    };
+    createCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    updateCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    deleteCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    importCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomScenario"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    exportCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    previewCustom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    startDifficulty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomScenario"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DifficultyOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getDifficulty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DifficultyOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     listMods: {
         parameters: {
             query?: {
@@ -48722,6 +51031,64 @@ export interface operations {
             };
         };
     };
+    continueSandbox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
     getRobotics: {
         parameters: {
             query?: never;
@@ -50162,6 +52529,624 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFinserv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    applyCharter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    partnerBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                bank_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    bankCapital: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                bank_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    launchNetwork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    applyInsuranceLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    insurerCapital: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buyForward: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForwardIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setHedgeProgramme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgrammeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
                 };
             };
             /** @description Bad Request */

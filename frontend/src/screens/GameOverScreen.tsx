@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router';
 import { CampaignEndPanel } from '../components/CampaignEndPanel';
+import { SandboxContinuePanel } from '../components/SandboxContinuePanel';
 import { ExitChoicePanel } from '../components/ExitChoicePanel';
 import { LegacyPanel } from '../components/FounderPanels';
 import { ScenarioScorePanel } from '../components/ScenarioScorePanel';
@@ -267,6 +268,7 @@ export function GameOverScreen() {
         </div>
         {g.can_found_again && <ExitChoicePanel saveId={saveId} over={g} />}
         {g.can_continue && <CampaignEndPanel saveId={saveId} over={g} />}
+        {g.game_state === 'dynasty_end' && <SandboxContinuePanel saveId={saveId} />}
         <LegacyPanel legacy={g.legacy} />
         {g.game_state === 'founder_removed' && g.directors.length > 0 && (
           <section className="tst-panel" aria-label="The directors">

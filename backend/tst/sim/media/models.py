@@ -4,7 +4,7 @@ settings (an ad tier, ad load, a social network's format and moderation, consume
 pricing), licences in, divest-or-ban laws, service months and the game-wide world rows (growth,
 ad spend's growth, seeded format eras, console generations and strikes, and the ad market's
 calibration at 2026), all hidden until they come. Persisted in `media_record` (migration
-0068_m55), one row a record.
+0070_m55), one row a record.
 
 Hidden values (65.8, the brief's hidden-value test): a title's audience is drawn at release (stream
 media (0, title id)) and never before; a lead's `ego` and `loyalty` live here only, never in the

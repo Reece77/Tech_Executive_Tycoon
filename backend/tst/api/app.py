@@ -18,6 +18,7 @@ from tst.api.routers import (
     contracts,
     coo,
     desktop,
+    editor,
     equipment,
     events,
     explain,
@@ -26,6 +27,7 @@ from tst.api.routers import (
     facilities,
     family,
     finance,
+    finserv,
     founder,
     game,
     geo,
@@ -74,6 +76,7 @@ from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
     CriticalEventOpenError,
+    CustomScenarioExistsError,
     EventError,
     EventsOpenError,
     GameOverError,
@@ -99,6 +102,7 @@ ERROR_STATUS: dict[type[SimError], int] = {
     EventError: status.HTTP_409_CONFLICT,
     UpgradeNeededError: status.HTTP_409_CONFLICT,
     IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
+    CustomScenarioExistsError: status.HTTP_409_CONFLICT,  # M52: save as another name
 }
 
 
@@ -147,6 +151,7 @@ def create_app() -> FastAPI:
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
     app.include_router(scenarios.router)  # M51
+    app.include_router(editor.router)  # M52
     app.include_router(mods.router)  # M25
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
@@ -162,6 +167,7 @@ def create_app() -> FastAPI:
     app.include_router(robotics.router)  # M39
     app.include_router(space.router)  # M40
     app.include_router(telecom.router)  # M53
+    app.include_router(finserv.router)  # M54
     app.include_router(media.router)  # M55
     app.include_router(government.router)  # M44
     app.include_router(regulation.router)  # M34

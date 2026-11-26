@@ -1,4 +1,4 @@
-"""Loading and syncing M55's records (formulas.md 65; migration 0068_m55). Every collection of
+"""Loading and syncing M55's records (formulas.md 65; migration 0070_m55). Every collection of
 `GameState.media` lives in `media_record`, one row a record (`kind` = the MediaState field), its
 fields in `data`; a changed collection is rewritten whole."""
 
@@ -52,7 +52,7 @@ STRIDE: Final = 1_000_000  # tunable-exempt: row numbers kind_index x STRIDE + p
 def load_media(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every media record (0068_m55); a save from before M55 has none."""
+    """Every media record (0070_m55); a save from before M55 has none."""
     if not has_table(session, MediaRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in COLLECTIONS}

@@ -33,7 +33,10 @@ type Hashes = dict[str, list[str]]  # "full_integrator/seed/dynasty" -> one dige
 
 # M51: GameMode gained `challenges` (empty in this game) after the fixture was recorded; the
 # digest leaves it out, as M37's does for fields added after its fixture (m30.Digester)
-SKIP: Final[Mapping[type, frozenset[str]]] = {GameMode: frozenset({"challenges"})}
+# M52: and `scenario_sha256` (None) and `growth_delta` (empty), likewise
+SKIP: Final[Mapping[type, frozenset[str]]] = {
+    GameMode: frozenset({"challenges", "scenario_sha256", "growth_delta"})
+}
 
 
 def key(seed: int) -> str:

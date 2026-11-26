@@ -12,7 +12,7 @@ export type LeadOffer = Schemas['LeadOfferOut'];
 export type Service = Schemas['MediaServiceOut'];
 export type ServiceMonth = Schemas['ServiceMonthOut'];
 export type GameTitle = Schemas['GameTitleOut'];
-export type Network = Schemas['NetworkOut'];
+export type Network = Schemas['SocialNetworkOut'];
 export type AdMarket = Schemas['AdMarketOut'];
 export type RegionCustomers = Schemas['RegionCustomersOut'];
 

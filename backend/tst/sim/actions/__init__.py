@@ -243,6 +243,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.dynasty.lifetime import RetireFounder, retire_founder
 from tst.sim.dynasty.mode import (
     ContinueDynasty,
+    ContinueSandbox,
     EndCampaign,
     apply_mode_action,
     check_can_play,
@@ -275,6 +276,20 @@ from tst.sim.fabs.actions import BuildFab, FabAction, UpgradeFab, apply_fab
 from tst.sim.fabs.foundry import ACTION_TYPES as FOUNDRY_ACTION_TYPES
 from tst.sim.fabs.foundry import SignFoundryContract
 from tst.sim.fabs.foundry import sign as sign_foundry_contract
+from tst.sim.finserv.actions import ACTION_TYPES as FINSERV_ACTION_TYPES
+from tst.sim.finserv.actions import (
+    ApplyCharter,
+    ApplyInsuranceLicence,
+    BankCapital,
+    FinservAction,
+    InsurerCapital,
+    LaunchNetwork,
+    PartnerBank,
+    SetBank,
+    apply_finserv,
+)
+from tst.sim.fx.actions import ACTION_TYPES as FX_ACTION_TYPES
+from tst.sim.fx.actions import BuyForward, FxAction, SetHedgeProgramme, apply_fx
 from tst.sim.geo.cities import settle_home_cities
 from tst.sim.geopolitics.actions import ACTION_TYPES as GEOPOLITICS_ACTION_TYPES
 from tst.sim.geopolitics.actions import (
@@ -474,6 +489,7 @@ type Action = (
     | FoundAgain  # M15b addendum 10
     | Retire
     | ContinueDynasty  # M37 (52.1)
+    | ContinueSandbox  # M52 (66.3)
     | RetireFounder  # M37 (52.4)
     | EndCampaign
     | PressAction
@@ -501,6 +517,8 @@ type Action = (
     | PharmaAction  # M42
     | SpaceAction  # M40
     | TelecomAction  # M53
+    | FxAction  # M54 (64.4)
+    | FinservAction  # M54 (64.1-64.3)
     | MediaAction  # M55
     | GovernmentAction  # M44
     | NegotiationAction  # M47
@@ -530,6 +548,8 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **PHARMA_ACTION_TYPES,  # M42 (55)
     **SPACE_ACTION_TYPES,  # M40 (56)
     **TELECOM_ACTION_TYPES,  # M53 (62)
+    **FX_ACTION_TYPES,  # M54 (64.4)
+    **FINSERV_ACTION_TYPES,  # M54 (64.1-64.3)
     **MEDIA_ACTION_TYPES,  # M55 (65)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
@@ -632,6 +652,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     "found_again": FoundAgain,  # M15b addendum 10
     "retire": Retire,
     "continue_dynasty": ContinueDynasty,  # M37 (52.1)
+    "continue_sandbox": ContinueSandbox,  # M52 (66.3)
     "end_campaign": EndCampaign,
     "retire_founder": RetireFounder,
 }
@@ -828,7 +849,7 @@ def apply_action(
             state, action.company_name, action.keep_cents, rng, balance, data
         )
         return ActionResult(new, entries, logs)
-    if isinstance(action, ContinueDynasty | EndCampaign):  # M37 (52.1): before or at the end
+    if isinstance(action, ContinueDynasty | EndCampaign | ContinueSandbox):  # M37, M52
         return ActionResult(apply_mode_action(state, action, balance), (), ())
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
@@ -1105,6 +1126,18 @@ def apply_action(
             | SetTelecomLine()
         ):
             out = apply_telecom(state, action, ledger_balances, balance, data)  # M53 (62)
+        case BuyForward() | SetHedgeProgramme():
+            out = apply_fx(state, action, balance, data)  # M54 (64.4)
+        case (
+            ApplyCharter()
+            | PartnerBank()
+            | SetBank()
+            | BankCapital()
+            | LaunchNetwork()
+            | ApplyInsuranceLicence()
+            | InsurerCapital()
+        ):
+            out = apply_finserv(state, action, ledger_balances, balance, data)  # M54 (64.1-64.3)
         case (
             GreenlightTitle()
             | CancelTitle()

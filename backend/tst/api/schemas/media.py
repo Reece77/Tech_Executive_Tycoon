@@ -178,7 +178,7 @@ class LawOut(BaseModel):
     status: str
 
 
-class NetworkOut(BaseModel):
+class SocialNetworkOut(BaseModel):
     product_id: int
     name: str
     status: str
@@ -216,7 +216,7 @@ class ConsumerAppOut(BaseModel):
 
 
 class SocialOut(BaseModel):
-    networks: list[NetworkOut]
+    networks: list[SocialNetworkOut]
     formats: list[FormatOut]
     ads: list[AdMarketOut]
     consumer_apps: list[ConsumerAppOut]

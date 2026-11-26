@@ -359,6 +359,9 @@ products:
     aviation_maritime: 0.3 # M40 (56.3): airlines and shipping fleets (A)
     telecom_business: 20 # M53 (62.1): business lines a seller signs a month (A: a small-business account of a few lines)
     carriers: 0.05 # M53 (62.1, 62.3): a carrier contract or a site-set order a customer (A)
+    bank_business: 15 # M54 (64.1): business accounts a banker opens a month (A: a relationship banker's small-business book)
+    pay_merchants: 25 # M54 (64.2): merchants a payments seller signs a month (A: small merchants by inside sales)
+    pay_networks: 0.5 # M54 (64.2): card programmes (a $10M a year unit) a network seller signs a month (A: an issuer deal brings many units)
   marketer_mk: 5 # marketing points per unit of marketer contribution mu (11.5)
   # M46 (11.5): marketers direct a large budget. Marketing points above marketer_lift_from_mk
   # (the first $200k a month needs no team) are multiplied by 1 + min(cap, lift x mu): one
@@ -561,6 +564,9 @@ rivals:
     fixed_broadband: { builder: 0.55, seller: 0.20, marketer: 0.25 } # M53 (A)
     wholesale: { builder: 0.60, seller: 0.35, marketer: 0.05 } # M53 (A: carrier sales)
     network_equipment: { builder: 0.75, seller: 0.20, marketer: 0.05 } # M53 (62.3): vendors (A: engineering-led, sold by contract)
+    banking: { builder: 0.45, seller: 0.30, marketer: 0.25 } # M54 (64.1): banks (A: technology, relationship bankers, retail marketing)
+    payments: { builder: 0.55, seller: 0.35, marketer: 0.10 } # M54 (64.2): networks and acquirers (A: engineering and merchant sales)
+    insurance: { builder: 0.40, seller: 0.35, marketer: 0.25 } # M54 (64.3): insurers (A: underwriting, agents and brokers, brand)
     streaming: { builder: 0.50, seller: 0.0, marketer: 0.50 } # M55 (65.7): media rivals (A: content is the media module's; marketing-led consumer services)
     music_streaming: { builder: 0.55, seller: 0.0, marketer: 0.45 }
     games: { builder: 0.75, seller: 0.0, marketer: 0.25 }
@@ -723,7 +729,7 @@ exec_authority: # executives with authority (formulas.md 24, M10c)
     cro: { headcount_cap: 20, price_band_pct: 10, max_salary_ratio_bp: 11000 } # sellers; +- % of the player's last price
     cmo: { marketing_pct_of_revenue: 15 } # % of last month's revenue spent on marketing in total
     coo: { coverage_target: 1.0, lease_approval_rent_cents: 0, max_salary_ratio_bp: 11000 } # support coverage; rent above which a lease is only proposed
-    cfo: { runway_months: 9, repay_above_months: 24 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second
+    cfo: { runway_months: 9, repay_above_months: 24, hedge_pct: 0 } # months of burn: propose a round or loan below the first; repay debt early with cash above the second. M54 (64.4): hedge_pct, % of each month's net foreign revenue the CFO hedges 12 months ahead (0 = none; at most fx.cfo_limit_share)
     cpo: { headcount_cap: 12, categories: [], protected_products: [] } # M13b (27.1): builders a new product's team may total; category keys it may enter ([] = any); product ids it may not sunset
 
 pitch: # executives' pitches: big moves they propose for the founder to approve (formulas.md 27.1, M13b)
@@ -1669,6 +1675,36 @@ sandbox:
   cash_dollars: [100000, 100000000] # starting cash offered, dollars (M15b decision)
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
+
+editor: # M52 (formulas.md 66.1, ADR-0026): every field a custom scenario may set, with its range; a field outside its range is refused with the reason
+  start_years: [2008, 2030] # calendar years a custom start may begin in (M50's 2008 world to M51's latest scenario, The dynasty's 2030)
+  macro_from_year: 2026 # macro and commodity starting levels are editable from this year: before it both are history (20.1, 33.1), the same on every seed
+  cash_dollars: [0, 10000000000] # dollars of starting cash (up to $10bn: a funded giant, still far inside int64 cents)
+  debt_dollars: [0, 5000000000] # dollars: the starting loans' summed principal
+  staff_count: [1, 500] # people in one staff line (role and level)
+  staff_total: [0, 2000] # people in every staff line together (a start's hiring is one month's draws: kept to a mid-size company)
+  products: [0, 12] # products at the start
+  quality: [0, 100] # points, a product's quality (the scale's bounds)
+  features: [0, 2000] # feature points (M51's scenarios give 25-400)
+  brand: [0, 100] # points, a product's brand (the scale's bounds)
+  customers: [0, 100000000] # customers in one segment at the start
+  price_dollars: [0, 1000000] # dollars a month (or a unit) in one segment
+  research_lead: [0, 60] # points, a research lead (M51's scenarios give 5-30)
+  fabs: [0, 4] # fabs running at the start (38.2's start builder; data centres, plants and mines have none yet)
+  founder_age: [18, 80] # years at the start (M51's The dynasty: 64)
+  child_age: [0, 50] # years at the start
+  children: [1, 6] # children in a family at the start
+  rival_cash_mult_range: [0.25, 4.0] # x an incumbent's cash at the start
+  rival_quality_range: [-30, 30] # + points on each of an incumbent's products' quality (then clamped to 0-100)
+  added_rivals: [1, 5] # generic rivals added in one category at the start
+  market_mult_range: [0.5, 2.0] # x a category's addressable market at the start (54.1's ceilings still bind from 2026)
+  growth_delta_range: [-0.10, 0.10] # + a category's annual demand growth, fraction a year, from the start (never below 0 a year)
+  confidence: [60, 130] # consumer confidence at the start, index (100 = 2010-2019; history spans about 70-115)
+  policy_rate_pct: [0.0, 10.0] # the base rate at the start, % a year
+  commodity_mult_range: [0.5, 2.0] # x a commodity's price level at the start (it then reverts by 33.1's AR(1))
+  deadline_years: [1, 40] # years from the start to a goal's deadline
+  preview_seeds: [1, 2, 3] # the difficulty estimate: the sensible script on these seeds (66.1)
+  preview_months: 120 # months the estimate plays at most (a goal's verdict ends it sooner)
 
 challenges: # M51 (formulas.md 63.2): challenge rules a new game or scenario may add; each refuses its actions and multiplies the company score shown
   rules:
@@ -3058,6 +3094,10 @@ medical: # 50: medical devices (M41, v5 lane D). Data (routes, review times, app
 dynasty: # 52: dynasty mode, January 2040 to December 2069 (M37). Nothing here runs before start_year, with the mode on or off (52.5 target 1)
   start_year: 2040 # the first year past the standard campaign (December 2039, 360 turns; 52.1)
   end_year: 2069 # a dynasty game's last year: its final summary follows December (52.1)
+  beyond: # M52 (formulas.md 66.3): sandbox past 2069. Nothing here changes a month before January 2070
+    start_year: 2070 # the first sandbox year (a dynasty game continued in sandbox, or a sandbox begun endless); eras.yaml's beyond_2069 wave is in play from its January
+    end_year: 2120 # series 52.2 continues by rule (research baselines by decade, category growth's maturity) are extended at load to this year; a later year reads the last rate (A: eras.yaml's third wave ends here)
+    nodes: 4 # process-node successors past dynasty.nodes.count, nodes.yaml's atomic5-atomic8: windows about 2076-2117 as the gaps keep growing 20% a step (52.2's rule)
   nodes: # 52.2: seeded successors to nodes.yaml's last future node (A3), stream dynasty (0, series, step)
     count: 6 # successors generated: their windows run past 2069 (A)
     gap_years: 3.0 # years from the last future node's window midpoint to the first successor's (A: IRDS's 2-3 year cadence, slowing)
@@ -3467,6 +3507,127 @@ telecom: # 62: telecom (M53, v6 lane B). Data (subscriptions, ARPU, generations,
   energy: { build: 4, bid: 3, replace: 2, setting: 1 } # founder energy (A)
   unlock_year: 2012 # the Telecom screen opens (M29) from 2012 for a stage-3 company that makes devices or chips, or with a telecom line or network
 
+fx: # 64.4 and ADR-0025: currencies (M54, v6 lane A). History (2008-2025) is fx_history.yaml's, from FRED; these are the game's dials. The player's regional lines translate from the start; rivals and the seeded walk from `applies_from`. A = an assumption for gameplay, tuned only for 64.6
+  applies_from: "2026-01" # rivals' regional lines translate, and the indexes walk, from this month (ADR-0025 point 4)
+  home: north_america # the region whose currency is the US dollar (its index is 1 always)
+  reversion: 0.02 # a month's pull of ln index toward ln anchor (A: half-life about 3 years, R: PPP deviations' half-life of 3-5 years, Rogoff 1996)
+  sigma: # a month's standard deviation of ln index (A: 2010-2025's monthly moves in fx_history.yaml, about 2-3% for the majors, D)
+    north_america: 0.0
+    europe: 0.020
+    east_asia: 0.012
+    south_southeast_asia: 0.014
+    latin_america: 0.030
+    africa: 0.035
+    oceania: 0.028
+  drift: # the anchor's yearly drift (A: inflation gaps against the US, R: IMF WEO 2025)
+    north_america: 0.0
+    europe: 0.0
+    east_asia: 0.0
+    south_southeast_asia: -0.02
+    latin_america: -0.03
+    africa: -0.03
+    oceania: 0.0
+  jump_chance: 0.004 # a month's chance of a jump in a region (A: one or two a decade, as 2015's franc and renminbi and 2016's pound)
+  jump_size: 0.10 # a jump moves the index by +/- this share (A: the franc's 2015 and the pound's 2016 moves, 8-20%)
+  spread_bp: # a forward's spread against the buyer (R: about 5-20 bp for majors, more for emerging currencies, the dossier)
+    north_america: 0
+    europe: 10
+    east_asia: 15
+    south_southeast_asia: 30
+    latin_america: 40
+    africa: 50
+    oceania: 10
+  rate_comove: 0.6 # a region's policy rate after 2025 = its December 2025 rate + this x the US rate's move since (A)
+  term_months: [1, 12] # a forward's term (ADR-0025 point 5)
+  max_hedge_share: 1.0 # hedges may cover at most this share of the next 12 months' net foreign revenue
+  cfo_limit_share: 0.8 # the CFO delegate's hedging programme covers up to this share (R: large tech groups hedge 50-80%, the dossier)
+  what_if_move: 0.10 # the Currency screen's what-if dollar move (64.4)
+  history_months: 24 # translation months kept for the Currency screen
+  unlock_share: 0.05 # the Currency screen opens when this share of revenue is outside the home region
+
+finserv: # 64.1-64.3 and 64.5: banking, payments and insurance (M54, v6 lane A). Data (margins, charge-offs, deposits, capital rules, card volume, interchange caps, rails, premiums, combined ratios, catastrophes, rivals, regulators) is finance_services.yaml's, cited; these are the game's dials. Nothing here moves anything before `start` but the player's own bank, network and insurer (64.6 target 1). A = an assumption for gameplay, tuned only for 64.6
+  start: "2026-01" # history holds before this month (rivals follow finance_services.yaml; seeded growth and catastrophes from it)
+  banking_category: banking # categories.yaml keys
+  payments_category: payments
+  insurance_category: insurance
+  scale: 0.085 # the game's economy scale (economy_scale.money 0.0849, as telecom.scale): accounts, merchants, policies, volume units and capital minimums
+  scale_basis: "economy_scale.money (M34), as telecom.scale"
+  bank:
+    charter_capital_cents: 200000000 # $2M: a de novo bank's minimum capital, about $20-30M (R: FDIC de novo guidance) x scale
+    charter_fee_cents: 50000000 # $500K: application, legal and compliance build-out (A)
+    strict_months: 6 # months a strict regulator adds to a charter (A)
+    strict_line: 1.15 # a bank regulator is strict at or above this strictness index (regulation.yaml finance_regulators)
+    beta_range: [0.10, 0.90] # the deposit beta the player may choose (64.1)
+    default_beta: 0.40 # R: about 0.3 in 2016-2019's rises, 0.4-0.5 in 2022-2023's (the dossier)
+    market_beta: 0.35 # the market's deposit rate = policy rate x this (R: the dossier's betas)
+    rate_elasticity: 0.25 # a bank's deposits' target x (1 + this x (its rate - the market's), in points) (A)
+    rate_floor: 0.40 # the target's lower limit, of balance x accounts
+    rate_cap: 2.0 # the target's upper limit
+    deposit_adjust: 0.10 # a month's move of deposits toward their target (A: deposits reprice within a year)
+    partner_share: 0.30 # of net interest income a partner bank passes to the fintech (R: banking-as-a-service splits of about 20-40%)
+    loan_mix: { mortgage: 0.30, consumer: 0.15, card: 0.10, small_business: 0.20, corporate: 0.25 } # new loans' default mix (A: US banks' book, FDIC QBP, R)
+    loan_to_deposit: 0.70 # loans / deposits target (R: US banks about 0.65-0.85, FRED TOTLL / deposits)
+    securities_share: 0.25 # securities / deposits target (A)
+    duration_years: [1.0, 10.0] # securities' duration the player may choose
+    default_duration: 4.0 # years (R: US banks' securities about 4-6 years in 2021, FDIC)
+    term_premium: 0.15 # securities' yield over the policy rate, points a year of duration (A: a 2-10 year Treasury curve's slope)
+    loss_cycle_k: 0.8 # after 2025 charge-offs x (1 + this x (100 - confidence) / 100) (64.1; A)
+    loss_base_years: [2015, 2019] # a kind's base charge-off rate after 2025: these years' mean (A)
+    reserve_min: 0.05 # cash a bank keeps against deposits before it lends or buys securities (A)
+    gsib_assets_cents: 17000000000000 # $170B: the size surcharge's line, $2T of a G-SIB x scale (A from the FSB's list, R)
+    intervene_share: 0.5 # CET1 below this x the minimum: the regulator intervenes (64.1, 48's stages)
+    stress:
+      size_cents: 850000000000 # $8.5B: $100B of assets x scale (R: the Fed's stress tests' line from 2019)
+      month: 6 # results each June (R)
+      rate_shock: [1.0, 3.0] # points added to the policy rate (A: the Fed's severely adverse scenarios)
+      loss_mult: [2.0, 4.0] # a year's charge-offs x this (A)
+      deposit_outflow: [0.05, 0.15] # share of deposits that leaves (A)
+      freeze_months: 12 # dividends frozen after a failed test (64.1)
+    run:
+      unrealised_share: 0.5 # unrealised securities losses over CET1 above this ... (64.1; A: SVB's were about 1.0, R)
+      uninsured_min: 0.40 # ... with uninsured deposits above this share (A)
+      chance: 0.12 # a month's run chance at full pressure (A, tuned for 64.6 target 3)
+      pressure_k: 0.5 # unrealised share above the line that is full pressure
+      withdraw: [0.30, 0.70] # a run withdraws this share of uninsured deposits (R: SVB's $42B of about $175B in a day)
+    dividend_share: 0.5 # of a December's profit above the capital line the bank pays its parent (A)
+    group_review_share: 0.5 # a group whose non-bank revenue is above this share is a tech group: owning a bank draws a review (64.5; A)
+    rival_fee_share: 0.3 # rivals' fee lines are this share of a bank's revenue (R: US banks' noninterest income about 30%, FDIC)
+  payments:
+    network_cost_cents: 8500000000 # $85M: building a card network in a region, about $1B x scale (A)
+    acceptance_ref: 0.30 # acceptance at which a network's appeal is 1x (A)
+    acceptance_k: 1.2 # appeal x (acceptance / ref) ** this: the two-sided network effect (A, tuned for 64.6 target 4)
+    acceptance_adjust: 0.08 # a month's move of acceptance toward its target (A)
+    acceptance_exponent: 0.5 # target acceptance = network share ** this: merchants accept a network with a fifth of cards at about 45% (A)
+    appeal_range: [0.2, 3.0] # the network's appeal multiplier is held within this
+    fraud_skill_cut: 0.5 # the most a security team at 20 cuts fraud (64.2; A)
+    card_turnover: 0.4 # a month's card volume a dollar of card balances (A: US purchase volume about $4T on about $1T of balances a year, R)
+    growth_after: # card volume's yearly growth after 2025, drawn each January (A: Visa's and Mastercard's 2015-2024 growth, R)
+      north_america: [0.04, 0.08]
+      europe: [0.04, 0.08]
+      east_asia: [0.02, 0.06]
+      south_southeast_asia: [0.08, 0.15]
+      latin_america: [0.05, 0.10]
+      africa: [0.08, 0.15]
+      oceania: [0.03, 0.06]
+    rail_growth_after: 0.02 # rails' share gains this a year after 2025 ... (A)
+    rail_cap: 0.75 # ... up to this
+  insurance:
+    licence_capital_cents: 100000000 # $1M: an insurer's minimum capital, about $10M (R: state minimums) x scale
+    licence_fee_cents: 20000000 # $200K: application and filings (A)
+    price_elasticity: 1.0 # claims ratio x (reference / price) ** this: cheap policies draw worse risks (A)
+    skill_cut: 0.08 # the most a top team (finance and data at 20) cuts the claims ratio (A)
+    float_spread: -0.5 # the float earns the policy rate plus this, points (A: insurers' bond books)
+    cat:
+      chance: 0.25 # a year's chance of a catastrophe year after 2025 (R: 2011, 2017, 2021, 2022, 2024 in 2010-2024)
+      extra: [4.0, 12.0] # points added to property's combined ratio that year (R: 2011's and 2017's against their neighbours)
+      region_mult: 2.0 # the hit region's extra x this; others x the region's catastrophe share x 7
+    base_years: [2013, 2024] # a line's base combined ratio after 2025: these years' mean (A)
+    rival_claims_share: 0.90 # rivals' running cost, of premiums (A: combined ratio less float income)
+  growth_after: [0.0, 0.02] # accounts' and policies' yearly growth after 2025, drawn each January a region (A)
+  rival_cash_cents: 2000000000000 # $20B: a finance incumbent's opening capital at game scale (A: big banks' and insurers' equity x scale)
+  history_months: 36 # bank, network and insurer months kept (the screens' charts)
+  energy: { charter: 4, partner: 2, setting: 1, capital: 1, network: 4, licence: 3, hedge: 1 } # founder energy a finance or currency action spends
+  unlock_year: 2014 # finance opens to a stage-3 fintech from this year (A: neobanks from 2013-2015)
 media: # 65: media and entertainment (M55, v6 lane B). Data (ad spend, internet users, ARPU, streaming and music markets, games revenue, generations, formats, strikes, rivals' lines) is media.yaml's, cited; these are the game's dials. Nothing here moves anything before `start` but the player's own titles, services and networks (65.8 target 1). A = an assumption for gameplay, tuned only for 65.8
   start: "2026-01" # history holds before this month (rivals follow media.yaml; seeded eras, generations, strikes, laws and growth from it)
   streaming: streaming # categories.yaml keys
@@ -3723,6 +3884,7 @@ conglomerate:
     - { key: pharma, label: Pharmaceuticals, categories: [pharma_oncology, pharma_metabolic, pharma_immunology, pharma_neuroscience, pharma_infectious, pharma_cardiovascular, pharma_rare], accounts: [4060_revenue_drugs] } # M42
     - { key: space, label: Space and satellites, categories: [launch, satellite_broadband, earth_observation], facility_kinds: [launch_site, satellite_plant] } # M40
     - { key: telecom, label: Telecom, categories: [mobile, fixed_broadband, wholesale, network_equipment], facility_kinds: [tower, radio, fibre, subsea_cable], accounts: [6760_spectrum_amortization] } # M53
+    - { key: finance, label: Financial services, categories: [banking, payments, insurance], accounts: [4500_interest_income, 4510_interchange, 4520_investment_income, 4530_securities_gains, 5500_deposit_interest, 5510_claims, 5520_interchange_fees, 5530_fraud_losses, 6800_loan_losses] } # M54
     - { key: media, label: Media and entertainment, categories: [streaming, music_streaming, games, social], accounts: [4080_revenue_advertising, 4090_revenue_content, 5160_content_royalties, 5170_media_operations, 6770_content_amortization] } # M55
     - { key: government, label: Defence and government, accounts: [4070_revenue_government, 5300_contract_costs, 6990_bids_clearances] } # M44: government contracts, their delivery costs and bids
   trend_years: 10 # years of yearly trends the view shows (the brief's ten-year trends)

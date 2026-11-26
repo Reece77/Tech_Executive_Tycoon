@@ -86,7 +86,13 @@ def annual_growth(
         base = sum(annual_growth(state, data, c) for c in follows) / len(follows)
     else:
         base = base_growth(data, category, year)
-    return base + growth_boost(state, data, category, segment)
+    growth = base + growth_boost(state, data, category, segment)
+    mode = state.mode
+    if mode is not None and mode.growth_delta:  # M52 (66.1): a custom scenario's change
+        delta = dict(mode.growth_delta).get(category)
+        if delta is not None:
+            growth = max(0.0, growth + delta)
+    return growth
 
 
 def adoption_factor(state: GameState, data: GameData, category: str, segment: str) -> float:

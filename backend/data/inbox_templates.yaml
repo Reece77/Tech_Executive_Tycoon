@@ -1110,6 +1110,51 @@ templates:
   telecom_ordered:
     title: "{facility} ordered"
     body: "You ordered {units} in {region} ({what}). Capex of {capex_cents} is paid in equal parts over {months} months; it goes live in {ready}."
+  bank_charter_applied: # M54 (64.1)
+    title: "Charter application filed in {region}"
+    body: "{regulator} expects to decide in about {months} months. The bank's opening capital of {capital_cents} is held in its reserves; its lines take deposits there from the charter."
+  bank_chartered: # M54 (64.1)
+    title: "{regulator} grants your bank its charter"
+    body: "Your bank in {region} can take deposits and lend from this month. Its deposit beta, lending and securities are set on the Bank screen."
+  bank_partner: # M54 (64.1)
+    title: "A partner bank holds your customers' deposits in {region}"
+    body: "Your banking lines take deposits there through a chartered partner, which passes on a share of the interest they earn. No capital is needed, and nothing is lent in your name."
+  bank_restricted: # M54 (64.1)
+    title: "The regulator restricts your bank in {region}"
+    body: "Its capital ratio fell to {ratio}, far below the minimum. It may not grow deposits or lend until the ratio is back above its requirement: add capital on the Bank screen."
+  bank_stress_passed: # M54 (64.1)
+    title: "Your bank in {region} passed its stress test"
+    body: "Under the supervisor's adverse scenario its capital ratio would fall to {ratio}, still above the minimum."
+  bank_stress_failed: # M54 (64.1)
+    title: "Your bank in {region} failed its stress test"
+    body: "Under the adverse scenario its capital ratio would fall to {ratio}, below the minimum. Its dividends to the group are frozen for a year."
+  bank_run: # M54 (64.1)
+    title: "A run on your bank in {region}"
+    body: "Uninsured depositors withdrew {withdrawn_cents} this month. Securities sold to pay them realised a loss of {loss_cents}."
+  bank_failed: # M54 (64.1)
+    title: "Your bank in {region} has failed"
+    body: "Its capital is gone and its regulator has taken it over, with its deposits, loans and accounts. Whatever the group had put into it is lost."
+  bank_group_review: # M54 (64.5)
+    title: "{regulator} reviews your bank in {region}"
+    body: "A bank inside a technology group draws its supervisor's scrutiny. Its dividends to the group are blocked for the year; its capital stays its own."
+  finance_history: # M54 (64.5)
+    title: "Financial news"
+    body: "{text}."
+  network_launched: # M54 (64.2)
+    title: "Your card network opens in {region}"
+    body: "Card issuers can now put it on their cards. Merchants take a network as more cards carry it: acceptance starts near zero and grows with its share."
+  insurance_licence_applied: # M54 (64.3)
+    title: "Insurance licence application filed in {region}"
+    body: "{regulator} expects to decide in about {months} months."
+  insurance_licensed: # M54 (64.3)
+    title: "Your insurer is licensed in {region}"
+    body: "It may write policies there from this month while its capital covers the solvency rules."
+  insurance_insolvent: # M54 (64.3)
+    title: "Your insurer cannot write new business"
+    body: "Its own funds ({own_cents}) are below what the solvency rules ask ({required_cents}). Existing policies run on; add capital on the Insurance screen to write again."
+  insurance_catastrophe: # M54 (64.3)
+    title: "A catastrophe in {region} hits the insurers"
+    body: "Insured losses this year are far above normal. Property claims there rise sharply this month."
   # M55 (formulas.md 65): media and entertainment
   media_title_greenlit:
     title: "Green-lit: {title}"

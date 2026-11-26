@@ -420,6 +420,14 @@ class TelecomRuleError(SimError):
     code = "telecom_rule"
 
 
+class FinservRuleError(SimError):
+    """A banking, payments, insurance or currency action the rules do not allow (M54, formulas.md
+    64). The message never names a stress test's shock, a run's draw or a catastrophe year before
+    it happens."""
+
+    code = "finserv_rule"
+
+
 class MediaRuleError(SimError):
     """A media action the rules do not allow (M55, formulas.md 65). The message never names a
     title's audience before release, a lead's ego or loyalty, or a seeded era, generation, strike
@@ -487,3 +495,22 @@ class ChallengeRefusedError(SimError):
     names the rule."""
 
     code = "challenge_refused"
+
+
+class InvalidCustomScenarioError(SimError):
+    """A custom scenario file the editor refuses: bad YAML, an unknown field or a value outside
+    its range (M52, ADR-0026 points 2 and 7). The message names every reason."""
+
+    code = "invalid_custom_scenario"
+
+
+class UnknownCustomScenarioError(NotFoundError):
+    """No custom scenario of that name in `<saves>/scenarios/` (M52)."""
+
+    code = "unknown_custom_scenario"
+
+
+class CustomScenarioExistsError(SimError):
+    """A custom scenario of that name already exists (M52): import or save as another name."""
+
+    code = "custom_scenario_exists"
