@@ -15,12 +15,12 @@ from tst.api.deps import DataDep, SettingsDep
 from tst.api.routers.saves import ERRORS
 from tst.api.schemas.editor import (
     CategoryOptionOut,
-    CheckOut,
     CustomCardOut,
+    CustomCheckOut,
+    CustomImportIn,
     DifficultyOut,
     EditorOut,
     ExportOut,
-    ImportIn,
     IncumbentOptionOut,
     NodeOptionOut,
     OptionOut,
@@ -131,12 +131,14 @@ def open_start(start: str, data: DataDep) -> CustomScenario:
 
 
 @router.post(
-    "/api/editor/check", response_model=CheckOut, responses=ERRORS, operation_id="checkCustom"
+    "/api/editor/check", response_model=CustomCheckOut, responses=ERRORS, operation_id="checkCustom"
 )
-def check_custom(body: CustomScenario, data: DataDep) -> CheckOut:
+def check_custom(body: CustomScenario, data: DataDep) -> CustomCheckOut:
     """Every reason the editor refuses the spec (66.1), without saving it."""
     reasons = custom.refusals(body, data.balance, data.game_data)
-    return CheckOut(valid=not reasons, reasons=reasons, sha256=None if reasons else sf.sha256(body))
+    return CustomCheckOut(
+        valid=not reasons, reasons=reasons, sha256=None if reasons else sf.sha256(body)
+    )
 
 
 # --- The files --------------------------------------------------------------------------------
@@ -232,7 +234,7 @@ def delete_custom(slug: str, settings: SettingsDep) -> None:
     responses=ERRORS,
     operation_id="importCustom",
 )
-def import_custom(body: ImportIn, settings: SettingsDep, data: DataDep) -> CustomScenario:
+def import_custom(body: CustomImportIn, settings: SettingsDep, data: DataDep) -> CustomScenario:
     """A shared file validated and saved; refused with every reason, nothing written."""
     return sf.import_text(
         settings.resolved_save_dir(),

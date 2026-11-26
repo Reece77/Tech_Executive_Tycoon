@@ -70,7 +70,7 @@ class EditorOut(BaseModel):
     lengths: list[str]
 
 
-class CheckOut(BaseModel):
+class CustomCheckOut(BaseModel):
     """A spec's refusals (empty: valid) and its hash."""
 
     valid: bool
@@ -93,7 +93,7 @@ class CustomCardOut(BaseModel):
     best: ScenarioResultOut | None
 
 
-class ImportIn(BaseModel):
+class CustomImportIn(BaseModel):
     text: str = Field(description="A custom scenario file's YAML")
     slug: str | None = Field(default=None, description="Save under this name; omit for its own")
     overwrite: bool = False
