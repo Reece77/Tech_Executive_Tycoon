@@ -126,12 +126,14 @@ class BankMonth:
 
     @property
     def ratio(self) -> float:
+        # money-exact: ratio
         return self.cet1_cents / self.rwa_cents if self.rwa_cents > 0 else 0.0
 
     @property
     def nim(self) -> float:
         """Net interest margin, a year, of earning assets (loans, securities and reserves)."""
         assets = self.loans_cents + self.securities_cents + self.reserves_cents
+        # money-exact: ratio
         return 12 * self.nii_cents / assets if assets > 0 else 0.0
 
 

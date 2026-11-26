@@ -91,3 +91,27 @@ def nim_at(data: GameData, year: float) -> float:
     """US banks' net interest margin, a fraction a year, at a fractional year (held at the
     ends)."""
     return series_at(file(data).banking.nim, year) / PCT
+
+
+SKILL_TOP: Final = 20.0  # tunable-exempt: attributes' top
+
+
+def team_skill(
+    state: GameState, product: Product, skills: tuple[str, ...], balance: Balance, data: GameData
+) -> float:
+    """0-1: the mean of the line's builders' given skills over 20 (0 without builders: a
+    rival's pools)."""
+    from tst.sim.org.rules import org_view
+    from tst.sim.products.phases import team_of
+
+    company = state.company(product.company_id)
+    if company is None or not company.is_player:
+        return 0.0
+    team = team_of(state, org_view(state, product.company_id), product, balance, data)
+    vals = []
+    for b in team.builders:
+        d = state.person(b.person_id).skills.as_dict()
+        vals += [d.get(s, 0.0) for s in skills]
+    if not vals:
+        return 0.0
+    return max(0.0, min(1.0, sum(vals) / len(vals) / SKILL_TOP))

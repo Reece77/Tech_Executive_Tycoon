@@ -117,6 +117,7 @@ def addressable(
         return accounts * (f.banking.business_per_consumer if segment == "bank_business" else 1.0)
     if category == fb.payments_category:
         volume = network_volume_dollars(state, region, balance, data)
+        # money-exact: ratio (a count of merchants or network units: volume over a unit's)
         unit = (
             f.payments.network_unit_cents
             if segment == "pay_networks"
@@ -129,6 +130,7 @@ def addressable(
         state, region, POLICIES, balance, data
     )
     index = data.region_market(region).price_index
+    # money-exact: ratio (a count of policies: premiums over a policy's)
     return premiums / (MONTHS * f.insurance.premium_2010_cents[line] * index) * fb.scale
 
 
