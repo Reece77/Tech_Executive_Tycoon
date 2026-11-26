@@ -26,6 +26,7 @@ type LinkKind = Literal[
     "equipment",  # M33: the Equipment screen
     "medical",  # M41: the Medical screen
     "pharma",  # M42: the Pharma screen
+    "studio",  # M55: the Studio screen's title
 ]  # rival: M14 and M14b; rankings: the Rankings screen (M15r addendum b); group: M16;
 # exploration: the Exploration screen's project (M18); mine: the Mines screen's mine (M19);
 # refinery: the Refineries screen's plant (M20); fab: the Fabs screen's fab (M21)

@@ -101,7 +101,9 @@ def test_history_holds_lines_to_the_data_and_lines_open_on_their_dates(
         # the pin ran in phase 9 of the month just played (turn - 1)
         if game.state.turn in (ym_to_turn(2012, 12), ym_to_turn(2016, 12)):
             want = (
-                interp(row.customers, end_year_at(game.state.turn - 1)) * MILLION * balance.media.scale
+                interp(row.customers, end_year_at(game.state.turn - 1))
+                * MILLION
+                * balance.media.scale
             )
             assert _netflix_customers(game) == pytest.approx(want, rel=1e-6)
             checked += 1

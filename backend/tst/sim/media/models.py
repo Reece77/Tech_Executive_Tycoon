@@ -51,6 +51,8 @@ class Title:
     moves: int = 0
     events: int = 0  # overrules, cuts and moves: the n of a lead's reaction draw
     reach: float = 1.0  # x the audience: overrules' broader cuts
+    morale_sum: float = 0.0  # the lead's morale summed over production months
+    grievance: float = 0.0  # morale its lead lost to this title's overrules, cuts and moves
     released_turn: int | None = None
     quality: float | None = None  # the multiplier at release
     expected: float | None = None  # the audience expected at release (millions, real)

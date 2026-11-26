@@ -326,6 +326,7 @@ class SocialBalance(_Frozen):
     advantage_years: float = Field(gt=0)
     old_format: float = Field(gt=0, le=1)  # appeal x this an era behind the newest
     format_every: Range  # years between seeded format eras after 2025
+    format_names: tuple[str, ...] = Field(min_length=1)  # seeded eras' keys, in order
     rival_adopt_years: Range  # a rival network moves to a new format this long after it arrives
     switch_quality_cut: float = Field(ge=0, lt=1)  # a network's quality x (1 - this) on a switch
     moderation_cents: float = Field(ge=0)  # a user's moderation a month (2010 cents, real)
@@ -359,6 +360,7 @@ class TalentBalance(_Frozen):
     cut_morale: float = Field(ge=0)
     move_morale: float = Field(ge=0)
     overrule_reach: float = Field(ge=0)  # an overrule's audience gain (the commercial cut)
+    grievance_keep: float = Field(ge=0, le=1)  # of a title's lost morale its quality keeps losing
     walk_morale: float = Field(ge=0, le=100)  # below this an event may make the lead walk
     walk_chance: float = Field(ge=0, le=1)  # x (21 - loyalty) / 20 x (walk - morale) / walk
     hit_reputation: float = Field(ge=0)  # reputation += this x (ratio - 1)
