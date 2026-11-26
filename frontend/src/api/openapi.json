@@ -21541,6 +21541,28 @@
         }
       }
     },
+    "/api/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Get Scenarios",
+        "description": "Every historical scenario: brief, goal, deadline, difficulty and the best result.",
+        "operationId": "getScenarios",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenariosOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/mods": {
       "get": {
         "tags": [
@@ -23010,7 +23032,7 @@
               "anyOf": [
                 {
                   "type": "integer",
-                  "minimum": 0
+                  "minimum": -24
                 },
                 {
                   "type": "null"
@@ -28894,6 +28916,680 @@
         }
       }
     },
+    "/api/saves/{save_id}/telecom": {
+      "get": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Get Telecom",
+        "description": "Subscribers, coverage, capacity, spectrum, equipment, auctions and bans.",
+        "operationId": "getTelecom",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/towers": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Build Towers",
+        "operationId": "buildTowers",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TowersIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/radios": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Add Radios",
+        "operationId": "addRadios",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RadiosIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/fibre": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Build Fibre",
+        "operationId": "buildFibre",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FibreIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/cables": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Build Cable",
+        "operationId": "buildCable",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CableIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/auctions/{auction_id}/bid": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Bid Spectrum",
+        "operationId": "bidSpectrum",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Auction Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpectrumBidIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/radios/{facility_id}/replace": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Replace Radios",
+        "operationId": "replaceRadios",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "facility_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Facility Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceRadiosIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/telecom/lines/{product_id}": {
+      "post": {
+        "tags": [
+          "telecom"
+        ],
+        "summary": "Set Line",
+        "operationId": "setTelecomLine",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineSettingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelecomActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/government": {
       "get": {
         "tags": [
@@ -33716,6 +34412,123 @@
         ],
         "title": "AttributeOut"
       },
+      "AuctionOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "area_label": {
+            "type": "string",
+            "title": "Area Label"
+          },
+          "band": {
+            "type": "string",
+            "title": "Band"
+          },
+          "mhz": {
+            "type": "number",
+            "title": "Mhz"
+          },
+          "blocks": {
+            "type": "integer",
+            "title": "Blocks"
+          },
+          "reserve_cents": {
+            "type": "integer",
+            "title": "Reserve Cents",
+            "description": "A block"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "term_years": {
+            "type": "integer",
+            "title": "Term Years"
+          },
+          "obligation": {
+            "type": "number",
+            "title": "Obligation"
+          },
+          "obligation_years": {
+            "type": "integer",
+            "title": "Obligation Years"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "announced",
+              "closed"
+            ],
+            "title": "Status"
+          },
+          "biddable": {
+            "type": "boolean",
+            "title": "Biddable"
+          },
+          "my_blocks": {
+            "type": "integer",
+            "title": "My Blocks"
+          },
+          "my_limit_cents": {
+            "type": "integer",
+            "title": "My Limit Cents"
+          },
+          "rounds": {
+            "type": "integer",
+            "title": "Rounds"
+          },
+          "price_cents": {
+            "type": "integer",
+            "title": "Price Cents",
+            "description": "The final price a block (0 before it runs)"
+          },
+          "awards": {
+            "items": {
+              "$ref": "#/components/schemas/AwardOut"
+            },
+            "type": "array",
+            "title": "Awards"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "region",
+          "area",
+          "area_label",
+          "band",
+          "mhz",
+          "blocks",
+          "reserve_cents",
+          "month",
+          "term_years",
+          "obligation",
+          "obligation_years",
+          "status",
+          "biddable",
+          "my_blocks",
+          "my_limit_cents",
+          "rounds",
+          "price_cents",
+          "awards"
+        ],
+        "title": "AuctionOut"
+      },
       "AuthorityIn": {
         "properties": {
           "enabled": {
@@ -33993,6 +34806,34 @@
         ],
         "title": "AutomationOut"
       },
+      "AwardOut": {
+        "properties": {
+          "bidder": {
+            "type": "string",
+            "title": "Bidder"
+          },
+          "blocks": {
+            "type": "integer",
+            "title": "Blocks"
+          },
+          "paid_cents": {
+            "type": "integer",
+            "title": "Paid Cents"
+          },
+          "yours": {
+            "type": "boolean",
+            "title": "Yours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bidder",
+          "blocks",
+          "paid_cents",
+          "yours"
+        ],
+        "title": "AwardOut"
+      },
       "BackStartupIn": {
         "properties": {
           "founder_id": {
@@ -34165,6 +35006,61 @@
           "total_liabilities_and_equity_cents"
         ],
         "title": "BalanceSheetOut"
+      },
+      "BanOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "announced": {
+            "type": "string",
+            "title": "Announced"
+          },
+          "no_new": {
+            "type": "string",
+            "title": "No New"
+          },
+          "replace_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replace By"
+          },
+          "scope": {
+            "type": "number",
+            "title": "Scope"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "vendor",
+          "region",
+          "area",
+          "announced",
+          "no_new",
+          "replace_by",
+          "scope"
+        ],
+        "title": "BanOut"
       },
       "BankOut": {
         "properties": {
@@ -35192,6 +36088,88 @@
           "amount_cents"
         ],
         "title": "BuybackIn"
+      },
+      "CableIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "km": {
+            "type": "number",
+            "title": "Km"
+          },
+          "tbps": {
+            "type": "integer",
+            "title": "Tbps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "regions",
+          "km",
+          "tbps"
+        ],
+        "title": "CableIn"
+      },
+      "CableOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "km": {
+            "type": "number",
+            "title": "Km"
+          },
+          "tbps": {
+            "type": "integer",
+            "title": "Tbps"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name",
+          "regions",
+          "km",
+          "tbps",
+          "status",
+          "ready",
+          "capex_cents"
+        ],
+        "title": "CableOut"
       },
       "CampaignActionOut": {
         "properties": {
@@ -36743,6 +37721,36 @@
           "owner"
         ],
         "title": "ChainProducerOut"
+      },
+      "ChallengeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "score_mult": {
+            "type": "number",
+            "title": "Score Mult",
+            "description": "x the company score the result screen shows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "score_mult"
+        ],
+        "title": "ChallengeOut",
+        "description": "A challenge rule (M51, 63.2)."
       },
       "ChangePreviewOut": {
         "properties": {
@@ -39597,6 +40605,20 @@
             "title": "Campaign Length",
             "description": "Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069",
             "default": "standard"
+          },
+          "start_year": {
+            "type": "integer",
+            "title": "Start Year",
+            "description": "M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2008 or 2010); a Sandbox or scenario keeps its own year",
+            "default": 2010
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "description": "M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario"
           }
         },
         "type": "object",
@@ -45354,6 +46376,74 @@
         ],
         "title": "FeudOut"
       },
+      "FibreIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "homes": {
+            "type": "integer",
+            "title": "Homes",
+            "description": "Thousands of homes passed"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "homes"
+        ],
+        "title": "FibreIn"
+      },
+      "FibreOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "homes_thousands": {
+            "type": "integer",
+            "title": "Homes Thousands"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "region",
+          "homes_thousands",
+          "status",
+          "ready",
+          "capex_cents"
+        ],
+        "title": "FibreOut"
+      },
       "FiguresOut": {
         "properties": {
           "revenue_cents": {
@@ -46895,6 +47985,36 @@
               }
             ],
             "title": "Scenario Bonus Reached"
+          },
+          "scenario_score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "This game's verdict: the score, its parts and multipliers"
+          },
+          "scenario_best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The player's best result in this scenario in other saves"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "description": "M51: the game's rules"
           },
           "exit_buyer": {
             "anyOf": [
@@ -49396,6 +50516,30 @@
           "deadline_label": {
             "type": "string",
             "title": "Deadline Label"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "M51 (63.3): easy | medium | hard, from seeds 1-10's wins"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins",
+            "description": "M51: the sensible script's wins on seeds 1-10"
           }
         },
         "type": "object",
@@ -52227,6 +53371,55 @@
           "name"
         ],
         "title": "LineOptionOut"
+      },
+      "LineOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "zero_rating": {
+            "type": "boolean",
+            "title": "Zero Rating"
+          },
+          "satellite_partner": {
+            "type": "boolean",
+            "title": "Satellite Partner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "zero_rating",
+          "satellite_partner"
+        ],
+        "title": "LineOut"
+      },
+      "LineSettingIn": {
+        "properties": {
+          "zero_rating": {
+            "type": "boolean",
+            "title": "Zero Rating",
+            "default": false
+          },
+          "satellite_partner": {
+            "type": "boolean",
+            "title": "Satellite Partner",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "LineSettingIn"
       },
       "ListedOut": {
         "properties": {
@@ -57038,6 +58231,106 @@
         ],
         "title": "NetWorthPointOut"
       },
+      "NetworkGenerationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "open": {
+            "type": "boolean",
+            "title": "Open",
+            "description": "Commercial somewhere in the world now"
+          },
+          "first": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First",
+            "description": "Its first commercial month, once open"
+          },
+          "feature_points": {
+            "type": "number",
+            "title": "Feature Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "open",
+          "feature_points"
+        ],
+        "title": "NetworkGenerationOut"
+      },
+      "NetworkPaybackOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "Cumulative cash flow since its first build"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents",
+            "description": "Capex paid on its sites, radios, fibre and cables"
+          },
+          "last_year_cash_cents": {
+            "type": "integer",
+            "title": "Last Year Cash Cents"
+          },
+          "months_to_payback": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Months To Payback"
+          },
+          "paid_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Back"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "cash_cents",
+          "capex_cents",
+          "last_year_cash_cents",
+          "months_to_payback",
+          "paid_back"
+        ],
+        "title": "NetworkPaybackOut"
+      },
       "NetworkPersonOut": {
         "properties": {
           "person_id": {
@@ -57078,6 +58371,14 @@
       },
       "NewGameMetaOut": {
         "properties": {
+          "start_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Start Years",
+            "description": "M50 (ADR-0024): the years a campaign can start in, earliest first"
+          },
           "sandbox": {
             "anyOf": [
               {
@@ -57094,6 +58395,13 @@
             },
             "type": "array",
             "title": "Historical"
+          },
+          "challenges": {
+            "items": {
+              "$ref": "#/components/schemas/ChallengeOut"
+            },
+            "type": "array",
+            "title": "Challenges"
           },
           "scenarios": {
             "items": {
@@ -58142,6 +59450,70 @@
           "size"
         ],
         "title": "OpenZoneIn"
+      },
+      "OperatorOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "mobile": {
+            "type": "number",
+            "title": "Mobile",
+            "description": "Real subscribers, millions, this year (data)"
+          },
+          "fixed": {
+            "type": "number",
+            "title": "Fixed"
+          },
+          "supplier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "region",
+          "mobile",
+          "fixed",
+          "supplier"
+        ],
+        "title": "OperatorOut"
+      },
+      "OperatorShareOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "subscribers": {
+            "type": "number",
+            "title": "Subscribers"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "subscribers",
+          "share"
+        ],
+        "title": "OperatorShareOut"
       },
       "OpinionOut": {
         "properties": {
@@ -65088,6 +66460,136 @@
         ],
         "title": "QueueOut"
       },
+      "RadioOut": {
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "title": "Facility Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "vendor_label": {
+            "type": "string",
+            "title": "Vendor Label"
+          },
+          "overlay": {
+            "type": "boolean",
+            "title": "Overlay"
+          },
+          "sites": {
+            "type": "integer",
+            "title": "Sites"
+          },
+          "live_sites": {
+            "type": "integer",
+            "title": "Live Sites"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "ready": {
+            "type": "string",
+            "title": "Ready"
+          },
+          "dark": {
+            "type": "integer",
+            "title": "Dark"
+          },
+          "replaced": {
+            "type": "integer",
+            "title": "Replaced"
+          },
+          "owed": {
+            "type": "integer",
+            "title": "Owed",
+            "description": "Sites its bans make it replace by now"
+          },
+          "at_risk": {
+            "type": "integer",
+            "title": "At Risk",
+            "description": "Sites announced bans will make it replace"
+          },
+          "replacing": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replacing",
+            "description": "The record a rip-and-replace order replaces"
+          },
+          "capex_cents": {
+            "type": "integer",
+            "title": "Capex Cents"
+          },
+          "capex_paid_cents": {
+            "type": "integer",
+            "title": "Capex Paid Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "region",
+          "generation",
+          "vendor",
+          "vendor_label",
+          "overlay",
+          "sites",
+          "live_sites",
+          "status",
+          "ready",
+          "dark",
+          "replaced",
+          "owed",
+          "at_risk",
+          "capex_cents",
+          "capex_paid_cents"
+        ],
+        "title": "RadioOut"
+      },
+      "RadiosIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "sites": {
+            "type": "integer",
+            "title": "Sites"
+          },
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "sites",
+          "generation",
+          "vendor"
+        ],
+        "title": "RadiosIn"
+      },
       "RaiseIn": {
         "properties": {
           "salary_cents": {
@@ -66565,6 +68067,142 @@
         ],
         "title": "RegionEventOut"
       },
+      "RegionNetworkOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "mobile_market": {
+            "type": "number",
+            "title": "Mobile Market",
+            "description": "Mobile subscriptions in the region (game scale)"
+          },
+          "fixed_market": {
+            "type": "number",
+            "title": "Fixed Market"
+          },
+          "mobile_subscribers": {
+            "type": "number",
+            "title": "Mobile Subscribers",
+            "description": "Yours, every mobile line"
+          },
+          "fixed_subscribers": {
+            "type": "number",
+            "title": "Fixed Subscribers"
+          },
+          "wholesale_contracts": {
+            "type": "number",
+            "title": "Wholesale Contracts"
+          },
+          "sites": {
+            "type": "integer",
+            "title": "Sites"
+          },
+          "coverage": {
+            "type": "number",
+            "title": "Coverage",
+            "description": "Population your network covers (0-1)"
+          },
+          "coverage_by_generation": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Coverage By Generation"
+          },
+          "best_generation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Generation"
+          },
+          "capacity_gb": {
+            "type": "number",
+            "title": "Capacity Gb",
+            "description": "Your network's GB a month"
+          },
+          "demand_gb": {
+            "type": "number",
+            "title": "Demand Gb",
+            "description": "Your mobile subscribers' traffic, GB a month"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality",
+            "description": "Capacity over demand, at most 1"
+          },
+          "homes_passed": {
+            "type": "number",
+            "title": "Homes Passed"
+          },
+          "households": {
+            "type": "number",
+            "title": "Households"
+          },
+          "licensed": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Licensed",
+            "description": "Band -> licensed share of the region"
+          },
+          "mhz": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Mhz",
+            "description": "Band -> population-weighted MHz you hold"
+          },
+          "neutrality": {
+            "type": "boolean",
+            "title": "Neutrality",
+            "description": "A net-neutrality rule is in force in the region"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/OperatorShareOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "mobile_market",
+          "fixed_market",
+          "mobile_subscribers",
+          "fixed_subscribers",
+          "wholesale_contracts",
+          "sites",
+          "coverage",
+          "coverage_by_generation",
+          "best_generation",
+          "capacity_gb",
+          "demand_gb",
+          "quality",
+          "homes_passed",
+          "households",
+          "licensed",
+          "mhz",
+          "neutrality",
+          "rivals"
+        ],
+        "title": "RegionNetworkOut"
+      },
       "RegionOut": {
         "properties": {
           "region": {
@@ -67154,6 +68792,24 @@
           "person_id"
         ],
         "title": "ReplaceIn"
+      },
+      "ReplaceRadiosIn": {
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "sites": {
+            "type": "integer",
+            "title": "Sites"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vendor",
+          "sites"
+        ],
+        "title": "ReplaceRadiosIn"
       },
       "ReplaceableOut": {
         "properties": {
@@ -71518,6 +73174,88 @@
         ],
         "title": "ScandalOut"
       },
+      "ScenarioCardOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "type": "string",
+            "title": "Deadline Label"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "easy | medium | hard, from seeds 1-10's wins"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins",
+            "description": "The sensible script's wins on seeds 1-10"
+          },
+          "played": {
+            "type": "integer",
+            "title": "Played",
+            "description": "Scenario saves with a verdict"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The best: a success, then the score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "year",
+          "goal",
+          "deadline_label",
+          "difficulty",
+          "sensible_wins",
+          "played",
+          "best"
+        ],
+        "title": "ScenarioCardOut"
+      },
       "ScenarioOut": {
         "properties": {
           "id": {
@@ -71563,6 +73301,100 @@
           "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
+      },
+      "ScenarioResultOut": {
+        "properties": {
+          "save": {
+            "type": "string",
+            "title": "Save"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result",
+            "description": "success | failure"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label",
+            "description": "The game month of the verdict"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "description": "The company score at the verdict (30.1)"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "score_mult": {
+            "type": "number",
+            "title": "Score Mult",
+            "description": "The challenge rules' score multipliers, multiplied"
+          },
+          "adjusted": {
+            "type": "integer",
+            "title": "Adjusted",
+            "description": "score x multiplier: what results are compared on"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At",
+            "description": "When the verdict was kept (UTC, ISO 8601)"
+          },
+          "parts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScorePartsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "save",
+          "company",
+          "result",
+          "date_label",
+          "score",
+          "challenges",
+          "score_mult",
+          "adjusted",
+          "recorded_at"
+        ],
+        "title": "ScenarioResultOut",
+        "description": "One scenario save's verdict, from the app-wide results file."
+      },
+      "ScenariosOut": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioCardOut"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "scenarios"
+        ],
+        "title": "ScenariosOut"
       },
       "ScoreBandOut": {
         "properties": {
@@ -71651,6 +73483,40 @@
         ],
         "title": "ScoreOut",
         "description": "A company's score now (30.1), from public inputs only, with its parts in points."
+      },
+      "ScorePartsOut": {
+        "properties": {
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "growth": {
+            "type": "number",
+            "title": "Growth"
+          },
+          "profit": {
+            "type": "number",
+            "title": "Profit"
+          },
+          "leadership": {
+            "type": "number",
+            "title": "Leadership"
+          },
+          "reputation": {
+            "type": "number",
+            "title": "Reputation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "growth",
+          "profit",
+          "leadership",
+          "reputation"
+        ],
+        "title": "ScorePartsOut",
+        "description": "The company score's five parts at the verdict, in points (30.1)."
       },
       "ScoutOut": {
         "properties": {
@@ -73030,6 +74896,110 @@
           "bought_payload_kg"
         ],
         "title": "SpaceScreenOut"
+      },
+      "SpectrumBidIn": {
+        "properties": {
+          "blocks": {
+            "type": "integer",
+            "title": "Blocks"
+          },
+          "limit_cents": {
+            "type": "integer",
+            "title": "Limit Cents",
+            "description": "The most you pay a block"
+          }
+        },
+        "type": "object",
+        "required": [
+          "blocks",
+          "limit_cents"
+        ],
+        "title": "SpectrumBidIn"
+      },
+      "SpectrumLicenceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "area": {
+            "type": "string",
+            "title": "Area"
+          },
+          "area_label": {
+            "type": "string",
+            "title": "Area Label"
+          },
+          "band": {
+            "type": "string",
+            "title": "Band"
+          },
+          "mhz": {
+            "type": "number",
+            "title": "Mhz"
+          },
+          "paid_cents": {
+            "type": "integer",
+            "title": "Paid Cents"
+          },
+          "book_cents": {
+            "type": "integer",
+            "title": "Book Cents"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "expires": {
+            "type": "string",
+            "title": "Expires"
+          },
+          "obligation": {
+            "type": "number",
+            "title": "Obligation"
+          },
+          "obligation_due": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Obligation Due"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "fines": {
+            "type": "integer",
+            "title": "Fines"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "area",
+          "area_label",
+          "band",
+          "mhz",
+          "paid_cents",
+          "book_cents",
+          "since",
+          "expires",
+          "obligation",
+          "obligation_due",
+          "status",
+          "fines"
+        ],
+        "title": "SpectrumLicenceOut"
       },
       "SpinOffIn": {
         "properties": {
@@ -76061,6 +78031,177 @@
         "title": "TeamStrengthOut",
         "description": "The team's output against the two lines that matter (11.4; 23.4, M10b)."
       },
+      "TelecomActionOut": {
+        "properties": {
+          "telecom": {
+            "$ref": "#/components/schemas/TelecomScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "telecom",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "TelecomActionOut"
+      },
+      "TelecomScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "history": {
+            "type": "boolean",
+            "title": "History",
+            "description": "Rivals follow telecom.yaml before January 2026"
+          },
+          "generations": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkGenerationOut"
+            },
+            "type": "array",
+            "title": "Generations"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionNetworkOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "radios": {
+            "items": {
+              "$ref": "#/components/schemas/RadioOut"
+            },
+            "type": "array",
+            "title": "Radios"
+          },
+          "fibres": {
+            "items": {
+              "$ref": "#/components/schemas/FibreOut"
+            },
+            "type": "array",
+            "title": "Fibres"
+          },
+          "cables": {
+            "items": {
+              "$ref": "#/components/schemas/CableOut"
+            },
+            "type": "array",
+            "title": "Cables"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/SpectrumLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "auctions": {
+            "items": {
+              "$ref": "#/components/schemas/AuctionOut"
+            },
+            "type": "array",
+            "title": "Auctions"
+          },
+          "vendors": {
+            "items": {
+              "$ref": "#/components/schemas/VendorOut"
+            },
+            "type": "array",
+            "title": "Vendors"
+          },
+          "bans": {
+            "items": {
+              "$ref": "#/components/schemas/BanOut"
+            },
+            "type": "array",
+            "title": "Bans"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineOut"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "payback": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkPaybackOut"
+            },
+            "type": "array",
+            "title": "Payback"
+          },
+          "operators": {
+            "items": {
+              "$ref": "#/components/schemas/OperatorOut"
+            },
+            "type": "array",
+            "title": "Operators"
+          },
+          "site_civil_cents": {
+            "type": "number",
+            "title": "Site Civil Cents",
+            "description": "A new site's mast, power and backhaul now"
+          },
+          "fibre_home_cents": {
+            "type": "number",
+            "title": "Fibre Home Cents",
+            "description": "Fibre a home passed now"
+          },
+          "cable_km_cents": {
+            "type": "number",
+            "title": "Cable Km Cents",
+            "description": "A subsea cable a km now"
+          },
+          "has_own_equipment": {
+            "type": "boolean",
+            "title": "Has Own Equipment"
+          },
+          "sizes": {
+            "additionalProperties": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Sizes",
+            "description": "Facility kind -> the sizes it comes in"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "history",
+          "generations",
+          "regions",
+          "radios",
+          "fibres",
+          "cables",
+          "licences",
+          "auctions",
+          "vendors",
+          "bans",
+          "lines",
+          "payback",
+          "operators",
+          "site_civil_cents",
+          "fibre_home_cents",
+          "cable_km_cents",
+          "has_own_equipment",
+          "sizes"
+        ],
+        "title": "TelecomScreenOut"
+      },
       "TenderBidIn": {
         "properties": {
           "product_id": {
@@ -77080,6 +79221,45 @@
           "book_cents"
         ],
         "title": "ToolStockOut"
+      },
+      "TowersIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "sites": {
+            "type": "integer",
+            "title": "Sites"
+          },
+          "generation": {
+            "type": "string",
+            "title": "Generation"
+          },
+          "vendor": {
+            "type": "string",
+            "title": "Vendor"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "sites",
+          "generation",
+          "vendor"
+        ],
+        "title": "TowersIn"
       },
       "TradeIn": {
         "properties": {
@@ -78342,6 +80522,53 @@
           "options"
         ],
         "title": "VehiclesScreenOut"
+      },
+      "VendorOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "price_mult": {
+            "type": "number",
+            "title": "Price Mult"
+          },
+          "world_share": {
+            "type": "number",
+            "title": "World Share",
+            "description": "Its share of the RAN market this year (data)"
+          },
+          "radio_cents": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Radio Cents",
+            "description": "Generation -> a site's radios from it now"
+          },
+          "refused_in": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refused In",
+            "description": "Regions whose bans refuse new radios from it"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "price_mult",
+          "world_share",
+          "radio_cents",
+          "refused_in"
+        ],
+        "title": "VendorOut"
       },
       "VentureIn": {
         "properties": {

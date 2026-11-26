@@ -48,7 +48,8 @@ def starts(loaded: LoadedData) -> dict[str, tuple[GameState, dict]]:  # type: ig
 
 
 def test_the_five_scenarios_are_the_30_3_list(loaded: LoadedData) -> None:
-    assert tuple(h.key for h in loaded.game_data.historical) == KEYS
+    # M51 (63.1) appends six more; test_m51_scenarios covers them
+    assert tuple(h.key for h in loaded.game_data.historical)[: len(KEYS)] == KEYS
 
 
 @pytest.mark.parametrize("key", KEYS)

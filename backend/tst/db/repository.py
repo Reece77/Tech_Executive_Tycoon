@@ -72,7 +72,7 @@ from tst.sim.actions import (
     action_payload,
     apply_action,
 )
-from tst.sim.calendar import MONTHS_PER_YEAR, format_turn, turn_to_ym
+from tst.sim.calendar import HISTORY_START_YEAR, MONTHS_PER_YEAR, TURN_ZERO, format_turn, turn_to_ym
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
@@ -422,8 +422,14 @@ def create_save(
     mode: ModeSpec | None = None,
     family: FamilySpec | None = None,
     length: CampaignLength = "standard",
+    start_year: int = TURN_ZERO[0],
+    challenges: tuple[str, ...] = (),
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
+    `challenges` (M51, 63.2): a campaign's challenge rules (a Sandbox's or scenario's are in
+    its `mode`).
+    `start_year` (M50, ADR-0024): a campaign's first January, 2008 or 2010 (calendar
+    START_YEARS); a Sandbox starting in 2008-2009 is built on the 2008 world.
     `length` (M37, 52.1): a campaign's length, standard (to December 2039) or dynasty (2069).
     `hq_city` (M9, 19.1): None for geo.default_hq_city. `mode` (M15b, 30.2-30.3): a Sandbox
     or scenario start, the world built to its start month."""
@@ -433,12 +439,19 @@ def create_save(
     if isinstance(seed, bool) or not 0 <= seed <= MAX_STORED_SEED:
         raise InvalidSeedError(f"seed must be in 0..2**63-1, got {seed}")
     if mode is not None and mode.kind == "scenario" and mode.scenario is not None:
-        from tst.sim.modes.scenarios import scenario as historical
+        from tst.sim.modes import scenarios as sc
 
-        scenario = historical(data.game_data, mode.scenario).background  # its start (30.3)
+        h = sc.scenario(data.game_data, mode.scenario)
+        scenario = h.background  # its start (30.3)
+        # M51 (63.1): a scenario sets the founder's age and region, family and home city
+        founder = sc.founder_spec(h, founder)
+        family = sc.family_spec(h) or family
+        hq_city = h.hq_city or hq_city
     scenario_def = data.game_data.scenario(scenario)
     if scenario_def is None:
         raise UnknownScenarioError(f"unknown scenario {scenario!r}")
+    if mode is not None:  # a Sandbox or scenario keeps its own year; before 2010, 2008's world
+        start_year = HISTORY_START_YEAR if mode.start_year < TURN_ZERO[0] else TURN_ZERO[0]
     state, entries = new_game(
         save_name=name,
         master_seed=seed,
@@ -451,6 +464,7 @@ def create_save(
         mission=mission,
         hq_city=hq_city,
         family=family,
+        start_year=start_year,
     )
     if mode is not None:
         state, entries = start_mode(
@@ -459,7 +473,13 @@ def create_save(
     if length == "dynasty":  # M37 (52.1): only a campaign has one
         if mode is not None:
             raise InvalidModeError("only a campaign can be played in dynasty mode")
-        state = replace(state, mode=GameMode(kind="campaign", length="dynasty"))
+        begun = state.mode or GameMode(kind="campaign")  # M50: a 2008 game keeps its start
+        state = replace(state, mode=replace(begun, length="dynasty"))
+    if challenges and mode is None:  # M51 (63.2): a campaign's rules (a mode's are in its spec)
+        from tst.sim.modes.challenges import validate as valid_challenges
+
+        begun = state.mode or GameMode(kind="campaign")
+        state = replace(state, mode=replace(begun, challenges=valid_challenges(challenges)))
 
     save_dir.mkdir(parents=True, exist_ok=True)
     try:
@@ -474,6 +494,7 @@ def create_save(
                     difficulty=difficulty,
                     created_turn=state.turn,
                     current_turn=state.turn,
+                    start_turn=state.turn,  # M50 (ADR-0024): the month the game began
                     data_hashes=data.hashes,
                     schema_version=SCHEMA_VERSION,
                     # M25: a mod's name, merged-data hash and overlay copy; None without one
@@ -509,6 +530,8 @@ def create_save(
                         state.player.hq_city,
                         mode,
                         family,
+                        start_year if mode is None else TURN_ZERO[0],
+                        challenges if mode is None else (),
                     ),
                     seq=0,
                 )
@@ -1021,6 +1044,9 @@ def _after_commit(
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    from tst.profile.results import record_quietly  # M51 (63.3): scenario results, app-wide
+
+    record_quietly(save_path, data)
     settle_memory()
 
 
@@ -1108,6 +1134,9 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
+    from tst.profile.results import record_quietly  # M51 (63.3): scenario results, app-wide
+
+    record_quietly(save_path, data)
     return result
 
 
@@ -1120,6 +1149,8 @@ def new_game_payload(
     hq_city: str | None = None,
     mode: ModeSpec | None = None,
     family: FamilySpec | None = None,
+    start_year: int = TURN_ZERO[0],
+    challenges: tuple[str, ...] = (),
 ) -> dict[str, Any]:
     spec = asdict(founder)
     spec["allocation"] = None if founder.allocation is None else dict(founder.allocation)
@@ -1135,7 +1166,19 @@ def new_game_payload(
     }
     if family is not None and family.setting != "none":  # M36 (45.1); none leaves it out
         out["family"] = {"setting": family.setting, "child_ages": list(family.child_ages)}
+    if start_year != TURN_ZERO[0]:  # M50: a 2010 game's payload is unchanged
+        out["start_year"] = start_year
+    if challenges:  # M51 (63.2): a campaign's challenge rules; none leaves the payload as it was
+        out["challenges"] = list(challenges)
     return out
+
+
+def _mode_spec(raw: dict[str, Any]) -> ModeSpec:
+    """A payload's ModeSpec (JSON lists back to tuples: M51's challenges)."""
+    spec = dict(raw)
+    if "challenges" in spec:
+        spec["challenges"] = tuple(spec["challenges"])
+    return ModeSpec(**spec)
 
 
 def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Path:
@@ -1194,12 +1237,14 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         founder=FounderSpec(**founder),
         mission=tuple(setup["mission"]),
         hq_city=setup.get("hq_city"),
-        mode=ModeSpec(**setup["mode"]) if setup.get("mode") else None,
+        mode=_mode_spec(setup["mode"]) if setup.get("mode") else None,
         family=(
             FamilySpec(setup["family"]["setting"], tuple(setup["family"]["child_ages"]))
             if setup.get("family")
             else None
         ),
+        start_year=setup.get("start_year", TURN_ZERO[0]),  # M50
+        challenges=tuple(setup.get("challenges", ())),  # M51
     )
     for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):

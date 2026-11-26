@@ -94,6 +94,7 @@ from tst.sim.research.rivals import month_start as rival_research_start
 from tst.sim.research.rivals import rival_research_month
 from tst.sim.rivals.ceo_knowledge import ceo_knowledge_month
 from tst.sim.rivals.decisions import apply_effects, market_news, remember_shares, rival_month
+from tst.sim.rivals.launches import incumbent_launches
 from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.poaching import answer_approaches, join_rivals
 from tst.sim.rivals.startups import (
@@ -119,6 +120,7 @@ from tst.sim.state import (
     with_person_state,
     with_proposal,
 )
+from tst.sim.telecom import phase as telecom_phase
 from tst.sim.vehicles import phase as vehicles_phase
 from tst.sim.vehicles import sales as vehicles_sales
 from tst.sim.world.phase import world_month
@@ -337,6 +339,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=geopolitics.before_markets(ctx.state, ctx.balance, ctx.data))
     # M40 (56.3-56.4): space lines whose dated opening is this month sell from it (M43r).
     ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
+    # M53 (62.4): telecom lines whose dated opening is this month sell from it
+    ctx = replace(ctx, state=telecom_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
@@ -347,6 +351,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     platform_effects = robotics_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     # M40 (56.1-56.3): the player's space lines' gates (designs, coverage, licences, capacity)
     platform_effects = space_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
+    # M53 (62.1-62.4): the player's telecom lines' gates (coverage, spectrum, capacity, homes)
+    platform_effects = telecom_phase.with_effects(platform_effects, state, ctx.balance, ctx.data)
     out = products.run_markets(state, ctx.rng, ctx.balance, ctx.data, platform_effects)
     ctx = replace(ctx, state=out.state, revenue=out.revenue, flows=out.flows)
     ctx = ctx.post(*out.entries).log(*out.logs)
@@ -370,6 +376,11 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
         ctx.state, ctx.rng, ctx.balance, ctx.data, ctx.flows
     )
     ctx = replace(ctx, state=state).post(*space_entries).log(*space_logs)
+    # M53 (62.1-62.4): auctions, licences, partners, rip-and-replace, bans' deadlines, obligations
+    state, tel_entries, tel_logs = telecom_phase.after_sales(
+        ctx.state, ctx.rng, ctx.balance, ctx.data
+    )
+    ctx = replace(ctx, state=state).post(*tel_entries).log(*tel_logs)
     # M44 (57): tenders, awards, protests, government contracts' delivery, clearances
     state, gov_entries, gov_logs = government_phase.month(ctx.state, ctx.rng, ctx.balance, ctx.data)
     ctx = replace(ctx, state=state).post(*gov_entries).log(*gov_logs)
@@ -525,10 +536,13 @@ def market_and_macro_update(ctx: TurnContext) -> TurnContext:
     state, car_logs = vehicles_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M38
     state = robotics_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M39 (53)
     state, space_logs = space_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M40 (56)
+    state, tel_logs = telecom_phase.demand_month(state, ctx.rng, ctx.balance, ctx.data)  # M53 (62)
+    space_logs = [*space_logs, *tel_logs]
     going_live = products.regions_going_live(state, ctx.data)  # M9 (19.5)
     state, launched = launch_ready(state, ctx.balance, ctx.data)  # rival startups (M5, 15.4)
     state, arriving, arrived = found_entrants(state, ctx.rng, ctx.balance, ctx.data)  # M8 (18.7)
     state, founding, founded = found_startups(state, ctx.rng, ctx.balance, ctx.data)
+    state = incumbent_launches(state, ctx.balance, ctx.data)  # M50: a 2008 game's later launches
     # M37 (52.3): each January from 2040, rival leaders hand over and short markets get entrants
     state, successions = dynasty_rivals.leaders_month(state, ctx.rng, ctx.balance, ctx.data)
     state, entering, entered = dynasty_rivals.entrants_month(state, ctx.rng, ctx.balance, ctx.data)

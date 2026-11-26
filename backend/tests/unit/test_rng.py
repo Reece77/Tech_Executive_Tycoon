@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from tst.sim.errors import InvalidSeedError, UnknownStreamError
@@ -118,6 +119,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "negotiation": 70,  # M47
         "meetings": 71,  # M48
         "talks": 72,  # M49
+        "telecom": 73,  # M53
         "misc": 99,
     }
 
@@ -156,7 +158,16 @@ def test_keyed_draws_do_not_depend_on_other_entities() -> None:
     assert _draws(factory, 1, "growth", 5) == alone
 
 
-@pytest.mark.parametrize("bad", [(-1,), (True,), (1.5,)])
+@pytest.mark.parametrize("bad", [(-(2**32),), (True,), (1.5,)])
 def test_invalid_keys_raise(bad: tuple[object, ...]) -> None:
     with pytest.raises(InvalidSeedError):
         RngFactory(1).stream(0, "growth", *bad)  # type: ignore[arg-type]
+
+
+def test_a_negative_key_part_is_a_month_before_2010() -> None:
+    """M50 (ADR-0024): a key part that is a turn may be negative; it derives as the turn does,
+    and never as the positive key it mirrors."""
+    rng = RngFactory(9)
+    a = rng.stream(-30, "poach", 4, 0, -8).random(3)
+    assert np.array_equal(a, RngFactory(9).stream(-30, "poach", 4, 0, -8).random(3))
+    assert not np.array_equal(a, rng.stream(-30, "poach", 4, 0, 8).random(3))

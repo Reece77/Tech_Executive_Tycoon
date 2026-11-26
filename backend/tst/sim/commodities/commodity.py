@@ -33,6 +33,7 @@ from dataclasses import dataclass, replace
 import numpy as np
 
 from tst.sim import dmath
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.commodities.config import AnnualHistory, CommodityBalance
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import CommodityRuleError
@@ -89,7 +90,7 @@ def mean_of(data: GameData, good: str) -> float:
 def history_month(history: AnnualHistory, key: str, turn: int, mean: float) -> GoodMonth | None:
     """A good's month from history, or None after it ends. A history shortage's first month is
     `shock_turn` (contracts signed before it keep 100%, as 26.2)."""
-    if not 0 <= turn <= history.last_turn:
+    if not HISTORY_START_TURN <= turn <= history.last_turn:  # M50: from the earliest start
         return None
     index = history.value_at(turn) / mean
     allocation = history.allocation_at(turn)

@@ -10,7 +10,8 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { ChallengePicker } from '../components/ChallengePicker';
 import { ModePicker, type ModeChoice } from '../components/ModePicker';
 import { useMods } from '../hooks/mods';
 import { LoadError, Loading } from '../components/ScreenState';
@@ -169,11 +170,20 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const [hq, setHq] = useState<string | null>(meta.default_hq_city ?? null); // M9
   const [seed, setSeed] = useState('');
   const [showSeed, setShowSeed] = useState(false);
-  const [mode, setMode] = useState<ModeChoice>({ kind: 'campaign' }); // M15b (30.2-30.3)
+  // M15b (30.2-30.3); M51: the Scenarios screen's Play opens a scenario (?scenario=key)
+  const [params] = useSearchParams();
+  const [mode, setMode] = useState<ModeChoice>(() => {
+    const key = params.get('scenario');
+    return key && (meta.historical ?? []).some((h) => h.key === key)
+      ? { kind: 'historical', key }
+      : { kind: 'campaign' };
+  });
+  const [challenges, setChallenges] = useState<string[]>([]); // M51 (63.2)
   const mods = useMods(); // M25: a data-editor mod for the new game
   const [mod, setMod] = useState<string | null>(null);
   const [familySetting, setFamilySetting] = useState('none'); // M36 (45.1)
   const [length, setLength] = useState<'standard' | 'dynasty'>('standard'); // M37 (52.1)
+  const [startYear, setStartYear] = useState(2010); // M50 (ADR-0024)
   const [childAges, setChildAges] = useState<number[]>([NEW_CHILD_AGE]);
 
   const backgroundDef = meta.backgrounds.find((b) => b.key === background) ?? firstBackground;
@@ -251,6 +261,8 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
                 child_ages: familySetting === 'children' ? childAges : [],
               },
         campaign_length: mode.kind === 'campaign' ? length : 'standard',
+        start_year: mode.kind === 'campaign' ? startYear : 2010,
+        challenges,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -346,12 +358,26 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
           ))}
         </CardGrid>
         <ModePicker meta={meta} value={mode} onChange={setMode} />
+        <ChallengePicker meta={meta} value={challenges} onChange={setChallenges} />
+        {mode.kind === 'campaign' && (meta.start_years ?? []).length > 1 && (
+          <NativeSelect
+            label="Start year"
+            description="January 2010, or January 2008: the financial crisis hits in your first year, then the App Store and Android arrive."
+            data={(meta.start_years ?? []).map((y) => ({
+              value: String(y),
+              label: `January ${y}`,
+            }))}
+            value={String(startYear)}
+            onChange={(e) => setStartYear(Number(e.currentTarget.value))}
+            data-testid="start-year"
+          />
+        )}
         {mode.kind === 'campaign' && (
           <NativeSelect
             label="Campaign length"
-            description="Standard ends in December 2039 with a summary. Dynasty plays on to December 2069, with new eras and a second generation."
+            description="Standard runs 30 years and ends with a summary (December 2039, or December 2037 from a 2008 start). Dynasty plays on to December 2069, with new eras and a second generation."
             data={[
-              { value: 'standard', label: 'Standard: to December 2039 (30 years)' },
+              { value: 'standard', label: 'Standard: 30 years' },
               { value: 'dynasty', label: 'Dynasty: to December 2069 (60 years)' },
             ]}
             value={length}

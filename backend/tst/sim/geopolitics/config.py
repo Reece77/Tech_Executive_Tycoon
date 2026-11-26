@@ -11,6 +11,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR
 from tst.sim.facilities.config import month_to_turn
 
 BLOCS: Final = ("us_aligned", "china", "non_aligned")
@@ -85,8 +86,10 @@ class CountriesFile(_Frozen):
             if sum(1 for c in members if c.default) != 1:
                 raise ValueError(f"{region}: exactly one default country")
         turns = [month_to_turn(m) for m, _ in self.tension_history]
-        if not turns or turns[0] != 0 or turns != sorted(turns):
-            raise ValueError("tension_history starts in 2010-01 and runs in month order")
+        if not turns or turns[0] != HISTORY_START_TURN or turns != sorted(turns):
+            raise ValueError(
+                f"tension_history starts in {HISTORY_START_YEAR}-01 and runs in month order"
+            )
         if any(not 0 <= v <= 100 for _, v in self.tension_history):
             raise ValueError("tension is 0-100")
         return self

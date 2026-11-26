@@ -98,6 +98,8 @@ def build_facility(
         raise FacilityRuleError("order a cell plant or charging network from Vehicles")  # M38
     if action.facility_kind == balance.robotics.depot_kind:
         raise FacilityRuleError("order a robotaxi depot from Mobility")  # M39 (53.3)
+    if action.facility_kind in balance.telecom.kinds:
+        raise FacilityRuleError("order towers, radios, fibre and cables from Telecom")  # M53 (62.1)
     if (
         action.facility_kind == balance.space.site_kind
         and action.region not in balance.space.site_regions

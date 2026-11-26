@@ -71,11 +71,31 @@ class HistoricalOut(BaseModel):
     year: int
     goal: str
     deadline_label: str
+    difficulty: str | None = Field(
+        default=None, description="M51 (63.3): easy | medium | hard, from seeds 1-10's wins"
+    )
+    sensible_wins: int | None = Field(
+        default=None, description="M51: the sensible script's wins on seeds 1-10"
+    )
+
+
+class ChallengeOut(BaseModel):
+    """A challenge rule (M51, 63.2)."""
+
+    key: str
+    label: str
+    description: str
+    score_mult: float = Field(description="x the company score the result screen shows")
 
 
 class NewGameMetaOut(BaseModel):
+    start_years: list[int] = Field(
+        default_factory=lambda: [2010],
+        description="M50 (ADR-0024): the years a campaign can start in, earliest first",
+    )
     sandbox: SandboxMetaOut | None = None  # M15b (30.2)
     historical: list[HistoricalOut] = Field(default_factory=list)  # M15b (30.3)
+    challenges: list[ChallengeOut] = Field(default_factory=list)  # M51 (63.2)
     scenarios: list[ScenarioOut]  # selectable ones
     difficulties: list[str]
     backgrounds: list[BackgroundOut]

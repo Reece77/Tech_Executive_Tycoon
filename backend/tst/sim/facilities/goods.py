@@ -21,6 +21,7 @@ import math
 from dataclasses import dataclass, replace
 
 from tst.sim import dmath
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.config import ComponentsHistoryFile, GoodHistory, SupplyBalance
 from tst.sim.facilities.models import GoodMonth
@@ -50,11 +51,22 @@ def _components(data: GameData) -> ComponentsHistoryFile:
 def history_month(good: GoodHistory, turn: int) -> GoodMonth | None:
     """A good's month from history, or None after the history ends. The yearly change is
     the index against twelve months before (the first year's, against 2010)."""
-    if not 0 <= turn <= good.last_turn:
+    if not HISTORY_START_TURN <= turn <= good.last_turn:  # M50: from the earliest start
         return None
     index = good.index_at(turn)
-    before = good.index_at(max(0, turn - MONTHS_PER_YEAR))
-    change = index / before - 1 if turn >= MONTHS_PER_YEAR else good.index_at(MONTHS_PER_YEAR) - 1
+    if turn < 0:  # M50 (ADR-0024): 2008-2009 against a year before, 2008 against 2009's
+        first = HISTORY_START_TURN + MONTHS_PER_YEAR
+        before = good.index_at(max(HISTORY_START_TURN, turn - MONTHS_PER_YEAR))
+        change = (
+            index / before - 1
+            if turn >= first
+            else good.index_at(first) / good.index_at(HISTORY_START_TURN) - 1
+        )
+    else:  # 2010 on, exactly as before M50
+        before = good.index_at(max(0, turn - MONTHS_PER_YEAR))
+        change = (
+            index / before - 1 if turn >= MONTHS_PER_YEAR else good.index_at(MONTHS_PER_YEAR) - 1
+        )
     return GoodMonth(
         good=good.key,
         turn=turn,

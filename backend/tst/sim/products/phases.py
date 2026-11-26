@@ -26,6 +26,7 @@ from tst.sim.facilities import cloud, compute
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finance import macro
 from tst.sim.founder.effects import consumer_brand
+from tst.sim.geo.formulas import cost_ratio
 from tst.sim.geo.markets import ReachContext, reach_context
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.geopolitics import sales as geo_sales
@@ -34,6 +35,7 @@ from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, Ledge
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.markets import saturation
 from tst.sim.medical import gate as medical_gate
+from tst.sim.modes import challenges
 from tst.sim.modes.rankings import brand_bonus
 from tst.sim.money import Cents, exact, exact_product, times
 from tst.sim.org.executives import CRO, side_factor
@@ -439,7 +441,9 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
     seg_def = data.segment(seg_key)
     category_def = data.category(products[entries[0].product_id].category)
     base_churn = f.unit_base_churn(category_def, seg_def.base_churn, seg_key)
-    index = geo.price_index(region) if geo is not None and region is not None else 1.0
+    index = (
+        geo.price_index(region, category_def.key) if geo is not None and region is not None else 1.0
+    )
 
     def power(product: Product) -> float:
         return 1.0 if product.is_static else team(product).pricing_power
@@ -462,10 +466,17 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             return s.price_cents
         return max(1, s.price_cents - round(effects.cut(s.product_id, here)))
 
+    hard = challenges.rival_quality_mult(state, balance)  # M51 (63.2): Hard rivals
+
+    def weighed_product(product: Product) -> Product:
+        if hard == 1 or not challenges.is_rival_product(state, product.company_id):
+            return product
+        return replace(product, quality=min(SCORE_MAX, product.quality * hard))
+
     appeals = {
         s.product_id: _times(
             price_appeal(
-                products[s.product_id],
+                weighed_product(products[s.product_id]),
                 seg_key,
                 weighed(s),
                 data,
@@ -515,7 +526,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             a = limits.get(s.product_id)
             if a is not None and a.variant > 0:
                 p = products[s.product_id]
-                low = replace(p, quality=max(0.0, p.quality - penalty))
+                q = weighed_product(p).quality  # M51: a rival's quality under Hard rivals
+                low = replace(p, quality=max(0.0, q - penalty))
                 lowered[s.product_id] = _times(
                     price_appeal(
                         low, seg_key, weighed(s), data, turn, power(p), index, bonus(p.id)
@@ -866,6 +878,7 @@ def product_costs_by_division(
     if balance is not None and state.company_facilities(company_id):  # M12a (22.2)
         alloc = compute.allocate(state, company_id, balance, data)
         home = compute.home_region_of(state, balance, data)
+    cost_home = home_region_of(state, balance, data) if balance is not None else None
     for product in state.company_products(company_id):
         if product.status == "retired":
             continue
@@ -882,7 +895,12 @@ def product_costs_by_division(
             by_region[None] += round(seg.customers * h)
         for rseg in state.regional_segments_of(product.id):  # other regions (M9)
             h = f.hosting_cents(category, rseg.segment, ai)
-            by_region[rseg.region] = by_region.get(rseg.region, 0) + round(rseg.customers * h)
+            if category.price_index is not None and cost_home is not None:  # M53 (62.1)
+                ratio = cost_ratio(rseg.region, cost_home, data, category.key)
+                cost = round(exact(rseg.customers) * exact(h) * ratio)
+            else:
+                cost = round(rseg.customers * h)
+            by_region[rseg.region] = by_region.get(rseg.region, 0) + cost
         hosting[d] = hosting.get(d, 0) + sum(by_region.values())
         if alloc is not None:
             if category.capacity_market:  # its CU come from the company's own capacity

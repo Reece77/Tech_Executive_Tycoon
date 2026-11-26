@@ -19,7 +19,7 @@ from itertools import pairwise
 from typing import Final
 
 from tst.sim import dmath
-from tst.sim.calendar import turn_to_ym, ym_to_turn
+from tst.sim.calendar import TURN_ZERO, from_2010, turn_to_ym, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.geo.formulas import price_ratio
 from tst.sim.geo.models import RegionalMarket
@@ -45,7 +45,9 @@ def active(state: GameState, balance: Balance, data: GameData) -> bool:
 
 
 def _listed(table: dict[int, float], year: float) -> float:
-    """Geometric interpolation between listed years; flat before the first."""
+    """Geometric interpolation between listed years; flat before the first. From 2010 without
+    2008's point (M50: a 2010 game reads exactly as before)."""
+    table = from_2010(table, year, TURN_ZERO[0])
     years = sorted(table)
     if year <= years[0]:
         return table[years[0]]
@@ -112,7 +114,7 @@ def segment_value(data: GameData, category: str, segment: str, region: str, home
 
     cat = data.category(category)
     m = cat.market(segment)
-    index = 1.0 if region == home else float(price_ratio(region, home, data))
+    index = 1.0 if region == home else float(price_ratio(region, home, data, category))
     # money-exact: ratio (a market's size against its ceiling, never booked)
     monthly = m.reference_price_cents * sale_rate(cat, segment)
     if cat.medical:

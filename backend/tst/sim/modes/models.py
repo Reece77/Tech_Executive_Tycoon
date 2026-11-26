@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+from tst.sim.calendar import HISTORY_START_TURN, MONTHS_PER_YEAR, TURN_ZERO
+
 
 @dataclass(frozen=True, slots=True)
 class CompanyScore:
@@ -42,6 +44,26 @@ class GameMode:
     # M37 (52.1): standard ends in December 2039; dynasty runs to December 2069. A save
     # without a mode is a standard campaign.
     length: CampaignLength = "standard"
+    # M51 (63.2): the challenge rules this game plays under (modes.challenges.RULES)
+    challenges: tuple[str, ...] = ()
+
+
+def began_in(system: str, mode: GameMode | None) -> str:
+    """An LLM system prompt's "began in January 2010" for a game begun earlier (M50): the
+    text is unchanged for a 2010 game or a later start."""
+    if mode is None or mode.start_turn >= 0 or mode.kind != "campaign":
+        return system
+    year = TURN_ZERO[0] + mode.start_turn // MONTHS_PER_YEAR
+    return system.replace("January 2010", f"January {year}")
+
+
+def world_start_turn(mode: GameMode | None) -> int:
+    """The month the save's world began (ADR-0024, M50): January 2008 (turn -24) for a game
+    begun before 2010 (a 2008 campaign, or a Sandbox in 2008-2009 built on the 2008 world), else
+    turn 0 (a 2010 campaign, and a later start, whose world is played from 2010)."""
+    if mode is not None and mode.start_turn < 0:
+        return HISTORY_START_TURN
+    return 0
 
 
 @dataclass(frozen=True, slots=True)

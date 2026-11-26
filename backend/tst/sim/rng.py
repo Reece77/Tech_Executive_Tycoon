@@ -156,11 +156,26 @@ STREAM_IDS: Final = MappingProxyType(
         # month the talk opens; (kind index, subject id, turn, 1) a rival approach's retention
         # draw when a one-to-one ends
         "talks": 72,
+        # M53 (formulas.md 62): (0, 0, year, region_index) a region's subscription growth after
+        # 2025; (0, 1) 6G's first month; (0, 2, area, n, ...) an area's seeded auctions; (0, 3,
+        # area) a seeded ban; (1, auction_id) an auction's rivals' values when it runs (never
+        # stored)
+        "telecom": 73,
         "misc": 99,
     }
 )
 
 MAX_SEED: Final = 2**64 - 1
+# ADR-0024: a turn before January 2010 (a 2008 start's -24..-1) enters the seed sequence as
+# NEGATIVE_TURN_BASE + |turn|. Turns from 0 enter as themselves, so a 2010 game's draws are
+# unchanged, and no reachable turn (a dynasty game ends at 719) can meet a negative one.
+NEGATIVE_TURN_BASE: Final = 2**32  # tunable-exempt: derivation constant, never change it
+
+
+def turn_key(turn: int) -> int:
+    """The seed sequence's first spawn-key part for `turn` (ADR-0024): itself from 0, and
+    NEGATIVE_TURN_BASE + |turn| before January 2010."""
+    return turn if turn >= 0 else NEGATIVE_TURN_BASE - turn
 
 
 class RngFactory:
@@ -186,12 +201,20 @@ class RngFactory:
     def stream(self, turn: int, name: str, *key: int) -> np.random.Generator:
         if name not in STREAM_IDS:
             raise UnknownStreamError(f"unknown RNG stream {name!r}; add it to STREAM_IDS")
-        if turn < 0:
-            raise InvalidSeedError(f"turn must be >= 0 for an RNG stream, got {turn}")
+        if isinstance(turn, bool) or not isinstance(turn, int):
+            raise InvalidSeedError(f"turn must be an int, got {type(turn).__name__}")
+        if not -NEGATIVE_TURN_BASE < turn < NEGATIVE_TURN_BASE:
+            raise InvalidSeedError(f"turn out of range for an RNG stream: {turn}")
         for part in key:
-            if isinstance(part, bool) or not isinstance(part, int) or part < 0:
-                raise InvalidSeedError(f"stream keys must be non-negative ints, got {key!r}")
-        seq = np.random.SeedSequence(
-            entropy=self._master_seed, spawn_key=(turn, STREAM_IDS[name], *key)
-        )
+            if isinstance(part, bool) or not isinstance(part, int):
+                raise InvalidSeedError(f"stream keys must be ints, got {key!r}")
+            if part <= -NEGATIVE_TURN_BASE:
+                raise InvalidSeedError(f"stream key out of range: {key!r}")
+        # ADR-0024: a key part may be a month (an approach's, a contract's), negative before
+        # 2010; it enters as a turn does, so every key from 0 is unchanged
+        if turn >= 0 and (not key or min(key) >= 0):  # every draw from 2010: no mapping
+            spawn_key = (turn, STREAM_IDS[name], *key)
+        else:
+            spawn_key = (turn_key(turn), STREAM_IDS[name], *(turn_key(p) for p in key))
+        seq = np.random.SeedSequence(entropy=self._master_seed, spawn_key=spawn_key)
         return np.random.Generator(np.random.PCG64(seq))

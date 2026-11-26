@@ -15,8 +15,10 @@ import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 
 from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
+from tst.history_coverage import coverage_problems
 from tst.mods.overlay import canonical_hash, merge
 from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR, TURN_ZERO
 from tst.sim.commodities.config import (
     CommoditiesFile,
     CommoditiesHistoryFile,
@@ -80,12 +82,20 @@ from tst.sim.regulation.config import RegulationFile
 from tst.sim.research.data import ErasFile, TechFrontierFile
 from tst.sim.robotics.config import HUMANOID_SEGMENTS, INDUSTRIAL_SEGMENTS, RoboticsFile
 from tst.sim.space.config import BROADBAND_SEGMENTS, EO_SEGMENTS, LAUNCH_SEGMENTS, SpaceFile
+from tst.sim.telecom.config import (
+    BANDS,
+    CARRIER_SEGMENTS,
+    FIXED_SEGMENTS,
+    MOBILE_SEGMENTS,
+    OWN_SUPPLIER,
+    TelecomFile,
+)
 from tst.sim.vehicles.config import LEVELS, VehiclesFile
 from tst.sim.world.config import ChainCompaniesFile
 
 POLY_TOLERANCE = 1e-9  # tunable-exempt: float tolerance
 SHARE_TOLERANCE = 1e-6  # tunable-exempt: shares that split 1
-FIRST_HISTORY_YEAR = 2010  # tunable-exempt: the game's first year
+FIRST_HISTORY_YEAR = HISTORY_START_YEAR  # M50: the data's first year (the earliest start)
 LAST_HISTORY_YEAR = 2025  # tunable-exempt: history holds to December 2025
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
 CELL_PRICE_TOLERANCE = (
@@ -136,6 +146,7 @@ ROBOTICS_FILE = "robotics.yaml"  # M39 (formulas.md 53)
 GOVERNMENT_FILE = "government.yaml"  # M44 (formulas.md 57)
 PHARMA_FILE = "pharma.yaml"  # M42 (formulas.md 55)
 SPACE_FILE = "space.yaml"  # M40 (formulas.md 56)
+TELECOM_FILE = "telecom.yaml"  # M53 (formulas.md 62)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -164,6 +175,7 @@ DATA_FILES = (
     GOVERNMENT_FILE,
     PHARMA_FILE,
     SPACE_FILE,
+    TELECOM_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -438,6 +450,7 @@ def _check_facilities(balance: Balance, data: GameData) -> None:
             and key not in vehicle_kinds(balance)  # M38: cells and charging are 49's
             and key != balance.robotics.depot_kind  # M39: a depot serves robotaxis (53.3)
             and key != balance.space.plant_kind  # M40: satellites are tst.sim.space's (56.2)
+            and key not in balance.telecom.kinds  # M53: networks are tst.sim.telecom's (62.1)
         ):
             raise DataLoadError(
                 f"{where}: output_good {kind.output_good!r} is not in compute.goods"
@@ -704,7 +717,7 @@ def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     regions = set(data.region_keys)
     categories = {c.key: c for c in (*data.categories, *data.pseudo_categories)}
     owners = {c.name for c in data.incumbents}
-    first, last = 2010, 2010 + pf.history_end_turn // 12
+    first, last = HISTORY_START_YEAR, 2010 + pf.history_end_turn // 12  # M50: from 2008
     for p in pf.platforms:
         if p.owner is not None and p.owner not in owners:
             problems.append(f"platform {p.key}: owner {p.owner!r} is not in incumbents.yaml")
@@ -859,7 +872,7 @@ def world_problems(balance: Balance, data: GameData) -> list[str]:
     if bad := sorted(set(balance.world.groups.security_goods) - goods):
         problems.append(f"world.groups.security_goods not commodities: {bad}")
     for good in sorted(goods):
-        for turn in range(0, balance.world.start_turn):
+        for turn in range(HISTORY_START_TURN, balance.world.start_turn):  # M50: from 2008
             if sum(named_shares(data, good, turn).values()) > 1.0 + 1e-9:
                 problems.append(f"{good}: named shares above 1 in turn {turn}")
                 break
@@ -1062,6 +1075,11 @@ def load_all(
             parsed[name] = merge(parsed[name], changes)
         mod_hash = canonical_hash({name: parsed[name] for name in DATA_FILES})
 
+    # M50 (ADR-0024 decision 4): every series covering 2010 reaches back to the earliest start
+    gaps = [g for name in DATA_FILES for g in coverage_problems(parsed[name], name)]
+    if gaps:
+        raise DataLoadError("history before 2010: " + "; ".join(gaps))
+
     event_templates: list[EventTemplate] = []
     for file in sorted((path / EVENTS_DIR).glob("*.yaml")):
         name = f"{EVENTS_DIR}/{file.name}"
@@ -1108,6 +1126,9 @@ def load_all(
     names = _validate(NamesFile, parsed[NAMES_FILE], NAMES_FILE)
     inbox = _validate(InboxTemplatesFile, parsed[INBOX_FILE], INBOX_FILE)
     categories = _validate(CategoriesFile, parsed[CATEGORIES_FILE], CATEGORIES_FILE)
+    early = list(range(HISTORY_START_YEAR, TURN_ZERO[0]))  # M50 (ADR-0024): growth before 2010
+    if short := [c.key for c in categories.categories if sorted(c.early_growth) != early]:
+        raise DataLoadError(f"{CATEGORIES_FILE}: early_growth must list exactly {early}: {short}")
     incumbents = _validate(IncumbentsFile, parsed[INCUMBENTS_FILE], INCUMBENTS_FILE)
     investors = _validate(InvestorsFile, parsed[INVESTORS_FILE], INVESTORS_FILE)
     macro_history = _validate(MacroHistory, parsed[MACRO_HISTORY_FILE], MACRO_HISTORY_FILE)
@@ -1153,6 +1174,7 @@ def load_all(
     government = _validate(GovernmentFile, parsed[GOVERNMENT_FILE], GOVERNMENT_FILE)
     pharma = _validate(PharmaFile, parsed[PHARMA_FILE], PHARMA_FILE)
     space = _validate(SpaceFile, parsed[SPACE_FILE], SPACE_FILE)
+    telecom = _validate(TelecomFile, parsed[TELECOM_FILE], TELECOM_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1216,6 +1238,7 @@ def load_all(
             "government": government,
             "pharma": pharma,
             "space": space,
+            "telecom": telecom,
         },
         "seed data cross-check",
     )
@@ -1255,6 +1278,8 @@ def load_all(
         )
     if problems := space_problems(balance, game_data):
         raise DataLoadError(f"{SPACE_FILE}, {BALANCE_FILE} space: " + "; ".join(problems))
+    if problems := telecom_problems(balance, game_data):
+        raise DataLoadError(f"{TELECOM_FILE}, {BALANCE_FILE} telecom: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1600,6 +1625,112 @@ def robotics_problems(balance: Balance, data: GameData) -> list[str]:
     for size in rb.robotaxi.zone_sizes:
         if size not in ("small", "medium", "large"):
             out.append(f"robotaxi.zone_sizes: unknown size {size!r}")
+    return out
+
+
+def telecom_problems(balance: Balance, data: GameData) -> list[str]:
+    """M53 (62): telecom.yaml names known incumbents, regions, areas, vendors and countries,
+    reaches 2025; balance.yaml's telecom keys agree with categories.yaml and facility kinds."""
+    f = data.telecom
+    tb = balance.telecom
+    out: list[str] = []
+    if f is None:
+        return ["telecom.yaml is required"]
+    regions = set(data.region_keys)
+    cats = {c.key: c for c in data.categories}
+    want = {
+        tb.mobile: MOBILE_SEGMENTS,
+        tb.fixed: FIXED_SEGMENTS,
+        tb.wholesale: CARRIER_SEGMENTS,
+        tb.equipment: CARRIER_SEGMENTS,
+    }
+    for key, segs in want.items():
+        cat = cats.get(key)
+        if cat is None:
+            out.append(f"telecom category {key!r} is not in categories.yaml")
+        elif tuple(cat.segment_keys) != segs:
+            out.append(f"{key} must sell to {list(segs)}")
+        elif not cat.telecom:
+            out.append(f"{key} must be family telecom")
+    if tb.equipment in cats and not cats[tb.equipment].sells_units:
+        out.append(f"{tb.equipment} must be a unit-sale category")
+    if tb.equipment not in balance.hardware.bom:
+        out.append(f"hardware.bom needs {tb.equipment}")
+    for kind in tb.kinds:
+        if kind not in balance.facility.kinds:
+            out.append(f"{kind!r} is not a facility kind")
+    if set(tb.mobile_split) != set(MOBILE_SEGMENTS) or set(tb.fixed_split) != set(FIXED_SEGMENTS):
+        out.append("mobile_split and fixed_split list the categories' segments")
+    if set(tb.growth_after) != regions:
+        out.append("growth_after must list every region")
+    if set(tb.auction.seeded_mhz) != set(BANDS) or set(
+        tb.auction.seeded_reserve_cents_mhz_pop
+    ) != set(BANDS):
+        out.append(f"auction.seeded_mhz and seeded_reserve_cents_mhz_pop list {list(BANDS)}")
+    if {r.key for r in f.regions} != regions:
+        out.append("telecom.yaml regions must be exactly the game's")
+    for r in f.regions:
+        for name, series in (("mobile", r.mobile), ("fixed", r.fixed)):
+            if max(series) < LAST_HISTORY_YEAR or min(series) > HISTORY_START_YEAR:
+                out.append(
+                    f"{r.key} {name} must run from {HISTORY_START_YEAR} to {LAST_HISTORY_YEAR}"
+                )
+    names = {c.name for c in data.incumbents}
+    countries = {c.key for c in data.countries.countries} if data.countries is not None else set()
+    vendors = {v.key for v in f.vendors}
+    gens = [g.key for g in f.generations]
+    if len(set(gens)) != len(gens) or not gens:
+        out.append("generations must be unique")
+    for o in f.operators:
+        if o.company not in names:
+            out.append(f"operator {o.company!r} is not in incumbents.yaml")
+        if o.region not in regions:
+            out.append(f"operator {o.company!r}: unknown region {o.region!r}")
+        if o.supplier and o.supplier not in vendors:
+            out.append(f"operator {o.company!r}: unknown vendor {o.supplier!r}")
+    pairs = [(o.company, o.region) for o in f.operators]
+    if len(set(pairs)) != len(pairs):
+        out.append("an operator is listed once a region")
+    for v in f.vendors:
+        if v.key == OWN_SUPPLIER:
+            out.append(f"vendor key {OWN_SUPPLIER!r} is reserved for the player's own line")
+        if v.company not in names:
+            out.append(f"vendor {v.company!r} is not in incumbents.yaml")
+        if countries and v.origin not in countries:
+            out.append(f"vendor {v.key!r}: unknown country {v.origin!r}")
+        if bad := set(v.region_mult) - regions:
+            out.append(f"vendor {v.key!r}: unknown regions {sorted(bad)}")
+
+    def area_ok(where: str, region: str, area: str) -> None:
+        if region not in regions:
+            out.append(f"{where}: unknown region {region!r}")
+            return
+        if f.region(region).area(area) is None:
+            out.append(f"{where}: unknown area {area!r} in {region}")
+
+    keys = [a.key for a in f.auctions]
+    if len(set(keys)) != len(keys):
+        out.append("auction keys must be unique")
+    for a in f.auctions:
+        area_ok(f"auction {a.key}", a.region, a.area)
+        for company in a.winners:
+            if company not in names:
+                out.append(f"auction {a.key}: winner {company!r} is not in incumbents.yaml")
+    for b in f.bans:
+        area_ok(f"ban {b.key}", b.region, b.area)
+        if b.vendor not in vendors:
+            out.append(f"ban {b.key}: unknown vendor {b.vendor!r}")
+    for n in f.neutrality:
+        area_ok(f"neutrality {n.key}", n.region, n.area)
+    for c in f.cables:
+        if bad := set(c.regions) - regions:
+            out.append(f"cable {c.key}: unknown regions {sorted(bad)}")
+    for m in f.mergers:
+        if m.region not in regions:
+            out.append(f"merger {m.key}: unknown region {m.region!r}")
+    for cat in data.categories:
+        if cat.price_index is not None and set(cat.price_index) != regions:
+            out.append(f"{cat.key}: price_index must list every region")
     return out
 
 

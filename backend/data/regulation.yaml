@@ -7,6 +7,10 @@
 # History holds (48.5 target 1): to `history_end` designations, duties, cases, fines and rulings come
 # only from this file and post nothing (platforms.yaml already carries the dated platform rules and
 # fee rows the duties brought to 2025, 44.4). The model acts on rivals from the month after.
+#
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: each strictness path gained a 2008 key (and 2009 where a
+# real step fell in 2009) so a 2008 start has history; tagged A like the rest, the basis in the row's comment
+# after "M50:". Most hold the 2010 level (a step path read from the listed year, so 2010 on is unchanged).
 
 history_end: "2025-12"
 
@@ -22,42 +26,42 @@ regulators:
     region: europe
     part: eu # the EU-27 (platforms.yaml region_parts, WB)
     structural: true # Regulation 1/2003 Art. 7 (structural remedies) and DMA Art. 18 (systematic non-compliance): https://eur-lex.europa.eu/EN/legal-content/summary/digital-markets-act.html
-    strictness: { 2010: 0.7, 2017: 0.85, 2023: 1.0 } # A: rising with the Google decisions (2017-2019) and the DMA (2023)
+    strictness: { 2008: 0.7, 2010: 0.7, 2017: 0.85, 2023: 1.0 } # A: rising with the Google decisions (2017-2019) and the DMA (2023); M50: 2008 as 2010 (Microsoft's EUR 899M penalty Feb 2008, Intel's EUR 1.06B fine May 2009)
     source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en"
   - key: uk_cma
     name: Competition and Markets Authority
     region: europe
     part: rest # A: the UK sits in Europe's non-EU part (platforms.yaml region_parts)
     structural: true # A: market investigations can order divestiture (Enterprise Act 2002); SMS conduct duties from 2025
-    strictness: { 2010: 0.6, 2020: 0.8, 2025: 0.9 } # A: the Activision block (April 2023) and the DMCC regime (2025)
+    strictness: { 2008: 0.6, 2010: 0.6, 2020: 0.8, 2025: 0.9 } # A: the Activision block (April 2023) and the DMCC regime (2025); M50: 2008 as 2010 (the OFT, before the CMA's 2014 merger with the Competition Commission)
     source: "https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms"
   - key: us_doj_ftc
     name: US Department of Justice and Federal Trade Commission
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
     structural: true # Sherman Act divestiture: the AT&T break-up (1984) and the 2000 Microsoft order (precedents below)
-    strictness: { 2010: 0.5, 2020: 0.8 } # A: the 2020 cases against Google and Meta
+    strictness: { 2008: 0.4, 2009: 0.5, 2010: 0.5, 2020: 0.8 } # A: the 2020 cases against Google and Meta; M50: 2008 lower (DOJ's Section 2 report, Sep 2008), 2009 the 2010 level from the report's withdrawal (11 May 2009): https://www.justice.gov/archive/opa/pr/2009/May/09-at-459.html
     source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case"
   - key: jftc
     name: Japan Fair Trade Commission
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
     structural: false # A: the MSCA brings conduct duties, not structural powers
-    strictness: { 2010: 0.4, 2024: 0.7 } # A: the Mobile Software Competition Act (enacted 2024)
+    strictness: { 2008: 0.4, 2010: 0.4, 2024: 0.7 } # A: the Mobile Software Competition Act (enacted 2024); M50: 2008 as 2010
     source: "https://www.jftc.go.jp/en/policy_enforcement/digital/index.html"
   - key: kftc
     name: Korea Fair Trade Commission and Korea Communications Commission
     region: east_asia
     part: south_korea # platforms.yaml region_parts (WB)
     structural: false # A
-    strictness: { 2010: 0.5, 2021: 0.8 } # A: the app payment law (in force 14 Sep 2021, platforms.yaml rules)
+    strictness: { 2008: 0.5, 2010: 0.5, 2021: 0.8 } # A (M50: 2008 as 2010): the app payment law (in force 14 Sep 2021, platforms.yaml rules)
     source: "https://keia.org/the-peninsula/the-implications-of-south-koreas-anti-google-law/"
   - key: samr
     name: State Administration for Market Regulation
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
     structural: false # A
-    strictness: { 2010: 0.4, 2021: 0.8 } # A: the platform campaign of 2021 (no figure used)
+    strictness: { 2008: 0.3, 2009: 0.4, 2010: 0.4, 2021: 0.8 } # A: the platform campaign of 2021 (no figure used); M50: 2008 lower (the Anti-Monopoly Law in force only from 1 Aug 2008, enforced by MOFCOM, NDRC and SAIC before SAMR's 2018 merger), 2009 the 2010 level (MOFCOM blocked Coca-Cola/Huiyuan, 18 Mar 2009)
     source: "A"
 
 # --- Designation regimes (48.1) ---------------------------------------------------------------
@@ -395,28 +399,28 @@ health_regulators:
     name: US Food and Drug Administration (CDRH)
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
-    strictness: { 2010: 1.0 } # A: biennial inspections (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
+    strictness: { 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): biennial inspections (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
     source: "https://www.fda.gov/about-fda/cdrh-reports/cdrh-2024-annual-report"
   - key: eu_notified_bodies
     kind: health
     name: EU notified bodies and national competent authorities
     region: europe
     part: eu # the EU-27 (platforms.yaml region_parts, WB)
-    strictness: { 2010: 0.7, 2021: 0.9 } # A: unannounced audits and the MDR from 26 May 2021; 51 MDR notified bodies by Dec 2025: https://ppri.goeg.at/system/files/inline-files/2025-10_18NBSurvey_MD_IVD_MDAvailabilityStudy.pdf
+    strictness: { 2008: 0.7, 2010: 0.7, 2021: 0.9 } # A (M50: 2008 as 2010, under the MDD 93/42/EEC): unannounced audits and the MDR from 26 May 2021; 51 MDR notified bodies by Dec 2025: https://ppri.goeg.at/system/files/inline-files/2025-10_18NBSurvey_MD_IVD_MDAvailabilityStudy.pdf
     source: "https://bsigroup.com/de-DE/medical-devices/News/Enews/2023-news/mdr-transition-timelines-extended/"
   - key: pmda
     kind: health
     name: Pharmaceuticals and Medical Devices Agency
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
-    strictness: { 2010: 0.8 } # A
+    strictness: { 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
     source: "https://rapath.github.io/jp/pre-market/approval-shonin/pmda-review-process/"
   - key: nmpa
     kind: health
     name: National Medical Products Administration
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
-    strictness: { 2010: 0.7, 2021: 0.85 } # A: the revised device regulation (State Council Order 739) from 1 Jun 2021
+    strictness: { 2008: 0.7, 2010: 0.7, 2021: 0.85 } # A (M50: 2008 as 2010, the SFDA's 2007 registration rules): the revised device regulation (State Council Order 739) from 1 Jun 2021
     source: "https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf"
 
 # M42 (formulas.md 55.3): medicines regulators, M34's records with the `drugs` kind. They approve
@@ -429,26 +433,88 @@ drug_regulators:
     name: US Food and Drug Administration (CDER and CBER)
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
-    strictness: { 2010: 1.0 } # A: surveillance inspections risk-based, about every 2-3 years (FDA's site selection model)
+    strictness: { 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): surveillance inspections risk-based, about every 2-3 years (FDA's site selection model)
     source: "https://fda.gov/media/184967/download"
   - key: ema
     kind: drugs
     name: European Medicines Agency
     region: europe
     part: eu # platforms.yaml region_parts (WB)
-    strictness: { 2010: 0.9 } # A: GMP inspections by national authorities under the EMA's coordination
+    strictness: { 2008: 0.9, 2010: 0.9 } # A (M50: 2008 as 2010): GMP inspections by national authorities under the EMA's coordination
     source: "https://www.ema.europa.eu/assets/en/annual-report/2023/human-medicines.html"
   - key: pmda_drugs
     kind: drugs
     name: Pharmaceuticals and Medical Devices Agency (drugs)
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
-    strictness: { 2010: 0.8 } # A
+    strictness: { 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
     source: "https://www.pmda.go.jp/english/"
   - key: nmpa_drugs
     kind: drugs
     name: National Medical Products Administration (drugs)
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
-    strictness: { 2010: 0.6, 2017: 0.8 } # A: the 2015-2017 drug review reforms and ICH membership (June 2017)
+    strictness: { 2008: 0.6, 2010: 0.6, 2017: 0.8 } # A (M50: 2008 as 2010, after the SFDA's 2007 Provisions for Drug Registration): the 2015-2017 drug review reforms and ICH membership (June 2017)
     source: "https://english.nmpa.gov.cn/"
+
+# M53 (formulas.md 62.4): telecom regulators, M34's records with the `telecom` kind. They set licence
+# conditions (coverage obligations), review operator mergers and enforce net-neutrality rules
+# (tst.sim.telecom; the rules and precedents are telecom.yaml's); M34's competition rules, M41's device
+# code and M42's drug code read neither this list nor them. One a region (the region's largest national
+# authority stands for its others, A). strictness: a coverage and merger index by year (A, 1.0 = the
+# FCC; the European Commission's 2016 block of Three and O2 and the CMA's 2024 conditions on Vodafone
+# and Three, telecom.yaml, lift Europe's). formed: S (each regulator's Wikipedia page, 2026-11-25).
+telecom_regulators:
+  - key: fcc
+    kind: telecom
+    name: Federal Communications Commission
+    region: north_america
+    part: united_states # platforms.yaml region_parts (WB)
+    formed: "1934-06" # Federal Communications Commission: 19 Jun 1934 (S)
+    strictness: { 2008: 0.9, 2009: 0.9, 2010: 0.9, 2011: 1.0, 2017: 0.85, 2021: 1.0 } # A: AT&T and T-Mobile abandoned (Dec 2011), Sprint and T-Mobile cleared with conditions (Nov 2019), telecom.yaml
+    source: "https://en.wikipedia.org/wiki/Federal_Communications_Commission"
+  - key: berec
+    kind: telecom
+    name: European Commission and BEREC
+    region: europe
+    part: eu # platforms.yaml region_parts (WB)
+    formed: "2009-11" # BEREC: Regulation 1211/2009 of 25 Nov 2009 (Net Neutrality Regulation 2015, S)
+    strictness: { 2008: 1.0, 2010: 1.0, 2016: 1.2, 2024: 1.1 } # A: Three and O2 blocked on 11 May 2016 (O2 (UK), S); MasOrange cleared with remedies (2024, R)
+    source: "https://en.wikipedia.org/wiki/Body_of_European_Regulators_for_Electronic_Communications"
+  - key: miit
+    kind: telecom
+    name: Ministry of Industry and Information Technology
+    region: east_asia
+    part: china # platforms.yaml region_parts (WB)
+    formed: "2008-03" # Ministry of Industry and Information Technology: March 2008 (S)
+    strictness: { 2008: 1.2, 2010: 1.2 } # A: spectrum assigned administratively to the state operators (5G licences 6 Jun 2019, R)
+    source: "https://en.wikipedia.org/wiki/Ministry_of_Industry_and_Information_Technology"
+  - key: trai
+    kind: telecom
+    name: Telecom Regulatory Authority of India and the Department of Telecommunications
+    region: south_southeast_asia
+    part: india # platforms.yaml region_parts (WB)
+    formed: "1997-02" # Telecom Regulatory Authority of India: 20 Feb 1997 (S)
+    strictness: { 2008: 0.9, 2010: 0.9, 2016: 1.1 } # A: discriminatory tariffs banned 8 Feb 2016 (Net neutrality in India, S)
+    source: "https://en.wikipedia.org/wiki/Telecom_Regulatory_Authority_of_India"
+  - key: anatel
+    kind: telecom
+    name: Anatel
+    region: latin_america
+    formed: "1997-07" # National Telecommunications Agency (Brazil): 16 Jul 1997 (S)
+    strictness: { 2008: 0.9, 2010: 0.9, 2021: 1.0 } # A: the 2021 auction's coverage obligations (R)
+    source: "https://en.wikipedia.org/wiki/National_Telecommunications_Agency_(Brazil)"
+  - key: icasa
+    kind: telecom
+    name: Independent Communications Authority of South Africa
+    region: africa
+    formed: "2000-06" # Independent Communications Authority of South Africa: 1 Jun 2000 (S)
+    strictness: { 2008: 0.7, 2010: 0.7 } # A
+    source: "https://en.wikipedia.org/wiki/Independent_Communications_Authority_of_South_Africa"
+  - key: acma
+    kind: telecom
+    name: Australian Communications and Media Authority
+    region: oceania
+    formed: "2005-07" # Australian Communications and Media Authority: 1 Jul 2005 (S)
+    strictness: { 2008: 0.9, 2010: 0.9 } # A
+    source: "https://en.wikipedia.org/wiki/Australian_Communications_and_Media_Authority"

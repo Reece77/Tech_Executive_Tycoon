@@ -13,6 +13,7 @@ from tst.advisor.template import amount
 from tst.events.context import Kpis, _person
 from tst.sim.calendar import format_turn
 from tst.sim.data_models import GameData
+from tst.sim.modes.models import began_in
 from tst.sim.state import GameState
 
 CENTS_PER_DOLLAR = 100  # tunable-exempt: unit conversion
@@ -91,7 +92,9 @@ def explain_prompt(
     ctx = context(e, kpis, template)
     if e.metric.scope == "person" and e.entity is not None:
         ctx["person"] = _person(state, state.player.id, int(e.entity), data)
-    system = SYSTEM.format(speaker=speaker, company=state.player.name, words=words)
+    system = began_in(
+        SYSTEM.format(speaker=speaker, company=state.player.name, words=words), state.mode
+    )
     user = (
         f"Date: {format_turn(state.turn)}\n\nContext:\n{json.dumps(ctx, indent=1)}\n\n"
         f"The founder asks: {question}"

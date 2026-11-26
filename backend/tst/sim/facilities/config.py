@@ -19,6 +19,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from tst.sim import dmath
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR
 
 MONTH_RE: Final = re.compile(r"^(\d{4})-(\d{2})$")
 FIRST_YEAR: Final = 2010  # tunable-exempt: turn 0 is January 2010 (calendar definition)
@@ -211,8 +212,8 @@ class GoodHistory(_Frozen):
         turns = [month_to_turn(m) for m in self.points]
         if turns != sorted(turns) or len(set(turns)) != len(turns):
             raise ValueError(f"good {self.key!r}: points must be in month order")
-        if turns[0] != 0:
-            raise ValueError(f"good {self.key!r}: the first point must be 2010-01")
+        if turns[0] != HISTORY_START_TURN:  # ADR-0024: from the earliest start offered
+            raise ValueError(f"good {self.key!r}: the first point must be {HISTORY_START_YEAR}-01")
         if any(v <= 0 for v in self.points.values()):
             raise ValueError(f"good {self.key!r}: index values must be positive")
         return self
@@ -224,7 +225,9 @@ class GoodHistory(_Frozen):
     def index_at(self, turn: int) -> float:
         """The index in `turn` (within the history): geometric between anchors."""
         anchors = sorted((month_to_turn(m), v) for m, v in self.points.items())
-        if not 0 <= turn <= anchors[-1][0]:
+        if turn >= 0:  # M50: from 2010 the anchors from 2010 only, exactly as before
+            anchors = [a for a in anchors if a[0] >= 0]
+        if not HISTORY_START_TURN <= turn <= anchors[-1][0]:
             raise ValueError(f"turn {turn} is outside {self.key!r}'s history")
         for (t0, v0), (t1, v1) in itertools.pairwise(anchors):
             if t0 <= turn <= t1:

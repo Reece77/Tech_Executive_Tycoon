@@ -127,6 +127,7 @@ Python
 - Python 3.12, full type hints, `mypy --strict` for `tst/sim` and `tst/events`.
 - Sim models: `@dataclass(frozen=True, slots=True)`. Return new objects; never mutate inputs. Use `dataclasses.replace`.
 - IDs are `int`. Turn 0 = January 2010. Convert with `tst.sim.calendar` only.
+- Months before 2010 are negative turns (January 2008 is -24; ADR-0024): never assume a turn is >= 0 or that turn 0 is the start; a game's first month is `world_start_turn(state.mode)`, and a 2010 game must read nothing from before 2010.
 - Attributes are `float` in [1.0, 20.0] internally, shown as rounded `int`. Clamp on every write with `clamp_attr()`.
 - No `print` in library code; use `logging.getLogger(__name__)`.
 - Domain errors live in `tst.sim.errors`; the API maps them to HTTP status codes.

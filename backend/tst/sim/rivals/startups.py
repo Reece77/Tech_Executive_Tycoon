@@ -16,7 +16,7 @@ from dataclasses import replace
 import numpy as np
 
 from tst.sim.calendar import ym_to_turn
-from tst.sim.data_models import FUNCTIONS, Balance, CategoryDef, GameData
+from tst.sim.data_models import FUNCTIONS, Balance, CategoryDef, EntrantDef, GameData
 from tst.sim.finance.fundraising import climate
 from tst.sim.geo import formulas as gf
 from tst.sim.geo.cities import home_region
@@ -24,6 +24,7 @@ from tst.sim.geo.models import ProductRegion, RegionalSegment
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry
 from tst.sim.log import LogItem
 from tst.sim.mna.style import style  # M14 (28.5): a kept brand's directive
+from tst.sim.modes.models import world_start_turn
 from tst.sim.money import times
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import Product, ProductSegment
@@ -92,6 +93,8 @@ def found_startups(
         if category.medical:  # M41 (50.1): medical rivals are scheduled only
             continue
         if category.space:  # M40 (56): space rivals are scheduled only
+            continue
+        if category.telecom:  # M53 (62.4): operators and vendors are scheduled only
             continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)
@@ -386,6 +389,14 @@ def is_entrant(company: CompanyState, data: GameData) -> bool:
     return company.is_startup and any(e.name == company.name for e in data.entrants)
 
 
+def founding_turn(entrant: EntrantDef, begun: int) -> int:
+    """The month an entrant is founded in a world begun at `begun` (M50): its real month when
+    the world began before it (`early`), else the month it has in a 2010 game."""
+    if entrant.early is not None and ym_to_turn(*entrant.early) >= begun:
+        return ym_to_turn(*entrant.early)
+    return ym_to_turn(entrant.year, entrant.month)
+
+
 def found_entrants(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[RivalMove, ...]]:
@@ -393,8 +404,9 @@ def found_entrants(
     nothing; its people (all senior) come from stream `entrants`, key (entrant_index,)."""
     entries: list[LedgerEntry] = []
     moves: list[RivalMove] = []
+    begun = world_start_turn(state.mode)
     for index, entrant in enumerate(data.entrants):
-        if ym_to_turn(entrant.year, entrant.month) != state.turn:
+        if founding_turn(entrant, begun) != state.turn:
             continue
         if any(c.name == entrant.name for c in state.companies):
             continue

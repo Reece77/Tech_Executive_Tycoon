@@ -23,6 +23,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.commodities import commodity, costs, offtake
 from tst.sim.data_models import GameData
 from tst.sim.facilities.models import GoodMonth
+from tst.sim.modes.models import world_start_turn
 from tst.sim.state import GameState
 
 MONTHS_PER_YEAR = 12
@@ -34,7 +35,7 @@ def month_at(
     """A commodity's or region's power month from history or from the months already played,
     never ahead (as facility_views.month_at)."""
     d = data.game_data
-    if turn > current_turn(state, data) or turn < 0:
+    if turn > current_turn(state, data) or turn < world_start_turn(state.mode):
         return None
     history = commodity.history_of(d, good)
     known = commodity.history_month(history, good, turn, commodity.mean_of(d, good))
@@ -51,7 +52,7 @@ def _history(good: str, state: GameState, data: LoadedData, stored: Stored) -> l
     mult = 1.0 if commodity.is_power(good) else commodity.price_multiple(good, b)
     mean = commodity.mean_of(d, good)
     out = []
-    for t in range(max(0, now - b.commodity.history_months), now + 1):
+    for t in range(max(world_start_turn(state.mode), now - b.commodity.history_months), now + 1):
         m = month_at(good, t, state, data, stored)
         if m is not None:
             out.append(

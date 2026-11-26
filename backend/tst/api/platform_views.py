@@ -23,6 +23,7 @@ from tst.api.schemas.platforms import (
 from tst.loader import LoadedData
 from tst.sim.calendar import format_turn
 from tst.sim.geopolitics import world
+from tst.sim.modes.models import world_start_turn
 from tst.sim.platforms import data as pdata
 from tst.sim.platforms import formulas as pf
 from tst.sim.platforms.actions import DEVELOPER_CATEGORIES
@@ -140,7 +141,9 @@ def platforms_out(state: GameState, data: LoadedData) -> PlatformsOut:
                 owner_company_id=p.owner_id,
                 own=own,
                 historical=p.historical,
-                launched_label=format_turn(p.launched_turn) if p.launched_turn > 0 else None,
+                launched_label=format_turn(p.launched_turn)
+                if p.launched_turn > world_start_turn(state.mode)
+                else None,
                 ended_label=format_turn(p.ended_turn) if p.ended_turn is not None else None,
                 open_source=p.open_turn is not None and p.open_turn <= turn,
                 licensable=p.licensable,

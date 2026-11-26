@@ -24,6 +24,7 @@ from tst.sim.commodities import costs
 from tst.sim.geopolitics import actions as ga
 from tst.sim.geopolitics import rules as gr
 from tst.sim.geopolitics import sales, supply, tariffs, tension, world
+from tst.sim.modes.models import world_start_turn
 from tst.sim.state import GameState
 
 HISTORY_MONTHS = 180  # tunable-exempt: tension months the screen charts (15 years)
@@ -99,7 +100,7 @@ def world_out(state: GameState, data: LoadedData) -> WorldOut:
             value=tension.tension_at(state, d, t),
             shock=next((m.shock for m in state.tension if m.turn == t), "none"),
         )
-        for t in range(max(0, turn - HISTORY_MONTHS), turn + 1)
+        for t in range(max(world_start_turn(state.mode), turn - HISTORY_MONTHS), turn + 1)
     ]
     rules = [rule_out(state, a, data) for a in gr.visible(state, d)]
     rules.sort(key=lambda r: (r.status != "in_force", r.status != "coming", r.month), reverse=False)

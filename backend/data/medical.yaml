@@ -8,6 +8,11 @@
 # History holds (50.6 target 1): the medical model acts only on products in these sub-categories.
 # Rivals' devices to 2025 are incumbents.yaml's (cleared everywhere they sell, as history had them);
 # a company without medical devices draws, posts and logs nothing here.
+#
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: each use's us_class gained a "2008-01" entry, the
+# class it held in 2010 (R: no US classification of these device types changed in 2008-2009; FDA
+# product classification database, 21 CFR 862-892, recalled). Tags as above (A, est.) plus R
+# (recalled from the named source, not opened in that session).
 
 history_end: "2025-12"
 
@@ -32,17 +37,17 @@ subcategories:
     uses:
       - key: wellness_tracking
         label: Wellness tracking
-        us_class: { "2010-01": I } # most class I devices (FDA classification, ~47% of device types): https://meddeviceguide.com/blog/fda-device-classification-guide
+        us_class: { "2008-01": I, "2010-01": I } # most class I devices (FDA classification, ~47% of device types): https://meddeviceguide.com/blog/fda-device-classification-guide
         eu_class: { mdd: I, mdr: I } # A: MDR rule 1 non-invasive devices
         exempt: true # general wellness and most class I devices are 510(k)-exempt (~90% of class I codes): https://meddeviceguide.com/blog/fda-device-classification-guide
       - key: glucose_monitoring
         label: Continuous glucose monitoring
-        us_class: { "2010-01": III, "2018-03": II } # CGMs were PMA devices until Dexcom G6's De Novo created iCGM, class II, 27 Mar 2018 (DEN170088): https://fda.innolitics.com/device/DEN170088
+        us_class: { "2008-01": III, "2010-01": III, "2018-03": II } # CGMs were PMA devices until Dexcom G6's De Novo created iCGM, class II, 27 Mar 2018 (DEN170088): https://fda.innolitics.com/device/DEN170088
         eu_class: { mdd: IIb, mdr: IIb } # A: rule 10 active diagnostic monitoring of vital parameters
         predicate_from: "2018-03" # iCGMs after the G6 go by 510(k) (same source)
       - key: arrhythmia_detection
         label: Arrhythmia detection (ECG)
-        us_class: { "2010-01": II } # an ECG app is class II (21 CFR 870.2345, DEN180044 above)
+        us_class: { "2008-01": II, "2010-01": II } # an ECG app is class II (21 CFR 870.2345, DEN180044 above)
         eu_class: { mdd: IIa, mdr: IIa } # A
         predicate_from: "2018-09" # Apple Watch ECG app DEN180044 and IRN DEN180042, 11 Sep 2018: https://fda.innolitics.com/device/DEN180044
   - key: imaging
@@ -57,12 +62,12 @@ subcategories:
     uses:
       - key: ultrasound
         label: Ultrasound
-        us_class: { "2010-01": II } # diagnostic ultrasound systems are class II (21 CFR 892.1550; A: the game's grouping)
+        us_class: { "2008-01": II, "2010-01": II } # diagnostic ultrasound systems are class II (21 CFR 892.1550; A: the game's grouping)
         eu_class: { mdd: IIa, mdr: IIa } # A: rule 10
         predicate_from: "1990-01" # A: long-established 510(k) devices
       - key: ct_mri
         label: CT and MRI
-        us_class: { "2010-01": II } # CT and MRI systems are class II (21 CFR 892.1750, 892.1000; A: the game's grouping)
+        us_class: { "2008-01": II, "2010-01": II } # CT and MRI systems are class II (21 CFR 892.1750, 892.1000; A: the game's grouping)
         eu_class: { mdd: IIb, mdr: IIb } # A: rule 10 ionising radiation (CT)
         predicate_from: "1990-01" # A
   - key: surgical_robotics
@@ -77,7 +82,7 @@ subcategories:
     uses:
       - key: robotic_surgery
         label: Robotic-assisted surgery
-        us_class: { "2010-01": II } # da Vinci was cleared as class II by 510(k) (K990144, above)
+        us_class: { "2008-01": II, "2010-01": II } # da Vinci was cleared as class II by 510(k) (K990144, above)
         eu_class: { mdd: IIb, mdr: IIb } # A
         predicate_from: "2000-07" # da Vinci K990144, cleared 11 Jul 2000 (510(k), with a 113 v 132 patient study): https://fda.innolitics.com/device/K990144
   - key: implantables
@@ -92,17 +97,17 @@ subcategories:
     uses:
       - key: cardiac_rhythm
         label: Pacemakers and defibrillators
-        us_class: { "2010-01": III } # pacemakers and ICDs are class III PMA devices (A: 21 CFR 870.3610 and 870.3680)
+        us_class: { "2008-01": III, "2010-01": III } # pacemakers and ICDs are class III PMA devices (A: 21 CFR 870.3610 and 870.3680)
         eu_class: { mdd: III, mdr: III } # AIMDD active implants; MDR rule 8
         pivotal: true # PMA: a successful pivotal study
       - key: neurostimulator
         label: Neurostimulators
-        us_class: { "2010-01": III } # implanted neurostimulators are class III PMA devices (A)
+        us_class: { "2008-01": III, "2010-01": III } # implanted neurostimulators are class III PMA devices (A)
         eu_class: { mdd: III, mdr: III } # AIMDD active implants; MDR rule 8
         pivotal: true
       - key: orthopaedic_implant
         label: Orthopaedic implants
-        us_class: { "2010-01": II } # most joint implants are 510(k) class II (A: 21 CFR 888)
+        us_class: { "2008-01": II, "2010-01": II } # most joint implants are 510(k) class II (A: 21 CFR 888)
         eu_class: { mdd: IIb, mdr: III } # MDR rule 8: joint replacements up-classified to III (A: the game's simplification of 'IIb, III for joints')
         predicate_from: "1990-01" # A
   - key: samd
@@ -118,17 +123,17 @@ subcategories:
     uses:
       - key: radiology_triage
         label: Radiology triage
-        us_class: { "2010-01": II } # radiological computer-aided triage, class II (21 CFR 892.2080, created by DEN170073)
+        us_class: { "2008-01": II, "2010-01": II } # radiological computer-aided triage, class II (21 CFR 892.2080, created by DEN170073)
         eu_class: { mdd: I, mdr: IIa } # MDR rule 11 up-classifies most diagnostic software
         predicate_from: "2018-02" # Viz.ai ContaCT, De Novo DEN170073, 13 Feb 2018: https://510k.innolitics.com/device/DEN170073
       - key: autonomous_diagnosis
         label: Autonomous screening (retina)
-        us_class: { "2010-01": II } # IDx-DR, class II (DEN180001, above)
+        us_class: { "2008-01": II, "2010-01": II } # IDx-DR, class II (DEN180001, above)
         eu_class: { mdd: I, mdr: IIb } # A: rule 11, decisions that may cause serious deterioration
         predicate_from: "2018-04" # IDx-DR, De Novo DEN180001, 11 Apr 2018, class II: https://public4.pagefreezer.com:443/content/FDA/01-03-2022T00:42/https://www.accessdata.fda.gov/cdrh_docs/pdf18/DEN180001.pdf
       - key: autonomous_radiology
         label: Autonomous radiology reporting
-        us_class: { "2010-01": II } # A: a novel diagnostic software function, class II by De Novo
+        us_class: { "2008-01": II, "2010-01": II } # A: a novel diagnostic software function, class II by De Novo
         eu_class: { mdd: I, mdr: IIb } # Oxipit ChestLink, the first autonomous chest X-ray AI, CE class IIb in March 2022 (A: from the company's announcement)
         # no predicate: no autonomous radiology reporting authorised by the FDA by 2025 (A), so De Novo
 

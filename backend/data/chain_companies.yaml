@@ -25,24 +25,28 @@
 #   with a rival's (Intel Foundry beside the chip rival Intel). A supplier whose share ended before December 2025 (Rockwood,
 #   Molycorp, MEMC, Ingas, Cryoin) or that sells no M17 good (the wafer makers) has no entry.
 # others: the aggregate producer of each good: its cost position and country.
+# M50 (ADR-0024, formulas.md 60.2; 2026-11-23): world_supply gained 2008 points (and 2009 where the
+#   crisis dipped output), each cited at the row's end; tags as above plus V (read this session from
+#   USGS Mineral Commodity Summaries 2010-2012) and D (derived, as the row says). Linear between
+#   points, so 2010 onward is unchanged.
 foundry_other_share: 0.12 # A: Tower, Vanguard, Hua Hong, PSMC and smaller foundries' share of wafer capacity
 world_supply:
-  quartz_hp: { 2010: 20000, 2025: 40000 } # A: crucible-grade HPQ, no public series (dossier 1.2)
-  silicon_metal: { 2010: 2000000, 2015: 2600000, 2020: 3200000, 2024: 4600000, 2025: 4700000 } # R: USGS (4.6 Mt in 2024, commodities.yaml)
-  polysilicon: { 2010: 25000000, 2015: 30000000, 2020: 36000000, 2025: 42000000 } # A: semiconductor-grade kg (the good's price is semiconductor grade; solar volume excluded)
-  gallium: { 2010: 180000, 2014: 440000, 2019: 320000, 2022: 550000, 2024: 848000, 2025: 870000 } # R: USGS primary low-purity kg (848 t in 2024)
-  germanium: { 2010: 120000, 2015: 160000, 2020: 140000, 2025: 140000 } # R: USGS refinery kg
-  copper: { 2010: 19000000, 2015: 22800000, 2020: 24500000, 2024: 27000000, 2025: 27500000 } # R: ICSG refined copper t
-  tin: { 2010: 360000, 2015: 350000, 2020: 360000, 2025: 380000 } # R: ITA refined tin t
-  tantalum: { 2010: 830000, 2015: 1350000, 2020: 2100000, 2025: 2500000 } # R: USGS mine Ta x 1.22, kg Ta2O5
-  cobalt: { 2010: 89000, 2015: 126000, 2020: 142000, 2023: 230000, 2024: 290000, 2025: 300000 } # R: USGS mine cobalt t
-  lithium_carbonate: { 2010: 150000, 2015: 170000, 2018: 450000, 2020: 440000, 2022: 700000, 2024: 1200000, 2025: 1350000 } # R: USGS lithium x 5.32, t LCE
-  ndpr_oxide: { 2010: 25000000, 2015: 26000000, 2020: 48000000, 2025: 80000000 } # A: about 20% of USGS rare-earth oxide, kg
-  nickel: { 2010: 1600000, 2015: 2200000, 2020: 2500000, 2024: 3700000, 2025: 3800000 } # R: USGS MCS mine nickel t (M38)
-  manganese: { 2010: 14000000, 2015: 18000000, 2020: 18900000, 2024: 20000000, 2025: 20000000 } # R: USGS MCS mine manganese t contained (M38)
-  graphite: { 2010: 1100000, 2015: 1200000, 2020: 1000000, 2024: 1600000, 2025: 1650000 } # R: USGS MCS natural graphite t (M38)
-  battery_cells: { 2010: 300000, 2015: 22000000, 2020: 142800000, 2022: 517900000, 2024: 894400000, 2025: 1187000000 } # S: SNE EV battery installations in kWh (vehicles.yaml world_cells_gwh x 1,000,000) (M38)
-  neon: { 2010: 20000, 2025: 40000 } # A: semiconductor neon lots ($1,000 at index 1.0; no public series)
+  quartz_hp: { 2008: 18200, 2010: 20000, 2025: 40000 } # A: crucible-grade HPQ, no public series (dossier 1.2); M50 2008-2009: A: 2010 less two years of the series' 4.7% growth
+  silicon_metal: { 2008: 1850000, 2009: 1650000, 2010: 2000000, 2015: 2600000, 2020: 3200000, 2024: 4600000, 2025: 4700000 } # R: USGS (4.6 Mt in 2024, commodities.yaml); M50 2008-2009: A: USGS MCS 2010 world silicon output fell about 12% in 2009 (6,160 to 5,400 kt) and recovered in 2010
+  polysilicon: { 2008: 21700000, 2009: 17900000, 2010: 25000000, 2015: 30000000, 2020: 36000000, 2025: 42000000 } # A: semiconductor-grade kg (the good's price is semiconductor grade; solar volume excluded); M50 2008-2009: D: SEMI silicon wafer area 8,137 / 6,707 / 9,370 MSI in 2008-2010 (R) as ratios to 2010
+  gallium: { 2008: 190000, 2009: 136000, 2010: 180000, 2014: 440000, 2019: 320000, 2022: 550000, 2024: 848000, 2025: 870000 } # R: USGS primary low-purity kg (848 t in 2024); M50 2008-2009: D: USGS MCS 2010-2011 primary 111 t (2008) and 79 t (2009) x 182 / 106, MCS 2012's revision of 2010 (V)
+  germanium: { 2008: 120000, 2010: 120000, 2015: 160000, 2020: 140000, 2025: 140000 } # R: USGS refinery kg; M50 2008-2009: V: USGS MCS 2011 refinery 120 t (2009, revised; MCS 2010 had 140 t)
+  copper: { 2008: 18200000, 2010: 19000000, 2015: 22800000, 2020: 24500000, 2024: 27000000, 2025: 27500000 } # R: ICSG refined copper t; M50 2008-2009: R: ICSG refined copper about 18.2 Mt in 2008
+  tin: { 2008: 335000, 2009: 325000, 2010: 360000, 2015: 350000, 2020: 360000, 2025: 380000 } # R: ITA refined tin t; M50 2008-2009: R: ITRI refined tin about 335 kt (2008) and 325 kt (2009)
+  tantalum: { 2008: 1430000, 2009: 810000, 2010: 830000, 2015: 1350000, 2020: 2100000, 2025: 2500000 } # R: USGS mine Ta x 1.22, kg Ta2O5; M50 2008-2009: V: USGS MCS 2010 mine Ta 1,170 t (2008) and MCS 2011 665 t (2009, Wodgina shut in late 2008) x 1.22
+  cobalt: { 2008: 75900, 2009: 72300, 2010: 89000, 2015: 126000, 2020: 142000, 2023: 230000, 2024: 290000, 2025: 300000 } # R: USGS mine cobalt t; M50 2008-2009: V: USGS MCS 2010 (2008) and MCS 2011 (2009) mine cobalt
+  lithium_carbonate: { 2008: 135000, 2009: 100000, 2010: 150000, 2015: 170000, 2018: 450000, 2020: 440000, 2022: 700000, 2024: 1200000, 2025: 1350000 } # R: USGS lithium x 5.32, t LCE; M50 2008-2009: V: USGS MCS 2010 (25,400 t Li, 2008) and MCS 2011 (18,800 t, 2009) x 5.32
+  ndpr_oxide: { 2008: 23300000, 2010: 25000000, 2015: 26000000, 2020: 48000000, 2025: 80000000 } # A: about 20% of USGS rare-earth oxide, kg; M50 2008-2009: D: USGS rare-earth oxide 124 kt (2008) against 133 kt (2010) (R) x 2010's level
+  nickel: { 2008: 1570000, 2009: 1400000, 2010: 1600000, 2015: 2200000, 2020: 2500000, 2024: 3700000, 2025: 3800000 } # R: USGS MCS mine nickel t (M38); M50 2008-2009: V: USGS MCS 2010 (2008) and MCS 2011 (2009) mine nickel
+  manganese: { 2008: 13300000, 2009: 10800000, 2010: 14000000, 2015: 18000000, 2020: 18900000, 2024: 20000000, 2025: 20000000 } # R: USGS MCS mine manganese t contained (M38); M50 2008-2009: V: USGS MCS 2010 (2008) and MCS 2011 (2009) mine manganese
+  graphite: { 2008: 1120000, 2010: 1100000, 2015: 1200000, 2020: 1000000, 2024: 1600000, 2025: 1650000 } # R: USGS MCS natural graphite t (M38); M50 2008-2009: V: USGS MCS 2010 natural graphite 1,120 kt
+  battery_cells: { 2008: 10000, 2009: 100000, 2010: 300000, 2015: 22000000, 2020: 142800000, 2022: 517900000, 2024: 894400000, 2025: 1187000000 } # S: SNE EV battery installations in kWh (vehicles.yaml world_cells_gwh x 1,000,000) (M38); M50 2008-2009: D: vehicles.yaml world_cells_gwh 0.01 and 0.1 x 1,000,000
+  neon: { 2008: 18200, 2010: 20000, 2025: 40000 } # A: semiconductor neon lots ($1,000 at index 1.0; no public series); M50 2008-2009: A: as quartz_hp
 demand_growth:
   quartz_hp: 0.04
   silicon_metal: 0.04

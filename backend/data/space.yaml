@@ -38,8 +38,27 @@
 #   SI     Space industry;  TSR  The Space Report;  INS  Satellite insurance;  DEB  Space debris
 #   CPI    US BLS CPI-U annual averages (R; 2025 A, preliminary), as robotics.yaml's
 #   FX     euro and rupee rates (R: ECB reference rates, annual averages)
+#
+# M50 (ADR-0024, formulas.md 60.2), 2026-11-23: 2008 and 2009 entries were added so a game can start in
+# January 2008; values for 2010 onward are unchanged. Tags as above (S, D, R, A); no M50 source could be
+# opened in this session, so the figures are R (or D from R figures, or A).
+# M50 (2008-2009) sources:
+#   YIS08  Wikipedia, "2008 in spaceflight" and "2009 in spaceflight": 69 and 78 orbital launch attempts;
+#          China 11 and 6, India 3 and 2, R
+#   ULA09  ULA's launch record: 7 launches in 2008 (Atlas V 2, Delta II 5) and a then-record 16 in 2009
+#          (Delta II 8, Atlas V 5, Delta IV 3), R
+#   AR508  Ariane 5 launch list: 6 flights in 2008 and 7 in 2009 (Soyuz at Kourou from 2011, Vega from
+#          2012), R
+#   F108   Falcon 1: flight 3 (August 2008, failed), flight 4 (September 2008, first orbit) and flight 5
+#          (RazakSAT, July 2009), R: not counted in SpaceX's launches, which are Falcon 9 and Falcon Heavy
+#          from `first` (June 2010)
+#   WB09   Viasat bought WildBlue (about 400,000 subscribers) in December 2009; WildBlue-1 (2006) and
+#          Anik F2's Ka payload (2004), R
+#   DG09   DigitalGlobe: WorldView-1 (September 2007), WorldView-2 (October 2009), R
 
 cpi: # R (CPI), as robotics.yaml
+  2008: 215.303 # M50 R (CPI)
+  2009: 214.537 # M50 R (CPI)
   2010: 218.056
   2011: 224.939
   2012: 229.594
@@ -62,6 +81,8 @@ launch:
   # World orbital launch attempts a year (YIS infobox "total"; 2010: "| total = 74 | success = 70 | failed
   # = 4", 2025: "World || 330 || 317 || 13"), S.
   world:
+    2008: [69, R] # M50 YIS08
+    2009: [78, R] # M50 YIS08
     2010: [74, S]
     2011: [84, S]
     2012: [77, S]
@@ -85,21 +106,24 @@ launch:
     - company: SpaceX
       origin: us
       first: "2010-06" # F9: Falcon 9's first flight, 4 June 2010 (R, F9L)
+      # M50: 2008-2009 0 (D: Falcon 9 first flew in June 2010; Falcon 1's three flights, F108, not counted)
       # F9L "Rocket configurations" chart, Falcon 9 + Falcon Heavy a year, summed (D from S): 2024 "134
       # total Falcon flights", 2025 "165 total Falcon flights" (S)
-      launches: { 2010: [2, D], 2011: [0, D], 2012: [2, D], 2013: [3, D], 2014: [6, D], 2015: [7, D], 2016: [8, D], 2017: [18, D], 2018: [21, D], 2019: [13, D], 2020: [26, D], 2021: [31, D], 2022: [61, D], 2023: [96, D], 2024: [134, S], 2025: [165, S] }
+      launches: { 2008: [0, D], 2009: [0, D], 2010: [2, D], 2011: [0, D], 2012: [2, D], 2013: [3, D], 2014: [6, D], 2015: [7, D], 2016: [8, D], 2017: [18, D], 2018: [21, D], 2019: [13, D], 2020: [26, D], 2021: [31, D], 2022: [61, D], 2023: [96, D], 2024: [134, S], 2025: [165, S] }
       failures: { 2012: [1, S], 2015: [1, S], 2024: [1, S] } # F9: CRS-1 (partial), CRS-7, Starlink 9-3; AMOS-6 (2016) was lost on the pad before flight
     - company: United Launch Alliance
       origin: us
+      # M50: 2008-2009 R (ULA09)
       # R (ULA's Atlas V and Delta IV manifests, Wikipedia's ATL and Delta IV launch lists): ULA flew
       # 8-14 a year to 2016, fewer as SpaceX took the market; the USA's YIS totals (15 in 2010, 198 in
       # 2025) bound it (S)
-      launches: { 2010: [8, R], 2011: [11, R], 2012: [10, R], 2013: [11, R], 2014: [14, R], 2015: [12, R], 2016: [12, R], 2017: [8, R], 2018: [8, R], 2019: [5, R], 2020: [6, R], 2021: [5, R], 2022: [7, R], 2023: [3, R], 2024: [5, R], 2025: [6, R] }
+      launches: { 2008: [7, R], 2009: [16, R], 2010: [8, R], 2011: [11, R], 2012: [10, R], 2013: [11, R], 2014: [14, R], 2015: [12, R], 2016: [12, R], 2017: [8, R], 2018: [8, R], 2019: [5, R], 2020: [6, R], 2021: [5, R], 2022: [7, R], 2023: [3, R], 2024: [5, R], 2025: [6, R] }
     - company: Arianespace
       origin: france
+      # M50: 2008-2009 R (AR508, Ariane 5 only)
       # R (Ariane 5, Vega and Soyuz-from-Kourou manifests); AR5's last flight 5 July 2023 and AR6's first
       # 9 July 2024 (S)
-      launches: { 2010: [6, R], 2011: [7, R], 2012: [10, R], 2013: [7, R], 2014: [11, R], 2015: [12, R], 2016: [11, R], 2017: [11, R], 2018: [11, R], 2019: [9, R], 2020: [5, R], 2021: [6, R], 2022: [5, R], 2023: [3, R], 2024: [3, R], 2025: [6, R] }
+      launches: { 2008: [6, R], 2009: [7, R], 2010: [6, R], 2011: [7, R], 2012: [10, R], 2013: [7, R], 2014: [11, R], 2015: [12, R], 2016: [11, R], 2017: [11, R], 2018: [11, R], 2019: [9, R], 2020: [5, R], 2021: [6, R], 2022: [5, R], 2023: [3, R], 2024: [3, R], 2025: [6, R] }
     - company: Rocket Lab
       origin: new_zealand
       first: "2017-05" # ELEC: "launched on 25 May 2017, reaching space but not achieving orbit" (S)
@@ -109,13 +133,14 @@ launch:
       failures: { 2017: [1, S], 2020: [1, S], 2021: [1, S], 2023: [1, R] } # ELEC: the maiden flight (2017) and the 13th (July 2020) and 20th (May 2021) launches failed (S); 2023 R (Rocket Lab, September 2023)
     - company: CASC
       origin: china
+      # M50: 2008-2009 D = China's YIS08 totals (11, 6; R) x 1 (all CASC before commercial launchers)
       # D: China's YIS totals (15 / 19 / 39 / 56 / 64 / 67 / 68 / 93 in 2010 / 2015 / 2020-2025, S) x CASC's
       # share (A: all Chinese launches to 2014, falling to about 70% by 2025 as commercial launchers grew;
       # CASC-only counts were not found)
-      launches: { 2010: [15, D], 2011: [19, D], 2012: [19, D], 2013: [15, D], 2014: [16, D], 2015: [18, D], 2016: [20, D], 2017: [16, D], 2018: [33, D], 2019: [27, D], 2020: [33, D], 2021: [48, D], 2022: [53, D], 2023: [50, D], 2024: [50, D], 2025: [65, D] }
+      launches: { 2008: [11, D], 2009: [6, D], 2010: [15, D], 2011: [19, D], 2012: [19, D], 2013: [15, D], 2014: [16, D], 2015: [18, D], 2016: [20, D], 2017: [16, D], 2018: [33, D], 2019: [27, D], 2020: [33, D], 2021: [48, D], 2022: [53, D], 2023: [50, D], 2024: [50, D], 2025: [65, D] }
     - company: ISRO
       origin: india
-      launches: { 2010: [3, R], 2011: [3, R], 2012: [2, R], 2013: [3, R], 2014: [4, R], 2015: [5, R], 2016: [7, R], 2017: [5, R], 2018: [7, R], 2019: [6, R], 2020: [2, R], 2021: [2, R], 2022: [5, R], 2023: [7, R], 2024: [5, R], 2025: [5, R] } # R (ISRO's PSLV and GSLV manifests)
+      launches: { 2008: [3, R], 2009: [2, R], 2010: [3, R], 2011: [3, R], 2012: [2, R], 2013: [3, R], 2014: [4, R], 2015: [5, R], 2016: [7, R], 2017: [5, R], 2018: [7, R], 2019: [6, R], 2020: [2, R], 2021: [2, R], 2022: [5, R], 2023: [7, R], 2024: [5, R], 2025: [5, R] } # R (ISRO's PSLV and GSLV manifests); M50 2008-2009 R (YIS08: PSLV C10, C9, C11; C12, C14)
     - company: Blue Origin
       origin: us
       first: "2025-01" # NG: "Its first flight, NG-1, took place on January 16, 2025" (S)
@@ -129,14 +154,14 @@ launch:
       first_flight: "1981-04"
       retired: "2011-07" # R (STS-135, July 2011)
       payload_kg: [27500, S] # SHUT infobox "{{cvt|27500|kg}}"
-      price_usd: { 2010: [1642000000, 2012, S] } # SHUT: "Accounting for the entire Space Shuttle program budget, the per-launch cost was $1.642 billion (in 2012)" (D about $59,700 a kg; CSIS's $54,500, R)
+      price_usd: { 2008: [1642000000, 2012, D], 2010: [1642000000, 2012, S] } # SHUT: "Accounting for the entire Space Shuttle program budget, the per-launch cost was $1.642 billion (in 2012)" (D about $59,700 a kg; CSIS's $54,500, R); M50 2008 D: the same programme average
     - key: falcon9_v1
       label: Falcon 9 v1.0/v1.1
       company: SpaceX
       first_flight: "2010-06"
       retired: "2016-01" # R: the last v1.1 flight, January 2016
       payload_kg: [13100, S] # F9: v1.1 13,100 kg (v1.0 10,400)
-      price_usd: { 2010: [49900000, 2010, S], 2012: [54000000, 2012, S], 2013: [56500000, 2013, S], 2014: [61200000, 2014, S] } # F9: "$49.9-56 million ... By 2012, it rose to $54-59.5 million, followed by $56.5 million for the v1.1 version in 2013, $61.2 million in 2014"
+      price_usd: { 2008: [49900000, 2010, A], 2010: [49900000, 2010, S], 2012: [54000000, 2012, S], 2013: [56500000, 2013, S], 2014: [61200000, 2014, S] } # F9: "$49.9-56 million ... By 2012, it rose to $54-59.5 million, followed by $56.5 million for the v1.1 version in 2013, $61.2 million in 2014"; M50 2008 A: the initial list price held before the first flight (SpaceX's 2008 quotes were lower, about $35-37M, R, weak)
     - key: falcon9
       label: Falcon 9 Full Thrust
       company: SpaceX
@@ -278,8 +303,8 @@ constellations:
     kind: broadband
     first_launch: "2011-10" # R (ViaSat-1, October 2011)
     service: "2010-01" # R: WildBlue, bought by Viasat in 2009, served from before 2010
-    satellites: { 2010: [2, R], 2011: [3, R], 2017: [4, R], 2023: [17, R], 2025: [18, R] } # R: WildBlue-1 and Anik F2's payload, ViaSat-1 (2011), ViaSat-2 (2017), ViaSat-3 F1 and Inmarsat's fleet (VSAT: acquisition completed May 30, 2023, S)
-    subscribers: { 2010: [410, R], 2013: [560, R], 2016: [650, R], 2019: [590, R], 2022: [400, R], 2025: [190, R] } # R (Viasat's annual reports: US residential broadband subscribers)
+    satellites: { 2008: [2, R], 2009: [2, R], 2010: [2, R], 2011: [3, R], 2017: [4, R], 2023: [17, R], 2025: [18, R] } # R: WildBlue-1 and Anik F2's payload, ViaSat-1 (2011), ViaSat-2 (2017), ViaSat-3 F1 and Inmarsat's fleet (VSAT: acquisition completed May 30, 2023, S); M50 2008 R (WB09: WildBlue's two)
+    subscribers: { 2008: [350, R], 2010: [410, R], 2013: [560, R], 2016: [650, R], 2019: [590, R], 2022: [400, R], 2025: [190, R] } # R (Viasat's annual reports: US residential broadband subscribers); M50 2008 R (WB09: WildBlue about 350,000 at the end of 2008, 400,000 when bought)
   - key: o3b
     label: O3b and O3b mPOWER (MEO)
     company: SES
@@ -301,7 +326,7 @@ constellations:
     kind: eo
     first_launch: "2007-09" # R (WorldView-1)
     service: "2010-01" # R (DigitalGlobe's imagery service)
-    satellites: { 2010: [4, R], 2014: [5, R], 2016: [5, R], 2025: [8, R] } # R (WorldView-3 2014, WorldView-4 2016 (lost 2019), WorldView Legion from 2024)
+    satellites: { 2008: [3, R], 2009: [4, R], 2010: [4, R], 2014: [5, R], 2016: [5, R], 2025: [8, R] } # R (WorldView-3 2014, WorldView-4 2016 (lost 2019), WorldView Legion from 2024); M50 2008-2009 R (DG09: one fewer before WorldView-2 in October 2009)
 
 # Direct-to-device (56.3): sellers have no price in the market's direct_to_device segment before `open`.
 d2d:
@@ -329,6 +354,7 @@ terminal_cost_usd:
 # Satellites) at 150-200 kg (OW, S) is about $5,000-7,000 a kg; R: Starlink's v1.0 "well under $500,000"
 # (Musk, 2019) at 260 kg (STL, S) is under $2,000 a kg; 2025 A (V2 mini at volume).
 satellite_cost_usd:
+  2008: [20000, 2008, A] # M50 A: as 2010's (small LEO satellites built a few at a time)
   2010: [20000, 2010, A]
   2015: [6500, 2015, D]
   2019: [1800, 2019, R]

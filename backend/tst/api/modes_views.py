@@ -7,8 +7,25 @@ import math
 from tst.api.schemas.modes import RankingEntryOut, RankingListOut, RankingsOut, ScoreOut
 from tst.loader import LoadedData
 from tst.sim import score as sc
+from tst.sim.data_models import Balance
 from tst.sim.ledger import LedgerBalances
+from tst.sim.modes.models import CompanyScore
 from tst.sim.state import GameState
+
+
+def score_points(s: CompanyScore, b: Balance) -> dict[str, float]:
+    """The score's five parts in points, as the score card shows them (30.1; M51's results)."""
+    sb = b.score
+    decades = math.log10(max(s.value_cents / sc.CENTS, sb.value_floor_dollars)) - math.log10(
+        sb.value_floor_dollars
+    )
+    return {
+        "value": round(sb.weight_value * min(max(decades / sb.value_span_decades, 0), 1), 1),
+        "growth": round(sb.weight_growth * s.growth, 1),
+        "profit": round(sb.weight_profit * s.profit, 1),
+        "leadership": round(sb.weight_leadership * s.leadership, 1),
+        "reputation": round(sb.weight_reputation * s.reputation, 1),
+    }
 
 
 def score_out(
@@ -20,18 +37,15 @@ def score_out(
 ) -> ScoreOut:
     b = data.balance
     s = sc.company_score(state, company_id, balances, b, data.game_data, markets)
-    sb = b.score
-    decades = math.log10(max(s.value_cents / sc.CENTS, sb.value_floor_dollars)) - math.log10(
-        sb.value_floor_dollars
-    )
+    p = score_points(s, b)
     last = sc.latest_score(state, company_id)
     return ScoreOut(
         score=s.score,
-        value_points=round(sb.weight_value * min(max(decades / sb.value_span_decades, 0), 1), 1),
-        growth_points=round(sb.weight_growth * s.growth, 1),
-        profit_points=round(sb.weight_profit * s.profit, 1),
-        leadership_points=round(sb.weight_leadership * s.leadership, 1),
-        reputation_points=round(sb.weight_reputation * s.reputation, 1),
+        value_points=p["value"],
+        growth_points=p["growth"],
+        profit_points=p["profit"],
+        leadership_points=p["leadership"],
+        reputation_points=p["reputation"],
         estimate_cents=s.value_cents,
         last_december=last.score if last is not None else None,
     )

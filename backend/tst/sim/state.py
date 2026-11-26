@@ -15,6 +15,7 @@ from types import MappingProxyType
 from typing import Any, Final
 
 from tst.sim.automation.models import AreaDecision, AreaOwner, HeadcountTarget
+from tst.sim.calendar import HISTORY_START_TURN
 from tst.sim.commodities.models import CommodityDeal
 from tst.sim.contracts.models import FoundryContract, Relation
 from tst.sim.dynasty.models import DynastyState
@@ -202,6 +203,7 @@ from tst.sim.robotics.models import (
     ZoneMonth,
 )
 from tst.sim.space.models import SpaceState
+from tst.sim.telecom.models import TelecomState
 from tst.sim.vehicles.models import (
     CellLot,
     CellPlant,
@@ -239,7 +241,8 @@ _PRODUCT_REGION = attrgetter("product_id", "region")
 # relationship_map's memo: the tuple is kept with its map, so an id is never reused while cached
 _REL_MAPS: dict[int, tuple[tuple[Relationship, ...], Mapping[tuple[int, int], Relationship]]] = {}
 _REL_MAPS_KEPT: Final = 4  # tunable-exempt: memo size (the turn's old and new tuples)
-_BEFORE_TIME: Final = -1  # tunable-exempt: the root's own window starts before turn 0
+# tunable-exempt: the root's own window starts before the earliest start (M50: before -24)
+_BEFORE_TIME: Final = HISTORY_START_TURN - 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -616,6 +619,10 @@ class GameState:
     # M40 (56): launch vehicle designs, constellations, licences, launches flown, constellation
     # months and the game-wide space world (rivals' growth and the debris rule, both hidden)
     space: SpaceState = field(default_factory=SpaceState)
+    # M53 (62): the player's networks, spectrum licences, auctions (announced and run), line
+    # settings, network months and the game-wide telecom world (6G's month, growth, seeded
+    # auctions and bans, hidden until they come)
+    telecom: TelecomState = field(default_factory=TelecomState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

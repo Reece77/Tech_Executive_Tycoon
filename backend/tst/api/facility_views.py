@@ -30,6 +30,7 @@ from tst.sim.facilities import compute, goods, lifecycle
 from tst.sim.facilities import formulas as ff
 from tst.sim.facilities.models import Facility, GoodMonth
 from tst.sim.ledger import CASH, LedgerBalances, account_balance
+from tst.sim.modes.models import world_start_turn
 from tst.sim.money import exact
 from tst.sim.products.models import SELLING
 from tst.sim.state import GameState
@@ -58,7 +59,7 @@ def month_at(
     """A good's month from history or from the months already played, never ahead."""
     components = data.game_data.components
     assert components is not None
-    if turn > current_turn(state, data) or turn < 0:
+    if turn > current_turn(state, data) or turn < world_start_turn(state.mode):
         return None
     known = goods.history_month(components.good(good), turn)
     if known is not None:
@@ -86,10 +87,16 @@ def components_out(state: GameState, data: LoadedData, stored: Stored) -> list[C
         month = month_at(good.key, now, state, data, stored) or goods.current(
             state, good.key, data.game_data
         )
-        year_ago = month_at(good.key, max(0, now - MONTHS_PER_YEAR), state, data, stored)
-        change = month.index / year_ago.index - 1 if year_ago and now >= MONTHS_PER_YEAR else 0.0
+        year_ago = month_at(
+            good.key, max(world_start_turn(state.mode), now - MONTHS_PER_YEAR), state, data, stored
+        )
+        change = (
+            month.index / year_ago.index - 1
+            if year_ago and now >= world_start_turn(state.mode) + MONTHS_PER_YEAR
+            else 0.0
+        )
         history = []
-        for t in range(max(0, now - window), now + 1):
+        for t in range(max(world_start_turn(state.mode), now - window), now + 1):
             m = month_at(good.key, t, state, data, stored)
             if m is not None:
                 history.append(

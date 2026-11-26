@@ -154,6 +154,11 @@ export function ModePicker({
               <span style={{ fontSize: 13 }}>
                 Goal: {h.goal} by {h.deadline_label}.
               </span>
+              {h.difficulty && (
+                <span className="tst-muted" style={{ fontSize: 12 }}>
+                  Difficulty: {h.difficulty}
+                </span>
+              )}
             </button>
           ))}
         </div>

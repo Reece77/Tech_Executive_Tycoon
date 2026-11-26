@@ -10,6 +10,7 @@ from typing import Final
 from tst.sim import dmath
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
+from tst.sim.modes.models import world_start_turn
 from tst.sim.platforms import formulas as pf
 from tst.sim.platforms.config import OTHER, PlatformsFile
 from tst.sim.platforms.models import DeviceRun, Platform, PlatformRegion, RivalStore, Standard
@@ -205,14 +206,16 @@ def allows_side_loading(data: GameData, platform: Platform, region: str, turn: i
 
 def historical_platforms_from_file(data: GameData) -> tuple[Platform, ...]:
     """The historical platforms with no owners resolved (the fee calibration's view)."""
-    return _historical(data, {})
+    return _historical(data, {}, 0)
 
 
 def historical_platforms(state: GameState, data: GameData) -> tuple[Platform, ...]:
-    return _historical(data, {c.name: c.id for c in state.companies})
+    return _historical(data, {c.name: c.id for c in state.companies}, world_start_turn(state.mode))
 
 
-def _historical(data: GameData, owners: dict[str, int]) -> tuple[Platform, ...]:
+def _historical(data: GameData, owners: dict[str, int], first: int) -> tuple[Platform, ...]:
+    """`first` (M50): the world's first month; a store with no date ("before 2010") and an
+    earlier open-source base count from it (turn 0 in a 2010 game, as before)."""
     out = []
     for i, p in enumerate(file(data).platforms):
         out.append(
@@ -225,11 +228,11 @@ def _historical(data: GameData, owners: dict[str, int]) -> tuple[Platform, ...]:
                 owner_id=owners.get(p.owner) if p.owner else None,
                 owner_label=p.owner_label,
                 regions=tuple(p.regions or data.region_keys),
-                launched_turn=p.opened_turn,
+                launched_turn=p.opened_turn if p.store_opened else first,
                 ended_turn=p.ended_turn,
                 licensable=p.licensable,
                 side_loading=p.side_loading,
-                open_turn=None if p.open_source is None else max(0, _turn(p.open_source)),
+                open_turn=None if p.open_source is None else max(first, _turn(p.open_source)),
             )
         )
     return tuple(out)
@@ -306,7 +309,7 @@ def materialise(state: GameState, balance: Balance, data: GameData) -> GameState
                 formats=s.formats,
                 sponsors=tuple(keys.get(s.sponsors.get(f, "")) for f in s.formats),  # type: ignore[arg-type]
                 adoption=(1.0 if s.winner == s.formats[0] else 0.0) if done else EVEN,
-                started_turn=0,
+                started_turn=world_start_turn(state.mode),  # M50: the world's first month
                 winner=s.winner if done else None,
                 tipped_turn=tipped if done else None,
                 historical=True,

@@ -20,7 +20,7 @@ from tst.api.schemas.equipment import (
     ToolStockOut,
 )
 from tst.loader import LoadedData
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.equipment import data as ed
 from tst.sim.equipment import programme as ep
 from tst.sim.equipment import queue as eq
@@ -33,6 +33,7 @@ from tst.sim.equipment.models import Programme
 from tst.sim.fabs import market as fm
 from tst.sim.geopolitics import rules as gr
 from tst.sim.geopolitics import world
+from tst.sim.modes.models import world_start_turn
 from tst.sim.state import GameState
 
 THIN, DEEP = 0.75, 1.25  # tunable-exempt: book labels (open orders / next year's capacity)
@@ -97,7 +98,7 @@ def generations_out(state: GameState, data: LoadedData) -> list[ToolGenerationOu
                 list_cents=round(ed.base_price_cents(g, state.turn, b.equipment.price.growth)),
                 shipments=[
                     ToolShipmentOut(year=y, tools=ed.capacity(state, g, y))
-                    for y in range(max(2010, year - 9), year)
+                    for y in range(max(turn_to_ym(world_start_turn(state.mode))[0], year - 9), year)
                     if y >= ed.year_of(g.first_shipment_turn)
                 ],
                 capacity_next=cap_next,

@@ -19,6 +19,12 @@
 # - launch_quality (M8, optional): launch also needs at least this quality (compliance).
 # - growth_by_year (M8, optional): annual growth from each listed calendar year on; replaces
 #   `growth` for demand (formulas.md 18.6).
+# - early_growth (M50, ADR-0024, formulas.md 60.2): annual growth of addressable demand in each
+#   year before 2010, for a game begun in 2008 (a 2010 game never reads it). Every category
+#   lists every year from 2008 to 2009 (the loader checks). A 2008 game's D in January 2008 is
+#   D0 shrunk by these two years' growth, so it arrives at D0 in January 2010. It may be
+#   negative (servers and contract manufacturing shrank in 2009). Tags: R recalled from the
+#   named source (not re-read in this session), A an assumption with its basis, D derived.
 # - compute_indexed (M8, optional): hosting is h x compute_index(year) (compute_index.yaml).
 # - markets: addressable customers in January 2010 (D0), reference monthly price and hosting
 #   cost per customer per month, both in cents.
@@ -181,10 +187,37 @@ segments:
     base_churn: 0.03
     adoption: 0.02
     reach: self_serve
+  # M53 (formulas.md 62.1): telecom subscribers and carriers. A: consumers weigh price and the
+  # network (quality: coverage and speed), brand and plans less; business lines the network most.
+  # Churn: mobile operators lose about 1-2% of subscribers a month (R: US postpaid 0.8-1%, prepaid and
+  # emerging markets 2-4%, operators' reports), fixed broadband about 1-1.5% (R). Carriers buy wholesale
+  # capacity and network equipment by contract (sales-led).
+  - key: telecom_consumer
+    label: Subscribers
+    weights: { quality: 0.30, price: 0.35, brand: 0.20, features: 0.15 }
+    outside_option: 30
+    base_churn: 0.015
+    adoption: 0.06
+    reach: self_serve
+  - key: telecom_business
+    label: Business lines
+    weights: { quality: 0.40, price: 0.25, brand: 0.20, features: 0.15 }
+    outside_option: 35
+    base_churn: 0.01
+    adoption: 0.03
+    reach: sales
+  - key: carriers
+    label: Carriers
+    weights: { quality: 0.40, price: 0.40, brand: 0.10, features: 0.10 }
+    outside_option: 40
+    base_churn: 0.02 # equipment uses replacement_months
+    adoption: 0.02
+    reach: sales
 categories:
   - key: b2b_saas
     label: B2B SaaS
     growth: 0.20
+    early_growth: { 2008: 0.27, 2009: 0.18 } # M50 (60.2): R: Gartner SaaS revenue +27% in 2008 to $6.4B, +18% in 2009 to $7.5B (press releases 2008-10 and 2009-12)
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -198,6 +231,7 @@ categories:
   - key: dev_tools
     label: Developer tools
     growth: 0.1749 # M43a (54.2) from 0.25, matching eras.yaml's base_growth (x0.66) to January 2020 (21.8 target 1); demand reads eras.yaml
+    early_growth: { 2008: 0.12, 2009: 0.06 } # M50 (60.2): R: Gartner software revenue +8% in 2008 and -3% in 2009; tools held up better (A between them)
     features_at_start: 50
     features_per_month: 4.0
     scope: 5
@@ -211,6 +245,7 @@ categories:
   - key: consumer_apps
     label: Consumer apps
     growth: 0.30
+    early_growth: { 2008: 0.30, 2009: 0.28 } # M50 (60.2): R: Facebook's users 100M (Aug 2008) to 350M (Dec 2009); the App Store from July 2008 (D, damped to the 2010 base 0.2568)
     features_at_start: 40
     features_per_month: 5.0
     scope: 4
@@ -223,6 +258,7 @@ categories:
   - key: cybersecurity
     label: Cybersecurity
     growth: 0.15
+    early_growth: { 2008: 0.186, 2009: 0.08 } # M50 (60.2): R: Gartner security software revenue +18.6% in 2008 ($13.5B), +8% in 2009
     features_at_start: 70
     features_per_month: 3.5
     scope: 7
@@ -237,6 +273,7 @@ categories:
   - key: fintech
     label: Fintech
     growth: 0.25
+    early_growth: { 2008: 0.26, 2009: 0.19 } # M50 (60.2): R: PayPal payment volume $47.5B (2007), $60B (2008), $72B (2009), eBay 10-K
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -253,6 +290,7 @@ categories:
   - key: ai_models
     label: AI models and inference
     growth: 0.25 # the fallback before the first growth_by_year year (none: 2010 is listed)
+    early_growth: { 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: machine-learning services before deep learning, below the 2010 entry's 0.30
     features_at_start: 30
     features_per_month: 6.0
     scope: 8
@@ -281,6 +319,7 @@ categories:
   - key: cloud_hosting
     label: Cloud and GPU hosting
     growth: 0.225 # M43a (54.2) calibration from 0.30: main's 2025 served revenue was 3.5x Synergy's $419B (real-dollar equivalent)
+    early_growth: { 2008: 0.21, 2009: 0.21 } # M50 (60.2): R: Gartner cloud services revenue +21% in 2009 ($58.6B) and about +21% in 2008
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -305,6 +344,7 @@ categories:
   - key: devices
     label: Devices
     growth: 0.12
+    early_growth: { 2008: 0.14, 2009: 0.18 } # M50 (60.2): R: Gartner smartphone sales 139M in 2008 (+14%) and 172M in 2009 (+24%), damped by flat PCs
     features_at_start: 50
     features_per_month: 8.0 # 26.1: hardware ages fast
     scope: 6
@@ -320,6 +360,7 @@ categories:
   - key: servers
     label: Servers
     growth: 0.15 # M43a (54.2) calibration from 0.10 (with D0 x5): 2025 served about 0.6x IDC's $444B (real-dollar equivalent; 2010 about $48B)
+    early_growth: { 2008: 0.01, 2009: -0.15 } # M50 (60.2): R: IDC server shipments about flat in 2008 and -19% in 2009
     features_at_start: 50
     features_per_month: 8.0
     scope: 6
@@ -341,6 +382,7 @@ categories:
     family: chips
     chip_type: mobile_soc
     growth: 0.12
+    early_growth: { 2008: 0.08, 2009: 0.02 } # M50 (60.2): R: WSTS semiconductors -3% in 2008 and -9% in 2009; mobile held up (A)
     features_at_start: 50
     features_per_month: 10.0 # 26.1
     scope: 6
@@ -357,6 +399,7 @@ categories:
     family: chips
     chip_type: server_cpu
     growth: 0.10
+    early_growth: { 2008: 0.0, 2009: -0.10 } # M50 (60.2): R: IDC servers, WSTS semiconductors (2008 flat, 2009 down)
     features_at_start: 50
     features_per_month: 10.0
     scope: 6
@@ -374,6 +417,7 @@ categories:
     family: chips
     chip_type: ai_accelerator
     growth: 0.28
+    early_growth: { 2008: 0.10, 2009: 0.0 } # M50 (60.2): R: NVIDIA revenue FY2009 $3.4B (-16%) and FY2010 $3.3B; GPU compute was new (A)
     features_at_start: 50
     features_per_month: 10.0
     scope: 6
@@ -393,6 +437,7 @@ categories:
   - key: contract_manufacturing
     label: Contract manufacturing
     growth: 0.10
+    early_growth: { 2008: 0.04, 2009: -0.10 } # M50 (60.2): R: EMS revenue up about 4% in 2008 and down about 10% in 2009 (New Venture Research)
     features_at_start: 50
     features_per_month: 4.0
     scope: 6
@@ -409,6 +454,7 @@ categories:
     label: Operating system
     pseudo: true
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: built through devices
     features_at_start: 50
     features_per_month: 2.0
     scope: 8
@@ -428,6 +474,7 @@ categories:
   - key: vehicles
     label: Electric vehicles
     growth: 0.0 # demand comes from vehicles.yaml each month (49.1), not growth
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the vehicles system's own data (vehicles.yaml)
     features_at_start: 50
     features_per_month: 5.0 # cars age more slowly than phones (26.1's 8)
     scope: 10
@@ -454,6 +501,7 @@ categories:
     label: "Medical: wearables and diagnostics"
     family: medical
     growth: 0.15
+    early_growth: { 2008: 0.12, 2009: 0.10 } # M50 (60.2): A: below the 2010 entry's 0.15 in the recession
     growth_by_year: { 2010: 0.15, 2025: 0.08 } # 2010 $2B to 2024 $14B real (x7.08); A after
     features_at_start: 50
     features_per_month: 6.0
@@ -468,6 +516,7 @@ categories:
     label: "Medical: imaging"
     family: medical
     growth: 0.03 # 2010 $30B to 2024 $44B real (x1.51)
+    early_growth: { 2008: 0.02, 2009: -0.03 } # M50 (60.2): R: hospitals cut imaging capital spending in 2009 (GE Healthcare orders down)
     features_at_start: 50
     features_per_month: 4.0
     scope: 6
@@ -481,6 +530,7 @@ categories:
     label: "Medical: surgical robotics"
     family: medical
     growth: 0.14
+    early_growth: { 2008: 0.25, 2009: 0.15 } # M50 (60.2): R: Intuitive Surgical revenue $875M (2008, +46%) and $1,052M (2009, +20%), damped
     growth_by_year: { 2010: 0.14, 2025: 0.10 } # 2010 $1.6B to 2024 $10B real (x6.26); A after
     features_at_start: 50
     features_per_month: 4.0
@@ -495,6 +545,7 @@ categories:
     label: "Medical: implantables"
     family: medical
     growth: 0.03 # 2010 $20B to 2024 $30.5B real (x1.51)
+    early_growth: { 2008: 0.04, 2009: 0.03 } # M50 (60.2): A: about the 2010 rate (0.03)
     features_at_start: 50
     features_per_month: 3.0
     scope: 6
@@ -508,6 +559,7 @@ categories:
     label: "Medical: software and AI"
     family: medical
     growth: 0.20
+    early_growth: { 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.20, 2016: 0.35, 2025: 0.20 } # 2010 $0.05B to 2024 $1.5B real (x32.9); A after
     features_at_start: 30
     features_per_month: 6.0
@@ -533,6 +585,7 @@ categories:
   - key: industrial_robots
     label: Industrial robots
     growth: 0.0 # demand comes from robotics.yaml each month (53.1), not growth
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data (robotics.yaml)
     features_at_start: 50
     features_per_month: 3.0 # robots age slowly (26.1's 8 for devices)
     scope: 8
@@ -558,6 +611,7 @@ categories:
   - key: humanoid_robots
     label: Humanoid robots
     growth: 0.0 # demand comes from the era and robotics.yaml (53.2), not growth
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data
     features_at_start: 50
     features_per_month: 6.0 # a young category moves fast
     scope: 8
@@ -580,6 +634,7 @@ categories:
     label: Robotaxi services
     pseudo: true
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo
     features_at_start: 50
     features_per_month: 4.0
     scope: 8
@@ -597,6 +652,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -607,6 +663,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -617,6 +674,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -627,6 +685,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -637,6 +696,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -647,6 +707,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -657,6 +718,7 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -682,6 +744,7 @@ categories:
     label: Launch services
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.03
+    early_growth: { 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.03, 2017: 0.08, 2020: 0.24, 2026: 0.10 }
     features_at_start: 40
     features_per_month: 1.5 # launch vehicles age slowly
@@ -711,6 +774,7 @@ categories:
     label: Satellite broadband
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.03
+    early_growth: { 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.03, 2019: 0.10, 2021: 0.15, 2026: 0.06 }
     features_at_start: 40
     features_per_month: 3.0
@@ -733,6 +797,7 @@ categories:
     label: Earth observation
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.06
+    early_growth: { 2008: 0.06, 2009: 0.06 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.06, 2018: 0.08 }
     features_at_start: 40
     features_per_month: 3.0
@@ -743,3 +808,91 @@ categories:
     markets:
       - { segment: enterprise, addressable: 170, reference_price_cents: 2000000, hosting_cents: 600000 }
       - { segment: government, addressable: 25, reference_price_cents: 20000000, hosting_cents: 6000000 }
+
+  # --- M53 telecom (formulas.md 62.1) ---------------------------------------------------------------
+  # family telecom: scheduled rivals only (operators and vendors, incumbents.yaml), no startups, pitches
+  # or angel starts; a service line sells only where its company's networks and spectrum reach
+  # (tst.sim.telecom). growth 0: telecom.yaml sets the addressable market each month (subscriptions by
+  # region to 2025, then seeded growth; tst.sim.telecom.demand), as vehicles.yaml's, so M43a's ceilings
+  # leave these markets alone (saturation.grows). D0 below is January 2010's north_america from the data
+  # (D: 411M mobile and 109M fixed subscriptions x 0.085 x the segment split). price_index: the
+  # category's own regional index (R: ARPU by region, telecom.yaml; the regions table's 0.35-1.0 is far
+  # too narrow for telecom: India's mobile ARPU is about 1/15 of North America's). Prices a month in 2010
+  # dollars (telecom.yaml arpu: north_america $40 mobile, $45-50 fixed; business lines about 1.5x, A).
+  # hosting_cents: the costs of a subscriber other than the network (care, billing, interconnect, device
+  # subsidies and marketing; A: about 40% of ARPU, operators' EBITDA margins 30-40% with network opex of
+  # 20-25%, R); the network's sites, radios and fibre are the player's facilities.
+  - key: mobile
+    label: Mobile
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (telecom.yaml has 2008)
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 10
+    brand_constant: 150
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.35, software_engineering: 0.25, operations: 0.25, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.40, east_asia: 0.25, south_southeast_asia: 0.065, latin_america: 0.19, africa: 0.088, oceania: 0.90 } # R: telecom.yaml arpu_mobile 2020 over north_america's
+    markets:
+      - { segment: telecom_consumer, addressable: 29695000, reference_price_cents: 4000, hosting_cents: 1600 }
+      - { segment: telecom_business, addressable: 5240000, reference_price_cents: 6000, hosting_cents: 2400 }
+
+  - key: fixed_broadband
+    label: Fixed broadband
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 10
+    brand_constant: 150
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.40, operations: 0.30, software_engineering: 0.15, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.60, east_asia: 0.26, south_southeast_asia: 0.14, latin_america: 0.36, africa: 0.40, oceania: 1.10 } # R: telecom.yaml arpu_fixed 2020 over north_america's
+    markets:
+      - { segment: telecom_consumer, addressable: 8338000, reference_price_cents: 5000, hosting_cents: 2000 }
+      - { segment: telecom_business, addressable: 927000, reference_price_cents: 9000, hosting_cents: 3600 }
+
+  # wholesale (62.1): capacity sold to other operators and content providers by contract. A customer is
+  # a contract (1 Gbps in 2010, growing with telecom.capacity.contract_growth); D0 = 411M mobile
+  # subscriptions x telecom.wholesale_per_sub (900 a million, A: carrier services about $100B a year at
+  # about $1,000 a contract a month, R/A) x 0.085. A line sells where its company's networks and subsea
+  # cables have spare capacity.
+  - key: wholesale
+    label: Wholesale capacity
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.4
+    scope: 8
+    brand_constant: 100
+    launch_quality: 30
+    dev_weights: { infrastructure: 0.45, operations: 0.30, security: 0.15, software_engineering: 0.10 }
+    price_index: { north_america: 1.0, europe: 0.80, east_asia: 0.60, south_southeast_asia: 0.40, latin_america: 0.60, africa: 0.70, oceania: 0.90 } # A: transit and wavelength prices by region
+    markets:
+      - { segment: carriers, addressable: 31441, reference_price_cents: 100000, hosting_cents: 30000 }
+
+  # network_equipment (62.3): a site's radios and baseband, sold once a replacement cycle (units,
+  # replacement_months 84: radios replaced about every 7 years, A). D0 = 411M mobile subscriptions x
+  # telecom.equipment_sites_per_sub (0.0011 site sets a subscription, A: about 7M macro sites worldwide
+  # for about 6.5B subscriptions, R) x 0.085, set each month from the data like the services'. Price
+  # $45,000 a site set (A: R industry $30k-70k); rivals' cost of goods 60% of their price (A: vendors'
+  # gross margins about 40%, R). The player's own line is a hardware line (hardware.bom) on its chips.
+  - key: network_equipment
+    label: Network equipment
+    family: telecom
+    growth: 0
+    early_growth: { 2008: 0.0, 2009: 0.0 }
+    features_at_start: 40
+    features_per_month: 0.6
+    scope: 10
+    brand_constant: 150
+    launch_quality: 35
+    revenue_model: units
+    rival_cost_share: 0.60
+    dev_weights: { hardware_design: 0.35, chip_design: 0.25, software_engineering: 0.25, security: 0.15 }
+    price_index: { north_america: 1.0, europe: 0.95, east_asia: 0.80, south_southeast_asia: 0.80, latin_america: 0.90, africa: 0.90, oceania: 1.0 } # A: Chinese vendors' prices in Asia
+    markets:
+      - { segment: carriers, addressable: 38429, reference_price_cents: 4500000, hosting_cents: 2700000, replacement_months: 84 }

@@ -20,6 +20,8 @@ from tst.sim.mining.actions import mine_name
 from tst.sim.power.plants import plant_name
 from tst.sim.state import GameState, group_members, listed_id
 
+CENTURY_MONTHS = 1200  # tunable-exempt: shifts turns positive for SQL division (M50)
+
 MONTHS_A_YEAR = 12  # tunable-exempt: calendar
 START_YEAR = 2010  # tunable-exempt: turn 0 is January 2010
 
@@ -113,7 +115,9 @@ def line_sums(session: Session, group: list[Member]) -> list[LineSum]:
     """The members' ledger lines while inside the group (each run, each entry once), summed by
     year, account and memo."""
     out: list[LineSum] = []
-    year = LedgerEntryRow.turn // MONTHS_A_YEAR
+    # M50: SQLite's integer division truncates toward zero, so a negative turn (2008-2009) is
+    # shifted a century forward first; for turns from 0 the year is the same
+    year = (LedgerEntryRow.turn + CENTURY_MONTHS) // MONTHS_A_YEAR - CENTURY_MONTHS // MONTHS_A_YEAR
     for m in group:
         q = (
             select(

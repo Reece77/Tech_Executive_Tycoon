@@ -82,6 +82,16 @@ class CreateSaveIn(BaseModel):
         default="standard",
         description="Campaign length (M37, 52.1): standard to December 2039, dynasty to 2069",
     )
+    start_year: int = Field(
+        default=2010,
+        description="M50 (ADR-0024): a campaign's first January, one of /api/meta start_years "
+        "(2008 or 2010); a Sandbox or scenario keeps its own year",
+    )
+    challenges: list[str] = Field(
+        default_factory=list,
+        description="M51 (63.2): challenge rules (keys from /api/meta challenges), for any "
+        "campaign, Sandbox or scenario",
+    )
 
 
 class SaveOut(BaseModel):

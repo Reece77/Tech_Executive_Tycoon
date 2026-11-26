@@ -14,6 +14,8 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import from_2010
+
 PLANT_TYPES: Final = ("gas", "solar_storage", "wind", "nuclear", "smr")
 type PlantType = Literal["gas", "solar_storage", "wind", "nuclear", "smr"]
 BASE_YEAR: Final = 2010  # tunable-exempt: the game's money is in 2010 dollars
@@ -29,8 +31,8 @@ class _Frozen(BaseModel):
 
 
 def interp(points: dict[int, float], year: float) -> float:
-    """Linear between year points, held at the ends."""
-    pts = sorted(points.items())
+    """Linear between year points, held at the ends; from 2010 without 2008-2009 (M50)."""
+    pts = sorted(from_2010(points, year).items())
     if year <= pts[0][0]:
         return pts[0][1]
     for (y0, v0), (y1, v1) in itertools.pairwise(pts):

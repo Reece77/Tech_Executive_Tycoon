@@ -61,8 +61,10 @@ from tst.api.routers import (
     robotics,
     saves,
     scaleup,
+    scenarios,
     space,
     talks,
+    telecom,
     vehicles,
 )
 from tst.api.schemas.common import ErrorOut
@@ -143,6 +145,7 @@ def create_app() -> FastAPI:
     app.include_router(mining.router)  # M19
     app.include_router(explain.router)  # M25
     app.include_router(profile.router)  # M25
+    app.include_router(scenarios.router)  # M51
     app.include_router(mods.router)  # M25
     app.include_router(onboarding.router)  # M29
     app.include_router(automation.router)  # M27a
@@ -157,6 +160,7 @@ def create_app() -> FastAPI:
     app.include_router(campaign.router)  # M37
     app.include_router(robotics.router)  # M39
     app.include_router(space.router)  # M40
+    app.include_router(telecom.router)  # M53
     app.include_router(government.router)  # M44
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41

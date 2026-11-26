@@ -71,6 +71,20 @@ class StoryBalance(_Frozen):
     max_per_month: int = Field(ge=0)  # pieces a month at most
 
 
+class ChallengeRule(_Frozen):
+    """One challenge rule's numbers (63.2)."""
+
+    score_mult: float = Field(gt=0)  # x the company score the result screen shows
+
+
+class ChallengesBalance(_Frozen):
+    """M51 (63.2): `challenges.<rule>` in balance.yaml."""
+
+    rules: dict[str, ChallengeRule]
+    hard_rivals_quality_mult: float = Field(ge=1)  # rivals' quality in their markets, x this
+    difficulty_wins: tuple[int, int]  # sensible wins of 10 at or below: hard, then medium (63.3)
+
+
 class SandboxBalance(_Frozen):
     """Sandbox starts (30.2)."""
 
@@ -93,11 +107,33 @@ class StaffSpec(_Frozen):
     role: str
     level: str
     count: int = Field(ge=1)
+    unit: str | None = None  # M51: a team of this name (made at the start), else the root
+
+
+class FabSpec(_Frozen):
+    """M51: a fab the company already runs at the start (38.2), built `age_months` before it:
+    live, its yield mature, its capex on the books less the depreciation since."""
+
+    node: str  # nodes.yaml key
+    region: str
+    capacity: int = Field(gt=0)  # wafer starts a month (fab.sizes)
+    age_months: int = Field(ge=0)
+    unit: str  # the team (a StaffSpec unit) that staffs it
+    country: str | None = None  # None: the region's default (countries.yaml)
 
 
 class SegmentSpec(_Frozen):
     price_dollars: float = Field(ge=0)
     customers: float = Field(ge=0)
+
+
+class ContractSpec(_Frozen):
+    """M51: a contract-manufacturing deal running at the start (26.2), signed that month."""
+
+    manufacturer: str  # balance.yaml hardware.contract.manufacturers key
+    city: str
+    units: int = Field(gt=0)  # a month
+    months: int = Field(ge=1)
 
 
 class ProductSpec(_Frozen):
@@ -107,6 +143,9 @@ class ProductSpec(_Frozen):
     features: float = Field(ge=0)  # feature points
     brand: float = Field(ge=0, le=100)
     segments: dict[str, SegmentSpec]
+    # M51: a product still in development (a prototype) has no customers or launch
+    status: Literal["live", "in_development"] = "live"
+    contract: ContractSpec | None = None  # M51: its assembly contract at the start
 
 
 class LeadSpec(_Frozen):
@@ -128,6 +167,15 @@ type GoalKind = Literal[
     "solvent_margin",  # cash at least 0 and a positive trailing operating margin at the end
     "unit_share",  # `share` of `category`'s customers
     "profit_no_down_round",  # an operating profit (trailing 12 months), no down round
+    # M51 (63.1)
+    "solvent_series",  # still solvent at the deadline, with a `series` round closed since the start
+    "platform_share",  # the company's own platform holds `share` of developers in a region (44)
+    "vehicles_year",  # `units` cars sold in the trailing 12 months (49)
+    "fab_catch_up",  # a live fab within `node_gap` nodes of the leader, and an operating profit
+    "node_volume",  # wafers run on a live fab at `node` or newer (38.2)
+    # judged at the deadline: a child of the first head runs the company as its head (not a
+    # professional CEO, 45.5), and the family holds control (family.control_bp, 45.6)
+    "family_succession",
 ]
 
 
@@ -144,6 +192,17 @@ class GoalSpec(_Frozen):
     # `bonus_era` first, described by `bonus_text`
     bonus_era: str | None = None
     bonus_text: str | None = None
+    series: str | None = None  # M51: a round series key (fundraising's "a", "b", ...)
+    region: str | None = None  # M51: the region it must hold in (None: any one region)
+    units: int | None = None  # M51: cars a year
+    node: str | None = None  # M51: a nodes.yaml key
+    node_gap: int | None = None  # M51: nodes behind the leading edge at most
+
+
+class FamilyStartSpec(_Frozen):
+    """M51: the founder's family at the start (45.1): a partner and children of these ages."""
+
+    child_ages: tuple[int, ...] = Field(min_length=1)
 
 
 class HistoricalScenario(_Frozen):
@@ -160,5 +219,14 @@ class HistoricalScenario(_Frozen):
     products: tuple[ProductSpec, ...] = ()
     research: tuple[LeadSpec, ...] = ()
     loans: tuple[LoanSpec, ...] = ()
+    fabs: tuple[FabSpec, ...] = ()  # M51
     goal: GoalSpec
     deadline: tuple[int, int]  # (year, month): judged at that month's end
+    # M51 (63.1): the founder and the company's home, where a scenario sets them
+    founder_age: int | None = Field(default=None, ge=18)  # tunable-exempt: adult; None: default
+    founder_region: str | None = None  # None: founder.default_region
+    hq_city: str | None = None  # None: geo.default_hq_city
+    family: FamilyStartSpec | None = None  # M51: built in the world's first month, then aged
+    length: Literal["standard", "dynasty"] = "standard"  # M51: shown as a dynasty game (52.1)
+    # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py), the difficulty
+    sensible_wins: int | None = Field(default=None, ge=0, le=10)  # tunable-exempt: 10 seeds

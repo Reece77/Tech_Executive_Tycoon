@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { DesktopPrompts } from './components/DesktopPrompts';
 import { AchievementsScreen } from './screens/AchievementsScreen';
+import { ScenariosScreen } from './screens/ScenariosScreen';
 import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
@@ -45,6 +46,7 @@ import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screen
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
 import { SpaceScreen } from './screens/SpaceScreen';
+import { TelecomScreen } from './screens/TelecomScreen';
 import { GovernmentScreen } from './screens/GovernmentScreen';
 import { RegulationScreen } from './screens/RegulationScreen';
 import { WorldScreen } from './screens/WorldScreen';
@@ -57,6 +59,7 @@ export default function App() {
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
+        <Route path="/scenarios" element={<ScenariosScreen />} />
         <Route path="/mods" element={<DataEditorScreen />} />
         <Route path="/saves" element={<MainMenu />} />
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />
@@ -88,6 +91,7 @@ export default function App() {
           <Route path="products/robotics" element={<RoboticsScreen />} />
           <Route path="products/mobility" element={<MobilityScreen />} />
           <Route path="products/space" element={<SpaceScreen />} />
+          <Route path="products/telecom" element={<TelecomScreen />} />
           <Route path="products/government" element={<GovernmentScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
