@@ -723,8 +723,7 @@ export function EditorScreen() {
       { text, slug: slug || null },
       {
         onSuccess: (s) => {
-          setMessage(`Imported ${s.key}`);
-          void open(s.key, true);
+          void open(s.key, true).then(() => setMessage(`Imported ${s.key}`));
         },
       },
     );

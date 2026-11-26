@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { continueMonth } from './helpers.ts';
 
 // M52 (formulas.md 66): the editor and sandbox. (a) "The EV maker" opened in the editor, its
@@ -52,7 +52,7 @@ test.describe.serial('a custom scenario', () => {
     expect(saves.find((s: { save_id: string }) => s.save_id === save).mode).toBe('custom');
   });
 
-  test('(b) export the scenario and import it back', async ({ page }, info) => {
+  test('(b) export the scenario and import it back', async ({ page }) => {
     await page.goto(`/editor?custom=${slug}`);
     await expect(page.getByTestId('editor-label')).toHaveValue('The EV maker');
     const [download] = await Promise.all([
@@ -62,20 +62,23 @@ test.describe.serial('a custom scenario', () => {
     expect(download.suggestedFilename()).toBe(`${slug}.yaml`);
     const text = readFileSync(await download.path(), 'utf8');
     expect(text).toContain('format: 1');
-    const copy = join(info.outputDir, `shared-${stamp}.yaml`);
-    writeFileSync(copy, text);
-    await page.getByTestId('editor-import-file').setInputFiles(copy);
+    await page.getByTestId('editor-import-file').setInputFiles({
+      name: `shared-${stamp}.yaml`,
+      mimeType: 'application/yaml',
+      buffer: Buffer.from(text, 'utf8'),
+    });
     await expect(page.getByTestId('editor-message')).toHaveText(`Imported shared-${stamp}`);
     await page.goto('/scenarios');
     const rows = page.getByTestId('custom-row');
     await expect(rows.filter({ hasText: `shared-${stamp}.yaml` })).toBeVisible();
     await expect(rows.filter({ hasText: `${slug}.yaml` })).toBeVisible();
-    const cards = await (await page.request.get('/api/scenarios/custom')).json();
-    const hashes = cards
-      .filter((c: { slug: string }) => c.slug === slug || c.slug === `shared-${stamp}`)
-      .map((c: { sha256: string }) => c.sha256);
-    expect(hashes).toHaveLength(2);
-    expect(hashes[0]).toBe(hashes[1]); // the same canonical text
+    // the same scenario under another name: every field but the name is equal
+    const get = async (name: string) => {
+      const spec = await (await page.request.get(`/api/scenarios/custom/${name}`)).json();
+      delete spec.key;
+      return spec;
+    };
+    expect(await get(`shared-${stamp}`)).toEqual(await get(slug));
   });
 });
 
