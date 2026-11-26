@@ -252,6 +252,23 @@ export const GUIDES: Record<string, Guide> = {
       'Networks are capital-heavy: a national network takes years to pay back. 5G needs mid-band spectrum, and a ban on a vendor forces you to replace its radios by a deadline.',
     ],
   },
+  finserv: {
+    title: 'Financial services',
+    path: 'products/bank',
+    what: 'Banking, payments and insurance: your banks (deposits, loans, securities, capital, stress tests, run risk as a band), card networks and merchant acquiring, and your insurer (premiums, combined ratio, float, solvency). The Bank, Payments and Insurance screens.',
+    start: [
+      'Make a Banking line from Products, then take deposits through a partner bank at once or apply for your own charter (a year or two, with opening capital). A low deposit beta widens the margin as rates rise, and deposits leave faster.',
+      'A Payments line acquires merchants anywhere; a card network you launch sells card programmes only where it runs, as merchants come to accept it. An Insurance line writes policies where its insurer is licensed and solvent.',
+    ],
+  },
+  currency: {
+    title: 'Currency',
+    path: 'finance/currency',
+    what: "Revenue and costs abroad by region, translated at each month's rate; forwards and their settlements; a what-if of a dollar move.",
+    start: [
+      "Prices abroad are set in local money: a stronger dollar makes them worth less. Sell a region's money forward to fix its rate, or set a rolling programme.",
+    ],
+  },
   government: {
     title: 'Government',
     path: 'products/government',

@@ -4,10 +4,12 @@ Target 1's currency guard (sub-task 2): a company that sells and spends only in 
 plays exactly as before currencies existed. `na_only_digests` plays the `steady` script (one
 North American product, no regions) on a seed with the data as loaded and with `fx` removed (every
 index 1, nothing translated), digesting each month (M30's canonical digest) the full state and
-ledger balances to December 2025, and from January 2026 the player company's own state (its
-company record, products, segments and ledger balances): from then rivals' regional lines
-translate (ADR-0025 point 4) and the indexes walk, so the world around it moves by design, while
-the North American company itself must not (M54 decision 6).
+ledger balances to December 2025, and from January 2026 the company's currency footprint (its
+translation marks, currency months, forwards, programmes, FX and hedge account balances and the
+translation entries posted for it), which must stay empty: from 2026 rivals' regional lines
+translate (ADR-0025 point 4) and the indexes walk, so the world around it, and through
+competition the company itself, moves by design (seed 3 differs from October 2026), while the
+currency system never touches it (M54 decision 6).
 """
 
 from __future__ import annotations
@@ -58,13 +60,33 @@ def na_only_digests(seed: int, turns: int = NA_TURNS, *, fx: bool = True) -> lis
     return out
 
 
-def _player_digest(digester: Digester, game: Game) -> str:
+FX_ACCOUNTS: Final = (
+    "1340_fx_hedge_assets",
+    "2340_fx_hedge_liabilities",
+    "4940_fx_gains",
+    "4945_fx_losses",
+)
+TRANSLATION_MEMO: Final = "Currency translation"
+
+
+def footprint(game: Game) -> tuple[object, ...]:
+    """The player company's currency footprint this month (module docstring): empty for a
+    company that sells and spends only in North America."""
     s = game.state
     pid = s.player.id
-    products = tuple(p for p in s.products if p.company_id == pid)
-    segments = tuple(x for p in products for x in s.segments_of(p.id))
-    regional = tuple(x for p in products for x in s.regional_segments_of(p.id))
-    books = tuple(sorted((a, v) for (c, a), v in game.balances.items() if c == pid))
-    out = digester.digest((s.player, products, segments, regional, books))
+    mine = {p.id for p in s.products if p.company_id == pid}
+    entries = game.last_result.ledger_entries if game.last_result is not None else ()
+    return (
+        tuple(m for m in s.fx.marks if m.product_id in mine),
+        tuple(m for m in s.fx.months if m.company_id == pid),
+        tuple(h for h in s.fx.hedges if h.company_id == pid),
+        tuple(p for p in s.fx.programmes if p.company_id == pid),
+        tuple(v for (c, a), v in game.balances.items() if c == pid and a in FX_ACCOUNTS and v),
+        tuple(e for e in entries if e.company_id == pid and e.memo.startswith(TRANSLATION_MEMO)),
+    )
+
+
+def _player_digest(digester: Digester, game: Game) -> str:
+    out = digester.digest(footprint(game))
     digester.next_month()
     return hashlib.sha256(out).hexdigest()[:16]

@@ -29590,6 +29590,835 @@
         }
       }
     },
+    "/api/saves/{save_id}/finserv": {
+      "get": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Get Finserv",
+        "description": "Banks, payments, the insurer and currency exposure (the four screens).",
+        "operationId": "getFinserv",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/charter": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Apply Charter",
+        "operationId": "applyCharter",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/partner": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Partner Bank",
+        "operationId": "partnerBank",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/settings": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Set Bank",
+        "operationId": "setBank",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "bank_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Bank Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankSettingsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/capital": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Bank Capital",
+        "operationId": "bankCapital",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "bank_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Bank Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmountIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/networks": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Launch Network",
+        "operationId": "launchNetwork",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/insurance/licence": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Apply Licence",
+        "operationId": "applyInsuranceLicence",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/insurance/capital": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Insurer Capital",
+        "operationId": "insurerCapital",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AmountIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/forwards": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Buy Forward",
+        "operationId": "buyForward",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForwardIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/finserv/programme": {
+      "post": {
+        "tags": [
+          "finserv"
+        ],
+        "summary": "Set Programme",
+        "operationId": "setHedgeProgramme",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgrammeIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinservActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/government": {
       "get": {
         "tags": [
@@ -33421,6 +34250,19 @@
         ],
         "title": "AllocationOut"
       },
+      "AmountIn": {
+        "properties": {
+          "amount_cents": {
+            "type": "integer",
+            "title": "Amount Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount_cents"
+        ],
+        "title": "AmountIn"
+      },
       "AnalystOut": {
         "properties": {
           "firm": {
@@ -35062,6 +35904,103 @@
         ],
         "title": "BanOut"
       },
+      "BankLoanOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "balance_cents": {
+            "type": "integer",
+            "title": "Balance Cents"
+          },
+          "risk_weight": {
+            "type": "number",
+            "title": "Risk Weight"
+          },
+          "yield_rate": {
+            "type": "number",
+            "title": "Yield Rate",
+            "description": "% a year: the policy rate plus the kind's spread"
+          },
+          "loss_rate": {
+            "type": "number",
+            "title": "Loss Rate",
+            "description": "% a year charged off this year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "balance_cents",
+          "risk_weight",
+          "yield_rate",
+          "loss_rate"
+        ],
+        "title": "BankLoanOut"
+      },
+      "BankMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "deposits_cents": {
+            "type": "integer",
+            "title": "Deposits Cents"
+          },
+          "loans_cents": {
+            "type": "integer",
+            "title": "Loans Cents"
+          },
+          "nii_cents": {
+            "type": "integer",
+            "title": "Nii Cents",
+            "description": "Net interest income this month"
+          },
+          "profit_cents": {
+            "type": "integer",
+            "title": "Profit Cents",
+            "description": "Net interest income less charge-offs"
+          },
+          "nim": {
+            "type": "number",
+            "title": "Nim",
+            "description": "Net interest margin, a year, of earning assets"
+          },
+          "ratio": {
+            "type": "number",
+            "title": "Ratio",
+            "description": "CET1 / risk-weighted assets"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "deposit_rate": {
+            "type": "number",
+            "title": "Deposit Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "deposits_cents",
+          "loans_cents",
+          "nii_cents",
+          "profit_cents",
+          "nim",
+          "ratio",
+          "policy_rate",
+          "deposit_rate"
+        ],
+        "title": "BankMonthOut"
+      },
       "BankOut": {
         "properties": {
           "key": {
@@ -35091,6 +36030,165 @@
           "reputation"
         ],
         "title": "BankOut"
+      },
+      "BankRunOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "withdrawn_cents": {
+            "type": "integer",
+            "title": "Withdrawn Cents"
+          },
+          "realised_loss_cents": {
+            "type": "integer",
+            "title": "Realised Loss Cents"
+          },
+          "failed": {
+            "type": "boolean",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "withdrawn_cents",
+          "realised_loss_cents",
+          "failed"
+        ],
+        "title": "BankRunOut"
+      },
+      "BankScreenOut": {
+        "properties": {
+          "can_charter": {
+            "type": "boolean",
+            "title": "Can Charter",
+            "description": "The company has a fintech or banking line"
+          },
+          "has_banking_line": {
+            "type": "boolean",
+            "title": "Has Banking Line"
+          },
+          "charter_capital_cents": {
+            "type": "integer",
+            "title": "Charter Capital Cents"
+          },
+          "charter_fee_cents": {
+            "type": "integer",
+            "title": "Charter Fee Cents"
+          },
+          "beta_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Beta Range"
+          },
+          "duration_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Duration Range"
+          },
+          "reserve_min": {
+            "type": "number",
+            "title": "Reserve Min"
+          },
+          "partner_share": {
+            "type": "number",
+            "title": "Partner Share"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/FinRegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "banks": {
+            "items": {
+              "$ref": "#/components/schemas/OwnBankOut"
+            },
+            "type": "array",
+            "title": "Banks"
+          },
+          "charters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Charters",
+            "description": "Fintechs that took charters (history)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_charter",
+          "has_banking_line",
+          "charter_capital_cents",
+          "charter_fee_cents",
+          "beta_range",
+          "duration_range",
+          "reserve_min",
+          "partner_share",
+          "regions",
+          "banks",
+          "charters"
+        ],
+        "title": "BankScreenOut"
+      },
+      "BankSettingsIn": {
+        "properties": {
+          "beta": {
+            "type": "number",
+            "title": "Beta"
+          },
+          "loan_to_deposit": {
+            "type": "number",
+            "title": "Loan To Deposit"
+          },
+          "securities_share": {
+            "type": "number",
+            "title": "Securities Share"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration"
+          }
+        },
+        "type": "object",
+        "required": [
+          "beta",
+          "loan_to_deposit",
+          "securities_share",
+          "duration"
+        ],
+        "title": "BankSettingsIn"
+      },
+      "BankStressOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "ratio_after": {
+            "type": "number",
+            "title": "Ratio After"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "ratio_after",
+          "passed"
+        ],
+        "title": "BankStressOut"
       },
       "BatteryOut": {
         "properties": {
@@ -36981,6 +38079,29 @@
           "burn_cents"
         ],
         "title": "CashFlowOut"
+      },
+      "CatastropheOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "region",
+          "label"
+        ],
+        "title": "CatastropheOut"
       },
       "CategoryOptionOut": {
         "properties": {
@@ -40719,6 +41840,192 @@
           "fix"
         ],
         "title": "CrossDivisionOut"
+      },
+      "CurrencyRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Its basket"
+          },
+          "index": {
+            "type": "number",
+            "title": "Index",
+            "description": "US dollars a unit now over January 2010's"
+          },
+          "change_12m": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change 12M"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "This month, translated"
+          },
+          "untranslated_revenue_cents": {
+            "type": "integer",
+            "title": "Untranslated Revenue Cents",
+            "description": "At the indexes prices were set at"
+          },
+          "cost_cents": {
+            "type": "integer",
+            "title": "Cost Cents"
+          },
+          "net_cents": {
+            "type": "integer",
+            "title": "Net Cents"
+          },
+          "exposure_cents": {
+            "type": "integer",
+            "title": "Exposure Cents",
+            "description": "The next 12 months' net revenue at today's index"
+          },
+          "hedged_cents": {
+            "type": "integer",
+            "title": "Hedged Cents",
+            "description": "Open forwards' notional"
+          },
+          "unhedged_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unhedged Share"
+          },
+          "what_if_cents": {
+            "type": "integer",
+            "title": "What If Cents",
+            "description": "A year's net revenue change if the dollar rises"
+          },
+          "forward_12m_index": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forward 12M Index"
+          },
+          "spread_bp": {
+            "type": "integer",
+            "title": "Spread Bp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "currency",
+          "index",
+          "change_12m",
+          "policy_rate",
+          "revenue_cents",
+          "untranslated_revenue_cents",
+          "cost_cents",
+          "net_cents",
+          "exposure_cents",
+          "hedged_cents",
+          "unhedged_share",
+          "what_if_cents",
+          "forward_12m_index",
+          "spread_bp"
+        ],
+        "title": "CurrencyRegionOut"
+      },
+      "CurrencyScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "what_if_move": {
+            "type": "number",
+            "title": "What If Move"
+          },
+          "term_range": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Term Range"
+          },
+          "max_hedge_share": {
+            "type": "number",
+            "title": "Max Hedge Share"
+          },
+          "foreign_share": {
+            "type": "number",
+            "title": "Foreign Share",
+            "description": "Foreign revenue over all revenue this month"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/CurrencyRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "hedges": {
+            "items": {
+              "$ref": "#/components/schemas/HedgeOut"
+            },
+            "type": "array",
+            "title": "Hedges"
+          },
+          "programme": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProgrammeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fx_result_12m_cents": {
+            "type": "integer",
+            "title": "Fx Result 12M Cents",
+            "description": "Currency gains less losses, last 12 months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "what_if_move",
+          "term_range",
+          "max_hedge_share",
+          "foreign_share",
+          "regions",
+          "hedges",
+          "programme",
+          "fx_result_12m_cents"
+        ],
+        "title": "CurrencyScreenOut"
       },
       "D2dPartnerIn": {
         "properties": {
@@ -46507,6 +47814,41 @@
         ],
         "title": "FiguresOut"
       },
+      "FinRegionOptionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months",
+            "description": "Months to a charter or licence there"
+          },
+          "strict": {
+            "type": "boolean",
+            "title": "Strict",
+            "description": "A strict regulator (adds months to a charter)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "regulator",
+          "months",
+          "strict"
+        ],
+        "title": "FinRegionOptionOut"
+      },
       "FinanceActionOut": {
         "properties": {
           "energy": {
@@ -46698,6 +48040,62 @@
           "ebitda_range"
         ],
         "title": "FinancialsOut"
+      },
+      "FinservActionOut": {
+        "properties": {
+          "finserv": {
+            "$ref": "#/components/schemas/FinservScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "finserv",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "FinservActionOut"
+      },
+      "FinservScreenOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "history": {
+            "type": "boolean",
+            "title": "History",
+            "description": "Before 2026: rivals follow the history"
+          },
+          "bank": {
+            "$ref": "#/components/schemas/BankScreenOut"
+          },
+          "payments": {
+            "$ref": "#/components/schemas/PaymentsScreenOut"
+          },
+          "insurance": {
+            "$ref": "#/components/schemas/InsuranceScreenOut"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyScreenOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "history",
+          "bank",
+          "payments",
+          "insurance",
+          "currency"
+        ],
+        "title": "FinservScreenOut"
       },
       "FireOut": {
         "properties": {
@@ -47104,6 +48502,30 @@
         ],
         "title": "FormerProfileOut",
         "description": "A person who has left the company (M7c): read-only, as the player knew them at\ndeparture. Displayed ranges and noticed tags only (ADR-0007)."
+      },
+      "ForwardIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "notional_cents": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Notional Cents"
+          },
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "notional_cents",
+          "months"
+        ],
+        "title": "ForwardIn"
       },
       "FoundAgainIn": {
         "properties": {
@@ -50086,6 +51508,74 @@
         ],
         "title": "HealthRegulatorOut"
       },
+      "HedgeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "notional_cents": {
+            "type": "integer",
+            "title": "Notional Cents"
+          },
+          "bought": {
+            "type": "string",
+            "title": "Bought"
+          },
+          "settles": {
+            "type": "string",
+            "title": "Settles"
+          },
+          "spot_index": {
+            "type": "number",
+            "title": "Spot Index"
+          },
+          "forward_index": {
+            "type": "number",
+            "title": "Forward Index"
+          },
+          "value_cents": {
+            "type": "integer",
+            "title": "Value Cents"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "settled_cents": {
+            "type": "integer",
+            "title": "Settled Cents"
+          },
+          "programme": {
+            "type": "boolean",
+            "title": "Programme"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "notional_cents",
+          "bought",
+          "settles",
+          "spot_index",
+          "forward_index",
+          "value_cents",
+          "status",
+          "settled_cents",
+          "programme"
+        ],
+        "title": "HedgeOut"
+      },
       "HireBanksIn": {
         "properties": {
           "bank": {
@@ -51720,6 +53210,137 @@
         ],
         "title": "InstallRobotsIn"
       },
+      "InsuranceLicenceOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "decided": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "status",
+          "decided"
+        ],
+        "title": "InsuranceLicenceOut"
+      },
+      "InsuranceScreenOut": {
+        "properties": {
+          "can_apply": {
+            "type": "boolean",
+            "title": "Can Apply",
+            "description": "The company has an insurance line"
+          },
+          "licence_capital_cents": {
+            "type": "integer",
+            "title": "Licence Capital Cents"
+          },
+          "licence_fee_cents": {
+            "type": "integer",
+            "title": "Licence Fee Cents"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/FinRegionOptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "has_insurer": {
+            "type": "boolean",
+            "title": "Has Insurer"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/InsuranceLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          },
+          "investments_cents": {
+            "type": "integer",
+            "title": "Investments Cents"
+          },
+          "float_cents": {
+            "type": "integer",
+            "title": "Float Cents"
+          },
+          "own_funds_cents": {
+            "type": "integer",
+            "title": "Own Funds Cents"
+          },
+          "required_cents": {
+            "type": "integer",
+            "title": "Required Cents"
+          },
+          "solvent": {
+            "type": "boolean",
+            "title": "Solvent"
+          },
+          "premiums_by_line": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Premiums By Line",
+            "description": "This month's premiums by line"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/LineMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          },
+          "catastrophes": {
+            "items": {
+              "$ref": "#/components/schemas/CatastropheOut"
+            },
+            "type": "array",
+            "title": "Catastrophes",
+            "description": "Those that have happened"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_apply",
+          "licence_capital_cents",
+          "licence_fee_cents",
+          "regions",
+          "has_insurer",
+          "licences",
+          "investments_cents",
+          "float_cents",
+          "own_funds_cents",
+          "required_cents",
+          "solvent",
+          "premiums_by_line",
+          "months",
+          "catastrophes"
+        ],
+        "title": "InsuranceScreenOut"
+      },
       "InvestingRulesOut": {
         "properties": {
           "join_energy": {
@@ -53353,6 +54974,59 @@
           "signed"
         ],
         "title": "LicenseOut"
+      },
+      "LineMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "premiums_cents": {
+            "type": "integer",
+            "title": "Premiums Cents"
+          },
+          "claims_cents": {
+            "type": "integer",
+            "title": "Claims Cents"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          },
+          "investment_income_cents": {
+            "type": "integer",
+            "title": "Investment Income Cents"
+          },
+          "float_cents": {
+            "type": "integer",
+            "title": "Float Cents"
+          },
+          "own_funds_cents": {
+            "type": "integer",
+            "title": "Own Funds Cents"
+          },
+          "required_cents": {
+            "type": "integer",
+            "title": "Required Cents"
+          },
+          "catastrophe": {
+            "type": "boolean",
+            "title": "Catastrophe"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "premiums_cents",
+          "claims_cents",
+          "combined_ratio",
+          "investment_income_cents",
+          "float_cents",
+          "own_funds_cents",
+          "required_cents",
+          "catastrophe"
+        ],
+        "title": "LineMonthOut"
       },
       "LineOptionOut": {
         "properties": {
@@ -58272,6 +59946,52 @@
         ],
         "title": "NetworkGenerationOut"
       },
+      "NetworkOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "since": {
+            "type": "string",
+            "title": "Since"
+          },
+          "acceptance": {
+            "type": "number",
+            "title": "Acceptance",
+            "description": "Share of merchants that take it"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Its share of the region's card programmes"
+          },
+          "volume_cents": {
+            "type": "integer",
+            "title": "Volume Cents",
+            "description": "Card volume it carries this month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "since",
+          "acceptance",
+          "share",
+          "volume_cents"
+        ],
+        "title": "NetworkOut"
+      },
       "NetworkPaybackOut": {
         "properties": {
           "region": {
@@ -60464,6 +62184,246 @@
         ],
         "title": "OverviewOut"
       },
+      "OwnBankOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "applying, chartered, partner or failed"
+          },
+          "regulator": {
+            "type": "string",
+            "title": "Regulator"
+          },
+          "charter_month": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charter Month",
+            "description": "When the regulator decides (applying)"
+          },
+          "beta": {
+            "type": "number",
+            "title": "Beta"
+          },
+          "loan_to_deposit": {
+            "type": "number",
+            "title": "Loan To Deposit"
+          },
+          "securities_share": {
+            "type": "number",
+            "title": "Securities Share"
+          },
+          "duration": {
+            "type": "number",
+            "title": "Duration"
+          },
+          "deposits_cents": {
+            "type": "integer",
+            "title": "Deposits Cents"
+          },
+          "consumer_deposits_cents": {
+            "type": "integer",
+            "title": "Consumer Deposits Cents"
+          },
+          "business_deposits_cents": {
+            "type": "integer",
+            "title": "Business Deposits Cents"
+          },
+          "loans_cents": {
+            "type": "integer",
+            "title": "Loans Cents"
+          },
+          "loans": {
+            "items": {
+              "$ref": "#/components/schemas/BankLoanOut"
+            },
+            "type": "array",
+            "title": "Loans"
+          },
+          "securities_cents": {
+            "type": "integer",
+            "title": "Securities Cents"
+          },
+          "securities_value_cents": {
+            "type": "integer",
+            "title": "Securities Value Cents",
+            "description": "Market value at today's rate"
+          },
+          "unrealised_loss_cents": {
+            "type": "integer",
+            "title": "Unrealised Loss Cents"
+          },
+          "reserves_cents": {
+            "type": "integer",
+            "title": "Reserves Cents"
+          },
+          "cet1_cents": {
+            "type": "integer",
+            "title": "Cet1 Cents"
+          },
+          "rwa_cents": {
+            "type": "integer",
+            "title": "Rwa Cents"
+          },
+          "ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio",
+            "description": "CET1 / RWA (null without loans)"
+          },
+          "requirement": {
+            "type": "number",
+            "title": "Requirement",
+            "description": "Minimum plus buffers (and the size surcharge)"
+          },
+          "minimum": {
+            "type": "number",
+            "title": "Minimum"
+          },
+          "nim": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nim",
+            "description": "The last 12 months' net interest margin"
+          },
+          "policy_rate": {
+            "type": "number",
+            "title": "Policy Rate"
+          },
+          "deposit_rate": {
+            "type": "number",
+            "title": "Deposit Rate"
+          },
+          "market_deposit_rate": {
+            "type": "number",
+            "title": "Market Deposit Rate"
+          },
+          "uninsured_share": {
+            "type": "number",
+            "title": "Uninsured Share"
+          },
+          "insured_limit_cents": {
+            "type": "integer",
+            "title": "Insured Limit Cents"
+          },
+          "run_risk": {
+            "type": "string",
+            "title": "Run Risk",
+            "description": "low, elevated or high: a band, never the chance"
+          },
+          "restricted": {
+            "type": "boolean",
+            "title": "Restricted"
+          },
+          "dividends_frozen_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dividends Frozen Until"
+          },
+          "capital_in_cents": {
+            "type": "integer",
+            "title": "Capital In Cents"
+          },
+          "stress": {
+            "items": {
+              "$ref": "#/components/schemas/BankStressOut"
+            },
+            "type": "array",
+            "title": "Stress"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/BankRunOut"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/BankMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "status",
+          "regulator",
+          "charter_month",
+          "beta",
+          "loan_to_deposit",
+          "securities_share",
+          "duration",
+          "deposits_cents",
+          "consumer_deposits_cents",
+          "business_deposits_cents",
+          "loans_cents",
+          "loans",
+          "securities_cents",
+          "securities_value_cents",
+          "unrealised_loss_cents",
+          "reserves_cents",
+          "cet1_cents",
+          "rwa_cents",
+          "ratio",
+          "requirement",
+          "minimum",
+          "nim",
+          "policy_rate",
+          "deposit_rate",
+          "market_deposit_rate",
+          "uninsured_share",
+          "insured_limit_cents",
+          "run_risk",
+          "restricted",
+          "dividends_frozen_until",
+          "capital_in_cents",
+          "stress",
+          "runs",
+          "months"
+        ],
+        "title": "OwnBankOut"
+      },
       "OwnSupplyOut": {
         "properties": {
           "facility_id": {
@@ -60929,6 +62889,124 @@
           "balance_after_cents"
         ],
         "title": "PaymentOut"
+      },
+      "PaymentsRegionOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "acquired_cents": {
+            "type": "integer",
+            "title": "Acquired Cents",
+            "description": "Your merchants' card volume this month"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Your payments lines' revenue there this month"
+          },
+          "take_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Take Rate",
+            "description": "Revenue over volume carried"
+          },
+          "interchange_cents": {
+            "type": "integer",
+            "title": "Interchange Cents"
+          },
+          "fraud_cents": {
+            "type": "integer",
+            "title": "Fraud Cents"
+          },
+          "interchange_bp": {
+            "type": "number",
+            "title": "Interchange Bp"
+          },
+          "rails_share": {
+            "type": "number",
+            "title": "Rails Share",
+            "description": "Real-time rails' share of the region's volume"
+          },
+          "networks": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Networks",
+            "description": "The listed networks' shares (history)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "acquired_cents",
+          "revenue_cents",
+          "take_rate",
+          "interchange_cents",
+          "fraud_cents",
+          "interchange_bp",
+          "rails_share",
+          "networks"
+        ],
+        "title": "PaymentsRegionOut"
+      },
+      "PaymentsScreenOut": {
+        "properties": {
+          "can_launch": {
+            "type": "boolean",
+            "title": "Can Launch",
+            "description": "The company has a payments line"
+          },
+          "network_cost_cents": {
+            "type": "integer",
+            "title": "Network Cost Cents"
+          },
+          "network_fee_bp": {
+            "type": "number",
+            "title": "Network Fee Bp"
+          },
+          "fraud_bp": {
+            "type": "number",
+            "title": "Fraud Bp"
+          },
+          "networks": {
+            "items": {
+              "$ref": "#/components/schemas/NetworkOut"
+            },
+            "type": "array",
+            "title": "Networks"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentsRegionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "can_launch",
+          "network_cost_cents",
+          "network_fee_bp",
+          "fraud_bp",
+          "networks",
+          "regions"
+        ],
+        "title": "PaymentsScreenOut"
       },
       "PeakOut": {
         "properties": {
@@ -65841,6 +67919,49 @@
         ],
         "title": "ProfitAndLossOut"
       },
+      "ProgrammeIn": {
+        "properties": {
+          "share": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months",
+            "default": 12
+          }
+        },
+        "type": "object",
+        "required": [
+          "share"
+        ],
+        "title": "ProgrammeIn"
+      },
+      "ProgrammeOut": {
+        "properties": {
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "by_cfo": {
+            "type": "boolean",
+            "title": "By Cfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "share",
+          "term_months",
+          "by_cfo"
+        ],
+        "title": "ProgrammeOut"
+      },
       "ProjectBudgetIn": {
         "properties": {
           "budget_cents": {
@@ -68066,6 +70187,19 @@
           "seeded"
         ],
         "title": "RegionEventOut"
+      },
+      "RegionIn": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region"
+        ],
+        "title": "RegionIn"
       },
       "RegionNetworkOut": {
         "properties": {

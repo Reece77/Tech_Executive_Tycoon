@@ -361,6 +361,7 @@ const GUARD_LABELS: Record<string, string> = {
   lease_approval_rent_cents: 'Leases above this rent need your approval ($ a month)',
   runway_months: 'Propose funding below this runway (months)',
   repay_above_months: 'Repay debt with cash above (months of burn)',
+  hedge_pct: 'Hedge this % of net foreign revenue a year ahead (0: none)',
   protected_units: 'Units it may not move people from',
   categories: 'Categories it may enter (none chosen: any)',
   protected_products: 'Products it may not sunset',

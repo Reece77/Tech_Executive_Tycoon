@@ -36,6 +36,7 @@ class SetHedgeProgramme:
     actor_id: int
     share: float
     term_months: int = 12
+    by_cfo: bool = False  # the CFO delegate's own programme (tst.sim.fx.cfo)
     kind: Literal["set_hedge_programme"] = "set_hedge_programme"
 
 
@@ -90,7 +91,9 @@ def set_programme(
         balance,
         cost=balance.finserv.energy["hedge"],
     )
-    return Outcome(with_programme(state, company, action.share, action.term_months))
+    return Outcome(
+        with_programme(state, company, action.share, action.term_months, by_cfo=action.by_cfo)
+    )
 
 
 def with_programme(

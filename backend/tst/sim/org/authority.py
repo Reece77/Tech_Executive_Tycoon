@@ -315,6 +315,11 @@ def _cfo(seat: _Seat, data: GameData) -> None:
     debt early (24.1)."""
     state, b = seat.state, seat.run.balance
     company = seat.a.company_id
+    from tst.sim.fx.cfo import programme_action  # M54 (64.4): the hedging programme
+
+    hedge = programme_action(state, seat.a, seat.holder, b, data)
+    if hedge is not None:
+        seat.act(hedge, f"set the hedging programme to {hedge.share:.0%} of net foreign revenue")
     cash = account_balance(seat.run.balances, company, CASH)
     burn = max(projected_net_burn(state, company, b, data), 0)
     if burn > 0 and cash < seat.a.number("runway_months") * burn:
