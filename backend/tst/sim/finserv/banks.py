@@ -51,6 +51,7 @@ from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finance import macro
+from tst.sim.finserv import draws
 from tst.sim.finserv.config import series_at
 from tst.sim.finserv.data import FIRST_YEAR, LAST_YEAR, MONTHS, PCT, file, year_at
 from tst.sim.finserv.models import Bank, BankMonth, RunRecord, SecurityLot, StressResult
@@ -449,7 +450,7 @@ def _stress(
     first = file(data).banking.stress_from[bank.region]
     if month != sb.month or year < first or bank.assets_cents <= sb.size_cents:
         return bank, []
-    g = rng.stream(state.turn, "finserv", STRESS_KEY, bank.id, year)
+    g = draws.gen(rng, state.turn, STRESS_KEY, bank.id, year)
     shock = sb.rate_shock.lo + (sb.rate_shock.hi - sb.rate_shock.lo) * float(g.random())
     mult = sb.loss_mult.lo + (sb.loss_mult.hi - sb.loss_mult.lo) * float(g.random())
     outflow = sb.deposit_outflow.lo + (sb.deposit_outflow.hi - sb.deposit_outflow.lo) * float(
@@ -510,7 +511,7 @@ def _run(
     if chance <= 0:
         return bank, [], []
     rb = balance.finserv.bank.run
-    g = rng.stream(state.turn, "finserv", RUN_KEY, bank.id, state.turn)
+    g = draws.gen(rng, state.turn, RUN_KEY, bank.id, state.turn)
     if float(g.random()) >= chance:
         return bank, [], []
     share = rb.withdraw.lo + (rb.withdraw.hi - rb.withdraw.lo) * float(g.random())

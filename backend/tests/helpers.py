@@ -100,6 +100,7 @@ ROBOT_INCUMBENTS = 12  # M39 (53.1-53.2): appended after M41's, ids 66..77; new 
 PHARMA_INCUMBENTS = 16  # M42 (55.5): appended after M39's, ids 78..93; new games only
 SPACE_INCUMBENTS = 13  # M40 (56): appended after M42's, ids 94..106; new games only
 TELECOM_INCUMBENTS = 28  # M53 (62): 23 operators and 5 vendors, ids 107..134; new games only
+FINANCE_INCUMBENTS = 25  # M54 (64.5): banks, networks, acquirers, insurers, ids 135..159
 
 
 def move_directors(state: GameState) -> GameState:

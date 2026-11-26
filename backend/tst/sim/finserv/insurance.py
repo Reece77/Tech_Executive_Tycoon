@@ -36,6 +36,7 @@ from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
+from tst.sim.finserv import draws
 from tst.sim.finserv.config import series_at
 from tst.sim.finserv.data import MONTHS, PCT, file, region_index, team_skill, year_at
 from tst.sim.finserv.models import Catastrophe, InsuranceMonth, Insurer
@@ -91,7 +92,7 @@ def draw_cats(state: GameState, rng: RngFactory, balance: Balance, data: GameDat
     cats = list(state.finserv.world.cats)
     for region in data.region_keys:
         ri = region_index(region, data)
-        g = rng.stream(state.turn, "finserv", CAT_KEY, ri, year, state.turn)
+        g = draws.gen(rng, state.turn, CAT_KEY, ri, year, state.turn)
         if float(g.random()) >= chance * shares[region] * len(shares):
             continue
         extra = cb.extra.lo + (cb.extra.hi - cb.extra.lo) * float(g.random())

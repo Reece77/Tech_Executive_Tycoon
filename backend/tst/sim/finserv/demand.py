@@ -26,6 +26,7 @@ from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
+from tst.sim.finserv import draws
 from tst.sim.finserv.config import series_at
 from tst.sim.finserv.data import (
     BILLION,
@@ -173,7 +174,7 @@ def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameD
         ri = region_index(region, data)
         if world.rate(year, ri, ACCOUNTS) is not None:
             continue
-        g = rng.stream(state.turn, "finserv", GROWTH_KEY, ri, year)
+        g = draws.gen(rng, state.turn, GROWTH_KEY, ri, year)
         lo, hi = fb.growth_after.lo, fb.growth_after.hi
         v = fb.payments.growth_after[region]
         rows.append((year, ri, ACCOUNTS, float(lo + (hi - lo) * g.random())))
