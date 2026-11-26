@@ -80,7 +80,19 @@ Theme parks and merchandise; linear TV channels and cable bundles; a record labe
 
 ## Readings (seeds 1-10, `uv run --project backend python tools/m55_targets.py`)
 
-(filled in below)
+| Target | Band | Reading | Met |
+| --- | --- | --- | --- |
+| 1 history holds | earlier guards unchanged | consumer_apps identical to `main` (139979f) to December 2025 on seeds 1-3 (`tests/fixtures/m55_consumer_apps.json`); M28's five earlier series equal `main`'s on seeds 1-10 (the new `media` series recorded); golden snapshots unchanged; M30's, M37's, M45's and M32's fixtures re-recorded for the 22 new rivals (CHANGELOG) | yes |
+| 2a top 20% of titles' revenue | >= 60% | 69% (52-83% by seed; 40 titles a seed, 2016-2025) | yes |
+| 2b titles under their cost | >= a third | 75% (60-80%) | yes |
+| 3 a $1B-a-year video service's first year of positive cash flow | >= 60 months | 94.5 months (median; 14-132, never by 2039 on 2 seeds) | yes |
+| 4a a 5% network on its launch format loses users each year | most seeds | 10 of 10 | yes |
+| 4b switched to the new format, it grows | >= 6 of 10 | 10 of 10 | yes |
+| 5a two overrules of the highest-ego lead | quality >= 10% lower | 29% (0.83 to 0.59, median) | yes |
+| 5b the lead walks | >= 3 of 10 | 3 of 10 | yes |
+| 6 turn time | the guards | 556 ms a turn 2026-2030 with a video service and its slate (this machine, four runs in parallel); `make check-timing` on CI | see CI |
+
+Tuned (rule 1, `media.*` only): `talent.walk_morale` 45 -> 60 and `walk_chance` 0.8 -> 1.0 (5b: 2 of 10 walks before); `social_network.appeal_range` [0.7, 1.15] -> [0.5, 1.15], `churn_range` [0.85, 1.8] -> [0.85, 3.0], `format_advantage` 1.3 -> 1.6, `network_k` 0.25 -> 0.4, `churn_k` 0.3 -> 0.4 (4a: 0 of 10 before); `streaming_service.appeal_k` 0.15 -> 0.12, `churn_k` 0.3 -> 0.25, `churn_range` [0.7, 1.8] -> [0.7, 1.5], `rival_content_share` 0.45 -> 0.25 (3: the service never turned cash-positive by 2039 on any seed before).
 
 ## Follow-ups
 
