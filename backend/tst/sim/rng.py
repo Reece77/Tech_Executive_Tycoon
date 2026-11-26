@@ -161,6 +161,15 @@ STREAM_IDS: Final = MappingProxyType(
         # area) a seeded ban; (1, auction_id) an auction's rivals' values when it runs (never
         # stored)
         "telecom": 73,
+        # M54 (formulas.md 64.1-64.3; ADR-0013's table): (0, bank id, month) a bank's run chance
+        # and its withdrawn share; (1, region index, year) a region's catastrophe year and its
+        # losses; (2, bank id, year) a stress test's shock; (3, company id, month) a payments line's
+        # fraud noise; (4, region index, year) a region's seeded growth after 2025 (never stored
+        # before they happen)
+        "finserv": 74,
+        # M54 (formulas.md 64.4, ADR-0025): (region index, month) a region's rate index step from
+        # fx.applies_from (the walk's shock and its jump)
+        "fx": 75,
         "misc": 99,
     }
 )

@@ -10,6 +10,7 @@ import pytest
 from sqlalchemy import select, text
 
 from tests.helpers import (
+    FINANCE_INCUMBENTS,
     FIRST_PRODUCT,
     INCUMBENTS,
     MEDICAL_INCUMBENTS,
@@ -50,6 +51,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
             + PHARMA_INCUMBENTS
             + SPACE_INCUMBENTS
             + TELECOM_INCUMBENTS
+            + FINANCE_INCUMBENTS
             + 2,
         )
     )

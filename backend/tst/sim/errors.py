@@ -420,6 +420,14 @@ class TelecomRuleError(SimError):
     code = "telecom_rule"
 
 
+class FinservRuleError(SimError):
+    """A banking, payments, insurance or currency action the rules do not allow (M54, formulas.md
+    64). The message never names a stress test's shock, a run's draw or a catastrophe year before
+    it happens."""
+
+    code = "finserv_rule"
+
+
 class SpaceRuleError(SimError):
     """A space action the rules do not allow (M40, formulas.md 56). The message never names a
     licence's decision month, a failure chance's draw or a seeded rule."""

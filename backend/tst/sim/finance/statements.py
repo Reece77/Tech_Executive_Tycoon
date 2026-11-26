@@ -42,7 +42,16 @@ NON_CASH = (DEPRECIATION, ACCUMULATED_DEPRECIATION)
 INTEREST_PREFIX = "7"
 # M16 (31.1, 31.3): gains and losses below the operating result, in the net result: the
 # group's share of associates' profit, fair-value marks and disposals
-NON_OPERATING: tuple[AccountCode, ...] = (ASSOCIATES_PROFIT, FAIR_VALUE, DISPOSAL)
+# M54 (64.4, ADR-0025): currency forwards' gains and losses
+FX_GAINS: AccountCode = "4940_fx_gains"
+FX_LOSSES: AccountCode = "4945_fx_losses"
+NON_OPERATING: tuple[AccountCode, ...] = (
+    ASSOCIATES_PROFIT,
+    FAIR_VALUE,
+    DISPOSAL,
+    FX_GAINS,
+    FX_LOSSES,
+)
 # M16 (31.3): the outsiders' share of the net result, shown below it (consolidated only); the
 # balance sheet's accumulated result is the owners'
 NCI_ACCOUNTS: tuple[AccountCode, ...] = (NCI_SHARE,)

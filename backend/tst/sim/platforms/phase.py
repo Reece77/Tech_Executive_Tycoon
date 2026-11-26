@@ -410,6 +410,9 @@ class Effects:
     price_cut: Mapping[tuple[int, str], float] = field(default_factory=dict)
     # M40 (56.3): a segment's appeal x this, (product id, region, segment): direct-to-device
     segment_appeal: Mapping[tuple[int, str, str], float] = field(default_factory=dict)
+    # M54 (64.4, ADR-0025): a segment's translated price, (product id, region, segment): revenue
+    # books at it; customers weigh the local price as set (the stored price), so appeal is unchanged
+    fx_price: Mapping[tuple[int, str, str], int] = field(default_factory=dict)
 
     def bonus(self, product_id: int, region: str | None) -> float:
         return self.feature_bonus.get((product_id, region or ""), 0.0)

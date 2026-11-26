@@ -80,6 +80,8 @@ SYSTEMS: tuple[System, ...] = (
     System(33, "space", "Space", "products"),  # tunable-exempt: stable id (M40; 32 left for M42)
     System(34, "government", "Government", "markets"),  # tunable-exempt: stable id (M44)
     System(35, "telecom", "Telecom", "products"),  # tunable-exempt: stable id (M53)
+    System(36, "finserv", "Financial services", "products"),  # tunable-exempt: stable id (M54)
+    System(37, "currency", "Currency", "finance"),  # tunable-exempt: stable id (M54)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -331,6 +333,47 @@ def _telecom(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | 
     return None
 
 
+def _finserv(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M54 (64.1-64.3): a banking, payments or insurance line, a bank, a network or an insurer,
+    or from finserv.unlock_year a stage-3 company with a fintech line (the Bank, Payments and
+    Insurance screens)."""
+    if d.finserv is None:
+        return None
+    fb = b.finserv
+    if any(p.category in fb.categories for p in state.products if p.company_id in ids):
+        return "the company has a finance line"
+    fs = state.finserv
+    if (
+        any(x.company_id in ids for x in fs.banks)
+        or any(x.company_id in ids for x in fs.networks)
+        or any(x.company_id in ids for x in fs.insurers)
+    ):
+        return "the group runs a bank, a network or an insurer"
+    if (
+        turn_to_ym(state.turn)[0] >= fb.unlock_year
+        and _stage(state) >= STAGE_GROWTH
+        and any(p.category == "fintech" for p in state.products if p.company_id in ids)
+    ):
+        return f"banking is open to a stage-3 fintech ({fb.unlock_year})"
+    return None
+
+
+def _currency(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M54 (64.4): forwards or a hedging programme, or foreign revenue of at least
+    fx.unlock_share of the company's (the Currency screen)."""
+    if d.fx is None:
+        return None
+    if any(h.company_id in ids for h in state.fx.hedges) or any(
+        p.company_id in ids for p in state.fx.programmes
+    ):
+        return "the group hedges its currencies"
+    from tst.sim.fx.cfo import foreign_share
+
+    if any(foreign_share(state, c) >= b.fx.unlock_share for c in ids):
+        return f"{b.fx.unlock_share:.0%} of revenue is earned abroad"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -447,6 +490,8 @@ CHECKS: dict[str, Check] = {
     "space": _space,  # M40 (56)
     "government": _government,  # M44 (57)
     "telecom": _telecom,  # M53 (62)
+    "finserv": _finserv,  # M54 (64.1-64.3)
+    "currency": _currency,  # M54 (64.4)
 }
 
 

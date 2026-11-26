@@ -92,6 +92,7 @@ def lists(
     """Each list's (company id, measure), best first; ties by revenue, then by the stable
     rival key, the player after any rival it ties with (M15a fix: ties went to the lowest
     company id, the player's, so it won a sparse Most innovative list most years)."""
+    from tst.sim.finserv.rivals import holds as finance_holds
     from tst.sim.space.rivals import holds as space_holds
     from tst.sim.telecom.rivals import holds as telecom_holds
 
@@ -106,6 +107,7 @@ def lists(
         # the lists, and the Top 50 profile stories they drive, to 2025 are main's (target 1)
         and not space_holds(state, c, balance, data)
         and not telecom_holds(state, c, balance, data)  # M53 (62.5 target 1): likewise
+        and not finance_holds(state, c, balance, data)  # M54 (64.6 target 1): likewise
     ]
     revenue_of = {c.id: _revenue(state, c.id) for c in alive}
     stable = {c.id: (c.is_player, c.rival_key, c.id) for c in alive}

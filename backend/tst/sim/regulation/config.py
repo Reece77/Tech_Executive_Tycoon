@@ -213,6 +213,16 @@ class TelecomRegulatorDef(RegulatorDef):
     formed: str = ""  # "YYYY-MM" (shown)
 
 
+class FinanceRegulatorDef(RegulatorDef):
+    """M54 (docs/formulas.md 64.5): a bank or insurance regulator, M34's record with the `bank` or
+    `insurance` kind. It charters banks or licenses insurers, sets capital rules and reviews a bank
+    inside a tech group (tst.sim.finserv); M34's competition rules and M41's, M42's and M53's code
+    never read it."""
+
+    kind: Literal["bank", "insurance"]
+    formed: str = ""  # "YYYY-MM" (shown)
+
+
 class RegulationFile(_Frozen):
     """regulation.yaml (48)."""
 
@@ -225,6 +235,7 @@ class RegulationFile(_Frozen):
     health_regulators: tuple[HealthRegulatorDef, ...] = ()  # M41 (50): never in `regulators`
     drug_regulators: tuple[DrugRegulatorDef, ...] = ()  # M42 (55.3): in neither list above
     telecom_regulators: tuple[TelecomRegulatorDef, ...] = ()  # M53 (62.4): in no list above
+    finance_regulators: tuple[FinanceRegulatorDef, ...] = ()  # M54 (64.5): in no list above
 
     @property
     def history_end_turn(self) -> int:

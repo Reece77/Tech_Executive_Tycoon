@@ -27,6 +27,7 @@ from tst.api.routers import (
     facilities,
     family,
     finance,
+    finserv,
     founder,
     game,
     geo,
@@ -165,6 +166,7 @@ def create_app() -> FastAPI:
     app.include_router(robotics.router)  # M39
     app.include_router(space.router)  # M40
     app.include_router(telecom.router)  # M53
+    app.include_router(finserv.router)  # M54
     app.include_router(government.router)  # M44
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41

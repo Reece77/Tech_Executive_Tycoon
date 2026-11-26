@@ -2943,3 +2943,494 @@ companies:
         regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
         segments:
           carriers: { price_cents: 4280000, share_bp: 0 }
+
+  # M54 (formulas.md 64.5): banks, card networks, merchant acquirers and insurers (finance_services.yaml
+  # rivals and networks, cited there). Their customers are pinned to the data before 2026 (tst.sim.finserv
+  # history), so share_bp is 0; listed_from (R: the companies' listing months); prices in their own
+  # region (banking's own price index, the regions table's for the others), one price a line in every
+  # region it lists (M53 decision 8). Quality, features and brand: A (reputation, app ratings).
+  - name: JPMorgan Chase
+    stage: 4
+    founded_year: 2000
+    listed_from: [2000, 12] # M54: R
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 3000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Chase
+        category: banking
+        quality: 80
+        features: 74
+        brand: 88
+        regions: [north_america]
+        segments:
+          bank_consumer: { price_cents: 800, share_bp: 0 }
+          bank_business: { price_cents: 6000, share_bp: 0 }
+
+  - name: Bank of America
+    stage: 4
+    founded_year: 1998
+    listed_from: [1998, 9] # M54: R
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Bank of America
+        category: banking
+        quality: 74
+        features: 70
+        brand: 82
+        regions: [north_america]
+        segments:
+          bank_consumer: { price_cents: 800, share_bp: 0 }
+          bank_business: { price_cents: 6000, share_bp: 0 }
+
+  - name: Wells Fargo
+    stage: 4
+    founded_year: 1852
+    listed_from: [1998, 11] # M54: R
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 2800
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Wells Fargo
+        category: banking
+        quality: 72
+        features: 66
+        brand: 78
+        regions: [north_america]
+        segments:
+          bank_consumer: { price_cents: 800, share_bp: 0 }
+          bank_business: { price_cents: 6000, share_bp: 0 }
+
+  - name: Citigroup
+    stage: 4
+    founded_year: 1812
+    listed_from: [1998, 10] # M54: R
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 2200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Citibank
+        category: banking
+        quality: 72
+        features: 70
+        brand: 80
+        regions: [north_america, africa, oceania] # R: Citi's consumer banks in Africa and Australia (sold 2021-2022); no customers there before 2026 (the data's share is North America's)
+        segments:
+          bank_consumer: { price_cents: 800, share_bp: 0 }
+          bank_business: { price_cents: 6000, share_bp: 0 }
+
+  - name: Silicon Valley Bank
+    stage: 4
+    founded_year: 1983
+    listed_from: [1987, 1] # M54: R
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 3000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: SVB
+        category: banking
+        quality: 76
+        features: 72
+        brand: 62
+        regions: [north_america]
+        segments:
+          bank_business: { price_cents: 6600, share_bp: 0 }
+
+  - name: HSBC
+    stage: 4
+    founded_year: 1865
+    listed_from: [1991, 7] # M54: R
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: HSBC
+        category: banking
+        quality: 74
+        features: 70
+        brand: 82
+        regions: [europe]
+        segments:
+          bank_consumer: { price_cents: 720, share_bp: 0 }
+          bank_business: { price_cents: 5400, share_bp: 0 }
+
+  - name: BNP Paribas
+    stage: 4
+    founded_year: 2000
+    listed_from: [1993, 10] # M54: R
+    personality: cost_leader
+    builder_skill: 13
+    target_margin_bp: 2400
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: BNP Paribas
+        category: banking
+        quality: 72
+        features: 68
+        brand: 76
+        regions: [europe]
+        segments:
+          bank_consumer: { price_cents: 720, share_bp: 0 }
+          bank_business: { price_cents: 5400, share_bp: 0 }
+
+  - name: ICBC
+    stage: 4
+    founded_year: 1984
+    listed_from: [2006, 10] # M54: R
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 3500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: ICBC
+        category: banking
+        quality: 68
+        features: 62
+        brand: 80
+        regions: [east_asia]
+        segments:
+          bank_consumer: { price_cents: 560, share_bp: 0 }
+          bank_business: { price_cents: 4200, share_bp: 0 }
+
+  - name: HDFC Bank
+    stage: 4
+    founded_year: 1994
+    listed_from: [1995, 5] # M54: R
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 3000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: HDFC Bank
+        category: banking
+        quality: 74
+        features: 70
+        brand: 74
+        regions: [south_southeast_asia]
+        segments:
+          bank_consumer: { price_cents: 120, share_bp: 0 }
+          bank_business: { price_cents: 900, share_bp: 0 }
+
+  - name: Itau Unibanco
+    stage: 4
+    founded_year: 1924
+    listed_from: [2008, 11] # M54: R
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 3200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Itau
+        category: banking
+        quality: 74
+        features: 70
+        brand: 78
+        regions: [latin_america]
+        segments:
+          bank_consumer: { price_cents: 280, share_bp: 0 }
+          bank_business: { price_cents: 2100, share_bp: 0 }
+
+  - name: Visa
+    stage: 4
+    founded_year: 1958
+    listed_from: [2008, 3] # M54: R
+    personality: premium
+    builder_skill: 16
+    target_margin_bp: 5500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Visa
+        category: payments
+        quality: 86
+        features: 80
+        brand: 92
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          pay_networks: { price_cents: 208333, share_bp: 0 }
+
+  - name: Mastercard
+    stage: 4
+    founded_year: 1966
+    listed_from: [2006, 5] # M54: R
+    personality: fast_follower
+    builder_skill: 15
+    target_margin_bp: 5000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Mastercard
+        category: payments
+        quality: 84
+        features: 78
+        brand: 88
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          pay_networks: { price_cents: 208333, share_bp: 0 }
+
+  - name: American Express
+    stage: 4
+    founded_year: 1850
+    listed_from: [1977, 5] # M54: R
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: American Express
+        category: payments
+        quality: 82
+        features: 74
+        brand: 86
+        regions: [north_america, europe, east_asia, oceania]
+        segments:
+          pay_networks: { price_cents: 208333, share_bp: 0 }
+
+  - name: UnionPay
+    stage: 4
+    founded_year: 2002
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 3000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: UnionPay
+        category: payments
+        quality: 72
+        features: 66
+        brand: 80
+        regions: [east_asia]
+        segments:
+          pay_networks: { price_cents: 208333, share_bp: 0 }
+
+  - name: First Data
+    stage: 4
+    founded_year: 1971
+    listed_from: [2015, 10] # M54: R
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: First Data
+        category: payments
+        quality: 66
+        features: 62
+        brand: 64
+        regions: [north_america]
+        segments:
+          pay_merchants: { price_cents: 57500, share_bp: 0 }
+
+  - name: Worldpay
+    stage: 4
+    founded_year: 1989
+    listed_from: [2015, 10] # M54: R
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Worldpay
+        category: payments
+        quality: 66
+        features: 64
+        brand: 62
+        regions: [europe]
+        segments:
+          pay_merchants: { price_cents: 51750, share_bp: 0 }
+
+  - name: Adyen
+    stage: 4
+    founded_year: 2006
+    listed_from: [2018, 6] # M54: R
+    personality: aggressive
+    builder_skill: 16
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Adyen
+        category: payments
+        quality: 80
+        features: 80
+        brand: 58
+        regions: [europe]
+        segments:
+          pay_merchants: { price_cents: 51750, share_bp: 0 }
+
+  - name: Ant Group
+    stage: 4
+    founded_year: 2004
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Alipay
+        category: payments
+        quality: 78
+        features: 80
+        brand: 82
+        regions: [east_asia]
+        segments:
+          pay_merchants: { price_cents: 46000, share_bp: 0 }
+
+  - name: Allianz
+    stage: 4
+    founded_year: 1890
+    listed_from: [1985, 1] # M54: R
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1200
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Allianz
+        category: insurance
+        quality: 74
+        features: 66
+        brand: 82
+        regions: [europe, south_southeast_asia, latin_america, africa, oceania] # R: Allianz writes in about 70 countries; no customers outside Europe before 2026
+        segments:
+          ins_property: { price_cents: 9000, share_bp: 0 }
+          ins_life: { price_cents: 22500, share_bp: 0 }
+
+  - name: AXA
+    stage: 4
+    founded_year: 1817
+    listed_from: [1985, 1] # M54: R
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 1100
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: AXA
+        category: insurance
+        quality: 72
+        features: 66
+        brand: 80
+        regions: [europe]
+        segments:
+          ins_property: { price_cents: 9000, share_bp: 0 }
+          ins_life: { price_cents: 22500, share_bp: 0 }
+
+  - name: Generali
+    stage: 4
+    founded_year: 1831
+    listed_from: [1985, 1] # M54: R
+    personality: cost_leader
+    builder_skill: 12
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Generali
+        category: insurance
+        quality: 70
+        features: 64
+        brand: 76
+        regions: [europe]
+        segments:
+          ins_property: { price_cents: 9000, share_bp: 0 }
+          ins_life: { price_cents: 22500, share_bp: 0 }
+
+  - name: Ping An
+    stage: 4
+    founded_year: 1988
+    listed_from: [2004, 6] # M54: R
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1300
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Ping An
+        category: insurance
+        quality: 74
+        features: 72
+        brand: 80
+        regions: [east_asia]
+        segments:
+          ins_property: { price_cents: 8000, share_bp: 0 }
+          ins_life: { price_cents: 20000, share_bp: 0 }
+
+  - name: Berkshire Hathaway
+    stage: 4
+    founded_year: 1839
+    listed_from: [1988, 11] # M54: R
+    personality: cost_leader
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: GEICO
+        category: insurance
+        quality: 76
+        features: 62
+        brand: 84
+        regions: [north_america]
+        segments:
+          ins_property: { price_cents: 10000, share_bp: 0 }
+
+  - name: MetLife
+    stage: 4
+    founded_year: 1868
+    listed_from: [2000, 4] # M54: R
+    personality: premium
+    builder_skill: 12
+    target_margin_bp: 1000
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: MetLife
+        category: insurance
+        quality: 70
+        features: 64
+        brand: 78
+        regions: [north_america]
+        segments:
+          ins_life: { price_cents: 25000, share_bp: 0 }
+
+  - name: Chubb
+    stage: 4
+    founded_year: 1985
+    listed_from: [1993, 3] # M54: R
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1400
+    cash_months: 36
+    key_people: 2
+    products:
+      - name: Chubb
+        category: insurance
+        quality: 78
+        features: 68
+        brand: 76
+        regions: [north_america]
+        segments:
+          ins_property: { price_cents: 10000, share_bp: 0 }

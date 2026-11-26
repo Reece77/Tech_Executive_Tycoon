@@ -45,6 +45,7 @@ from tst.sim.finance.models import (
     Safe,
     TermSheet,
 )
+from tst.sim.finserv.models import FinservState
 from tst.sim.founder.investing_models import (
     AngelStake,
     FamilyOffice,
@@ -56,6 +57,7 @@ from tst.sim.founder.investing_models import (
     WealthPoint,
 )
 from tst.sim.founder.models import Foundation, FounderLife, Influence, PersonalEntry
+from tst.sim.fx.models import FxState
 from tst.sim.geo.models import (
     MarketingSplit,
     Office,
@@ -623,6 +625,12 @@ class GameState:
     # settings, network months and the game-wide telecom world (6G's month, growth, seeded
     # auctions and bans, hidden until they come)
     telecom: TelecomState = field(default_factory=TelecomState)
+    # M54 (64.4, ADR-0025): translation marks, currency forwards, hedging programmes, the indexes'
+    # seeded walk after 2025 (drawn month by month as they come) and translation months
+    fx: FxState = field(default_factory=FxState)
+    # M54 (64.1-64.3): the player's banks (balance sheets in integer cents), payments networks,
+    # insurers, their months, and the game-wide draws (growth after 2025, catastrophes that came)
+    finserv: FinservState = field(default_factory=FinservState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

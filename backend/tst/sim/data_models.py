@@ -42,6 +42,7 @@ from tst.sim.facilities.config import (
     SupplyBalance,
 )
 from tst.sim.family.config import EstateRegion, FamilyBalance
+from tst.sim.finserv.config import FinservBalance, FinservFile
 from tst.sim.founder.config import (
     AngelBalance,
     FamilyOfficeBalance,
@@ -51,6 +52,7 @@ from tst.sim.founder.config import (
     PersonalBalance,
     StressBalance,
 )
+from tst.sim.fx.config import FxBalance, FxFile
 from tst.sim.geopolitics.config import (
     CountriesFile,
     ExportControlsFile,
@@ -1441,6 +1443,8 @@ class Balance(_Frozen):
     pharma: PharmaBalance  # M42 (formulas.md 55): pharmaceuticals
     space: SpaceBalance  # M40 (formulas.md 56): space and satellites
     telecom: TelecomBalance  # M53 (formulas.md 62): telecom
+    fx: FxBalance  # M54 (formulas.md 64.4, ADR-0025): currencies and hedging
+    finserv: FinservBalance  # M54 (formulas.md 64.1-64.3, 64.5): banking, payments, insurance
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
@@ -1778,6 +1782,12 @@ class CategoryDef(_Frozen):
         """M40 (56): launch, satellite broadband or Earth observation (scheduled rivals only;
         a line sells only with vehicles or satellites)."""
         return self.family == "space"
+
+    @property
+    def finance(self) -> bool:
+        """M54 (64): banking, payments and insurance (scheduled rivals only; a bank line takes
+        deposits only with a charter or a partner bank, an insurer writes only where licensed)."""
+        return self.family == "finance"
 
     @property
     def telecom(self) -> bool:
@@ -2250,6 +2260,8 @@ class GameData(_Frozen):
     pharma: PharmaFile | None = None  # M42 (55); None = no pharmaceuticals
     space: SpaceFile | None = None  # M40 (56); None = no space markets' history
     telecom: TelecomFile | None = None  # M53 (62); None = no telecom markets' history
+    finserv: FinservFile | None = None  # M54 (64.1-64.3); None = no financial services' history
+    fx: FxFile | None = None  # M54 (64.4); None = every region's index is 1 (no translation)
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:

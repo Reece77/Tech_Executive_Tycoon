@@ -6797,6 +6797,179 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/finserv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Finserv
+         * @description Banks, payments, the insurer and currency exposure (the four screens).
+         */
+        get: operations["getFinserv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/charter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Charter */
+        post: operations["applyCharter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/partner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Partner Bank */
+        post: operations["partnerBank"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Bank */
+        post: operations["setBank"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/banks/{bank_id}/capital": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bank Capital */
+        post: operations["bankCapital"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/networks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Launch Network */
+        post: operations["launchNetwork"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/insurance/licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Licence */
+        post: operations["applyInsuranceLicence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/insurance/capital": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Insurer Capital */
+        post: operations["insurerCapital"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/forwards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Buy Forward */
+        post: operations["buyForward"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/finserv/programme": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Programme */
+        post: operations["setHedgeProgramme"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/government": {
         parameters: {
             query?: never;
@@ -7958,6 +8131,11 @@ export interface components {
             risk: string;
             planned: components["schemas"]["PlannedOut"];
         };
+        /** AmountIn */
+        AmountIn: {
+            /** Amount Cents */
+            amount_cents: number;
+        };
         /** AnalystOut */
         AnalystOut: {
             /** Firm */
@@ -8630,6 +8808,60 @@ export interface components {
             /** Scope */
             scope: number;
         };
+        /** BankLoanOut */
+        BankLoanOut: {
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Balance Cents */
+            balance_cents: number;
+            /** Risk Weight */
+            risk_weight: number;
+            /**
+             * Yield Rate
+             * @description % a year: the policy rate plus the kind's spread
+             */
+            yield_rate: number;
+            /**
+             * Loss Rate
+             * @description % a year charged off this year
+             */
+            loss_rate: number;
+        };
+        /** BankMonthOut */
+        BankMonthOut: {
+            /** Month */
+            month: string;
+            /** Deposits Cents */
+            deposits_cents: number;
+            /** Loans Cents */
+            loans_cents: number;
+            /**
+             * Nii Cents
+             * @description Net interest income this month
+             */
+            nii_cents: number;
+            /**
+             * Profit Cents
+             * @description Net interest income less charge-offs
+             */
+            profit_cents: number;
+            /**
+             * Nim
+             * @description Net interest margin, a year, of earning assets
+             */
+            nim: number;
+            /**
+             * Ratio
+             * @description CET1 / risk-weighted assets
+             */
+            ratio: number;
+            /** Policy Rate */
+            policy_rate: number;
+            /** Deposit Rate */
+            deposit_rate: number;
+        };
         /** BankOut */
         BankOut: {
             /** Key */
@@ -8646,6 +8878,68 @@ export interface components {
              * @description How the bank's name helps the price, in words
              */
             reputation: string;
+        };
+        /** BankRunOut */
+        BankRunOut: {
+            /** Month */
+            month: string;
+            /** Withdrawn Cents */
+            withdrawn_cents: number;
+            /** Realised Loss Cents */
+            realised_loss_cents: number;
+            /** Failed */
+            failed: boolean;
+        };
+        /** BankScreenOut */
+        BankScreenOut: {
+            /**
+             * Can Charter
+             * @description The company has a fintech or banking line
+             */
+            can_charter: boolean;
+            /** Has Banking Line */
+            has_banking_line: boolean;
+            /** Charter Capital Cents */
+            charter_capital_cents: number;
+            /** Charter Fee Cents */
+            charter_fee_cents: number;
+            /** Beta Range */
+            beta_range: number[];
+            /** Duration Range */
+            duration_range: number[];
+            /** Reserve Min */
+            reserve_min: number;
+            /** Partner Share */
+            partner_share: number;
+            /** Regions */
+            regions: components["schemas"]["FinRegionOptionOut"][];
+            /** Banks */
+            banks: components["schemas"]["OwnBankOut"][];
+            /**
+             * Charters
+             * @description Fintechs that took charters (history)
+             */
+            charters: string[];
+        };
+        /** BankSettingsIn */
+        BankSettingsIn: {
+            /** Beta */
+            beta: number;
+            /** Loan To Deposit */
+            loan_to_deposit: number;
+            /** Securities Share */
+            securities_share: number;
+            /** Duration */
+            duration: number;
+        };
+        /** BankStressOut */
+        BankStressOut: {
+            /** Month */
+            month: string;
+            /** Ratio After */
+            ratio_after: number;
+            /** Passed */
+            passed: boolean;
         };
         /** BatteryOut */
         BatteryOut: {
@@ -9452,6 +9746,15 @@ export interface components {
              * @description -(operating) when negative, else 0 (14.1)
              */
             burn_cents: number;
+        };
+        /** CatastropheOut */
+        CatastropheOut: {
+            /** Month */
+            month: string;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
         };
         /** CategoryOut */
         CategoryOut: {
@@ -11151,6 +11454,88 @@ export interface components {
              */
             fix: string;
         };
+        /** CurrencyRegionOut */
+        CurrencyRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Currency
+             * @description Its basket
+             */
+            currency: string;
+            /**
+             * Index
+             * @description US dollars a unit now over January 2010's
+             */
+            index: number;
+            /** Change 12M */
+            change_12m: number | null;
+            /** Policy Rate */
+            policy_rate: number;
+            /**
+             * Revenue Cents
+             * @description This month, translated
+             */
+            revenue_cents: number;
+            /**
+             * Untranslated Revenue Cents
+             * @description At the indexes prices were set at
+             */
+            untranslated_revenue_cents: number;
+            /** Cost Cents */
+            cost_cents: number;
+            /** Net Cents */
+            net_cents: number;
+            /**
+             * Exposure Cents
+             * @description The next 12 months' net revenue at today's index
+             */
+            exposure_cents: number;
+            /**
+             * Hedged Cents
+             * @description Open forwards' notional
+             */
+            hedged_cents: number;
+            /** Unhedged Share */
+            unhedged_share: number | null;
+            /**
+             * What If Cents
+             * @description A year's net revenue change if the dollar rises
+             */
+            what_if_cents: number;
+            /** Forward 12M Index */
+            forward_12m_index: number | null;
+            /** Spread Bp */
+            spread_bp: number;
+        };
+        /** CurrencyScreenOut */
+        CurrencyScreenOut: {
+            /** Month */
+            month: string;
+            /** What If Move */
+            what_if_move: number;
+            /** Term Range */
+            term_range: number[];
+            /** Max Hedge Share */
+            max_hedge_share: number;
+            /**
+             * Foreign Share
+             * @description Foreign revenue over all revenue this month
+             */
+            foreign_share: number;
+            /** Regions */
+            regions: components["schemas"]["CurrencyRegionOut"][];
+            /** Hedges */
+            hedges: components["schemas"]["HedgeOut"][];
+            programme: components["schemas"]["ProgrammeOut"] | null;
+            /**
+             * Fx Result 12M Cents
+             * @description Currency gains less losses, last 12 months
+             */
+            fx_result_12m_cents: number;
+        };
         /**
          * CustomCardOut
          * @description A custom scenario on the Scenarios screen's Custom section (66.2).
@@ -12691,7 +13076,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "bank";
             /** Entity */
             entity?: string | null;
             /**
@@ -13729,6 +14114,25 @@ export interface components {
              */
             return_on_capital: number | null;
         };
+        /** FinRegionOptionOut */
+        FinRegionOptionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Regulator */
+            regulator: string;
+            /**
+             * Months
+             * @description Months to a charter or licence there
+             */
+            months: number;
+            /**
+             * Strict
+             * @description A strict regulator (adds months to a charter)
+             */
+            strict: boolean;
+        };
         /** FinanceActionOut */
         FinanceActionOut: {
             energy: components["schemas"]["EnergyOut"];
@@ -13796,6 +14200,27 @@ export interface components {
             /** @description Private: an estimate */
             revenue_range: components["schemas"]["MoneyRangeOut"] | null;
             ebitda_range: components["schemas"]["MoneyRangeOut"] | null;
+        };
+        /** FinservActionOut */
+        FinservActionOut: {
+            finserv: components["schemas"]["FinservScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** FinservScreenOut */
+        FinservScreenOut: {
+            /** Month */
+            month: string;
+            /**
+             * History
+             * @description Before 2026: rivals follow the history
+             */
+            history: boolean;
+            bank: components["schemas"]["BankScreenOut"];
+            payments: components["schemas"]["PaymentsScreenOut"];
+            insurance: components["schemas"]["InsuranceScreenOut"];
+            currency: components["schemas"]["CurrencyScreenOut"];
         };
         /** FireOut */
         FireOut: {
@@ -13971,6 +14396,15 @@ export interface components {
              * @description Units they led, seats they held, products their unit built and the storylines they were in (23.6, M10b)
              */
             led: components["schemas"]["LedOut"][];
+        };
+        /** ForwardIn */
+        ForwardIn: {
+            /** Region */
+            region: string;
+            /** Notional Cents */
+            notional_cents: number;
+            /** Months */
+            months: number;
         };
         /**
          * FoundAgainIn
@@ -15217,6 +15651,33 @@ export interface components {
              */
             share: number;
         };
+        /** HedgeOut */
+        HedgeOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Notional Cents */
+            notional_cents: number;
+            /** Bought */
+            bought: string;
+            /** Settles */
+            settles: string;
+            /** Spot Index */
+            spot_index: number;
+            /** Forward Index */
+            forward_index: number;
+            /** Fair Value Cents */
+            fair_value_cents: number;
+            /** Status */
+            status: string;
+            /** Settled Cents */
+            settled_cents: number;
+            /** Programme */
+            programme: boolean;
+        };
         /** HireBanksIn */
         HireBanksIn: {
             /** Bank */
@@ -15885,6 +16346,59 @@ export interface components {
              */
             product_id?: number | null;
         };
+        /** InsuranceLicenceOut */
+        InsuranceLicenceOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Status */
+            status: string;
+            /** Decided */
+            decided: string | null;
+        };
+        /** InsuranceScreenOut */
+        InsuranceScreenOut: {
+            /**
+             * Can Apply
+             * @description The company has an insurance line
+             */
+            can_apply: boolean;
+            /** Licence Capital Cents */
+            licence_capital_cents: number;
+            /** Licence Fee Cents */
+            licence_fee_cents: number;
+            /** Regions */
+            regions: components["schemas"]["FinRegionOptionOut"][];
+            /** Has Insurer */
+            has_insurer: boolean;
+            /** Licences */
+            licences: components["schemas"]["InsuranceLicenceOut"][];
+            /** Investments Cents */
+            investments_cents: number;
+            /** Float Cents */
+            float_cents: number;
+            /** Own Funds Cents */
+            own_funds_cents: number;
+            /** Required Cents */
+            required_cents: number;
+            /** Solvent */
+            solvent: boolean;
+            /**
+             * Premiums By Line
+             * @description This month's premiums by line
+             */
+            premiums_by_line: {
+                [key: string]: number;
+            };
+            /** Months */
+            months: components["schemas"]["LineMonthOut"][];
+            /**
+             * Catastrophes
+             * @description Those that have happened
+             */
+            catastrophes: components["schemas"]["CatastropheOut"][];
+        };
         /** InvestingRulesOut */
         InvestingRulesOut: {
             /** Join Energy */
@@ -16526,6 +17040,27 @@ export interface components {
             royalty_months_left: number;
             /** Signed */
             signed: string;
+        };
+        /** LineMonthOut */
+        LineMonthOut: {
+            /** Month */
+            month: string;
+            /** Premiums Cents */
+            premiums_cents: number;
+            /** Claims Cents */
+            claims_cents: number;
+            /** Combined Ratio */
+            combined_ratio: number;
+            /** Investment Income Cents */
+            investment_income_cents: number;
+            /** Float Cents */
+            float_cents: number;
+            /** Own Funds Cents */
+            own_funds_cents: number;
+            /** Required Cents */
+            required_cents: number;
+            /** Catastrophe */
+            catastrophe: boolean;
         };
         /** LineOptionOut */
         LineOptionOut: {
@@ -18545,6 +19080,32 @@ export interface components {
             /** Feature Points */
             feature_points: number;
         };
+        /** NetworkOut */
+        NetworkOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Since */
+            since: string;
+            /**
+             * Acceptance
+             * @description Share of merchants that take it
+             */
+            acceptance: number;
+            /**
+             * Share
+             * @description Its share of the region's card programmes
+             */
+            share: number;
+            /**
+             * Volume Cents
+             * @description Card volume it carries this month
+             */
+            volume_cents: number;
+        };
         /** NetworkPaybackOut */
         NetworkPaybackOut: {
             /** Region */
@@ -19524,6 +20085,104 @@ export interface components {
              */
             active_effects: components["schemas"]["ActiveEffectOut"][];
         };
+        /** OwnBankOut */
+        OwnBankOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Status
+             * @description applying, chartered, partner or failed
+             */
+            status: string;
+            /** Regulator */
+            regulator: string;
+            /**
+             * Charter Month
+             * @description When the regulator decides (applying)
+             */
+            charter_month: string | null;
+            /** Beta */
+            beta: number;
+            /** Loan To Deposit */
+            loan_to_deposit: number;
+            /** Securities Share */
+            securities_share: number;
+            /** Duration */
+            duration: number;
+            /** Deposits Cents */
+            deposits_cents: number;
+            /** Consumer Deposits Cents */
+            consumer_deposits_cents: number;
+            /** Business Deposits Cents */
+            business_deposits_cents: number;
+            /** Loans Cents */
+            loans_cents: number;
+            /** Loans */
+            loans: components["schemas"]["BankLoanOut"][];
+            /** Securities Cents */
+            securities_cents: number;
+            /**
+             * Securities Value Cents
+             * @description Market value at today's rate
+             */
+            securities_value_cents: number;
+            /** Unrealised Loss Cents */
+            unrealised_loss_cents: number;
+            /** Reserves Cents */
+            reserves_cents: number;
+            /** Cet1 Cents */
+            cet1_cents: number;
+            /** Rwa Cents */
+            rwa_cents: number;
+            /**
+             * Ratio
+             * @description CET1 / RWA (null without loans)
+             */
+            ratio: number | null;
+            /**
+             * Requirement
+             * @description Minimum plus buffers (and the size surcharge)
+             */
+            requirement: number;
+            /** Minimum */
+            minimum: number;
+            /**
+             * Nim
+             * @description The last 12 months' net interest margin
+             */
+            nim: number | null;
+            /** Policy Rate */
+            policy_rate: number;
+            /** Deposit Rate */
+            deposit_rate: number;
+            /** Market Deposit Rate */
+            market_deposit_rate: number;
+            /** Uninsured Share */
+            uninsured_share: number;
+            /** Insured Limit Cents */
+            insured_limit_cents: number;
+            /**
+             * Run Risk
+             * @description low, elevated or high: a band, never the chance
+             */
+            run_risk: string;
+            /** Restricted */
+            restricted: boolean;
+            /** Dividends Frozen Until */
+            dividends_frozen_until: string | null;
+            /** Capital In Cents */
+            capital_in_cents: number;
+            /** Stress */
+            stress: components["schemas"]["BankStressOut"][];
+            /** Runs */
+            runs: components["schemas"]["BankRunOut"][];
+            /** Months */
+            months: components["schemas"]["BankMonthOut"][];
+        };
         /** OwnSupplyOut */
         OwnSupplyOut: {
             /** Facility Id */
@@ -19760,6 +20419,64 @@ export interface components {
             principal_cents: number;
             /** Balance After Cents */
             balance_after_cents: number;
+        };
+        /** PaymentsRegionOut */
+        PaymentsRegionOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Acquired Cents
+             * @description Your merchants' card volume this month
+             */
+            acquired_cents: number;
+            /**
+             * Revenue Cents
+             * @description Your payments lines' revenue there this month
+             */
+            revenue_cents: number;
+            /**
+             * Take Rate
+             * @description Revenue over volume carried
+             */
+            take_rate: number | null;
+            /** Interchange Cents */
+            interchange_cents: number;
+            /** Fraud Cents */
+            fraud_cents: number;
+            /** Interchange Bp */
+            interchange_bp: number;
+            /**
+             * Rails Share
+             * @description Real-time rails' share of the region's volume
+             */
+            rails_share: number;
+            /**
+             * Networks
+             * @description The listed networks' shares (history)
+             */
+            networks: {
+                [key: string]: number;
+            };
+        };
+        /** PaymentsScreenOut */
+        PaymentsScreenOut: {
+            /**
+             * Can Launch
+             * @description The company has a payments line
+             */
+            can_launch: boolean;
+            /** Network Cost Cents */
+            network_cost_cents: number;
+            /** Network Fee Bp */
+            network_fee_bp: number;
+            /** Fraud Bp */
+            fraud_bp: number;
+            /** Networks */
+            networks: components["schemas"]["NetworkOut"][];
+            /** Regions */
+            regions: components["schemas"]["PaymentsRegionOut"][];
         };
         /** PeakOut */
         PeakOut: {
@@ -21908,6 +22625,25 @@ export interface components {
              */
             net_to_owners_cents?: number;
         };
+        /** ProgrammeIn */
+        ProgrammeIn: {
+            /** Share */
+            share: number;
+            /**
+             * Term Months
+             * @default 12
+             */
+            term_months?: number;
+        };
+        /** ProgrammeOut */
+        ProgrammeOut: {
+            /** Share */
+            share: number;
+            /** Term Months */
+            term_months: number;
+            /** By Cfo */
+            by_cfo: boolean;
+        };
         /** ProjectBudgetIn */
         ProjectBudgetIn: {
             /**
@@ -22803,6 +23539,11 @@ export interface components {
             title: string;
             /** Seeded */
             seeded: boolean;
+        };
+        /** RegionIn */
+        RegionIn: {
+            /** Region */
+            region: string;
         };
         /** RegionNetworkOut */
         RegionNetworkOut: {
@@ -51035,6 +51776,624 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TelecomActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getFinserv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    applyCharter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    partnerBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setBank: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                bank_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    bankCapital: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                bank_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    launchNetwork: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    applyInsuranceLicence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    insurerCapital: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AmountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    buyForward: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForwardIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setHedgeProgramme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgrammeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinservActionOut"];
                 };
             };
             /** @description Bad Request */

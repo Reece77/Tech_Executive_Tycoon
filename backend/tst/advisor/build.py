@@ -917,6 +917,18 @@ class Builder:
 
         return v6_telecom.network_payback(self, m, entity)
 
+    # --- v6 (M54): financial services and currencies ---------------------------------------------
+
+    def bank_profit(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_finance
+
+        return v6_finance.bank_profit(self, m, entity)
+
+    def fx_result(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_finance
+
+        return v6_finance.fx_result(self, m, entity)
+
     # --- v5 (M44): government ------------------------------------------------------------------
 
     def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:

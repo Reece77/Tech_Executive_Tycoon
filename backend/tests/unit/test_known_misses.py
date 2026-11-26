@@ -111,7 +111,7 @@ def test_m43a_misses_are_known_to_m57_within_their_bounds() -> None:
     assert reading("M13.T2.blitzscale", -1.0) == "fail"
     assert verdict(Reading("M13.T2.steady", False, -3.0)) == "fail"  # steady is not covered
     assert reading("M13b.T1", -6.0) == "known" and reading("M13b.T1", -5.0) == "fail"
-    assert reading("M22.T2.variant", 0.21) == "known" and reading("M22.T2.variant", 0.22) == "fail"
+    assert reading("M22.T2.variant", 0.215) == "known" and reading("M22.T2.variant", 0.22) == "fail"
 
     def row(target: str, score: float) -> str:
         return verdict(Row(target, "", "", "", False, score=score))
