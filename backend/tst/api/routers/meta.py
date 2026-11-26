@@ -6,6 +6,7 @@ from tst.api.deps import DataDep
 from tst.api.schemas.common import GlossaryOut
 from tst.api.schemas.meta import (
     BackgroundOut,
+    ChallengeOut,
     ChannelOut,
     FounderPreviewOut,
     FounderRulesOut,
@@ -28,6 +29,7 @@ from tst.sim.calendar import START_YEARS, format_turn, ym_to_turn
 from tst.sim.data_models import DEFAULT_DIFFICULTY, DIFFICULTY_LEVELS
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.hiring.phases import ONE_BATCH
+from tst.sim.modes import challenges
 from tst.sim.org.models import PLAN_CHANNELS, UNIT_KINDS, WORK_POLICIES
 from tst.sim.people.founder import preview_founder
 from tst.sim.setup import MISSION_SIZE, starting_cash_cents
@@ -80,8 +82,19 @@ def new_game_meta(data: DataDep) -> NewGameMetaOut:
                 year=h.year,
                 goal=h.goal.text,
                 deadline_label=format_turn(ym_to_turn(*h.deadline)),
+                difficulty=challenges.difficulty(h.sensible_wins, data.balance),
+                sensible_wins=h.sensible_wins,
             )
             for h in game.historical
+        ],
+        challenges=[
+            ChallengeOut(
+                key=rule,
+                label=challenges.LABELS[rule][0],
+                description=challenges.LABELS[rule][1],
+                score_mult=data.balance.challenges.rules[rule].score_mult,
+            )
+            for rule in challenges.RULES
         ],
         scenarios=[s for s in _scenarios(data) if s.selectable],
         difficulties=list(DIFFICULTY_LEVELS),

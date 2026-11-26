@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { DesktopPrompts } from './components/DesktopPrompts';
 import { AchievementsScreen } from './screens/AchievementsScreen';
+import { ScenariosScreen } from './screens/ScenariosScreen';
 import { AutomationScreen } from './screens/AutomationScreen';
 import { DataEditorScreen } from './screens/DataEditorScreen';
 import { CompetitorsScreen } from './screens/CompetitorsScreen';
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/" element={<MainMenu />} />
         <Route path="/new" element={<NewGameScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
+        <Route path="/scenarios" element={<ScenariosScreen />} />
         <Route path="/mods" element={<DataEditorScreen />} />
         <Route path="/saves" element={<MainMenu />} />
         <Route path="/game/:saveId/over" element={<GameOverScreen />} />

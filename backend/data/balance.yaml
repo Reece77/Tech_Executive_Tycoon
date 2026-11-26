@@ -1666,6 +1666,17 @@ sandbox:
   rival_share_half: 0.5 # "half the rivals" keeps this share of each category's incumbents (30.2)
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
 
+challenges: # M51 (formulas.md 63.2): challenge rules a new game or scenario may add; each refuses its actions and multiplies the company score shown
+  rules:
+    bootstrapped: { score_mult: 1.25 } # x the score; no rounds, SAFEs, bridges, loans or listing (63.4 target 2 sets it)
+    hardware_only: { score_mult: 1.25 } # x the score; only categories that sell units
+    no_acquisitions: { score_mult: 1.25 } # x the score; no bids, stakes or buy-outs
+    one_region: { score_mult: 1.25 } # x the score; no region launches
+    hard_rivals: { score_mult: 1.25 } # x the score; rivals' quality x hard_rivals_quality_mult
+    no_automation: { score_mult: 1.25 } # x the score; no automation areas, seat authority or CEO scopes
+  hard_rivals_quality_mult: 1.2 # x a rival product's quality in its markets (63.2: "their quality x 1.2")
+  difficulty_wins: [3, 6] # wins of 10 (scenarios.yaml sensible_wins) at or below: hard, then medium; above: easy (63.3)
+
 story: # rival CEO storylines (M15b addendum 12): press pieces from engine facts, LLM-worded within the budget (16.8)
   feud_marks: [25, 50] # feud points; crossing one brings a reply from their CEO (addendum 12)
   max_per_month: 2 # pieces a month at most, one per rival (keeps the LLM spend small)

@@ -35,6 +35,7 @@ from tst.sim.ledger import CASH, COGS, REVENUE_SUBSCRIPTIONS, LedgerEntry, Ledge
 from tst.sim.log import LinkKind, LogItem, inbox_item
 from tst.sim.markets import saturation
 from tst.sim.medical import gate as medical_gate
+from tst.sim.modes import challenges
 from tst.sim.modes.rankings import brand_bonus
 from tst.sim.money import Cents, exact, exact_product, times
 from tst.sim.org.executives import CRO, side_factor
@@ -465,10 +466,17 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             return s.price_cents
         return max(1, s.price_cents - round(effects.cut(s.product_id, here)))
 
+    hard = challenges.rival_quality_mult(state, balance)  # M51 (63.2): Hard rivals
+
+    def weighed_product(product: Product) -> Product:
+        if hard == 1 or not challenges.is_rival_product(state, product.company_id):
+            return product
+        return replace(product, quality=min(SCORE_MAX, product.quality * hard))
+
     appeals = {
         s.product_id: _times(
             price_appeal(
-                products[s.product_id],
+                weighed_product(products[s.product_id]),
                 seg_key,
                 weighed(s),
                 data,
@@ -518,7 +526,8 @@ def _run_segment[S: (ProductSegment, RegionalSegment)](
             a = limits.get(s.product_id)
             if a is not None and a.variant > 0:
                 p = products[s.product_id]
-                low = replace(p, quality=max(0.0, p.quality - penalty))
+                q = weighed_product(p).quality  # M51: a rival's quality under Hard rivals
+                low = replace(p, quality=max(0.0, q - penalty))
                 lowered[s.product_id] = _times(
                     price_appeal(
                         low, seg_key, weighed(s), data, turn, power(p), index, bonus(p.id)

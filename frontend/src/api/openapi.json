@@ -21541,6 +21541,28 @@
         }
       }
     },
+    "/api/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Get Scenarios",
+        "description": "Every historical scenario: brief, goal, deadline, difficulty and the best result.",
+        "operationId": "getScenarios",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenariosOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/mods": {
       "get": {
         "tags": [
@@ -37700,6 +37722,36 @@
         ],
         "title": "ChainProducerOut"
       },
+      "ChallengeOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "score_mult": {
+            "type": "number",
+            "title": "Score Mult",
+            "description": "x the company score the result screen shows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "score_mult"
+        ],
+        "title": "ChallengeOut",
+        "description": "A challenge rule (M51, 63.2)."
+      },
       "ChangePreviewOut": {
         "properties": {
           "allowed": {
@@ -40559,6 +40611,14 @@
             "title": "Start Year",
             "description": "M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2008 or 2010); a Sandbox or scenario keeps its own year",
             "default": 2010
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "description": "M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario"
           }
         },
         "type": "object",
@@ -47926,6 +47986,36 @@
             ],
             "title": "Scenario Bonus Reached"
           },
+          "scenario_score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "This game's verdict: the score, its parts and multipliers"
+          },
+          "scenario_best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The player's best result in this scenario in other saves"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "description": "M51: the game's rules"
+          },
           "exit_buyer": {
             "anyOf": [
               {
@@ -50426,6 +50516,30 @@
           "deadline_label": {
             "type": "string",
             "title": "Deadline Label"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "M51 (63.3): easy | medium | hard, from seeds 1-10's wins"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins",
+            "description": "M51: the sensible script's wins on seeds 1-10"
           }
         },
         "type": "object",
@@ -58281,6 +58395,13 @@
             },
             "type": "array",
             "title": "Historical"
+          },
+          "challenges": {
+            "items": {
+              "$ref": "#/components/schemas/ChallengeOut"
+            },
+            "type": "array",
+            "title": "Challenges"
           },
           "scenarios": {
             "items": {
@@ -73053,6 +73174,88 @@
         ],
         "title": "ScandalOut"
       },
+      "ScenarioCardOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "goal": {
+            "type": "string",
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "type": "string",
+            "title": "Deadline Label"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "easy | medium | hard, from seeds 1-10's wins"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins",
+            "description": "The sensible script's wins on seeds 1-10"
+          },
+          "played": {
+            "type": "integer",
+            "title": "Played",
+            "description": "Scenario saves with a verdict"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The best: a success, then the score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description",
+          "year",
+          "goal",
+          "deadline_label",
+          "difficulty",
+          "sensible_wins",
+          "played",
+          "best"
+        ],
+        "title": "ScenarioCardOut"
+      },
       "ScenarioOut": {
         "properties": {
           "id": {
@@ -73098,6 +73301,100 @@
           "starting_cash_by_difficulty"
         ],
         "title": "ScenarioOut"
+      },
+      "ScenarioResultOut": {
+        "properties": {
+          "save": {
+            "type": "string",
+            "title": "Save"
+          },
+          "company": {
+            "type": "string",
+            "title": "Company"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result",
+            "description": "success | failure"
+          },
+          "date_label": {
+            "type": "string",
+            "title": "Date Label",
+            "description": "The game month of the verdict"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "description": "The company score at the verdict (30.1)"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "score_mult": {
+            "type": "number",
+            "title": "Score Mult",
+            "description": "The challenge rules' score multipliers, multiplied"
+          },
+          "adjusted": {
+            "type": "integer",
+            "title": "Adjusted",
+            "description": "score x multiplier: what results are compared on"
+          },
+          "recorded_at": {
+            "type": "string",
+            "title": "Recorded At",
+            "description": "When the verdict was kept (UTC, ISO 8601)"
+          },
+          "parts": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScorePartsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "save",
+          "company",
+          "result",
+          "date_label",
+          "score",
+          "challenges",
+          "score_mult",
+          "adjusted",
+          "recorded_at"
+        ],
+        "title": "ScenarioResultOut",
+        "description": "One scenario save's verdict, from the app-wide results file."
+      },
+      "ScenariosOut": {
+        "properties": {
+          "profile": {
+            "type": "string",
+            "title": "Profile"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioCardOut"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "scenarios"
+        ],
+        "title": "ScenariosOut"
       },
       "ScoreBandOut": {
         "properties": {
@@ -73186,6 +73483,40 @@
         ],
         "title": "ScoreOut",
         "description": "A company's score now (30.1), from public inputs only, with its parts in points."
+      },
+      "ScorePartsOut": {
+        "properties": {
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "growth": {
+            "type": "number",
+            "title": "Growth"
+          },
+          "profit": {
+            "type": "number",
+            "title": "Profit"
+          },
+          "leadership": {
+            "type": "number",
+            "title": "Leadership"
+          },
+          "reputation": {
+            "type": "number",
+            "title": "Reputation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "growth",
+          "profit",
+          "leadership",
+          "reputation"
+        ],
+        "title": "ScorePartsOut",
+        "description": "The company score's five parts at the verdict, in points (30.1)."
       },
       "ScoutOut": {
         "properties": {

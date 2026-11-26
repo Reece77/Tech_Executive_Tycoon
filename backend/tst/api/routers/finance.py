@@ -166,7 +166,16 @@ def get_game_over(save_id: str, settings: SettingsDep, data: DataDep) -> GameOve
         news = inbox.list_inbox(
             session, player, kinds=list(finance_views.FINANCE_TEMPLATES), limit=NEWS_LIMIT
         )
-    return finance_views.game_over_out(state, cash, snaps, news, data)
+    out = finance_views.game_over_out(state, cash, snaps, news, data)
+    if out.scenario_result is not None:  # M51 (63.3): the player's best before this save
+        from tst.api.routers.scenarios import result_out
+        from tst.profile import results as kept
+
+        mode = state.mode
+        assert mode is not None and mode.scenario is not None
+        stored = kept.load(settings.resolved_save_dir()).get(mode.scenario, {})
+        out.scenario_best = result_out(kept.best(stored, without=save_id))
+    return out
 
 
 # --- SAFEs -----------------------------------------------------------------------------------

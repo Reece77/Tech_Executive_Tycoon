@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from fractions import Fraction
+from typing import Any
 
 from tst.api.schemas.finance import (
     BalanceSheetOut,
@@ -856,7 +857,7 @@ def funding_summary(state: GameState) -> str | None:
     return f"after {words}"
 
 
-def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | bool | None]:
+def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, Any]:
     """A historical scenario's goal and verdict for the result screen (M15b, 30.3)."""
     mode = state.mode
     if mode is None or mode.kind != "scenario" or mode.scenario is None:
@@ -864,6 +865,9 @@ def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | bool
     h = data.game_data.historical_scenario(mode.scenario)
     if h is None:
         return {}
+    from tst.api.routers.scenarios import result_out
+    from tst.profile.results import record_of
+
     return {
         "scenario_label": h.label,
         "scenario_goal": h.goal.text,
@@ -871,6 +875,8 @@ def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, str | bool
         "scenario_result": mode.result,
         "scenario_bonus": h.goal.bonus_text,
         "scenario_bonus_reached": bonus_reached(h.goal, state),
+        # M51 (63.3): the verdict as the results file keeps it (the score and its parts)
+        "scenario_score": result_out(record_of(state, state.save_meta.name, data.balance)),
     }
 
 
@@ -928,6 +934,7 @@ def game_over_out(
         dynasty_score=family_score.total if family_score is not None else None,
         can_found_again=meta.game_state == "exit",
         **_scenario_fields(state, data),
+        challenges=list(state.mode.challenges) if state.mode is not None else [],
         min_new_cash_cents=data.balance.serial.min_cash_dollars * 100,  # tunable-exempt: cents
         exit_buyer=state.company(sale.acquirer_id).name if sale is not None else None,
         exit_price_cents=sale.price_cents if sale is not None else None,

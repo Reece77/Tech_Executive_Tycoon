@@ -13,12 +13,14 @@ weekly test compares a run with them month by month and names the first month th
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Final
 
 from tst.balance import m30, m37
 from tst.sim.dynasty.mode import continue_dynasty
+from tst.sim.modes.models import GameMode
 
 SEEDS: Final = (1, 2, 3)
 TURNS: Final = m37.END  # 720: January 2010 to December 2069
@@ -27,6 +29,11 @@ HASH_FILE: Final = (
 )
 
 type Hashes = dict[str, list[str]]  # "full_integrator/seed/dynasty" -> one digest per month
+
+
+# M51: GameMode gained `challenges` (empty in this game) after the fixture was recorded; the
+# digest leaves it out, as M37's does for fields added after its fixture (m30.Digester)
+SKIP: Final[Mapping[type, frozenset[str]]] = {GameMode: frozenset({"challenges"})}
 
 
 def key(seed: int) -> str:
@@ -38,7 +45,7 @@ def run_hashes(seed: int, turns: int = TURNS) -> list[str]:
     game = m37._family_game(seed)
     game.state = continue_dynasty(game.state, m30.loaded().balance)
     script = m30.strategy(m37.STRATEGY)
-    digester = m30.Digester()
+    digester = m30.Digester(SKIP)
     out: list[str] = []
     while game.state.turn < turns and not game.state.ended:
         script(game)

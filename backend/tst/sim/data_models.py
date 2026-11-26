@@ -68,6 +68,7 @@ from tst.sim.meetings.config import MeetingsBalance
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
 from tst.sim.modes.config import (
+    ChallengesBalance,
     HistoricalScenario,
     RankBalance,
     SandboxBalance,
@@ -1399,6 +1400,7 @@ class Balance(_Frozen):
     score: ScoreBalance  # M15b (formulas.md 30.1)
     rank: RankBalance  # M15b (formulas.md 30.4)
     sandbox: SandboxBalance  # M15b (formulas.md 30.2)
+    challenges: ChallengesBalance  # M51 (formulas.md 63.2)
     story: StoryBalance  # M15b addendum 12: rival CEO storylines
     serial: SerialBalance  # M15b addendum 10: founding again after an exit
     promise: PromiseBalance  # M14b (formulas.md 29.2)

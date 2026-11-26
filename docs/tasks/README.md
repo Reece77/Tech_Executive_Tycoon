@@ -85,7 +85,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M50-the-2008-start.md](M50-the-2008-start.md) | The 2008 start (lane C, merges last; done 2026-11-23): negative turns (ADR-0024), 2008–2009 history for every system, the financial crisis and the App Store, a 2010 game unchanged (formulas §60) | M43r |
 | [M49-press-interviews-and-one-to-ones.md](M49-press-interviews-and-one-to-ones.md) | Press conferences, interviews and one-to-ones (v6, lane A, merges first): live interviews and crisis conferences, Football Manager-style talks with key people, tracked promises (formulas §61; done 2026-11-24) | M48 |
 | [M53-telecom.md](M53-telecom.md) | Telecom (v6, lane B; done 2026-11-25): mobile and fixed networks, towers, fibre and subsea cables, spectrum auctions, 5G and 6G, equipment and bans, operators and regulation (formulas §62) | M50 |
-| [M51-scenarios-and-challenges.md](M51-scenarios-and-challenges.md) | Scenarios and challenges (v6, lane C, merges last): six new scenarios including the 2008 crash, challenge rules enforced and scored, a Scenarios screen with best results (formulas §63) | M50 |
+| [M51-scenarios-and-challenges.md](M51-scenarios-and-challenges.md) | Scenarios and challenges (v6, lane C, merges last; done 2026-11-25): six new scenarios including the 2008 crash, challenge rules enforced and scored, a Scenarios screen with best results (formulas §63) | M50 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 

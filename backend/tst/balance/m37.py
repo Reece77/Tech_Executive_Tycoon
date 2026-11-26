@@ -37,7 +37,7 @@ LEGACY_FILE: Final = (
 # the fields M37 added: left out, so a digest is what it was before M37
 SKIP: Final[Mapping[type, frozenset[str]]] = {
     GameState: frozenset({"dynasty"}),
-    GameMode: frozenset({"length"}),
+    GameMode: frozenset({"length", "challenges"}),  # M51: challenges (empty), after the fixture
 }
 
 type Hashes = dict[str, list[str]]

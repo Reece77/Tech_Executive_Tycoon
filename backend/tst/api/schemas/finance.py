@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from tst.api.schemas.founder_parts import LegacyOut
 from tst.api.schemas.people import EnergyOut
+from tst.api.schemas.scenarios import ScenarioResultOut
 
 
 class StatementLineOut(BaseModel):
@@ -441,6 +442,14 @@ class GameOverOut(BaseModel):
         default=None, description="The goal's bonus in words, never a win condition (M15r)"
     )
     scenario_bonus_reached: bool | None = None
+    # M51 (63.3): the score breakdown, the challenge rules and the player's best before this
+    scenario_score: ScenarioResultOut | None = Field(
+        default=None, description="This game's verdict: the score, its parts and multipliers"
+    )
+    scenario_best: ScenarioResultOut | None = Field(
+        default=None, description="The player's best result in this scenario in other saves"
+    )
+    challenges: list[str] = Field(default_factory=list, description="M51: the game's rules")
     exit_buyer: str | None = Field(default=None, description="Exit (M14, 28.6): who bought it")
     exit_price_cents: int | None = None
     exit_proceeds_cents: int | None = Field(default=None, description="The founder's stake")

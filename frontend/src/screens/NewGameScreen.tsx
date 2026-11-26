@@ -10,7 +10,8 @@ import {
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
+import { ChallengePicker } from '../components/ChallengePicker';
 import { ModePicker, type ModeChoice } from '../components/ModePicker';
 import { useMods } from '../hooks/mods';
 import { LoadError, Loading } from '../components/ScreenState';
@@ -169,7 +170,15 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
   const [hq, setHq] = useState<string | null>(meta.default_hq_city ?? null); // M9
   const [seed, setSeed] = useState('');
   const [showSeed, setShowSeed] = useState(false);
-  const [mode, setMode] = useState<ModeChoice>({ kind: 'campaign' }); // M15b (30.2-30.3)
+  // M15b (30.2-30.3); M51: the Scenarios screen's Play opens a scenario (?scenario=key)
+  const [params] = useSearchParams();
+  const [mode, setMode] = useState<ModeChoice>(() => {
+    const key = params.get('scenario');
+    return key && (meta.historical ?? []).some((h) => h.key === key)
+      ? { kind: 'historical', key }
+      : { kind: 'campaign' };
+  });
+  const [challenges, setChallenges] = useState<string[]>([]); // M51 (63.2)
   const mods = useMods(); // M25: a data-editor mod for the new game
   const [mod, setMod] = useState<string | null>(null);
   const [familySetting, setFamilySetting] = useState('none'); // M36 (45.1)
@@ -253,6 +262,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
               },
         campaign_length: mode.kind === 'campaign' ? length : 'standard',
         start_year: mode.kind === 'campaign' ? startYear : 2010,
+        challenges,
       },
       { onSuccess: (save) => void navigate(`/game/${save.save_id}`) },
     );
@@ -348,6 +358,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
           ))}
         </CardGrid>
         <ModePicker meta={meta} value={mode} onChange={setMode} />
+        <ChallengePicker meta={meta} value={challenges} onChange={setChallenges} />
         {mode.kind === 'campaign' && (meta.start_years ?? []).length > 1 && (
           <NativeSelect
             label="Start year"

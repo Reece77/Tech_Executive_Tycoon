@@ -816,6 +816,10 @@ def apply_action(
     if state.ended:
         raise GameOverError(f"the game is over ({state.save_meta.game_state.replace('_', ' ')})")
     check_can_play(state, balance)  # M37 (52.1): at the standard end only the choice
+    if state.mode is not None and state.mode.challenges:  # M51 (63.2): the game's rules
+        from tst.sim.modes.challenges import check as check_challenges
+
+        check_challenges(state, action, data)
     if isinstance(action, RetireFounder):  # M37 (52.4): dynasty years, no family
         return ActionResult(retire_founder(state, balance), (), ())
     if draws is None:
