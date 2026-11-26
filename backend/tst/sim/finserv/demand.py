@@ -44,7 +44,7 @@ ACCOUNTS: Final = 0  # growth kinds (the world's growth rows)
 POLICIES: Final = 1
 VOLUME: Final = 2
 CENTS: Final = 100  # tunable-exempt: cents a dollar
-GROWTH_KEY: Final = 4  # ADR-0013: finserv (4, region index, year)
+GROWTH_KEY: Final = 4  # tunable-exempt: ADR-0013's key, finserv (4, region index, year)
 
 
 def growth_factor(

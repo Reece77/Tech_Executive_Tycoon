@@ -25,6 +25,7 @@ from tst.sim.money import times
 from tst.sim.state import GameState
 
 JANUARY = 1  # tunable-exempt: calendar
+REST_OF_YEAR = 11  # tunable-exempt: calendar (to December)
 
 
 def strictness(state: GameState, region: str, kind: str, data: GameData) -> float:
@@ -78,7 +79,7 @@ def group_review_month(
             and company.is_player
             and tech_group(state, b.company_id, balance)
         ):
-            b = replace(b, frozen_until=max(b.frozen_until or 0, state.turn + 11))
+            b = replace(b, frozen_until=max(b.frozen_until or 0, state.turn + REST_OF_YEAR))
             logs.append(
                 inbox_item(
                     state.turn,

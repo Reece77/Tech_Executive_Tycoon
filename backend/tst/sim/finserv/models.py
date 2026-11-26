@@ -56,10 +56,10 @@ class Bank:
     applied_turn: int
     charter_turn: int | None = None
     product_id: int | None = None  # the company's banking line
-    beta: float = 0.4  # deposit beta the player chose
-    loan_to_deposit: float = 0.7
-    securities_share: float = 0.25
-    duration: float = 4.0  # new securities' duration, years
+    beta: float = 0.4  # tunable-exempt: a record default; set from finserv.bank at the charter
+    loan_to_deposit: float = 0.7  # tunable-exempt: likewise
+    securities_share: float = 0.25  # tunable-exempt: likewise
+    duration: float = 4.0  # tunable-exempt: likewise (new securities' duration, years)
     consumer_deposits_cents: int = 0
     business_deposits_cents: int = 0
     loans: tuple[tuple[str, int], ...] = ()  # (loan kind, balance)

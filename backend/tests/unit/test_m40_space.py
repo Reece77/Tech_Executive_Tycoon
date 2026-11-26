@@ -399,9 +399,12 @@ def test_space_companies_are_not_ranked_while_they_hold(
     from tst.sim.space.data import is_space_rival
 
     b, d = loaded.balance, loaded.game_data
-    monkeypatch.setattr(rankings, "_revenue", lambda state, cid: 10**12 + cid)
     state = _state(loaded, ym_to_turn(2015, 1))
     space = {c.id for c in state.companies if is_space_rival(c, d)}
+    # the space companies the largest (M54: later companies' ids no longer push them out of 50)
+    monkeypatch.setattr(
+        rankings, "_revenue", lambda state, cid: 10**12 + cid + (10**6 if cid in space else 0)
+    )
     assert space
     for listed in rankings.lists(state, b, d).values():
         assert not {cid for cid, _ in listed} & space

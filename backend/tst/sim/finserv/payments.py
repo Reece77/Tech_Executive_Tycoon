@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Final
 
+from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finserv.data import MONTHS, file, team_skill
@@ -151,7 +152,7 @@ def networks_month(state: GameState, balance: Balance, data: GameData) -> GameSt
     out = []
     for n in state.finserv.networks:
         share = network_share(state, n.company_id, n.region, balance, data)
-        target = share**pb.acceptance_exponent if share > 0 else 0.0
+        target = dmath.pow(share, pb.acceptance_exponent) if share > 0 else 0.0
         out.append(
             replace(n, acceptance=n.acceptance + pb.acceptance_adjust * (target - n.acceptance))
         )
