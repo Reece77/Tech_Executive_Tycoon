@@ -26,5 +26,8 @@ Each ADR records one decision that coding agents must not re-decide. Status is A
 | [0020](0020-design-for-v3-now.md) | Design v2 systems so v3 can extend them: per-company entities, one facility model, one market-good model, region risk fields | Accepted |
 | [0022](0022-power-as-an-input-everywhere.md) | Power as an input everywhere: one meter and grid price per facility, a month-end settlement for plants, PPAs and exports, power producers as chain companies | Accepted |
 | [0023](0023-conversations.md) | Conversations run between turns as a service; the LLM only scores moves, suggests and words replies; their own monthly cap; template mode; skip always; the player's text is untrusted | Accepted |
+| [0024](0024-start-years-before-2010.md) | Start years before 2010: negative turns, each save's start turn, data series extended backwards | Accepted |
+| [0025](0025-currencies.md) | Currencies: the unit stays the US cent; regions translate by a monthly rate index; prices set in local terms; forwards as hedges; history holds before 2026 | Accepted |
+| [0026](0026-custom-scenarios.md) | Custom scenarios as validated YAML with a closed list of overrides; canonical copy and hash in the save; Custom games kept out of results; sandbox past 2069 | Accepted |
 
 Template: [0000-template.md](0000-template.md).

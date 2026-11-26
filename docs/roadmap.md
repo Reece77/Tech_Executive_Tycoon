@@ -88,6 +88,8 @@ All of v5 is built and merged: family and succession (M36), dynasty mode to 2069
 
 **Reece's decision (2026-11-21):** all three directions: conversations (A), scenarios (B), and new industries (C). Outline: `docs/v6-outline.md`.
 
+**Status (2026-11-25):** M46–M51, M53 and M58 are merged, and v6.0.0 is released (the first installer). Round 4 runs M54 (lane A), M55 (lane B) and M52 (lane C) in parallel: no lane waits for another. Still to brief: the 2000 and 1995 starts, M57 (v6 balance, which owns the known misses) and the performance pass.
+
 | Milestone | Direction |
 | --- | --- |
 | M46, v6 balance pass one (v5's carried misses) | — |

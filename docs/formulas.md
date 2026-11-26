@@ -4394,3 +4394,138 @@ Each is a start (year, company, cash, staff, products, research, rivals' state) 
 - *Challenges* (63.2) are `GameMode.challenges` (`game_mode.data`; a campaign with rules has a mode record, one without has none, as before). `tst.sim.modes.challenges.check` runs in `apply_action` for every action (the player's, a delegate's, an automated one) and refuses with the rule named: Bootstrapped refuses rounds, term sheets, SAFEs, bridges, loans, the banks for an IPO and secondary offerings; Hardware only refuses a product in a category whose revenue model is not units; No acquisitions refuses bids, stakes and minority buy-outs; One region refuses region launches; No automation refuses automation areas, seat authority and CEO scopes. Hard rivals refuses nothing: in each market segment's month (11.6) a product of a company outside the player's group weighs in at its quality x `challenges.hard_rivals_quality_mult` (1.2), at most 100, its stored quality unchanged. The score multiplier is the product of the rules' `challenges.<rule>.score_mult` (1.25 each).
 - *Results* (63.3) are `<saves>/results/<profile>.json` (beside M25's achievement profile, outside every save): one record a scenario save (keyed by its slug and seed) when its verdict is in: the result and month, the company score at the verdict (the snapshot of the month it ended, 30.1) in points, the rules, their multiplier and the adjusted score. The best is a success over a failure, then the higher adjusted score, then the earlier. Difficulty: the sensible wins of 10 at or below `challenges.difficulty_wins` (3, 6) are hard, then medium, else easy; the five M15b scenarios are rated with v1's steady script.
 - *Target 2* is measured at December 2014 (60 months; at year 10 the score has saturated) on the scripted player each rule cuts into: steady_regions (Bootstrapped, Hardware only, One region, Hard rivals), acquirer (No acquisitions), ceo (No automation). Hard rivals, No acquisitions and No automation do not move those players' score and are carried by Reece's decision (M51 brief).
+
+## 64. Financial services and currencies (M54; v6)
+
+Reece (2026-11-21): **financial services at scale** in v6's third direction (banking, payments, insurance), with **currencies and hedging**, the backlog's last item. The player's fintech products (§18.6's `fintech`) can grow into a bank, a payments network or an insurer. **History holds to 2025** (`finance_services.yaml`, `fx_history.yaml`; research `docs/v6-research/finance-dossier.md`); markets and money at the game's scale (§54).
+
+### 64.1 Banking
+
+- **A bank** is a licensed business of a company (a charter by region, from the region's bank regulator; §48's machinery with a `bank` kind). Getting one takes `bank.charter_months` (12–30, by region and strictness) and minimum capital; a fintech can instead **partner** with a chartered bank (a share of interest kept, no capital needed) as most fintechs did before 2020.
+- **Deposits** by segment (consumer, business) arrive by the bank's appeal (rate offered, brand, app quality from its fintech product, branches or none) and leave by churn and by **runs** (64.1's last point). The rate the bank pays follows the policy rate (`macro.base_rate`) by a **deposit beta** the player chooses within `bank.beta_range`: a lower beta earns more margin and loses deposits faster when rates rise.
+- **Loans** by kind (mortgage, consumer, card, small business, corporate) with a yield over the policy rate, a term, a **risk weight** and a **loss rate** that rises in recessions (§20's confidence cycle): charge-offs = balance × loss rate × (1 + `bank.loss_cycle_k` × (100 − confidence) / 100).
+- **Net interest income** = loans × yield + securities × their yield − deposits × deposit rate. Securities are fixed-rate: when the policy rate rises, their market value falls (duration × rate change), which matters only if they must be sold.
+- **Capital rules:** CET1 capital / risk-weighted assets ≥ the minimum plus buffers (4.5% + 2.5% from 2019, plus a size surcharge; `bank.capital.*`). Below the line the bank can't grow loans or pay dividends; far below, the regulator intervenes (§48 stages). Yearly **stress tests** for banks above `bank.stress_size`: a seeded shock (rates, losses, deposits) must leave CET1 above the minimum, or dividends are frozen for a year.
+- **Runs:** when a bank's unrealised securities losses exceed a share of its capital and its uninsured deposits are high, each month has a run chance (`bank.run.*`); a run withdraws a share of uninsured deposits, forcing securities sales at market value (losses realised). Insured deposits (`bank.insured_limit`) don't run. A run that leaves CET1 below zero is a failure: §17's insolvency for the bank, and its regulator takes it.
+
+### 64.2 Payments
+
+- **A payments network** (cards or account-to-account) earns a **network fee** on volume (`payments.network_fee_bp`); an **issuer** (a bank with cards) earns **interchange** (`payments.interchange_bp` by region, capped from the data's dates: US debit October 2011, EU December 2015); an **acquirer or processor** (the player's fintech for merchants) earns a merchant discount minus interchange and network fees.
+- **Volume** by region follows the data to 2025 (cards and digital wallets), then consumer spending (macro) × the digital share's path. A network has a two-sided network effect: merchants accept it by cardholders, cardholders choose it by acceptance (as §44's developers and users).
+- **Real-time rails** (UPI 2016, Pix 2020, FedNow 2023) take a share of volume in their regions at no network fee, from their dates.
+- **Fraud and chargebacks** cost `payments.fraud_bp` of volume, lowered by the security skill of the product's team.
+
+### 64.3 Insurance
+
+- **An insurer** writes premiums by line (property and casualty, life; health insurance is out of scope) in regions where it holds a licence (§48, an `insurance` kind). **Underwriting result** = premiums − claims − expenses: the **combined ratio** follows the line's base, the product's data and pricing skill, and seeded **catastrophe years** (stream `finserv`) with losses by region.
+- **The float** (premiums received before claims paid) is invested at about the policy rate; investment income is most of an insurer's profit in a normal year.
+- **Solvency rules** (Solvency II from 2016 in Europe; US risk-based capital): capital must cover a share of premiums and reserves, or the insurer can't write new business.
+
+### 64.4 Currencies and hedging (ADR-0025)
+
+- Each region's **rate index** (its currency or basket in US dollars, ÷ its January 2010 value) follows `fx_history.yaml` monthly to 2025 and a seeded mean-reverting walk after (stream `fx`): index_{t+1} = index_t × exp(`fx.reversion` × (ln anchor_t − ln index_t) + σ_region × z), with a jump of ±`fx.jump_size` with chance `fx.jump_chance` a month.
+- **Translation:** a regional price or local cost set in month s is worth price × index_t / index_s US cents in month t (rounded half-even). The player's regional lines translate from the start; rivals' from `fx.applies_from` (2026).
+- **Hedging:** the player (or its CFO, §40) buys forwards: notional N (local terms, as US cents at today's index), term m months, forward index F = S × ((1 + r_home) / (1 + r_region))^(m/12) × (1 ± `fx.spread_bp`). At settlement the gain = N × (F − S_m) / S_0, posted to FX gain or loss. Region rates come from each region's policy rate path (`fx_history.yaml`'s `policy_rate`).
+- **Exposure screen:** revenue, costs and debt by currency; the unhedged share of the next 12 months' net foreign revenue; a what-if of a 10% dollar move.
+
+### 64.5 Rivals and regulation
+
+- **Banks** (JPMorgan, Bank of America, Citigroup, Wells Fargo, HSBC, ICBC, BNP Paribas and others), **networks** (Visa, Mastercard, American Express, UnionPay), **payments companies** (PayPal; Stripe, Adyen and Ant as private or listed by their dates) and **insurers** (Allianz, AXA, Ping An, Berkshire Hathaway, Chubb and others), each with the data's 2010 size at the game's scale.
+- **Regulators:** bank kinds (the Fed, OCC and FDIC as one US regulator; the ECB's SSM; the UK's PRA; China's PBoC and NFRA; India's RBI) and insurance kinds; charters, capital, stress tests, interchange caps, and the data's actions (Wells Fargo's asset cap 2018–2025, SVB's failure in March 2023 as history for its rival record, Ant's halted IPO in November 2020).
+- A bank in a group: §16's consolidation applies; capital is the bank's own (a regulator can block dividends to the parent). Owning a bank inside a tech group draws a regulator's review (§48) above `bank.group_review_share`.
+
+### 64.6 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company with no bank, network, insurer or foreign sales plays exactly as before).
+2. **Banks are rate businesses:** a sensible player's bank's net interest margin is within 2.5–4.0% on seeds 1–10 in 2015–2025, and its profit rises with the policy rate when its deposit beta is below 0.5.
+3. **Runs are rare and real:** a bank that holds long securities through 2022's rate rise with more than 50% uninsured deposits has a run on at least 3 of 10 seeds; one with under 20% uninsured deposits on none.
+4. **Networks compound:** a payments network that reaches 10% of a region's volume keeps or grows its share for 5 years on at least 7 of 10 seeds.
+5. **Currency risk matters, hedging works:** for a player with at least 40% of revenue outside North America, the standard deviation of yearly operating profit in 2026–2035 is at least 15% lower with an 80% rolling hedge than with none (median of seeds 1–10).
+6. **Turn time** within the guards.
+
+## 65. Media and entertainment (M55; v6)
+
+Reece (2026-11-21): **media and entertainment** close v6's third direction: streaming, a games studio and social networks, with content as an asset, hits drawn like trials, talent with egos, and platforms and advertising tying back to §44. **History holds to 2025** (`media.yaml`; research `docs/v6-research/media-dossier.md`); markets and money at the game's scale (§54).
+
+### 65.1 Advertising
+
+- **An advertising market** by region: total spend follows the data to 2025 (GroupM), then GDP-linked growth with the confidence cycle (§20); digital's share follows the data, then a slowing path toward `ads.digital_ceiling`.
+- **Ad-funded products** (social networks, ad tiers of streaming, and §11's `consumer_apps`, which already book revenue a user) sell **impressions**: revenue = users × engagement (hours) × ad load × price an impression. The price an impression follows the region's ad spend ÷ the impressions all sellers offer, × the product's **targeting quality** (its data skill and data rules).
+- **Privacy events cut targeting:** Apple's App Tracking Transparency (April 2021) lowers targeting quality on iOS for apps without first-party data by `ads.att_cut`; GDPR (May 2018) and the DSA lower it in Europe. A company that owns a platform (§44) is not cut on its own platform.
+
+### 65.2 Content as an asset
+
+- **A title** (a series, a film, a game) is a project with a budget, a team (its creative lead and staff), a genre and a development time (`media.dev_months` by kind). Its cost is **capitalised** as a content asset while in production and **amortised** from release on an accelerated schedule (`media.amortisation` by kind: series and films about 90% in four years; games by expected sales).
+- **Hits are drawn like trials** (§55's readouts): at release a title's **audience** = the kind's base × quality multiplier × a lognormal draw (stream `media`, σ by kind, `media.hit_sigma`), so most titles underperform and a few earn most of the money. Quality comes from the creative lead's attributes, the team, the budget's ratio to the kind's typical budget (diminishing), and franchise strength (a sequel's prior audience, decaying).
+- **The catalogue** keeps earning: a streaming service's titles keep subscribers (an engagement score from the catalogue's audience-weighted recency); a game earns sales, then a tail, and live-service games earn in-app spending while the team keeps updating them.
+
+### 65.3 Streaming
+
+- **Video and music services** by region with subscription tiers and, from the data's dates, ad tiers (65.1). Subscribers arrive by catalogue engagement, price and brand, and churn by price and engagement (`streaming.churn_*`); the leader's lower churn follows its catalogue, not a constant.
+- **Licensing:** a service can license titles from rivals (cost a year by audience) or license its own out (revenue); the 2019–2020 pull-back of licences to own services is history in the data.
+- **Music** pays rights holders a share of revenue (`streaming.music_payout`, about 65–70%), so margins stay thin unless the service owns content (a label as a later follow-up).
+
+### 65.4 Games
+
+- **A games studio** makes titles for PC, console and mobile. Console and store fees (30%, Epic's 12% from December 2018) apply; on the player's own store (§44) they're internal. Console generations (2013, 2020, seeded after) lift sales of titles on the new platforms and cut the old.
+- **Free-to-play** titles earn in-app spending from a share of players (`games.payer_share`) at an average spend; loot-box rules (Belgium 2018, others) cut it in their regions.
+- **Live service:** a title's players decay monthly (`games.decay`) unless updated; an update costs staff time and slows the decay.
+
+### 65.5 Social networks
+
+- **A social network** is a platform of users with a **network effect**: a user's value = the share of their region's users already on it, to a power (`social.network_k`). Growth needs a **format advantage** (feature points in the network's format; a new format era draws users from incumbents, as TikTok's feed did from 2018).
+- Revenue is ads (65.1); costs are hosting and **moderation** (staff a million users, rising with regulation: the DSA from 2023–2024).
+- **Regulation and politics:** privacy fines (§48's GDPR cases), the DSA's duties, and divest-or-ban laws by region (the US law of April 2024 as history for ByteDance's record; seeded after for a network whose owner is in a rival bloc, §39).
+
+### 65.6 Talent with egos
+
+- **Creative leads** (showrunners, directors, game directors, star creators) are people with `creative` and `vision` attributes, a **reputation** from their past titles' audiences, and hidden traits `ego` and `loyalty` (never shown; their effects are).
+- **Overall deals:** a creative lead signs for a term and a fee (a share up front); during it, the studio has first look at their titles.
+- **Egos:** cutting a title's budget, moving its date or overruling the lead's choices (an action the player can take) lowers the lead's morale by their ego; low morale lowers the title's quality and can make the lead walk (to a rival, which then gains their next title). A hit raises the lead's reputation and fee demands. One-to-ones (§61) work with creative leads as with any key person.
+- **Strikes:** the 2023 writers' and actors' strikes as history (production paused for their months); seeded strikes after 2025 by region (`media.strike_*`).
+
+### 65.7 Rivals
+
+Netflix, Disney, Warner Bros. Discovery (Time Warner and WarnerMedia before April 2022), Comcast–NBCUniversal, Paramount, Sony, Spotify, Universal Music, Electronic Arts, Activision Blizzard (to October 2023, then Microsoft's), Take-Two, Ubisoft, Nintendo, Tencent, NetEase, Meta, Twitter (private from October 2022), Snap (listed from March 2017), ByteDance and Roblox, with the data's 2010 values; Alphabet's YouTube and Amazon's Prime Video as lines of those existing companies.
+
+### 65.8 Balance targets (printed)
+
+1. **History holds** where M43a set it; every earlier guard unchanged (a company without media lines plays exactly as before; `consumer_apps`' revenue a user is unchanged before 2026 unless it opts into ad pricing).
+2. **Hits rule:** across a sensible player's titles, the top 20% earn at least 60% of the titles' revenue (median of seeds 1–10), and at least a third of titles don't earn back their cost.
+3. **Content is capital-heavy:** a new streaming service with a $1B-a-year (real) content budget takes at least 5 years to positive cash flow.
+4. **Networks tip:** a social network with under 10% of a region's users loses users each year unless it has a format advantage; one with a format advantage grows on at least 6 of 10 seeds.
+5. **Egos bite:** overruling a high-ego lead twice in a title cuts its median quality by at least 10% and makes the lead walk on at least 3 of 10 seeds.
+6. **Turn time** within the guards.
+
+## 66. The editor and sandbox (M52; v6)
+
+Reece (2026-11-21): **an editor** to make custom scenarios from a starting company, rivals, markets and rules, and **sandbox play past 2069** with no score. ADR-0026 fixes the file format, validation and determinism.
+
+### 66.1 The editor
+
+- **Start from** a blank 2010 game, a start year (2008 or 2010, more as M50's later starts land), or any scenario in `scenarios.yaml` (including M51's), and change:
+  - **the player's company:** name, region, cash, debt, staff by role and level, products by category (quality, features, brand), research levels, facilities (fabs, data centres, plants, mines, as their builders allow), and the founder's age and family (§63.1's start fields);
+  - **rivals:** each incumbent present or removed, its cash and its products' quality (± `editor.rival_quality_range`); added generic rivals by category (drawn as entrants are);
+  - **markets:** each category's addressable market (× `editor.market_mult_range`) and growth (± `editor.growth_delta_range`);
+  - **the world:** macro start (confidence, the policy rate's starting level), eras historical or seeded, commodity prices' starting levels (× a range);
+  - **rules:** M51's challenges, campaign length (standard, dynasty, sandbox with no end), and a goal from §63's goal kinds with a deadline, or none.
+- **Validation** is the loader's, plus the editor's ranges (`editor.*` in balance.yaml): a field outside its range or a combination the engine refuses (a fab at a node not yet invented in the start year) is refused with the reason. The editor never shows or sets hidden values (ADR-0026, point 3).
+- **Preview:** the editor runs the start month (no turn) and shows the company summary, its rivals and a "difficulty" estimate (the scripted sensible player's result on 3 seeds, run on request in the background).
+
+### 66.2 Custom scenarios
+
+- **Saved** as `<saves>/scenarios/<slug>.yaml`, exported and imported as files; listed on M51's Scenarios screen under **Custom** with the player's best result kept apart from M51's results (custom results don't count toward M51's results or the Hall of Fame).
+- **A game started from one** stores its canonical YAML and hash (ADR-0026, point 4).
+
+### 66.3 Sandbox past 2069
+
+- **Continue in sandbox** at December 2069 (the option §52.1 left out of scope) or start a sandbox with no end. Series continue by §52.2's rules year after year; rivals' leaders keep ageing and retiring; process nodes keep slowing; eras draw from a third wave (`eras.yaml`'s `beyond_2069` list: windows 2070–2120, with the same domain and acceleration fields).
+- **Guards for long play:** no field may overflow its database column (money columns are 64-bit integers: the game's economy at 2100 stays at least 1,000× below the limit; tested); ages, years and ids grow without wrap; turn time at 2100 within the dynasty guard.
+- **Score:** shown, kept out of comparisons, as §30.2's Sandbox.
+
+### 66.4 Balance targets (printed)
+
+1. **Nothing else moves:** a normal game, a scenario from `scenarios.yaml` and a dynasty game to 2069 play exactly as before (state cache and golden snapshots).
+2. **Round trip:** every scenario in `scenarios.yaml`, opened in the editor and saved unchanged, starts a game identical to the original (state hash at month 12, seeds 1–3).
+3. **Determinism:** a custom scenario exported and imported on another machine gives the same state hash at month 24 (the `determinism` job's Windows and Linux digests include one custom scenario).
+4. **Long play:** a sandbox game continued from a 2069 save to December 2100 runs with no error on seeds 1–3, every money value within its column, and the late-month turn time within 550 ms (runner-adjusted).
