@@ -70,6 +70,8 @@ class Candidate:
     vision: float
     ego: float
     loyalty: float
+    creative_off: float  # in [-1, 1]: the shown ranges' centres, x their half-width
+    vision_off: float
 
 
 def candidate(
@@ -86,7 +88,8 @@ def candidate(
     vision = clamp_attr(float(g.normal(tb.attribute_mean, tb.attribute_sd)))
     ego = clamp_attr(person.personality["ego"] + float(g.normal(0.0, tb.trait_sd)))
     loyalty = clamp_attr(person.personality["loyalty"] + float(g.normal(0.0, tb.trait_sd)))
-    return Candidate(person, creative, vision, ego, loyalty)
+    c_off, v_off = (float(x) for x in g.uniform(-1.0, 1.0, size=2))  # tunable-exempt: two
+    return Candidate(person, creative, vision, ego, loyalty, c_off, v_off)
 
 
 def fee_cents(creative: float, vision: float, reputation: float, balance: Balance) -> int:
@@ -169,6 +172,8 @@ def sign(
         vision=c.vision,
         ego=c.ego,
         loyalty=c.loyalty,
+        creative_off=c.creative_off,
+        vision_off=c.vision_off,
         company_id=company_id,
         deal_from=state.turn,
         deal_to=state.turn + years * MONTHS,
@@ -398,3 +403,13 @@ def strikes_now(state: GameState, data: GameData) -> list[str]:
         if dated or seeded_strike_on(state, region, data):
             out.append(region)
     return out
+
+
+def shown_range(true: float, off: float, titles_together: int, balance: Balance) -> tuple[int, int]:
+    """A creative or vision value as the company sees it (65.6): a range of half-width
+    `reveal_hw` (1 after a released title together) whose centre is offset from the true value,
+    rounded and clamped to 1-20. The true value is always inside it."""
+    hw = balance.media.talent.reveal_hw if titles_together == 0 else 1.0
+    centre = true + off * hw
+    lo, hi = clamp_attr(centre - hw), clamp_attr(centre + hw)
+    return int(lo // 1), int(-(-hi // 1))

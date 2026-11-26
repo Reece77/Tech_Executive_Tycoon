@@ -63,6 +63,9 @@ class GreenlightTitle:
     service_product_id: int | None = None
     kind: Literal["greenlight_title"] = "greenlight_title"
 
+    def __post_init__(self) -> None:  # decision_log stores the platforms as a JSON list
+        object.__setattr__(self, "platforms", tuple(self.platforms))
+
 
 @dataclass(frozen=True, slots=True)
 class CancelTitle:

@@ -75,6 +75,8 @@ class CreativeLead:
     ego: float  # hidden
     loyalty: float  # hidden
     reputation: float = 0.0
+    creative_off: float = 0.0  # the shown range's centre is creative + this x its half-width
+    vision_off: float = 0.0
     company_id: int | None = None
     deal_from: int | None = None
     deal_to: int | None = None

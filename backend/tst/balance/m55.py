@@ -105,7 +105,7 @@ def line(
         status="live",
         quality=QUALITY,
         feature_points=0.0,
-        brand=60.0,
+        brand=70.0,
         marketing_budget_cents=0,
         created_turn=state.turn,
         launched_turn=state.turn,

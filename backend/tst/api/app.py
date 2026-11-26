@@ -37,6 +37,7 @@ from tst.api.routers import (
     holiday,
     investing,
     living,
+    media,
     medical,
     meetings,
     meta,
@@ -161,6 +162,7 @@ def create_app() -> FastAPI:
     app.include_router(robotics.router)  # M39
     app.include_router(space.router)  # M40
     app.include_router(telecom.router)  # M53
+    app.include_router(media.router)  # M55
     app.include_router(government.router)  # M44
     app.include_router(regulation.router)  # M34
     app.include_router(medical.router)  # M41
