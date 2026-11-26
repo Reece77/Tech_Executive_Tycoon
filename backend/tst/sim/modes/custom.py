@@ -55,6 +55,8 @@ ADDED_SPAN: Final = 100  # tunable-exempt: keys a category's added rivals may us
 BLANK_BACKGROUND: Final = "ex_big_tech_founders"  # scenarios.yaml start a blank game uses
 BLANK_LABEL: Final = "A blank start"
 DIFFICULTY: Final = "standard"  # a blank start's cash is the background's standard cash
+ANY_TIME: Final = 10**6  # tunable-exempt: a turn after every node's first month (a name check)
+ADULT: Final = 18  # tunable-exempt: an adult's age (HistoricalScenario.founder_age's floor)
 
 # The goal kinds' required fields (63.1's notes; 30.3)
 GOAL_FIELDS: Final[Mapping[str, tuple[str, ...]]] = {
@@ -169,7 +171,7 @@ def _check_goal(out: list[str], spec: CustomScenario, ed: EditorBalance, data: G
         out.append(f"the goal's category {goal.category!r} is not a category")
     if goal.region is not None and goal.region not in data.region_keys:
         out.append(f"the goal's region {goal.region!r} is not a region")
-    if goal.node is not None and _node_ready(goal.node, 10**6, data) is None:
+    if goal.node is not None and _node_ready(goal.node, ANY_TIME, data) is None:
         out.append(f"the goal's node {goal.node!r} is not a process node")
     for name in ("share",):
         v = getattr(goal, name)
@@ -276,8 +278,8 @@ def refusals(spec: CustomScenario, balance: Balance, data: GameData) -> list[str
         _range(out, "children", len(spec.family.child_ages), ed.children)
         for age in spec.family.child_ages:
             _range(out, "a child's age", age, ed.child_age)
-        if spec.founder_age is not None and max(spec.family.child_ages) > spec.founder_age - 18:
-            out.append("a child is older than the founder's age less 18")  # tunable-exempt
+        if spec.founder_age is not None and max(spec.family.child_ages) > spec.founder_age - ADULT:
+            out.append(f"a child is older than the founder's age less {ADULT}")
     _check_goal(out, spec, ed, data)
     # the overrides
     o = spec.overrides

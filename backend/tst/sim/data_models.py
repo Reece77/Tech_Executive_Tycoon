@@ -67,7 +67,6 @@ from tst.sim.medical.config import MedicalBalance, MedicalFile
 from tst.sim.meetings.config import MeetingsBalance
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
 from tst.sim.mna.data import AntitrustBalance, IntegrationBalance, MnaBalance
-from tst.sim.modes.custom_config import EditorBalance
 from tst.sim.modes.config import (
     ChallengesBalance,
     HistoricalScenario,
@@ -77,6 +76,7 @@ from tst.sim.modes.config import (
     SerialBalance,
     StoryBalance,
 )
+from tst.sim.modes.custom_config import EditorBalance
 from tst.sim.money import BP_DENOMINATOR
 from tst.sim.negotiation.config import LlmBalance, NegotiationBalance
 from tst.sim.org.voice_data import Voice
