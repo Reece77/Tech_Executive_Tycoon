@@ -33,6 +33,7 @@ from tst.sim.finance.options import pool_left_bp
 from tst.sim.geo.offices import employee_office_cents
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.hiring.phases import employment_monthly_cost_cents, monthly_costs
+from tst.sim.modes.custom_config import CustomScenario
 from tst.sim.modes.world import ModeSpec
 from tst.sim.org.rules import is_remote
 from tst.sim.products.phases import projected_revenue
@@ -227,6 +228,13 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         from tst.mods.store import read_mod, validate
 
         data = validate(settings.data_dir, read_mod(settings.resolved_save_dir(), body.mod))
+    spec = None
+    if body.custom is not None:  # M52 (66.2): a custom scenario, validated as it is now
+        from tst import scenario_files as sf
+
+        if body.historical is not None or body.sandbox is not None or body.challenges:
+            raise InvalidModeError("a custom scenario brings its own start and rules")
+        spec = sf.read(settings.resolved_save_dir(), body.custom, data.balance, data.game_data)
     path = repository.create_save(
         body.name,
         seed,
@@ -238,7 +246,7 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         hq_city=body.hq_city,
         data=data,
         save_dir=settings.resolved_save_dir(),
-        mode=_mode_spec(body, data),
+        mode=_mode_spec(body, data) if spec is None else _custom_mode(spec),
         family=(
             FamilySpec(body.family.setting, tuple(body.family.child_ages))
             if body.family is not None
@@ -247,8 +255,16 @@ def create_save(body: CreateSaveIn, settings: SettingsDep, data: DataDep) -> Sav
         length=body.campaign_length,
         start_year=body.start_year,  # M50 (ADR-0024)
         challenges=tuple(body.challenges),  # M51 (63.2): a campaign's (a mode's are in its spec)
+        custom=spec,
     )
     return _save_out(saves_db.describe(path))
+
+
+def _custom_mode(spec: CustomScenario) -> ModeSpec:
+    from tst import scenario_files as sf
+    from tst.sim.modes.custom import mode_spec
+
+    return mode_spec(spec, sf.sha256(spec))
 
 
 def _mode_spec(body: CreateSaveIn, data: LoadedData) -> ModeSpec | None:
@@ -264,7 +280,15 @@ def _mode_spec(body: CreateSaveIn, data: LoadedData) -> ModeSpec | None:
         return None
     sb = body.sandbox
     cash = None if sb.cash_dollars is None else sb.cash_dollars * 100
-    return ModeSpec("sandbox", sb.start_year, cash, sb.rivals, sb.eras, challenges=rules)
+    return ModeSpec(
+        "sandbox",
+        sb.start_year,
+        cash,
+        sb.rivals,
+        sb.eras,
+        challenges=rules,
+        length="endless" if sb.endless else None,  # M52 (66.3)
+    )
 
 
 def _existing(settings: SettingsDep, save_id: str) -> Path:

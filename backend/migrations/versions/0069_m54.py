@@ -6,8 +6,8 @@ indexes' walk after 2025 and the hedging programme), one row each: `kind` names 
 like M53's telecom, financial services come only with a new game; an existing save's indexes read
 fx_history.yaml.
 
-Revision ID: 0068_m54
-Revises: 0067_m53
+Revision ID: 0069_m54
+Revises: 0068_m52
 """
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0068_m54"
-down_revision: str | None = "0067_m53"
+revision: str = "0069_m54"
+down_revision: str | None = "0068_m52"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

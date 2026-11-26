@@ -1,7 +1,7 @@
 """Frozen currency records (docs/formulas.md 64.4, ADR-0025). GameState holds one `FxState`: the
 translation marks (each regional price's local value fixed at the month it was set), currency
 forwards, hedging programmes, the indexes' seeded walk after `fx.applies_from` and the player's
-translation months. Persisted in `fx_record` (migration 0068_m54).
+translation months. Persisted in `fx_record` (migration 0069_m54).
 
 Hidden values: the walk's future months do not exist until they come (each month's step is drawn
 then, stream `fx` (region index, month)); the API shows only indexes up to this month."""

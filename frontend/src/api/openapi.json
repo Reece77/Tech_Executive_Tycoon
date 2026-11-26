@@ -21563,6 +21563,845 @@
         }
       }
     },
+    "/api/editor": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Editor",
+        "description": "Every option the Editor screen offers: ranges, starts and the loaded data's lists (M54's\nand M55's categories and incumbents included, as data).",
+        "operationId": "getEditor",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/open/{start}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Open Start",
+        "description": "A start to edit: `blank_<year>` or any scenarios.yaml entry (M51's included), with no\noverrides.",
+        "operationId": "openEditorStart",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Start"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/editor/check": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Check Custom",
+        "description": "Every reason the editor refuses the spec (66.1), without saving it.",
+        "operationId": "checkCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomCheckOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "List Custom",
+        "operationId": "listCustom",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomCardOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listcustom"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Create Custom",
+        "description": "Save (or save as) a new custom scenario; 409 if the name exists, 400 with every reason\nif refused.",
+        "operationId": "createCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom/{slug}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Custom",
+        "operationId": "getCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Update Custom",
+        "description": "Save over an existing custom scenario (its name is the route's).",
+        "operationId": "updateCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Delete Custom",
+        "description": "Delete the file; games started from it keep their own copy (ADR-0026 point 4).",
+        "operationId": "deleteCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom-import": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Import Custom",
+        "description": "A shared file validated and saved; refused with every reason, nothing written.",
+        "operationId": "importCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomScenario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenarios/custom/{slug}/export": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Export Custom",
+        "operationId": "exportCustom",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/editor/preview": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Preview Custom",
+        "description": "The start month's summary (66.1): the world built to the start in memory (no turn is\nplayed, nothing is saved).",
+        "operationId": "previewCustom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/difficulty": {
+      "post": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Start Difficulty",
+        "description": "Start (or rejoin) the difficulty estimate in the background (66.1).",
+        "operationId": "startDifficulty",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomScenario"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DifficultyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/editor/difficulty/{job_id}": {
+      "get": {
+        "tags": [
+          "editor"
+        ],
+        "summary": "Get Difficulty",
+        "operationId": "getDifficulty",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DifficultyOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/mods": {
       "get": {
         "tags": [
@@ -27495,6 +28334,79 @@
         "summary": "End Campaign",
         "description": "At December 2039: end the standard campaign with its summary.",
         "operationId": "endCampaign",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/campaign/sandbox": {
+      "post": {
+        "tags": [
+          "campaign"
+        ],
+        "summary": "Continue Sandbox",
+        "description": "M52 (66.3): a game over after December 2069 plays on in sandbox, with no end.",
+        "operationId": "continueSandbox",
         "parameters": [
           {
             "name": "save_id",
@@ -34121,6 +35033,27 @@
         ],
         "title": "AddCarsIn"
       },
+      "AddedRivals": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "count"
+        ],
+        "title": "AddedRivals",
+        "description": "Generic rivals added in a category, drawn as entrants are (52.3)."
+      },
       "AdoptIn": {
         "properties": {
           "product_id": {
@@ -35241,7 +36174,7 @@
             "title": "Group"
           },
           "range": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           }
         },
         "type": "object",
@@ -37286,12 +38219,24 @@
           "length": {
             "type": "string",
             "title": "Length",
-            "description": "standard | dynasty"
+            "description": "standard | dynasty | endless (M52)"
           },
           "end_label": {
             "type": "string",
             "title": "End Label",
-            "description": "The month the game ends after"
+            "description": "The month the game ends after, or 'no end'"
+          },
+          "endless": {
+            "type": "boolean",
+            "title": "Endless",
+            "description": "M52 (66.3): a sandbox with no end",
+            "default": false
+          },
+          "can_continue_sandbox": {
+            "type": "boolean",
+            "title": "Can Continue Sandbox",
+            "description": "M52 (66.3): over after December 2069: continue in sandbox",
+            "default": false
           },
           "at_end": {
             "type": "boolean",
@@ -38102,24 +39047,6 @@
           "label"
         ],
         "title": "CatastropheOut"
-      },
-      "CategoryOptionOut": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key"
-          },
-          "label": {
-            "type": "string",
-            "title": "Label"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "label"
-        ],
-        "title": "CategoryOptionOut"
       },
       "CategoryOut": {
         "properties": {
@@ -40663,6 +41590,27 @@
         ],
         "title": "CompanyFiguresOut"
       },
+      "CompanyOverride": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CompanyOverride",
+        "description": "The player's company beyond the scenario fields (66.1): its name."
+      },
       "CompanyRefOut": {
         "properties": {
           "company_id": {
@@ -41243,6 +42191,38 @@
         ],
         "title": "ContractOut"
       },
+      "ContractSpec": {
+        "properties": {
+          "manufacturer": {
+            "type": "string",
+            "title": "Manufacturer"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "units": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Units"
+          },
+          "months": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Months"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "manufacturer",
+          "city",
+          "units",
+          "months"
+        ],
+        "title": "ContractSpec",
+        "description": "M51: a contract-manufacturing deal running at the start (26.2), signed that month."
+      },
       "CooAnswerOut": {
         "properties": {
           "answer_id": {
@@ -41740,6 +42720,18 @@
             "type": "array",
             "title": "Challenges",
             "description": "M51 (63.2): challenge rules (keys from /api/meta challenges), for any campaign, Sandbox or scenario"
+          },
+          "custom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom",
+            "description": "M52 (66.2): a custom scenario's name in saves/scenarios; its own rules and challenges apply (`challenges` must then be empty)"
           }
         },
         "type": "object",
@@ -42026,6 +43018,375 @@
           "fx_result_12m_cents"
         ],
         "title": "CurrencyScreenOut"
+      },
+      "CustomCardOut": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline Label"
+          },
+          "opened_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened From"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "played": {
+            "type": "integer",
+            "title": "Played",
+            "description": "Custom games with a verdict (kept apart from M51's)"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScenarioResultOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "label",
+          "description",
+          "year",
+          "goal",
+          "deadline_label",
+          "opened_from",
+          "sha256",
+          "played",
+          "best"
+        ],
+        "title": "CustomCardOut",
+        "description": "A custom scenario on the Scenarios screen's Custom section (66.2)."
+      },
+      "CustomCheckOut": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256",
+            "description": "The canonical text's SHA-256 when valid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "reasons",
+          "sha256"
+        ],
+        "title": "CustomCheckOut",
+        "description": "A spec's refusals (empty: valid) and its hash."
+      },
+      "CustomImportIn": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "A custom scenario file's YAML"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug",
+            "description": "Save under this name; omit for its own"
+          },
+          "overwrite": {
+            "type": "boolean",
+            "title": "Overwrite",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "CustomImportIn"
+      },
+      "CustomScenario": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,47}$",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 600,
+            "title": "Description",
+            "default": ""
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "background": {
+            "type": "string",
+            "title": "Background"
+          },
+          "cash_dollars": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cash Dollars"
+          },
+          "stage": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Stage"
+          },
+          "staff": {
+            "items": {
+              "$ref": "#/components/schemas/StaffSpec"
+            },
+            "type": "array",
+            "title": "Staff",
+            "default": []
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSpec"
+            },
+            "type": "array",
+            "title": "Products",
+            "default": []
+          },
+          "research": {
+            "items": {
+              "$ref": "#/components/schemas/LeadSpec"
+            },
+            "type": "array",
+            "title": "Research",
+            "default": []
+          },
+          "loans": {
+            "items": {
+              "$ref": "#/components/schemas/LoanSpec"
+            },
+            "type": "array",
+            "title": "Loans",
+            "default": []
+          },
+          "fabs": {
+            "items": {
+              "$ref": "#/components/schemas/FabSpec"
+            },
+            "type": "array",
+            "title": "Fabs",
+            "default": []
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          },
+          "founder_age": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 18.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Age"
+          },
+          "founder_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Founder Region"
+          },
+          "hq_city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hq City"
+          },
+          "family": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyStartSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "length": {
+            "$ref": "#/components/schemas/Length",
+            "default": "standard"
+          },
+          "sensible_wins": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sensible Wins"
+          },
+          "opened_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened From"
+          },
+          "overrides": {
+            "$ref": "#/components/schemas/Overrides",
+            "default": {
+              "company": {},
+              "rivals": {},
+              "added_rivals": [],
+              "markets": {},
+              "world": {
+                "commodities": {},
+                "eras": "historical"
+              },
+              "rules": {
+                "challenges": []
+              }
+            }
+          },
+          "format": {
+            "type": "integer",
+            "title": "Format",
+            "default": 1
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "year",
+          "background",
+          "cash_dollars",
+          "stage"
+        ],
+        "title": "CustomScenario",
+        "description": "A custom scenario file's body (ADR-0026 point 1): a historical entry, whose goal and\ndeadline may both be left out (no goal: open play), plus `overrides`. `key` is the file's\nslug; `opened_from` names what the editor started from (shown only)."
       },
       "D2dPartnerIn": {
         "properties": {
@@ -42917,6 +44278,71 @@
           "platform_id"
         ],
         "title": "DevicePlatformIn"
+      },
+      "DifficultyOut": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "running | done | failed"
+          },
+          "seeds": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Seeds"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SeedResultOut"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "wins": {
+            "type": "integer",
+            "title": "Wins"
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "easy | medium | hard; None without a goal"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "seeds",
+          "results",
+          "wins",
+          "difficulty"
+        ],
+        "title": "DifficultyOut",
+        "description": "The sensible script's estimate on `editor.preview_seeds`, run in the background."
       },
       "DigestAreaOut": {
         "properties": {
@@ -43924,6 +45350,145 @@
         ],
         "title": "EditorFileRefOut"
       },
+      "EditorOut": {
+        "properties": {
+          "ranges": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__RangeOut"
+            },
+            "type": "object",
+            "title": "Ranges",
+            "description": "Each editable field's range (editor.*)"
+          },
+          "macro_from_year": {
+            "type": "integer",
+            "title": "Macro From Year"
+          },
+          "starts": {
+            "items": {
+              "$ref": "#/components/schemas/StartOptionOut"
+            },
+            "type": "array",
+            "title": "Starts"
+          },
+          "backgrounds": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Backgrounds"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOptionOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__CategoryOptionOut"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "incumbents": {
+            "items": {
+              "$ref": "#/components/schemas/IncumbentOptionOut"
+            },
+            "type": "array",
+            "title": "Incumbents"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Domains"
+          },
+          "lenders": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Lenders"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/NodeOptionOut"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "cities": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "commodities": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Commodities"
+          },
+          "challenges": {
+            "items": {
+              "$ref": "#/components/schemas/tst__api__schemas__editor__OptionOut"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "goal_kinds": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Goal Kinds",
+            "description": "Each goal kind's required fields"
+          },
+          "lengths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lengths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ranges",
+          "macro_from_year",
+          "starts",
+          "backgrounds",
+          "roles",
+          "categories",
+          "incumbents",
+          "domains",
+          "lenders",
+          "nodes",
+          "regions",
+          "cities",
+          "commodities",
+          "challenges",
+          "goal_kinds",
+          "lengths"
+        ],
+        "title": "EditorOut",
+        "description": "Everything the Editor screen offers, from the loaded data and `editor.*`."
+      },
       "EducateIn": {
         "properties": {
           "person_id": {
@@ -44483,6 +46048,13 @@
           "window_label"
         ],
         "title": "EraWindowOut"
+      },
+      "Eras": {
+        "type": "string",
+        "enum": [
+          "historical",
+          "seeded"
+        ]
       },
       "ErrorOut": {
         "properties": {
@@ -45938,6 +47510,25 @@
         ],
         "title": "ExplorerOut"
       },
+      "ExportOut": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The canonical YAML (ADR-0026 point 7)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "text"
+        ],
+        "title": "ExportOut"
+      },
       "FabCountryOut": {
         "properties": {
           "key": {
@@ -46601,6 +48192,54 @@
           "cost_per_start_cents"
         ],
         "title": "FabQuoteOut"
+      },
+      "FabSpec": {
+        "properties": {
+          "node": {
+            "type": "string",
+            "title": "Node"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "wafer_starts": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Wafer Starts"
+          },
+          "age_months": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Age Months"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "node",
+          "region",
+          "wafer_starts",
+          "age_months",
+          "unit"
+        ],
+        "title": "FabSpec",
+        "description": "M51: a fab the company already runs at the start (38.2), built `age_months` before it:\nlive, its yield mature, its capex on the books less the depreciation since."
       },
       "FabsActionOut": {
         "properties": {
@@ -47558,6 +49197,25 @@
           "trust_since"
         ],
         "title": "FamilyOut"
+      },
+      "FamilyStartSpec": {
+        "properties": {
+          "child_ages": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Child Ages"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "child_ages"
+        ],
+        "title": "FamilyStartSpec",
+        "description": "M51: the founder's family at the start (45.1): a partner and children of these ages."
       },
       "FamilyTimeIn": {
         "properties": {
@@ -49989,6 +51647,183 @@
         ],
         "title": "GlossaryOut",
         "description": "Definitions of every KPI and column (backend/data/glossary.yaml; M7b)."
+      },
+      "GoalKind": {
+        "type": "string",
+        "enum": [
+          "arr",
+          "customers",
+          "solvent_margin",
+          "unit_share",
+          "profit_no_down_round",
+          "solvent_series",
+          "platform_share",
+          "vehicles_year",
+          "fab_catch_up",
+          "node_volume",
+          "family_succession"
+        ]
+      },
+      "GoalSpec": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/GoalKind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Era"
+          },
+          "arr_dollars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arr Dollars"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "segment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment"
+          },
+          "customers": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customers"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
+          },
+          "bonus_era": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonus Era"
+          },
+          "bonus_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonus Text"
+          },
+          "series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          },
+          "units": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Units"
+          },
+          "node": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node"
+          },
+          "node_gap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Node Gap"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "text"
+        ],
+        "title": "GoalSpec"
       },
       "GovBuyerOut": {
         "properties": {
@@ -52841,6 +54676,27 @@
         ],
         "title": "IncidentOut"
       },
+      "IncumbentOptionOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "categories"
+        ],
+        "title": "IncumbentOptionOut"
+      },
       "IndustryOut": {
         "properties": {
           "key": {
@@ -53456,7 +55312,7 @@
           },
           "categories": {
             "items": {
-              "$ref": "#/components/schemas/CategoryOptionOut"
+              "$ref": "#/components/schemas/tst__api__schemas__investing__CategoryOptionOut"
             },
             "type": "array",
             "title": "Categories",
@@ -54436,6 +56292,26 @@
         ],
         "title": "LaunchSpecIn"
       },
+      "LeadSpec": {
+        "properties": {
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "lead": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Lead"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "domain",
+          "lead"
+        ],
+        "title": "LeadSpec"
+      },
       "LeaderChangeOut": {
         "properties": {
           "company_id": {
@@ -54723,6 +56599,14 @@
         ],
         "title": "LegacyOut",
         "description": "The legacy score with its parts (32.6), across every company the founder ran."
+      },
+      "Length": {
+        "type": "string",
+        "enum": [
+          "standard",
+          "dynasty",
+          "endless"
+        ]
       },
       "LetterOut": {
         "properties": {
@@ -55604,6 +57488,44 @@
         ],
         "title": "LoanPreviewOut"
       },
+      "LoanSpec": {
+        "properties": {
+          "lender": {
+            "type": "string",
+            "title": "Lender"
+          },
+          "principal_dollars": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Principal Dollars"
+          },
+          "rate_bp": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Rate Bp"
+          },
+          "term_months": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Term Months"
+          },
+          "interest_only_months": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Interest Only Months"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lender",
+          "principal_dollars",
+          "rate_bp",
+          "term_months",
+          "interest_only_months"
+        ],
+        "title": "LoanSpec"
+      },
       "LoanTermsOut": {
         "properties": {
           "instrument": {
@@ -56259,6 +58181,24 @@
           "segments"
         ],
         "title": "MarketOut"
+      },
+      "MarketOverride": {
+        "properties": {
+          "market_mult": {
+            "type": "number",
+            "title": "Market Mult",
+            "default": 1.0
+          },
+          "growth_delta": {
+            "type": "number",
+            "title": "Growth Delta",
+            "default": 0.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "MarketOverride",
+        "description": "A category's addressable market and annual growth."
       },
       "MarketProductOut": {
         "properties": {
@@ -60355,6 +62295,30 @@
         ],
         "title": "NextGuidanceOut"
       },
+      "NodeOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "first_year": {
+            "type": "integer",
+            "title": "First Year",
+            "description": "The year it first ran in volume anywhere"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "first_year"
+        ],
+        "title": "NodeOptionOut"
+      },
       "NodeOut": {
         "properties": {
           "key": {
@@ -61826,6 +63790,52 @@
           "customers_lost"
         ],
         "title": "OutageOut"
+      },
+      "Overrides": {
+        "properties": {
+          "company": {
+            "$ref": "#/components/schemas/CompanyOverride",
+            "default": {}
+          },
+          "rivals": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RivalOverride"
+            },
+            "type": "object",
+            "title": "Rivals"
+          },
+          "added_rivals": {
+            "items": {
+              "$ref": "#/components/schemas/AddedRivals"
+            },
+            "type": "array",
+            "title": "Added Rivals",
+            "default": []
+          },
+          "markets": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MarketOverride"
+            },
+            "type": "object",
+            "title": "Markets"
+          },
+          "world": {
+            "$ref": "#/components/schemas/WorldOverride",
+            "default": {
+              "eras": "historical",
+              "commodities": {}
+            }
+          },
+          "rules": {
+            "$ref": "#/components/schemas/RulesOverride",
+            "default": {
+              "challenges": []
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Overrides"
       },
       "OverviewBreakdownsOut": {
         "properties": {
@@ -66466,6 +68476,112 @@
         ],
         "title": "PressOut"
       },
+      "PreviewOut": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "start_label": {
+            "type": "string",
+            "title": "Start Label"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          },
+          "debt_cents": {
+            "type": "integer",
+            "title": "Debt Cents"
+          },
+          "staff": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Staff"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLineOut"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "research": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Research"
+          },
+          "rivals": {
+            "items": {
+              "$ref": "#/components/schemas/RivalLineOut"
+            },
+            "type": "array",
+            "title": "Rivals"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Removed"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "deadline_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline Label"
+          },
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges"
+          },
+          "length": {
+            "type": "string",
+            "title": "Length"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "start_label",
+          "cash_cents",
+          "debt_cents",
+          "staff",
+          "products",
+          "research",
+          "rivals",
+          "removed",
+          "goal",
+          "deadline_label",
+          "challenges",
+          "length"
+        ],
+        "title": "PreviewOut",
+        "description": "The start month's summary (66.1): built in memory, no turn played, nothing saved."
+      },
       "PriceIn": {
         "properties": {
           "segment": {
@@ -66787,6 +68903,39 @@
           "product_id"
         ],
         "title": "ProductIn"
+      },
+      "ProductLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "status",
+          "quality",
+          "customers"
+        ],
+        "title": "ProductLineOut"
       },
       "ProductMonthOut": {
         "properties": {
@@ -67663,6 +69812,72 @@
           "points"
         ],
         "title": "ProductSeriesOut"
+      },
+      "ProductSpec": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Quality"
+          },
+          "features": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Features"
+          },
+          "brand": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Brand"
+          },
+          "segments": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SegmentSpec"
+            },
+            "type": "object",
+            "title": "Segments"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "live",
+              "in_development"
+            ],
+            "title": "Status",
+            "default": "live"
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "quality",
+          "features",
+          "brand",
+          "segments"
+        ],
+        "title": "ProductSpec"
       },
       "ProductTotalMonthOut": {
         "properties": {
@@ -68741,10 +70956,10 @@
             "title": "Group"
           },
           "before": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           },
           "after": {
-            "$ref": "#/components/schemas/RangeOut"
+            "$ref": "#/components/schemas/tst__api__schemas__people__RangeOut"
           }
         },
         "type": "object",
@@ -68757,24 +70972,6 @@
         ],
         "title": "RangeChangeOut",
         "description": "One displayed range an action narrowed (M4c): what the viewer saw before and after."
-      },
-      "RangeOut": {
-        "properties": {
-          "min": {
-            "type": "integer",
-            "title": "Min"
-          },
-          "max": {
-            "type": "integer",
-            "title": "Max"
-          }
-        },
-        "type": "object",
-        "required": [
-          "min",
-          "max"
-        ],
-        "title": "RangeOut"
       },
       "RankingEntryOut": {
         "properties": {
@@ -71543,6 +73740,39 @@
         ],
         "title": "RivalLeaderOut"
       },
+      "RivalLineOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "quality": {
+            "type": "number",
+            "title": "Quality"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "added": {
+            "type": "boolean",
+            "title": "Added"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "quality",
+          "customers",
+          "added"
+        ],
+        "title": "RivalLineOut"
+      },
       "RivalMinerOut": {
         "properties": {
           "supplier": {
@@ -71658,6 +73888,29 @@
           "market"
         ],
         "title": "RivalOutlastedOut"
+      },
+      "RivalOverride": {
+        "properties": {
+          "present": {
+            "type": "boolean",
+            "title": "Present",
+            "default": true
+          },
+          "cash_mult": {
+            "type": "number",
+            "title": "Cash Mult",
+            "default": 1.0
+          },
+          "quality_delta": {
+            "type": "number",
+            "title": "Quality Delta",
+            "default": 0.0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RivalOverride",
+        "description": "One incumbent (incumbents.yaml, by name): present or removed, its cash and its products'\nquality."
       },
       "RivalProductMarketOut": {
         "properties": {
@@ -72670,6 +74923,32 @@
         ],
         "title": "RoleChoiceOut"
       },
+      "RoleOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "levels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "levels"
+        ],
+        "title": "RoleOptionOut"
+      },
       "RoleOut": {
         "properties": {
           "key": {
@@ -73352,6 +75631,22 @@
           "seeded"
         ],
         "title": "RuleOut"
+      },
+      "RulesOverride": {
+        "properties": {
+          "challenges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Challenges",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RulesOverride",
+        "description": "M51's challenge rules (63.2). The campaign length is the entry's own `length`."
       },
       "RxAssetOut": {
         "properties": {
@@ -74985,6 +77280,12 @@
             ],
             "title": "Eras",
             "default": "historical"
+          },
+          "endless": {
+            "type": "boolean",
+            "title": "Endless",
+            "description": "M52 (66.3): a sandbox with no end (past December 2069)",
+            "default": false
           }
         },
         "type": "object",
@@ -75099,7 +77400,7 @@
           "mode": {
             "type": "string",
             "title": "Mode",
-            "description": "campaign | sandbox | scenario (M15b)",
+            "description": "campaign | sandbox | scenario (M15b) | custom (M52)",
             "default": "campaign"
           },
           "score": {
@@ -76050,6 +78351,48 @@
         ],
         "title": "SecondaryIn"
       },
+      "SeedResultOut": {
+        "properties": {
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "month_label": {
+            "type": "string",
+            "title": "Month Label"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "seed",
+          "result",
+          "month_label",
+          "score"
+        ],
+        "title": "SeedResultOut"
+      },
       "SeenIn": {
         "properties": {
           "keys": {
@@ -76078,6 +78421,27 @@
           "segment"
         ],
         "title": "SegmentIn"
+      },
+      "SegmentSpec": {
+        "properties": {
+          "price_dollars": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Price Dollars"
+          },
+          "customers": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Customers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "price_dollars",
+          "customers"
+        ],
+        "title": "SegmentSpec"
       },
       "SellSharesIn": {
         "properties": {
@@ -77282,6 +79646,42 @@
         ],
         "title": "StaffRefineryIn"
       },
+      "StaffSpec": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Count"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "role",
+          "level",
+          "count"
+        ],
+        "title": "StaffSpec"
+      },
       "StageIn": {
         "properties": {
           "stage": {
@@ -77520,6 +79920,30 @@
           "yours_on_loser"
         ],
         "title": "StandardOut"
+      },
+      "StartOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "A scenarios.yaml key, or blank_<year>"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "year"
+        ],
+        "title": "StartOptionOut"
       },
       "StartProjectIn": {
         "properties": {
@@ -83552,6 +85976,47 @@
         ],
         "title": "WorldOut"
       },
+      "WorldOverride": {
+        "properties": {
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "policy_rate_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Rate Pct"
+          },
+          "eras": {
+            "$ref": "#/components/schemas/Eras",
+            "default": "historical"
+          },
+          "commodities": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Commodities"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "WorldOverride",
+        "description": "The macro start, eras and commodity price levels (66.1)."
+      },
       "YearPointOut": {
         "properties": {
           "year": {
@@ -83827,6 +86292,74 @@
           "name"
         ],
         "title": "UnitChoiceOut"
+      },
+      "tst__api__schemas__editor__CategoryOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "segments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Segments"
+          },
+          "market_editable": {
+            "type": "boolean",
+            "title": "Market Editable",
+            "description": "False: its market follows its own data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "segments",
+          "market_editable"
+        ],
+        "title": "CategoryOptionOut"
+      },
+      "tst__api__schemas__editor__OptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "OptionOut"
+      },
+      "tst__api__schemas__editor__RangeOut": {
+        "properties": {
+          "lo": {
+            "type": "number",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "number",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "RangeOut"
       },
       "tst__api__schemas__events__EventLinkOut": {
         "properties": {
@@ -84143,6 +86676,24 @@
         ],
         "title": "NamedOut"
       },
+      "tst__api__schemas__investing__CategoryOptionOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label"
+        ],
+        "title": "CategoryOptionOut"
+      },
       "tst__api__schemas__investing__IndexPointOut": {
         "properties": {
           "turn": {
@@ -84261,6 +86812,24 @@
           "label"
         ],
         "title": "EventLinkOut"
+      },
+      "tst__api__schemas__people__RangeOut": {
+        "properties": {
+          "min": {
+            "type": "integer",
+            "title": "Min"
+          },
+          "max": {
+            "type": "integer",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "RangeOut"
       },
       "tst__api__schemas__platforms__ListingOut": {
         "properties": {

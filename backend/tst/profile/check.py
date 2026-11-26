@@ -27,6 +27,10 @@ def why_none(state: GameState, mod_name: str | None) -> str | None:
     """Why this game earns no achievements, or None when it can."""
     if state.mode is not None and state.mode.kind == "sandbox":
         return "Sandbox games earn no achievements."
+    if state.mode is not None and state.mode.custom:  # M52 (ADR-0026 point 5)
+        return "Custom scenario games earn no achievements."
+    if state.mode is not None and state.mode.endless:  # M52 (66.3): sandbox past 2069
+        return "Sandbox games earn no achievements."
     if mod_name:
         return f"Modded games earn no achievements (this one uses the mod {mod_name!r})."
     return None

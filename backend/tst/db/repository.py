@@ -91,6 +91,7 @@ from tst.sim.family.setup import FamilySpec
 from tst.sim.finance.statements import cash_before_financing, profit_and_loss, projected_runway
 from tst.sim.ledger import AccountCode, apply_entries
 from tst.sim.modes.continue_until import MAX_MONTHS, StopReason, needs_player
+from tst.sim.modes.custom_config import CustomScenario
 from tst.sim.modes.models import CampaignLength, GameMode
 from tst.sim.modes.world import ModeSpec, start_mode
 from tst.sim.money import Cents
@@ -424,8 +425,11 @@ def create_save(
     length: CampaignLength = "standard",
     start_year: int = TURN_ZERO[0],
     challenges: tuple[str, ...] = (),
+    custom: CustomScenario | None = None,
 ) -> Path:
     """Create `<save_dir>/<name>.tst.sqlite` at schema head with the turn-0 state.
+    `custom` (M52, ADR-0026): a validated custom scenario; `mode` is then its scenario spec
+    (`tst.sim.modes.custom` key and hash) and the save keeps the scenario's canonical YAML.
     `challenges` (M51, 63.2): a campaign's challenge rules (a Sandbox's or scenario's are in
     its `mode`).
     `start_year` (M50, ADR-0024): a campaign's first January, 2008 or 2010 (calendar
@@ -438,6 +442,10 @@ def create_save(
         raise SaveExistsError(f"a save named {name!r} already exists")
     if isinstance(seed, bool) or not 0 <= seed <= MAX_STORED_SEED:
         raise InvalidSeedError(f"seed must be in 0..2**63-1, got {seed}")
+    if custom is not None:  # M52: its entry beside scenarios.yaml's, for the start code
+        from tst.db.custom_io import data_with
+
+        data = data_with(data, custom)
     if mode is not None and mode.kind == "scenario" and mode.scenario is not None:
         from tst.sim.modes import scenarios as sc
 
@@ -468,7 +476,14 @@ def create_save(
     )
     if mode is not None:
         state, entries = start_mode(
-            state, entries, mode, founder, RngFactory(seed), data.balance, data.game_data
+            state,
+            entries,
+            mode,
+            founder,
+            RngFactory(seed),
+            data.balance,
+            data.game_data,
+            custom=custom,
         )
     if length == "dynasty":  # M37 (52.1): only a campaign has one
         if mode is not None:
@@ -516,6 +531,11 @@ def create_save(
             session.flush()
             sync_state(session, None, state)
             insert_entries(session, entries)
+            if custom is not None:  # M52 (ADR-0026 point 4): the scenario's own copy
+                from tst.db.custom_io import write_custom
+                from tst.scenario_files import canonical, sha256
+
+                write_custom(session, custom, canonical(custom), sha256(custom))
             session.add(
                 DecisionLogRow(
                     turn=state.turn,
@@ -1223,6 +1243,12 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
             if row.source == RIVAL_SOURCE:
                 rival_logged.setdefault(row.turn, []).append((row.company_id, row.payload))
     setup = start.payload
+    from tst.db.custom_io import data_with, spec_of, stored_custom
+
+    stored = stored_custom(source)  # M52: a custom scenario's game replays from its own copy
+    custom = spec_of(stored) if stored is not None else None
+    if custom is not None:
+        data = data_with(data, custom)
     founder = dict(setup["founder"])
     if founder.get("interests") is not None:
         founder["interests"] = tuple(founder["interests"])
@@ -1245,6 +1271,7 @@ def replay_save(source: Path, save_dir: Path, name: str, data: LoadedData) -> Pa
         ),
         start_year=setup.get("start_year", TURN_ZERO[0]),  # M50
         challenges=tuple(setup.get("challenges", ())),  # M51
+        custom=custom,
     )
     for turn in range(first_turn, target_turn + 1):
         for _, action in (a for a in actions if a[0] == turn):

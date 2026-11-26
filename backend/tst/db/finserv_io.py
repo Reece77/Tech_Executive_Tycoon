@@ -1,4 +1,4 @@
-"""Loading and syncing M54's records (formulas.md 64; migration 0068_m54). Every collection of
+"""Loading and syncing M54's records (formulas.md 64; migration 0069_m54). Every collection of
 `GameState.finserv` lives in `finserv_record` and every collection of `GameState.fx` in
 `fx_record`, one row a record (`kind` = the state's field), its fields in `data`; a changed
 collection is rewritten whole. Nested records (a bank's securities lots, stress results and runs,
@@ -125,7 +125,7 @@ def _fx_rows(fx: FxState) -> dict[str, Any]:
 def load_finserv(
     session: Session, state: GameState, has_table: Callable[[Session, Any], bool]
 ) -> GameState:
-    """Every finance and currency record (0068_m54); a save from before M54 has none."""
+    """Every finance and currency record (0069_m54); a save from before M54 has none."""
     if not has_table(session, FinservRecordRow):
         return state
     found: dict[str, list[Any]] = {k: [] for k in FINSERV}

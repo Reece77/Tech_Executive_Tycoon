@@ -48,7 +48,8 @@ def with_successors(nodes: NodesFile, rule: DynastyBalance) -> NodesFile:
     nr = rule.nodes
     gap = nr.gap_years * MONTHS
     out: list[FutureNodeDef] = []
-    for s in nodes.successors[: nr.count]:
+    # M52 (66.3): `beyond.nodes` more, their windows after 2069 (the gaps keep growing)
+    for s in nodes.successors[: nr.count + rule.beyond.nodes]:
         mid += round(gap)
         gap *= 1 + nr.gap_growth
         start = max(first_allowed, mid - nr.window_months // 2)

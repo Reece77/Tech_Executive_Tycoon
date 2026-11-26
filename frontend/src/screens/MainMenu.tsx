@@ -38,6 +38,16 @@ export function MainMenu() {
             </Button>
             <Button
               component={Link}
+              to="/editor"
+              variant="default"
+              size="md"
+              h={44}
+              data-testid="scenario-editor-link"
+            >
+              Scenario editor
+            </Button>
+            <Button
+              component={Link}
               to="/mods"
               variant="default"
               size="md"

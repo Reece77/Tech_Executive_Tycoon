@@ -1,7 +1,7 @@
 """Frozen financial services records (docs/formulas.md 64.1-64.3). GameState holds one
 `FinservState`: the player's banks (with their balance sheets, in integer cents), payments
 networks, insurers, their months, and the game-wide `FinservWorld` (drawn growth after 2025 and the
-catastrophes that have happened). Persisted in `finserv_record` (migration 0068_m54).
+catastrophes that have happened). Persisted in `finserv_record` (migration 0069_m54).
 
 Hidden values (64.5): a stress test's shock is drawn when the test runs (stream finserv (2, bank,
 year)) and only its result is stored; a run's chance and draw are drawn each month (finserv (0,

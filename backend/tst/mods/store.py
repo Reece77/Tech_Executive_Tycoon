@@ -178,10 +178,12 @@ def save_mod(path: Path) -> SaveMod | None:
 def data_for_save(path: Path, data_dir: Path, base: LoadedData) -> LoadedData:
     """The data a save plays with: `base` for a game without a mod (unchanged, so it is
     byte-identical to before), else the base files with the save's own overlay copy."""
+    from tst.db.custom_io import data_for_custom  # M52: a custom scenario's own entry
+
     mod = save_mod(path)
     if mod is None:
-        return base
-    loaded = with_overlay(data_dir, mod.name, mod.overlay)
+        return data_for_custom(path, base)
+    loaded = data_for_custom(path, with_overlay(data_dir, mod.name, mod.overlay))
     if mod.hash is not None and loaded.mod_hash != mod.hash:
         log.warning(
             "Data files changed since %s was created with mod %r: %s", path.name, mod.name, mod.hash

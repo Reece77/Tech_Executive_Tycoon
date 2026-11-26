@@ -863,7 +863,7 @@ def _scenario_fields(state: GameState, data: LoadedData) -> dict[str, Any]:
     if mode is None or mode.kind != "scenario" or mode.scenario is None:
         return {}
     h = data.game_data.historical_scenario(mode.scenario)
-    if h is None:
+    if h is None or h.goal is None:  # M52: a custom scenario with no goal has no verdict
         return {}
     from tst.api.routers.scenarios import result_out
     from tst.profile.results import record_of

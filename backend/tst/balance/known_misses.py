@@ -141,6 +141,23 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         "a year's total already averages a year of rates; M57 decides on 24-month forwards or "
         "the band for a 12-month hedge",
     ),
+    # M52 (Reece, 2026-11-26): both of 66.4 target 4's misses are known misses
+    KnownMiss(
+        target="M52.2100_month",  # tests/integration/test_m52_perf.py: 550 ms runner-adjusted
+        owner="v6 performance",  # as M37.2069_month: the same cause
+        # score: the adjusted median in seconds; known up to 650 ms
+        worse_than=0.650,
+        reason="610 ms adjusted on CI (544 ms locally) after rule 6's telecom fix (700 ms "
+        "before): 365 companies by 2100 against about 170 in 2069, every phase does more",
+    ),
+    KnownMiss(
+        target="M52.economy_2100",  # tests/balance/test_m52_balance.py: 1,000x below int64
+        owner=NEXT,  # v6 balance and polish: mines' sales compounding after 2069 (no M52 key)
+        # score: 2100 revenue x 1,000 / int64 (1 is the target); known up to 4 (250x below)
+        worse_than=4.0,
+        reason="2100 revenue 359-442x below int64 on seeds 1-3 (2069: 3,786x); commodity "
+        "sales dominate; every value stays within int64 (59-79x below)",
+    ),
 )
 
 Verdict = Literal["ok", "printed", "known", "fail"]

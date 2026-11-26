@@ -53,6 +53,9 @@ class SandboxIn(BaseModel):
     cash_dollars: int | None = Field(default=None, ge=0, description="Omit for the background's")
     rivals: Literal["all", "half", "none"] = "all"
     eras: Literal["historical", "seeded"] = "historical"
+    endless: bool = Field(
+        default=False, description="M52 (66.3): a sandbox with no end (past December 2069)"
+    )
 
 
 class CreateSaveIn(BaseModel):
@@ -92,6 +95,11 @@ class CreateSaveIn(BaseModel):
         description="M51 (63.2): challenge rules (keys from /api/meta challenges), for any "
         "campaign, Sandbox or scenario",
     )
+    custom: str | None = Field(
+        default=None,
+        description="M52 (66.2): a custom scenario's name in saves/scenarios; its own rules "
+        "and challenges apply (`challenges` must then be empty)",
+    )
 
 
 class SaveOut(BaseModel):
@@ -107,7 +115,9 @@ class SaveOut(BaseModel):
     size_bytes: int
     ironman: bool = Field(description="No duplicate or restore (ADR-0004)")
     busy: bool = Field(description="A turn, action or holiday is writing to it now")
-    mode: str = Field(default="campaign", description="campaign | sandbox | scenario (M15b)")
+    mode: str = Field(
+        default="campaign", description="campaign | sandbox | scenario (M15b) | custom (M52)"
+    )
     score: int | None = Field(
         default=None, description="The latest company score; none for Sandbox games (M15b)"
     )

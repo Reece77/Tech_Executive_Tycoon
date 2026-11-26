@@ -231,15 +231,27 @@ class EraDef(_Frozen):
         return tuple(dict.fromkeys(b.category for b in self.boosts))
 
 
+BEYOND_FIRST, BEYOND_LAST = 2070, 2120  # tunable-exempt: 66.3's window years for the third wave
+
+
 class ErasFile(_Frozen):
     eras: tuple[EraDef, ...] = ()
     base_growth: dict[str, dict[int, float]] = Field(default_factory=dict)
+    # M52 (66.3): the third wave, windows 2070-2120 (sandbox past 2069); the loader appends it
+    # to `eras` after every other era, so no earlier era's index (its stream key) moves
+    beyond_2069: tuple[EraDef, ...] = ()
 
     @model_validator(mode="after")
     def _check(self) -> ErasFile:
-        keys = [e.key for e in self.eras]
+        keys = [e.key for e in (*self.eras, *self.beyond_2069)]
         if len(set(keys)) != len(keys):
             raise ValueError("eras.yaml: era keys listed twice")
+        for e in self.beyond_2069:
+            if e.window is None or e.window[0][0] < BEYOND_FIRST or e.window[1][0] > BEYOND_LAST:
+                raise ValueError(
+                    f"eras.yaml beyond_2069: {e.key!r} needs a window within"
+                    f" {BEYOND_FIRST}-{BEYOND_LAST}"
+                )
         for category, table in self.base_growth.items():
             if not table or any(g < 0 for g in table.values()):
                 raise ValueError(f"base_growth.{category}: needs entries, each >= 0")
