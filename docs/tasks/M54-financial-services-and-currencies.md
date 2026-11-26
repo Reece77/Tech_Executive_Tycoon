@@ -86,7 +86,19 @@ Investment banking and trading desks; asset management; health insurance; crypto
 
 ## Readings
 
-(seeds 1-10, `uv run --project backend python tools/m54_targets.py`; filled in at the close)
+Seeds 1-10, `uv run --project backend python tools/m54_targets.py` (2026-11-26):
+
+| Target | Band | Reading | Met |
+| --- | --- | --- | --- |
+| 1 history holds | earlier guards unchanged | M28's six earlier series equal `main`'s fixture on seeds 1-10; the `finance` series recorded; the currency guard (decision 6) | yes |
+| 2 NIM 2015-2025 | 2.5%-4.0% | 2.91% on every seed (the history's rates; seeds draw only runs and stress tests) | yes |
+| 2 profit rises with the rate (beta 0.3) | correlation > 0 | 0.92 (yearly profit a dollar of deposits against the year's policy rate) | yes |
+| 3 runs, over 50% uninsured | >= 3 of 10 | 4 (78% uninsured, long securities bought 2019-2021) | yes |
+| 3 runs, under 20% uninsured | none | 0 | yes |
+| 4 network keeps 10% for 5 years | >= 7 of 10 | 10 (15.9%-18.1% after 5 years) | yes |
+| 5 80% hedge cuts yearly profit's spread | >= 15% (median) | 6.9% (0.0%-12.9%) | carried (decision 13) |
+
+Nothing tuned (rule 1): targets 2-4 met at the first keys; no `fx.*` setting within reason meets target 5.
 
 ## Follow-ups
 
