@@ -347,9 +347,10 @@ def _media(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | No
     m = state.media
     if any(t.company_id in ids for t in m.titles) or any(x.company_id in ids for x in m.leads):
         return "the group has titles or creative leads"
-    if turn_to_ym(state.turn)[0] >= mb.unlock_year and _stage(state) >= STAGE_SCALEUP:
-        if any(p.category == mb.consumer_apps for p in state.products if p.company_id in ids):
-            return f"media is open to a stage-2 company with a consumer app ({mb.unlock_year})"
+    open_year = turn_to_ym(state.turn)[0] >= mb.unlock_year and _stage(state) >= STAGE_SCALEUP
+    apps = any(p.category == mb.consumer_apps for p in state.products if p.company_id in ids)
+    if open_year and apps:
+        return f"media is open to a stage-2 company with a consumer app ({mb.unlock_year})"
     return None
 
 
