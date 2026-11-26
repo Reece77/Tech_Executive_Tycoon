@@ -3568,10 +3568,10 @@ media: # 65: media and entertainment (M55, v6 lane B). Data (ad spend, internet 
     old_gen_cut: 0.7 # a console title from before a generation sells x this after it (A)
     console_every: [6, 8] # years between seeded console generations after 2025 (S/R: 2013, 2020)
   social_network: # 65.5
-    network_k: 0.25 # appeal x (users / the region's internet users / share_ref) ** this (A; appeal is cubed in the choice, 11.7)
+    network_k: 0.4 # M55 rule 1: 0.25 -> 0.4 (target 4a: a 5% network grew in its first year). appeal x (users / the region's internet users / share_ref) ** this (A; appeal is cubed in the choice, 11.7)
     share_ref: 0.10 # (65.8 target 4: under 10% a network shrinks without a format advantage)
     appeal_range: [0.5, 1.15] # M55 rule 1: [0.7, 1.15] -> [0.5, 1.15] (target 4a: 0 of 10 small networks shrank)
-    churn_k: 0.3 # churn x (share_ref / share) ** this
+    churn_k: 0.4 # M55 rule 1: 0.3 -> 0.4. churn x (share_ref / share) ** this
     churn_range: [0.85, 3.0] # M55 rule 1: [0.85, 1.8] -> [0.85, 3.0]
     format_advantage: 1.6 # M55 rule 1: 1.3 -> 1.6 (target 4b kept with the lower floor) # appeal x this on the newest format for advantage_years from its arrival (A: TikTok's growth 2018-2021)
     advantage_years: 4

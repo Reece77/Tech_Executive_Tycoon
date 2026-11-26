@@ -385,3 +385,25 @@ def table(rows: list[SeedResult]) -> str:
         "| see make check-timing |",
     ]
     return "\n".join(lines)
+
+
+def met(rows: list[SeedResult]) -> bool:
+    """65.8 targets 2-5 met (target 6 is make check-timing)."""
+    top = median(r.hits[0] for r in rows)
+    flops = median(r.hits[1] for r in rows)
+    pay = median(r.service.payback if r.service.payback is not None else 10**6 for r in rows)
+    falls = sum(1 for r in rows if _falls(r.network_a[0]))
+    grows = sum(1 for r in rows if r.network_b[1])
+    qa = median(r.ego_a[0] for r in rows)
+    qb = median(r.ego_b[0] for r in rows)
+    walks = sum(1 for r in rows if r.ego_b[1])
+    return (
+        top >= TOP_SHARE
+        and flops >= FLOP_SHARE
+        and pay >= PAYBACK_MONTHS
+        and falls > len(rows) / 2
+        and grows >= GROWS
+        and qa > 0
+        and 1 - qb / qa >= QUALITY_CUT
+        and walks >= WALKS
+    )
