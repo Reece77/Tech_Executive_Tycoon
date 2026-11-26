@@ -213,6 +213,9 @@ class LongPlay:
     revenue_2100: int  # every company's revenue in 2100, cents (the economy's size)
     late_ms: tuple[int, ...]  # each of 2100's months in memory, ms
     ended: str  # the game state at the end
+    # 66.4 target 1 on the way: the months to December 2069 against M45's dynasty fixture
+    # (None: all 720 identical; else the first difference)
+    m45_difference: str | None = None
 
 
 def _largest_int(value: object) -> int:
@@ -251,9 +254,14 @@ def _revenue(game: Game) -> int:
 def sandbox_2100(seed: int, until: int = SANDBOX_END) -> LongPlay:
     """M45's dynasty game (full_integrator with a family) to December 2069, continued in
     sandbox (`ContinueSandbox`) and played to December 2100, in memory."""
+    return play_2100(seed, until)[1]
+
+
+def play_2100(seed: int, until: int = SANDBOX_END) -> tuple[Game, LongPlay]:
+    """`sandbox_2100` with the game kept (tools/m52_save.py writes it to a save)."""
     import time
 
-    from tst.balance import m37
+    from tst.balance import m37, m45
     from tst.sim.calendar import format_turn
     from tst.sim.dynasty.mode import continue_dynasty, continue_sandbox, final_turn
 
@@ -264,6 +272,9 @@ def sandbox_2100(seed: int, until: int = SANDBOX_END) -> LongPlay:
     error = None
     late: list[int] = []
     revenue_start = 0
+    digester = m30.Digester(m45.SKIP)  # M45's own digest of each month to 2069
+    want = m45.recorded().get(m45.key(seed), [])
+    got: list[str] = []
     try:
         while game.state.turn < until:
             if game.state.turn == final_turn(loaded.balance) and game.state.ended:
@@ -275,12 +286,14 @@ def sandbox_2100(seed: int, until: int = SANDBOX_END) -> LongPlay:
             script(game)
             started = time.perf_counter()
             game.turn()
+            if len(got) < len(want):
+                got.append(m30.month_digest(digester, game))
             if game.state.turn > until - LATE_MONTHS:
                 late.append(round((time.perf_counter() - started) * 1000))
     except Exception as exc:  # the run reports the error rather than stopping the table
         log.exception("sandbox_2100 seed %s", seed)
         error = f"{type(exc).__name__}: {exc}"
-    return LongPlay(
+    return game, LongPlay(
         seed=seed,
         reached=format_turn(game.state.turn - 1),
         error=error,
@@ -289,6 +302,7 @@ def sandbox_2100(seed: int, until: int = SANDBOX_END) -> LongPlay:
         revenue_2100=_revenue(game) - revenue_start,
         late_ms=tuple(late),
         ended=game.state.save_meta.game_state,
+        m45_difference=m30.first_difference(got, want) if len(got) == len(want) else "short",
     )
 
 

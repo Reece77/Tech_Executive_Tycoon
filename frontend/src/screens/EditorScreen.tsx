@@ -713,8 +713,14 @@ export function EditorScreen() {
   };
   const onImport = async (file: File) => {
     const text = await file.text();
+    // saved under the file's own name (rename the file to import a copy beside the original)
+    const slug = file.name
+      .replace(/\.ya?ml$/i, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .slice(0, 48);
     imp.mutate(
-      { text },
+      { text, slug: slug || null },
       {
         onSuccess: (s) => {
           setMessage(`Imported ${s.key}`);
