@@ -12583,7 +12583,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "bank";
             /** Entity */
             entity?: string | null;
             /**

@@ -45183,7 +45183,8 @@
               "zone",
               "constellation",
               "bid",
-              "negotiation"
+              "negotiation",
+              "bank"
             ],
             "title": "Scope"
           },
