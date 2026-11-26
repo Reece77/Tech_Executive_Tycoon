@@ -93,6 +93,7 @@ def pin(state: GameState, balance: Balance, data: GameData) -> GameState:
             others[k] = others.get(k, 0.0) + rs.customers
     rows: list[ProductSegment] = []
     regional: list[RegionalSegment] = []
+    taken: dict[tuple[str, str, str], float] = {}  # what lines pinned before this one hold
     for product, source in sorted(found, key=lambda x: x[0].id):
         last = source.last_turn if isinstance(source, FinRivalDef) else None
         active = last is None or state.turn < last
@@ -103,9 +104,10 @@ def pin(state: GameState, balance: Balance, data: GameData) -> GameState:
         for seg_row, region in pairs:
             price = _base_price(state, product, seg_row.segment, data) if active else None
             k = (product.category, region, seg_row.segment)
-            free = max(0.0, demand.get(k, 0.0) - others.get(k, 0.0))
+            free = max(0.0, demand.get(k, 0.0) - others.get(k, 0.0) - taken.get(k, 0.0))
             share = _target(source, region, seg_row.segment, year)
             customers = 0.0 if price is None else min(free, share * demand.get(k, 0.0))
+            taken[k] = taken.get(k, 0.0) + customers
             if price != seg_row.price_cents or abs(customers - seg_row.customers) > TINY:
                 if isinstance(seg_row, RegionalSegment):
                     regional.append(replace(seg_row, price_cents=price, customers=customers))
