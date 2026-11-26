@@ -293,7 +293,10 @@ def chartered_month(
     post("Bank deposits in and out", (RESERVES, moved), (DEPOSITS, -moved))
     # income and costs
     loan_income = sum(
-        per_month(times(v, max(0.0, r + kinds[k].spread / PCT))) for k, v in bank.loans
+        per_month(round_half_even(v * y, BP_DENOMINATOR))
+        if (y := bank.fixed_yield(k)) is not None
+        else per_month(times(v, max(0.0, r + kinds[k].spread / PCT)))
+        for k, v in bank.loans
     )
     sec_income = sum(
         round_half_even(x.amount_cents * x.yield_bp, BP_DENOMINATOR * MONTHS)
@@ -348,11 +351,17 @@ def chartered_month(
         lend = min(spare, times(gap, bb.deposit_adjust))
         if lend > 0:
             loans = dict(bank.loans)
+            yields = dict(bank.fixed_yields)
             for k, v in _split(lend, bb.loan_mix):
+                if kinds[k].fixed and v > 0:  # the book's yield, weighted by balance
+                    now_bp = round((max(0.0, r) + kinds[k].spread / PCT) * BP_DENOMINATOR)
+                    old = loans.get(k, 0)
+                    yields[k] = round_half_even(old * yields.get(k, now_bp) + v * now_bp, old + v)
                 loans[k] = loans.get(k, 0) + v
             bank = replace(
                 bank,
                 loans=tuple((k, loans[k]) for k in kinds if k in loans),
+                fixed_yields=tuple((k, yields[k]) for k in kinds if k in yields),
                 reserves_cents=bank.reserves_cents - lend,
             )
             post("New loans", (LOANS, lend), (RESERVES, -lend))

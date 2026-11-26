@@ -13,7 +13,6 @@ accounts:
   - { code: 1310_bank_loans, name: Loans, type: asset } # M54 (64.1): a bank's loans outstanding, less repayments and charge-offs
   - { code: 1320_bank_securities, name: Securities, type: asset } # M54 (64.1): a bank's fixed-rate securities at amortised cost (their market value is shown, not booked, until sold)
   - { code: 1330_insurer_investments, name: Insurer investments, type: asset } # M54 (64.3): an insurer's capital and float, invested; premiums less claims and expenses move through it
-  - { code: 1340_fx_hedge_assets, name: Currency hedges (assets), type: asset } # M54 (64.4, ADR-0025): forwards in the money at fair value
   - { code: 1530_tool_inventory, name: Tool inventory, type: asset } # M33 (47.2, 47.4): lithography tools held and not yet in a fab: bought from ASML into stock, or made by the player's own tool line at cost
   - { code: 1510_accumulated_depreciation, name: Accumulated depreciation, type: asset } # M12a: contra-asset, credit balance
   - { code: 1800_goodwill, name: Goodwill, type: asset } # M14 (28.3): price - the target's book equity at closing; no amortization
@@ -28,7 +27,6 @@ accounts:
   - { code: 2610_asset_retirement_obligation, name: Asset retirement obligation, type: liability } # M19 (35.3): mines' reclamation, provisioned a tonne from first output, paid over mining.reclamation_months after closure (35.3's '2600': SAFEs already hold 2600)
   - { code: 2310_deposits, name: Customer deposits, type: liability } # M54 (64.1): a bank's deposits
   - { code: 2320_claims_reserves, name: Claims reserves, type: liability } # M54 (64.3): claims incurred and not yet paid (the float)
-  - { code: 2340_fx_hedge_liabilities, name: Currency hedges (liabilities), type: liability } # M54 (64.4, ADR-0025): forwards out of the money at fair value
   # Equity
   - { code: 3000_common_equity, name: Common equity, type: equity }
   - { code: 3100_preferred_equity, name: Preferred equity, type: equity }

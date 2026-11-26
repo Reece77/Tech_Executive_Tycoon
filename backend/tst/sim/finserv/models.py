@@ -63,6 +63,8 @@ class Bank:
     consumer_deposits_cents: int = 0
     business_deposits_cents: int = 0
     loans: tuple[tuple[str, int], ...] = ()  # (loan kind, balance)
+    # (loan kind, book yield bp a year) of fixed-rate kinds: the balance-weighted rate written
+    fixed_yields: tuple[tuple[str, int], ...] = ()
     securities: tuple[SecurityLot, ...] = ()
     reserves_cents: int = 0
     capital_in_cents: int = 0  # the parent's capital less dividends paid
@@ -95,6 +97,9 @@ class Bank:
 
     def loan(self, kind: str) -> int:
         return next((v for k, v in self.loans if k == kind), 0)
+
+    def fixed_yield(self, kind: str) -> int | None:
+        return next((y for k, y in self.fixed_yields if k == kind), None)
 
 
 @dataclass(frozen=True, slots=True)

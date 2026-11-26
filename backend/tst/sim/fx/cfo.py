@@ -19,7 +19,7 @@ PCT: Final = 100.0  # tunable-exempt: a percent
 
 def foreign_share(state: GameState, company_id: int) -> float:
     """Foreign revenue over all revenue last month (0 without either)."""
-    last = state.turn - 1
+    last = max((m.turn for m in state.fx.months if m.company_id == company_id), default=None)
     foreign = sum(
         m.revenue_cents for m in state.fx.months if m.company_id == company_id and m.turn == last
     )

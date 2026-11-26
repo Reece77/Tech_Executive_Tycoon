@@ -120,6 +120,7 @@ banking:
     - key: mortgage
       label: Mortgages
       spread: [2.6, R] # 30-year mortgage rates about 3.5-4.5% against fed funds 0.1-2.4% in 2010-2019 (Freddie Mac PMMS, R)
+      fixed: true # R: US mortgages are mostly 30-year fixed; a book's yield is the rates it was written at (the others float, A)
       risk_weight: [0.35, R]
       term_months: [300, A]
       losses: { 2008: [1.37, S], 2009: [2.33, S], 2010: [2.11, S], 2011: [1.57, S], 2012: [1.35, S], 2013: [0.65, S], 2014: [0.29, S], 2015: [0.21, S], 2016: [0.10, S], 2017: [0.04, S], 2018: [0.0, S], 2019: [0.0, S], 2020: [0.0, S], 2021: [0.0, S], 2022: [0.0, S], 2023: [0.0, S], 2024: [0.0, S], 2025: [0.0, S] }

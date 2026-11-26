@@ -15105,8 +15105,8 @@ export interface components {
             spot_index: number;
             /** Forward Index */
             forward_index: number;
-            /** Value Cents */
-            value_cents: number;
+            /** Fair Value Cents */
+            fair_value_cents: number;
             /** Status */
             status: string;
             /** Settled Cents */

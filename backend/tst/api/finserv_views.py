@@ -88,7 +88,9 @@ def _bank_out(state: GameState, bank: Bank, b: Balance, d: GameData) -> OwnBankO
                 label=k.label,
                 balance_cents=bank.loan(k.key),
                 risk_weight=k.risk_weight,
-                yield_rate=max(0.0, r_pct + k.spread),
+                yield_rate=(y / 100)
+                if (y := bank.fixed_yield(k.key)) is not None
+                else max(0.0, r_pct + k.spread),
                 loss_rate=banks.loss_rate(k.key, state.turn, state, b, d) * PCT,
             )
             for k in f.loan_kinds
@@ -319,7 +321,8 @@ def _basket(region: str, d: GameData) -> str:
 
 def currency_out(state: GameState, ids: set[int], b: Balance, d: GameData) -> CurrencyScreenOut:
     xb = b.fx
-    months = [m for m in state.fx.months if m.company_id in ids and m.turn == state.turn]
+    last = max((m.turn for m in state.fx.months if m.company_id in ids), default=None)
+    months = [m for m in state.fx.months if m.company_id in ids and m.turn == last]
     regions = []
     for r in d.region_keys:
         if r == xb.home:
@@ -370,7 +373,7 @@ def currency_out(state: GameState, ids: set[int], b: Balance, d: GameData) -> Cu
                 settles=format_turn(h.settle_turn),
                 spot_index=h.spot_index / INDEX_SCALE,
                 forward_index=h.forward_index / INDEX_SCALE,
-                value_cents=h.value_cents,
+                fair_value_cents=h.value_cents,
                 status=h.status,
                 settled_cents=h.settled_cents,
                 programme=h.programme,

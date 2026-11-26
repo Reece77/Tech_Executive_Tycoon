@@ -188,7 +188,7 @@ class HedgeOut(BaseModel):
     settles: str
     spot_index: float
     forward_index: float
-    value_cents: int
+    fair_value_cents: int
     status: str
     settled_cents: int
     programme: bool

@@ -229,7 +229,16 @@ function BankPanel({ saveId, bank, f }: { saveId: string; bank: Bank; f: Finserv
               <Term term="finserv.nim">Net interest margin</Term>
             </td>
             <td data-testid={`bank-nim-${bank.region}`}>
-              {pct(bank.nim, 2)} over the last year{' '}
+              {pct(bank.nim, 2)} over the last year
+              {bank.months.length > 0 && (
+                <>
+                  ,{' '}
+                  <span data-testid={`bank-nim-month-${bank.region}`}>
+                    {pct(bank.months[bank.months.length - 1].nim, 2)}
+                  </span>{' '}
+                  last month
+                </>
+              )}{' '}
               {live && (
                 <Explain metric="bank_profit" entity={String(bank.id)} label="bank profit" />
               )}
@@ -658,7 +667,7 @@ function CurrencyBody({ saveId, f }: { saveId: string; f: Finserv }) {
           meta: { term: 'fx.forward' },
           cell: (x) => `${x.getValue().toFixed(4)} (spot ${x.row.original.spot_index.toFixed(4)})`,
         }),
-        hedgeHelper.accessor('value_cents', {
+        hedgeHelper.accessor('fair_value_cents', {
           header: 'Value',
           meta: { term: 'fx.forward' },
           cell: (x) =>

@@ -46,6 +46,7 @@ class LoanKindDef(_Frozen):
     key: str
     label: str
     spread: float  # % a year over the policy rate
+    fixed: bool = False  # written at the month's rate and held (else floats with the policy rate)
     risk_weight: float = Field(ge=0, le=2)
     term_months: int = Field(ge=1)
     losses: dict[int, float]  # yearly net charge-off rate, %

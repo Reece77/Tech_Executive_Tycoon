@@ -6,14 +6,17 @@ months at the forward index
     F = S_0 x ((1 + r_home) / (1 + r_region)) ** (m / 12) x (1 - spread_bp / 10,000)
 
 (covered interest parity, rates from `rates.policy_rate`; the bank's spread against the seller).
-Its fair value in month t is N x (F - S_t) / S_0 (undiscounted, A), booked each month: in the money
-in 1340 and out of it in 2340, the month's change to the currency gain or loss line (4940 / 4945,
-below the operating result). At settlement (month m) the value is N x (F - S_m) / S_0 exactly and
-settles in cash. Hedge accounting is not modelled (ADR-0025 point 5).
+Its fair value in month t is N x (F - S_t) / S_0 (undiscounted, A), recomputed each month and shown
+on the Currency screen. At settlement (month m) the value is N x (F - S_m) / S_0 exactly: it settles
+in cash and posts to the currency gain or loss line (4940 / 4945, below the operating result) in
+that month (ADR-0025 point 5: hedge accounting is not modelled, and nothing is booked before
+settlement, M54 decision 10).
 
-A **hedging programme** buys, each month after the markets, a forward on `share` of the month's
-net revenue in each foreign region (revenue less local costs), `term_months` ahead: a rolling hedge
-(64.6 target 5). The CFO delegate (40) may run one up to `fx.cfo_limit_share`.
+A **hedging programme** is a layered rolling hedge (64.6 target 5): each month after the markets,
+for each foreign region and each of the next `term_months` months, a forward on share / term of the
+month's net revenue (revenue less local costs), so each month is covered by forwards bought over
+the year before it (R: large tech groups layer their hedges over a year, the dossier). The CFO
+delegate (40) may run one up to `fx.cfo_limit_share`.
 """
 
 from __future__ import annotations
@@ -30,8 +33,6 @@ from tst.sim.ledger import CASH, LedgerEntry, LedgerLine
 from tst.sim.money import BP_DENOMINATOR, round_half_even
 from tst.sim.state import GameState
 
-HEDGE_ASSETS = "1340_fx_hedge_assets"
-HEDGE_LIABILITIES = "2340_fx_hedge_liabilities"
 FX_GAINS = "4940_fx_gains"
 FX_LOSSES = "4945_fx_losses"
 PCT = 100  # tunable-exempt: % a year to a fraction
@@ -92,16 +93,11 @@ def buy(
     return replace(state, fx=replace(state.fx, hedges=(*state.fx.hedges, h))), h
 
 
-def _split(values: list[int]) -> tuple[int, int]:
-    """(assets, liabilities) of fair values: positives and negatives' magnitude."""
-    return sum(v for v in values if v > 0), -sum(v for v in values if v < 0)
-
-
 def mark_and_settle(
     state: GameState, balance: Balance, data: GameData
 ) -> tuple[GameState, list[LedgerEntry], dict[tuple[int, str], int]]:
-    """Every open forward's fair value this month, booked by company; those due settle in cash.
-    Returns the settled gains by (company, region)."""
+    """Every open forward's fair value this month (shown); those due settle in cash and post
+    their gain or loss. Returns the settled gains by (company, region)."""
     entries: list[LedgerEntry] = []
     settled: dict[tuple[int, str], int] = {}
     fx = state.fx
@@ -109,63 +105,51 @@ def mark_and_settle(
         return state, entries, settled
     spots: dict[str, int] = {}
     hedges: list[FxHedge] = []
-    by_company: dict[int, tuple[list[int], list[int], int]] = {}
+    cash: dict[int, int] = {}
     for h in fx.hedges:
         if h.status != "open":
             hedges.append(h)
             continue
         if h.region not in spots:
             spots[h.region] = index_at(state, h.region, state.turn, balance, data)
-        new = value_cents(h, spots[h.region])
-        before, after, cash = by_company.setdefault(h.company_id, ([], [], 0))
-        before.append(h.value_cents)
+        value = value_cents(h, spots[h.region])
         if h.settle_turn <= state.turn:
-            after.append(0)
-            by_company[h.company_id] = (before, after, cash + new)
+            cash[h.company_id] = cash.get(h.company_id, 0) + value
             key = (h.company_id, h.region)
-            settled[key] = settled.get(key, 0) + new
-            hedges.append(replace(h, status="settled", value_cents=0, settled_cents=new))
+            settled[key] = settled.get(key, 0) + value
+            hedges.append(replace(h, status="settled", value_cents=0, settled_cents=value))
         else:
-            after.append(new)
-            hedges.append(replace(h, value_cents=new))
-    for company_id in sorted(by_company):
-        before, after, cash = by_company[company_id]
-        a0, l0 = _split(before)
-        a1, l1 = _split(after)
-        pnl = (a1 - l1 + cash) - (a0 - l0)
-        lines = []
-        if a1 != a0:
-            lines.append(LedgerLine(HEDGE_ASSETS, a1 - a0))
-        if l1 != l0:
-            lines.append(LedgerLine(HEDGE_LIABILITIES, -(l1 - l0)))
-        if cash:
-            lines.append(LedgerLine(CASH, cash))
-        if pnl > 0:
-            lines.append(LedgerLine(FX_GAINS, -pnl))
-        elif pnl < 0:
-            lines.append(LedgerLine(FX_LOSSES, -pnl))
-        if any(line.amount for line in lines):
-            entries.append(
-                LedgerEntry(
-                    turn=state.turn,
-                    company_id=company_id,
-                    memo="Currency hedges: fair value and settlements",
-                    lines=tuple(x for x in lines if x.amount),
-                )
+            hedges.append(replace(h, value_cents=value))
+    for company_id in sorted(cash):
+        amount = cash[company_id]
+        if not amount:
+            continue
+        pnl = LedgerLine(FX_GAINS, -amount) if amount > 0 else LedgerLine(FX_LOSSES, -amount)
+        entries.append(
+            LedgerEntry(
+                turn=state.turn,
+                company_id=company_id,
+                memo="Currency forwards settled",
+                lines=(LedgerLine(CASH, amount), pnl),
             )
+        )
     return replace(state, fx=replace(fx, hedges=tuple(hedges))), entries, settled
 
 
 def net_revenue(state: GameState, company_id: int, region: str) -> int:
-    """The company's net revenue in a foreign region last recorded (revenue less local costs)."""
+    """The company's net revenue in a foreign region in the last month recorded (revenue less
+    local costs): this month's after the markets, last month's between turns."""
     row = next(
         (
             m
             for m in reversed(state.fx.months)
-            if m.company_id == company_id and m.region == region and m.turn == state.turn
+            if m.company_id == company_id and m.region == region and m.turn <= state.turn
         ),
         None,
     )
+    latest = max((m.turn for m in state.fx.months if m.company_id == company_id), default=None)
+    if row is not None and row.turn != latest:
+        return 0  # nothing earned there in the last month recorded
     return 0 if row is None else row.revenue_cents - row.cost_cents
 
 
@@ -179,19 +163,36 @@ def open_notional(state: GameState, company_id: int, region: str) -> int:
 
 
 def programme_month(state: GameState, balance: Balance, data: GameData) -> GameState:
-    """Each programme's forwards for the month (module docstring)."""
+    """Each programme's forwards for the month (module docstring): a layered rolling hedge. For
+    each foreign region with net revenue this month, one forward for each of the next
+    `term_months` months, each on share / term of the month's net revenue, so a month's revenue
+    is covered, once the layers are built, by forwards bought over the year before it."""
     for p in state.fx.programmes:
         for region in data.region_keys:
             if region == balance.fx.home:
                 continue
             net = net_revenue(state, p.company_id, region)
-            notional = round_half_even(net * round(p.share * BP_DENOMINATOR), BP_DENOMINATOR)
-            if notional <= 0:
-                continue
-            state, _ = buy(
-                state, p.company_id, region, notional, p.term_months, balance, data, programme=True
+            layer = round_half_even(
+                net * round(p.share * BP_DENOMINATOR), BP_DENOMINATOR * p.term_months
             )
+            if layer <= 0:
+                continue
+            for months in range(1, p.term_months + 1):
+                state, _ = buy(
+                    state, p.company_id, region, layer, months, balance, data, programme=True
+                )
     return state
+
+
+def prune(state: GameState, balance: Balance) -> GameState:
+    """Settled forwards are kept `fx.history_months` after settlement (the Currency screen)."""
+    keep = balance.fx.history_months
+    kept = tuple(
+        h for h in state.fx.hedges if h.status == "open" or h.settle_turn > state.turn - keep
+    )
+    if len(kept) == len(state.fx.hedges):
+        return state
+    return replace(state, fx=replace(state.fx, hedges=kept))
 
 
 _ = FxMonth

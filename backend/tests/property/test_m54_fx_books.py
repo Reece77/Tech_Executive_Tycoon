@@ -1,8 +1,8 @@
 """M54 sub-task 2 property test (formulas.md 64.4, ADR-0025): the books balance through translation
 and hedge settlement. For any forwards (regions, notionals, terms), seed and months from 2026: every
-entry balances; the hedge accounts' net postings equal the open forwards' fair value; cash moves
-only at settlement, by exactly the settled gains; and the gain and loss lines sum to the settled
-gains plus the open fair value. Translated prices are integers within one cent of price x ratio."""
+entry balances; nothing is booked before settlement (M54 decision 10); cash moves only at
+settlement, by exactly the settled gains, and the gain and loss lines sum to them. Translated prices
+are integers within one cent of price x ratio."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from hypothesis import strategies as st
 from tests.helpers import fresh_game
 from tst.loader import LoadedData
 from tst.sim.fx import hedges, rates, translate
-from tst.sim.fx.hedges import FX_GAINS, FX_LOSSES, HEDGE_ASSETS, HEDGE_LIABILITIES
+from tst.sim.fx.hedges import FX_GAINS, FX_LOSSES
 from tst.sim.ledger import CASH
 from tst.sim.rng import RngFactory
 
@@ -47,7 +47,7 @@ def test_hedge_books_balance(
     rng = RngFactory(seed)
     start = b.fx.start_turn
     state = replace(fresh_game(loaded), turn=start)
-    net = {HEDGE_ASSETS: 0, HEDGE_LIABILITIES: 0, CASH: 0, FX_GAINS: 0, FX_LOSSES: 0}
+    net = {CASH: 0, FX_GAINS: 0, FX_LOSSES: 0}
     settled_total = 0
     for k in range(months):
         state = rates.walk_month(replace(state, turn=start + k), rng, b, d)
@@ -59,12 +59,10 @@ def test_hedge_books_balance(
         for e in entries:
             assert sum(x.amount for x in e.lines) == 0
             for x in e.lines:
-                net[x.account] += x.amount
-    open_value = [h.value_cents for h in state.fx.hedges if h.status == "open"]
-    assert net[HEDGE_ASSETS] == sum(v for v in open_value if v > 0)
-    assert -net[HEDGE_LIABILITIES] == -sum(v for v in open_value if v < 0)
+                net[x.account] = net.get(x.account, 0) + x.amount
+    assert set(net) == {CASH, FX_GAINS, FX_LOSSES}
     assert net[CASH] == settled_total
-    assert -(net[FX_GAINS] + net[FX_LOSSES]) == settled_total + sum(open_value)
+    assert -(net[FX_GAINS] + net[FX_LOSSES]) == settled_total
     assert settled_total == sum(h.settled_cents for h in state.fx.hedges)
 
 

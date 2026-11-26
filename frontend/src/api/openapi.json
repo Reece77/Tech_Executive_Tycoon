@@ -51542,9 +51542,9 @@
             "type": "number",
             "title": "Forward Index"
           },
-          "value_cents": {
+          "fair_value_cents": {
             "type": "integer",
-            "title": "Value Cents"
+            "title": "Fair Value Cents"
           },
           "status": {
             "type": "string",
@@ -51569,7 +51569,7 @@
           "settles",
           "spot_index",
           "forward_index",
-          "value_cents",
+          "fair_value_cents",
           "status",
           "settled_cents",
           "programme"

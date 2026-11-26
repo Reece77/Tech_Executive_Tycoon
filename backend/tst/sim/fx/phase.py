@@ -106,6 +106,8 @@ def after_sales(
     state = _foreign_months(state, balance, data)
     if state.fx.programmes:
         state = hedges.programme_month(state, balance, data)
+    if state.fx.hedges:
+        state = hedges.prune(state, balance)
     return state, entries
 
 
