@@ -158,3 +158,47 @@ def test_every_money_column_is_a_64_bit_integer() -> None:
     ]
     assert len(money) > 20
     assert [m for m in money if not isinstance(m[2], Integer)] == []
+
+
+def _old_growth_factor(state: GameState, region: str, loaded: LoadedData) -> float:
+    """M53's growth factor as it was: compounded from the start on every call."""
+    from tst.sim import dmath
+    from tst.sim.calendar import turn_to_ym
+    from tst.sim.telecom.data import MONTHS, region_index
+
+    b = loaded.balance
+    start = b.telecom.start_turn
+    if state.turn < start:
+        return 1.0
+    ri = region_index(region, loaded.game_data)
+    out = 1.0
+    for turn in range(start, state.turn + 1):
+        rate = state.telecom.world.rate(turn_to_ym(turn)[0], ri)
+        if rate is None:
+            rate = b.telecom.growth_after[region].lo
+        out *= float(dmath.pow(1.0 + rate, 1.0 / MONTHS))
+    return out
+
+
+def test_telecom_growth_is_the_same_kept_as_compounded(
+    start: GameState, loaded: LoadedData
+) -> None:
+    """Rule 6: the memo gives exactly the products M53's loop gave, in any call order."""
+    from tst.sim.telecom.demand import growth_factor
+    from tst.sim.telecom.models import TelecomWorld
+
+    regions = [r.key for r in loaded.game_data.regions][:3]
+    rows = tuple(
+        (year, i, 0.01 * ((year * 7 + i * 3) % 9 - 2))
+        for year in range(2026, 2101)
+        for i in range(len(regions))
+        if (year + i) % 5  # some years missing: the fallback rate
+    )
+    world = replace(start, telecom=replace(start.telecom, world=TelecomWorld(growth=rows)))
+    turns = [ym_to_turn(2100, 12), ym_to_turn(2025, 12), ym_to_turn(2026, 1), ym_to_turn(2071, 6)]
+    for turn in [*turns, *reversed(turns)]:
+        s = replace(world, turn=turn)
+        for region in regions:
+            assert growth_factor(s, region, loaded.balance, loaded.game_data) == (
+                _old_growth_factor(s, region, loaded)
+            )

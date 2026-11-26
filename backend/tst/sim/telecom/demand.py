@@ -36,6 +36,12 @@ from tst.sim.telecom.data import (
     region_index,
 )
 
+# M52 (66.3, rule 6): each month's factor once, the running products kept by the drawn rates,
+# the region and the start (a pure memo: the same products, multiplied in the same order, as
+# compounding from the start every call, which grew with every year played past 2025)
+_PRODUCTS: dict[tuple[tuple[tuple[int, int, float], ...], int, int, float], list[float]] = {}
+_PRODUCTS_MAX = 64  # tunable-exempt: memo entries kept (a few regions, one draw set a year)
+
 
 def growth_factor(state: GameState, region: str, balance: Balance, data: GameData) -> float:
     """Subscriptions now over December 2025's: 1 before `telecom.start`, then the drawn yearly
@@ -44,14 +50,23 @@ def growth_factor(state: GameState, region: str, balance: Balance, data: GameDat
     if state.turn < start:
         return 1.0
     ri = region_index(region, data)
-    out = 1.0
-    for turn in range(start, state.turn + 1):
+    world = state.telecom.world
+    fallback = balance.telecom.growth_after[region].lo
+    key = (world.growth, ri, start, fallback)
+    products = _PRODUCTS.get(key)
+    if products is None:
+        if len(_PRODUCTS) >= _PRODUCTS_MAX:
+            _PRODUCTS.clear()
+        products = _PRODUCTS[key] = []
+    out = products[-1] if products else 1.0
+    for turn in range(start + len(products), state.turn + 1):
         year = turn_to_ym(turn)[0]
-        rate = state.telecom.world.rate(year, ri)
+        rate = world.rate(year, ri)
         if rate is None:
-            rate = balance.telecom.growth_after[region].lo
+            rate = fallback
         out *= float(dmath.pow(1.0 + rate, 1.0 / MONTHS))
-    return out
+        products.append(out)
+    return products[state.turn - start]
 
 
 def subscriptions(
