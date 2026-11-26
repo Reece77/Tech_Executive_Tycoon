@@ -398,7 +398,7 @@ roles:
     product_function: none
     founder_fit: false
     summary: "Leads a series, film or game: their creative and vision set its quality, their reputation its fee. Signed to an overall deal on the Studio screen; overruling them costs morale by their ego."
-    why_hire: "Sign one before you green-light a title: a title without a creative lead starts well below par (65.2)."
+    why_hire: "Hire one (sign them to an overall deal on the Studio screen) before you green-light a title: a title without a creative lead starts well below par (65.2)."
     primary: [design, product]
     secondary: [communication, leadership, strategy, marketing]
     work_style: researcher

@@ -12,6 +12,7 @@ from sqlalchemy import select, text
 from tests.helpers import (
     FIRST_PRODUCT,
     INCUMBENTS,
+    MEDIA_INCUMBENTS,
     MEDICAL_INCUMBENTS,
     PHARMA_INCUMBENTS,
     ROBOT_INCUMBENTS,
@@ -50,6 +51,7 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
             + PHARMA_INCUMBENTS
             + SPACE_INCUMBENTS
             + TELECOM_INCUMBENTS
+            + MEDIA_INCUMBENTS
             + 2,
         )
     )

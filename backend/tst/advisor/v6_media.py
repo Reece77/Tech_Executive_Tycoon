@@ -61,7 +61,8 @@ def lead_walk(b: Builder, m: MetricDef, entity: str | None) -> Explanation:
     pid = _id(entity, "person")
     lead = b.state.media.lead(pid)
     if lead is None or lead.walked_turn is None:
-        raise _bad(f"no creative lead {pid} who walked")
+        note = "Not a creative lead who walked: a lead walks only after overrules, cuts or moves."
+        return b._out(m, entity, None, [], note, (), [], None)
     person = b.state.person(pid)
     name = f"{person.first_name} {person.last_name}"
     mine = [t for t in b.state.media.titles if t.lead_person_id == pid]

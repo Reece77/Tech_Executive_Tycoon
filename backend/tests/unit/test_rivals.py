@@ -161,7 +161,8 @@ def test_startups_are_founded_seeded_and_capped(loaded: LoadedData) -> None:
             or c.medical
             or c.space
             or c.telecom
-        )  # M12a, M12b, M41, M40, M53
+            or c.media
+        )  # M12a, M12b, M41, M40, M53, M55
     ]
     assert len(runs[0]) == len(founding)
     state = fresh_game(eager)

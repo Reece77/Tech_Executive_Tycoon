@@ -37,6 +37,9 @@ def test_categories_match_formulas_tables(loaded: LoadedData) -> None:
         "telecom_consumer",  # M53 (62)
         "telecom_business",
         "carriers",
+        "viewers",  # M55 (65)
+        "players",
+        "users",
     ]
     b2b = data.category(B2B)
     assert b2b.market("smb").addressable == 400_000
@@ -91,6 +94,7 @@ def test_every_role_has_a_product_function(loaded: LoadedData) -> None:
     assert sorted(by_function["none"]) == [
         "communications_manager",
         "corporate_development_manager",
+        "creative_lead",  # M55 (65.6)
         "engineering_manager",
         "fab_engineer",
         "fab_manager",

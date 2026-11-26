@@ -9,14 +9,14 @@ until the script's start (so history holds); then:
    top 20% of titles earn at least 60% of it (median of seeds), and at least a third earn less than
    they cost.
 3. **Content is capital-heavy:** from January 2026 a new video service in North America (at the
-   market's reference price) spends $1B a year (real, x scale) on content: series and films on its
-   own service, a twelfth of the year's budget green-lit each month (no leads, no units). The months
-   from its launch to its cumulative cash at or above zero (revenue less content, hosting and
-   marketing), median at least 60.
-4. **Networks tip:** a social network in North America from January 2026, pushed to about 5% of the
-   region's users by marketing for two years; then (a) on the format it launched with: it loses
-   users in each of the next three years; (b) switched to each new format era when it arrives: it
-   grows over the era's advantage years on at least 6 of 10 seeds.
+   market's reference price) spends $1B a year (real, x scale) on content: series on its own
+   service, green-lit as the year's budget accrues (no leads, no units). The months from its launch
+   to its first twelve months of positive cash flow (revenue less content, hosting, royalties and
+   marketing over the trailing year), median at least 60 (decision 14).
+4. **Networks tip:** a social network in North America from January 2026 with 5% of the region's
+   users (under 10%); (a) on the format it launched with: it loses users in each of the next three
+   years (most seeds); (b) switched to each new format era the month it arrives: it grows over the
+   era's advantage years on at least 6 of 10 seeds (decision 15).
 5. **Egos bite:** from January 2026 a studio signs the lead with the highest hidden ego on offer
    (the script reads it; a player never can) and green-lights a series; (a) left alone, (b)
    overruled twice in its first two months: (b)'s quality at release is at least 10% under (a)'s
@@ -65,8 +65,7 @@ QUALITY_CUT: Final = 0.10
 WALKS: Final = 3
 GROWS: Final = 6
 BUDGET_YEAR_CENTS: Final = 100_000_000_000  # $1B a year, real (target 3)
-PUSH_MONTHS: Final = 24
-PUSH_BUDGET_CENTS: Final = 2_000_000_000  # a month's marketing on the network (target 4)
+START_SHARE: Final = 0.05  # target 4: a network with 5% of North America's users, under 10%
 TIMING_END: Final = ym_to_turn(2030, 12)
 
 
@@ -230,65 +229,62 @@ def service_run(seed: int) -> Service:
     g.state, pid = line(g.state, b.media.streaming, "Nova Stream")
     monthly = BUDGET_YEAR_CENTS * b.media.scale / 12
     series = titles.typical_budget_cents(b.media.kind("series"), b)
-    t0 = time.perf_counter()
+    t0 = t1 = time.perf_counter()
     timed = 0
     start = g.state.turn
     spent = 0.0
+    cash: dict[int, int] = {}
     while g.state.turn <= END:
         spent += monthly
         while spent >= series:
             greenlight(g, "series", budget=series, window="own", service_product_id=pid)
             spent -= series
         g.turn()
+        last = g.state.media.last_month(pid)
+        if last is not None:
+            cash[last.turn] = last.cash_cents
         if g.state.turn <= TIMING_END:
             timed += 1
-            if g.state.turn == TIMING_END:
-                t1 = time.perf_counter()
-    pb = next((x.turn for x in g.state.media.paid_back if x.product_id == pid), None)
+            t1 = time.perf_counter()
+    first = next((t for t in sorted(cash) if t - 12 in cash and cash[t] >= cash[t - 12]), None)
     ms = (t1 - t0) / max(1, timed) * 1000
-    return Service(pb - start if pb is not None else None, ms)
+    return Service(first - start if first is not None else None, ms)
 
 
 # --- target 4 ------------------------------------------------------------------------------------
 
 
 def network_run(seed: int, switch: bool) -> tuple[list[float], bool]:
-    """A North American network's users each January after its push, and whether it grew over an
-    advantage window (arm b)."""
+    """Target 4's network: North American users each January from 2026 (it starts with
+    START_SHARE of the region's internet users), and whether it grew over an advantage window
+    after switching to a new era (arm b)."""
     b, d = loaded().balance, loaded().game_data
     g = world(seed, START_2026)
     g.state, pid = line(g.state, b.media.social, "Nova Social")
-    product = g.state.product(pid)
-    assert product is not None
-    g.state = with_product(g.state, replace(product, marketing_budget_cents=PUSH_BUDGET_CENTS))
-    users: list[float] = []
+    (seg,) = g.state.segments_of(pid)
+    users = social.region_users(g.state, NA, b, d) * START_SHARE
+    g.state = with_segments(g.state, [replace(seg, customers=users)], [])
+    out: list[float] = []
     grew = False
     window_start: float | None = None
     window_end: int | None = None
     while g.state.turn <= END:
-        if g.state.turn == START_2026 + PUSH_MONTHS:
-            p = g.state.product(pid)
-            assert p is not None
-            g.state = with_product(g.state, replace(p, marketing_budget_cents=0))
-        if switch and g.state.turn > START_2026 + PUSH_MONTHS:
-            eras = social.eras(g.state, d)
-            p = g.state.product(pid)
-            assert p is not None
-            newest, since = eras[-1]
-            if since == g.state.turn and social.line_format(p, g.state, d) != newest:
+        p = g.state.product(pid)
+        assert p is not None
+        if switch:
+            newest, since = social.eras(g.state, d)[-1]
+            if since == g.state.turn - 1 and social.line_format(p, g.state, d) != newest:
                 _energy(g)
                 g.act(SetMediaLine(g.founder_id, pid, format=newest))
                 window_start = streaming.customers(g.state, p)
                 window_end = since + round(b.media.social_network.advantage_years * 12)
-        p = g.state.product(pid)
-        assert p is not None
-        if window_end is not None and g.state.turn == window_end and window_start is not None:
+        if window_end is not None and g.state.turn >= window_end and window_start is not None:
             grew = grew or streaming.customers(g.state, p) > window_start
             window_end = None
-        if turn_to_ym(g.state.turn)[1] == 1 and g.state.turn > START_2026 + PUSH_MONTHS:
-            users.append(streaming.customers(g.state, p))
+        if turn_to_ym(g.state.turn)[1] == 1:
+            out.append(streaming.customers(g.state, p))
         g.turn()
-    return users, grew
+    return out, grew
 
 
 # --- target 5 ------------------------------------------------------------------------------------
@@ -353,7 +349,7 @@ def _yes(ok: bool) -> str:
 
 
 def _falls(users: list[float]) -> bool:
-    """The network's users fell in each of the three years after its push."""
+    """The network's users fell in each of the three years from January 2026."""
     years = users[:4]  # tunable-exempt: the push's end and three Januaries after
     return len(years) == 4 and all(b < a for a, b in pairwise(years))  # tunable-exempt: as above
 

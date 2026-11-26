@@ -933,7 +933,8 @@ categories:
   # 2010 cents a customer a month: streaming's is a subscription, music's too (media.streaming
   # .music_payout of it goes to rights holders), games' is a player's spend a month (rivals' lines only:
   # the player's games are titles, 65.4), and social's is ad revenue a user (65.1: set by the ad market,
-  # not by the player). hosting_cents: delivery and care a customer (A: CDN and support about 15% of
+  # not by the player). D0 is the data's value in January 2010 (its December 2009 point and a
+  # month, x scale). hosting_cents: delivery and care a customer (A: CDN and support about 15% of
   # streaming's price; a social user's servers about 5% of ARPU).
   - key: streaming
     label: Video streaming
@@ -948,7 +949,7 @@ categories:
     dev_weights: { software_engineering: 0.35, infrastructure: 0.25, design: 0.20, product: 0.10, data: 0.10 }
     price_index: { north_america: 1.0, europe: 0.77, east_asia: 0.65, south_southeast_asia: 0.30, latin_america: 0.50, africa: 0.40, oceania: 0.80 } # R: Netflix ARPU by region 2020 (UCAN $13.5, EMEA $10.5, LATAM $7.1, APAC $9.2; India's plans below $5)
     markets:
-      - { segment: viewers, addressable: 2125000, reference_price_cents: 900, hosting_cents: 130 }
+      - { segment: viewers, addressable: 1618542, reference_price_cents: 900, hosting_cents: 130 }
 
   - key: music_streaming
     label: Music streaming
@@ -963,7 +964,7 @@ categories:
     dev_weights: { software_engineering: 0.35, data: 0.25, design: 0.20, product: 0.10, infrastructure: 0.10 }
     price_index: { north_america: 1.0, europe: 0.85, east_asia: 0.40, south_southeast_asia: 0.20, latin_america: 0.35, africa: 0.30, oceania: 0.90 } # R: Spotify's ARPU by region and Tencent Music's
     markets:
-      - { segment: viewers, addressable: 340000, reference_price_cents: 800, hosting_cents: 40 }
+      - { segment: viewers, addressable: 262083, reference_price_cents: 800, hosting_cents: 40 }
 
   - key: games
     label: Games
@@ -977,7 +978,7 @@ categories:
     dev_weights: { software_engineering: 0.40, design: 0.30, product: 0.15, data: 0.15 }
     price_index: { north_america: 1.0, europe: 0.90, east_asia: 0.80, south_southeast_asia: 0.30, latin_america: 0.40, africa: 0.30, oceania: 0.90 } # A: games' spend a player by region (Newzoo's revenue over players, R)
     markets:
-      - { segment: players, addressable: 14240000, reference_price_cents: 1000, hosting_cents: 100 }
+      - { segment: players, addressable: 12939578, reference_price_cents: 1000, hosting_cents: 100 }
 
   - key: social
     label: Social networks
@@ -992,4 +993,4 @@ categories:
     dev_weights: { software_engineering: 0.30, data: 0.25, design: 0.20, product: 0.15, infrastructure: 0.10 }
     price_index: { north_america: 1.0, europe: 0.33, east_asia: 0.083, south_southeast_asia: 0.044, latin_america: 0.066, africa: 0.044, oceania: 0.44 } # R: Meta's ARPU by region 2024 over US and Canada's (media.yaml arpu_usd)
     markets:
-      - { segment: users, addressable: 32045000, reference_price_cents: 1500, hosting_cents: 60 }
+      - { segment: users, addressable: 27749844, reference_price_cents: 1500, hosting_cents: 60 }
