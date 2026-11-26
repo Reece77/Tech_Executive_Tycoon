@@ -90,10 +90,13 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     KnownMiss(
         target="M22.T2.variant",  # formulas 39.4 T2: revenue lost with a variant 5-15%, every seed
         owner=NEXT,  # M46: from M43 (M43a decision 10)
-        # score: the largest seed's loss; known while at most 21% (M46: was 22%)
-        worse_than=0.21,
+        # score: the largest seed's loss; known while at most 21.5% (M46: was 22%, then 21%;
+        # M54: 21.5%, PM ruling 2026-11-26)
+        worse_than=0.215,
         reason="10.5-20.8% on M46 (unchanged since M43a): one seed out; the chip markets the "
-        "variant sells into follow cloud and servers, both recalibrated before 2026",
+        "variant sells into follow cloud and servers, both recalibrated before 2026. M54 "
+        "currencies: East Asia's 2022-23 exchange rates lift every seed by 0.16-0.17 points "
+        "(PM ruling 2026-11-26)",
     ),
     KnownMiss(
         target="V4.T1.1",  # formulas 51 T1: platform_owner ARR / devices_regions, 0.90-1.40x
@@ -128,6 +131,15 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=0.550,
         reason="535 ms adjusted on M46 (main 467 ms the same day; 172 staff against 136): "
         "the listings leave a larger 2069 group, so the existing phases do more",
+    ),
+    KnownMiss(
+        target="M54.T5",  # formulas 64.6 T5: an 80% hedge cuts yearly profit's spread >= 15%
+        owner=NEXT,  # M54: carried, PM ruling 2026-11-26 (M54 decision 13)
+        # score: the shortfall, 15% less the median cut; known while the median cut is >= 5%
+        worse_than=0.10,
+        reason="6.9% median (0.0-12.9%) on M54: forwards run at most 12 months (ADR-0025) and "
+        "a year's total already averages a year of rates; M57 decides on 24-month forwards or "
+        "the band for a 12-month hedge",
     ),
 )
 

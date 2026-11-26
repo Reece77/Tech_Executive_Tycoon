@@ -310,6 +310,59 @@ def ev_sensible(game: Game) -> None:
     if car.status == "live":
         set_marketing(game, CAR_MARKETING)
         regions_step(game)
+        reprice_abroad(game, car)
+        hedge_abroad(game)
+
+
+# M54 (PM ruling 2026-11-26, M54 decision 22): a sensible exporter does not hold one dollar price
+# in every region while currencies move. Each January it reprices each foreign region back to the
+# region's $35,000 reference at that month's rate, by at most 10% a year, and it runs a 50%
+# rolling hedge 12 months ahead (the scenario has no CFO, so the programme is the founder's at the
+# CFO's term).
+REPRICE_MONTH: Final = 1  # January
+REPRICE_CAP: Final = 0.10  # a year's reprice is at most +/- 10%
+HEDGE_SHARE: Final = 0.5
+HEDGE_TERM: Final = 12
+
+
+def reprice_abroad(game: Game, car: Product) -> None:
+    from tst.sim.actions.geo import SetRegionalPrice
+    from tst.sim.calendar import turn_to_ym
+    from tst.sim.facilities.compute import home_region_of
+    from tst.sim.fx import rates
+    from tst.sim.fx.translate import translated
+    from tst.sim.geo.formulas import regional_price_cents
+
+    s = game.state
+    if turn_to_ym(s.turn)[1] != REPRICE_MONTH:
+        return
+    b, d = game.loaded.balance, game.loaded.game_data
+    home = home_region_of(s, b, d)
+    marks = {(m.product_id, m.region, m.segment): m for m in s.fx.marks}
+    for rs in s.regional_segments_of(car.id):
+        mark = marks.get((car.id, rs.region, rs.segment))
+        if rs.price_cents is None or mark is None or mark.price_cents != rs.price_cents:
+            continue
+        now = rates.index_at(s, rs.region, s.turn, b, d)
+        worth = translated(rs.price_cents, now, rates.index_at(s, rs.region, mark.turn, b, d))
+        target = regional_price_cents(CAR_PRICE, rs.region, home, d, category=car.category)
+        factor = min(1 + REPRICE_CAP, max(1 - REPRICE_CAP, target / worth))
+        price = max(1, round(worth * factor))
+        if price != rs.price_cents:
+            game.act(SetRegionalPrice(game.founder_id, car.id, rs.region, rs.segment, price))
+
+
+def hedge_abroad(game: Game) -> None:
+    from tst.sim.fx.actions import SetHedgeProgramme
+
+    s = game.state
+    if s.fx.programme(PLAYER) is None and s.regional_segments_of(_car_id(game)):
+        game.act(SetHedgeProgramme(game.founder_id, HEDGE_SHARE, HEDGE_TERM))
+
+
+def _car_id(game: Game) -> int:
+    car = _own(game, "vehicles")
+    return car.id if car is not None else -1
 
 
 FAB_REGION: Final = ("east_asia", "taiwan")  # where the scripts build (as m21's EUV fabs)
