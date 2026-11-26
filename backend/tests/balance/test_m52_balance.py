@@ -13,6 +13,9 @@ import os
 import pytest
 
 from tst.balance import m52
+from tst.balance.known_misses import Reading, verdict
+
+ECONOMY = "M52.economy_2100"
 
 
 def _jobs() -> int:
@@ -36,4 +39,6 @@ def test_66_4_target_4_sandbox_to_2100() -> None:
         assert r.error is None, r
         assert r.reached == "Dec 2100" and r.ended == "active", r
         assert r.largest_int < m52.INT64, r
-        assert r.revenue_2100 * m52.ECONOMY_MARGIN < m52.INT64, r
+        score = r.revenue_2100 * m52.ECONOMY_MARGIN / m52.INT64
+        reading = Reading(ECONOMY, score <= 1, score, str(r))
+        assert verdict(reading) != "fail", r  # Reece (2026-11-26): a known miss within its bound

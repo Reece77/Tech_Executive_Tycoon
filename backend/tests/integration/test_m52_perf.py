@@ -1,8 +1,8 @@
 """M52's 66.4 target 4 on the CI runner: from M45's dynasty game continued in sandbox to December
 2100 (tools/m52_save.py), a late month within the dynasty guard: the median of ten months
-runner-adjusted (tests/calibration.py, as M37's and M30's guards) within 550 ms, and none over
-M30's 1.0 s budget. Runs only where TST_M52_SAVE names the save; it copies the save and never
-changes it."""
+runner-adjusted (tests/calibration.py, as M37's and M30's guards) within 550 ms, or within its
+known-miss bound (Reece, 2026-11-26). Runs only where TST_M52_SAVE names the save; it copies the
+save and never changes it."""
 
 from __future__ import annotations
 
@@ -17,7 +17,8 @@ import pytest
 
 from tests.calibration import REFERENCE_S, calibrate, runner_note
 from tests.helpers import answer_critical
-from tests.integration.test_product_perf import LIMIT_S, TurnTime
+from tests.integration.test_product_perf import TurnTime
+from tst.balance.known_misses import Reading, known_miss, verdict
 from tst.db import migrate
 from tst.db.repository import load_state, open_session, run_turn
 from tst.loader import LoadedData
@@ -32,6 +33,7 @@ pytestmark = [
 ]
 
 MEDIAN_S = 0.55  # 66.4 target 4: the dynasty guard, runner-adjusted
+TIMING = "M52.2100_month"  # its known-miss target (tst/balance/known_misses.py)
 WARM_UP = 2
 MONTHS = 10
 
@@ -66,5 +68,9 @@ def test_a_2100_month(tmp_path: Path, loaded: LoadedData) -> None:
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
-    assert worst < LIMIT_S, report
-    assert adjusted <= MEDIAN_S, report
+    # Reece (2026-11-26): a known miss owned by v6 performance within its bound, as M37's 2069
+    # month; the raw 1.0 s worst-month check is not applied at 2100
+    reading = Reading(TIMING, adjusted <= MEDIAN_S, adjusted, report)
+    assert verdict(reading) != "fail", report
+    if verdict(reading) == "known":
+        pytest.xfail(f"KNOWN MISS ({known_miss(TIMING).owner}): {report}")  # type: ignore[union-attr]

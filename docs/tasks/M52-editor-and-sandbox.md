@@ -74,6 +74,8 @@ Editing hidden values (ADR-0026, point 3); editing data files under `backend/dat
 
 18. **Rule 6 (turn time at 2100):** profiling a 2101 month found telecom demand's growth factor recompounding every month since 2026 on every call (11% of the month, growing with each year played): now kept as running products (identical results, tested against the old loop): 736 -> 544 ms adjusted locally, 700 -> 610 ms on CI. What remains is spread over every phase (365 companies by 2100 against about 170 in 2069), the cause of M37's own 2069 known miss (535 ms, bound 550).
 
+19. **Reece's ruling (2026-11-26)** on target 4's two misses: both are known misses (`tst/balance/known_misses.py`). `M52.2100_month` (owner v6 performance, as M37's 2069 month: the same cause) is known up to 650 ms adjusted, and the raw 1.0 s worst-month check is not applied at 2100; `M52.economy_2100` (owner M57, the v6 balance pass: mines' sales compounding after 2069, governed by no M52 key) is known while 2100 revenue stays at least 250x below int64. The hard guard stays: every value within int64.
+
 ### Readings (66.4, printed by `tools/m52_targets.py` and `tools/m52_save.py`)
 
 | Target | Reading | |
@@ -83,8 +85,8 @@ Editing hidden values (ADR-0026, point 3); editing data files under `backend/dat
 | 3. Determinism | the edited EV maker's 24 months identical on Linux and Windows (`determinism` job, every push) | met |
 | 4. Long play: errors | seeds 1-3 reach December 2100, active, no error | met |
 | 4. Long play: within the column | largest integer 1.17e17 / 1.38e17 / 1.55e17 (79x / 67x / 59x below int64) | met |
-| 4. Long play: economy 1,000x below | 2100 revenue 2.09e16 / 2.46e16 / 2.57e16 cents (442x / 375x / 359x below); 2069: 2.4e15 (3,786x, seed 1). Commodity sales dominate (2.4e17 of the 2100 save's cumulative revenue against 4.5e16 of subscriptions) | **missed** |
-| 4. Long play: turn time | a 2101 month 610 ms adjusted on CI (1,118 ms raw, worst 1,496 ms; runner x1.83), 544 ms locally | **missed** (550) |
+| 4. Long play: economy 1,000x below | 2100 revenue 2.09e16 / 2.46e16 / 2.57e16 cents (442x / 375x / 359x below); 2069: 2.4e15 (3,786x, seed 1). Commodity sales dominate (2.4e17 of the 2100 save's cumulative revenue against 4.5e16 of subscriptions) | **known miss** `M52.economy_2100` (M57, within 250x) |
+| 4. Long play: turn time | a 2101 month 610 ms adjusted on CI (1,118 ms raw, worst 1,496 ms; runner x1.83), 544 ms locally | **known miss** `M52.2100_month` (v6 performance, within 650 ms) |
 
 ## Follow-ups
 
