@@ -23,7 +23,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 # Bumped by any migration that changes the schema; stored in save_meta.schema_version.
-SCHEMA_VERSION = 67  # M53: 0067; M50: 0066; M47: 0065; M25: 0040; M17: 0041; M18: 0042
+SCHEMA_VERSION = 68  # M52: 0068; M53: 0067; M50: 0066; M47: 0065; M25: 0040; M17: 0041; M18: 0042
 # M19: 0043; M26: 0044; M20: 0045
 # M21: 0046
 # M22: 0047; M23a: 0048; M27a: 0049; M28: 0050; M27b: 0051; M31: 0052; M36: 0053; M30: 0054
@@ -1820,6 +1820,18 @@ class GameModeRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)  # always 1
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class CustomScenarioRow(Base):
+    """The custom scenario a game was started from (M52, ADR-0026; migration 0068): its
+    canonical YAML and SHA-256. One row (id 1), or none for every other game."""
+
+    __tablename__ = "custom_scenario"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)  # always 1
+    slug: Mapped[str] = mapped_column(String(64), nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    yaml: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class RankingRow(Base):

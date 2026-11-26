@@ -27,7 +27,9 @@ type ModeKind = Literal["campaign", "sandbox", "scenario"]
 type RivalsOption = Literal["all", "half", "none"]
 type ErasOption = Literal["historical", "seeded"]
 type ListKind = Literal["revenue", "places", "innovative"]
-type CampaignLength = Literal["standard", "dynasty"]  # M37 (52.1)
+# M37 (52.1); M52 (66.3): endless, a sandbox with no end (a dynasty game continued past 2069,
+# a Sandbox or a custom scenario begun so)
+type CampaignLength = Literal["standard", "dynasty", "endless"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +48,21 @@ class GameMode:
     length: CampaignLength = "standard"
     # M51 (63.2): the challenge rules this game plays under (modes.challenges.RULES)
     challenges: tuple[str, ...] = ()
+    # M52 (ADR-0026 point 4): a custom scenario's game (kind "scenario", `scenario` the
+    # "custom/<slug>" key) keeps the SHA-256 of the scenario's canonical YAML; None otherwise
+    scenario_sha256: str | None = None
+    # M52 (66.1): a custom scenario's category growth changes, (category, + fraction a year)
+    growth_delta: tuple[tuple[str, float], ...] = ()
+
+    @property
+    def custom(self) -> bool:
+        """A custom scenario's game (66.2): kept out of M51's results and the comparisons."""
+        return self.scenario_sha256 is not None
+
+    @property
+    def endless(self) -> bool:
+        """A sandbox with no end (66.3): its score is shown, kept out of comparisons."""
+        return self.length == "endless"
 
 
 def began_in(system: str, mode: GameMode | None) -> str:
