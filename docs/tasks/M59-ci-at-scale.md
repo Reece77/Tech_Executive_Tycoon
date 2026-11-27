@@ -155,11 +155,27 @@ The flows build their saves by running `tools/e2e_*_save.py` with save names sta
 time, so a cache keyed by file name would never hit. Each of the 50 tools' `__main__` now runs
 `main` through `tools/e2e_cache.run`. With `TST_E2E_FIXTURE_CACHE` set (CI only), a call is a
 build when its arguments name an existing save folder and then a save that does not exist yet.
-The cache key is the tool and its other arguments. A hit copies the save, writes the new name
-into `save_meta.name` (the only place a save holds its name: the state's `SaveMeta` is read from
-it) and replays the tool's printed output with the folder and name restored (M26's and M47's
-flows read it). A miss builds, then stores only if the tool exited 0 and the one save file it
-made is that one. Every other call (`advance`, `holiday` and the other edits) runs as before. No
+The cache key is the tool and its other arguments. A hit does four things:
+
+- copies the save;
+- writes the new name into `save_meta.name` (the only place a save holds its name: the state's
+  `SaveMeta` is read from it);
+- lists the save in the folder's `index.json`, as `create_save` does;
+- replays the tool's printed output with the folder and name restored (M26's and M47's flows
+  read it).
+
+A miss builds and then stores the save only if the tool exited 0.
+
+The first cache-hit run on CI failed two flows (run 46072543176, shard 2): M7b's save list did
+not show a restored save, and M25's first-launch toast never appeared. A build also writes beside
+the save: it updates `index.json`, and it changes the shared profile (`profiles/default.json`) as
+its months earn achievements; M25's `ready` clears the profile for a fresh one. So a miss now also
+records the build's changes to the folder's JSON files entry by entry (`earned.<achievement>`,
+`watch.<save>`), with the save's name templated, and a hit replays them. A build that changes any
+other kind of file is never stored (`m25-ready` and `m7b-saves` build every time). The replayed
+rows carry the miss's wall-clock `earned_at`, which no flow compares; the test compares the
+profile without it. Locally, `m25.spec.ts` and `m7b.spec.ts` passed 11 of 11 on a cache miss and
+again on a hit. Every other call (`advance`, `holiday` and the other edits) runs as before. No
 spec file changed. `actions/cache` keeps one cache a shard (about 54 MB for shard 1), keyed by
 the brief's file list plus `frontend/e2e/durations.json`, which decides which files a shard runs.
 
