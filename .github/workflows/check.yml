@@ -24,8 +24,10 @@ jobs:
     name: check (shard ${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
     # M43: 40 -> 50; shard 1's tests ran 25-36 minutes on the combined code (listed companies
-    # from 2015 under the real-listings IPO floor), leaving the 6-minute timing step too little
-    timeout-minutes: 50
+    # from 2015 under the real-listings IPO floor), leaving the 6-minute timing step too little.
+    # M55: 50 -> 60; after the v6 merge (M52, M54, M55) shard 1's tests ran 35-41 minutes and the
+    # limit cut off check-timing again; no test failed (decision 21)
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:

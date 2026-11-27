@@ -21,7 +21,10 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 120 # M53: main ran 85 of 90 minutes; 28 telecom rivals and three flows pushed it past (decision 17)
+    # M53: main ran 85 of 90 minutes; 28 telecom rivals and three flows pushed it past (decision 17).
+    # M55: 120 -> 150; after the v6 merge (M52, M54 and M55's flows, 47 more rivals) 202 tests ran
+    # 108 minutes on one runner and 179 of them filled 120 on another; none failed (decision 21)
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 

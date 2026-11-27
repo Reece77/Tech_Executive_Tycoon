@@ -3434,3 +3434,494 @@ companies:
         regions: [north_america]
         segments:
           ins_property: { price_cents: 10000, share_bp: 0 }
+
+  # --- M55 (formulas.md 65.7): media rivals, held to media.yaml's history before 2026 (as M53's
+  # operators): no decisions, never failed, not ranked; a line's customers and (social) price follow the
+  # data, and a line sells only from its media.yaml `first` month. price_cents is North America's (2010
+  # cents a customer a month); a region's is x the category's price_index there (history.pin). Social
+  # lines' price is the ad market's revenue a user (65.1). Quality, features and brand are A (critics'
+  # and players' reception, R loosely).
+  - name: Netflix # R: listed 23 May 2002 (NFLX)
+    stage: 3
+    founded_year: 1997
+    listed_from: [2002, 5]
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 1000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Netflix
+        category: streaming
+        quality: 78
+        features: 75
+        brand: 80
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          viewers: { price_cents: 900, share_bp: 0 }
+
+  - name: Disney # R: The Walt Disney Company (DIS); listed on the NYSE from 1957
+    stage: 4
+    founded_year: 1923
+    listed_from: [1957, 11]
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Hulu
+        category: streaming
+        quality: 70
+        features: 68
+        brand: 70
+        regions: [north_america]
+        segments:
+          viewers: { price_cents: 800, share_bp: 0 }
+      - name: Disney+
+        category: streaming
+        quality: 78
+        features: 70
+        brand: 90
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 700, share_bp: 0 }
+      - name: Disney Interactive
+        category: games
+        quality: 60
+        features: 60
+        brand: 75
+        regions: [north_america, europe, east_asia, latin_america]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Warner Bros. Discovery # R: Time Warner to June 2018, WarnerMedia (AT&T) to April 2022, then Warner Bros. Discovery (one record, A); listed throughout as Time Warner, AT&T and WBD (A: from Time Warner's 1990 merger)
+    stage: 4
+    founded_year: 1990
+    listed_from: [1992, 1]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: HBO Max
+        category: streaming
+        quality: 80
+        features: 65
+        brand: 85
+        regions: [north_america, europe, south_southeast_asia, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 1000, share_bp: 0 }
+
+  - name: NBCUniversal # R: Comcast's media arm (majority from January 2011, all from March 2013); a record of its own beside Comcast's telecom lines (A)
+    stage: 4
+    founded_year: 2004
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Peacock
+        category: streaming
+        quality: 62
+        features: 60
+        brand: 65
+        regions: [north_america]
+        segments:
+          viewers: { price_cents: 600, share_bp: 0 }
+
+  - name: Paramount # R: CBS Corporation, then ViacomCBS (December 2019) and Paramount Global (February 2022); listed throughout (A)
+    stage: 4
+    founded_year: 2005
+    listed_from: [2005, 12]
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1200
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Paramount+
+        category: streaming
+        quality: 64
+        features: 60
+        brand: 65
+        regions: [north_america, europe, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 650, share_bp: 0 }
+
+  - name: Sony # R: Sony's games, pictures and Crunchyroll lines (its devices are not in the game's records)
+    stage: 4
+    founded_year: 1946
+    listed_from: [1958, 12]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1200
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Crunchyroll
+        category: streaming
+        quality: 70
+        features: 60
+        brand: 60
+        regions: [north_america, europe, south_southeast_asia, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 700, share_bp: 0 }
+      - name: PlayStation Studios
+        category: games
+        quality: 80
+        features: 72
+        brand: 85
+        regions: [north_america, europe, east_asia, latin_america, africa, oceania] # R: PlayStation sold officially in South Africa since the 1990s
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Spotify # R: listed by direct listing 3 April 2018 (SPOT)
+    stage: 2
+    founded_year: 2006
+    listed_from: [2018, 4]
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 0
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Spotify
+        category: music_streaming
+        quality: 75
+        features: 72
+        brand: 70
+        regions: [north_america, europe, south_southeast_asia, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 800, share_bp: 0 }
+
+  - name: Electronic Arts # R: EA (Nasdaq from 1989)
+    stage: 4
+    founded_year: 1982
+    listed_from: [1989, 9]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 1800
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: EA Games
+        category: games
+        quality: 72
+        features: 70
+        brand: 78
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Activision Blizzard # R: formed July 2008; Microsoft's from 13 October 2023 (its line closes then; Microsoft Gaming's revenue includes it after)
+    stage: 4
+    founded_year: 2008
+    listed_from: [2008, 7]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Activision Blizzard
+        category: games
+        quality: 78
+        features: 72
+        brand: 82
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Microsoft Gaming # R: Xbox (Microsoft's gaming segment); a record of its own beside Microsoft's, which the game holds as dev tools (A)
+    stage: 4
+    founded_year: 2001
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Xbox
+        category: games
+        quality: 74
+        features: 70
+        brand: 80
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Take-Two # R: Take-Two Interactive (Nasdaq from April 1997); Zynga from May 2022 (its line here)
+    stage: 3
+    founded_year: 1993
+    listed_from: [1997, 4]
+    personality: premium
+    builder_skill: 14
+    target_margin_bp: 1500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Take-Two
+        category: games
+        quality: 80
+        features: 70
+        brand: 80
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Ubisoft # R: Ubisoft (Euronext Paris from July 1996)
+    stage: 3
+    founded_year: 1986
+    listed_from: [1996, 7]
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 1000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Ubisoft
+        category: games
+        quality: 70
+        features: 68
+        brand: 70
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Nintendo # R: Nintendo (Osaka and Kyoto exchanges from 1962)
+    stage: 4
+    founded_year: 1889
+    listed_from: [1962, 1]
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Nintendo
+        category: games
+        quality: 82
+        features: 70
+        brand: 90
+        regions: [north_america, europe, east_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Tencent Media # R: Tencent's games, WeChat, Tencent Video and QQ Music (Tencent Music listed separately from December 2018); a record of its own beside Tencent's QQ (A)
+    stage: 4
+    founded_year: 1998
+    listed_from: [2004, 6]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Tencent Video
+        category: streaming
+        quality: 66
+        features: 62
+        brand: 70
+        regions: [east_asia]
+        segments:
+          viewers: { price_cents: 700, share_bp: 0 }
+      - name: QQ Music
+        category: music_streaming
+        quality: 62
+        features: 62
+        brand: 65
+        regions: [east_asia]
+        segments:
+          viewers: { price_cents: 800, share_bp: 0 }
+      - name: Tencent Games
+        category: games
+        quality: 72
+        features: 70
+        brand: 80
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+      - name: WeChat
+        category: social
+        quality: 72
+        features: 80
+        brand: 85
+        regions: [east_asia, south_southeast_asia]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: NetEase # R: NetEase (Nasdaq from June 2000)
+    stage: 3
+    founded_year: 1997
+    listed_from: [2000, 6]
+    personality: fast_follower
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: NetEase Games
+        category: games
+        quality: 70
+        features: 66
+        brand: 62
+        regions: [north_america, europe, east_asia, south_southeast_asia]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: Meta Platforms # R: Facebook's social network and Instagram (April 2012, $1B); Meta Platforms from October 2021; a record of its own beside the Facebook record's consumer app (A)
+    stage: 4
+    founded_year: 2004
+    listed_from: [2012, 5]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 3000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Facebook Feed
+        category: social
+        quality: 68
+        features: 80
+        brand: 92
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+      - name: Instagram
+        category: social
+        quality: 74
+        features: 70
+        brand: 80
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: Twitter # R: listed 7 November 2013; private from 27 October 2022 (Musk's $44B purchase; X from July 2023)
+    stage: 2
+    founded_year: 2006
+    listed_from: [2013, 11]
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 0
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Twitter
+        category: social
+        quality: 62
+        features: 65
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: Snap # R: listed 2 March 2017 (SNAP)
+    stage: 2
+    founded_year: 2011
+    listed_from: [2017, 3]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 0
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Snapchat
+        category: social
+        quality: 68
+        features: 70
+        brand: 65
+        regions: [north_america, europe, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: ByteDance # R: private (BD)
+    stage: 3
+    founded_year: 2012
+    personality: aggressive
+    builder_skill: 15
+    target_margin_bp: 2000
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: TikTok
+        category: social
+        quality: 76
+        features: 80
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+      - name: Douyin
+        category: social
+        quality: 76
+        features: 80
+        brand: 80
+        regions: [east_asia]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: Roblox # R: listed by direct listing 10 March 2021 (RBLX)
+    stage: 2
+    founded_year: 2004
+    listed_from: [2021, 3]
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 0
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Roblox
+        category: games
+        quality: 62
+        features: 70
+        brand: 55
+        regions: [north_america, europe, south_southeast_asia, latin_america, oceania]
+        segments:
+          players: { price_cents: 1000, share_bp: 0 }
+
+  - name: YouTube # R: Google's from November 2006 ($1.65B); a record of its own (the game has no Alphabet record; M55 decision 3)
+    stage: 4
+    founded_year: 2005
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 2500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: YouTube Premium
+        category: music_streaming
+        quality: 66
+        features: 64
+        brand: 80
+        regions: [north_america, europe, south_southeast_asia, latin_america, africa, oceania] # R: YouTube Music Premium in South Africa, Nigeria, Kenya and others (2020-21)
+        segments:
+          viewers: { price_cents: 800, share_bp: 0 }
+      - name: YouTube
+        category: social
+        quality: 74
+        features: 78
+        brand: 90
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania]
+        segments:
+          users: { price_cents: 150, share_bp: 0 }
+
+  - name: Amazon Prime Video # R: Amazon's video service (Unbox 2006, Instant Video 2008, Prime Video); a record of its own beside Amazon Web Services (M55 decision 3)
+    stage: 4
+    founded_year: 2006
+    personality: premium
+    builder_skill: 13
+    target_margin_bp: 500
+    cash_months: 24
+    key_people: 2
+    products:
+      - name: Prime Video
+        category: streaming
+        quality: 70
+        features: 65
+        brand: 75
+        regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, oceania]
+        segments:
+          viewers: { price_cents: 500, share_bp: 0 }

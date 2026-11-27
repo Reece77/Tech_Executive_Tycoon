@@ -388,3 +388,20 @@ roles:
     work_style_weights: { builder: 0, operator: 5, researcher: 3, seller: 2 }
     interest_weights: { ai: 1, hardware: 1, crypto: 1, climate: 1, security: 0, gaming: 0, mining: 1, policy: 1, design: 0, fintech: 4, consumer: 1, enterprise: 3, open_source: 0 }
     salary_band_mid_cents: { junior: 8500000, mid: 11500000, senior: 15000000, staff: 18000000, principal: 21000000, exec: 24500000 }
+
+  # M55 (formulas.md 65.6): a showrunner, director, game director or star creator, signed to an
+  # overall deal on the Studio screen (not through a search). Their creative and vision, and their
+  # hidden ego and loyalty, are tst.sim.media's (drawn on stream media, keyed by the person), so no
+  # existing person's draws change; this role gives them a salary band, skills and one-to-ones.
+  - key: creative_lead
+    label: Creative lead
+    product_function: none
+    founder_fit: false
+    summary: "Leads a series, film or game: their creative and vision set its quality, their reputation its fee. Signed to an overall deal on the Studio screen; overruling them costs morale by their ego."
+    why_hire: "Hire one (sign them to an overall deal on the Studio screen) before you green-light a title: a title without a creative lead starts well below par (65.2)."
+    primary: [design, product]
+    secondary: [communication, leadership, strategy, marketing]
+    work_style: researcher
+    work_style_weights: { builder: 3, operator: 0, researcher: 5, seller: 2 }
+    interest_weights: { ai: 1, hardware: 0, crypto: 0, climate: 1, security: 0, gaming: 4, mining: 0, policy: 0, design: 4, fintech: 0, consumer: 4, enterprise: 0, open_source: 0 }
+    salary_band_mid_cents: { junior: 6000000, mid: 9000000, senior: 15000000, staff: 25000000, principal: 40000000, exec: 60000000 }

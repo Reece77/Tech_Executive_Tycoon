@@ -150,6 +150,10 @@ def insolvency(
 
             if finance_holds(state, company, balance, data):  # M54 (64.5): finance likewise
                 continue
+            from tst.sim.media.rivals import holds as media_holds
+
+            if media_holds(state, company, balance, data):  # M55 (65.7): media rivals likewise
+                continue
         months = company.insolvent_months + 1
         state = with_company(state, replace(company, insolvent_months=months))
         if not company.is_player:  # a rival fails after the same months; no bridges (15.1)

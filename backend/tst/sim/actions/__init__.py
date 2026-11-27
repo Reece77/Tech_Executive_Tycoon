@@ -330,6 +330,21 @@ from tst.sim.group.actions import (
 )
 from tst.sim.ledger import LedgerBalances, LedgerEntry
 from tst.sim.log import LogItem
+from tst.sim.media.actions import ACTION_TYPES as MEDIA_ACTION_TYPES
+from tst.sim.media.actions import (
+    CancelTitle,
+    CutBudget,
+    DivestRegion,
+    GreenlightTitle,
+    LicenseTitles,
+    MediaAction,
+    MoveRelease,
+    OverruleLead,
+    SetLiveService,
+    SetMediaLine,
+    SignLead,
+    apply_media,
+)
 from tst.sim.medical.actions import ACTION_TYPES as MEDICAL_ACTION_TYPES
 from tst.sim.medical.actions import (
     DesignDevice,
@@ -504,6 +519,7 @@ type Action = (
     | TelecomAction  # M53
     | FxAction  # M54 (64.4)
     | FinservAction  # M54 (64.1-64.3)
+    | MediaAction  # M55
     | GovernmentAction  # M44
     | NegotiationAction  # M47
     | MeetingOutcome  # M48
@@ -534,6 +550,7 @@ ACTION_TYPES: dict[str, type[Any]] = {
     **TELECOM_ACTION_TYPES,  # M53 (62)
     **FX_ACTION_TYPES,  # M54 (64.4)
     **FINSERV_ACTION_TYPES,  # M54 (64.1-64.3)
+    **MEDIA_ACTION_TYPES,  # M55 (65)
     **GOVERNMENT_ACTION_TYPES,  # M44 (57)
     **NEGOTIATION_ACTION_TYPES,  # M47 (58.4)
     **MEETING_ACTION_TYPES,  # M48 (59)
@@ -1121,6 +1138,19 @@ def apply_action(
             | InsurerCapital()
         ):
             out = apply_finserv(state, action, ledger_balances, balance, data)  # M54 (64.1-64.3)
+        case (
+            GreenlightTitle()
+            | CancelTitle()
+            | OverruleLead()
+            | CutBudget()
+            | MoveRelease()
+            | SignLead()
+            | LicenseTitles()
+            | SetMediaLine()
+            | SetLiveService()
+            | DivestRegion()
+        ):
+            out = apply_media(state, action, rng, ledger_balances, balance, data)  # M55 (65)
         case (
             PlaceBid()
             | WithdrawBid()

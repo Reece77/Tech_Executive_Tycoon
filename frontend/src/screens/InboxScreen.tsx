@@ -561,6 +561,16 @@ function MessageDetail({
             Open Regulation
           </Button>
         )}
+        {item.link_kind === 'studio' && (
+          <Button
+            component={Link}
+            to={`/game/${saveId}/products/studio`}
+            h={44}
+            data-testid="view-studio"
+          >
+            Open Studio
+          </Button>
+        )}
         {item.link_kind === 'platforms' && (
           <Button
             component={Link}

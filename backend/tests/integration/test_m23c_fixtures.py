@@ -52,6 +52,7 @@ V3 = [
     ("e2e_m49_save", "talks", "/talks", True),  # M49: the practice save pt-talks
     ("e2e_m53_save", "telecom", "/telecom", True),  # M53: the practice save pt-telecom
     ("e2e_m54_save", "bank", "/finserv", True),  # M54: the practice save pt-bank
+    ("e2e_m55_save", "media", "/media", True),  # M55: the practice save pt-media
 ]
 OLDER = [
     ("e2e_approach_save", None, "/overview", False),

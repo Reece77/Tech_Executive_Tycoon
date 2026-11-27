@@ -428,6 +428,14 @@ class FinservRuleError(SimError):
     code = "finserv_rule"
 
 
+class MediaRuleError(SimError):
+    """A media action the rules do not allow (M55, formulas.md 65). The message never names a
+    title's audience before release, a lead's ego or loyalty, or a seeded era, generation, strike
+    or law before it comes."""
+
+    code = "media_rule"
+
+
 class SpaceRuleError(SimError):
     """A space action the rules do not allow (M40, formulas.md 56). The message never names a
     licence's decision month, a failure chance's draw or a seeded rule."""
