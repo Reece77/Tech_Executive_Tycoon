@@ -89,6 +89,7 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M54-financial-services-and-currencies.md](M54-financial-services-and-currencies.md) | Financial services and currencies (v6, lane A; done 2026-11-26): banks with deposits, loans, capital, stress tests and runs; payments networks; insurers; regional currencies, translation and hedging (formulas §64, ADR-0025) | M53 |
 | [M55-media-and-entertainment.md](M55-media-and-entertainment.md) | Media and entertainment (v6, lane B; done 2026-11-26): advertising, content as an asset with hits drawn at release, streaming, games, social networks, creative talent with egos (formulas §65) | M53 |
 | [M52-editor-and-sandbox.md](M52-editor-and-sandbox.md) | The editor and sandbox (v6, lane C; done 2026-11-26): custom scenarios as validated files, shared by export and import; sandbox play past 2069 (formulas §66, ADR-0026) | M50, M51 |
+| [M59-ci-at-scale.md](M59-ci-at-scale.md) | CI at scale (engineering, single lane): `e2e` in four shards and `check` in four plus timing alone, fixture saves cached, shards that warn before they outgrow their limits; the same tests, about 30 minutes to a verdict | M55 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
