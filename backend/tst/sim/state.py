@@ -111,6 +111,7 @@ from tst.sim.markets_public.models import (
     PublicCompany,
     ShareMonth,
 )
+from tst.sim.media.models import MediaState
 from tst.sim.medical.models import (
     Adoption,
     Clearance,
@@ -631,6 +632,10 @@ class GameState:
     # M54 (64.1-64.3): the player's banks (balance sheets in integer cents), payments networks,
     # insurers, their months, and the game-wide draws (growth after 2025, catastrophes that came)
     finserv: FinservState = field(default_factory=FinservState)
+    # M55 (65): titles (content assets), creative leads and leads on offer, line settings,
+    # licences, divest-or-ban laws, service months, the ad market's months and the game-wide
+    # draws (growth, eras, generations, strikes; hidden until they come)
+    media: MediaState = field(default_factory=MediaState)
     # M44 (57): tenders (seeded and named, hidden until announced), the player's bids, protests,
     # government contracts, staff and facility clearances, controlled (ITAR-style) products,
     # each company's defence record, and the game-wide budgets' seeded growth and id counters.

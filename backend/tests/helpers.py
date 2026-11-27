@@ -75,11 +75,15 @@ def rival_cash(state: GameState, loaded: LoadedData) -> dict[tuple[int, str], in
     capital = loaded.balance.vehicles.rival_cash_cents  # M38: a car maker's opening capital
     robots = loaded.balance.robotics.rival_cash_cents  # M39: a robot maker's
     space = loaded.balance.space.rival_cash_cents  # M40: a space company's
+    from tst.sim.media.data import is_media_rival
+
+    media = loaded.balance.media.rival_cash_cents  # M55: a media company's (as new_game posts)
     return {
         (c.id, CASH): opening_cash_cents(state, c.id, loaded.game_data)
         + (capital if is_car_maker(c, loaded.game_data) else 0)
         + (robots if is_robot_maker(c, loaded.game_data) else 0)
         + (space if is_space_rival(c, loaded.game_data) else 0)
+        + (media if is_media_rival(c, loaded.game_data) else 0)
         for c in state.companies
         if not c.is_player
     }
@@ -101,6 +105,7 @@ PHARMA_INCUMBENTS = 16  # M42 (55.5): appended after M39's, ids 78..93; new game
 SPACE_INCUMBENTS = 13  # M40 (56): appended after M42's, ids 94..106; new games only
 TELECOM_INCUMBENTS = 28  # M53 (62): 23 operators and 5 vendors, ids 107..134; new games only
 FINANCE_INCUMBENTS = 25  # M54 (64.5): banks, networks, acquirers, insurers, ids 135..159
+MEDIA_INCUMBENTS = 22  # M55 (65.7): media rivals, ids 160..181 (after M54's); new games only
 
 
 def move_directors(state: GameState) -> GameState:

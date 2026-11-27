@@ -269,6 +269,42 @@ export const GUIDES: Record<string, Guide> = {
       "Prices abroad are set in local money: a stronger dollar makes them worth less. Sell a region's money forward to fix its rate, or set a rolling programme.",
     ],
   },
+  studio: {
+    title: 'Studio',
+    path: 'products/studio',
+    what: "Your slate of series, films and games in development with their budgets, leads and stages; released titles' audiences against their cost; content assets and the catalogue's value; creative leads and the leads on offer.",
+    start: [
+      'Sign a creative lead to an overall deal, then green-light a title with them: its cost is capitalised as it is made and amortised from release.',
+      'Hits are drawn at release: most titles miss and a few earn most of the money. Overruling a lead, cutting their budget or moving their date costs morale by their ego, and they may walk.',
+    ],
+  },
+  streaming: {
+    title: 'Streaming',
+    path: 'products/streaming',
+    what: 'Your video and music services: subscribers by region, churn and catalogue engagement, content spend, licences, ad tiers and ad revenue, and cash since launch.',
+    start: [
+      "Make a Video streaming line on Products, then green-light series and films for your own service: the catalogue's value keeps subscribers and wins more.",
+      'Content is capital-heavy: a new service takes years to pay back. An ad tier (from November 2022) sells cheaper plans and impressions.',
+    ],
+  },
+  games: {
+    title: 'Games',
+    path: 'products/games',
+    what: 'Your games by platform: copies or players and their decay, in-app revenue, live service, console generations and store fees.',
+    start: [
+      'Green-light a game on the Studio screen for PC, console or mobile, premium or free-to-play.',
+      "A console generation lifts new titles and cuts old ones; live service slows a free-to-play game's decline for an update team's cost.",
+    ],
+  },
+  social: {
+    title: 'Social',
+    path: 'products/social',
+    what: "Your social networks: users by region and share, the network effect, format, moderation and ad revenue; consumer apps' ad pricing; the ad market by region.",
+    start: [
+      "A social network's revenue is ads: its price is its ad revenue a user, set by the ad market; its lever is ad load.",
+      'Under about 10% of a region a network is worth less than its rivals: ride a new format era when it arrives to grow.',
+    ],
+  },
   government: {
     title: 'Government',
     path: 'products/government',

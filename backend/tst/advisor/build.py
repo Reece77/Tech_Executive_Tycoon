@@ -929,6 +929,18 @@ class Builder:
 
         return v6_finance.fx_result(self, m, entity)
 
+    # --- v6 (M55): media ---------------------------------------------------------------------
+
+    def title_result(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_media
+
+        return v6_media.title_result(self, m, entity)
+
+    def lead_walk(self, m: MetricDef, entity: str | None) -> Explanation:
+        from tst.advisor import v6_media
+
+        return v6_media.lead_walk(self, m, entity)
+
     # --- v5 (M44): government ------------------------------------------------------------------
 
     def bid_score(self, m: MetricDef, entity: str | None) -> Explanation:

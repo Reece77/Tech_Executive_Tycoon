@@ -207,6 +207,10 @@ def new_game(
 
     state, finserv_cash = finserv_new_game(state, balance, data)  # M54 (64): history to 2025
     rival_cash = (*rival_cash, *finserv_cash)
+    from tst.sim.media.phase import new_game as media_new_game
+
+    state, media_cash = media_new_game(state, balance, data)  # M55 (65): history to 2025
+    rival_cash = (*rival_cash, *media_cash)
     if family is not None and family.setting != "none":  # M36 (45.1): Family none adds nothing
         state = start_family(state, family, rng, balance, data)
     entries: tuple[LedgerEntry, ...] = rival_cash

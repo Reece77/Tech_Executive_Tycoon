@@ -82,6 +82,11 @@ SYSTEMS: tuple[System, ...] = (
     System(35, "telecom", "Telecom", "products"),  # tunable-exempt: stable id (M53)
     System(36, "finserv", "Financial services", "products"),  # tunable-exempt: stable id (M54)
     System(37, "currency", "Currency", "finance"),  # tunable-exempt: stable id (M54)
+    # M55 (65): ids from 40, leaving 36-39 to M54 and M52 (lanes A and C, built in parallel)
+    System(40, "studio", "Studio", "products"),  # tunable-exempt: stable id (M55)
+    System(41, "streaming", "Streaming", "products"),  # tunable-exempt: stable id (M55)
+    System(42, "games", "Games", "products"),  # tunable-exempt: stable id (M55)
+    System(43, "social", "Social", "products"),  # tunable-exempt: stable id (M55)
 )
 BY_KEY: dict[str, System] = {s.key: s for s in SYSTEMS}
 BY_ID: dict[int, System] = {s.id: s for s in SYSTEMS}
@@ -374,6 +379,24 @@ def _currency(state: GameState, ids: set[int], b: Balance, d: GameData) -> str |
     return None
 
 
+def _media(state: GameState, ids: set[int], b: Balance, d: GameData) -> str | None:
+    """M55 (65): a media line, a title or a signed creative lead, or the media year
+    (media.unlock_year) for a stage-2 company with a consumer app."""
+    if d.media is None:
+        return None
+    mb = b.media
+    if any(p.category in mb.categories for p in state.products if p.company_id in ids):
+        return "the company has a media line"
+    m = state.media
+    if any(t.company_id in ids for t in m.titles) or any(x.company_id in ids for x in m.leads):
+        return "the group has titles or creative leads"
+    open_year = turn_to_ym(state.turn)[0] >= mb.unlock_year and _stage(state) >= STAGE_SCALEUP
+    apps = any(p.category == mb.consumer_apps for p in state.products if p.company_id in ids)
+    if open_year and apps:
+        return f"media is open to a stage-2 company with a consumer app ({mb.unlock_year})"
+    return None
+
+
 def _group(state: GameState, _ids: set[int], _b: Balance, _d: GameData) -> str | None:
     owners = {c.id for c in player_companies(state)}
     if any(o.owner_id in owners and o.to_turn is None for o in state.ownerships):
@@ -492,6 +515,10 @@ CHECKS: dict[str, Check] = {
     "telecom": _telecom,  # M53 (62)
     "finserv": _finserv,  # M54 (64.1-64.3)
     "currency": _currency,  # M54 (64.4)
+    "studio": _media,  # M55 (65)
+    "streaming": _media,
+    "games": _media,
+    "social": _media,
 }
 
 

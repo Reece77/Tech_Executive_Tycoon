@@ -6970,6 +6970,196 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/saves/{save_id}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Media
+         * @description The Studio, Streaming, Games and Social screens: titles, leads, services, games, networks.
+         */
+        get: operations["getMedia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Greenlight Title */
+        post: operations["greenlightTitle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles/{title_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Title */
+        post: operations["cancelTitle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles/{title_id}/overrule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Overrule Lead */
+        post: operations["overruleLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles/{title_id}/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cut Budget */
+        post: operations["cutTitleBudget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles/{title_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move Release */
+        post: operations["moveTitleRelease"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/titles/{title_id}/live-service": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Live Service */
+        post: operations["setLiveService"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign Lead */
+        post: operations["signLead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/licences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** License Titles */
+        post: operations["licenseTitles"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/lines/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Media Line */
+        post: operations["setMediaLine"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/saves/{save_id}/media/laws/{law_id}/divest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Divest Region */
+        post: operations["divestRegion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/saves/{save_id}/government": {
         parameters: {
             query?: never;
@@ -8064,6 +8254,24 @@ export interface components {
             value_pct: number;
             /** Months Left */
             months_left: number;
+        };
+        /** AdMarketOut */
+        AdMarketOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /**
+             * Spend Cents
+             * @description A month, game scale
+             */
+            spend_cents: number;
+            /** Digital Cents */
+            digital_cents: number;
+            /** Impressions M */
+            impressions_m: number;
+            /** Cpm Cents */
+            cpm_cents: number;
         };
         /** AddCarsIn */
         AddCarsIn: {
@@ -11010,6 +11218,15 @@ export interface components {
             /** Letters */
             letters: components["schemas"]["LetterOut"][];
         };
+        /** ConsoleGenerationOut */
+        ConsoleGenerationOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Month */
+            month: string;
+        };
         /** ConstellationIn */
         ConstellationIn: {
             /** Name */
@@ -11118,6 +11335,15 @@ export interface components {
              * @default true
              */
             insured?: boolean;
+        };
+        /** ConsumerAppOut */
+        ConsumerAppOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Ad Pricing */
+            ad_pricing: boolean;
         };
         /**
          * ContinueUntilOut
@@ -11686,6 +11912,11 @@ export interface components {
              * @default 1
              */
             format?: number;
+        };
+        /** CutIn */
+        CutIn: {
+            /** Budget Cents */
+            budget_cents: number;
         };
         /** D2dPartnerIn */
         D2dPartnerIn: {
@@ -13076,7 +13307,7 @@ export interface components {
              * Scope
              * @enum {string}
              */
-            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "bank";
+            scope: "company" | "product" | "person" | "account" | "market" | "project" | "mine" | "fab" | "refinery" | "region" | "plant" | "order" | "zone" | "constellation" | "bid" | "negotiation" | "bank" | "title";
             /** Entity */
             entity?: string | null;
             /**
@@ -14324,6 +14555,15 @@ export interface components {
             /** Complaint */
             complaint: boolean;
         };
+        /** FormatOut */
+        FormatOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Month */
+            month: string;
+        };
         /**
          * FormerProfileOut
          * @description A person who has left the company (M7c): read-only, as the player knew them at
@@ -14827,6 +15067,28 @@ export interface components {
              */
             directors: components["schemas"]["GameOverDirectorOut"][];
         };
+        /** GameTitleOut */
+        GameTitleOut: {
+            title: components["schemas"]["TitleOut"];
+            /**
+             * Decay
+             * @description Players lost a month now
+             */
+            decay: number;
+        };
+        /** GamesOut */
+        GamesOut: {
+            /** Titles */
+            titles: components["schemas"]["GameTitleOut"][];
+            /** Generations */
+            generations: components["schemas"]["ConsoleGenerationOut"][];
+            /** Store Fee */
+            store_fee: number;
+            /** Epic Fee */
+            epic_fee: number;
+            /** Epic Open */
+            epic_open: boolean;
+        };
         /** GenerationOut */
         GenerationOut: {
             /** Person Id */
@@ -15204,6 +15466,50 @@ export interface components {
              * @default false
              */
             next_vest_is_cliff?: boolean;
+        };
+        /** GreenlightIn */
+        GreenlightIn: {
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Budget Cents */
+            budget_cents: number;
+            /**
+             * Genre
+             * @default drama
+             */
+            genre?: string;
+            /** Lead Person Id */
+            lead_person_id?: number | null;
+            /** Unit Id */
+            unit_id?: number | null;
+            /** Sequel Of */
+            sequel_of?: number | null;
+            /** Platforms */
+            platforms?: string[];
+            /**
+             * Monetisation
+             * @default premium
+             */
+            monetisation?: string;
+            /**
+             * Live Service
+             * @default false
+             */
+            live_service?: boolean;
+            /**
+             * Store
+             * @default default
+             */
+            store?: string;
+            /**
+             * Window
+             * @default licensed
+             */
+            window?: string;
+            /** Service Product Id */
+            service_product_id?: number | null;
         };
         /** GreyRouteIn */
         GreyRouteIn: {
@@ -16789,6 +17095,74 @@ export interface components {
             /** Reuse */
             reuse: string;
         };
+        /** LawOut */
+        LawOut: {
+            /** Id */
+            id: number;
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Announced */
+            announced: string;
+            /** Deadline */
+            deadline: string;
+            /** Status */
+            status: string;
+        };
+        /** LeadOfferOut */
+        LeadOfferOut: {
+            /** Year */
+            year: number;
+            /** N */
+            n: number;
+            /** Name */
+            name: string;
+            /** Level */
+            level: string;
+            /** Region */
+            region: string;
+            creative: components["schemas"]["MediaRangeOut"];
+            vision: components["schemas"]["MediaRangeOut"];
+            /**
+             * Fee Cents
+             * @description A year at signing
+             */
+            fee_cents: number;
+            /** Upfront Share */
+            upfront_share: number;
+            /** Expires */
+            expires: string;
+        };
+        /** LeadOut */
+        LeadOut: {
+            /** Person Id */
+            person_id: number;
+            /** Name */
+            name: string;
+            /** Level */
+            level: string;
+            creative: components["schemas"]["MediaRangeOut"];
+            vision: components["schemas"]["MediaRangeOut"];
+            /** Reputation */
+            reputation: number;
+            /**
+             * Fee Cents
+             * @description A year
+             */
+            fee_cents: number;
+            /** Deal To */
+            deal_to: string | null;
+            /** Titles */
+            titles: number;
+            /** Morale */
+            morale: number | null;
+            /**
+             * Busy
+             * @description Leading a title in development
+             */
+            busy: boolean;
+        };
         /** LeadSpec */
         LeadSpec: {
             /** Domain */
@@ -17216,6 +17590,11 @@ export interface components {
             stage: string;
             /** Funding */
             funding: number;
+        };
+        /** LiveServiceIn */
+        LiveServiceIn: {
+            /** On */
+            on: boolean;
         };
         /** LoanIn */
         LoanIn: {
@@ -17775,6 +18154,120 @@ export interface components {
             shares: {
                 [key: string]: number;
             };
+        };
+        /** MediaActionOut */
+        MediaActionOut: {
+            media: components["schemas"]["MediaScreenOut"];
+            energy: components["schemas"]["EnergyOut"];
+            /** Unread Inbox */
+            unread_inbox: number;
+        };
+        /** MediaLicenceIn */
+        MediaLicenceIn: {
+            /** Product Id */
+            product_id: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /** Years */
+            years: number;
+        };
+        /** MediaLicenceOut */
+        MediaLicenceOut: {
+            /** Id */
+            id: number;
+            /** Fee Cents */
+            fee_cents: number;
+            /** From Month */
+            from_month: string;
+            /** To Month */
+            to_month: string;
+        };
+        /** MediaLineIn */
+        MediaLineIn: {
+            /**
+             * Ad Tier
+             * @default false
+             */
+            ad_tier?: boolean;
+            /**
+             * Ad Load
+             * @default 1
+             */
+            ad_load?: number;
+            /** Format */
+            format?: string | null;
+            /**
+             * Moderation
+             * @default standard
+             */
+            moderation?: string;
+            /**
+             * Ad Pricing
+             * @default false
+             */
+            ad_pricing?: boolean;
+        };
+        /** MediaRangeOut */
+        MediaRangeOut: {
+            /** Lo */
+            lo: number;
+            /** Hi */
+            hi: number;
+        };
+        /** MediaScreenOut */
+        MediaScreenOut: {
+            studio: components["schemas"]["StudioOut"];
+            streaming: components["schemas"]["StreamingOut"];
+            games: components["schemas"]["GamesOut"];
+            social: components["schemas"]["SocialOut"];
+        };
+        /** MediaServiceOut */
+        MediaServiceOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Category */
+            category: string;
+            /** Status */
+            status: string;
+            /** Regions */
+            regions: components["schemas"]["RegionCustomersOut"][];
+            /** Customers */
+            customers: number;
+            /**
+             * Churn Mult
+             * @description Its churn x this (catalogue engagement)
+             */
+            churn_mult: number;
+            /**
+             * Engagement
+             * @description Catalogue value over the median service's
+             */
+            engagement: number;
+            /** Ad Tier */
+            ad_tier: boolean;
+            /**
+             * Ad Revenue Cents
+             * @description Last month
+             */
+            ad_revenue_cents: number;
+            /**
+             * Content Cents
+             * @description Last month: own titles in production and licences
+             */
+            content_cents: number;
+            /**
+             * Cash Cents
+             * @description Cumulative since launch
+             */
+            cash_cents: number;
+            /** Paid Back */
+            paid_back: string | null;
+            /** Months */
+            months: components["schemas"]["ServiceMonthOut"][];
+            /** Licences */
+            licences: components["schemas"]["MediaLicenceOut"][];
         };
         /** MedicalActionOut */
         MedicalActionOut: {
@@ -18669,6 +19162,11 @@ export interface components {
              * @description Null moves them to the company root
              */
             unit_id: number | null;
+        };
+        /** MoveReleaseIn */
+        MoveReleaseIn: {
+            /** Months */
+            months: number;
         };
         /** MoveUnitIn */
         MoveUnitIn: {
@@ -23519,6 +24017,24 @@ export interface components {
             /** Variant */
             variant: number;
         };
+        /** RegionCustomersOut */
+        RegionCustomersOut: {
+            /** Region */
+            region: string;
+            /** Label */
+            label: string;
+            /** Customers */
+            customers: number;
+            /** Price Cents */
+            price_cents: number | null;
+            /** Market */
+            market: number;
+            /**
+             * Share
+             * @description Of the region's market (social: of its internet users)
+             */
+            share: number;
+        };
         /** RegionEventOut */
         RegionEventOut: {
             /** Turn */
@@ -26125,6 +26641,23 @@ export interface components {
             /** Energy Cost */
             energy_cost: number;
         };
+        /** ServiceMonthOut */
+        ServiceMonthOut: {
+            /** Month */
+            month: string;
+            /** Customers */
+            customers: number;
+            /** Revenue Cents */
+            revenue_cents: number;
+            /** Ad Revenue Cents */
+            ad_revenue_cents: number;
+            /** Content Cents */
+            content_cents: number;
+            /** Costs Cents */
+            costs_cents: number;
+            /** Cash Cents */
+            cash_cents: number;
+        };
         /** ServiceOut */
         ServiceOut: {
             /** Product Id */
@@ -26219,6 +26752,15 @@ export interface components {
             complete: boolean;
             /** Regions */
             regions: string[];
+        };
+        /** SignIn */
+        SignIn: {
+            /** Year */
+            year: number;
+            /** N */
+            n: number;
+            /** Years */
+            years: number;
         };
         /** SignPpaIn */
         SignPpaIn: {
@@ -26318,6 +26860,59 @@ export interface components {
              * @description Average director confidence (M4a)
              */
             board_confidence: number | null;
+        };
+        /** SocialNetworkOut */
+        SocialNetworkOut: {
+            /** Product Id */
+            product_id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Regions */
+            regions: components["schemas"]["RegionCustomersOut"][];
+            /** Users */
+            users: number;
+            /** Format */
+            format: string | null;
+            /** Format Label */
+            format_label: string | null;
+            /**
+             * Advantage
+             * @description On the newest format within its window
+             */
+            advantage: boolean;
+            /**
+             * Network Effect
+             * @description Appeal x this in its largest region
+             */
+            network_effect: number;
+            /** Ad Load */
+            ad_load: number;
+            /** Moderation */
+            moderation: string;
+            /**
+             * Ad Revenue Cents
+             * @description Last month: users x their ad revenue a user
+             */
+            ad_revenue_cents: number;
+            /** Laws */
+            laws: components["schemas"]["LawOut"][];
+        };
+        /** SocialOut */
+        SocialOut: {
+            /** Networks */
+            networks: components["schemas"]["SocialNetworkOut"][];
+            /** Formats */
+            formats: components["schemas"]["FormatOut"][];
+            /** Ads */
+            ads: components["schemas"]["AdMarketOut"][];
+            /** Consumer Apps */
+            consumer_apps: components["schemas"]["ConsumerAppOut"][];
+            /** Ad Pricing Open */
+            ad_pricing_open: boolean;
+            /** Load Range */
+            load_range: number[];
         };
         /** SortKey */
         SortKey: {
@@ -26867,6 +27462,19 @@ export interface components {
             /** Started Label */
             started_label: string;
         };
+        /** StreamingOut */
+        StreamingOut: {
+            /** Services */
+            services: components["schemas"]["MediaServiceOut"][];
+            /** Ad Tier Open */
+            ad_tier_open: boolean;
+            /** Ad Tier From */
+            ad_tier_from: string;
+            /** Music Payout */
+            music_payout: number;
+            /** Licence Years */
+            licence_years: number[];
+        };
         /**
          * StressOut
          * @description The top bar's stress meter (32.1).
@@ -26900,6 +27508,36 @@ export interface components {
         StructureGuideOut: {
             /** Sections */
             sections: components["schemas"]["GuideSectionOut"][];
+        };
+        /** StudioOut */
+        StudioOut: {
+            /** Slate */
+            slate: components["schemas"]["TitleOut"][];
+            /** Released */
+            released: components["schemas"]["TitleOut"][];
+            /**
+             * Catalogue Book Cents
+             * @description Content assets carried
+             */
+            catalogue_book_cents: number;
+            /**
+             * Catalogue Value Cents
+             * @description Own titles' revenue equivalent, decayed
+             */
+            catalogue_value_cents: number;
+            /** Leads */
+            leads: components["schemas"]["LeadOut"][];
+            /** Offers */
+            offers: components["schemas"]["LeadOfferOut"][];
+            /** Kinds */
+            kinds: components["schemas"]["TitleKindOut"][];
+            /**
+             * Strikes
+             * @description Regions on strike this month
+             */
+            strikes: string[];
+            /** Deal Years */
+            deal_years: number[];
         };
         /** StudyIn */
         StudyIn: {
@@ -28156,6 +28794,121 @@ export interface components {
             people: components["schemas"]["tst__api__schemas__history__NamedOut"][];
             /** Products */
             products: components["schemas"]["tst__api__schemas__history__NamedOut"][];
+        };
+        /** TitleKindOut */
+        TitleKindOut: {
+            /** Key */
+            key: string;
+            /** Typical Budget Cents */
+            typical_budget_cents: number;
+            /** Min Budget Cents */
+            min_budget_cents: number;
+            /** Max Budget Cents */
+            max_budget_cents: number;
+            /** Dev Months */
+            dev_months: number;
+        };
+        /** TitleOut */
+        TitleOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @description series, film or game
+             */
+            kind: string;
+            /** Genre */
+            genre: string;
+            /**
+             * Stage
+             * @description development, released or cancelled
+             */
+            stage: string;
+            /** Budget Cents */
+            budget_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+            /**
+             * Book Cents
+             * @description Carried as a content asset (1560)
+             */
+            book_cents: number;
+            /** Amortised Cents */
+            amortised_cents: number;
+            /** Written Off Cents */
+            written_off_cents: number;
+            /** Lead Person Id */
+            lead_person_id: number | null;
+            /** Lead Name */
+            lead_name: string | null;
+            /** Lead Walked */
+            lead_walked: boolean;
+            /** Months Done */
+            months_done: number;
+            /** Dev Months */
+            dev_months: number;
+            /**
+             * Release
+             * @description Planned release month (or the month it released)
+             */
+            release: string;
+            /** Greenlit */
+            greenlit: string;
+            /** Overrules */
+            overrules: number;
+            /** Cuts */
+            cuts: number;
+            /** Moves */
+            moves: number;
+            /**
+             * Window
+             * @description own (on your video service) or licensed
+             */
+            window: string;
+            /** Platforms */
+            platforms: string[];
+            /** Monetisation */
+            monetisation: string;
+            /** Live Service */
+            live_service: boolean;
+            /** Store */
+            store: string;
+            /** Sequel Of */
+            sequel_of: number | null;
+            /**
+             * Audience
+             * @description Millions; null before release
+             */
+            audience: number | null;
+            /**
+             * Expected
+             * @description Millions expected at release; null before
+             */
+            expected: number | null;
+            /**
+             * Quality
+             * @description Its quality multiplier, shown from release
+             */
+            quality: number | null;
+            /**
+             * Revenue Cents
+             * @description Booked (licences, box office, sales, in-app)
+             */
+            revenue_cents: number;
+            /**
+             * Attributed Cents
+             * @description Its share of its own service's revenue (shown)
+             */
+            attributed_cents: number;
+            /**
+             * Players
+             * @description A free-to-play game's current players, millions
+             */
+            players: number;
+            /** Earned Back */
+            earned_back: boolean;
         };
         /** ToolControlOut */
         ToolControlOut: {
@@ -52394,6 +53147,679 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FinservActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    getMedia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaScreenOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    greenlightTitle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GreenlightIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    cancelTitle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                title_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    overruleLead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                title_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    cutTitleBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                title_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    moveTitleRelease: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                title_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveReleaseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setLiveService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                title_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LiveServiceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    signLead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    licenseTitles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaLicenceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    setMediaLine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                product_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaLineIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    divestRegion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                save_id: string;
+                law_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaActionOut"];
                 };
             };
             /** @description Bad Request */

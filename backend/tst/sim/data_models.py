@@ -65,6 +65,7 @@ from tst.sim.group.config import GroupBalance
 from tst.sim.group.conglomerate_config import ConglomerateBalance
 from tst.sim.hardware.config import HardwareBalance
 from tst.sim.markets_public.config import Bank, CeoBalance, IpoBalance, PublicBalance
+from tst.sim.media.config import MediaBalance, MediaFile
 from tst.sim.medical.config import MedicalBalance, MedicalFile
 from tst.sim.meetings.config import MeetingsBalance
 from tst.sim.mining.config import MiningBalance, NationalizationHistory
@@ -1445,6 +1446,7 @@ class Balance(_Frozen):
     telecom: TelecomBalance  # M53 (formulas.md 62): telecom
     fx: FxBalance  # M54 (formulas.md 64.4, ADR-0025): currencies and hedging
     finserv: FinservBalance  # M54 (formulas.md 64.1-64.3, 64.5): banking, payments, insurance
+    media: MediaBalance  # M55 (formulas.md 65): media and entertainment
     government: GovernmentBalance  # M44 (formulas.md 57): defence and government contracts
     conglomerate: ConglomerateBalance  # M43: the conglomerate view's industries
     negotiation: NegotiationBalance  # M47 (formulas.md 58): negotiations by conversation
@@ -1788,6 +1790,12 @@ class CategoryDef(_Frozen):
         """M54 (64): banking, payments and insurance (scheduled rivals only; a bank line takes
         deposits only with a charter or a partner bank, an insurer writes only where licensed)."""
         return self.family == "finance"
+
+    @property
+    def media(self) -> bool:
+        """M55 (65): video and music streaming, games and social networks (scheduled rivals only;
+        a startup never enters them)."""
+        return self.family == "media"
 
     @property
     def telecom(self) -> bool:
@@ -2262,6 +2270,7 @@ class GameData(_Frozen):
     telecom: TelecomFile | None = None  # M53 (62); None = no telecom markets' history
     finserv: FinservFile | None = None  # M54 (64.1-64.3); None = no financial services' history
     fx: FxFile | None = None  # M54 (64.4); None = every region's index is 1 (no translation)
+    media: MediaFile | None = None  # M55 (65); None = no media markets' history
     government: GovernmentFile | None = None  # M44 (57); None = governments buy nothing
 
     def bank(self, key: str) -> Bank:
