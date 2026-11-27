@@ -147,4 +147,6 @@ def _play_to_backup(path: Path, data: LoadedData, offline: TemplateAdapter) -> N
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    import e2e_cache  # M59: CI keeps the saves it builds (tools/e2e_cache.py)
+
+    sys.exit(e2e_cache.run(__file__, sys.argv[1:], lambda: main(sys.argv[1:])))
