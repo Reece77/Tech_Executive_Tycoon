@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -184,6 +184,12 @@ fmt:
 # Playwright smoke test; starts its own API and Vite servers on spare ports.
 e2e:
 	cd frontend && pnpm test:e2e
+
+# CI's e2e matrix (M59): shard SHARD of E2E_SHARDS, split by measured file time
+# (frontend/e2e/shard-reporter.ts). Together the shards are `make e2e`.
+E2E_SHARDS ?= 4
+e2e-shard:
+	cd frontend && pnpm test:e2e --shard=$(SHARD)/$(E2E_SHARDS)
 
 # The M7c agent playtest: a new game played for 120 months through the browser (out of `make e2e`).
 playtest:

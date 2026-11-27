@@ -30,7 +30,9 @@ export default defineConfig({
   testIgnore: ['playtest/**'], // the agent playtest runs on demand: make playtest (M7c)
   fullyParallel: false,
   workers: 1,
-  reporter: 'list',
+  // M59: e2e/shard-reporter.ts splits `--shard=N/T` runs by measured file time (CI's four
+  // `e2e (shard N/4)` jobs); without --shard it only records file times when asked to.
+  reporter: [['list'], ['./e2e/shard-reporter.ts']],
   globalSetup: './e2e/server-errors-setup.ts',
   globalTeardown: './e2e/server-errors.ts',
   use: {
