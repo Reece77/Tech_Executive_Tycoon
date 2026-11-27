@@ -137,6 +137,72 @@ The 20 slowest backend tests in `check` (`tests/durations.json`, local seconds; 
 | `tests/unit/test_people_phase.py::test_young_founder_grows_and_old_founder_does_not[1]` | 90 |
 | `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m31_save-platform-/platforms-True]` | 90 |
 
+### 2. The e2e split: whole files by measured time, no spec file split (sub-task 2)
+
+Playwright's own `--shard=N/4` splits files in name order into runs of equal test counts. With
+main's file times that gives shards of 11.5, 8.6, 34.3 and 14.7 minutes (1.99x the mean), because
+the M31-M55 flows (about a minute a test) sit together in name order. Splitting the heaviest
+files along their `describe` blocks would not help: the pieces keep their place in that order.
+Instead `frontend/e2e/shard-reporter.ts` uses Playwright 1.64's `TestRun.skipSharding()` and
+`exclude()` (a reporter's `preprocess`): whole files, heaviest first by `frontend/e2e/durations.json`,
+each to the lightest shard. On main's times that is 17.2, 17.3, 17.3 and 17.3 minutes (1.00x), so
+no spec file moved. The command is still `playwright test --shard=N/4` (`make e2e-shard SHARD=N`).
+The four `--list --shard=k/4` lists together equal the unsharded list, test for test.
+
+### 3. The fixture cache sits in the tools, keyed by their arguments (sub-task 3)
+
+The flows build their saves by running `tools/e2e_*_save.py` with save names stamped with the
+time, so a cache keyed by file name would never hit. Each of the 50 tools' `__main__` now runs
+`main` through `tools/e2e_cache.run`. With `TST_E2E_FIXTURE_CACHE` set (CI only), a call is a
+build when its arguments name an existing save folder and then a save that does not exist yet.
+The cache key is the tool and its other arguments. A hit copies the save, writes the new name
+into `save_meta.name` (the only place a save holds its name: the state's `SaveMeta` is read from
+it) and replays the tool's printed output with the folder and name restored (M26's and M47's
+flows read it). A miss builds, then stores only if the tool exited 0 and the one save file it
+made is that one. Every other call (`advance`, `holiday` and the other edits) runs as before. No
+spec file changed. `actions/cache` keeps one cache a shard (about 54 MB for shard 1), keyed by
+the brief's file list plus `frontend/e2e/durations.json`, which decides which files a shard runs.
+
+### 4. Timing alone, and the shards' other work (sub-task 4)
+
+`check (timing)` installs only the backend (no pnpm or Node). Lint and types go to shard 1, the
+API sync to 2 and the front end to 3. They are 1.1, 0.3 and 1.0 minutes, inside the guard's
+per-shard constants. `check-ci-1` and `check-ci-2` now mean shards 1 and 2 of four; the
+Makefile calls all four CI-internal, and no doc lists them as commands. The old two-shard
+meanings are used nowhere else.
+
+### 5. The guard's model (sub-task 5)
+
+- **Backend:** `tests/unit/test_ci_shards.py` repeats `shard_of` over the collected `check`
+  tests, which `tests/conftest.py` now records before the shard filter. It predicts a shard at
+  1.7 minutes plus its other work plus 0.248x its weighted minutes, fitted on main's d6d61fb run.
+  In a partial run (under 1,000 `check` tests collected) it skips.
+- **Playwright:** it repeats `assignShards` and predicts 3.2 minutes plus the shard's file
+  times. A spec file with no measured time is a warning, not a failure (the reporter counts it at
+  the mean).
+- **Thresholds:** over 70% of the limit the guard writes a warning to `$GITHUB_STEP_SUMMARY` and
+  raises a pytest warning; over 90% it fails. Parametrised tests check 70% and 90% exactly and
+  just above each.
+- **Nightly:** new `durations (check N/4)` and `durations (e2e N/4)` matrices measure every test
+  and file, the nightly shards write theirs too (`--durations-out`), and the `durations` job
+  merges them (`tools/ci_durations.py`) into one artifact. It opens no pull request.
+
+### 6. The 77 tests without a duration
+
+`backend/tests/durations.json` lacked 77 `check` tests (M52's, one M55 file and M59's own). I
+measured them locally (`--durations-out`, 168 s in all) and merged them in. Every other entry is
+unchanged.
+
+### 7. Local `make check`
+
+`make check` runs the `nightly` tests too (`check-backend` leaves out only `timing` and
+`weekly`). On this container it was 10% through after 30 minutes, so by §9 rule 7 I stopped it.
+In its place, what it runs ran on CI on this branch: lint, types, the API sync, the front end and
+every `check` test in `check (shard N/4)`, the 7 turn-time budgets in `check (timing)`, and the
+121 `nightly` tests in the nightly dispatched on `m59-ci`. Locally I ran the parts M59 touched:
+ruff and mypy, the front end's lint and typecheck, the new tests and a whole e2e shard (shard
+4/4, 50 passed in 23.0 minutes with no cache).
+
 ## Follow-ups
 
 (filled in by the session)
