@@ -98,6 +98,8 @@ make check-fast  # the same without the golden tests, for local iteration only
 make dev       # run API and front end together
 ```
 
+CI runs the same tests split across runners (M59): `check` as four shards plus `check (timing)` alone, `e2e` as four shards, each behind a summary job of that name; e2e fixture saves are cached. When the shard guard (`tests/unit/test_ci_shards.py`) warns, rebalance as `docs/ci.md` says; never lengthen a job's limit.
+
 ## 6. Definition of done (every task)
 
 - [ ] Every acceptance criterion in the brief is met, and you state how each was verified.
@@ -112,7 +114,7 @@ make dev       # run API and front end together
 
 ### Merging (from 2026-10-27, Reece's decision; pull-request route from 2026-11-03)
 
-`main` is protected: changes arrive only through a pull request whose `check` shards pass on a branch that is up to date with `main`. When every box above is ticked, `make e2e` passes, and the `check` run on your pushed branch is green:
+`main` is protected: changes arrive only through a pull request whose required checks, the summary jobs `check` (four `check (shard N/4)` jobs and `check (timing)`) and `e2e` (four `e2e (shard N/4)` jobs), pass on a branch that is up to date with `main` (M59, `docs/ci.md`). When every box above is ticked, `make e2e` passes, and the `check` run on your pushed branch is green:
 
 1. Merge `main` into your branch if it has moved (resolve `CHANGELOG.md` conflicts by keeping both sides' lines), push, and wait for `check` to go green again.
 2. Open a pull request into `main` and merge it with a **merge commit** (not squash or rebase). The merge commit's message ends with the trailer `Milestone-Tag: mX-done` (the milestone id). Wait for the `check` run on `main` to go green. If it fails, fix it at once through another pull request (that fix's merge commit carries the trailer instead).

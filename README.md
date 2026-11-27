@@ -50,6 +50,7 @@ On macOS or Linux, run `make dev` and open http://localhost:5173.
 | `Tech Startup Tycoon.cmd`, `tools/launcher.py` | Double-click to play on Windows (M29): installs, builds, serves the game on one port and opens the browser |
 | `Make desktop shortcut.cmd` | Adds a Tech Startup Tycoon shortcut to the Windows desktop (M29) |
 | `packaging/`, `backend/tst/desktop/` | The installed game (M58): the PyInstaller spec, the Inno Setup installer, the release smoke test, and the window's entry point (`python -m tst.desktop`) |
+| `docs/ci.md` | How CI runs: the `check` and `e2e` shards, the fixture cache, the shard guard and rebalancing (M59) |
 | `.github/workflows/release.yml` | Builds, smoke-tests and publishes the Windows installer to GitHub Releases (M58) |
 
 ## Getting started
