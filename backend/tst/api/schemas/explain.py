@@ -52,6 +52,7 @@ class ExplainOut(BaseModel):
         "bid",  # M44: a government bid
         "negotiation",  # M47: a negotiation's revealed range
         "bank",  # M54: a bank's profit
+        "title",  # M55: a series, film or game
     ]
     entity: str | None = None
     subject: str = Field(description="What the number belongs to, by name")

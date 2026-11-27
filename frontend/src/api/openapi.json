@@ -31331,6 +31331,932 @@
         }
       }
     },
+    "/api/saves/{save_id}/media": {
+      "get": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Get Media",
+        "description": "The Studio, Streaming, Games and Social screens: titles, leads, services, games, networks.",
+        "operationId": "getMedia",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaScreenOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Greenlight Title",
+        "operationId": "greenlightTitle",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GreenlightIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles/{title_id}/cancel": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Cancel Title",
+        "operationId": "cancelTitle",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "title_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Title Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles/{title_id}/overrule": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Overrule Lead",
+        "operationId": "overruleLead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "title_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Title Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles/{title_id}/budget": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Cut Budget",
+        "operationId": "cutTitleBudget",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "title_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Title Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CutIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles/{title_id}/move": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Move Release",
+        "operationId": "moveTitleRelease",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "title_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Title Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveReleaseIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/titles/{title_id}/live-service": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Set Live Service",
+        "operationId": "setLiveService",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "title_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Title Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveServiceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/leads": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Sign Lead",
+        "operationId": "signLead",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/licences": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "License Titles",
+        "operationId": "licenseTitles",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaLicenceIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/lines/{product_id}": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Set Media Line",
+        "operationId": "setMediaLine",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaLineIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/saves/{save_id}/media/laws/{law_id}/divest": {
+      "post": {
+        "tags": [
+          "media"
+        ],
+        "summary": "Divest Region",
+        "operationId": "divestRegion",
+        "parameters": [
+          {
+            "name": "save_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Save Id"
+            }
+          },
+          {
+            "name": "law_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Law Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaActionOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/saves/{save_id}/government": {
       "get": {
         "tags": [
@@ -35006,6 +35932,45 @@
         ],
         "title": "ActiveEffectOut",
         "description": "A running event modifier (23.2, M10b): what it does, where from, how long is left."
+      },
+      "AdMarketOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "spend_cents": {
+            "type": "integer",
+            "title": "Spend Cents",
+            "description": "A month, game scale"
+          },
+          "digital_cents": {
+            "type": "integer",
+            "title": "Digital Cents"
+          },
+          "impressions_m": {
+            "type": "number",
+            "title": "Impressions M"
+          },
+          "cpm_cents": {
+            "type": "number",
+            "title": "Cpm Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "spend_cents",
+          "digital_cents",
+          "impressions_m",
+          "cpm_cents"
+        ],
+        "title": "AdMarketOut"
       },
       "AddCarsIn": {
         "properties": {
@@ -41763,6 +42728,29 @@
         ],
         "title": "ConglomerateOut"
       },
+      "ConsoleGenerationOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "month"
+        ],
+        "title": "ConsoleGenerationOut"
+      },
       "ConstellationIn": {
         "properties": {
           "name": {
@@ -42051,6 +43039,29 @@
           "launches_per_month"
         ],
         "title": "ConstellationPlanIn"
+      },
+      "ConsumerAppOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ad_pricing": {
+            "type": "boolean",
+            "title": "Ad Pricing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "ad_pricing"
+        ],
+        "title": "ConsumerAppOut"
       },
       "ContinueUntilOut": {
         "properties": {
@@ -43387,6 +44398,19 @@
         ],
         "title": "CustomScenario",
         "description": "A custom scenario file's body (ADR-0026 point 1): a historical entry, whose goal and\ndeadline may both be left out (no goal: open play), plus `overrides`. `key` is the file's\nslug; `opened_from` names what the editor started from (shown only)."
+      },
+      "CutIn": {
+        "properties": {
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "budget_cents"
+        ],
+        "title": "CutIn"
       },
       "D2dPartnerIn": {
         "properties": {
@@ -46756,7 +47780,8 @@
               "constellation",
               "bid",
               "negotiation",
-              "bank"
+              "bank",
+              "title"
             ],
             "title": "Scope"
           },
@@ -49971,6 +50996,29 @@
         ],
         "title": "FlowOut"
       },
+      "FormatOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "month"
+        ],
+        "title": "FormatOut"
+      },
       "FormerProfileOut": {
         "properties": {
           "person_id": {
@@ -51303,6 +52351,63 @@
         "title": "GameOverOut",
         "description": "How the game ended (ADR-0018), for the game over screen."
       },
+      "GameTitleOut": {
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/TitleOut"
+          },
+          "decay": {
+            "type": "number",
+            "title": "Decay",
+            "description": "Players lost a month now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "decay"
+        ],
+        "title": "GameTitleOut"
+      },
+      "GamesOut": {
+        "properties": {
+          "titles": {
+            "items": {
+              "$ref": "#/components/schemas/GameTitleOut"
+            },
+            "type": "array",
+            "title": "Titles"
+          },
+          "generations": {
+            "items": {
+              "$ref": "#/components/schemas/ConsoleGenerationOut"
+            },
+            "type": "array",
+            "title": "Generations"
+          },
+          "store_fee": {
+            "type": "number",
+            "title": "Store Fee"
+          },
+          "epic_fee": {
+            "type": "number",
+            "title": "Epic Fee"
+          },
+          "epic_open": {
+            "type": "boolean",
+            "title": "Epic Open"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titles",
+          "generations",
+          "store_fee",
+          "epic_fee",
+          "epic_open"
+        ],
+        "title": "GamesOut"
+      },
       "GenerationOut": {
         "properties": {
           "person_id": {
@@ -52276,6 +53381,105 @@
           "fraction"
         ],
         "title": "GrantOut"
+      },
+      "GreenlightIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          },
+          "genre": {
+            "type": "string",
+            "title": "Genre",
+            "default": "drama"
+          },
+          "lead_person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Person Id"
+          },
+          "unit_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit Id"
+          },
+          "sequel_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequel Of"
+          },
+          "platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Platforms"
+          },
+          "monetisation": {
+            "type": "string",
+            "title": "Monetisation",
+            "default": "premium"
+          },
+          "live_service": {
+            "type": "boolean",
+            "title": "Live Service",
+            "default": false
+          },
+          "store": {
+            "type": "string",
+            "title": "Store",
+            "default": "default"
+          },
+          "window": {
+            "type": "string",
+            "title": "Window",
+            "default": "licensed"
+          },
+          "service_product_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Product Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "budget_cents"
+        ],
+        "title": "GreenlightIn"
       },
       "GreyRouteIn": {
         "properties": {
@@ -56292,6 +57496,178 @@
         ],
         "title": "LaunchSpecIn"
       },
+      "LawOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "announced": {
+            "type": "string",
+            "title": "Announced"
+          },
+          "deadline": {
+            "type": "string",
+            "title": "Deadline"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region",
+          "label",
+          "announced",
+          "deadline",
+          "status"
+        ],
+        "title": "LawOut"
+      },
+      "LeadOfferOut": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "creative": {
+            "$ref": "#/components/schemas/MediaRangeOut"
+          },
+          "vision": {
+            "$ref": "#/components/schemas/MediaRangeOut"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents",
+            "description": "A year at signing"
+          },
+          "upfront_share": {
+            "type": "number",
+            "title": "Upfront Share"
+          },
+          "expires": {
+            "type": "string",
+            "title": "Expires"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "n",
+          "name",
+          "level",
+          "region",
+          "creative",
+          "vision",
+          "fee_cents",
+          "upfront_share",
+          "expires"
+        ],
+        "title": "LeadOfferOut"
+      },
+      "LeadOut": {
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "title": "Person Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "creative": {
+            "$ref": "#/components/schemas/MediaRangeOut"
+          },
+          "vision": {
+            "$ref": "#/components/schemas/MediaRangeOut"
+          },
+          "reputation": {
+            "type": "number",
+            "title": "Reputation"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents",
+            "description": "A year"
+          },
+          "deal_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deal To"
+          },
+          "titles": {
+            "type": "integer",
+            "title": "Titles"
+          },
+          "morale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Morale"
+          },
+          "busy": {
+            "type": "boolean",
+            "title": "Busy",
+            "description": "Leading a title in development"
+          }
+        },
+        "type": "object",
+        "required": [
+          "person_id",
+          "name",
+          "level",
+          "creative",
+          "vision",
+          "reputation",
+          "fee_cents",
+          "deal_to",
+          "titles",
+          "morale",
+          "busy"
+        ],
+        "title": "LeadOut"
+      },
       "LeadSpec": {
         "properties": {
           "domain": {
@@ -57284,6 +58660,19 @@
           "funding"
         ],
         "title": "LithoStartIn"
+      },
+      "LiveServiceIn": {
+        "properties": {
+          "on": {
+            "type": "boolean",
+            "title": "On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "on"
+        ],
+        "title": "LiveServiceIn"
       },
       "LoanIn": {
         "properties": {
@@ -58396,6 +59785,261 @@
         ],
         "title": "MarketingSplitIn",
         "description": "Shares of the marketing budget by region, in basis points summing to 10,000; empty\nreturns to the default split by revenue (23.5)."
+      },
+      "MediaActionOut": {
+        "properties": {
+          "media": {
+            "$ref": "#/components/schemas/MediaScreenOut"
+          },
+          "energy": {
+            "$ref": "#/components/schemas/EnergyOut"
+          },
+          "unread_inbox": {
+            "type": "integer",
+            "title": "Unread Inbox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "media",
+          "energy",
+          "unread_inbox"
+        ],
+        "title": "MediaActionOut"
+      },
+      "MediaLicenceIn": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "fee_cents",
+          "years"
+        ],
+        "title": "MediaLicenceIn"
+      },
+      "MediaLicenceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "fee_cents": {
+            "type": "integer",
+            "title": "Fee Cents"
+          },
+          "from_month": {
+            "type": "string",
+            "title": "From Month"
+          },
+          "to_month": {
+            "type": "string",
+            "title": "To Month"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "fee_cents",
+          "from_month",
+          "to_month"
+        ],
+        "title": "MediaLicenceOut"
+      },
+      "MediaLineIn": {
+        "properties": {
+          "ad_tier": {
+            "type": "boolean",
+            "title": "Ad Tier",
+            "default": false
+          },
+          "ad_load": {
+            "type": "number",
+            "title": "Ad Load",
+            "default": 1.0
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "moderation": {
+            "type": "string",
+            "title": "Moderation",
+            "default": "standard"
+          },
+          "ad_pricing": {
+            "type": "boolean",
+            "title": "Ad Pricing",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "MediaLineIn"
+      },
+      "MediaRangeOut": {
+        "properties": {
+          "lo": {
+            "type": "integer",
+            "title": "Lo"
+          },
+          "hi": {
+            "type": "integer",
+            "title": "Hi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lo",
+          "hi"
+        ],
+        "title": "MediaRangeOut"
+      },
+      "MediaScreenOut": {
+        "properties": {
+          "studio": {
+            "$ref": "#/components/schemas/StudioOut"
+          },
+          "streaming": {
+            "$ref": "#/components/schemas/StreamingOut"
+          },
+          "games": {
+            "$ref": "#/components/schemas/GamesOut"
+          },
+          "social": {
+            "$ref": "#/components/schemas/SocialOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "studio",
+          "streaming",
+          "games",
+          "social"
+        ],
+        "title": "MediaScreenOut"
+      },
+      "MediaServiceOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionCustomersOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "churn_mult": {
+            "type": "number",
+            "title": "Churn Mult",
+            "description": "Its churn x this (catalogue engagement)"
+          },
+          "engagement": {
+            "type": "number",
+            "title": "Engagement",
+            "description": "Catalogue value over the median service's"
+          },
+          "ad_tier": {
+            "type": "boolean",
+            "title": "Ad Tier"
+          },
+          "ad_revenue_cents": {
+            "type": "integer",
+            "title": "Ad Revenue Cents",
+            "description": "Last month"
+          },
+          "content_cents": {
+            "type": "integer",
+            "title": "Content Cents",
+            "description": "Last month: own titles in production and licences"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents",
+            "description": "Cumulative since launch"
+          },
+          "paid_back": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Back"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/ServiceMonthOut"
+            },
+            "type": "array",
+            "title": "Months"
+          },
+          "licences": {
+            "items": {
+              "$ref": "#/components/schemas/MediaLicenceOut"
+            },
+            "type": "array",
+            "title": "Licences"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "category",
+          "status",
+          "regions",
+          "customers",
+          "churn_mult",
+          "engagement",
+          "ad_tier",
+          "ad_revenue_cents",
+          "content_cents",
+          "cash_cents",
+          "paid_back",
+          "months",
+          "licences"
+        ],
+        "title": "MediaServiceOut"
       },
       "MedicalActionOut": {
         "properties": {
@@ -60841,6 +62485,19 @@
           "unit_id"
         ],
         "title": "MovePersonIn"
+      },
+      "MoveReleaseIn": {
+        "properties": {
+          "months": {
+            "type": "integer",
+            "title": "Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "months"
+        ],
+        "title": "MoveReleaseIn"
       },
       "MoveUnitIn": {
         "properties": {
@@ -72326,6 +73983,52 @@
         ],
         "title": "RegionAccessOut"
       },
+      "RegionCustomersOut": {
+        "properties": {
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "price_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cents"
+          },
+          "market": {
+            "type": "number",
+            "title": "Market"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share",
+            "description": "Of the region's market (social: of its internet users)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region",
+          "label",
+          "customers",
+          "price_cents",
+          "market",
+          "share"
+        ],
+        "title": "RegionCustomersOut"
+      },
       "RegionEventOut": {
         "properties": {
           "turn": {
@@ -78589,6 +80292,49 @@
         "title": "SeriesGuideOut",
         "description": "The next round and whether it is allowed (14.5)."
       },
+      "ServiceMonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "customers": {
+            "type": "number",
+            "title": "Customers"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents"
+          },
+          "ad_revenue_cents": {
+            "type": "integer",
+            "title": "Ad Revenue Cents"
+          },
+          "content_cents": {
+            "type": "integer",
+            "title": "Content Cents"
+          },
+          "costs_cents": {
+            "type": "integer",
+            "title": "Costs Cents"
+          },
+          "cash_cents": {
+            "type": "integer",
+            "title": "Cash Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "customers",
+          "revenue_cents",
+          "ad_revenue_cents",
+          "content_cents",
+          "costs_cents",
+          "cash_cents"
+        ],
+        "title": "ServiceMonthOut"
+      },
       "ServiceOut": {
         "properties": {
           "product_id": {
@@ -78828,6 +80574,29 @@
           "regions"
         ],
         "title": "ShellOut"
+      },
+      "SignIn": {
+        "properties": {
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "years": {
+            "type": "integer",
+            "title": "Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "n",
+          "years"
+        ],
+        "title": "SignIn"
       },
       "SignPpaIn": {
         "properties": {
@@ -79083,6 +80852,155 @@
           "board_confidence"
         ],
         "title": "SnapshotPointOut"
+      },
+      "SocialNetworkOut": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/RegionCustomersOut"
+            },
+            "type": "array",
+            "title": "Regions"
+          },
+          "users": {
+            "type": "number",
+            "title": "Users"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "format_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format Label"
+          },
+          "advantage": {
+            "type": "boolean",
+            "title": "Advantage",
+            "description": "On the newest format within its window"
+          },
+          "network_effect": {
+            "type": "number",
+            "title": "Network Effect",
+            "description": "Appeal x this in its largest region"
+          },
+          "ad_load": {
+            "type": "number",
+            "title": "Ad Load"
+          },
+          "moderation": {
+            "type": "string",
+            "title": "Moderation"
+          },
+          "ad_revenue_cents": {
+            "type": "integer",
+            "title": "Ad Revenue Cents",
+            "description": "Last month: users x their ad revenue a user"
+          },
+          "laws": {
+            "items": {
+              "$ref": "#/components/schemas/LawOut"
+            },
+            "type": "array",
+            "title": "Laws"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "name",
+          "status",
+          "regions",
+          "users",
+          "format",
+          "format_label",
+          "advantage",
+          "network_effect",
+          "ad_load",
+          "moderation",
+          "ad_revenue_cents",
+          "laws"
+        ],
+        "title": "SocialNetworkOut"
+      },
+      "SocialOut": {
+        "properties": {
+          "networks": {
+            "items": {
+              "$ref": "#/components/schemas/SocialNetworkOut"
+            },
+            "type": "array",
+            "title": "Networks"
+          },
+          "formats": {
+            "items": {
+              "$ref": "#/components/schemas/FormatOut"
+            },
+            "type": "array",
+            "title": "Formats"
+          },
+          "ads": {
+            "items": {
+              "$ref": "#/components/schemas/AdMarketOut"
+            },
+            "type": "array",
+            "title": "Ads"
+          },
+          "consumer_apps": {
+            "items": {
+              "$ref": "#/components/schemas/ConsumerAppOut"
+            },
+            "type": "array",
+            "title": "Consumer Apps"
+          },
+          "ad_pricing_open": {
+            "type": "boolean",
+            "title": "Ad Pricing Open"
+          },
+          "load_range": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Load Range"
+          }
+        },
+        "type": "object",
+        "required": [
+          "networks",
+          "formats",
+          "ads",
+          "consumer_apps",
+          "ad_pricing_open",
+          "load_range"
+        ],
+        "title": "SocialOut"
       },
       "SortKey": {
         "properties": {
@@ -80443,6 +82361,45 @@
         ],
         "title": "StorylineOut"
       },
+      "StreamingOut": {
+        "properties": {
+          "services": {
+            "items": {
+              "$ref": "#/components/schemas/MediaServiceOut"
+            },
+            "type": "array",
+            "title": "Services"
+          },
+          "ad_tier_open": {
+            "type": "boolean",
+            "title": "Ad Tier Open"
+          },
+          "ad_tier_from": {
+            "type": "string",
+            "title": "Ad Tier From"
+          },
+          "music_payout": {
+            "type": "number",
+            "title": "Music Payout"
+          },
+          "licence_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Licence Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "services",
+          "ad_tier_open",
+          "ad_tier_from",
+          "music_payout",
+          "licence_years"
+        ],
+        "title": "StreamingOut"
+      },
       "StressOut": {
         "properties": {
           "stress": {
@@ -80508,6 +82465,83 @@
           "sections"
         ],
         "title": "StructureGuideOut"
+      },
+      "StudioOut": {
+        "properties": {
+          "slate": {
+            "items": {
+              "$ref": "#/components/schemas/TitleOut"
+            },
+            "type": "array",
+            "title": "Slate"
+          },
+          "released": {
+            "items": {
+              "$ref": "#/components/schemas/TitleOut"
+            },
+            "type": "array",
+            "title": "Released"
+          },
+          "catalogue_book_cents": {
+            "type": "integer",
+            "title": "Catalogue Book Cents",
+            "description": "Content assets carried"
+          },
+          "catalogue_value_cents": {
+            "type": "integer",
+            "title": "Catalogue Value Cents",
+            "description": "Own titles' revenue equivalent, decayed"
+          },
+          "leads": {
+            "items": {
+              "$ref": "#/components/schemas/LeadOut"
+            },
+            "type": "array",
+            "title": "Leads"
+          },
+          "offers": {
+            "items": {
+              "$ref": "#/components/schemas/LeadOfferOut"
+            },
+            "type": "array",
+            "title": "Offers"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/TitleKindOut"
+            },
+            "type": "array",
+            "title": "Kinds"
+          },
+          "strikes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Strikes",
+            "description": "Regions on strike this month"
+          },
+          "deal_years": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Deal Years"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slate",
+          "released",
+          "catalogue_book_cents",
+          "catalogue_value_cents",
+          "leads",
+          "offers",
+          "kinds",
+          "strikes",
+          "deal_years"
+        ],
+        "title": "StudioOut"
       },
       "StudyIn": {
         "properties": {
@@ -83419,6 +85453,268 @@
           "products"
         ],
         "title": "TimelineOut"
+      },
+      "TitleKindOut": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "typical_budget_cents": {
+            "type": "integer",
+            "title": "Typical Budget Cents"
+          },
+          "min_budget_cents": {
+            "type": "integer",
+            "title": "Min Budget Cents"
+          },
+          "max_budget_cents": {
+            "type": "integer",
+            "title": "Max Budget Cents"
+          },
+          "dev_months": {
+            "type": "integer",
+            "title": "Dev Months"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "typical_budget_cents",
+          "min_budget_cents",
+          "max_budget_cents",
+          "dev_months"
+        ],
+        "title": "TitleKindOut"
+      },
+      "TitleOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "series, film or game"
+          },
+          "genre": {
+            "type": "string",
+            "title": "Genre"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage",
+            "description": "development, released or cancelled"
+          },
+          "budget_cents": {
+            "type": "integer",
+            "title": "Budget Cents"
+          },
+          "spent_cents": {
+            "type": "integer",
+            "title": "Spent Cents"
+          },
+          "book_cents": {
+            "type": "integer",
+            "title": "Book Cents",
+            "description": "Carried as a content asset (1560)"
+          },
+          "amortised_cents": {
+            "type": "integer",
+            "title": "Amortised Cents"
+          },
+          "written_off_cents": {
+            "type": "integer",
+            "title": "Written Off Cents"
+          },
+          "lead_person_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Person Id"
+          },
+          "lead_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Name"
+          },
+          "lead_walked": {
+            "type": "boolean",
+            "title": "Lead Walked"
+          },
+          "months_done": {
+            "type": "integer",
+            "title": "Months Done"
+          },
+          "dev_months": {
+            "type": "integer",
+            "title": "Dev Months"
+          },
+          "release": {
+            "type": "string",
+            "title": "Release",
+            "description": "Planned release month (or the month it released)"
+          },
+          "greenlit": {
+            "type": "string",
+            "title": "Greenlit"
+          },
+          "overrules": {
+            "type": "integer",
+            "title": "Overrules"
+          },
+          "cuts": {
+            "type": "integer",
+            "title": "Cuts"
+          },
+          "moves": {
+            "type": "integer",
+            "title": "Moves"
+          },
+          "window": {
+            "type": "string",
+            "title": "Window",
+            "description": "own (on your video service) or licensed"
+          },
+          "platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Platforms"
+          },
+          "monetisation": {
+            "type": "string",
+            "title": "Monetisation"
+          },
+          "live_service": {
+            "type": "boolean",
+            "title": "Live Service"
+          },
+          "store": {
+            "type": "string",
+            "title": "Store"
+          },
+          "sequel_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequel Of"
+          },
+          "audience": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audience",
+            "description": "Millions; null before release"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected",
+            "description": "Millions expected at release; null before"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quality",
+            "description": "Its quality multiplier, shown from release"
+          },
+          "revenue_cents": {
+            "type": "integer",
+            "title": "Revenue Cents",
+            "description": "Booked (licences, box office, sales, in-app)"
+          },
+          "attributed_cents": {
+            "type": "integer",
+            "title": "Attributed Cents",
+            "description": "Its share of its own service's revenue (shown)"
+          },
+          "players": {
+            "type": "number",
+            "title": "Players",
+            "description": "A free-to-play game's current players, millions"
+          },
+          "earned_back": {
+            "type": "boolean",
+            "title": "Earned Back"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "genre",
+          "stage",
+          "budget_cents",
+          "spent_cents",
+          "book_cents",
+          "amortised_cents",
+          "written_off_cents",
+          "lead_person_id",
+          "lead_name",
+          "lead_walked",
+          "months_done",
+          "dev_months",
+          "release",
+          "greenlit",
+          "overrules",
+          "cuts",
+          "moves",
+          "window",
+          "platforms",
+          "monetisation",
+          "live_service",
+          "store",
+          "sequel_of",
+          "audience",
+          "expected",
+          "quality",
+          "revenue_cents",
+          "attributed_cents",
+          "players",
+          "earned_back"
+        ],
+        "title": "TitleOut"
       },
       "ToolControlOut": {
         "properties": {

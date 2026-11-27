@@ -278,6 +278,8 @@ def _new_products(state: GameState, company: int, b: Balance, data: GameData) ->
             continue
         if cat.finance:  # M54 (64): a bank needs a charter, an insurer a licence
             continue
+        if cat.media:  # M55 (65): a media line needs a studio's titles or a network's format
+            continue
         if allowed and cat.key not in allowed:
             continue
         best: tuple[float, str, float, int] | None = None

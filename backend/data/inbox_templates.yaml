@@ -1155,3 +1155,31 @@ templates:
   insurance_catastrophe: # M54 (64.3)
     title: "A catastrophe in {region} hits the insurers"
     body: "Insured losses this year are far above normal. Property claims there rise sharply this month."
+  # M55 (formulas.md 65): media and entertainment
+  media_title_greenlit:
+    title: "Green-lit: {title}"
+    body: "A {kind} with a budget of {budget_cents}, spent as it is made and carried as a content asset. Planned release: {release}. See it on the Studio screen."
+  media_title_released:
+    title: "{title} is out: {audience} against {expected} expected"
+    body: "Its audience is drawn at release: most titles miss, a few earn most of the money. Its cost is now amortised from the content asset on the kind's schedule."
+  media_lead_signed:
+    title: "Signed {name} to an overall deal"
+    body: "{years} years at {fee_cents} a year; a share is paid up front. You have first look at their titles: green-light one on the Studio screen with them as lead."
+  media_lead_unhappy:
+    title: "Morale warning: {name} is unhappy about {title}"
+    body: "Overruling a creative lead, cutting their budget or moving their date costs morale, more with a bigger ego. Low morale lowers the title's quality and can make them walk to a rival."
+  media_lead_walked:
+    title: "{name} walked out on {title}"
+    body: "They have gone to {rival}, which gets their next title. The title carries on without its lead, at a lower quality."
+  media_format_era:
+    title: "A new format arrives: {format}"
+    body: "Networks on the newest format win users from the incumbents for a few years. Switch {product} on the Social screen to ride it (a switch costs some quality)."
+  media_dsa_fine:
+    title: "Digital Services Act fine: {product}"
+    body: "Light moderation in Europe drew a fine of {fine_cents}. Standard or strong moderation costs more a user but avoids it."
+  media_divest_law:
+    title: "{product} must divest in {region}"
+    body: "A law there orders a sale of the network's users or a ban by {deadline}. Divest on the Social screen for a forced sale's price, or lose its users there."
+  media_banned:
+    title: "{product} is banned in {region}"
+    body: "Its users there have gone. It cannot sell there again."

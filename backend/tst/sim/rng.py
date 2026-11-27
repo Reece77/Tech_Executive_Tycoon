@@ -170,6 +170,13 @@ STREAM_IDS: Final = MappingProxyType(
         # M54 (formulas.md 64.4, ADR-0025): (region index, month) a region's rate index step from
         # fx.applies_from (the walk's shock and its jump)
         "fx": 75,
+        # M55 (formulas.md 65): (0, title id) a title's audience at release (never stored before
+        # it); (1, person id, title id, n) a lead's reaction to the title's n-th overrule, cut or
+        # move; (2, region index, year) seeded strikes and divest-or-ban laws after 2025; (3, 0,
+        # year) a format era's arrival, (3, 1, year) a console generation's, (3, 2, year, ...)
+        # yearly growth; (4, year, n) the n-th creative lead on offer that year (the person, then
+        # creative, vision and the hidden ego and loyalty)
+        "media": 76,
         "misc": 99,
     }
 )

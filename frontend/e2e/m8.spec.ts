@@ -89,6 +89,7 @@ test('(c) create a fintech product and launch one', async ({ page }) => {
 });
 
 test('(d) Competitors shows Stripe after September 2011', async ({ page }) => {
+  test.setTimeout(120_000); // the fixture plays 21 months first (tools/e2e_m8_save.py)
   fixture('advance', LATER, '21');
   await page.goto(`/game/${LATER}/competitors`);
   await expect(page.getByTestId('rival-link').filter({ hasText: 'Stripe' })).toBeVisible();

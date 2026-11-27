@@ -122,6 +122,7 @@ def test_stream_ids_are_unique_and_append_only() -> None:
         "telecom": 73,  # M53
         "finserv": 74,  # M54
         "fx": 75,  # M54
+        "media": 76,  # M55
         "misc": 99,
     }
 

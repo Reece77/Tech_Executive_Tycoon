@@ -74,6 +74,7 @@ from tst.sim.government.config import GovernmentFile
 from tst.sim.ledger import ENGINE_ACCOUNTS
 from tst.sim.markets.longrun import with_long_run
 from tst.sim.markets_public.config import BanksFile
+from tst.sim.media.config import MediaFile
 from tst.sim.medical.config import MedicalFile
 from tst.sim.mining.config import NationalizationHistory
 from tst.sim.modes.config import HistoricalScenario
@@ -152,6 +153,7 @@ SPACE_FILE = "space.yaml"  # M40 (formulas.md 56)
 TELECOM_FILE = "telecom.yaml"  # M53 (formulas.md 62)
 FINSERV_FILE = "finance_services.yaml"  # M54 (formulas.md 64.1-64.3, 64.5)
 FX_FILE = "fx_history.yaml"  # M54 (formulas.md 64.4, ADR-0025)
+MEDIA_FILE = "media.yaml"  # M55 (formulas.md 65)
 EVENTS_DIR = "events"  # M6: event templates, one file per category (formulas.md 16.4)
 DATA_FILES = (
     ACCOUNTS_FILE,
@@ -183,6 +185,7 @@ DATA_FILES = (
     TELECOM_FILE,
     FINSERV_FILE,
     FX_FILE,
+    MEDIA_FILE,
     REGULATION_FILE,
     MEDICAL_FILE,
     INTERESTS_FILE,
@@ -1186,6 +1189,7 @@ def load_all(
     telecom = _validate(TelecomFile, parsed[TELECOM_FILE], TELECOM_FILE)
     finserv = _validate(FinservFile, parsed[FINSERV_FILE], FINSERV_FILE)
     fx = _validate(FxFile, parsed[FX_FILE], FX_FILE)
+    media = _validate(MediaFile, parsed[MEDIA_FILE], MEDIA_FILE)
     tariffs = with_vehicle_tariffs(tariffs, vehicles)  # M38 (49.5): cars join 39.3's schedules
     medical = _validate(MedicalFile, parsed[MEDICAL_FILE], MEDICAL_FILE)
     game_data = _validate(
@@ -1252,6 +1256,7 @@ def load_all(
             "telecom": telecom,
             "finserv": finserv,
             "fx": fx,
+            "media": media,
         },
         "seed data cross-check",
     )
@@ -1297,6 +1302,8 @@ def load_all(
         raise DataLoadError(
             f"{FINSERV_FILE}, {FX_FILE}, {BALANCE_FILE} finserv, fx: " + "; ".join(problems)
         )
+    if problems := media_problems(balance, game_data):
+        raise DataLoadError(f"{MEDIA_FILE}, {BALANCE_FILE} media: " + "; ".join(problems))
     if problems := geopolitics_problems(balance, game_data):
         raise DataLoadError(
             f"{COUNTRIES_FILE}, {CONTROLS_FILE}, {TARIFFS_FILE}, {BALANCE_FILE} geopolitics: "
@@ -1706,6 +1713,113 @@ def finserv_problems(balance: Balance, data: GameData) -> list[str]:
     for n in f.payments.networks:
         if n.name not in names:
             out.append(f"network {n.name!r} is not in incumbents.yaml")
+    return out
+
+
+MEDIA_SEGMENTS: Final = {  # M55 (65): each media category's one segment
+    "streaming": ("viewers",),
+    "music": ("viewers",),
+    "games": ("players",),
+    "social": ("users",),
+}
+
+
+def media_problems(balance: Balance, data: GameData) -> list[str]:
+    """M55 (65): media.yaml names known incumbents, regions, categories and formats and reaches
+    2025; balance.yaml's media keys agree with categories.yaml and roles.yaml."""
+    f = data.media
+    mb = balance.media
+    out: list[str] = []
+    if f is None:
+        return ["media.yaml is required"]
+    regions = set(data.region_keys)
+    cats = {c.key: c for c in data.categories}
+    for name, key in (
+        ("streaming", mb.streaming),
+        ("music", mb.music),
+        ("games", mb.games),
+        ("social", mb.social),
+    ):
+        cat = cats.get(key)
+        if cat is None:
+            out.append(f"media category {key!r} is not in categories.yaml")
+        elif tuple(cat.segment_keys) != MEDIA_SEGMENTS[name]:
+            out.append(f"{key} must sell to {list(MEDIA_SEGMENTS[name])}")
+        elif not cat.media:
+            out.append(f"{key} must be family media")
+    if mb.consumer_apps not in cats:
+        out.append(f"{mb.consumer_apps!r} is not in categories.yaml")
+    if set(mb.growth_after) != set(mb.categories):
+        out.append("growth_after must list every media category")
+    if mb.lead_role not in {r.key for r in data.roles}:
+        out.append(f"lead_role {mb.lead_role!r} is not in roles.yaml")
+    if set(mb.ads.hours) != {"social", "streaming", "consumer_apps"}:
+        out.append("ads.hours lists social, streaming and consumer_apps")
+    if set(mb.ads.ad_load) != set(mb.ads.hours):
+        out.append("ads.ad_load lists what ads.hours lists")
+    for name, table in (
+        ("internet_users", f.internet_users),
+        ("arpu_usd", f.arpu_cents),
+        ("streaming_market", f.streaming_market),
+        ("music_market", f.music_market),
+    ):
+        if set(table) != regions:
+            out.append(f"{name} must list exactly the game's regions")
+        for region, series in table.items():
+            if max(series) < LAST_HISTORY_YEAR or min(series) > HISTORY_START_YEAR:
+                out.append(f"{name} {region} must run from {HISTORY_START_YEAR} to 2025")
+    for name, split in (
+        ("ads.region_share", f.ads.region_share),
+        ("games_region_share", f.games_region_share),
+    ):
+        for year, row in split.items():
+            if set(row) - regions:
+                out.append(f"{name} {year}: unknown regions")
+            if abs(sum(row.values()) - 1.0) > SHARE_TOLERANCE:
+                out.append(f"{name} {year} must sum to 1")
+    if set(f.ads.ios_share) != regions:
+        out.append("ads.ios_share must list every region")
+    names = {c.name for c in data.incumbents}
+    formats = set(f.format_keys())
+    pairs = [(x.company, x.line) for x in f.lines]
+    if len(set(pairs)) != len(pairs):
+        out.append("a media line is listed once")
+    for x in f.lines:
+        spec = next((c for c in data.incumbents if c.name == x.company), None)
+        if spec is None:
+            out.append(f"line {x.line!r}: {x.company!r} is not in incumbents.yaml")
+            continue
+        product = next((p for p in spec.products if p.name == x.line), None)
+        if product is None:
+            out.append(f"line {x.line!r} is not a product of {x.company!r} in incumbents.yaml")
+        elif product.category != x.category:
+            out.append(f"line {x.line!r}: category {x.category!r} is not incumbents.yaml's")
+        elif set(x.regions()) != set(product.regions or ()):
+            out.append(f"line {x.line!r}: its split's regions must be incumbents.yaml's regions")
+        if x.category not in mb.categories:
+            out.append(f"line {x.line!r}: {x.category!r} is not a media category")
+        if (x.category == mb.games) != bool(x.revenue_cents):
+            out.append(f"line {x.line!r}: games lines give revenue_usd, others customers")
+        if x.category == mb.social and x.format not in formats:
+            out.append(f"line {x.line!r}: a social line needs a known format")
+        series = x.customers or x.revenue_cents
+        if x.last is None and max(series) < LAST_HISTORY_YEAR:
+            out.append(f"line {x.line!r} must run to 2025")
+        for row in x.split.values():
+            if set(row) - regions:
+                out.append(f"line {x.line!r}: unknown regions in its split")
+    for law in f.divest_laws:
+        if law.company not in names or law.region not in regions:
+            out.append(f"divest law {law.company!r}: unknown company or region")
+    for key, region in (
+        *((x.key, x.region) for x in f.loot_box_rules),
+        *((x.key, x.region) for x in f.strikes),
+    ):
+        if region not in regions:
+            out.append(f"{key}: unknown region {region!r}")
+    for p in f.ads.privacy:
+        if set(p.regions) - regions:
+            out.append(f"privacy {p.key}: unknown regions")
     return out
 
 

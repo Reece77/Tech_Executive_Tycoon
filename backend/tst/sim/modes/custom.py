@@ -128,7 +128,8 @@ def _range(out: list[str], label: str, value: float, r: Range) -> None:
 
 def computed_markets(balance: Balance) -> frozenset[str]:
     """Categories whose addressable market follows its own data every month (cars, robots,
-    telecom services): their market and growth are not editable."""
+    telecom services, and from the v6 merge M54's banking, payments and insurance and M55's
+    media): their market and growth are not editable."""
     from tst.sim.telecom.data import demand_categories
 
     return frozenset(
@@ -137,6 +138,8 @@ def computed_markets(balance: Balance) -> frozenset[str]:
             balance.robotics.industrial,
             balance.robotics.humanoid,
             *demand_categories(balance),
+            *balance.finserv.categories,  # M54 (64.5): set from finance_services.yaml monthly
+            *balance.media.categories,  # M55 (65): set from media.yaml monthly
         )
     )
 

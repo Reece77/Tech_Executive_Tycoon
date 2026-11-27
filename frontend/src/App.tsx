@@ -47,6 +47,7 @@ import { PharmaPlantScreen, PharmaProgrammeScreen, PharmaScreen } from './screen
 import { RoboticsScreen } from './screens/RoboticsScreen';
 import { MobilityScreen } from './screens/MobilityScreen';
 import { SpaceScreen } from './screens/SpaceScreen';
+import { GamesScreen, SocialScreen, StreamingScreen, StudioScreen } from './screens/MediaScreens';
 import { TelecomScreen } from './screens/TelecomScreen';
 import {
   BankScreen,
@@ -104,6 +105,10 @@ export default function App() {
           <Route path="products/payments" element={<PaymentsScreen />} />
           <Route path="products/insurance" element={<InsuranceScreen />} />
           <Route path="finance/currency" element={<CurrencyScreen />} />
+          <Route path="products/studio" element={<StudioScreen />} />
+          <Route path="products/streaming" element={<StreamingScreen />} />
+          <Route path="products/games" element={<GamesScreen />} />
+          <Route path="products/social" element={<SocialScreen />} />
           <Route path="products/government" element={<GovernmentScreen />} />
           <Route path="products/equipment" element={<EquipmentScreen />} />
           <Route path="products/medical" element={<MedicalScreen />} />
