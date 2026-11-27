@@ -52,7 +52,90 @@ Making tests or the game faster (the v6 performance pass); the nightly and weekl
 
 ## Decisions made
 
-(filled in by the session)
+### 1. Baseline (sub-task 1, measured 2026-11-27)
+
+Runs (wall = run created to last job done, minutes; cancelled runs left out):
+
+| workflow | branch | runs (sha) | wall, each | median |
+| --- | --- | --- | --- | --- |
+| check | main | d6d61fb, 3da2f5b, 65f6d12, 139979f, ebce7f4 | 37.9, 26.1, 47.0, 30.3, 28.7 | 30.3 |
+| check | m55-media | 06bc551 (PR, push), f8e2e5e (PR, push), 3071e60 | 38.7, 52.2, 53.5, 53.9, 37.9 | 52.2 |
+| e2e | main | d6d61fb, 3da2f5b, 65f6d12, 139979f, ebce7f4 | 72.2, 81.9, 69.2, 83.2, 95.7 | 81.9 |
+| e2e | m55-media | 06bc551, f8e2e5e (failed: limit), fd9c93b, ccd8822, c9c9c27 | 96.2, 124.1, 108.2, 94.6, 100.9 | 100.9 |
+
+Steps (median minutes, [range]). Every setup step (checkout, Python, uv, pnpm, Node, both
+installs) takes 0.0-0.15 minutes, with the uv and pnpm caches always hitting; queueing is 2-3
+seconds and Playwright's Chromium 0.2-0.5 minutes:
+
+| job | step | main | m55-media |
+| --- | --- | --- | --- |
+| check (shard 1/2) | `make check-ci-1` (ruff < 1 s, mypy 64 s, pytest on 2 workers) | 23.7 [19.9-38.8] | 30.1 [29.4-42.5] |
+| check (shard 1/2) | `make check-timing` (7 tests, `-n 0`) | 4.8 [4.1-7.9] | 8.0 [7.3-10.7] |
+| check (shard 2/2) | `make check-ci-2` (API sync 13 s, eslint 20 s, tsc 32 s, vitest 6 s, pytest) | 25.9 [20.3-30.1] | 50.2 [29.7-53.5] |
+| e2e | `make e2e` (202 tests, 1 worker; servers up and first test after 54-72 s) | 81.3 [68.4-95.2] | 99.9 [93.7-123.3] |
+
+The same commit (06bc551) ran shard 2 in 29.7 minutes on its pull-request run and 51.6 on its
+push run, and every e2e file ran 1.2-1.45x slower on m55-media's run than on main's: runner
+speed alone moves a job by about a third. Pytest on main's d6d61fb: shard 1 `1514 passed` in
+28:56, shard 2 `1512 passed, 1 skipped` in 28:55 (2 xdist workers: the runners have 2 vCPUs).
+
+Collected on main (d6d61fb): backend 3,173 tests, of which 3,027 are `not nightly and not timing
+and not weekly` (CI's `check`), 121 `nightly`, 7 `timing` and 18 `weekly`; Playwright `Total: 202
+tests in 60 files`.
+
+The 20 slowest Playwright files (sum of test durations; main job 140675711155 ran 69.0 minutes
+of tests and m55-media job 140632957875 92.3; the other 40 files take 20.8 and 27.0 minutes).
+Only one test is over 1.5 minutes (`m43.spec.ts:23`, 3.5): the M31-M55 specs cost about a minute
+a test, about 37 of main's 69 minutes.
+
+| file | tests | main min | m55-media min |
+| --- | --- | --- | --- |
+| `m39.spec.ts` | 3 | 3.60 | 4.90 |
+| `m43.spec.ts` | 1 | 3.50 | 4.60 |
+| `m40.spec.ts` | 3 | 3.40 | 4.60 |
+| `m32.spec.ts` | 3 | 3.20 | 4.60 |
+| `m34.spec.ts` | 3 | 3.19 | 4.50 |
+| `m55.spec.ts` | 4 | 3.17 | 3.81 |
+| `m31.spec.ts` | 3 | 3.05 | 4.40 |
+| `m54.spec.ts` | 3 | 3.05 | 3.80 |
+| `m42.spec.ts` | 3 | 3.00 | 4.20 |
+| `m41.spec.ts` | 3 | 2.91 | 3.90 |
+| `m38.spec.ts` | 3 | 2.77 | 4.00 |
+| `m53.spec.ts` | 3 | 2.64 | 3.60 |
+| `m15b.spec.ts` | 4 | 1.96 | 2.83 |
+| `m49.spec.ts` | 4 | 1.75 | 2.33 |
+| `m44.spec.ts` | 3 | 1.58 | 2.19 |
+| `m24.spec.ts` | 4 | 1.28 | 1.65 |
+| `m7b.spec.ts` | 6 | 1.17 | 1.43 |
+| `m16.spec.ts` | 4 | 1.05 | 1.41 |
+| `m14b.spec.ts` | 4 | 1.02 | 1.34 |
+| `m13.spec.ts` | 3 | 0.91 | 1.16 |
+
+The 20 slowest backend tests in `check` (`tests/durations.json`, local seconds; the file's
+2,938 known `check` tests sum to 164.8 minutes):
+
+| test | s |
+| --- | --- |
+| `tests/property/test_product_invariants.py::test_customers_stay_within_demand_and_entries_balance` | 365 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m37_save-practice-/campaign-False]` | 316 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m48_save-boardroom-/meetings-False]` | 297 |
+| `tests/unit/test_modes_scenarios.py::test_each_scenario_loads_on_its_years_world[ai_lab]` | 243 |
+| `tests/golden/test_golden.py::test_same_seed_twice_is_identical` | 166 |
+| `tests/balance/test_m48_balance.py::test_59_4_targets_2_and_3` | 153 |
+| `tests/golden/test_golden.py::test_golden_seed[1]` | 146 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m34_save-regulated-/regulation-True]` | 133 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m32_save-power-/power-True]` | 123 |
+| `tests/unit/test_m38_vehicles_data.py::test_history_ev_shares_follow_the_data` | 120 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m33_save-litho-/equipment-True]` | 120 |
+| `tests/balance/test_balance_smoke.py::test_report_has_every_target` | 116 |
+| `tests/integration/test_cli_org.py::test_manual_check_flow` | 106 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m40_save-space-/space-True]` | 105 |
+| `tests/unit/test_m30_memo.py::test_derived_values_match_a_recompute_while_a_group_plays` | 104 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m44_save-defence-/government-True]` | 101 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m39_save-robotics-/robotics-True]` | 95 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m42_save-pharma-/pharma-True]` | 90 |
+| `tests/unit/test_people_phase.py::test_young_founder_grows_and_old_founder_does_not[1]` | 90 |
+| `tests/integration/test_m23c_fixtures.py::test_every_v3_practice_save_opens_people_and_org_with_a_team[e2e_m31_save-platform-/platforms-True]` | 90 |
 
 ## Follow-ups
 
