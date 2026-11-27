@@ -219,6 +219,36 @@ every `check` test in `check (shard N/4)`, the 7 turn-time budgets in `check (ti
 ruff and mypy, the front end's lint and typecheck, the new tests and a whole e2e shard (shard
 4/4, 50 passed in 23.0 minutes with no cache).
 
+### 8. Readings on the branch (2026-11-27)
+
+| Run (commit) | `check` wall | check shards 1-4, timing | slowest / mean | `e2e` wall | e2e shards 1-4 | slowest / mean |
+| --- | --- | --- | --- | --- | --- | --- |
+| push 59efb4f (before main's M55) | 19.3 | 11.2, 18.9, 15.8, 14.2; 6.7 | 1.26 | - | - | - |
+| push d2e0fd1 | 26.4 | 24.9, 26.2, 20.0, 23.6; 10.8 | 1.11 | - | - | - |
+| PR d2e0fd1 | 27.5 | 25.7, 15.9, 27.4, 19.0; 6.9 | 1.25 | 21.6 (miss) | 21.4, 19.3, 21.4, 20.7 | 1.03 |
+| PR c36149c (queued behind the nightly) | 21.0 | 13.2, 14.2, 20.5, 13.2; 10.4 | 1.34 | 33.0 (miss) | 20.1, 20.9, 18.4, 32.9 | 1.42 |
+| push c36149c | 28.4 | 24.3, 27.9, 27.8, 17.1; 7.8 | 1.15 | - | - | - |
+| re-run c36149c | - | - | - | 13.3 (hit) | 9.7, 13.2, 8.7, 11.0 | 1.24 |
+
+Against the targets: `check` median of the three latest (27.5, 21.0, 28.4) is 27.5 minutes (band
+30; main's baseline median 30.3, m55-media's 52.2). `e2e` on a cache miss 21.6 and 33.0 (band 45),
+on a hit 13.3 (band 35; main's baseline median 81.9). Counts equal main's (decision 1) plus M59's
+13 new backend tests (3,040 `check`). Slowest / mean is within 1.3 in seven of nine readings: the
+two over it (1.34, 1.42) are single slow runners on a split the guard predicts flat (check
+16.3-17.4, e2e 20.4-20.5 minutes a shard). As the baseline showed, the same work runs up to 1.75x
+slower on one runner than another; no split removes that.
+
+**Risk, for Reece:** the slowest `check` shard reached 27.9 of its 30 minutes (93%), on runners
+1.6x slower than the guard's model. The guard judges the model's prediction (58% today), so it
+does not see a slow runner coming. A fifth shard (about 14 minutes a shard by the model, 22 on
+the slowest runner seen) would keep that margin; with the summary job it needs no ruleset change.
+Not done: the brief names four.
+
 ## Follow-ups
 
-(filled in by the session)
+- A fifth `check` shard if slow runners keep shards near 30 minutes (decision 8).
+- `playwright install --with-deps` runs `apt-get update` on every e2e shard; one shard failed when
+  an apt mirror answered 403 (run 46072543176). Four shards meet that four times as often. Caching
+  the browser, or installing without `--with-deps` on the hosted image, would remove it.
+- The guard's constants are fitted to one run; refit them from the nightly's measured files after a
+  week of runs (docs/ci.md).
