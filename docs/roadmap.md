@@ -104,6 +104,7 @@ All of v5 is built and merged: family and succession (M36), dynasty mode to 2069
 | M55, media and entertainment | C |
 | M56, the shared core (deferred unless the law firm game outgrows a fork) | engineering |
 | M58, a real executable with automatic updates | engineering, early |
+| M59, CI at scale: parallel `check` and `e2e`, cached fixtures (after M55, before the rest) | engineering |
 | M57, v6 balance and polish; closes v6 | — |
 
 ## Process
