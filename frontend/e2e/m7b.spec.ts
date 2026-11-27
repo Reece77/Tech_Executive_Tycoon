@@ -137,6 +137,7 @@ test('(d) hover a top-bar number and see its breakdown', async ({ page }) => {
 });
 
 test('(e) save a People view, reload, and find it still selected', async ({ page }) => {
+  test.setTimeout(120_000); // two fixture saves are built first (28 s of 30 on a slow runner)
   const save = `m7b-views-${stamp}`;
   const other = `m7b-views-other-${stamp}`;
   makeSave(save);
