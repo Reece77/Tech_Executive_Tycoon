@@ -52,6 +52,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="Write each test's duration (setup, call and teardown) to tests/durations.json",
     )
+    parser.addoption(
+        "--durations-out",
+        default=None,
+        help="Write the durations of the tests this run measured to this JSON file (M59: the "
+        "nightly's fresh durations, merged by tools/ci_durations.py)",
+    )
 
 
 # On the 2-core CI runner a test costs about 0.93x its local duration plus 1.2 s (fixtures,
@@ -75,8 +81,18 @@ def shard_of(nodeids: list[str], durations: dict[str, float], shards: int) -> di
     return shard
 
 
+# The markers CI's `check` leaves out (the Makefile's check-ci-N; `timing` runs alone).
+CHECK_SKIPS = ("nightly", "timing", "weekly")
+CHECK_TESTS = pytest.StashKey[list[str]]()
+
+
 @pytest.hookimpl(trylast=True)  # after -m deselection, so `nightly` tests weigh nothing (M7a)
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    # M59: the tests CI's `check` shards run, as collected here before the shard filter, for
+    # the shard guard (tests/unit/test_ci_shards.py)
+    config.stash[CHECK_TESTS] = [
+        i.nodeid for i in items if not any(i.get_closest_marker(m) for m in CHECK_SKIPS)
+    ]
     spec = config.getoption("--shard")
     if spec is None:
         return
@@ -99,6 +115,12 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
 
 def pytest_sessionfinish(session: pytest.Session) -> None:
     config = session.config
-    if config.getoption("--store-durations") and not hasattr(config, "workerinput"):
-        rounded = {n: round(d, 2) for n, d in sorted(_DURATIONS.items())}
+    if hasattr(config, "workerinput"):
+        return
+    rounded = {n: round(d, 2) for n, d in sorted(_DURATIONS.items())}
+    if config.getoption("--store-durations"):
         DURATIONS_FILE.write_text(json.dumps(rounded, indent=1) + "\n")
+    out = config.getoption("--durations-out")
+    if out:
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Path(out).write_text(json.dumps(rounded, indent=1) + "\n")

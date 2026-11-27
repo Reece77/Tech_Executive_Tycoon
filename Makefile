@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -43,7 +43,12 @@ nightly:
 # tools/nightly_durations.py merges into the durations file to rebalance the shards.
 NIGHTLY_SHARDS ?= 6
 nightly-ci:
-	cd backend && uv run pytest -q -n auto -m "nightly and not weekly" -s --durations=0 --shard $(SHARD)/$(NIGHTLY_SHARDS)
+	cd backend && uv run pytest -q -n auto -m "nightly and not weekly" -s --durations=0 --shard $(SHARD)/$(NIGHTLY_SHARDS) $(if $(DURATIONS_OUT),--durations-out $(DURATIONS_OUT))
+
+# M59: the nightly's measurement of the `check` tests, shard SHARD of four, each test's
+# duration written to DURATIONS_OUT (tools/ci_durations.py merges the shards).
+check-durations-ci:
+	$(CHECK_CI_TESTS) $(SHARD)/4 --durations-out $(DURATIONS_OUT)
 
 # The v2 30-year targets (M15a, formulas.md 30.7; CI: .github/workflows/weekly.yml, Sundays):
 # V1 over 30 seeds, V5's runs to December 2039, and V6's turn time on a 2039 stage-4 save.
