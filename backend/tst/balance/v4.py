@@ -43,7 +43,7 @@ from tst.balance.report import SCENARIO, Row
 from tst.balance.strategies_v4 import V4, V4_ARMS
 from tst.balance.v3 import ALL as V3_ALL
 from tst.balance.v3 import COMPARED, DEVICES, INTEGRATOR, LONG_TURNS, loaded
-from tst.sim.calendar import ym_to_turn
+from tst.sim.calendar import turn_to_ym, ym_to_turn
 from tst.sim.ledger import FINES
 from tst.sim.power import queues
 
@@ -341,6 +341,6 @@ def rung_table(runs: Sequence[V4Run]) -> str:
         cells = []
         for k in keys:
             t = r.rungs.get(k)
-            cells.append(f"{'-' if t is None else f'{2010 + t // 12}-{t % 12 + 1:02d}':>12}")
+            cells.append(f"{'-' if t is None else '{}-{:02d}'.format(*turn_to_ym(t)):>12}")
         lines.append(f"{r.strategy:18} {r.seed:4}  " + "  ".join(cells))
     return "\n".join(lines)

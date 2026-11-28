@@ -24,6 +24,7 @@ from tst.balance.game import PLAYER, Game, start_game
 from tst.balance.m13b import _energy, _launch_region
 from tst.balance.report import SCENARIO, _loaded
 from tst.balance.strategies import do_nothing, steady
+from tst.sim.calendar import turn_to_ym
 from tst.sim.hiring.formulas import benefits_cents, monthly_salary_cents
 from tst.sim.ledger import CASH, COMMON_EQUITY, LedgerEntry, apply_entries
 from tst.sim.mna import antitrust, deals, valuation
@@ -309,7 +310,7 @@ def review_blocked(seed: int) -> bool:
     deal = Deal(1, PLAYER, zoho, 10**10, 1.0, state.turn, close_turn=state.turn + 1)
     screened, _ = antitrust.screen(state, deal, RngFactory(seed), b, g)
     assert screened.status == "review" and screened.blocked_draw is not None
-    year = 2010 + state.turn // 12
+    year = turn_to_ym(state.turn)[0]
     return screened.blocked_draw < mf.block_probability(screened.combined_share, year, b.antitrust)
 
 

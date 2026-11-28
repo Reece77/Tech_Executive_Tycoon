@@ -31,7 +31,7 @@ from tst.api.schemas.editor import (
 )
 from tst.loader import LoadedData
 from tst.profile import results as kept
-from tst.sim.calendar import format_turn, ym_to_turn
+from tst.sim.calendar import format_turn, turn_to_ym, ym_to_turn
 from tst.sim.errors import InvalidCustomScenarioError, NotFoundError
 from tst.sim.modes import challenges, custom
 from tst.sim.modes.custom_config import CustomScenario, Range
@@ -68,7 +68,7 @@ def get_editor(data: DataDep) -> EditorOut:
     if d.nodes is not None:
         for n in d.nodes.nodes:
             first = min(month_to_turn(m) for m in n.first.values())
-            nodes.append(NodeOptionOut(key=n.key, label=n.label, first_year=2010 + first // 12))
+            nodes.append(NodeOptionOut(key=n.key, label=n.label, first_year=turn_to_ym(first)[0]))
     return EditorOut(
         ranges=_ranges(data),
         macro_from_year=b.editor.macro_from_year,

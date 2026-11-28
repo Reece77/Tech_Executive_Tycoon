@@ -38,6 +38,8 @@ function Fail($text) {
   throw $text
 }
 
+# Start-Process joins its arguments with spaces and quotes none: a folder with a space goes in
+# as "/DIR=`"<folder>`"" or setup reads only its first word.
 function Run-Installer([string[]]$Extra = @()) {
   $argv = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOLAUNCH=1') + $Extra
   $p = Start-Process -FilePath $Installer -ArgumentList $argv -PassThru -Wait
@@ -206,7 +208,7 @@ Step 'Setup refuses a folder overlapping the saves; uninstall keeps the player''
 Uninstall-From $App
 $docsGame = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Tech Startup Tycoon'
 foreach ($bad in @($docsGame, (Join-Path $docsGame 'game'))) {
-  $code = Run-Installer @("/DIR=$bad")
+  $code = Run-Installer @("/DIR=`"$bad`"")
   if ($code -eq 0) { Fail "setup installed into $bad, which overlaps the saves" }
   if (Test-Path (Join-Path $bad 'Tech Startup Tycoon.exe')) { Fail "setup wrote the game into $bad" }
 }
@@ -215,7 +217,7 @@ $custom = Join-Path $env:RUNNER_TEMP 'TST custom folder'
 New-Item -ItemType Directory -Force -Path $custom | Out-Null
 $sentinel = Join-Path $custom 'my own notes.txt'
 Set-Content -Path $sentinel -Value 'the player''s file'
-$code = Run-Installer @("/DIR=$custom")
+$code = Run-Installer @("/DIR=`"$custom`"")
 if ($code -ne 0) { Fail "installer into $custom exited $code" }
 if (-not (Test-Path (Join-Path $custom 'Tech Startup Tycoon.exe'))) { Fail "no game in $custom" }
 Uninstall-From $custom
