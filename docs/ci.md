@@ -8,11 +8,12 @@ How the pull-request checks run (M59). Locally nothing changes: `make check`, `m
 | Workflow | Job | Runs | Limit |
 | --- | --- | --- | --- |
 | `check.yml` (every push and pull request) | `check (shard N/4)`, N = 1-4 | `make check-ci-N`: a quarter of the backend tests (`-n auto`, `--shard N/4`), plus ruff and mypy (1), the API sync (2) or the front end's lint, types and tests (3) | 30 min |
-| | `check (timing)` | `make check-timing`: the 7 turn-time budgets, `-n 0`, alone on their runner | 30 min |
+| | `check (timing)` | `make check-timing`: the 9 turn-time budgets, `-n 0`, alone on their runner, with the late v6 saves restored from the cache (M60) | 30 min |
 | | **`check`** | needs the five above; fails unless all succeeded | 5 min |
 | `e2e.yml` (pull requests into main, pushes to main, on demand) | `e2e (shard N/4)` | `make e2e-shard SHARD=N`: `playwright test --shard=N/4`, with its own API, launcher, Vite server and save folder | 45 min |
 | | **`e2e`** | needs the four shards; fails unless all succeeded | 5 min |
 | `determinism.yml` | `digests (...)`, `compare` | unchanged | |
+| `timing-saves.yml` (pushes to main, on demand) | `timing save (2069)`, `timing save (2100)` | `make timing-save-N`: builds one late v6 save and keeps it in the Actions cache (M60) | 180 min |
 
 The rulesets require the summary jobs: `check` ("Main protection") and `e2e` ("Main"), so adding
 or removing a shard never changes a required name. `tag-milestone` still waits for the `check`
@@ -39,6 +40,23 @@ Calls that edit an existing save run as before. The key is a hash of `backend/ts
 is deterministic (ADR-0002); `backend/tests/integration/test_e2e_cache.py` holds a cached save's
 state digest and ledger to a fresh build's. A change to the spec files alone keeps the cache: a
 save a new argument asks for is built (and not stored until the key changes).
+
+## The late v6 saves (M60)
+
+`check (timing)` times a January 2069 month of M37's dynasty game whose player also runs the v6
+industries, and a December 2100 month of M52's sandbox continuation
+(`backend/tests/integration/test_m60_perf.py`: 500 and 550 ms, runner-adjusted). Each save takes
+about an hour to build, longer than the job's limit, so the job never builds them:
+
+- `timing-saves.yml` builds them (`make timing-save-2069`, `make timing-save-2100`) after every
+  push to `main` and keeps each in the Actions cache as `timing-save-N-<commit>`;
+- `check (timing)` restores the newest `timing-save-N-` its branch can read (its own branch's, else
+  `main`'s) into `/tmp/tst-timing`, and `make check-timing` passes each save it finds to the test;
+  a guard whose save is missing skips (the first hour after a cache is evicted, or a fork).
+
+A save built a few commits back is still a 2069 or 2100 world: migrations bring it up to date and
+the engine plays it on. Locally, `make timing-saves` builds both into `TIMING_SAVE_DIR`
+(`/tmp/tst-timing`), and `make check-timing` uses them from then on.
 
 ## The guard
 

@@ -1,0 +1,55 @@
+# M60: the two late v6 saves `check (timing)` times (tests/integration/test_m60_perf.py), an hour
+# each to build, so the check never builds them: this workflow builds them after each push to
+# main (and on demand, for a branch) and keeps each in the Actions cache, keyed by the commit;
+# `check (timing)` restores the newest for its branch or main. The engine is deterministic and
+# migrations bring an older save up to date, so a save built a few commits back times the same
+# world. docs/ci.md.
+name: timing-saves
+
+on:
+  push:
+    # TEMPORARY (M60, removed before merging): m60-perf, on a commit whose message says
+    # [timing-saves], builds the branch's own saves
+    branches: [main, m60-perf]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: timing-saves-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
+
+jobs:
+  build:
+    name: timing save (${{ matrix.save }})
+    if: github.ref == 'refs/heads/main' || contains(github.event.head_commit.message, '[timing-saves]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        save: ["2069", "2100"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: make timing-save-${{ matrix.save }}
+        run: make timing-save-${{ matrix.save }} TIMING_SAVE_DIR=/tmp/tst-timing
+
+      - name: Keep the save
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/tst-timing/m60_${{ matrix.save }}.tst.sqlite
+          key: timing-save-${{ matrix.save }}-${{ github.sha }}

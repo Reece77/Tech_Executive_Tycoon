@@ -86,8 +86,24 @@ jobs:
       - name: Install backend dependencies
         run: uv sync --project backend --locked
 
+      # M60: the late v6 saves (January 2069 and December 2100) built by timing-saves.yml, the
+      # newest kept for this branch or main; without one its guard skips (docs/ci.md).
+      - name: Restore the 2069 save
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/tst-timing/m60_2069.tst.sqlite
+          key: timing-save-2069-${{ github.sha }}
+          restore-keys: timing-save-2069-
+
+      - name: Restore the 2100 save
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/tst-timing/m60_2100.tst.sqlite
+          key: timing-save-2100-${{ github.sha }}
+          restore-keys: timing-save-2100-
+
       - name: make check-timing
-        run: make check-timing
+        run: make check-timing TIMING_SAVE_DIR=/tmp/tst-timing
 
   check:
     name: check

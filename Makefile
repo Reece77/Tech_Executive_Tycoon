@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing timing-saves timing-save-2069 timing-save-2100 check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -26,8 +26,25 @@ check-ci-4:
 # The turn-time budgets (marker `timing`, 1.0 s a turn): alone, without xdist, after the parallel
 # suite, so they measure on an otherwise idle machine (M14, product manager 2026-11-06). CI runs
 # this alone on its own runner, as the job `check (timing)` (M59).
+# M60: with the late v6 saves when `make timing-saves` (CI: the timing-saves workflow's cache)
+# has built them in TIMING_SAVE_DIR; without them their two guards skip.
+TIMING_SAVE_DIR ?= /tmp/tst-timing
+TIMING_2069 = $(wildcard $(TIMING_SAVE_DIR)/m60_2069.tst.sqlite)
+TIMING_2100 = $(wildcard $(TIMING_SAVE_DIR)/m60_2100.tst.sqlite)
 check-timing:
-	cd backend && uv run pytest -q -n 0 -m "timing and not weekly"
+	cd backend && $(if $(TIMING_2069),TST_M60_2069_SAVE=$(abspath $(TIMING_2069))) $(if $(TIMING_2100),TST_M60_2100_SAVE=$(abspath $(TIMING_2100))) uv run pytest -q -n 0 -m "timing and not weekly"
+
+# M60: the two late saves check-timing's guards time (an hour each to build): January 2069, M37's
+# dynasty game whose player also runs the v6 industries, and December 2100, M52's sandbox
+# continuation (seed 1).
+timing-saves: timing-save-2069 timing-save-2100
+timing-save-2069:
+	uv run --project backend python tools/v6_save.py $(TIMING_SAVE_DIR) m60_2069_base --strategy full_integrator --turns 708 --length dynasty --children 2,5
+	uv run --project backend python tools/profile_m60_v6_arm.py $(TIMING_SAVE_DIR)/m60_2069_base.tst.sqlite $(TIMING_SAVE_DIR)/m60_2069.tst.sqlite
+	rm -f $(TIMING_SAVE_DIR)/m60_2069_base.tst.sqlite*
+timing-save-2100:
+	uv run --project backend python tools/m52_save.py $(TIMING_SAVE_DIR) m60_2100 --seeds 1
+	uv run --project backend python -c "import sqlite3, sys; sqlite3.connect(sys.argv[1]).execute('PRAGMA wal_checkpoint(TRUNCATE)')" $(TIMING_SAVE_DIR)/m60_2100.tst.sqlite
 
 # The balance runner (docs/balance-targets.md): 4 strategies x 10 seeds x 120 turns plus steady on
 # easy and hard, one table of targets. Exits 1 if a pass/fail target (T1-T3) fails.

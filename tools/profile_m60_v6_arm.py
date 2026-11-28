@@ -5,7 +5,8 @@ radio network in North America (tools/e2e_m53_save.py's "huawei" mode), a charte
 American bank with 300,000 consumer and 20,000 business accounts and its banking line
 (tools/e2e_m54_save.py's "rates" mode), a streaming line (tools/e2e_m55_save.py's "stream"
 mode) and a software line selling half in Europe (the "currency" mode). The rival world is the
-save's own. Then `tools/profile_m60.py <out>` times the months.
+save's own. Then `tools/profile_m60.py <out>` times the months; `make timing-save-2069` builds
+check-timing's 2069 save this way (tests/integration/test_m60_perf.py).
 
     uv run --project backend python tools/profile_m60_v6_arm.py <save.tst.sqlite> <out.tst.sqlite>
 """
@@ -28,6 +29,18 @@ BANK_CAPITAL = 60_000_000_000  # $600M, as e2e_m54_save
 MOBILE_PRICE = 4_000
 
 
+def _checkpoint(path: Path) -> None:
+    """Fold the write-ahead log into the file, so the file alone is the whole save (CI caches
+    the file)."""
+    import sqlite3
+
+    con = sqlite3.connect(path)
+    try:
+        con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    finally:
+        con.close()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("save", type=Path)
@@ -47,6 +60,7 @@ def main() -> int:
     from tst.sim.state import with_facility
     from tst.sim.telecom.models import RadioNetwork
 
+    _checkpoint(args.save)
     shutil.copy(args.save, args.out)
     migrate.ensure_current(args.out)
     data = load_all(BACKEND / "data")
@@ -143,6 +157,7 @@ def main() -> int:
     m38._launch(game, stream)
 
     m38._write(args.out, game.state, game.balances, start)
+    _checkpoint(args.out)
     print(f"wrote {args.out} at turn {game.state.turn}")
     return 0
 
