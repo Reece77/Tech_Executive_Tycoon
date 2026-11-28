@@ -57,6 +57,7 @@ Built on branch `m57-balance` in its own clone. Docs PR #118 (`docs-v6-round5`) 
 **Sub-task 1 readings (on `main`'s code after M57r: nightly 46154340570, weekly 46154343112, both at 0767452).**
 
 - `make balance` (v1, seeds 1-10): every target holds (T1 10/10; T2 most wins research_heavy 6 of <= 6; T3 9-10/10; T4a-c in band; T5 0-10%; T6 21 months, 12%, 12%; T7 179.9/180 and 49% of 104; E3 all ok). **S2** (the run's worker-minutes) reads 145.4 against < 140 on CI: a runtime guard, M60's lane (rule 6), printed only.
+- The nightly tests (six shards): 118 pass. Known misses: **M13b.T1** 6/10 seeds (bound 6), **M22.T2.variant** 10.6-21.0% (bound 21.5%), **M9.spread.africa** 10/10 (closed by decision 4). Failures: **M54.T5** 3.3% (decision 3), and two earlier guards that M57r's changes moved (M57r-A's brief: "guards moved by these fixes are M57's to retune"): **M51 63.4 target 1**, the EV maker's sensible script winning 0 of 10 (band 3-8; the crash 5, failing chipmaker 6, under controls 6, platform war 6, dynasty 4: ok), and **M50 60.3 target 2**'s rounds clause, rival startups' rounds closed per attempt Q4 2008-Q2 2009 5/26 against 2010's 12/67 (no drop against >= 40%; M50 read 8/96 against 56/281; its other clauses hold: seed term sheets 42% fewer, V_base 36% cheaper; target 3 1.000 and 0.967). M51 target 2: bootstrapped 94.5%, hardware only 95.6%, one region 24.4% (ok); no acquisitions -3.7%, hard rivals 1.5%, no automation 0.0% (carried, decision 5).
 
 ### Sub-task 4 scripts
 
