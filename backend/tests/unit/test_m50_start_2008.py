@@ -9,6 +9,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from tst import history_coverage
 from tst.history_coverage import coverage_problems
 from tst.loader import LoadedData
 from tst.sim.calendar import (
@@ -50,8 +51,9 @@ def _game(loaded: LoadedData, year: int, seed: int = 7):  # type: ignore[no-unty
 
 
 def test_january_2008_is_turn_minus_24() -> None:
-    assert START_YEARS == (2008, 2010)
-    assert start_turn_of(2008) == HISTORY_START_TURN == -24
+    assert START_YEARS == (2000, 2008, 2010)  # M50b: 2000 is the earliest
+    assert start_turn_of(2008) == -24
+    assert HISTORY_START_TURN == start_turn_of(2000) == -120
     assert start_turn_of(2010) == 0
     assert format_turn(-24) == "Jan 2008"
     assert format_turn(-1) == "Dec 2009"
@@ -195,11 +197,13 @@ def test_square_is_founded_on_its_real_month_only_in_an_earlier_world(
 
 
 def test_every_series_reaches_back_to_2008(loaded: LoadedData) -> None:
-    """The loader's check passed on load; categories list 2008-2009 growth."""
-    assert all(sorted(c.early_growth) == [2008, 2009] for c in loaded.game_data.categories)
+    """The loader's check passed on load; categories list 2008-2009 growth (M50b: from 2000)."""
+    years = list(range(2000, 2010))
+    assert all(sorted(c.early_growth) == years for c in loaded.game_data.categories)
 
 
-def test_the_coverage_check_rejects_gaps() -> None:
+def test_the_coverage_check_rejects_gaps(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(history_coverage, "HISTORY_START_YEAR", 2008)  # M50's earliest start
     assert coverage_problems({"s": {2010: 1, 2011: 2}}, "f") == [
         "f.s starts in 2010; it needs entries from 2008"
     ]
@@ -215,8 +219,9 @@ def test_the_coverage_check_rejects_gaps() -> None:
     assert coverage_problems({"growth_by_year": {2010: 1}}, "f") == []  # exempt
 
 
-def test_the_coverage_check_rejects_interior_gaps() -> None:
+def test_the_coverage_check_rejects_interior_gaps(monkeypatch: pytest.MonkeyPatch) -> None:
     """M57r-A (review 10 item 28): a missing interior month or year passed."""
+    monkeypatch.setattr(history_coverage, "HISTORY_START_YEAR", 2008)  # M50's earliest start
     monthly = {f"2008-{m:02d}": 1 for m in range(1, 13) if m != 2}
     monthly |= {f"2009-{m:02d}": 1 for m in range(1, 13)} | {"2010-01": 1}
     assert coverage_problems({"s": monthly}, "f") == ["f.s has no entry for ['2008-02']"]

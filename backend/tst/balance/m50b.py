@@ -9,6 +9,7 @@ M50b change (`tools/m50b_identity.py --write`), and the nightly test compares wi
 
 from __future__ import annotations
 
+import contextlib
 import json
 from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
@@ -224,10 +225,8 @@ def bust_sensible(game: Game) -> None:
     staff = [e for e in staff if e.person_id != game.founder_id]
     if months is not None and months < BUST_CUT_RUNWAY and len(staff) > BUST_CORE:
         victim = max(staff, key=lambda e: (e.role not in KEEP_ROLES, e.salary_cents, -e.id))
-        try:
+        with contextlib.suppress(SimError):
             game.act(Fire(game.founder_id, victim.person_id))
-        except SimError:
-            pass
 
 
 def bust_job(job: tuple[int, str]) -> tuple[int, str, str | None, bool]:

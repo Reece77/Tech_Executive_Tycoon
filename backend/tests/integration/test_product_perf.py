@@ -79,7 +79,9 @@ def test_product_turn_time_budget(tmp_path: Path, loaded: LoadedData) -> None:
         state = load_state(session)
     assert state.board(1) and state.safes  # M4a: a board and a SAFE
     assert len(state.staff(1)) == STAFF + 1 and len(state.company_products(1)) == len(PRODUCTS)
-    incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
+    incumbent_products = sum(  # M50b: the 2000 world's own companies are not in a 2010 game
+        len(c.products) for c in loaded.game_data.incumbents if not c.history_only
+    )
     assert len(state.products) == incumbent_products + len(PRODUCTS)
 
     def turn() -> None:
