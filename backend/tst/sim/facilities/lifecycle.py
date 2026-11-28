@@ -307,8 +307,11 @@ def operating_lines(
 ) -> list[tuple[str, str, Cents, int | None]]:
     """Phase 6's lines for facilities' operating costs (memo, account, amount, division):
     corporate; data centres with compute (22.2) at their region's power index (M17, 33.5),
-    assembly plants with the cost of goods (26.2)."""
-    centres = plants = 0
+    assembly plants with the cost of goods (26.2), telecom networks (62) likewise on a line of
+    their own."""
+    centres = plants = networks = 0
+    # M57 (M53 decision 14's follow-up): telecom networks' costs under a line of their own
+    telecom = balance.telecom.kinds
     for f in state.company_facilities(company_id):
         if not kind_of(f, balance).generic:
             continue  # M19: a mine's costs post with its own month (tst.sim.mining)
@@ -319,6 +322,8 @@ def operating_lines(
         )
         if kind_of(f, balance).output_good in balance.compute.goods:
             centres += cost
+        elif f.kind in telecom:
+            networks += cost
         else:
             plants += cost
     lines: list[tuple[str, str, Cents, int | None]] = []
@@ -326,6 +331,8 @@ def operating_lines(
         lines.append(("Data centre operations", COMPUTE, centres, None))
     if plants:
         lines.append(("Assembly plant operations", COGS, plants, None))
+    if networks:
+        lines.append(("Telecom network operations", COGS, networks, None))
     return lines
 
 

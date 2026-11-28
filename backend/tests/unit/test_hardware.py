@@ -559,3 +559,17 @@ def test_a_month_with_hardware_balances(loaded: LoadedData) -> None:
         assert sum(line.amount for line in e.lines) == 0
     assert result.new_state.production_of(dev) is not None
     _ = Product  # keep the import for type readers
+
+
+def test_telecom_networks_have_their_own_operations_line(loaded: LoadedData) -> None:
+    """M57 (M53 decision 14's follow-up): a telecom kind's operating cost posts as "Telecom
+    network operations", not with assembly plants, to the same account."""
+    state = _plant(fresh_game(loaded), loaded, 5_000, staff=5, skill=14.0)
+    plant = state.company_facilities(1)[0]
+    tower = replace(plant, kind=loaded.balance.telecom.tower_kind)
+    state = with_facility(state, tower)
+    lines = lifecycle.operating_lines(state, 1, loaded.balance)
+    assert [(memo, account) for memo, account, _, _ in lines] == [
+        ("Telecom network operations", COGS)
+    ]
+    assert lines[0][2] == lifecycle.operating_cents(tower, state.turn, loaded.balance) > 0
