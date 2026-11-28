@@ -1138,7 +1138,7 @@ _INPUT_MEMO: OrderedDict[tuple[int, ...], tuple[tuple[object, ...], dict[object,
 )
 _ONE_INPUT: dict[int, tuple[object, dict[object, Any]]] = {}  # from_inputs: id -> (input, memo)
 _INPUT_MEMO_GUARD = threading.Lock()  # the API reads states from several threads
-INPUT_MEMO_SIZE: Final = 64  # tunable-exempt: input tuples whose derived values are kept
+INPUT_MEMO_SIZE: Final = 512  # tunable-exempt: input tuples whose derived values are kept
 
 
 def from_inputs[T](source: object, key: object, compute: Callable[[], T]) -> T:

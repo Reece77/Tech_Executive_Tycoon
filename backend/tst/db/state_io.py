@@ -1754,10 +1754,18 @@ def _write[T](session: Session, old: Iterable[T], new: Iterable[T], key: Any, to
         row = to_row(item)
         if known:
             model = type(row)
-            updates.append({a.key: getattr(row, a.key) for a in model.__mapper__.column_attrs})
+            # M60: the values from the instance's dict, not one instrumented getattr each (a
+            # column the mapper never set reads None either way)
+            values = row.__dict__
+            updates.append({k: values.get(k) for k in _column_keys(model)})
         else:
             session.merge(row)
     _update_rows(session, model, updates)
+
+
+@cache
+def _column_keys(model: Any) -> tuple[str, ...]:
+    return tuple(a.key for a in model.__mapper__.column_attrs)
 
 
 @cache
