@@ -54,6 +54,10 @@ Built on branch `m57-balance` in its own clone. Docs PR #118 (`docs-v6-round5`) 
 4. **M9.spread.africa (ruling 6).** MTN Group gains a fixed-broadband line in Africa (MTN Home Broadband: consumer 1,500 and business 2,550 cents a month in 2010, MTN's mobile price x Africa's fixed/mobile ARPU, A) with telecom.yaml subscribers 0.05 / 0.1 / 0.3 / 1.0 / 2.0M (2008 / 2010 / 2015 / 2020 / 2025, A: about 3-7% of the region's fixed lines). Every cell is covered on seeds 1-10 (local): the row is gone and any empty cell fails.
 5. **M51.T2's three rules** stay as 63.2 defines them (Reece, M51 decision 9: `hard_rivals_quality_mult` 1.2 is the spec's "quality x 1.2"), so no key is retuned; re-owned to **v7** with this pass's readings (below).
 
+**Sub-task 1 readings (on `main`'s code after M57r: nightly 46154340570, weekly 46154343112, both at 0767452).**
+
+- `make balance` (v1, seeds 1-10): every target holds (T1 10/10; T2 most wins research_heavy 6 of <= 6; T3 9-10/10; T4a-c in band; T5 0-10%; T6 21 months, 12%, 12%; T7 179.9/180 and 49% of 104; E3 all ok). **S2** (the run's worker-minutes) reads 145.4 against < 140 on CI: a runtime guard, M60's lane (rule 6), printed only.
+
 ### Sub-task 4 scripts
 
 The three v6 strategies are `tst/balance/strategies_v6.py` (`V6`); each grows out of `steady_regions`, acts only through `Game.act` and reads only what a player sees (announced auctions and reserves, build quotes, the bank's CET1 ratio and requirement and its deposits, the leads on offer as their shown ranges and fees). Their numbers are script constants there, not balance keys.
