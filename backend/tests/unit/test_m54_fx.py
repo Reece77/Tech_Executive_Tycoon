@@ -142,8 +142,9 @@ def test_forward_terms_and_regions(loaded: LoadedData) -> None:
     state = fresh_game(loaded)
     with pytest.raises(FinservRuleError):
         hedges.buy(state, PLAYER, "north_america", 100, 3, b, d)
+    hedges.buy(state, PLAYER, EU, 100, 24, b, d)  # M57: forwards run to 24 months
     with pytest.raises(FinservRuleError):
-        hedges.buy(state, PLAYER, EU, 100, 13, b, d)
+        hedges.buy(state, PLAYER, EU, 100, 25, b, d)
 
 
 def test_policy_rates_follow_the_data_then_comove(loaded: LoadedData) -> None:

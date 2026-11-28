@@ -12,7 +12,7 @@ Every amount in the game is integer US cents (ADR-0003), and regional prices are
 2. **Each game region has a currency** (`fx_history.yaml`): north_america USD, europe EUR (GBP and CHF folded in by weight; A), east_asia a basket of CNY, JPY and KRW by GDP weight, south_asia INR, latin_america a basket of BRL and MXN. A region's **rate index** is its basket's US dollars per local unit this month divided by its January 2010 value (exact decimals, `Decimal` or rational, never float in money).
 3. **Prices are set in local terms.** A regional price the player or a rival sets is fixed in local money, and its US-cent value each month is the price at setting × (index now / index at setting), rounded half-even to cents. Costs paid in a region (staff, facilities, power, local suppliers) move the same way. Revenue and costs are **translated**, not converted: no currency is held.
 4. **History holds.** Before `fx.applies_from` (January 2026) rivals' pinned lines and their history are unchanged: their data are already in reported dollars. The player's regional lines translate from the start. A company that sells and spends only in North America plays exactly as before (the guard).
-5. **Hedging** is a contract (`FxHedge`): a region, a notional in local terms, a term of 1–12 months and a forward index = spot index × (1 + home rate) / (1 + region rate) for the term, plus a spread. At settlement the gain or loss (notional × (forward − spot)) posts to an FX gain or loss line. Hedge accounting is not modelled: gains and losses go through the income statement in their month.
+5. **Hedging** is a contract (`FxHedge`): a region, a notional in local terms, a term of 1–12 months (1–24 from M57: amendment below) and a forward index = spot index × (1 + home rate) / (1 + region rate) for the term, plus a spread. At settlement the gain or loss (notional × (forward − spot)) posts to an FX gain or loss line. Hedge accounting is not modelled: gains and losses go through the income statement in their month.
 6. **Rates after 2025** are seeded: each region's index follows a mean-reverting walk around its real-rate drift (stream `fx`, keyed by region and month), with rare jumps (`fx.jump_*`).
 7. **The fixed `fx` tables** in regulation and power keep their roles (converting dated fines and carbon prices); M54 does not rewrite them.
 
@@ -22,3 +22,7 @@ Every amount in the game is integer US cents (ADR-0003), and regional prices are
 - A new account pair: FX gain and FX loss (non-operating), and the balance sheet's hedge assets and liabilities at fair value.
 - Stream `fx` (75) in ADR-0013.
 - Translation runs in the month's existing revenue and cost phases (one multiply per regional line), so turn time grows little.
+
+## Amendment (M57, 2026-11-28)
+
+Point 5's term runs to **24 months** (`fx.term_months: [1, 24]`), the decision M54's ruling 13 left to M57. With 12-month forwards a year's profit already averages a year of rates, so an 80% layered hedge cut yearly profit's spread by 3.3% (median, seeds 1–10) against §64.6 target 5's 15%; with 24-month layers it cuts 14.3% on seeds 1–10 and 17.8% on seeds 11–40 (R: large groups hedge 12–24 months ahead). The rest of point 5 is unchanged.

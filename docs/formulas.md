@@ -4441,7 +4441,7 @@ Reece (2026-11-21): **financial services at scale** in v6's third direction (ban
 2. **Banks are rate businesses:** a sensible player's bank's net interest margin is within 2.5–4.0% on seeds 1–10 in 2015–2025, and its profit rises with the policy rate when its deposit beta is below 0.5.
 3. **Runs are rare and real:** a bank that holds long securities through 2022's rate rise with more than 50% uninsured deposits has a run on at least 3 of 10 seeds; one with under 20% uninsured deposits on none.
 4. **Networks compound:** a payments network that reaches 10% of a region's volume keeps or grows its share for 5 years on at least 7 of 10 seeds.
-5. **Currency risk matters, hedging works:** for a player with at least 40% of revenue outside North America, the standard deviation of yearly operating profit in 2026–2035 is at least 15% lower with an 80% rolling hedge than with none (median of seeds 1–10).
+5. **Currency risk matters, hedging works:** for a player with at least 40% of revenue outside North America, the standard deviation of yearly operating profit in 2026–2035 is at least 15% lower with an 80% rolling hedge than with none (median of seeds 1–10). M57: forwards run to 24 months (ADR-0025 amendment) and the target's script layers its hedge 24 months ahead.
 6. **Turn time** within the guards.
 
 ## 65. Media and entertainment (M55; v6)

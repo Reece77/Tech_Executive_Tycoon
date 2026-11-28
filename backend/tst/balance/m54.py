@@ -259,7 +259,7 @@ COST_SHARE: Final = 0.7  # costs in US dollars, of the first month's revenue
 def target5_profits(seed: int, hedge_share: float) -> list[int]:
     """64.6 target 5's yearly operating profit after currency results, 2026-2035, for a player
     with 60% of its revenue abroad (FOREIGN_MIX, prices set in January 2026), costs in dollars,
-    with a layered rolling hedge of `hedge_share` (0: none) 12 months ahead."""
+    with a layered rolling hedge of `hedge_share` (0: none) 24 months ahead (M57: the ADR-0025 amendment)."""
     from dataclasses import replace
 
     from tst.sim.calendar import turn_to_ym, ym_to_turn
@@ -274,7 +274,7 @@ def target5_profits(seed: int, hedge_share: float) -> list[int]:
     rows = [(r, "smb", price, MONTHLY_REVENUE_CENTS * share / price) for r, share in FOREIGN_MIX]
     state = _line(state, FOREIGN_LINE, "b2b_saas", rows)
     if hedge_share > 0:
-        state = with_programme(state, PLAYER, hedge_share, 12)
+        state = with_programme(state, PLAYER, hedge_share, 24)
     cost = times(MONTHLY_REVENUE_CENTS, COST_SHARE)
     rng = RngFactory(seed)
     years: dict[int, int] = {}

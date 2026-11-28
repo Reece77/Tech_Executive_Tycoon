@@ -3538,7 +3538,7 @@ fx: # 64.4 and ADR-0025: currencies (M54, v6 lane A). History (2008-2025) is fx_
     africa: 50
     oceania: 10
   rate_comove: 0.6 # a region's policy rate after 2025 = its December 2025 rate + this x the US rate's move since (A)
-  term_months: [1, 12] # a forward's term (ADR-0025 point 5)
+  term_months: [1, 24] # months; a forward's term (ADR-0025 point 5; M57 amendment: 24, from 12, so a layered hedge smooths yearly profit, 64.6 target 5)
   max_hedge_share: 1.0 # hedges may cover at most this share of the next 12 months' net foreign revenue
   cfo_limit_share: 0.8 # the CFO delegate's hedging programme covers up to this share (R: large tech groups hedge 50-80%, the dossier)
   what_if_move: 0.10 # the Currency screen's what-if dollar move (64.4)
