@@ -344,11 +344,14 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M53 (62.4): telecom lines whose dated opening is this month sell from it
     ctx = replace(ctx, state=telecom_phase.open_month(ctx.state, ctx.balance, ctx.data))
-    # M54 (64.4): the indexes' month, translation marks and the month's translated prices
-    state, fx_prices = fx_phase.before_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
-    ctx = replace(ctx, state=state)
+    # M54 (64.1-64.2): this month's finance demand and dated caps before its sales (M57r-A)
+    ctx = replace(ctx, state=finserv_phase.open_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
     # M55 (65.1, 65.7): media lines whose dated opening is this month sell from it; ad prices
     ctx = replace(ctx, state=media_phase.open_month(ctx.state, ctx.balance, ctx.data))
+    # M54 (64.4): the indexes' month, translation marks and the month's translated prices, after
+    # every engine-set price of the month (M57r-A, review 10 item 10)
+    state, fx_prices = fx_phase.before_markets(ctx.state, ctx.rng, ctx.balance, ctx.data)
+    ctx = replace(ctx, state=state)
     # M31 (44): the platforms month, and what demand reads from it (nothing before 2026).
     state, platform_effects = platform_month.before_markets(
         ctx.state, ctx.rng, ctx.balance, ctx.data
@@ -395,7 +398,7 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     )
     ctx = replace(ctx, state=state).post(*tel_entries).log(*tel_logs)
     # M54 (64.4): foreign money by region, hedging programmes, forwards' fair value and settlements
-    state, fx_entries = fx_phase.after_sales(ctx.state, ctx.balance, ctx.data)
+    state, fx_entries = fx_phase.after_sales(ctx.state, ctx.balance, ctx.data, out.booked_by_region)
     ctx = replace(ctx, state=state).post(*fx_entries)
     # M54 (64.1-64.3): banks, payments and insurers' month; rivals' interest, interchange, claims
     state, fin_entries, fin_logs = finserv_phase.after_sales(

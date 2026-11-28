@@ -2034,6 +2034,7 @@ class MacroHistory(_Frozen):
         """The raw confidence average over the base years (rescaled to 100)."""
         lo, hi = self.confidence_base_years
         values = [x for y in range(lo, hi + 1) for x in self.confidence[y]]
+        # money-exact: ratio: `value` is a score or attribute here, not money
         return sum(values) / len(values)
 
 

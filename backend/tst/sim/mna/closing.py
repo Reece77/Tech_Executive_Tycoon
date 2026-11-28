@@ -71,7 +71,13 @@ def close_deal(
     deal = replace(deal, mode=mode, status="closed", resolved_turn=state.turn)
     found = deals.file_of(state, deal.acquirer_id, deal.target_id, balance)
     state = with_target_file(
-        state, replace(found, diligence_done_turn=found.diligence_done_turn or state.turn)
+        state,
+        replace(
+            found,
+            diligence_done_turn=found.diligence_done_turn
+            if found.diligence_done_turn is not None
+            else state.turn,
+        ),
     )
     state, posted, acquisition = settle(state, deal, found.problems, balances, balance, data)
     state, acquisition, more, logs = integration.after_closing(

@@ -10,8 +10,8 @@ block in the start month, before the rivals' balances are brought forward:
 - **rivals** (incumbents.yaml, by name): removed as a failed rival closes (15.1), as Sandbox's
   rivals option removes them; cash x `cash_mult` (against common equity); every product's
   quality + `quality_delta`, clamped to 0-100; added generic rivals by category, each a 52.3
-  entrant on stream `scenario`, key (ADDED + category index x ADDED_SPAN + k,), rival key
-  (CUSTOM_KEY, category index, k);
+  entrant on stream `scenario`, key (ADDED, category key, k), rival key (CUSTOM_KEY, category
+  key, k), with the category's key from `text_key` (never its position in categories.yaml);
 - **markets**: every segment's addressable customers (national and regional) x `market_mult`
   this month; `growth_delta` joins the mode record and adds to the category's annual growth in
   every month from the start (`research.eras.annual_growth`, never below 0);
@@ -40,7 +40,8 @@ from tst.sim.modes.custom_config import (
     EditorBalance,
     Range,
 )
-from tst.sim.rng import RngFactory
+from tst.sim.money import times
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 
 if TYPE_CHECKING:
@@ -51,7 +52,6 @@ MAX_QUALITY: Final = 100.0  # tunable-exempt: the quality scale's top
 INCUMBENT_KEY: Final = 0  # tunable-exempt: rivals.models' incumbent rival_key tag
 CUSTOM_KEY: Final = 20  # tunable-exempt: rival_key tag of a custom start's added rival
 ADDED: Final = 1_000_000  # tunable-exempt: `scenario` keys past every staff draw's (index,)
-ADDED_SPAN: Final = 100  # tunable-exempt: keys a category's added rivals may use
 BLANK_BACKGROUND: Final = "ex_big_tech_founders"  # scenarios.yaml start a blank game uses
 BLANK_LABEL: Final = "A blank start"
 DIFFICULTY: Final = "standard"  # a blank start's cash is the background's standard cash
@@ -195,6 +195,23 @@ def _check_goal(out: list[str], spec: CustomScenario, ed: EditorBalance, data: G
         _range(out, "the deadline's years from the start", round(years, 2), ed.deadline_years)
 
 
+def _gated(balance: Balance) -> frozenset[str]:
+    """Categories that sell only behind a gate the start builder does not create: telecom
+    service lines (a network and spectrum) and banking, insurance and payments (a charter, a
+    licence or a network)."""
+    tb, fb = balance.telecom, balance.finserv
+    return frozenset(
+        {
+            tb.mobile,
+            tb.fixed,
+            tb.wholesale,
+            fb.banking_category,
+            fb.insurance_category,
+            fb.payments_category,
+        }
+    )
+
+
 def refusals(spec: CustomScenario, balance: Balance, data: GameData) -> list[str]:
     """Every reason the editor refuses `spec` (empty: valid). Ranges are `editor.*`'s."""
     ed = balance.editor
@@ -236,6 +253,13 @@ def refusals(spec: CustomScenario, balance: Balance, data: GameData) -> list[str
             _range(out, f"{p.name} ({seg}): price ($)", value.price_dollars, ed.price_dollars)
         if p.status == "in_development" and any(v.customers for v in p.segments.values()):
             out.append(f"{p.name}: a product in development has no customers")
+        if p.category in _gated(balance) and any(v.customers for v in p.segments.values()):
+            # M57r-A (review 10 item 18): a line the engine sells only with a network, a charter
+            # or a licence the start cannot build has no starting customers (66.1)
+            out.append(
+                f"{p.name}: a {cat.label} line starts without customers (it needs a "
+                "network, charter or licence first)"
+            )
         if p.contract is not None:
             makers = balance.hardware.contract.manufacturers
             if p.contract.manufacturer not in makers:
@@ -386,7 +410,7 @@ def apply_overrides(
             continue
         if r.cash_mult != 1:
             cash = out.get((cid, CASH), 0)
-            delta = round(cash * r.cash_mult) - cash
+            delta = times(cash, r.cash_mult) - cash  # exact, half-even once (M57r-A)
             out[(cid, CASH)] = cash + delta
             out[(cid, COMMON_EQUITY)] = out.get((cid, COMMON_EQUITY), 0) - delta
         if r.quality_delta:
@@ -400,11 +424,12 @@ def apply_overrides(
     from tst.sim.dynasty.rivals import enter
     from tst.sim.modes.scenarios import scenario_draw
 
-    for added in sorted(o.added_rivals, key=lambda a: index[a.category]):
+    for added in sorted(o.added_rivals, key=lambda a: a.category):
         i = index[added.category]
+        ck = text_key(added.category)
         for k in range(added.count):
-            g = scenario_draw(rng, state.turn, ADDED + i * ADDED_SPAN + k)
-            made = enter(state, data.categories[i], g, (CUSTOM_KEY, i, k), rng, balance, data)
+            g = scenario_draw(rng, state.turn, ADDED, ck, k)
+            made = enter(state, data.categories[i], g, (CUSTOM_KEY, ck, k), rng, balance, data)
             if made is None:
                 break
             state, entry, _ = made

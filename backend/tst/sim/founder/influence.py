@@ -132,6 +132,7 @@ def lobbying_month(
                         amount=spend,
                     )
                 )
+            # money-exact: ratio: `value` is a score or attribute here, not money
             value = min(ib.cap, record.value * (1 - ib.decay) + _gain(spend, balance))
             # money-exact: ratio: lobbying spend as a risk score
             risk_gain = spend / CENTS_A_DOLLAR / DOLLARS_A_K * ib.risk_rate

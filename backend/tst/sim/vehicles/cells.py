@@ -113,6 +113,7 @@ def metals_cents(
             total += q * rg.price_cents(state, good, balance, data)
         else:
             price = commodity.price(state, good, turn, data, balance)
+            # money-exact: rate: a unit price in float cents, rounded where posted
             total += q * price * usd_per_unit(good, data) * CENTS
     return total
 

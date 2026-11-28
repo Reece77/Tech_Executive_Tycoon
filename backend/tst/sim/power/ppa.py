@@ -15,6 +15,7 @@ from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
+from tst.sim.money import exact
 from tst.sim.negotiation.models import BP
 from tst.sim.power import formulas as pf
 from tst.sim.power import grid
@@ -101,8 +102,8 @@ def quote(
         forward_cents=fwd,
         start_turn=start,
         end_turn=start + years * MONTHS - 1,
-        monthly_cents=round(mwh_month * price),
-        minimum_cents=round(mwh_month * price * pb.take_or_pay),
+        monthly_cents=round(exact(mwh_month) * exact(price)),
+        minimum_cents=round(exact(mwh_month) * exact(price) * exact(pb.take_or_pay)),
     )
 
 
@@ -113,8 +114,10 @@ def at_bp(q: PpaQuote, price_bp: int, balance: Balance) -> PpaQuote:
     return replace(
         q,
         price_cents=price,
-        monthly_cents=round(q.mwh_month * price),
-        minimum_cents=round(q.mwh_month * price * balance.power.ppa.take_or_pay),
+        monthly_cents=round(exact(q.mwh_month) * exact(price)),
+        minimum_cents=round(
+            exact(q.mwh_month) * exact(price) * exact(balance.power.ppa.take_or_pay)
+        ),
     )
 
 

@@ -59,7 +59,10 @@ def post_bridges(
                     state.turn, safe.company_id, "bridge_funded", link_kind=FINANCE_LINK, **params
                 )
             )
-        elif safe.status == "offered" and (safe.expires_turn or 0) < state.turn:
+        elif (
+            safe.status == "offered"
+            and (safe.expires_turn if safe.expires_turn is not None else 0) < state.turn
+        ):
             state = with_safe(state, replace(safe, status="lapsed", resolved_turn=state.turn))
             logs.append(
                 inbox_item(

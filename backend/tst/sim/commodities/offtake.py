@@ -52,6 +52,7 @@ def usd_per_unit(good: str, data: GameData) -> float:
 def value_cents(volume: float, price: float, good: str, data: GameData) -> float:
     """Volume units at a price in the good's unit, in cents (a display or a physical ratio;
     money uses `exact_value`)."""
+    # money-exact: rate: a unit price in float cents, rounded where posted
     return volume * price * usd_per_unit(good, data) * CENTS
 
 
@@ -154,7 +155,9 @@ def offtake_quote(
         months=years * MONTHS_PER_YEAR,
         volume_year=volume_year,
         price=price,
+        # money-exact: rate: a unit price in float cents, rounded where posted
         floor=price * (1 - ob.collar),
+        # money-exact: rate: a unit price in float cents, rounded where posted
         ceiling=price * (1 + ob.collar),
         year_value_cents=year,
         prepaid_cents=times(year, prepay),  # M23a: exact (Codex review 5 finding 10)
@@ -166,6 +169,7 @@ def at_bp(q: DealQuote, price_bp: int, data: GameData) -> DealQuote:
     the collar and the prepayment move with it."""
     # money-exact: rate
     factor = price_bp / BP
+    # money-exact: rate: a unit price in float cents, rounded where posted
     price = q.price * factor
     return replace(
         q,

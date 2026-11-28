@@ -26,21 +26,21 @@ obligation is checked by the region's telecom regulator (tst.sim.telecom.regulat
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final
 
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, SPECTRUM, LedgerEntry
 from tst.sim.ledger import SPECTRUM_AMORTIZATION as AMORTIZATION
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import exact, times
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 from tst.sim.telecom import draws
 from tst.sim.telecom.config import BANDS, AuctionDef
-from tst.sim.telecom.data import MONTHS, file, in_telecom, region_index
+from tst.sim.telecom.data import MONTHS, file, in_telecom
 from tst.sim.telecom.models import Auction, Award, SpectrumLicence
 
 OTHERS: Final = "Bidders outside the game"  # tunable-exempt: a label
@@ -53,11 +53,14 @@ class Bidder:
     name: str
     company_id: int | None
     blocks: int
-    value_cents: float  # a block (hidden)
+    value_cents: float | int  # a block (hidden); the player's is their exact integer limit
 
 
-def _round_up(x: float) -> int:
-    return max(1, math.ceil(x))
+def next_price(price: int, increment: float) -> int:
+    """The clock's next price a block: price x (1 + increment) rounded up, in integer arithmetic
+    (M57r-A, review 10 item 7: a 10% step from 100 is 110, never the float's 111)."""
+    step = Fraction(price) * (1 + exact(increment))
+    return max(1, -(-step.numerator // step.denominator))
 
 
 def clock(
@@ -70,7 +73,7 @@ def clock(
         demand = sum(b.blocks for b in bidders if b.value_cents >= price)
         if demand <= blocks:
             break
-        price = _round_up(price * (1.0 + increment))
+        price = next_price(price, increment)
         rounds += 1
     won: dict[int, int] = {}
     left = blocks
@@ -106,10 +109,15 @@ def _from_def(d: AuctionDef, auction_id: int, scale: float) -> Auction:
     )
 
 
-def _area_index(region: str, area: str, data: GameData) -> int:
-    return region_index(region, data) * 100 + [
-        a.key for a in file(data).region(region).areas
-    ].index(area)
+def _area_key(region: str, area: str) -> int:
+    """An area's stream key (ADR-0013, M57r-A): its market key, never its file position."""
+    return text_key(f"{region}/{area}")
+
+
+def auction_key(auction: Auction) -> tuple[int, int]:
+    """An auction's stream key (ADR-0013, M57r-A ruling 3): its market key (telecom.yaml's
+    auction key, or the seeded auction's area and ordinal) and its year, never its storage id."""
+    return text_key(auction.key), turn_to_ym(auction.turn)[0]
 
 
 def _seeded_auction(
@@ -127,7 +135,7 @@ def _seeded_auction(
     r = file(data).region(region)
     a = r.area(area)
     assert a is not None
-    g = draws.gen(rng, turn, draws.WORLD, draws.SCHEDULE, _area_index(region, area, data), n, 1)
+    g = draws.gen(rng, turn, draws.WORLD, draws.SCHEDULE, _area_key(region, area), n, 1)
     band = BANDS[int(g.integers(0, len(BANDS)))]
     blocks = round(ab.seeded_blocks.lo + (ab.seeded_blocks.hi - ab.seeded_blocks.lo) * g.random())
     people = r.mobile_at(2025.0) * 1_000_000 * a.share  # tunable-exempt: millions
@@ -162,7 +170,7 @@ def _schedule_next(
     rng: RngFactory, region: str, area: str, after: int, n: int, balance: Balance, data: GameData
 ) -> int:
     ab = balance.telecom.auction
-    g = draws.gen(rng, after, draws.WORLD, draws.SCHEDULE, _area_index(region, area, data), n, 0)
+    g = draws.gen(rng, after, draws.WORLD, draws.SCHEDULE, _area_key(region, area), n, 0)
     years = ab.seeded_every.lo + (ab.seeded_every.hi - ab.seeded_every.lo) * g.random()
     return after + max(1, round(years * MONTHS))
 
@@ -235,7 +243,7 @@ def _rival_bidders(
     state: GameState, auction: Auction, rng: RngFactory, balance: Balance, data: GameData
 ) -> list[Bidder]:
     ab = balance.telecom.auction
-    g = draws.gen(rng, auction.turn, draws.AUCTION, auction.id)
+    g = draws.gen(rng, auction.turn, draws.AUCTION, *auction_key(auction))
     cap = max(1, int(auction.blocks * ab.max_blocks_share))
     out: list[Bidder] = []
     if auction.history:
@@ -246,6 +254,7 @@ def _rival_bidders(
         named = 0
         for company, n in sorted(d.winners.items()):
             c = next((x for x in state.companies if x.name == company and x.alive), None)
+            # money-exact: estimate: a float estimate compared or ranked, never posted
             v = price * (
                 ab.winner_value.lo + (ab.winner_value.hi - ab.winner_value.lo) * g.random()
             )
@@ -253,10 +262,12 @@ def _rival_bidders(
             named += n
         rest = d.blocks - named
         if rest > 0:
+            # money-exact: estimate: a float estimate compared or ranked, never posted
             v = price * (
                 ab.winner_value.lo + (ab.winner_value.hi - ab.winner_value.lo) * g.random()
             )
             out.append(Bidder(OTHERS, None, rest, v))
+        # money-exact: estimate: a float estimate compared or ranked, never posted
         v = price * (ab.loser_value.lo + (ab.loser_value.hi - ab.loser_value.lo) * g.random())
         out.append(Bidder(MARGINAL, None, max(1, int(d.blocks * ab.marginal_share)), v))
         return out
@@ -307,9 +318,7 @@ def run_month(
             company = state.company(player)
             cap = max(1, int(a.blocks * ab.max_blocks_share))
             mine_index = len(bidders)
-            bidders.append(
-                Bidder(company.name, player, min(cap, a.bid_blocks), float(a.bid_limit_cents))
-            )
+            bidders.append(Bidder(company.name, player, min(cap, a.bid_blocks), a.bid_limit_cents))
         rounds, price, won = clock(bidders, a.blocks, a.reserve_cents, ab.increment, ab.max_rounds)
         awards = []
         for i, n in sorted(won.items()):

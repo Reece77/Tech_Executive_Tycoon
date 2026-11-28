@@ -105,7 +105,8 @@ def mark_and_settle(
         return state, entries, settled
     spots: dict[str, int] = {}
     hedges: list[FxHedge] = []
-    cash: dict[int, int] = {}
+    gains: dict[int, int] = {}
+    losses: dict[int, int] = {}
     for h in fx.hedges:
         if h.status != "open":
             hedges.append(h)
@@ -114,25 +115,29 @@ def mark_and_settle(
             spots[h.region] = index_at(state, h.region, state.turn, balance, data)
         value = value_cents(h, spots[h.region])
         if h.settle_turn <= state.turn:
-            cash[h.company_id] = cash.get(h.company_id, 0) + value
+            book = gains if value > 0 else losses  # M57r-A (item 12): never netted
+            book[h.company_id] = book.get(h.company_id, 0) + value
             key = (h.company_id, h.region)
             settled[key] = settled.get(key, 0) + value
             hedges.append(replace(h, status="settled", value_cents=0, settled_cents=value))
         else:
             hedges.append(replace(h, value_cents=value))
-    for company_id in sorted(cash):
-        amount = cash[company_id]
-        if not amount:
-            continue
-        pnl = LedgerLine(FX_GAINS, -amount) if amount > 0 else LedgerLine(FX_LOSSES, -amount)
-        entries.append(
-            LedgerEntry(
-                turn=state.turn,
-                company_id=company_id,
-                memo="Currency forwards settled",
-                lines=(LedgerLine(CASH, amount), pnl),
+    for company_id in sorted(set(gains) | set(losses)):
+        gain, loss = gains.get(company_id, 0), losses.get(company_id, 0)
+        lines = [LedgerLine(CASH, gain + loss)] if gain + loss else []
+        if gain:
+            lines.append(LedgerLine(FX_GAINS, -gain))
+        if loss:
+            lines.append(LedgerLine(FX_LOSSES, -loss))
+        if gain or loss:
+            entries.append(
+                LedgerEntry(
+                    turn=state.turn,
+                    company_id=company_id,
+                    memo="Currency forwards settled",
+                    lines=tuple(lines),
+                )
             )
-        )
     return replace(state, fx=replace(fx, hedges=tuple(hedges))), entries, settled
 
 

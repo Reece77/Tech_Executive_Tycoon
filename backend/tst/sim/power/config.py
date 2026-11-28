@@ -145,6 +145,7 @@ class PowerFile(_Frozen):
         base = cpi[BASE_YEAR]
 
         def real(value: float, year: int) -> float:
+            # money-exact: rate: a unit price in float cents, rounded where posted
             return value * base / interp({y: v for y, v in cpi.items()}, year)
 
         def money(points: dict[Any, Any]) -> dict[int, float]:

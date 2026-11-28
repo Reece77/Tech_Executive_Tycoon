@@ -32,7 +32,7 @@ from tst.sim.finserv.data import MONTHS, file, team_skill
 from tst.sim.finserv.demand import network_volume_dollars, rails_share
 from tst.sim.finserv.models import PaymentsMonth
 from tst.sim.ledger import CASH, LedgerEntry, LedgerLine
-from tst.sim.money import BP_DENOMINATOR, round_half_even, times
+from tst.sim.money import BP_DENOMINATOR, times, times_over
 from tst.sim.products.models import SELLING, Product
 from tst.sim.state import GameState
 
@@ -59,7 +59,7 @@ def _rows(state: GameState, p: Product, home: str) -> list[tuple[str, str, float
 def acquired_cents(merchants: float, data: GameData) -> int:
     """A month's volume of `merchants` merchants (cents)."""
     per = round(file(data).payments.volume_per_merchant_cents)
-    return round_half_even(times(per, merchants), MONTHS)
+    return times_over(per, MONTHS, merchants)
 
 
 def network_share(
@@ -183,7 +183,7 @@ def months(
     for n in state.finserv.networks:
         share = network_share(state, n.company_id, n.region, balance, data)
         dollars = network_volume_dollars(state, n.region, balance, data) * balance.finserv.scale
-        volume = round_half_even(times(round(dollars * CENTS), share), MONTHS)  # money-exact: rate
+        volume = times_over(round(dollars * CENTS), MONTHS, share)  # money-exact: rate
         base = rows.get((n.company_id, n.region))
         row = PaymentsMonth(
             turn=state.turn,

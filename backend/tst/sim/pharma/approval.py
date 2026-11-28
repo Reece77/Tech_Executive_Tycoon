@@ -236,8 +236,11 @@ def value_cap_cents(p: Programme, region: str, balance: Balance, data: GameData)
     value_premium x (estimate - soc) / sd) x (1 + hta_max_premium)."""
     ind = pd.indication(data, p.indication)
     db = balance.pharma.demand
+    # money-exact: ratio: a score, share or weight, not money
     value = 1 + db.value_premium * (p.obs_eff - ind.soc) / balance.pharma.efficacy.sd
+    # money-exact: rate: a unit price in float cents, rounded where posted
     cap = ind.price_year * pd.CENTS * max(0.0, value)
+    # money-exact: rate: a unit price in float cents, rounded where posted
     return cap * (1 + pd.file(data).pricing.hta_max_premium)
 
 

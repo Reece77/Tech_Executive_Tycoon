@@ -148,7 +148,7 @@ def _service_months(
         if not selling(p) and state.media.last_month(p.id) is None:
             continue
         ad, fees, _ = extra.get(p.id, (0, 0, 0))
-        revenue = streaming.monthly_revenue_cents(state, p)
+        revenue = streaming.monthly_revenue_cents(state, p, balance, data)
         if p.category == mb.streaming and streaming.ad_tier_on(p, state, data):
             revenue = times(revenue, streaming.paid_share(balance))
         content = fees + sum(

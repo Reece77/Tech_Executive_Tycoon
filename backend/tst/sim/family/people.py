@@ -153,6 +153,7 @@ def _child_interests(
 def general_ability(person: Person) -> float:
     """A child's ability across every skill: 10 x the mean skill (as 1's CA scale)."""
     values = [v for _, v in person.skills.items]
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return ABILITY_PER_ATTR * sum(values) / len(values)
 
 

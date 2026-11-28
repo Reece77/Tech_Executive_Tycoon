@@ -54,6 +54,7 @@ class Modifier:
 
     @property
     def factor(self) -> float:
+        # money-exact: ratio: `value` is a score or attribute here, not money
         return 1 + self.value_pct / PCT
 
 

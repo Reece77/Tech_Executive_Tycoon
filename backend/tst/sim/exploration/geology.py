@@ -62,6 +62,7 @@ def draw_block(
     acc = 0.0
     for c in geo.commodities:
         p = ground.prospectivity[c.key]
+        # money-exact: ratio: a score, share or weight, not money
         acc += p * gb.deposit_rate
         if u_dep < acc:
             lift = 1 - gb.size_lift / 2 + gb.size_lift * p

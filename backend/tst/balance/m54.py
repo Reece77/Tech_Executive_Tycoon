@@ -282,7 +282,14 @@ def target5_profits(seed: int, hedge_share: float) -> list[int]:
         state = _month(replace(state, turn=turn), rng)
         state, prices = fx_phase.before_markets(state, rng, b, d)
         revenue = sum(times(prices.get((FOREIGN_LINE, r, seg), p), n) for r, seg, p, n in rows)
-        state, entries = fx_phase.after_sales(state, b, d)
+        booked: dict[tuple[int, str], tuple[int, int]] = {}  # phase 5's (M57r-A, item 11)
+        for r, seg, p, n in rows:
+            a, c = booked.get((PLAYER, r), (0, 0))
+            booked[(PLAYER, r)] = (
+                a + times(prices.get((FOREIGN_LINE, r, seg), p), n),
+                c + times(p, n),
+            )
+        state, entries = fx_phase.after_sales(state, b, d, booked)
         fx = -sum(
             x.amount
             for e in entries

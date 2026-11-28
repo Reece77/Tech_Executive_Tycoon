@@ -267,7 +267,9 @@ def platform(
     if not pl.ai_ready(state, company_id, balance, data):
         raise PharmaRuleError("an AI discovery platform needs AI discovery")
     if any(
-        d.kind == "platform" and d.counterparty_id == rival_id and (d.until_turn or 0) > state.turn
+        d.kind == "platform"
+        and d.counterparty_id == rival_id
+        and (d.until_turn if d.until_turn is not None else 0) > state.turn
         for d in state.pharma_deals
     ):
         raise PharmaRuleError(f"{rival.name} already licenses the platform")

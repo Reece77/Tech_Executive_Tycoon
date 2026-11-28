@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Final, Literal
 
-from tst.sim.calendar import HISTORY_START_TURN, MONTHS_PER_YEAR, TURN_ZERO
+from tst.sim.calendar import HISTORY_START_TURN, turn_to_ym
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,13 +65,20 @@ class GameMode:
         return self.length == "endless"
 
 
+MONTH_NAMES: Final = (
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+)  # fmt: skip
+
+
 def began_in(system: str, mode: GameMode | None) -> str:
-    """An LLM system prompt's "began in January 2010" for a game begun earlier (M50): the
-    text is unchanged for a 2010 game or a later start."""
-    if mode is None or mode.start_turn >= 0 or mode.kind != "campaign":
+    """An LLM system prompt's "began in January 2010" for a game begun earlier (M50): the save's
+    start month, whatever the mode (M57r-A, review 10 item 30: a 2008 Sandbox or custom game was
+    told January 2010). The text is unchanged for a 2010 game or a later start."""
+    if mode is None or mode.start_turn >= 0:
         return system
-    year = TURN_ZERO[0] + mode.start_turn // MONTHS_PER_YEAR
-    return system.replace("January 2010", f"January {year}")
+    year, month = turn_to_ym(mode.start_turn)
+    return system.replace("January 2010", f"{MONTH_NAMES[month - 1]} {year}")
 
 
 def world_start_turn(mode: GameMode | None) -> int:

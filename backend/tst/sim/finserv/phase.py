@@ -7,8 +7,9 @@
   licensed and solvent, card programmes only where its network runs, at its acceptance's appeal);
   after the markets (`after_sales`): banks' month, payments' fees, interchange and fraud,
   insurers' claims and float, and rivals' interest, interchange and claims.
-- **Phase 9** (`demand_month`): growth draws, demand, networks' acceptance, then the history's
-  pin.
+- **Phase 5**, first (`open_month`, M57r-A): growth draws, demand and the history's pin for
+  this month, before its sales.
+- **Phase 9** (`demand_month`): networks' acceptance, then the history's pin at the month's end.
 
 A save without the finance markets (made before M54) does nothing here, and a company without a
 bank, network or insurer plays exactly as before (64.6 target 1).
@@ -235,12 +236,21 @@ def after_sales(
     return state, entries, logs
 
 
+def open_month(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -> GameState:
+    """Phase 5, before the markets (M57r-A, review 10 item 13): this month's growth draws, demand
+    and dated caps (a new real-time rail's volume, the history's incumbent pin), so the month's
+    sales meet this month's market."""
+    if not enabled(state, balance, data):
+        return state
+    state = demand.draw_growth(state, rng, balance, data)
+    state = demand.set_demand(state, balance, data)
+    return history.pin(state, balance, data)
+
+
 def demand_month(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, list[LogItem]]:
     if not enabled(state, balance, data):
         return state, []
-    state = demand.draw_growth(state, rng, balance, data)
-    state = demand.set_demand(state, balance, data)
     state = payments.networks_month(state, balance, data)
     return history.pin(state, balance, data), []

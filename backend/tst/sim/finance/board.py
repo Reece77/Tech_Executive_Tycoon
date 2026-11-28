@@ -204,7 +204,10 @@ def growth_term(state: GameState, company_id: int, balance: Balance) -> float:
     now, then = mrr_now_and_then(state, company_id, balance)
     if then <= 0:
         live = any(p.status == "live" for p in state.company_products(company_id))
-        waited = state.turn - (latest.closed_turn or 0) >= bb.no_product_after_turns
+        waited = (
+            state.turn - (latest.closed_turn if latest.closed_turn is not None else 0)
+            >= bb.no_product_after_turns
+        )
         return bb.no_product_penalty if waited and not live else 0.0
     g6 = f.growth_6(now, then, balance.finance)
     return f.growth_points(g6, bb.expected_growth[latest.series], bb)
@@ -228,6 +231,7 @@ def next_meeting_turn(turn: int, bb: BoardBalance) -> int:
 def average_confidence(state: GameState, company_id: int) -> float | None:
     """The board's mood: the mean of the voting directors' confidence (common seats hold none)."""
     values = [s.confidence for s in state.board(company_id) if s.confidence is not None]
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return sum(values) / len(values) if values else None
 
 

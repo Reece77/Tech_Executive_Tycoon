@@ -62,12 +62,15 @@ def _value(choice: EventChoice) -> float:
     for e in choice.effects:
         match e.type:
             case "cash_delta":
+                # money-exact: ratio: `value` is a score or attribute here, not money
                 total += e.value / CASH_SCALE
             case "morale_delta" | "brand_delta" | "quality_delta" | "customers_pct":
                 total += e.value
             case "relationship_delta":
+                # money-exact: ratio: `value` is a score or attribute here, not money
                 total += e.value / 2
             case "modifier":
+                # money-exact: ratio: `value` is a score or attribute here, not money
                 total += e.value / MODIFIER_SCALE
     return total
 

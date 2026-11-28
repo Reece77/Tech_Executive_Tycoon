@@ -173,6 +173,7 @@ def monthly_return(
     m = fb.mandates[mandate]
     return (
         m.index * index_r
+        # money-exact: ratio: a score, share or weight, not money
         + (1 - m.index) * cash_r
         + fb.alpha * (skill - fb.alpha_mid)
         + m.vol * z

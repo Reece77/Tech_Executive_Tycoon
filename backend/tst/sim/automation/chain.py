@@ -879,6 +879,7 @@ def cash_cost_per_start(month: FabMonth) -> float:
     pay less than any contract), over the starts it ran last month."""
     run = month.own + month.sold + month.contracted
     cash = month.fixed_cents + month.materials_cents + month.power_cents + month.staff_cents
+    # money-exact: rate: a unit price in float cents, rounded where posted
     return cash / max(1.0, run)
 
 
@@ -1096,7 +1097,10 @@ def _bid_asked(state: GameState, company: int, target_id: int, b: Balance) -> bo
         action = json.loads(str(dict(p.params).get("action", "{}")))
         if action.get("kind") != "bid_for_company" or action.get("target_id") != target_id:
             continue
-        if p.status in ("pending", "approved") or (p.resolved_turn or p.turn) > state.turn - quiet:
+        if (
+            p.status in ("pending", "approved")
+            or (p.resolved_turn if p.resolved_turn is not None else p.turn) > state.turn - quiet
+        ):
             return True
     return False
 

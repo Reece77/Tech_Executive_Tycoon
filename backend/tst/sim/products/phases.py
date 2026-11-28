@@ -246,6 +246,9 @@ class MarketOutcome:
     flows: Mapping[FlowKey, Flow]
     # M31 (44.1): units sold outside the home region, (product id, region, segment) -> units
     regional_units: Mapping[tuple[int, str, str], float] = field(default_factory=dict)
+    # M57r-A (review 10 item 11): (company id, region) -> (revenue booked, at the prices as set)
+    # for companies with books: what FxMonth reports, so it matches the ledger
+    booked_by_region: Mapping[tuple[int, str], tuple[int, int]] = field(default_factory=dict)
 
 
 def run_markets(
@@ -369,7 +372,7 @@ def run_markets(
     for trimmed, gone in removed.items():
         if trimmed in flows:
             flows[trimmed] = replace(flows[trimmed], new=max(0.0, flows[trimmed].new - gone))
-    state, entries_out, revenue, flows, more_logs = _revenue(
+    state, entries_out, revenue, flows, more_logs, by_region = _revenue(
         state, flows, data, regional_units, plan, effects, home_region_of(state, balance, data)
     )
     running = any(c.running(state.turn) for c in state.production_contracts)
@@ -389,6 +392,7 @@ def run_markets(
         revenue=revenue,
         flows=flows,
         regional_units=regional_units,
+        booked_by_region=by_region,
     )
 
 
@@ -715,7 +719,12 @@ def _revenue(
     effects: Effects | None = None,
     home: str = "",
 ) -> tuple[
-    GameState, tuple[LedgerEntry, ...], dict[int, Cents], dict[FlowKey, Flow], list[LogItem]
+    GameState,
+    tuple[LedgerEntry, ...],
+    dict[int, Cents],
+    dict[FlowKey, Flow],
+    list[LogItem],
+    dict[tuple[int, str], tuple[int, int]],
 ]:
     """round(C x price) per segment for companies with books; in a unit-sale market (M12b,
     26.1) round(units sold x price), and a rival's abstract cost of goods (the market's
@@ -726,6 +735,11 @@ def _revenue(
     entries: list[LedgerEntry] = []
     revenue: dict[int, Cents] = {c.id: 0 for c in state.ledger_companies()}
     fx_price = effects.fx_price if effects is not None else {}  # M54 (64.4): translated prices
+    by_region: dict[tuple[int, str], tuple[int, int]] = {}
+
+    def note(company_id: int, region: str, amount: int, as_set: int) -> None:
+        a, b = by_region.get((company_id, region), (0, 0))
+        by_region[(company_id, region)] = (a + amount, b + as_set)
 
     def booked_price(product_id: int, region: str, segment: str, price: int | None) -> int:
         if price is None:
@@ -752,18 +766,25 @@ def _revenue(
                     sold = flows.get(key, Flow()).units
                     units_sold += sold
                     amount = times(price, sold)
+                    as_set = times(seg.price_cents or 0, sold)
                 else:
                     amount = times(price, seg.customers, paid)
+                    as_set = times(seg.price_cents or 0, seg.customers, paid)
                 booked += amount
+                note(product.company_id, home, amount, as_set)
                 flows[key] = replace(flows.get(key, Flow()), revenue_cents=amount)
             for rseg in abroad:  # other regions (M9, 19.5)
                 price = booked_price(product.id, rseg.region, rseg.segment, rseg.price_cents)
                 if category.sells_units:
                     sold = regional_units.get((product.id, rseg.region, rseg.segment), 0.0)
                     units_sold += sold
-                    booked += times(price, sold)
+                    amount = times(price, sold)
+                    as_set = times(rseg.price_cents or 0, sold)
                 else:
-                    booked += times(price, rseg.customers, paid)
+                    amount = times(price, rseg.customers, paid)
+                    as_set = times(rseg.price_cents or 0, rseg.customers, paid)
+                booked += amount
+                note(product.company_id, rseg.region, amount, as_set)
             if category.sells_units and units_sold and not (plan and plan.is_capped(product.id)):
                 share = category.rival_cost_share  # M38 (49.1): a share of its own price
                 cogs = round(
@@ -842,7 +863,7 @@ def _revenue(
                 state = with_regional_segment(state, replace(rseg, customers=0.0))
             state = with_product(state, replace(product, status="retired", retired_turn=turn))
             state = release_assignments(state, product.id)
-    return state, tuple(entries), revenue, flows, logs
+    return state, tuple(entries), revenue, flows, logs, by_region
 
 
 def release_assignments(state: GameState, product_id: int) -> GameState:

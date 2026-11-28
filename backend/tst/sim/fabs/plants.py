@@ -244,6 +244,7 @@ def _learn(
     mature = yb.mature * yield_mult(fab, balance)
     value = fx.next_yield(fab.yield_, mature, rate)
     noise = float(fab_draws(rng, state.turn, YIELD, facility.id).normal(0.0, yb.noise_sd))
+    # money-exact: ratio: `value` is a score or attribute here, not money
     value = min(yb.bounds.hi, max(yb.bounds.lo, value * (1 + noise)))
     return replace(fab, yield_=value, months_run=fab.months_run + 1)
 

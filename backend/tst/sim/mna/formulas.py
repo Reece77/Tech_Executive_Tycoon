@@ -114,6 +114,7 @@ def premium_over(price_cents: int, market_cap_cents: int) -> float:
 def tender_chance(premium: float, aggressive: bool, tb: TenderBalance) -> float:
     """A hostile tender succeeds with clamp((premium - 0.15) / 0.5, 0, 0.9), less the
     defence for an aggressive target (28.3)."""
+    # money-exact: ratio: a score, share or weight, not money
     base = min(max((premium - tb.floor) / tb.span, 0.0), tb.cap)
     return max(0.0, base - (tb.defence if aggressive else 0.0))
 

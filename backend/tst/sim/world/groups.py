@@ -274,6 +274,7 @@ def _new_deals(
             fit = gb.fit[buyer.personality or "fast_follower"].get(kind, 0.0)
             if fit <= 0:  # 41.3: buyers seek targets that supply them or share their markets
                 continue
+            # money-exact: ratio: a score, share or weight, not money
             score = fit / price
             if best is None or (score, -target.id) > (best[0], -best[1]):
                 best = (score, target.id, target, price, kind)

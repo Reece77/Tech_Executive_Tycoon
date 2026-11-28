@@ -69,22 +69,34 @@ def _listing(
 
 
 def app_revenue_cents(
-    state: GameState, product: Product, region: str, home: str | None, balance: Balance
+    state: GameState,
+    product: Product,
+    region: str,
+    home: str | None,
+    balance: Balance,
+    data: GameData | None = None,
 ) -> int:
     """Monthly revenue in the region's store-distributed segments: customers x price."""
     segments = set(balance.platforms.app_categories[product.category].segments)
     rows = [
-        (r.customers, r.price_cents)
+        (r.customers, r.segment, r.price_cents)
         for r in state.regional_segments_of(product.id, region)
         if r.segment in segments
     ]
     if region == home:
         rows += [
-            (s.customers, s.price_cents)
+            (s.customers, s.segment, s.price_cents)
             for s in state.segments_of(product.id)
             if s.segment in segments
         ]
-    return sum_times((p or 0, n) for n, p in rows)
+    if data is not None:  # M57r-A (review 10 item 10): the price as phase 5 booked it
+        from tst.sim.fx.translate import booked_price
+
+        rows = [
+            (n, seg, booked_price(state, product.id, region, seg, p, balance, data) if p else p)
+            for n, seg, p in rows
+        ]
+    return sum_times((p or 0, n) for n, _, p in rows)
 
 
 def seller_year_cents(state: GameState, company_id: int) -> int:
@@ -130,7 +142,7 @@ def fees_due_exact(
         year = seller_year_cents(state, product.company_id)
         paid = app.paid_share
         for region in data.region_keys:
-            revenue = app_revenue_cents(state, product, region, home, balance)
+            revenue = app_revenue_cents(state, product, region, home, balance, data)
             if revenue <= 0:
                 continue
             for pid, row in rows.get(region, {}).items():
@@ -201,7 +213,7 @@ def store_revenue_cents(
     state: GameState, product: Product, balance: Balance, data: GameData
 ) -> int:
     home = home_of(state, balance, data)
-    return sum(app_revenue_cents(state, product, r, home, balance) for r in data.region_keys)
+    return sum(app_revenue_cents(state, product, r, home, balance, data) for r in data.region_keys)
 
 
 def fee_entries(state: GameState, balance: Balance, data: GameData) -> list[LedgerEntry]:

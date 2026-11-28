@@ -144,8 +144,9 @@ def fee_for(
     steering: bool,
     balance: Balance,
 ) -> float:
-    """The effective fee a seller pays (44.4) on its store revenue in a category."""
-    app = balance.platforms.app_categories[category]
+    """The effective fee a seller pays (44.4) on its store revenue in a category. A category
+    without an app profile (games, M57r-A ruling 5) pays as one-off purchases: no subscriptions."""
+    app = balance.platforms.app_categories.get(category)
     small = (
         sched.small_threshold_cents is not None and seller_year_cents < sched.small_threshold_cents
     )
@@ -166,8 +167,8 @@ def fee_for(
         small,
         sched.sub_rate,
         sched.sub_after_year,
-        app.subscription_share,
-        app.renewal_share,
+        app.subscription_share if app is not None else 0.0,
+        app.renewal_share if app is not None else 0.0,
         regulated,
     )
 

@@ -215,6 +215,7 @@ def effects(
                 if ratio != 1.0:
                     segment[(p.id, k, sb.d2d_segment)] = ratio
                 if price:
+                    # money-exact: rate: a unit price in float cents, rounded where posted
                     cut[(p.id, k)] = -price / sb.terminal.amortize_months
     if not appeal and not segment and not cut and not churn:
         return base

@@ -24,6 +24,7 @@ where its company's networks and spectrum reach (tst.sim.telecom.services).
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final, Literal
 
 from tst.sim import dmath
@@ -158,7 +159,7 @@ def _order(
     kind: str,
     region: str,
     capacity: int,
-    capex: float,
+    capex: Fraction | int,
     city: str | None,
     balance: Balance,
     data: GameData,
@@ -175,7 +176,7 @@ def _order(
     if city is not None and (not data.has_city(city) or data.city(city).region != region):
         raise TelecomRuleError(f"{city!r} is not a city in that region")
     q = lifecycle.quote(state, company, kind, region, capacity, balance, data, None)
-    total = max(1, round(exact(capex)))
+    total = max(1, round(Fraction(capex)))  # rational throughout the quote (M57r-A)
     monthly = max(1, round(exact(total) / exact(k.build_months)))
     if account_balance(balances, company, CASH) < monthly:
         raise InsufficientCashError(f"the first capex payment needs {monthly} cents")
@@ -227,8 +228,8 @@ def build_towers(
     state = spend_energy(
         state, action.actor_id, "build_towers", balance, cost=balance.telecom.energy["build"]
     )
-    radio = eq.radio_cents(state, company, action.generation, action.vendor, balance, data)
-    capex = action.sites * (eq.civil_cents(state, data) + radio)
+    radio = eq.radio_exact(state, company, action.generation, action.vendor, balance, data)
+    capex = action.sites * (eq.civil_exact(state, data) + radio)
     state, f, total, months = _order(
         state,
         company,
@@ -295,7 +296,7 @@ def add_radios(
     state = spend_energy(
         state, action.actor_id, "add_radios", balance, cost=balance.telecom.energy["build"]
     )
-    capex = action.sites * eq.radio_cents(
+    capex = action.sites * eq.radio_exact(
         state, company, action.generation, action.vendor, balance, data
     )
     state, f, total, months = _order(
@@ -341,7 +342,7 @@ def build_fibre(
     )
     index = goods.current(state, "equipment", data).index
     home = file(data).fibre_home_at(end_year_at(state.turn))
-    capex = action.homes * THOUSAND * home * index
+    capex = action.homes * THOUSAND * exact(home) * exact(index)
     state, f, total, months = _order(
         state,
         company,
@@ -395,7 +396,10 @@ def build_cable(
     index = goods.current(state, "equipment", data).index
     per_km = file(data).cable_km_at(end_year_at(state.turn))
     capex = (
-        action.km * per_km * index * float(dmath.pow(action.tbps / cb.ref_tbps, cb.tbps_exponent))
+        exact(action.km)
+        * exact(per_km)
+        * exact(index)
+        * exact(float(dmath.pow(action.tbps / cb.ref_tbps, cb.tbps_exponent)))
     )
     state, f, total, months = _order(
         state,
@@ -489,8 +493,8 @@ def replace_radios(
     state = spend_energy(
         state, action.actor_id, "replace_radios", balance, cost=balance.telecom.energy["replace"]
     )
-    radio = eq.radio_cents(state, company, old.generation, action.vendor, balance, data)
-    capex = action.sites * radio * balance.telecom.ban.swap_mult  # removal and integration
+    radio = eq.radio_exact(state, company, old.generation, action.vendor, balance, data)
+    capex = action.sites * radio * exact(balance.telecom.ban.swap_mult)  # removal, integration
     state, nf, total, months = _order(
         state,
         company,

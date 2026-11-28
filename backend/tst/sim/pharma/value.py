@@ -103,6 +103,7 @@ def peak_cents(
         )
         n = pd.treated(data, ind, region, turn, lvl) * share
         price = pd.net_price(data, ind, round(ind.price_year * pd.CENTS), region) * pd.CENTS
+        # money-exact: estimate: a float estimate compared or ranked, never posted
         total += n * price * (1 - mod.cmo_share)
     return total * balance.pharma.scale
 

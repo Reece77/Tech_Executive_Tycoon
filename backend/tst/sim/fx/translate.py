@@ -66,16 +66,23 @@ def update_marks(state: GameState, balance: Balance, data: GameData) -> GameStat
         return state
     xb = balance.fx
     home = home_region_of(state, balance, data)
+    from tst.sim.media.ads import engine_priced
+
     old = {(m.product_id, m.region, m.segment): m for m in state.fx.marks}
     marks: list[PriceMark] = []
     companies = {c.id: c for c in state.companies}
+    engine: dict[int, bool] = {}
     for cid, pid, region, seg, price in _segments(state, home):
         if price is None or region == xb.home:
             continue
         if not translates(companies.get(cid), state.turn, balance):
             continue
+        if pid not in engine:
+            p = state.product(pid)
+            engine[pid] = p is not None and engine_priced(state, p, balance)
         m = old.get((pid, region, seg))
-        if m is None or m.price_cents != price:
+        # an engine-set price is already in US cents this month: re-marked every month
+        if m is None or m.price_cents != price or (engine[pid] and m.turn != state.turn):
             m = PriceMark(pid, region, seg, price, state.turn)
         marks.append(m)
     marks.sort(key=lambda m: (m.product_id, m.region, m.segment))
@@ -99,6 +106,30 @@ def fx_prices(state: GameState, balance: Balance, data: GameData) -> dict[Key, i
         if price != m.price_cents:
             out[(m.product_id, m.region, m.segment)] = max(1, price)
     return out
+
+
+def booked_prices(state: GameState, balance: Balance, data: GameData) -> dict[Key, int]:
+    """`fx_prices` once a state: the prices phase 5 books at, for what is a share of booked
+    revenue (royalties, claims, store fees; M57r-A, review 10 item 10 and ruling 4)."""
+    from tst.sim.state import derived
+
+    return derived(
+        state, ("fx_booked_prices", id(balance), id(data)), lambda: fx_prices(state, balance, data)
+    )
+
+
+def booked_price(
+    state: GameState,
+    product_id: int,
+    region: str,
+    segment: str,
+    price: int,
+    balance: Balance,
+    data: GameData,
+) -> int:
+    """A segment's price as phase 5 books it this month: translated where its index moved."""
+    prices = booked_prices(state, balance, data)
+    return prices.get((product_id, region, segment), price) if prices else price
 
 
 def _cost_basis(turn: int, last_raise: int | None) -> int:

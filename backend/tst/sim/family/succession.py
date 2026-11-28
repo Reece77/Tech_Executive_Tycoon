@@ -287,6 +287,7 @@ def heir_life(heir_id: int, parent: FounderLife | None, balance: Balance) -> Fou
     fb = balance.family
 
     def trait(value: float | None) -> float:
+        # money-exact: ratio: `value` is a score or attribute here, not money
         extra = fb.heir_persona_share * value if value is not None else 0.0
         return min(TRAIT_MAX, fb.heir_persona_start + extra)
 

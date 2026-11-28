@@ -100,6 +100,7 @@ def key_drug_b(d: RivalDrug, t: float, data: GameData) -> float:
             value = base * dmath.pow(1 + g, grow_to - last - mid)
             if t >= d.loe_us:
                 value *= pd.retained(mod, months_now)
+    # money-exact: estimate: a float estimate compared or ranked, never posted
     return value * _ira_factor(d, t, data)
 
 
@@ -169,6 +170,7 @@ def rival_generic_pool(state: GameState, balance: Balance, data: GameData) -> fl
             mod = pd.modality(data, d.modality)
             kept = pd.retained(mod, (t - d.loe_us) * pd.MONTHS)
             before = key_drug_b(d, t, data) / kept if kept > 0 else 0.0
+            # money-exact: estimate: a float estimate compared or ranked, never posted
             pool += before * (1 - kept) * mod.erosion.price_share * per_month
     for s in state.pharma_seeded:
         if turn < s.loe_turn:
@@ -176,6 +178,7 @@ def rival_generic_pool(state: GameState, balance: Balance, data: GameData) -> fl
         mod = pd.modality(data, s.modality)
         kept = pd.retained(mod, turn - s.loe_turn)
         before = seeded_b(s, turn, balance, data) / kept if kept > 0 else 0.0
+        # money-exact: estimate: a float estimate compared or ranked, never posted
         pool += before * (1 - kept) * mod.erosion.price_share / pd.MONTHS
     return pool
 

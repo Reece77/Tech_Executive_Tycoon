@@ -204,7 +204,7 @@ def operate(
         )
 
     # Facilities run, mothball, restart and close.
-    revenue: dict[int, float] = {}
+    revenue: dict[int, Fraction] = {}
     cogs: dict[int, Fraction] = {}
     fixed: dict[int, float] = {}
     depreciation: dict[int, int] = {}
@@ -233,7 +233,9 @@ def operate(
             changes["depreciated_cents"] = f.depreciated_cents + dep
         if f.status == "live":
             output = f.capacity * utilisation[f.good] / MONTHS
-            revenue[f.company_id] = revenue.get(f.company_id, 0.0) + output * spot
+            revenue[f.company_id] = revenue.get(f.company_id, Fraction()) + exact(output) * exact(
+                spot
+            )
             made_cost = exact(output) * exact(cash_cost)
             cogs[f.company_id] = cogs.get(f.company_id, Fraction()) + made_cost
             below = f.below_months + 1 if losing(spot, cash_cost, factors[f.good], wb) else 0
@@ -364,7 +366,7 @@ def _books(
     balance: Balance,
     data: GameData,
     balances: Mapping[tuple[int, AccountCode], Cents],
-    revenue: Mapping[int, float],
+    revenue: Mapping[int, Fraction],
     cogs: Mapping[int, Fraction],
     fixed: Mapping[int, float],
     depreciation: Mapping[int, int],
@@ -383,7 +385,7 @@ def _books(
             continue
         cid = rec.company_id
         foundry = any(f.good == FOUNDRY_GOOD for f in state.world_facilities if f.company_id == cid)
-        rev = round(revenue.get(cid, 0.0) * wq.CENTS)
+        rev = round(revenue.get(cid, Fraction()) * wq.CENTS)
         cost = round(cogs.get(cid, Fraction()) * wq.CENTS)
         fix = round(fixed.get(cid, 0.0) * wq.CENTS)
         debt = -account_balance(balances, cid, DEBT)

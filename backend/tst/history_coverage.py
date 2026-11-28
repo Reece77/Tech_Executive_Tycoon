@@ -6,7 +6,10 @@ is a mapping keyed by calendar years (`{2010: ..., 2011: ...}`), a mapping keyed
 January 2010 (turn 0) must also reach back to `calendar.HISTORY_START_YEAR` without a gap:
 
 - its first entry is in or before that year (January of it, for a month-keyed series);
-- an annual series (one listing both 2010 and 2011) lists every year from it to 2010.
+- an annual series lists every year from its first to 2010, and a monthly series every month
+  to January 2010 (M57r-A, review 10 item 28: a missing interior month or year passed). A series is
+  annual (monthly) when most of its steps are one year (one month); a series written at anchor
+  years and interpolated between is sparse and needs only its first entry.
 
 A series that starts after 2010 (a product launched in 2017, a plan from 2027) is a later
 fact of the world and needs nothing earlier.
@@ -19,6 +22,7 @@ Demand growth before 2010 has one source, each category's `early_growth` in cate
 from __future__ import annotations
 
 import re
+from itertools import pairwise
 from typing import Any, Final
 
 from tst.sim.calendar import HISTORY_START_YEAR, TURN_ZERO
@@ -48,17 +52,38 @@ def _month_rows(node: list[Any]) -> list[str] | None:
     return [r[0] for r in node]
 
 
+DENSE_SHARE: Final = 0.75  # tunable-exempt: steps of one that make a series annual or monthly
+
+
+def _dense(points: list[int]) -> bool:
+    """Most of the sorted points' steps are one (an annual or monthly series, not anchors)."""
+    xs = sorted(set(points))
+    if len(xs) < 3:  # tunable-exempt: two points are anchors
+        return False
+    ones = sum(1 for a, b in pairwise(xs) if b - a == 1)
+    return ones >= DENSE_SHARE * (len(xs) - 1)
+
+
+def _gaps(points: list[int], last: int) -> list[int]:
+    """The points missing from the first to `last` (the history: to January 2010)."""
+    have = set(points)
+    return [x for x in range(min(have), min(max(have), last) + 1) if x not in have]
+
+
 def _year_problem(path: str, years: list[int]) -> str | None:
     first = min(years)
     if first > ZERO_YEAR:
         return None  # starts after 2010: a later fact
     if first > HISTORY_START_YEAR:
         return f"{path} starts in {first}; it needs entries from {HISTORY_START_YEAR}"
-    if ZERO_YEAR in years and ZERO_YEAR + 1 in years:  # an annual series: no gap allowed
-        missing = [y for y in range(HISTORY_START_YEAR, ZERO_YEAR) if y not in years]
-        if missing:
-            return f"{path} has no entry for {missing}"
+    annual = _dense(years) or (ZERO_YEAR in years and ZERO_YEAR + 1 in years)
+    if annual and (missing := _gaps(years, ZERO_YEAR)):  # an annual series: no gap to 2010
+        return f"{path} has no entry for {missing}"
     return None
+
+
+def _month_index(key: str) -> int:
+    return int(key[:4]) * 12 + int(key[5:7]) - 1  # tunable-exempt: months a year
 
 
 def _month_problem(path: str, months: list[str]) -> str | None:
@@ -67,6 +92,10 @@ def _month_problem(path: str, months: list[str]) -> str | None:
         return None
     if first > f"{HISTORY_START_YEAR}-01":
         return f"{path} starts in {first}; it needs entries from {HISTORY_START_YEAR}-01"
+    index = [_month_index(m) for m in months]
+    if _dense(index) and (missing := _gaps(index, ZERO_YEAR * 12)):  # monthly: none to 2010-01
+        shown = [f"{i // 12}-{i % 12 + 1:02d}" for i in missing[:3]]  # tunable-exempt: months
+        return f"{path} has no entry for {shown}{' and more' if len(missing) > 3 else ''}"
     return None
 
 

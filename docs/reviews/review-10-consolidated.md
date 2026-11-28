@@ -62,6 +62,28 @@ Fixes go to **M57r-A** (engine) and **M57r-B** (platform, conversations and test
 6. **#24, M9's Africa miss:** M57r-B adds a bounded known-miss row (`M9.spread.africa`, owner M57, bound 10/10 seeds), with M57 to add a fixed-broadband rival in Africa or retire the cell. Releases require a commit on `main` with green `check` and `e2e`.
 7. **#29:** add a poisson-heavy seed to the `determinism` job's Windows and Linux digests; if they differ, draw through a `dmath`-based sampler.
 
+## Resolution, lane A (M57r-A, 2026-11-28)
+
+| # | Status | Commit (branch `claude/m57r-a-engine-fixes-597pvg`) |
+| --- | --- | --- |
+| 5 | Fixed: stable keys; insertion tests (`test_m57r_a_rng_keys.py`); older index-keyed streams left, follow-up | fddc366 |
+| 6 | Fixed: one liquidity routine; property test (`test_m57r_a_bank_liquidity.py`) | 1261e3b |
+| 7 | Fixed: integer clock, rational capex, half-even cash; money guard extended and triaged | 40efc2e, 680fa80 |
+| 8 | Fixed: one rational expression a month; reserves clear; licences by cumulative entitlement (`test_m57r_a_money.py`) | 40efc2e, 1261e3b |
+| 9 | Fixed: no withdrawal before the charter or below its capital | 1261e3b |
+| 10 | Fixed: marks after ad pricing; engine-priced lines re-marked; shares from booked revenue | 169c5df |
+| 11 | Fixed: `FxMonth` from phase 5's booked revenue (`test_m57r_a_currencies.py`) | 169c5df |
+| 12 | Fixed: settlements summed, settlement-only rows, gains and losses apart | 169c5df |
+| 13 | Fixed: finance demand and pin before sales (`test_m57r_a_timing.py`) | b438a65 |
+| 14 | Fixed: calibration at a region's first seller | b438a65 |
+| 15 | Fixed: privacy cuts by delivery; iOS share from M31 | b438a65 |
+| 16 | Fixed: game fees through `fee_for` to the owner | b438a65 |
+| 17 | Fixed: charters move with integrated or sold lines | b438a65 |
+| 18 | Fixed: the editor refuses customers behind a gate | b438a65 |
+| 28 | Fixed: interior gaps refused to 2010 | fdad52b |
+| 29 | Checked: poisson probe identical on Linux and Windows; no sampler change needed | 81b27c1 |
+| 30 | Fixed: 19 sites, AST guard; `began_in` by start month | fdad52b |
+
 ## Resolution, lane B (M57r-B, 2026-11-28)
 
 A section of its own rather than a column in the table above, so lane A's resolution never conflicts with it. Details in `docs/tasks/M57r-B-review-10-platform-fixes.md`, "Decisions made".

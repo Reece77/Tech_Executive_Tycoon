@@ -38,7 +38,7 @@ from tst.sim.finserv.data import (
     region_index,
 )
 from tst.sim.products.models import MarketSegment
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_all_markets
 
 ACCOUNTS: Final = 0  # growth kinds (the world's growth rows)
@@ -163,7 +163,7 @@ def set_demand(state: GameState, balance: Balance, data: GameData) -> GameState:
 
 def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -> GameState:
     """Each January from `finserv.start`: every region's growth for the year by kind (stream
-    finserv (4, region index, year); hidden)."""
+    finserv (4, region key, year); hidden)."""
     fb = balance.finserv
     year, month = turn_to_ym(state.turn)
     if state.turn < fb.start_turn or month != 1:
@@ -174,7 +174,7 @@ def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameD
         ri = region_index(region, data)
         if world.rate(year, ri, ACCOUNTS) is not None:
             continue
-        g = draws.gen(rng, state.turn, GROWTH_KEY, ri, year)
+        g = draws.gen(rng, state.turn, GROWTH_KEY, text_key(region), year)
         lo, hi = fb.growth_after.lo, fb.growth_after.hi
         v = fb.payments.growth_after[region]
         rows.append((year, ri, ACCOUNTS, float(lo + (hi - lo) * g.random())))

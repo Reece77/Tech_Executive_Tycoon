@@ -83,7 +83,11 @@ def conditions(
     history = [
         t for t in rdata.history_rulings(state, data, company_id, reg.key, state.turn) if t > ten
     ]
-    return len([c for c in ruled if (c.ruled_turn or 0) > ten]) + len(history) >= 2
+    return (
+        len([c for c in ruled if (c.ruled_turn if c.ruled_turn is not None else 0) > ten])
+        + len(history)
+        >= 2
+    )
 
 
 def watch_of(state: GameState, company_id: int, regulator: str, market: str) -> Watch | None:
@@ -270,10 +274,16 @@ def sell(
     if buyer is None:
         return state, [], []
     price = round(unit_revenue_cents(state, o) * exact(balance.regulation.structural.sale_multiple))
+    sold = []
     for pid in o.product_ids:
         product = state.product(pid)
         if product is not None:
+            sold.append(product)
             state = with_product(state, replace(product, company_id=buyer))
+    # M57r-A (review 10 item 17): a bank's or insurer's charter and books go with its line
+    from tst.sim.finserv.charters import on_sale
+
+    state, charter_entries = on_sale(state, o.company_id, sold, balance, data)
     state = replace(
         state,
         units=tuple(
@@ -302,6 +312,7 @@ def sell(
                 debit=GOODWILL, credit=CASH, amount=price,
             ),
         ]  # fmt: skip
+    entries += charter_entries
     state = with_order(state, replace(o, status="sold", closed_turn=state.turn))
     logs = []
     if o.company_id == state.player.id:
@@ -376,7 +387,7 @@ def orders_month(
             gen = draws.gen(rng, state.turn, draws.ORDER, o.id, draws.OUTCOME)
             lo, hi = sb.appeal_win
             odds = lo + (hi - lo) * float(gen.random())
-            length = o.appeal_until - (o.asked_turn or o.ordered_turn)
+            length = o.appeal_until - (o.asked_turn if o.asked_turn is not None else o.ordered_turn)
             if float(gen.random()) < odds:
                 state = with_order(state, replace(o, status="overturned", closed_turn=state.turn))
                 if o.company_id == state.player.id:

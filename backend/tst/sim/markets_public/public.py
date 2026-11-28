@@ -27,7 +27,7 @@ from tst.sim.markets_public.value import (
     fundamentals,
     growth_of,
 )
-from tst.sim.money import exact
+from tst.sim.money import exact, times
 from tst.sim.press.moments import credibility, queue_moment
 from tst.sim.rivals.models import player_key
 from tst.sim.rng import RngFactory
@@ -412,6 +412,7 @@ def apply_public_step(
     elif step == "takeover_talks" and public is not None:
         tb = balance.public.takeover
         bounds = balance.public.sentiment.bounds
+        # money-exact: ratio: a score, share or weight, not money
         sentiment = bounds.clamp(public.sentiment * (1 + tb.premium * tb.talks_share))
         state = with_public(state, replace(public, sentiment=sentiment))
         # M14 (28.6): next month the buyer names its price, which can be accepted (an exit)
@@ -471,7 +472,7 @@ def _pending(
             for _ in range(ab.board_seats):
                 state = _add_seat(state, cid, "investor", rng, balance, data, round_id=None)
         elif step == "activist_buyback":
-            amount = round(max(cash, 0) * ab.buyback_cash_share)
+            amount = times(max(cash, 0), ab.buyback_cash_share)
             try:
                 state, posted, shares, cost = capital.buyback(state, cid, amount, cash, balance)
             except InvalidActionError:
@@ -482,7 +483,7 @@ def _pending(
                 inbox_item(state.turn, cid, "buyback_done", shares=shares, amount_cents=cost)
             )
         elif step == "activist_fight":
-            cost = round(max(cash, 0) * ab.settle_cash_share)
+            cost = times(max(cash, 0), ab.settle_cash_share)
             if cost > 0:
                 entries.append(
                     LedgerEntry.transfer(

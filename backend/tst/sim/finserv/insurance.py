@@ -38,14 +38,14 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finserv import draws
 from tst.sim.finserv.config import series_at
-from tst.sim.finserv.data import MONTHS, PCT, file, region_index, team_skill, year_at
+from tst.sim.finserv.data import MONTHS, PCT, file, team_skill, year_at
 from tst.sim.finserv.models import Catastrophe, InsuranceMonth, Insurer
 from tst.sim.fx.rates import policy_rate
 from tst.sim.ledger import CASH, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import round_half_even, times
+from tst.sim.money import ceil_div, times, times_over
 from tst.sim.products.models import SELLING, Product
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 
 INVESTMENTS: Final = "1330_insurer_investments"
@@ -91,8 +91,7 @@ def draw_cats(state: GameState, rng: RngFactory, balance: Balance, data: GameDat
     shares = file(data).insurance.cat_region_share
     cats = list(state.finserv.world.cats)
     for region in data.region_keys:
-        ri = region_index(region, data)
-        g = draws.gen(rng, state.turn, CAT_KEY, ri, year, state.turn)
+        g = draws.gen(rng, state.turn, CAT_KEY, text_key(region), year, state.turn)
         if float(g.random()) >= chance * shares[region] * len(shares):
             continue
         extra = cb.extra.lo + (cb.extra.hi - cb.extra.lo) * float(g.random())
@@ -145,8 +144,20 @@ def _lines(
     return out
 
 
+def _booked(
+    state: GameState, p: Product, seg: str, region: str, price: int, b: Balance, d: GameData
+) -> int:
+    """A policy's premium as phase 5 books it (translated; M57r-A ruling 4)."""
+    from tst.sim.fx.translate import booked_price
+
+    return booked_price(state, p.id, region, seg, price, b, d)
+
+
 def premiums_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
-    return sum(times(price, n) for _, _, _, price, n in _lines(state, company_id, balance, data))
+    return sum(
+        times(_booked(state, p, seg, region, price, balance, data), n)
+        for p, seg, region, price, n in _lines(state, company_id, balance, data)
+    )
 
 
 def required_cents(state: GameState, insurer: Insurer, balance: Balance, data: GameData) -> int:
@@ -197,7 +208,7 @@ def insurer_month(
     premiums = 0
     cat_hit = False
     for p, seg, region, price, n in _lines(state, insurer.company_id, balance, data):
-        prem = times(price, n)
+        prem = times(_booked(state, p, seg, region, price, balance, data), n)
         premiums += prem
         skill = team_skill(state, p, SKILLS, balance, data)
         ratio = claims_ratio(state, p, seg, region, price, balance, data, skill)
@@ -208,7 +219,8 @@ def insurer_month(
     paid = 0
     for line in sorted(set(reserves) | set(claims)):
         r = reserves.get(line, 0)
-        pay = round_half_even(r, max(1, f.claims_lag_months[line]))
+        # rounded up (M57r-A, review 10 item 8): a reserve clears completely once claims stop
+        pay = ceil_div(r, max(1, f.claims_lag_months[line])) if r > 0 else 0
         reserves[line] = r - pay + claims.get(line, 0)
         paid += pay
     incurred = sum(claims.values())
@@ -216,7 +228,7 @@ def insurer_month(
     invest = total_reserves - insurer.reserves_cents + paid  # cash into 1330: the new reserves
     region = next((x.region for x in insurer.licences), "north_america")
     rate = (policy_rate(state, region, balance, data) + ib.float_spread) / PCT
-    income = round_half_even(times(insurer.investments_cents, max(0.0, rate)), MONTHS)
+    income = times_over(insurer.investments_cents, MONTHS, max(0.0, rate))
     lines = [
         LedgerLine(CLAIMS, incurred),
         LedgerLine(RESERVES, -incurred),

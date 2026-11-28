@@ -199,6 +199,10 @@ def integrate(
         )
         unit_ids.append(unit_id)
         state = _modifier(state, acquirer, product.id, ib.churn_mult, ib.churn_months)
+    # M57r-A (review 10 item 17): a finance line's charter comes with it
+    from tst.sim.finserv.charters import on_integrate
+
+    state = on_integrate(state, acquirer, products, balance, data)
     key = [e for e in state.staff(target)]
     arrived = [e.person_id for e in key]
     for index, employment in enumerate(sorted(key, key=lambda e: e.id)):

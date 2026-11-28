@@ -25,7 +25,7 @@ from tst.sim import dmath
 from tst.sim.data_models import Balance, GameData
 from tst.sim.finance import macro
 from tst.sim.fx.config import INDEX_SCALE, MONTHS, FxFile
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 
 
@@ -76,7 +76,7 @@ def walk_month(state: GameState, rng: RngFactory, balance: Balance, data: GameDa
     k = state.turn - start
     rows = dict(state.fx.walk)
     changed = False
-    for ri, region in enumerate(data.region_keys):
+    for region in data.region_keys:
         if region == xb.home:
             continue
         walk = rows.get(region, ())
@@ -91,7 +91,7 @@ def walk_month(state: GameState, rng: RngFactory, balance: Balance, data: GameDa
             ln_anchor = dmath.log(last / INDEX_SCALE) + dmath.log(1.0 + xb.drift[region]) * (
                 months / MONTHS
             )
-            g = rng.stream(turn, "fx", ri, turn)
+            g = rng.stream(turn, "fx", text_key(region), turn)
             z = float(g.standard_normal())
             u = float(g.random())
             up = float(g.random()) < 0.5  # tunable-exempt: a jump is up or down with equal odds

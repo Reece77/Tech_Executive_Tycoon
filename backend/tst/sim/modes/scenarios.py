@@ -535,14 +535,16 @@ def reached(
         return account_balance(balances, cid, CASH) >= 0 and margin is not None and margin > 0
     if goal.kind == "solvent_series":  # M51 (63.1): solvent, with the round closed since the start
         raised = any(
-            r.series == goal.series and r.status == "closed" and (r.closed_turn or 0) >= start_turn
+            r.series == goal.series
+            and r.status == "closed"
+            and (r.closed_turn if r.closed_turn is not None else 0) >= start_turn
             for r in state.company_rounds(cid)
         )
         return account_balance(balances, cid, CASH) >= 0 and raised
     # profit_no_down_round
     profit = _trailing_operating(state, cid)
     down = any(
-        r.down_round and (r.closed_turn or 0) >= start_turn
+        r.down_round and (r.closed_turn if r.closed_turn is not None else 0) >= start_turn
         for r in state.company_rounds(cid)
         if r.status == "closed"
     )

@@ -1,7 +1,7 @@
 """Stream `world` (id 57, ADR-0013): the one place the living world draws.
 
-Keys: `(0, *rival_key)` a chain company's December capex; `(1, region_index)` a region's cycle;
-`(2,)` the global shock; `(3, *rival_key, 0)` a rival's quarter of deals and
+Keys: `(0, *rival_key)` a chain company's December capex; `(1, text_key(region))` a region's
+cycle (M57r-A); `(2,)` the global shock; `(3, *rival_key, 0)` a rival's quarter of deals and
 `(3, *rival_key, 1)` its month's bid for the player; `(4, *rival_key, 0)` a chain company's
 executives' names and `(4, *rival_key, 1)` its CEO changing."""
 

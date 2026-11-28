@@ -373,6 +373,7 @@ def _adoption(
         labour = humanoids.labour_year_cents(state, region, balance, data)
         # money-exact: ratio: labour value over a humanoid's cost, an adoption driver
         value = best / 100 * labour / cost if cost > TINY else 0.0
+        # money-exact: ratio: `value` is a score or attribute here, not money
         k = max(hb.adoption_floor_k, hb.adoption_k * (value - 1))
         out.append((region, lg + k / MONTHS))
     return replace(world, adoption=tuple(out))

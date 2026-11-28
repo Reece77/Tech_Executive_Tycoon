@@ -30,6 +30,7 @@ from tst.sim.press.models import PressMoment
 from tst.sim.press.names import rival_ceo_name
 from tst.sim.press.promises import open_promises
 from tst.sim.rng import RngFactory
+from tst.sim.robotics.models import incident_key
 from tst.sim.scale import ATTR_MAX
 from tst.sim.state import GameState
 from tst.sim.talks.config import CRISIS_SOURCES, TALK_KINDS, TalkKind, TalksBalance
@@ -139,10 +140,11 @@ def crisis_subjects(state: GameState, tb: TalksBalance) -> list[Subject]:
                     medical=True,
                 )
             )
-    for i, inc in enumerate(state.robo_incidents):
+    for inc in state.robo_incidents:
         if inc.company_id == cid and recent(inc.turn):
             serious = "a serious robotaxi incident" if inc.serious else "a robotaxi incident"
-            out.append(Subject(key=i, source="robotaxi", words=f"{serious} in {inc.city}"))
+            key = incident_key(inc)  # M57r-A: zone and month, not the list position
+            out.append(Subject(key=key, source="robotaxi", words=f"{serious} in {inc.city}"))
     return out
 
 

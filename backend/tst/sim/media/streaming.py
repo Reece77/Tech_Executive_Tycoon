@@ -38,7 +38,7 @@ from tst.sim.media.config import KindBalance
 from tst.sim.media.data import MONTHS, TINY, end_year_at, file, selling
 from tst.sim.media.models import Title
 from tst.sim.media.titles import OPERATIONS, OWN, revenue_per_viewer_cents
-from tst.sim.money import exact, times
+from tst.sim.money import exact, round_half_even, times
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import GameState
 from tst.sim.vehicles.config import interp
@@ -67,16 +67,35 @@ def customers(state: GameState, product: Product) -> float:
     )
 
 
-def monthly_revenue_cents(state: GameState, product: Product) -> int:
-    """Customers x price this month (as phase 5 books it, before an ad tier's share)."""
+def monthly_revenue_cents(
+    state: GameState,
+    product: Product,
+    balance: Balance | None = None,
+    data: GameData | None = None,
+) -> int:
+    """Customers x price this month as phase 5 books it (translated where its index moved;
+    M57r-A ruling 4), before an ad tier's share. Without balance and data (a display): at the
+    prices as set."""
+    if balance is None or data is None:
+        rows: list[ProductSegment | RegionalSegment] = [
+            *state.segments_of(product.id),
+            *state.regional_segments_of(product.id),
+        ]
+        return sum(times(s.price_cents, s.customers) for s in rows if s.price_cents is not None)
+    from tst.sim.fx.translate import booked_price
+
+    home = home_region_of(state, balance, data)
     total = 0
-    rows: list[ProductSegment | RegionalSegment] = [
-        *state.segments_of(product.id),
-        *state.regional_segments_of(product.id),
-    ]
-    for s in rows:
+    for s in state.segments_of(product.id):
         if s.price_cents is not None:
-            total += times(s.price_cents, s.customers)
+            price = booked_price(state, product.id, home, s.segment, s.price_cents, balance, data)
+            total += times(price, s.customers)
+    for r in state.regional_segments_of(product.id):
+        if r.price_cents is not None:
+            price = booked_price(
+                state, product.id, r.region, r.segment, r.price_cents, balance, data
+            )
+            total += times(price, r.customers)
     return total
 
 
@@ -114,7 +133,7 @@ def catalogue_value(state: GameState, product: Product, balance: Balance, data: 
     company = state.company(product.company_id)
     value = 0.0
     if company is not None and not company.is_player:
-        yearly = monthly_revenue_cents(state, product) * MONTHS
+        yearly = monthly_revenue_cents(state, product, balance, data) * MONTHS
         # money-exact: ratio (a multiplier, not money)
         share = sb.rival_content_share * balance.media.kind("series").revenue_mult
         value += yearly * share * sb.recency_months / MONTHS  # money-exact: estimate
@@ -179,6 +198,7 @@ def ad_tier_on(product: Product, state: GameState, data: GameData) -> bool:
 def paid_share(balance: Balance) -> float:
     """The share of a line's subscription revenue booked with an ad tier."""
     sb = balance.media.streaming_service
+    # money-exact: ratio: a score, share or weight, not money
     return 1.0 - sb.ad_tier_take * (1.0 - sb.ad_tier_price)
 
 
@@ -196,12 +216,21 @@ def ad_revenue_cents(state: GameState, product: Product, balance: Balance, data:
     return round(total)
 
 
+def licence_month_cents(fee_cents: int, months_in: int) -> int:
+    """A yearly licence's month `months_in` (0 first): the difference of consecutive rounded
+    cumulative entitlements, so a year books exactly the fee (M57r-A, review 10 item 8: a 7-cent
+    licence once collected 12 cents a year)."""
+    return round_half_even(fee_cents * (months_in + 1), MONTHS) - round_half_even(
+        fee_cents * months_in, MONTHS
+    )
+
+
 def licence_fees_cents(state: GameState, product_id: int) -> int:
-    total = Fraction()
+    total = 0
     for lic in state.media.licences:
         if lic.product_id == product_id and lic.from_turn <= state.turn < lic.to_turn:
-            total += Fraction(lic.fee_cents, MONTHS)
-    return round(total)
+            total += licence_month_cents(lic.fee_cents, state.turn - lic.from_turn)
+    return total
 
 
 def month(
@@ -217,7 +246,9 @@ def month(
         if p.company_id not in ledger or not selling(p):
             continue
         if p.category == mb.music:
-            payout = times(monthly_revenue_cents(state, p), mb.streaming_service.music_payout)
+            payout = times(
+                monthly_revenue_cents(state, p, balance, data), mb.streaming_service.music_payout
+            )
             if payout:
                 out[p.id] = (0, 0, payout)
                 entries.append(
@@ -277,7 +308,7 @@ def attribute_revenue(state: GameState, balance: Balance, data: GameData) -> Gam
         total = sum(values.values())
         if total <= 0:
             continue
-        revenue = monthly_revenue_cents(state, p)
+        revenue = monthly_revenue_cents(state, p, balance, data)
         for i, t in enumerate(titles):
             if t.id in values:
                 share = times(revenue, values[t.id] / total)  # money-exact: ratio

@@ -14,6 +14,7 @@ from tst.loader import LoadedData
 from tst.sim.ledger import CASH
 from tst.sim.modes import custom
 from tst.sim.modes.custom_config import CustomScenario
+from tst.sim.rng import text_key
 
 
 @pytest.mark.parametrize("key", ["the_crash", "platform_war"])
@@ -91,6 +92,10 @@ def test_added_rivals_enter(games: tuple[Game, Game]) -> None:
     for c in added:
         (p,) = edited.state.company_products(c.id)
         assert p.category == "dev_tools" and p.status == "live"
+    # M57r-A: keyed by the category's key, never its position in categories.yaml
+    assert sorted(c.rival_key for c in added) == [
+        (custom.CUSTOM_KEY, text_key("dev_tools"), k) for k in range(2)
+    ]
 
 
 def test_the_market_and_its_growth(games: tuple[Game, Game], loaded: LoadedData) -> None:

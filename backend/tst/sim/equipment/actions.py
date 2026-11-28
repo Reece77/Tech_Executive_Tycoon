@@ -125,7 +125,8 @@ def order_tools(
     why = ec.order_blocked(state, data, order)
     if why is not None:
         raise EquipmentRuleError(f"{why}: {g.label} tools cannot ship to you")
-    prepay = round(qb.prepay_share * price * action.tools) if action.prepay else 0
+    # money-exact: Fraction: integer cents x integer units
+    prepay = times(price * action.tools, qb.prepay_share) if action.prepay else 0
     if prepay and account_balance(balances, company, CASH) < prepay:
         raise InsufficientCashError(f"the prepayment needs {prepay} cents")
     lead = eq.lead(state, order, balance, data)

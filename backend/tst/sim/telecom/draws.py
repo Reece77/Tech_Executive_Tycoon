@@ -1,10 +1,11 @@
 """Stream `telecom` (id 73, ADR-0013): the one place M53 draws.
 
-Keys (families): `(0, 0, year, region_index)` a region's subscription growth for a year after 2025;
-`(0, 1)` 6G's first month (drawn once at `telecom.start`); `(0, 2, area_index, n)` an area's nth
+Keys (families): `(0, 0, year, region key)` a region's subscription growth for a year after 2025;
+`(0, 1)` 6G's first month (drawn once at `telecom.start`); `(0, 2, area key, n)` an area's nth
 seeded auction (its month, band, blocks and bidders); `(0, 3, area_index)` a seeded ban; `(1,
-auction_id)` an auction's rivals' values and demands when it runs (never stored); `(2, deal_id)`
-nothing yet (merger reviews use M14's stream)."""
+auction key, year)` an auction's rivals' values and demands when it runs (never stored); `(2,
+deal_id)` nothing yet (merger reviews use M14's stream). Region, area and auction keys are
+`tst.sim.rng.text_key`s of their data keys (M57r-A ruling 3)."""
 
 from __future__ import annotations
 

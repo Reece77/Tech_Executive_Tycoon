@@ -61,6 +61,7 @@ def december(
             continue
         price = times(ed.price_cents(state, g, balance), 1 - exact(sb.discount))
         state, n, value = stock.take(state, x.company_id, g.key, n, "own")
+        # money-exact: Fraction: integer cents x integer units
         revenue = price * n
         entries.append(
             LedgerEntry(

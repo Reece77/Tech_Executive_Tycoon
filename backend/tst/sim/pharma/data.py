@@ -157,6 +157,7 @@ def mean_net_price(data: GameData, ind: IndicationDef) -> float:
     """Real USD a patient-year, the world's mean: the US list less the area's gross-to-net,
     x each region's price index, weighed by its patients."""
     a = area(data, ind.area)
+    # money-exact: rate: a unit price in float cents, rounded where posted
     net = ind.price_year * (1 - a.gross_to_net)
     return net * sum(s * price_index(data, r) for r, s in a.region_share.items())
 

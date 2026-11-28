@@ -20,7 +20,7 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.group import formulas as gf
 from tst.sim.ledger import CASH, COGS, LedgerEntry, LedgerLine
-from tst.sim.money import times
+from tst.sim.money import exact, times
 from tst.sim.refining import goods as rg
 from tst.sim.refining.plants import intercompany, live_refineries, recipe_of
 from tst.sim.state import GameState, with_refinery
@@ -66,7 +66,8 @@ def feed_from_mine(
         conc = min(pm.input_spot, (left_t - taken_t) * conc_per_t)
         tonnes = conc / conc_per_t
         conc_price = rg.price_cents(state, r.input_good, balance, data)  # type: ignore[arg-type]
-        spot_cents = round(conc * conc_price)
+        spot_cents = round(exact(conc) * exact(conc_price))
+        # money-exact: rate: a unit price in float cents, rounded where posted
         market_t = round(conc_price * conc_per_t)
         price_t = gf.transfer_price_cents(
             price_kind, round(unit_cost_cents_t), market_t, balance, margin

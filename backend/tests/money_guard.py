@@ -32,7 +32,9 @@ from pathlib import Path
 
 SIM = Path(__file__).resolve().parents[1] / "tst" / "sim"
 ALLOW = "money-exact:"
-EXACT_CALLS = frozenset({"exact", "Fraction", "times", "pct_of", "to_millicents"})
+EXACT_CALLS = frozenset(
+    {"exact", "Fraction", "times", "times_over", "pct_of", "to_millicents", "round_half_even"}
+)
 THROUGH = frozenset({"min", "max", "abs", "sum", "round", "int"})
 MATH = frozenset({"sqrt", "exp", "log", "log10", "pow", "tanh", "erf", "log1p", "expm1"})
 SKIP_FILES = frozenset({"money.py"})
@@ -54,6 +56,24 @@ ALIASES = frozenset(
         "interest",
         "ebitda",
         "capex",
+        # M57r-A (review 10 item 7): the aliases the review found money carried under
+        "price",
+        "prices",
+        "cash",
+        "value",
+        "values",
+        "premium",
+        "premiums",
+        "deposit",
+        "deposits",
+        "loan",
+        "loans",
+        "notional",
+        "claims",
+        "budget",
+        "budgets",
+        "balance",
+        "balances",
     }
 )
 FLOAT_ITERS = frozenset({"items", "values"})  # a float mapping's iteration yields floats

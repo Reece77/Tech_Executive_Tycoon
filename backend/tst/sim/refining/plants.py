@@ -291,11 +291,12 @@ def _take_group(
         lot.volume -= take
         price = transfer_cents(state, lot.seller, buyer, lot.unit_cents, market, balance)
         got += take
+        # money-exact: rate: a unit price in float cents, rounded where posted
         cents += take * price
         seller_month = months[lot.facility_id]
         seller_month.pm = replace(seller_month.pm, to_group=seller_month.pm.to_group + take)
         if lot.seller != buyer:
-            amount = round(take * price)
+            amount = round(exact(take) * exact(price))
             seller_month.group_revenue += amount
             entries += intercompany(state.turn, lot.seller, buyer, memo, amount)
     return got, cents

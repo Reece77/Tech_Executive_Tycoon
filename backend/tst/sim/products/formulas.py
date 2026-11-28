@@ -202,6 +202,7 @@ def appeal(
     """appeal = w_q Q + w_p price_score + w_b brand + w_f feature."""
     return (
         weights.quality * quality
+        # money-exact: ratio: a score, share or weight, not money
         + weights.price * price
         + weights.brand * brand
         + weights.features * feature

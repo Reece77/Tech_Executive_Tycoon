@@ -62,7 +62,8 @@ MILLION: Final = 1_000_000  # tunable-exempt: audiences are millions
 ATTR_MID: Final = 10.0  # tunable-exempt: the attribute scale's middle (1-20)
 GAME, SERIES, FILM = "game", "series", "film"  # tunable-exempt: kinds
 F2P = "free_to_play"  # tunable-exempt: a monetisation
-CONSOLE, PC = "console", "pc"  # tunable-exempt: platforms
+CONSOLE, PC, MOBILE = "console", "pc", "mobile"  # tunable-exempt: platforms
+OUTSIDE: Final = -1  # a store owner outside the game
 EPIC = "epic"  # tunable-exempt: a store
 OWN = "own"  # tunable-exempt: a window
 F2P_END_SHARE: Final = (
@@ -152,6 +153,7 @@ def quality(title: Title, state: GameState, balance: Balance, data: GameData) ->
     ratio = title.budget_cents / typical_budget_cents(kind, balance)  # money-exact: ratio
     budget = float(dmath.pow(ratio, qb.budget_exponent))
     q = (
+        # money-exact: ratio: a score, share or weight, not money
         lead_factor(lead, morale, balance)
         * team_factor(title, state, balance, data)
         * budget
@@ -222,6 +224,67 @@ def _fee(platform: str, title: Title, state: GameState, data: GameData) -> float
     return sf.default
 
 
+type Fees = dict[int, Fraction]  # store owner's company id (OUTSIDE: outside the game) -> fee
+
+
+def _add_fees(
+    fees: Fees,
+    part: Fraction,
+    platform: str,
+    title: Title,
+    state: GameState,
+    b: Balance,
+    d: GameData,
+) -> None:
+    """A platform's part of a game's month: a mobile part pays M31's store schedules
+    (`platforms.data.fee_for`, M34's caps and remedies included), each store's share by its users
+    in the regions weighted by their market sizes, to the store's owner, nothing on the seller's
+    own store; PC and console parts pay media.yaml's fees outside the game (M57r-A ruling 5)."""
+    shares = _mobile_stores(title, state, b, d) if platform == MOBILE else None
+    if not shares:
+        fees[OUTSIDE] = fees.get(OUTSIDE, Fraction()) + part * exact(
+            _fee(platform, title, state, d)
+        )
+        return
+    for owner, rate in shares.items():
+        if owner != title.company_id:
+            fees[owner] = fees.get(owner, Fraction()) + part * rate
+
+
+def _mobile_stores(title: Title, state: GameState, b: Balance, d: GameData) -> dict[int, Fraction]:
+    """Owner -> the user-weighted fee rate of the mobile stores (normalised over their users)."""
+    from tst.sim.platforms import data as pdata
+    from tst.sim.platforms.fees import seller_year_cents
+    from tst.sim.platforms.phase import by_region, live_in
+
+    if not pdata.enabled(d) or not state.platforms:
+        return {}
+    weights = pdata.region_weights(d)
+    year = seller_year_cents(state, title.company_id)
+    total = Fraction()
+    out: dict[int, Fraction] = {}
+    for region, rows in sorted(by_region(state).items()):
+        w = exact(weights.get(region, 0.0))
+        for pid, row in sorted(rows.items()):
+            p = state.platform(pid)
+            if (
+                p is None
+                or p.kind != "device"
+                or row.users <= 0
+                or not live_in(p, region, state.turn)
+            ):
+                continue
+            share = w * exact(row.users)
+            sched = pdata.schedule(p, region, state.turn, b, d, state.rival_stores)
+            rate = exact(pdata.fee_for(sched, b.media.games, year, False, b))
+            owner = p.owner_id if p.owner_id is not None else OUTSIDE
+            out[owner] = out.get(owner, Fraction()) + share * rate
+            total += share
+    if total <= 0:
+        return {}
+    return {k: v / total for k, v in out.items()}
+
+
 def _turn(month: str) -> int:
     return month_to_turn(month)
 
@@ -243,21 +306,21 @@ def _loot_mult(state: GameState, data: GameData) -> float:
 
 def _game_month(
     title: Title, m: int, state: GameState, balance: Balance, data: GameData
-) -> tuple[Fraction, Fraction]:
-    """A game's (gross, fees) this month, exact cents."""
+) -> tuple[Fraction, Fees]:
+    """A game's (gross, fees by store owner) this month, exact cents."""
     gb = balance.media.game_titles
     kind = kind_of(title, balance)
     scale = exact(balance.media.scale)
     reach = platform_reach(title, balance)
     gross = Fraction()
-    fees = Fraction()
+    fees: Fees = {}
     if title.monetisation == F2P:
         spend = exact(title.players) * MILLION * exact(gb.payer_share) * gb.spend_cents * scale
         spend *= exact(_loot_mult(state, data))
         for p in title.platforms:
             part = spend * exact(gb.platform_share[p]) / exact(reach)  # money-exact: Fraction
             gross += part
-            fees += part * exact(_fee(p, title, state, data))
+            _add_fees(fees, part, p, title, state, balance, data)
         return gross, fees
     copies = exact(title.audience or 0.0) * exact(month_share(m, kind)) * MILLION
     copies *= exact(_gen_mult(title, state, balance, data))
@@ -266,7 +329,7 @@ def _game_month(
         if p == PC and title.store == EPIC and state.turn >= _turn(file(data).store_fees.epic_from):
             part *= exact(file(data).store_fees.epic_reach)
         gross += part
-        fees += part * exact(_fee(p, title, state, data))
+        _add_fees(fees, part, p, title, state, balance, data)
     return gross, fees
 
 
@@ -395,6 +458,47 @@ def month(
     return replace(state, media=media), entries, logs
 
 
+def _fee_entries(title: Title, fees: Fees, state: GameState, entries: list[LedgerEntry]) -> int:
+    """Post a game's store fees by owner, each rounded once (M57r-A ruling 5): outside the game
+    5150 against cash; a store another company owns earns 4150; inside the player's group 5900 /
+    4300 (consolidation removes it). Returns what the title paid."""
+    from tst.sim.geopolitics import world
+    from tst.sim.ledger import INTERCOMPANY_PURCHASES, INTERCOMPANY_SALES, PLATFORM_FEE_REVENUE
+    from tst.sim.platforms.fees import intercompany
+
+    paid = 0
+    group = {c.id for c in world.group(state)} if set(fees) - {OUTSIDE} else set()
+    books = {c.id for c in state.ledger_companies()}
+    for owner in sorted(fees):
+        cents = round(fees[owner])
+        if cents <= 0:
+            continue
+        paid += cents
+        inner = owner != OUTSIDE and intercompany(group, title.company_id, owner)
+        entries.append(
+            LedgerEntry.transfer(
+                turn=state.turn,
+                company_id=title.company_id,
+                memo=f"Store fees{' (group store)' if inner else ''}: {title.name}",
+                debit=INTERCOMPANY_PURCHASES if inner else STORE_FEES,
+                credit=CASH,
+                amount=cents,
+            )
+        )
+        if owner != OUTSIDE and owner in books:
+            entries.append(
+                LedgerEntry.transfer(
+                    turn=state.turn,
+                    company_id=owner,
+                    memo=f"Store fees earned: {title.name}",
+                    debit=CASH,
+                    credit=INTERCOMPANY_SALES if inner else PLATFORM_FEE_REVENUE,
+                    amount=cents,
+                )
+            )
+    return paid
+
+
 def _released_month(
     title: Title, state: GameState, balance: Balance, data: GameData
 ) -> tuple[Title, list[LedgerEntry]]:
@@ -403,7 +507,7 @@ def _released_month(
     m = state.turn - title.released_turn
     entries: list[LedgerEntry] = []
     gross = Fraction()
-    fees = Fraction()
+    fees: Fees = {}
     if title.kind == GAME:
         gross, fees = _game_month(title, m, state, balance, data)
         if title.monetisation == F2P and title.players > 0:
@@ -434,7 +538,7 @@ def _released_month(
             * revenue_per_viewer_cents(kind, balance)
         )
     revenue = round(gross)
-    fee = round(fees)
+    fee = _fee_entries(title, fees, state, entries)
     if revenue:
         entries.append(
             LedgerEntry.transfer(
@@ -444,17 +548,6 @@ def _released_month(
                 debit=CASH,
                 credit=CONTENT_REVENUE,
                 amount=revenue,
-            )
-        )
-    if fee:
-        entries.append(
-            LedgerEntry.transfer(
-                turn=state.turn,
-                company_id=title.company_id,
-                memo=f"Store fees: {title.name}",
-                debit=STORE_FEES,
-                credit=CASH,
-                amount=fee,
             )
         )
     net = revenue - fee

@@ -45,6 +45,7 @@ books leave the company, 4930) and its lines' customers in the region go with it
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Any, Final
 
 from tst.sim.calendar import turn_to_ym
@@ -59,9 +60,10 @@ from tst.sim.fx.rates import policy_rate
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.ledger import CASH, DISPOSAL, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import BP_DENOMINATOR, round_half_even, times
+from tst.sim.money import BP_DENOMINATOR, exact, round_half_even, times, times_over
 from tst.sim.products.models import SELLING, ProductSegment
-from tst.sim.rng import RngFactory
+from tst.sim.rivals.models import stream_key
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_segments
 
 RESERVES: Final = "1060_bank_reserves"
@@ -75,8 +77,8 @@ DEPOSIT_INTEREST: Final = "5500_deposit_interest"
 LOAN_LOSSES: Final = "6800_loan_losses"
 CONSUMER: Final = "bank_consumer"
 BUSINESS: Final = "bank_business"
-RUN_KEY: Final = 0  # ADR-0013: finserv (0, bank id, month)
-STRESS_KEY: Final = 2  # finserv (2, bank id, year)
+RUN_KEY: Final = 0  # ADR-0013: finserv (0, *bank key, month)
+STRESS_KEY: Final = 2  # finserv (2, *bank key, year)
 CONFIDENCE_MID: Final = 100.0  # tunable-exempt: the confidence index's 2010-2019 mean
 LIVE: Final = ("chartered", "partner")
 
@@ -248,7 +250,7 @@ def partner_month(
     r = rate_fraction(state, bank.region, balance, data)
     bank = _move_deposits(state, bank, r, balance, data)
     nim = series_at(file(data).banking.nim, year_at(state.turn)) / PCT
-    fee = per_month(times(bank.deposits_cents, nim, balance.finserv.bank.partner_share))
+    fee = times_over(bank.deposits_cents, MONTHS, nim, balance.finserv.bank.partner_share)
     e = _entry(
         state, bank, "Partner bank: share of net interest", (CASH, fee), (INTEREST_INCOME, -fee)
     )
@@ -286,27 +288,49 @@ def chartered_month(
         if e is not None:
             entries.append(e)
 
-    # deposits
-    before = bank.deposits_cents
-    bank = _move_deposits(state, bank, r, balance, data)
-    moved = bank.deposits_cents - before
-    bank = replace(bank, reserves_cents=bank.reserves_cents + moved)
-    post("Bank deposits in and out", (RESERVES, moved), (DEPOSITS, -moved))
+    # deposits: inflows into reserves; outflows through the liquidity routine (M57r-A)
+    moved_bank = _move_deposits(state, bank, r, balance, data)
+    d_c = moved_bank.consumer_deposits_cents - bank.consumer_deposits_cents
+    d_b = moved_bank.business_deposits_cents - bank.business_deposits_cents
+    inflow = max(0, d_c) + max(0, d_b)
+    bank = replace(
+        bank,
+        consumer_deposits_cents=bank.consumer_deposits_cents + max(0, d_c),
+        business_deposits_cents=bank.business_deposits_cents + max(0, d_b),
+        reserves_cents=bank.reserves_cents + inflow,
+    )
+    post("Bank deposits in", (RESERVES, inflow), (DEPOSITS, -inflow))
+    out_c, out_b = max(0, -d_c), max(0, -d_b)
+    if out_c or out_b:
+        bank, paid_entries, paid, sold = pay_out(
+            state, bank, out_c, out_b, r_pct, "Securities sold for deposit outflows"
+        )
+        entries += paid_entries
+        if paid < out_c + out_b:
+            return _failed(state, bank, entries, logs, data)
+        if sold and not bank.restricted:  # liquidity came from forced sales: no growth
+            bank = replace(bank, restricted=True)
     # income and costs
-    loan_income = sum(
-        per_month(round_half_even(v * y, BP_DENOMINATOR))
-        if (y := bank.fixed_yield(k)) is not None
-        else per_month(times(v, max(0.0, r + kinds[k].spread / PCT)))
-        for k, v in bank.loans
+    # M57r-A (review 10 item 8): each month's interest is one rational expression, rounded once
+    loan_income = round(
+        sum(
+            (
+                Fraction(v * y, BP_DENOMINATOR * MONTHS)
+                if (y := bank.fixed_yield(k)) is not None
+                else Fraction(v) * exact(max(0.0, r + kinds[k].spread / PCT)) / MONTHS
+                for k, v in bank.loans
+            ),
+            Fraction(0),
+        )
     )
     sec_income = sum(
         round_half_even(x.amount_cents * x.yield_bp, BP_DENOMINATOR * MONTHS)
         for x in bank.securities
     )
-    reserve_income = per_month(times(bank.reserves_cents, max(0.0, r)))
+    reserve_income = times_over(bank.reserves_cents, MONTHS, max(0.0, r))
     income = loan_income + sec_income + reserve_income
     deposit_rate = max(0.0, r * bank.beta)
-    cost = per_month(times(bank.deposits_cents, deposit_rate))
+    cost = times_over(bank.deposits_cents, MONTHS, deposit_rate)
     post("Bank interest income", (RESERVES, income), (INTEREST_INCOME, -income))
     # issuing (64.2): the bank's cards' volume earns the region's interchange
     card_volume = times(bank.loan("card"), balance.finserv.payments.card_turnover)
@@ -321,7 +345,7 @@ def chartered_month(
     repaid = 0
     loans: dict[str, int] = dict(bank.loans)
     for k, v in bank.loans:
-        c = per_month(times(v, loss_rate(k, turn, state, balance, data)))
+        c = times_over(v, MONTHS, loss_rate(k, turn, state, balance, data))
         p = round_half_even(v - c, kinds[k].term_months)
         loans[k] = v - c - p
         charge += c
@@ -338,6 +362,12 @@ def chartered_month(
         reserves_cents=bank.reserves_cents + income - cost + repaid + matured,
         year_profit_cents=bank.year_profit_cents + income - cost - charge,
     )
+    if bank.reserves_cents < 0:  # costs above income and repayments: raise the cash or fail
+        bank, _, _ = _raise_cash(
+            state, bank, -bank.reserves_cents, r_pct, "Securities sold to meet costs", entries
+        )
+        if bank.reserves_cents < 0:
+            return _failed(state, bank, entries, logs, data)
     # the rules: intervention, then growth only above the requirement
     need = requirement(bank, turn, data, balance)
     now_ratio = ratio(bank, data)
@@ -372,6 +402,7 @@ def chartered_month(
         if buy > 0:
             lot = SecurityLot(
                 amount_cents=buy,
+                # money-exact: ratio: a score, share or weight, not money
                 yield_bp=round((r + bb.term_premium * bank.duration / PCT) * BP_DENOMINATOR),
                 rate=r_pct,
                 duration=bank.duration,
@@ -441,6 +472,20 @@ def _dividend(state: GameState, bank: Bank, balance: Balance, data: GameData) ->
     )
 
 
+def bank_key(state: GameState, bank: Bank) -> tuple[int, ...]:
+    """A bank's stream key (ADR-0013, M57r-A ruling 3): its owner's stable key, its region's key
+    and its ordinal among that owner's banks in the region (by id), never its storage id, which
+    an unrelated payments network or insurer opened first would shift."""
+    owner = next((c for c in state.companies if c.id == bank.company_id), None)
+    who = stream_key(bank.company_id, owner.rival_key if owner is not None else ())
+    ordinal = sum(
+        1
+        for b in state.finserv.banks
+        if b.company_id == bank.company_id and b.region == bank.region and b.id < bank.id
+    )
+    return (*who, text_key(bank.region), ordinal)
+
+
 def _stress(
     state: GameState, bank: Bank, rng: RngFactory, r_pct: float, balance: Balance, data: GameData
 ) -> tuple[Bank, list[LogItem]]:
@@ -450,7 +495,7 @@ def _stress(
     first = file(data).banking.stress_from[bank.region]
     if month != sb.month or year < first or bank.assets_cents <= sb.size_cents:
         return bank, []
-    g = draws.gen(rng, state.turn, STRESS_KEY, bank.id, year)
+    g = draws.gen(rng, state.turn, STRESS_KEY, *bank_key(state, bank), year)
     shock = sb.rate_shock.lo + (sb.rate_shock.hi - sb.rate_shock.lo) * float(g.random())
     mult = sb.loss_mult.lo + (sb.loss_mult.hi - sb.loss_mult.lo) * float(g.random())
     outflow = sb.deposit_outflow.lo + (sb.deposit_outflow.hi - sb.deposit_outflow.lo) * float(
@@ -511,7 +556,7 @@ def _run(
     if chance <= 0:
         return bank, [], []
     rb = balance.finserv.bank.run
-    g = draws.gen(rng, state.turn, RUN_KEY, bank.id, state.turn)
+    g = draws.gen(rng, state.turn, RUN_KEY, *bank_key(state, bank), state.turn)
     if float(g.random()) >= chance:
         return bank, [], []
     share = rb.withdraw.lo + (rb.withdraw.hi - rb.withdraw.lo) * float(g.random())
@@ -519,53 +564,8 @@ def _run(
     out_c = times(bank.consumer_deposits_cents, u[CONSUMER], share)
     out_b = times(bank.business_deposits_cents, u[BUSINESS], share)
     withdrawn = out_c + out_b
-    entries: list[LedgerEntry] = []
-    need = max(0, withdrawn - bank.reserves_cents)
-    lots = list(bank.securities)
-    realised = 0
-    proceeds = 0
-    book_sold = 0
-    kept: list[SecurityLot] = []
-    for lot in lots:
-        if need <= 0:
-            kept.append(lot)
-            continue
-        value = lot_value_cents(lot, r_pct, state.turn)
-        if value <= need or value == 0:
-            proceeds += value
-            book_sold += lot.amount_cents
-            need -= value
-            continue
-        # sell part of the lot: the fraction that raises `need`
-        part = round_half_even(lot.amount_cents * need, value)
-        proceeds += need
-        book_sold += part
-        kept.append(replace(lot, amount_cents=lot.amount_cents - part))
-        need = 0
-    realised = book_sold - proceeds
-    if book_sold:
-        e = _entry(
-            state,
-            bank,
-            "Securities sold in a run",
-            (RESERVES, proceeds),
-            (SECURITIES_GAINS, realised),
-            (SECURITIES, -book_sold),
-        )
-        if e:
-            entries.append(e)
-    paid = min(withdrawn, bank.reserves_cents + proceeds)
-    e = _entry(state, bank, "Deposits withdrawn in a run", (DEPOSITS, paid), (RESERVES, -paid))
-    if e:
-        entries.append(e)
-    scale_c = round_half_even(out_c * paid, withdrawn) if withdrawn else 0
-    bank = replace(
-        bank,
-        securities=tuple(kept),
-        reserves_cents=bank.reserves_cents + proceeds - paid,
-        consumer_deposits_cents=bank.consumer_deposits_cents - scale_c,
-        business_deposits_cents=bank.business_deposits_cents - (paid - scale_c),
-        year_profit_cents=bank.year_profit_cents - realised,
+    bank, entries, paid, realised = pay_out(
+        state, bank, out_c, out_b, r_pct, "Securities sold in a run", "Deposits withdrawn in a run"
     )
     failed = bank.equity_cents <= 0 or paid < withdrawn
     bank = replace(bank, runs=(*bank.runs, RunRecord(state.turn, paid, realised, failed)))
@@ -575,6 +575,96 @@ def _run(
         entries += fail_entries
         logs += fail_logs
     return bank, entries, logs
+
+
+def _raise_cash(
+    state: GameState, bank: Bank, need: int, r_pct: float, memo: str, entries: list[LedgerEntry]
+) -> tuple[Bank, int, int]:
+    """Sell securities lots in order at market value until `need` cents are raised (a lot in
+    part), the loss realised in 4530 (M57r-A, review 10 item 6). Appends the sale's entry;
+    returns the bank with the proceeds in reserves, the proceeds and the realised loss."""
+    proceeds = book_sold = 0
+    kept: list[SecurityLot] = []
+    for lot in bank.securities:
+        if need <= 0:
+            kept.append(lot)
+            continue
+        value = lot_value_cents(lot, r_pct, state.turn)
+        if value <= need or value == 0:
+            proceeds += value
+            book_sold += lot.amount_cents
+            need -= value
+            continue
+        part = round_half_even(lot.amount_cents * need, value)  # the fraction that raises `need`
+        proceeds += need
+        book_sold += part
+        kept.append(replace(lot, amount_cents=lot.amount_cents - part))
+        need = 0
+    realised = book_sold - proceeds
+    if not book_sold:
+        return bank, 0, 0
+    e = _entry(
+        state,
+        bank,
+        memo,
+        (RESERVES, proceeds),
+        (SECURITIES_GAINS, realised),
+        (SECURITIES, -book_sold),
+    )
+    if e:
+        entries.append(e)
+    bank = replace(
+        bank,
+        securities=tuple(kept),
+        reserves_cents=bank.reserves_cents + proceeds,
+        year_profit_cents=bank.year_profit_cents - realised,
+    )
+    return bank, proceeds, realised
+
+
+def pay_out(
+    state: GameState,
+    bank: Bank,
+    out_c: int,
+    out_b: int,
+    r_pct: float,
+    sale_memo: str,
+    paid_memo: str = "Bank deposits out",
+) -> tuple[Bank, list[LedgerEntry], int, int]:
+    """The one liquidity routine for deposit outflows, ordinary or in a run (M57r-A, review 10
+    item 6): reserves pay first, then securities are sold at market value (the loss to 4530).
+    Reserves never go below zero: what cannot be paid stays a deposit, and the caller fails the
+    bank. Returns the bank, the entries, the amount paid and the realised loss."""
+    owed = out_c + out_b
+    entries: list[LedgerEntry] = []
+    realised = 0
+    if owed > bank.reserves_cents:
+        need = owed - max(0, bank.reserves_cents)
+        bank, _, realised = _raise_cash(state, bank, need, r_pct, sale_memo, entries)
+    paid = max(0, min(owed, bank.reserves_cents))
+    e = _entry(state, bank, paid_memo, (DEPOSITS, paid), (RESERVES, -paid))
+    if e:
+        entries.append(e)
+    paid_c = round_half_even(out_c * paid, owed) if owed else 0
+    bank = replace(
+        bank,
+        reserves_cents=bank.reserves_cents - paid,
+        consumer_deposits_cents=bank.consumer_deposits_cents - paid_c,
+        business_deposits_cents=bank.business_deposits_cents - (paid - paid_c),
+    )
+    return bank, entries, paid, realised
+
+
+def _failed(
+    state: GameState,
+    bank: Bank,
+    entries: list[LedgerEntry],
+    logs: list[LogItem],
+    data: GameData,
+) -> tuple[Bank, list[LedgerEntry], list[LogItem], BankMonth | None]:
+    """The month ends with the regulator taking a bank that could not pay (M57r-A)."""
+    bank, fail_entries, fail_logs = fail(state, bank, data)
+    return bank, [*entries, *fail_entries], [*logs, *fail_logs], None
 
 
 def fail(
