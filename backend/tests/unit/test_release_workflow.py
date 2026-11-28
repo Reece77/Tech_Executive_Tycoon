@@ -48,3 +48,29 @@ def test_the_uninstaller_never_deletes_the_install_folder_wholesale() -> None:
     entries = [ln for ln in section.splitlines() if ln.strip() and not ln.startswith(";")]
     assert entries == ['Type: filesandordirs; Name: "{app}\\_internal"']
     assert "function PrepareToInstall" in text and "OverlapsGameData" in text
+
+
+def test_tag_milestone_accepts_a_lanes_tag() -> None:
+    """M57r-B: a lane's milestone tag (m57r-b-done) is of the form the tag workflow accepts,
+    as are plain ones (m59-done, m43a-done); anything else is refused."""
+    import re
+    import subprocess
+
+    text = (ROOT / ".github" / "workflows" / "tag-milestone.yml").read_text(encoding="utf-8")
+    pattern = re.search(r"grep -Eq '(\^[^']+\$)'", text)
+    assert pattern
+    rx = re.compile(pattern[1])
+    for ok in ("m59-done", "m43a-done", "m57r-b-done", "m57r-a-done"):
+        assert rx.match(ok), ok
+    for bad in ("m57r-bb-done", "v6.0.1", "m-done", "m57r-b-done-2"):
+        assert not rx.match(bad), bad
+    sed = re.search(r"sed -n '(s/[^']+)'", text)
+    assert sed
+    for line, want in (
+        ("Milestone-Tag: m57r-b-done", "m57r-b-done"),
+        ("Milestone-Tag: m59-done", "m59-done"),
+    ):
+        got = subprocess.run(
+            ["sed", "-n", sed[1]], input=line, capture_output=True, text=True, check=True
+        )
+        assert got.stdout.strip() == want
