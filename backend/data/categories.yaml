@@ -25,6 +25,8 @@
 #   D0 shrunk by these two years' growth, so it arrives at D0 in January 2010. It may be
 #   negative (servers and contract manufacturing shrank in 2009). Tags: R recalled from the
 #   named source (not re-read in this session), A an assumption with its basis, D derived.
+#   M50b (formulas.md 60.4): 2000-2007 added the same way (a comment above each line gives the basis
+#   and the 2000 size as a share of D0); categories whose own system sets demand keep 0.0.
 # - compute_indexed (M8, optional): hosting is h x compute_index(year) (compute_index.yaml).
 # - markets: addressable customers in January 2010 (D0), reference monthly price and hosting
 #   cost per customer per month, both in cents.
@@ -292,7 +294,8 @@ categories:
   - key: b2b_saas
     label: B2B SaaS
     growth: 0.20
-    early_growth: { 2008: 0.27, 2009: 0.18 } # M50 (60.2): R: Gartner SaaS revenue +27% in 2008 to $6.4B, +18% in 2009 to $7.5B (press releases 2008-10 and 2009-12)
+    # M50b (60.4): early_growth 2000-2007: R/D: Salesforce revenue $5.4M (FY Jan 2001) to $497M (FY Jan 2007) and Gartner SaaS $5.1B (2007), damped for the ASP bust 2001-2002; 2000 about 6% of 2010
+    early_growth: { 2000: 0.5, 2001: 0.25, 2002: 0.25, 2003: 0.35, 2004: 0.4, 2005: 0.4, 2006: 0.35, 2007: 0.3, 2008: 0.27, 2009: 0.18 } # M50 (60.2): R: Gartner SaaS revenue +27% in 2008 to $6.4B, +18% in 2009 to $7.5B (press releases 2008-10 and 2009-12)
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -306,7 +309,8 @@ categories:
   - key: dev_tools
     label: Developer tools
     growth: 0.1749 # M43a (54.2) from 0.25, matching eras.yaml's base_growth (x0.66) to January 2020 (21.8 target 1); demand reads eras.yaml
-    early_growth: { 2008: 0.12, 2009: 0.06 } # M50 (60.2): R: Gartner software revenue +8% in 2008 and -3% in 2009; tools held up better (A between them)
+    # M50b (60.4): early_growth 2000-2007: R/A: software tools fell in the 2001-2002 bust (IT budgets cut after Y2K and the dot-com crash), then recovered with Gartner software revenue; 2000 about 59% of 2010
+    early_growth: { 2000: 0.15, 2001: -0.1, 2002: -0.08, 2003: 0.04, 2004: 0.08, 2005: 0.08, 2006: 0.1, 2007: 0.12, 2008: 0.12, 2009: 0.06 } # M50 (60.2): R: Gartner software revenue +8% in 2008 and -3% in 2009; tools held up better (A between them)
     features_at_start: 50
     features_per_month: 4.0
     scope: 5
@@ -320,7 +324,8 @@ categories:
   - key: consumer_apps
     label: Consumer apps
     growth: 0.30
-    early_growth: { 2008: 0.30, 2009: 0.28 } # M50 (60.2): R: Facebook's users 100M (Aug 2008) to 350M (Dec 2009); the App Store from July 2008 (D, damped to the 2010 base 0.2568)
+    # M50b (60.4): early_growth 2000-2007: R/D: internet users about 0.4B (2000) to 1.3B (2007) (ITU), ad-funded web hit 2001-2002; 2000 about 13% of 2010
+    early_growth: { 2000: 0.35, 2001: 0.1, 2002: 0.12, 2003: 0.18, 2004: 0.2, 2005: 0.22, 2006: 0.25, 2007: 0.28, 2008: 0.30, 2009: 0.28 } # M50 (60.2): R: Facebook's users 100M (Aug 2008) to 350M (Dec 2009); the App Store from July 2008 (D, damped to the 2010 base 0.2568)
     features_at_start: 40
     features_per_month: 5.0
     scope: 4
@@ -333,7 +338,8 @@ categories:
   - key: cybersecurity
     label: Cybersecurity
     growth: 0.15
-    early_growth: { 2008: 0.186, 2009: 0.08 } # M50 (60.2): R: Gartner security software revenue +18.6% in 2008 ($13.5B), +8% in 2009
+    # M50b (60.4): early_growth 2000-2007: R/D: security software about $4B (2000) to $11.4B (2007) (Gartner, IDC), with worms (ILOVEYOU 2000, Code Red 2001) keeping it growing in the bust; 2000 about 25% of 2010
+    early_growth: { 2000: 0.25, 2001: 0.12, 2002: 0.1, 2003: 0.15, 2004: 0.16, 2005: 0.15, 2006: 0.14, 2007: 0.15, 2008: 0.186, 2009: 0.08 } # M50 (60.2): R: Gartner security software revenue +18.6% in 2008 ($13.5B), +8% in 2009
     features_at_start: 70
     features_per_month: 3.5
     scope: 7
@@ -348,7 +354,8 @@ categories:
   - key: fintech
     label: Fintech
     growth: 0.25
-    early_growth: { 2008: 0.26, 2009: 0.19 } # M50 (60.2): R: PayPal payment volume $47.5B (2007), $60B (2008), $72B (2009), eBay 10-K
+    # M50b (60.4): early_growth 2000-2007: R/D: PayPal payment volume about $1B (2000) to $47.5B (2007), damped for online brokers and banks that shrank in 2001-2002; 2000 about 10% of 2010
+    early_growth: { 2000: 0.4, 2001: 0.15, 2002: 0.2, 2003: 0.3, 2004: 0.3, 2005: 0.3, 2006: 0.28, 2007: 0.27, 2008: 0.26, 2009: 0.19 } # M50 (60.2): R: PayPal payment volume $47.5B (2007), $60B (2008), $72B (2009), eBay 10-K
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -365,7 +372,8 @@ categories:
   - key: ai_models
     label: AI models and inference
     growth: 0.25 # the fallback before the first growth_by_year year (none: 2010 is listed)
-    early_growth: { 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: machine-learning services before deep learning, below the 2010 entry's 0.30
+    # M50b (60.4): early_growth 2000-2007: A: speech, search ranking and data mining before deep learning, slower in the bust; 2000 about 22% of 2010
+    early_growth: { 2000: 0.15, 2001: 0.1, 2002: 0.1, 2003: 0.18, 2004: 0.18, 2005: 0.18, 2006: 0.18, 2007: 0.18, 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: machine-learning services before deep learning, below the 2010 entry's 0.30
     features_at_start: 30
     features_per_month: 6.0
     scope: 8
@@ -394,7 +402,8 @@ categories:
   - key: cloud_hosting
     label: Cloud and GPU hosting
     growth: 0.225 # M43a (54.2) calibration from 0.30: main's 2025 served revenue was 3.5x Synergy's $419B (real-dollar equivalent)
-    early_growth: { 2008: 0.21, 2009: 0.21 } # M50 (60.2): R: Gartner cloud services revenue +21% in 2009 ($58.6B) and about +21% in 2008
+    # M50b (60.4): early_growth 2000-2007: A: no public cloud before S3 (March 2006) and EC2 (August 2006): managed hosting and colocation, cut in the 2001-2002 hosting bust; 2000 about 9% of 2010 (the era gates the category)
+    early_growth: { 2000: 0.3, 2001: 0.1, 2002: 0.1, 2003: 0.2, 2004: 0.25, 2005: 0.3, 2006: 0.6, 2007: 0.5, 2008: 0.21, 2009: 0.21 } # M50 (60.2): R: Gartner cloud services revenue +21% in 2009 ($58.6B) and about +21% in 2008
     features_at_start: 60
     features_per_month: 4.0
     scope: 6
@@ -419,7 +428,8 @@ categories:
   - key: devices
     label: Devices
     growth: 0.12
-    early_growth: { 2008: 0.14, 2009: 0.18 } # M50 (60.2): R: Gartner smartphone sales 139M in 2008 (+14%) and 172M in 2009 (+24%), damped by flat PCs
+    # M50b (60.4): early_growth 2000-2007: R/D: PC shipments 135M (2000), -5% in 2001, 271M (2007) and phones 0.41B (2000) to 1.15B (2007) (Gartner, IDC), damped by falling prices; 2000 about 48% of 2010
+    early_growth: { 2000: 0.1, 2001: -0.05, 2002: 0.02, 2003: 0.06, 2004: 0.08, 2005: 0.08, 2006: 0.07, 2007: 0.09, 2008: 0.14, 2009: 0.18 } # M50 (60.2): R: Gartner smartphone sales 139M in 2008 (+14%) and 172M in 2009 (+24%), damped by flat PCs
     features_at_start: 50
     features_per_month: 8.0 # 26.1: hardware ages fast
     scope: 6
@@ -435,7 +445,8 @@ categories:
   - key: servers
     label: Servers
     growth: 0.15 # M43a (54.2) calibration from 0.10 (with D0 x5): 2025 served about 0.6x IDC's $444B (real-dollar equivalent; 2010 about $48B)
-    early_growth: { 2008: 0.01, 2009: -0.15 } # M50 (60.2): R: IDC server shipments about flat in 2008 and -19% in 2009
+    # M50b (60.4): early_growth 2000-2007: R: IDC server revenue about $61B (2000) to $45B (2002), then $54B (2007); units grew faster from 2003; 2000 about 89% of 2010
+    early_growth: { 2000: 0.12, 2001: -0.12, 2002: -0.06, 2003: 0.06, 2004: 0.1, 2005: 0.08, 2006: 0.06, 2007: 0.06, 2008: 0.01, 2009: -0.15 } # M50 (60.2): R: IDC server shipments about flat in 2008 and -19% in 2009
     features_at_start: 50
     features_per_month: 8.0
     scope: 6
@@ -457,7 +468,8 @@ categories:
     family: chips
     chip_type: mobile_soc
     growth: 0.12
-    early_growth: { 2008: 0.08, 2009: 0.02 } # M50 (60.2): R: WSTS semiconductors -3% in 2008 and -9% in 2009; mobile held up (A)
+    # M50b (60.4): early_growth 2000-2007: R: WSTS semiconductors +37% (2000), -32% (2001), +1% (2002), +18% (2003), +28% (2004), +7%, +9%, +3% (2005-2007); mobile damped; 2000 about 41% of 2010
+    early_growth: { 2000: 0.3, 2001: -0.2, 2002: 0.05, 2003: 0.18, 2004: 0.25, 2005: 0.12, 2006: 0.12, 2007: 0.1, 2008: 0.08, 2009: 0.02 } # M50 (60.2): R: WSTS semiconductors -3% in 2008 and -9% in 2009; mobile held up (A)
     features_at_start: 50
     features_per_month: 10.0 # 26.1
     scope: 6
@@ -474,7 +486,8 @@ categories:
     family: chips
     chip_type: server_cpu
     growth: 0.10
-    early_growth: { 2008: 0.0, 2009: -0.10 } # M50 (60.2): R: IDC servers, WSTS semiconductors (2008 flat, 2009 down)
+    # M50b (60.4): early_growth 2000-2007: R: WSTS semiconductors and IDC servers (the 2001-2002 fall, the 2003-2007 recovery); 2000 about 87% of 2010
+    early_growth: { 2000: 0.15, 2001: -0.2, 2002: -0.05, 2003: 0.08, 2004: 0.12, 2005: 0.08, 2006: 0.06, 2007: 0.06, 2008: 0.0, 2009: -0.10 } # M50 (60.2): R: IDC servers, WSTS semiconductors (2008 flat, 2009 down)
     features_at_start: 50
     features_per_month: 10.0
     scope: 6
@@ -492,7 +505,8 @@ categories:
     family: chips
     chip_type: ai_accelerator
     growth: 0.28
-    early_growth: { 2008: 0.10, 2009: 0.0 } # M50 (60.2): R: NVIDIA revenue FY2009 $3.4B (-16%) and FY2010 $3.3B; GPU compute was new (A)
+    # M50b (60.4): early_growth 2000-2007: R/A: NVIDIA revenue $735M (FY Jan 2001) to $4.1B (FY Jan 2008); GPU compute began with CUDA (2007), so damped; 2000 about 33% of 2010
+    early_growth: { 2000: 0.25, 2001: 0.1, 2002: 0.1, 2003: 0.0, 2004: 0.08, 2005: 0.12, 2006: 0.2, 2007: 0.25, 2008: 0.10, 2009: 0.0 } # M50 (60.2): R: NVIDIA revenue FY2009 $3.4B (-16%) and FY2010 $3.3B; GPU compute was new (A)
     features_at_start: 50
     features_per_month: 10.0
     scope: 6
@@ -512,7 +526,8 @@ categories:
   - key: contract_manufacturing
     label: Contract manufacturing
     growth: 0.10
-    early_growth: { 2008: 0.04, 2009: -0.10 } # M50 (60.2): R: EMS revenue up about 4% in 2008 and down about 10% in 2009 (New Venture Research)
+    # M50b (60.4): early_growth 2000-2007: R/A: EMS revenue boomed in 2000, fell in 2001-2002 (telecom bust), then grew with outsourcing to 2007 (New Venture Research, recalled); 2000 about 52% of 2010
+    early_growth: { 2000: 0.3, 2001: -0.15, 2002: -0.05, 2003: 0.12, 2004: 0.18, 2005: 0.15, 2006: 0.15, 2007: 0.12, 2008: 0.04, 2009: -0.10 } # M50 (60.2): R: EMS revenue up about 4% in 2008 and down about 10% in 2009 (New Venture Research)
     features_at_start: 50
     features_per_month: 4.0
     scope: 6
@@ -529,7 +544,8 @@ categories:
     label: Operating system
     pseudo: true
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: built through devices
+    # M50b (60.4): early_growth 2000-2007: pseudo
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: built through devices
     features_at_start: 50
     features_per_month: 2.0
     scope: 8
@@ -549,7 +565,8 @@ categories:
   - key: vehicles
     label: Electric vehicles
     growth: 0.0 # demand comes from vehicles.yaml each month (49.1), not growth
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the vehicles system's own data (vehicles.yaml)
+    # M50b (60.4): early_growth 2000-2007: the vehicles system's own data (vehicles.yaml); the category opens with the EV era (2008)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the vehicles system's own data (vehicles.yaml)
     features_at_start: 50
     features_per_month: 5.0 # cars age more slowly than phones (26.1's 8)
     scope: 10
@@ -576,7 +593,8 @@ categories:
     label: "Medical: wearables and diagnostics"
     family: medical
     growth: 0.15
-    early_growth: { 2008: 0.12, 2009: 0.10 } # M50 (60.2): A: below the 2010 entry's 0.15 in the recession
+    # M50b (60.4): early_growth 2000-2007: A: glucose meters and Holter monitors before consumer wearables, below the 2010 rate; 2000 about 39% of 2010
+    early_growth: { 2000: 0.1, 2001: 0.08, 2002: 0.08, 2003: 0.1, 2004: 0.1, 2005: 0.1, 2006: 0.1, 2007: 0.1, 2008: 0.12, 2009: 0.10 } # M50 (60.2): A: below the 2010 entry's 0.15 in the recession
     growth_by_year: { 2010: 0.15, 2025: 0.08 } # 2010 $2B to 2024 $14B real (x7.08); A after
     features_at_start: 50
     features_per_month: 6.0
@@ -591,7 +609,8 @@ categories:
     label: "Medical: imaging"
     family: medical
     growth: 0.03 # 2010 $30B to 2024 $44B real (x1.51)
-    early_growth: { 2008: 0.02, 2009: -0.03 } # M50 (60.2): R: hospitals cut imaging capital spending in 2009 (GE Healthcare orders down)
+    # M50b (60.4): early_growth 2000-2007: R/A: CT and MRI installed bases grew through the 2000s; the US Deficit Reduction Act cut imaging payments from 2007; 2000 about 67% of 2010
+    early_growth: { 2000: 0.06, 2001: 0.05, 2002: 0.05, 2003: 0.06, 2004: 0.06, 2005: 0.06, 2006: 0.05, 2007: 0.04, 2008: 0.02, 2009: -0.03 } # M50 (60.2): R: hospitals cut imaging capital spending in 2009 (GE Healthcare orders down)
     features_at_start: 50
     features_per_month: 4.0
     scope: 6
@@ -605,7 +624,8 @@ categories:
     label: "Medical: surgical robotics"
     family: medical
     growth: 0.14
-    early_growth: { 2008: 0.25, 2009: 0.15 } # M50 (60.2): R: Intuitive Surgical revenue $875M (2008, +46%) and $1,052M (2009, +20%), damped
+    # M50b (60.4): early_growth 2000-2007: R: Intuitive Surgical revenue $27M (2000), $72M (2002), $139M (2004), $373M (2006), $601M (2007), with Computer Motion to 2003, damped; 2000 about 4% of 2010
+    early_growth: { 2000: 0.8, 2001: 0.6, 2002: 0.3, 2003: 0.2, 2004: 0.35, 2005: 0.4, 2006: 0.4, 2007: 0.4, 2008: 0.25, 2009: 0.15 } # M50 (60.2): R: Intuitive Surgical revenue $875M (2008, +46%) and $1,052M (2009, +20%), damped
     growth_by_year: { 2010: 0.14, 2025: 0.10 } # 2010 $1.6B to 2024 $10B real (x6.26); A after
     features_at_start: 50
     features_per_month: 4.0
@@ -620,7 +640,8 @@ categories:
     label: "Medical: implantables"
     family: medical
     growth: 0.03 # 2010 $20B to 2024 $30.5B real (x1.51)
-    early_growth: { 2008: 0.04, 2009: 0.03 } # M50 (60.2): A: about the 2010 rate (0.03)
+    # M50b (60.4): early_growth 2000-2007: R/A: drug-eluting stents from 2003 (Cypher) lifted 2003-2004; the ICD recalls (2005) and stent safety scare (2006) slowed it; 2000 about 55% of 2010
+    early_growth: { 2000: 0.06, 2001: 0.06, 2002: 0.07, 2003: 0.1, 2004: 0.12, 2005: 0.08, 2006: 0.04, 2007: 0.03, 2008: 0.04, 2009: 0.03 } # M50 (60.2): A: about the 2010 rate (0.03)
     features_at_start: 50
     features_per_month: 3.0
     scope: 6
@@ -634,7 +655,8 @@ categories:
     label: "Medical: software and AI"
     family: medical
     growth: 0.20
-    early_growth: { 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: the 2010 entry
+    # M50b (60.4): early_growth 2000-2007: A: the 2010 entry (computer-aided detection from 1998); 2000 about 16% of 2010
+    early_growth: { 2000: 0.2, 2001: 0.2, 2002: 0.2, 2003: 0.2, 2004: 0.2, 2005: 0.2, 2006: 0.2, 2007: 0.2, 2008: 0.20, 2009: 0.20 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.20, 2016: 0.35, 2025: 0.20 } # 2010 $0.05B to 2024 $1.5B real (x32.9); A after
     features_at_start: 30
     features_per_month: 6.0
@@ -660,7 +682,8 @@ categories:
   - key: industrial_robots
     label: Industrial robots
     growth: 0.0 # demand comes from robotics.yaml each month (53.1), not growth
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data (robotics.yaml)
+    # M50b (60.4): early_growth 2000-2007: the robotics system's own data (robotics.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data (robotics.yaml)
     features_at_start: 50
     features_per_month: 3.0 # robots age slowly (26.1's 8 for devices)
     scope: 8
@@ -686,7 +709,8 @@ categories:
   - key: humanoid_robots
     label: Humanoid robots
     growth: 0.0 # demand comes from the era and robotics.yaml (53.2), not growth
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data
+    # M50b (60.4): early_growth 2000-2007: the robotics system's own data
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the robotics system's own data
     features_at_start: 50
     features_per_month: 6.0 # a young category moves fast
     scope: 8
@@ -709,7 +733,8 @@ categories:
     label: Robotaxi services
     pseudo: true
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo
+    # M50b (60.4): early_growth 2000-2007: pseudo
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo
     features_at_start: 50
     features_per_month: 4.0
     scope: 8
@@ -727,7 +752,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -738,7 +764,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -749,7 +776,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -760,7 +788,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -771,7 +800,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -782,7 +812,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -793,7 +824,8 @@ categories:
     pseudo: true
     family: pharma
     growth: 0.0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
+    # M50b (60.4): early_growth 2000-2007: pseudo: the pharma system's own data (pharma.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): pseudo: the pharma system's own data (pharma.yaml)
     features_at_start: 50
     features_per_month: 1.0
     scope: 6
@@ -819,7 +851,8 @@ categories:
     label: Launch services
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.03
-    early_growth: { 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
+    # M50b (60.4): early_growth 2000-2007: R: world orbital launches about 85 (2000), 59 (2001), 65, 63, 54, 55, 66, 68 (2002-2007); commercial demand collapsed with the LEO constellations' bankruptcies; 2000 about 114% of 2010
+    early_growth: { 2000: -0.1, 2001: -0.12, 2002: 0.0, 2003: -0.05, 2004: -0.08, 2005: 0.05, 2006: 0.1, 2007: 0.03, 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.03, 2017: 0.08, 2020: 0.24, 2026: 0.10 }
     features_at_start: 40
     features_per_month: 1.5 # launch vehicles age slowly
@@ -849,7 +882,8 @@ categories:
     label: Satellite broadband
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.03
-    early_growth: { 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
+    # M50b (60.4): early_growth 2000-2007: A: DirecWay's two-way consumer service (2000) and WildBlue (2005) on a potential market near the 2010 one; 2000 about 66% of 2010
+    early_growth: { 2000: 0.05, 2001: 0.03, 2002: 0.03, 2003: 0.05, 2004: 0.05, 2005: 0.05, 2006: 0.05, 2007: 0.05, 2008: 0.03, 2009: 0.03 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.03, 2019: 0.10, 2021: 0.15, 2026: 0.06 }
     features_at_start: 40
     features_per_month: 3.0
@@ -872,7 +906,8 @@ categories:
     label: Earth observation
     family: space # M40: scheduled rivals only; no startups or pitches (tst.sim.space)
     growth: 0.06
-    early_growth: { 2008: 0.06, 2009: 0.06 } # M50 (60.2): A: the 2010 entry
+    # M50b (60.4): early_growth 2000-2007: R/A: IKONOS (1999), QuickBird (2001), NGA's ClearView (2003) and NextView (2004) contracts, WorldView-1 (2007); 2000 about 44% of 2010
+    early_growth: { 2000: 0.08, 2001: 0.1, 2002: 0.08, 2003: 0.12, 2004: 0.08, 2005: 0.1, 2006: 0.08, 2007: 0.1, 2008: 0.06, 2009: 0.06 } # M50 (60.2): A: the 2010 entry
     growth_by_year: { 2010: 0.06, 2018: 0.08 }
     features_at_start: 40
     features_per_month: 3.0
@@ -901,7 +936,8 @@ categories:
     label: Mobile
     family: telecom
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (telecom.yaml has 2008)
+    # M50b (60.4): early_growth 2000-2007: the data sets demand (telecom.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (telecom.yaml has 2008)
     features_at_start: 40
     features_per_month: 0.4
     scope: 10
@@ -917,7 +953,7 @@ categories:
     label: Fixed broadband
     family: telecom
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 0.4
     scope: 10
@@ -938,7 +974,7 @@ categories:
     label: Wholesale capacity
     family: telecom
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 0.4
     scope: 8
@@ -959,7 +995,7 @@ categories:
     label: Network equipment
     family: telecom
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 0.6
     scope: 10
@@ -989,7 +1025,8 @@ categories:
     label: Banking
     family: finance
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (finance_services.yaml has 2008)
+    # M50b (60.4): early_growth 2000-2007: the data sets demand (finance_services.yaml)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (finance_services.yaml has 2008)
     features_at_start: 40
     features_per_month: 1.5
     scope: 8
@@ -1005,7 +1042,7 @@ categories:
     label: Payments
     family: finance
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 2.0
     scope: 8
@@ -1020,7 +1057,7 @@ categories:
     label: Insurance
     family: finance
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 1.0
     scope: 8
@@ -1047,7 +1084,8 @@ categories:
     label: Video streaming
     family: media
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (media.yaml has 2008)
+    # M50b (60.4): early_growth 2000-2007: the data sets demand (media.yaml); the category opens with its era (January 2007)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 } # M50 (60.2): the data sets demand (media.yaml has 2008)
     features_at_start: 40
     features_per_month: 1.5
     scope: 6
@@ -1062,7 +1100,7 @@ categories:
     label: Music streaming
     family: media
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 1.5
     scope: 5
@@ -1077,7 +1115,7 @@ categories:
     label: Games
     family: media
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 1.0
     scope: 8
@@ -1091,7 +1129,8 @@ categories:
     label: Social networks
     family: media
     growth: 0
-    early_growth: { 2008: 0.0, 2009: 0.0 }
+    # M50b (60.4): early_growth 2000-2007: the data sets demand (media.yaml); the category opens with its era (February 2004)
+    early_growth: { 2000: 0.0, 2001: 0.0, 2002: 0.0, 2003: 0.0, 2004: 0.0, 2005: 0.0, 2006: 0.0, 2007: 0.0, 2008: 0.0, 2009: 0.0 }
     features_at_start: 40
     features_per_month: 3.0
     scope: 6

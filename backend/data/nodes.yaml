@@ -34,6 +34,9 @@
 #   points, so 2010 on is unchanged. Node dates already cover 2008: 45 nm in volume at Intel (Nov 2007),
 #   TSMC 40 nm ramping 2008-2009 (first: 2009-01), Intel 32 nm shipping January 2010. No 2008-2009 dip:
 #   the crisis cut utilisation (TSMC about 35% in Q1 2009), not installed capacity.
+# M50b (formulas.md 60.4), 2026-11-28: a 2000 capacity point (and 2001-2005 points where it bent) added the same
+#   way, after "M50b 2000-2007:" in each comment. The node list still starts at 65 nm: 180, 130 and 90 nm
+#   (2000, 2001, 2004) are not nodes here (a node's position is its generation), so nothing new is listed.
 
 nodes:
   - key: n65
@@ -149,21 +152,21 @@ foundries:
     name: TSMC
     region: east_asia
     contract: tsmc # chips.contract.foundries key it backs (M12b's wafer contracts)
-    capacity: { 2008: 333, 2010: 420, 2013: 600, 2016: 850, 2019: 1050, 2021: 1180, 2023: 1330, 2025: 1450 } # M50 2008: R/D about 9.0M 8-inch-eq wafers in 2008 (TSMC 2008 annual report; / 12 / 2.25 = 0.333M 12-inch a month). R: 11.3M 8-inch-eq wafers in 2010 (= 0.42M 12-inch a month, D) to about 16-17M 12-inch-eq a year in 2024-25 (TSMC annual reports)
+    capacity: { 2000: 126, 2004: 178, 2008: 333, 2010: 420, 2013: 600, 2016: 850, 2019: 1050, 2021: 1180, 2023: 1330, 2025: 1450 } # M50 2008: R/D about 9.0M 8-inch-eq wafers in 2008 (TSMC 2008 annual report; / 12 / 2.25 = 0.333M 12-inch a month). R: 11.3M 8-inch-eq wafers in 2010 (= 0.42M 12-inch a month, D) to about 16-17M 12-inch-eq a year in 2024-25 (TSMC annual reports). M50b 2000-2007: R/D about 3.4M 8-inch-eq wafers in 2000 (TSMC after its 2000 WSMC and TSMC-Acer mergers, recalled) and 4.8M in 2004 (TSMC 6-K, 2Q04 and 4Q04 releases, read via search) / 12 / 2.25
     open_share: 1.0
     lag: [0, 2] # months behind the first to a node after 2025 (A: the leader)
   - key: samsung
     name: Samsung Foundry
     region: east_asia
     contract: samsung
-    capacity: { 2008: 100, 2010: 120, 2015: 200, 2020: 300, 2025: 400 } # M50 2008: A, a little below 2010 (S1 Giheung logic, Apple's SoCs; Austin S2 logic conversion 2009-2011). A: logic only (Samsung reports no foundry capacity; memory excluded)
+    capacity: { 2000: 40, 2005: 70, 2008: 100, 2010: 120, 2015: 200, 2020: 300, 2025: 400 } # M50 2008: A, a little below 2010 (S1 Giheung logic, Apple's SoCs; Austin S2 logic conversion 2009-2011). A: logic only (Samsung reports no foundry capacity; memory excluded). M50b 2000-2007: A, System LSI logic for its own chips; the foundry business opened to customers in 2005 (R)
     open_share: 0.6 # A: the rest is Samsung's own Exynos
     lag: [0, 12]
   - key: intel
     name: Intel
     region: north_america
     contract: intel
-    capacity: { 2008: 330, 2010: 350, 2015: 400, 2020: 450, 2025: 500 } # M50 2008: A, the 2010 trend back (Fab 28 opened 2008, Fab 32 2007). A: an IDM's logic capacity
+    capacity: { 2000: 250, 2008: 330, 2010: 350, 2015: 400, 2020: 450, 2025: 500 } # M50 2008: A, the 2010 trend back (Fab 28 opened 2008, Fab 32 2007). A: an IDM's logic capacity. M50b 2000-2007: A, an IDM's logic capacity (200 mm fabs to 300 mm from Fab 11X in 2002, R), below 2008's
     open_share: 0.0 # an IDM: its fabs run its own chips until Intel Foundry Services
     open_from: { month: "2021-03", share: 0.05 } # R: IFS announced March 2021 (A: the share)
     lag: [0, 18]
@@ -173,7 +176,7 @@ foundries:
     contract: globalfoundries
     reaches: { n65: "2009-03", n40: "2010-06", n28: "2012-06", n20: "2014-09", n16: "2016-01" } # R: AMD's fabs (65 nm), 28 nm 2012, 14LPP 2016 (Samsung-licensed); 22FDX 2014-15 read as the 20 nm class
     stops_at: n16 # R: abandoned 7 nm in August 2018 (dossier 3.3): stays at 14/12 nm
-    capacity: { 2008: 0, 2010: 170, 2015: 190, 2020: 200, 2025: 210 } # M50 2008: 0, not yet formed (R: spun off from AMD's Dresden fabs 2 Mar 2009, Chartered merged 13 Jan 2010; the line to 2010 gives about 100 at formation, D). R: about 2.3M 12-inch-eq a year in 2024 (D: 0.19M a month)
+    capacity: { 2000: 0, 2008: 0, 2010: 170, 2015: 190, 2020: 200, 2025: 210 } # M50 2008: 0, not yet formed (R: spun off from AMD's Dresden fabs 2 Mar 2009, Chartered merged 13 Jan 2010; the line to 2010 gives about 100 at formation, D). R: about 2.3M 12-inch-eq a year in 2024 (D: 0.19M a month). M50b 2000-2007: 0, AMD's own fabs (Fab 30 Dresden from 2000, Fab 36 2006, R) belong to the IDM AMD until the 2009 spin-off (A)
     open_share: 1.0
     lag: [0, 0]
   - key: umc
@@ -182,7 +185,7 @@ foundries:
     contract: umc
     reaches: { n65: "2006-06", n40: "2010-01", n28: "2013-06", n16: "2017-03" } # R: UMC 28 nm 2013, 14 nm 2017 (its 22 nm came after, as a 28 nm shrink: not a class of its own here); mature nodes (dossier 3.3)
     stops_at: n16 # R: UMC stopped leading-edge development in 2018 (dossier: "mature nodes")
-    capacity: { 2008: 175, 2010: 200, 2015: 260, 2020: 320, 2025: 360 } # M50 2008: R/D about 4.7M 8-inch-eq a year (UMC 2008 annual report, recalled; / 12 / 2.25). R: about 4.3M 12-inch-eq a year in 2024 (D: 0.36M a month)
+    capacity: { 2000: 95, 2004: 130, 2008: 175, 2010: 200, 2015: 260, 2020: 320, 2025: 360 } # M50 2008: R/D about 4.7M 8-inch-eq a year (UMC 2008 annual report, recalled; / 12 / 2.25). R: about 4.3M 12-inch-eq a year in 2024 (D: 0.36M a month). M50b 2000-2007: R/D about 2.6M 8-inch-eq a year in 2000 after UMC's January 2000 five-in-one merger (recalled) / 12 / 2.25; 2004 A between
     open_share: 1.0
     lag: [0, 0]
   - key: smic
@@ -191,7 +194,7 @@ foundries:
     contract: smic
     reaches: { n65: "2009-06", n40: "2012-01", n28: "2015-06", n16: "2019-11", n7: "2022-07" } # R: 28 nm 2015, 14 nm Q4 2019, 7 nm-class (N+2) by DUV multipatterning from 2022 (dossier 3.3)
     duv_only: true # its 7 nm-class is DUV (38.3): yield and cost as fab.duv
-    capacity: { 2008: 65, 2010: 70, 2015: 120, 2020: 230, 2025: 450 } # M50 2008: R/D about 150k 8-inch-eq a month (SMIC 2008 annual report, recalled; / 2.25). R: 0.95M 8-inch-eq a month in 2024 (D: 0.42M 12-inch)
+    capacity: { 2000: 0, 2001: 2, 2004: 45, 2008: 65, 2010: 70, 2015: 120, 2020: 230, 2025: 450 } # M50 2008: R/D about 150k 8-inch-eq a month (SMIC 2008 annual report, recalled; / 2.25). R: 0.95M 8-inch-eq a month in 2024 (D: 0.42M 12-inch). M50b 2000-2007: R: founded April 2000, Fab 1 Shanghai's first wafers September 2001 (2001 a token 2, A); about 100k 8-inch-eq a month by 2004 (recalled, / 2.25)
     open_share: 1.0
     lag: [36, 72] # A: without EUV tools, years behind the leader
     euv_gate: n7 # A: past this node it needs EUV it cannot buy (M22 may change that): stops here unless EUV opens

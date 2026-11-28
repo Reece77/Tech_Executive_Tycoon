@@ -34,14 +34,16 @@ from tst.sim.facilities.config import month_to_turn
 from tst.sim.geo.models import RegionalSegment
 from tst.sim.ledger import CASH, LedgerEntry
 from tst.sim.media import ads
-from tst.sim.media.config import KindBalance
+from tst.sim.media.config import (
+    KindBalance,
+    interp,  # M50b: the year-end floor
+)
 from tst.sim.media.data import MONTHS, TINY, end_year_at, file, selling
 from tst.sim.media.models import Title
 from tst.sim.media.titles import OPERATIONS, OWN, revenue_per_viewer_cents
 from tst.sim.money import exact, round_half_even, times
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import GameState
-from tst.sim.vehicles.config import interp
 
 AD_REVENUE: Final = "4080_revenue_advertising"
 ROYALTIES: Final = "5160_content_royalties"

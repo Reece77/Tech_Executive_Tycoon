@@ -19,6 +19,12 @@
 # basis. 2008 average rates (FRED annual AEXSZUS, AEXDNUS, AEXUSEU, AEXUSUK, AEXINUS, fetched
 # 2026-11-23, confirmed): CHF 1.0816, DKK 5.0885, USD 1.4726 a EUR, USD 1.8545 a GBP, INR 43.3859.
 # The sources of each 2008 value sit beside the indications' and rivals' notes below ("M50 (2008)").
+# M50b (formulas.md 60.4), 2026-11-28: 2000-2007 added the same way: each series gained a 2000 anchor,
+# with 2004 (and 2006 for rivals and drugs) where history bends; years between are interpolated, and a
+# 2008 or 2010 game reads none of them. Tags as M50's (R, D, A); the sources sit beside the notes below
+# ("M50b (2000)"). Average rates (FRED annual, fetched 2026-11-28): 2000 CHF 1.6904, DKK 8.0953, USD
+# 0.9232 a EUR, USD 1.5156 a GBP, INR 44.9975; 2004 CHF 1.2428, DKK 5.9891, USD 1.2438 a EUR, USD
+# 1.8330 a GBP, INR 45.2610; 2006 CHF 1.2532, DKK 5.9422, USD 1.2563 a EUR, USD 1.8434 a GBP, INR 45.1861.
 
 history_end: "2025-12"
 
@@ -186,12 +192,22 @@ modalities:
 # 2010 generics (depression 12.5), Acomplia's EU withdrawal (Oct 2008) and orlistat (obesity 0.7),
 # Pegasys and PegIntron slowly declining (hepatitis C 2.9); heart failure, atopic dermatitis and SMA
 # held at their 2010 values (no new branded therapies in 2008-2010).
+# M50b (2000): market_b's 2000 and 2004 anchors are A, from the same classes' sizes then (world pharma
+# sales about $390B in 2000 and $560B in 2004, IMS Health, R): lipids led by Lipitor ($5.0B, 2000) and
+# Zocor, before Zocor's 2006 generics; antidepressants before Prozac's generics (August 2001) and Paxil's
+# (2003); Plavix and Lovenox growing (thrombosis); Gleevec (2001), Velcade (2003) and Rituxan (blood
+# cancers); Herceptin, Arimidex and the taxanes (breast); Iressa (2003), Tarceva and Avastin (2004, lung);
+# Enbrel and Remicade, then Humira from 2003 (RA); Viread (2001) and Truvada (2004, HIV); PegIntron (2001)
+# and Pegasys (2002, hepatitis C); insulins, Avandia and Actos (diabetes); Xenical and Meridia (obesity);
+# Aricept, then Namenda (2003, Alzheimer's); recombinant factors (haemophilia); Pulmozyme and TOBI
+# (cystic fibrosis); Prevnar (2000) and the 2006 launches of Gardasil and RotaTeq after 2004 (vaccines);
+# SMA held at 2008's (no therapy until Spinraza, December 2016).
 indications:
   - key: lung_cancer
     label: Lung cancer
     area: oncology
     prevalence_m: 2.48 # new cases 2022: Bray et al., GLOBOCAN 2022, CA Cancer J Clin 2024, doi:10.3322/caac.21834 (confirmed)
-    market_b: { 2008: 7.0, 2010: 8.0, 2024: 55.0, 2025: 60.0 } # A: Keytruda $29.5B, Opdivo $9.3B, Tagrisso $6.6B, Imfinzi $4.7B (2024, below) and the rest; 2010 Alimta, Tarceva, Iressa, Avastin's lung share
+    market_b: { 2000: 3.0, 2004: 4.5, 2008: 7.0, 2010: 8.0, 2024: 55.0, 2025: 60.0 } # A: Keytruda $29.5B, Opdivo $9.3B, Tagrisso $6.6B, Imfinzi $4.7B (2024, below) and the rest; 2010 Alimta, Tarceva, Iressa, Avastin's lung share
     growth_after: 0.05 # A
     price_year: 190000 # est.: pembrolizumab's US list about $11,000 every three weeks
     brands: 10
@@ -202,7 +218,7 @@ indications:
     label: Breast cancer
     area: oncology
     prevalence_m: 2.30 # new cases 2022, GLOBOCAN 2022 (confirmed)
-    market_b: { 2008: 11.0, 2010: 12.0, 2024: 30.0 } # A: CDK4/6 inhibitors (Verzenio $5.3B, Ibrance, Kisqali), HER2 (Herceptin, Perjeta, Enhertu, Kadcyla)
+    market_b: { 2000: 4.0, 2004: 7.0, 2008: 11.0, 2010: 12.0, 2024: 30.0 } # A: CDK4/6 inhibitors (Verzenio $5.3B, Ibrance, Kisqali), HER2 (Herceptin, Perjeta, Enhertu, Kadcyla)
     growth_after: 0.04 # A
     price_year: 160000 # A
     brands: 12
@@ -213,7 +229,7 @@ indications:
     label: Blood cancers
     area: oncology
     prevalence_m: 1.3 # A: GLOBOCAN 2022's myeloma, leukaemia and non-Hodgkin lymphoma new cases, about 1.3M (est.)
-    market_b: { 2008: 17.0, 2010: 20.0, 2024: 55.0, 2025: 60.0 } # A: Darzalex $11.7B, Revlimid $5.8B, Imbruvica, Venclexta, CAR-Ts; 2010 Rituxan, Revlimid, Velcade
+    market_b: { 2000: 3.5, 2004: 9.0, 2008: 17.0, 2010: 20.0, 2024: 55.0, 2025: 60.0 } # A: Darzalex $11.7B, Revlimid $5.8B, Imbruvica, Venclexta, CAR-Ts; 2010 Rituxan, Revlimid, Velcade
     growth_after: 0.05 # A
     price_year: 220000 # A
     brands: 12
@@ -224,7 +240,7 @@ indications:
     label: Type 2 diabetes
     area: metabolic
     prevalence_m: 530 # IDF Diabetes Atlas 11th ed. (2025): 589M adults with diabetes in 2024, about 90% type 2 (derived; https://idf.org/news-and-resources/news/idf-diabetes-atlas-11th-edition/, confirmed)
-    market_b: { 2008: 25.0, 2010: 30.0, 2024: 70.0, 2025: 85.0 } # A: Ozempic $17.5B, Mounjaro $11.5B ($23.0B 2025), Farxiga $7.7B, Trulicity $5.3B, Jardiance, Januvia $2.3B and insulins (2024)
+    market_b: { 2000: 12.0, 2004: 18.0, 2008: 25.0, 2010: 30.0, 2024: 70.0, 2025: 85.0 } # A: Ozempic $17.5B, Mounjaro $11.5B ($23.0B 2025), Farxiga $7.7B, Trulicity $5.3B, Jardiance, Januvia $2.3B and insulins (2024)
     growth_after: 0.05 # A
     price_year: 11500 # Ozempic's list $959 a month (KFF/CMS, IRA 2027 round; confirmed)
     brands: 15
@@ -235,7 +251,7 @@ indications:
     label: Obesity
     area: metabolic
     prevalence_m: 880 # adults with obesity 2022, NCD-RisC, Lancet 2024, doi:10.1016/S0140-6736(23)02750-2 (confirmed)
-    market_b: { 2008: 0.7, 2010: 0.5, 2024: 15.0, 2025: 28.0 } # A: Wegovy $8.4B and Zepbound $4.9B (2024), $12.0B and $13.5B (2025); 2010 orlistat
+    market_b: { 2000: 0.9, 2004: 0.8, 2008: 0.7, 2010: 0.5, 2024: 15.0, 2025: 28.0 } # A: Wegovy $8.4B and Zepbound $4.9B (2024), $12.0B and $13.5B (2025); 2010 orlistat
     growth_after: 0.12 # A: the GLP-1 era (IQVIA: GLP-1s 29% of US spending growth in 2024)
     price_year: 16000 # est.: Wegovy's list about $1,350 a month
     brands: 3
@@ -246,7 +262,7 @@ indications:
     label: Rheumatoid arthritis
     area: immunology
     prevalence_m: 17.6 # 2020, GBD 2021 RA Collaborators, Lancet Rheumatol 2023, doi:10.1016/S2665-9913(23)00211-4 (confirmed)
-    market_b: { 2008: 15.0, 2010: 18.0, 2022: 32.0, 2024: 25.0 } # A: Humira (peak $21.2B 2022, about half RA), Enbrel, Remicade, Rinvoq $6.0B, Actemra, Orencia
+    market_b: { 2000: 3.0, 2004: 9.0, 2008: 15.0, 2010: 18.0, 2022: 32.0, 2024: 25.0 } # A: Humira (peak $21.2B 2022, about half RA), Enbrel, Remicade, Rinvoq $6.0B, Actemra, Orencia
     growth_after: 0.02 # A
     price_year: 85000 # est.: adalimumab's list before biosimilars
     brands: 10
@@ -257,7 +273,7 @@ indications:
     label: Psoriasis and IBD
     area: immunology
     prevalence_m: 125 # psoriasis worldwide, National Psoriasis Foundation (https://www.psoriasis.org/about/stats, est.)
-    market_b: { 2008: 4.0, 2010: 5.0, 2024: 40.0, 2025: 45.0 } # A: Skyrizi $11.7B, Stelara $10.4B, Cosentyx $6.1B, Tremfya, Taltz (2024)
+    market_b: { 2000: 1.0, 2004: 2.0, 2008: 4.0, 2010: 5.0, 2024: 40.0, 2025: 45.0 } # A: Skyrizi $11.7B, Stelara $10.4B, Cosentyx $6.1B, Tremfya, Taltz (2024)
     growth_after: 0.04 # A
     price_year: 90000 # A
     brands: 10
@@ -268,7 +284,7 @@ indications:
     label: Atopic dermatitis and asthma
     area: immunology
     prevalence_m: 170 # A: GBD 2019's atopic dermatitis, about 170M (est.)
-    market_b: { 2008: 1.0, 2010: 1.0, 2024: 18.0, 2025: 22.0 } # A: Dupixent EUR 13.1B ($14.1B) 2024, EUR 15.7B ($17.7B, est.) 2025, with Adbry and biologic asthma
+    market_b: { 2000: 0.5, 2004: 0.8, 2008: 1.0, 2010: 1.0, 2024: 18.0, 2025: 22.0 } # A: Dupixent EUR 13.1B ($14.1B) 2024, EUR 15.7B ($17.7B, est.) 2025, with Adbry and biologic asthma
     growth_after: 0.06 # A
     price_year: 45000 # est.: dupilumab's US list
     brands: 4
@@ -279,7 +295,7 @@ indications:
     label: Alzheimer's disease
     area: neuroscience
     prevalence_m: 37 # WHO: 57M with dementia in 2021, Alzheimer's 60-70% (derived at 65%, est.)
-    market_b: { 2008: 5.5, 2010: 6.0, 2024: 3.0 } # A: 2010 Aricept and Namenda before generics; 2024 Leqembi and Kisunla small
+    market_b: { 2000: 2.0, 2004: 3.8, 2008: 5.5, 2010: 6.0, 2024: 3.0 } # A: 2010 Aricept and Namenda before generics; 2024 Leqembi and Kisunla small
     growth_after: 0.10 # A: anti-amyloid antibodies
     price_year: 26500 # est.: lecanemab's US list
     brands: 3
@@ -290,7 +306,7 @@ indications:
     label: Depression and psychiatry
     area: neuroscience
     prevalence_m: 280 # WHO depression fact sheet (est.)
-    market_b: { 2008: 12.5, 2010: 12.0, 2024: 7.0 } # A: 2010 Cymbalta, Lexapro, Seroquel XR, Pristiq; 2024 Vraylar, Rexulti, Trintellix, Spravato
+    market_b: { 2000: 13.0, 2004: 14.0, 2008: 12.5, 2010: 12.0, 2024: 7.0 } # A: 2010 Cymbalta, Lexapro, Seroquel XR, Pristiq; 2024 Vraylar, Rexulti, Trintellix, Spravato
     growth_after: 0.02 # A
     price_year: 15000 # A
     brands: 8
@@ -301,7 +317,7 @@ indications:
     label: Multiple sclerosis
     area: neuroscience
     prevalence_m: 2.8 # A: MS International Federation, Atlas of MS 2020, 2.8M (est.)
-    market_b: { 2008: 9.5, 2010: 12.0, 2024: 23.0 } # A: Ocrevus CHF 6.7B, Kesimpta $3.2B (2024); 2010 Copaxone $3.3B (Teva, confirmed), Avonex, Rebif, Tysabri
+    market_b: { 2000: 3.0, 2004: 5.5, 2008: 9.5, 2010: 12.0, 2024: 23.0 } # A: Ocrevus CHF 6.7B, Kesimpta $3.2B (2024); 2010 Copaxone $3.3B (Teva, confirmed), Avonex, Rebif, Tysabri
     growth_after: 0.02 # A
     price_year: 90000 # A
     brands: 10
@@ -312,7 +328,7 @@ indications:
     label: HIV
     area: infectious_disease
     prevalence_m: 40.8 # end 2024, 31.6M on treatment: UNAIDS Global AIDS Update 2025 (confirmed)
-    market_b: { 2008: 12.5, 2010: 15.0, 2024: 30.0, 2025: 31.5 } # A: Gilead HIV $20.8B (2025, confirmed), ViiV; 2010 Atripla $2.93B and Truvada $2.65B (confirmed), Isentress, Prezista, Reyataz
+    market_b: { 2000: 5.0, 2004: 7.5, 2008: 12.5, 2010: 15.0, 2024: 30.0, 2025: 31.5 } # A: Gilead HIV $20.8B (2025, confirmed), ViiV; 2010 Atripla $2.93B and Truvada $2.65B (confirmed), Isentress, Prezista, Reyataz
     growth_after: 0.03 # A
     price_year: 48000 # est.: Biktarvy's US list
     brands: 6
@@ -323,7 +339,7 @@ indications:
     label: Hepatitis C
     area: infectious_disease
     prevalence_m: 50 # WHO Global Hepatitis Report 2024, 50M living with HCV (est.)
-    market_b: { 2008: 2.9, 2010: 2.5, 2015: 22.0, 2024: 3.0 } # A: 2010 Pegasys and PegIntron; Gilead's HCV peak $19.1B in 2015 (est.); cures shrink the market
+    market_b: { 2000: 1.2, 2004: 2.8, 2008: 2.9, 2010: 2.5, 2015: 22.0, 2024: 3.0 } # A: 2010 Pegasys and PegIntron; Gilead's HCV peak $19.1B in 2015 (est.); cures shrink the market
     growth_after: -0.02 # A
     price_year: 84000 # est.: sofosbuvir's $84,000 course (2013)
     brands: 3
@@ -334,7 +350,7 @@ indications:
     label: Vaccines
     area: infectious_disease
     prevalence_m: 8000 # A: the world's people (vaccination is for everyone)
-    market_b: { 2008: 19.0, 2010: 25.0, 2024: 50.0 } # A: Gardasil $8.6B, Prevnar $6.4B, Shingrix about $4.3B (2024) and the rest
+    market_b: { 2000: 6.0, 2004: 10.0, 2008: 19.0, 2010: 25.0, 2024: 50.0 } # A: Gardasil $8.6B, Prevnar $6.4B, Shingrix about $4.3B (2024) and the rest
     growth_after: 0.04 # A
     price_year: 300 # A: a branded vaccine course a year
     brands: 10
@@ -345,7 +361,7 @@ indications:
     label: Heart failure and cardiomyopathy
     area: cardiovascular
     prevalence_m: 64.3 # GBD 2017 via the ESC (https://www.eurekalert.org/news-releases/763086, confirmed)
-    market_b: { 2008: 2.0, 2010: 2.0, 2024: 18.0 } # A: Entresto $7.8B, Vyndaqel $5.5B, the SGLT2s' heart-failure share (2024)
+    market_b: { 2000: 1.5, 2004: 2.0, 2008: 2.0, 2010: 2.0, 2024: 18.0 } # A: Entresto $7.8B, Vyndaqel $5.5B, the SGLT2s' heart-failure share (2024)
     growth_after: 0.04 # A
     price_year: 7500 # est.: Entresto's US list
     brands: 5
@@ -356,7 +372,7 @@ indications:
     label: Thrombosis and atrial fibrillation
     area: cardiovascular
     prevalence_m: 59.7 # atrial fibrillation 2019, Roth et al. (GBD 2019), JACC 2020, doi:10.1016/j.jacc.2020.11.010 (est.; another GBD-based estimate is 33.3M)
-    market_b: { 2008: 12.5, 2010: 14.0, 2024: 28.0, 2025: 30.0 } # A: Eliquis $13.3B (BMS) + $7.4B (Pfizer alliance), Xarelto (2024); 2010 Plavix $9.4B (est.) and Lovenox
+    market_b: { 2000: 4.0, 2004: 9.0, 2008: 12.5, 2010: 14.0, 2024: 28.0, 2025: 30.0 } # A: Eliquis $13.3B (BMS) + $7.4B (Pfizer alliance), Xarelto (2024); 2010 Plavix $9.4B (est.) and Lovenox
     growth_after: 0.02 # A
     price_year: 7000 # est.: apixaban's US list
     brands: 5
@@ -367,7 +383,7 @@ indications:
     label: Lipids and prevention
     area: cardiovascular
     prevalence_m: 2000 # A: WHO's raised cholesterol in about 39% of adults (est.)
-    market_b: { 2008: 31.0, 2010: 30.0, 2024: 8.0 } # A: 2010 Lipitor $10.7B and Crestor $5.7B (est.), Zetia and Vytorin; 2024 Repatha, Praluent, Leqvio, Nexletol
+    market_b: { 2000: 18.5, 2004: 27.0, 2008: 31.0, 2010: 30.0, 2024: 8.0 } # A: 2010 Lipitor $10.7B and Crestor $5.7B (est.), Zetia and Vytorin; 2024 Repatha, Praluent, Leqvio, Nexletol
     growth_after: 0.04 # A
     price_year: 6500 # est.: evolocumab's US list after its 2018 cut
     brands: 8
@@ -379,7 +395,7 @@ indications:
     area: rare_disease
     orphan: true
     prevalence_m: 0.105 # Cystic Fibrosis Foundation, about 105,000 worldwide (est.)
-    market_b: { 2008: 0.9, 2010: 1.0, 2024: 11.0, 2025: 11.7 } # A: Vertex's cystic fibrosis revenue (Vertex total $12.0B in 2025, confirmed, almost all CF)
+    market_b: { 2000: 0.3, 2004: 0.5, 2008: 0.9, 2010: 1.0, 2024: 11.0, 2025: 11.7 } # A: Vertex's cystic fibrosis revenue (Vertex total $12.0B in 2025, confirmed, almost all CF)
     growth_after: 0.04 # A
     price_year: 320000 # est.: Trikafta's US list
     brands: 2
@@ -391,7 +407,7 @@ indications:
     area: rare_disease
     orphan: true
     prevalence_m: 0.1 # derived: prevalence 1-2 per 100,000 (https://www.ajmc.com/view/sma-birth-prevalence-in-us-lower-than-expected-new-report-finds, confirmed) x 8 billion
-    market_b: { 2008: 0.01, 2010: 0.01, 2024: 4.4 } # A: Spinraza, Zolgensma and Evrysdi (2024)
+    market_b: { 2000: 0.01, 2004: 0.01, 2008: 0.01, 2010: 0.01, 2024: 4.4 } # A: Spinraza, Zolgensma and Evrysdi (2024)
     growth_after: 0.03 # A
     price_year: 400000 # A
     brands: 3
@@ -403,7 +419,7 @@ indications:
     area: rare_disease
     orphan: true
     prevalence_m: 0.8 # A: World Federation of Hemophilia's estimate of about 0.8-1.1M with haemophilia (est.)
-    market_b: { 2008: 7.0, 2010: 8.0, 2024: 13.0 } # A: factor VIII and IX, Hemlibra CHF 4.5B ($5.1B, est.) 2024
+    market_b: { 2000: 3.5, 2004: 5.0, 2008: 7.0, 2010: 8.0, 2024: 13.0 } # A: factor VIII and IX, Hemlibra CHF 4.5B ($5.1B, est.) 2024
     growth_after: 0.03 # A
     price_year: 500000 # A
     brands: 6
@@ -525,11 +541,27 @@ ai:
 # $5,137.6M; Sun Pharma FY09 (to March 2009) about INR 4,270 crore (R, est.; D at 43.3859). Drugs 2008
 # (R, same reports): Lipitor $12,401M, Remicade $3,748M, Humira $4,521M, Crestor $3,597M, Copaxone
 # in-market $2,264M.
+# M50b (2000): rivals' 2000, 2004 and 2006 revenue, the same business, from annual reports (R, not
+# opened; est. where marked): Pfizer $29.6B (2000 restated with Warner-Lambert), $52.5B, $48.4B (continuing,
+# after Consumer Healthcare's sale); J&J pharmaceutical segment $12.96B (restated with Alza), $22.13B,
+# $23.27B; Roche Pharmaceuticals CHF 17.7B (est.), 21.7B, 33.3B (D); Merck without Medco (spun off August
+# 2003) about $20.0B (est.), $22.9B, $22.6B; Abbott pharmaceutical products about $6.0B, $10.0B, $12.4B
+# (est.; Knoll from March 2001); Novartis Pharmaceuticals about $10.7B (CHF 18.1B, est.), $18.5B, $22.6B;
+# AstraZeneca $18.1B, $21.4B, $26.5B; Novo Nordisk DKK 20,811M, 29,031M, 38,743M (D); Lilly $10.86B,
+# $13.86B, $15.69B; BMS pharmaceuticals about $14.8B (est.), $15.5B, $13.7B (Plavix's 2006 generic
+# launch); Sanofi-Synthelabo EUR 5,963M (2000; Sanofi-Aventis from August 2004: EUR 14,871M reported 2004,
+# EUR 28,373M 2006, D); GSK pharmaceuticals about GBP 15.4B (2000 pro forma, GSK formed December 2000,
+# est.), GBP 17.6B and 20.1B (D); Teva $1.75B, $4.80B, $8.41B; Sandoz (Novartis Generics) about $1.9B
+# (A est.), $3.0B, $5.96B (Hexal and Eon from 2005); Mylan's fiscal years to March 2001, 2005 and 2007
+# $0.85B, $1.25B, $1.61B; Sun Pharma's FY01, FY05 and FY07 about INR 1,000, 1,700 and 2,140 crore (A est.,
+# D). Drugs (R, same reports): Lipitor $5.03B, $10.86B, $12.89B; Remicade $0.37B, $2.15B, $3.01B; Humira
+# 0 to its December 2002 approval, $0.28B (2003), $0.85B, $2.04B; Crestor 0 to its 2003 approval, $0.13B
+# (2003), $0.91B, $2.03B; Copaxone in-market about $0.48B, $1.18B, $1.42B (est.).
 rivals:
   - company: Pfizer
-    revenue: { 2008: 48.3, 2010: 67.8, 2024: 63.6, 2025: 62.6 } # 2010 $67,809M (FY2010 release), 2024 annual review, 2025 Q4 release $62,579M (confirmed)
+    revenue: { 2000: 29.6, 2004: 52.5, 2006: 48.4, 2008: 48.3, 2010: 67.8, 2024: 63.6, 2025: 62.6 } # 2010 $67,809M (FY2010 release), 2024 annual review, 2025 Q4 release $62,579M (confirmed)
     drugs:
-      - { name: Lipitor, indication: lipids, modality: small_molecule, approved: 1996, loe_us: 2011, revenue: { 2008: 12.4, 2010: 10.7 } } # est. (Bloomberg ranking); US generics 30 Nov 2011
+      - { name: Lipitor, indication: lipids, modality: small_molecule, approved: 1996, loe_us: 2011, revenue: { 2000: 5.03, 2004: 10.86, 2006: 12.89, 2008: 12.4, 2010: 10.7 } } # est. (Bloomberg ranking); US generics 30 Nov 2011
       - { name: Eliquis (alliance), indication: thrombosis, modality: small_molecule, approved: 2012, loe_us: 2028, revenue: { 2024: 7.37, 2025: 7.96 }, ira_year: 2026 } # Pfizer alliance revenue (confirmed); earliest US generics 1 Apr 2028 by settlement
       - { name: Prevnar, indication: vaccines, modality: biologic, approved: 2000, loe_us: 2027, revenue: { 2024: 6.41 } } # confirmed; LOE A
       - { name: Vyndaqel, indication: heart_failure, modality: small_molecule, approved: 2019, loe_us: 2028, revenue: { 2024: 5.45 } } # confirmed; LOE A
@@ -537,16 +569,16 @@ rivals:
     pipeline: [vepdegestrant, sasanlimab]
     source: "Pfizer FY2010 and Q4 2025 releases; annual review 2024"
   - company: Johnson & Johnson Innovative Medicine
-    revenue: { 2008: 24.6, 2010: 22.4, 2024: 56.96, 2025: 60.4 } # pharmaceutical segment 2010 (BioSpace), Innovative Medicine 2024 (10-K) and 2025 $60,401M (Q4 release) (confirmed)
+    revenue: { 2000: 12.96, 2004: 22.13, 2006: 23.27, 2008: 24.6, 2010: 22.4, 2024: 56.96, 2025: 60.4 } # pharmaceutical segment 2010 (BioSpace), Innovative Medicine 2024 (10-K) and 2025 $60,401M (Q4 release) (confirmed)
     drugs:
-      - { name: Remicade, indication: rheumatoid_arthritis, modality: biologic, approved: 1998, loe_us: 2016, revenue: { 2008: 3.75, 2010: 4.61 } } # J&J FY2010 (confirmed); US biosimilar Inflectra Nov 2016
+      - { name: Remicade, indication: rheumatoid_arthritis, modality: biologic, approved: 1998, loe_us: 2016, revenue: { 2000: 0.37, 2004: 2.15, 2006: 3.01, 2008: 3.75, 2010: 4.61 } } # J&J FY2010 (confirmed); US biosimilar Inflectra Nov 2016
       - { name: Stelara, indication: psoriasis_ibd, modality: biologic, approved: 2009, loe_us: 2025, revenue: { 2024: 10.36, 2025: 6.08 }, ira_year: 2026 } # 2024 confirmed, 2025 est.; US biosimilars 1 Jan 2025
       - { name: Darzalex, indication: blood_cancers, modality: biologic, approved: 2015, loe_us: 2029, revenue: { 2024: 11.67, 2025: 14.35 } } # 2024 confirmed, 2025 est.; LOE unconfirmed (A)
     focus: [oncology, immunology, neuroscience]
     pipeline: [icotrokinra, nipocalimab]
     source: "J&J FY2010 release; 10-K 2024; Q4 2025 release"
   - company: Roche
-    revenue: { 2008: 33.2, 2010: 35.5, 2024: 52.4, 2025: 57.4 } # Pharmaceuticals CHF 37.06B, 46.171B and 47.669B (confirmed)
+    revenue: { 2000: 10.5, 2004: 17.5, 2006: 26.6, 2008: 33.2, 2010: 35.5, 2024: 52.4, 2025: 57.4 } # Pharmaceuticals CHF 37.06B, 46.171B and 47.669B (confirmed)
     drugs:
       - { name: Ocrevus, indication: multiple_sclerosis, modality: biologic, approved: 2017, loe_us: 2029, revenue: { 2024: 7.6, 2025: 8.4 } } # CHF 6.7B and 7.01B (est.); LOE A
       - { name: Hemlibra, indication: haemophilia, modality: biologic, approved: 2017, loe_us: 2033, revenue: { 2024: 5.1, 2025: 5.7 } } # CHF 4.5B and 4.75B (est.); LOE A
@@ -554,7 +586,7 @@ rivals:
     pipeline: [giredestrant, trontinemab]
     source: "Roche FY2010, FY2024 and FY2025 releases"
   - company: Merck & Co.
-    revenue: { 2008: 23.9, 2010: 46.0, 2024: 64.2, 2025: 65.0 } # FY2010 release, 4Q24 release $64,168M, 4Q25 $65,011M (confirmed)
+    revenue: { 2000: 20.0, 2004: 22.9, 2006: 22.6, 2008: 23.9, 2010: 46.0, 2024: 64.2, 2025: 65.0 } # FY2010 release, 4Q24 release $64,168M, 4Q25 $65,011M (confirmed)
     drugs:
       - { name: Keytruda, indication: lung_cancer, modality: biologic, approved: 2014, loe_us: 2028, revenue: { 2024: 29.48, 2025: 31.68 } } # confirmed; US compound patent December 2028
       - { name: Gardasil, indication: vaccines, modality: biologic, approved: 2006, loe_us: 2028, revenue: { 2024: 8.58 } } # confirmed; LOE A
@@ -563,16 +595,16 @@ rivals:
     pipeline: [enlicitide, sac-TMT]
     source: "Merck FY2010, 4Q24 and 4Q25 releases"
   - company: AbbVie
-    revenue: { 2008: 16.7, 2010: 19.9, 2024: 56.33, 2025: 61.16 } # Abbott worldwide pharmaceutical sales $19,894M 2010 (confirmed); AbbVie 2024 and 2025 releases (confirmed)
+    revenue: { 2000: 6.0, 2004: 10.0, 2006: 12.4, 2008: 16.7, 2010: 19.9, 2024: 56.33, 2025: 61.16 } # Abbott worldwide pharmaceutical sales $19,894M 2010 (confirmed); AbbVie 2024 and 2025 releases (confirmed)
     drugs:
-      - { name: Humira, indication: rheumatoid_arthritis, modality: biologic, approved: 2002, loe_us: 2023, revenue: { 2008: 4.52, 2010: 6.5, 2022: 21.2, 2024: 8.99, 2025: 4.54 } } # 2010 (AbbVie 10-K), 2024, 2025 confirmed; 2022 derived from 2023's -32%
+      - { name: Humira, indication: rheumatoid_arthritis, modality: biologic, approved: 2002, loe_us: 2023, revenue: { 2000: 0.0, 2002: 0.0, 2003: 0.28, 2004: 0.85, 2006: 2.04, 2008: 4.52, 2010: 6.5, 2022: 21.2, 2024: 8.99, 2025: 4.54 } } # 2010 (AbbVie 10-K), 2024, 2025 confirmed; 2022 derived from 2023's -32%
       - { name: Skyrizi, indication: psoriasis_ibd, modality: biologic, approved: 2019, loe_us: 2033, revenue: { 2024: 11.72, 2025: 17.56 } } # confirmed; LOE A
       - { name: Rinvoq, indication: rheumatoid_arthritis, modality: small_molecule, approved: 2019, loe_us: 2033, revenue: { 2024: 5.97, 2025: 8.30 } } # confirmed; LOE A
     focus: [immunology, neuroscience, oncology]
     pipeline: [tavapadon, emraclidine]
     source: "Abbott FY2010 release; AbbVie FY2024 and FY2025 releases"
   - company: Novartis
-    revenue: { 2008: 26.3, 2010: 30.6, 2024: 50.3, 2025: 54.5 } # Pharmaceuticals $30,558M (20-F 2010); continuing operations 2024 and 2025 (confirmed)
+    revenue: { 2000: 10.7, 2004: 18.5, 2006: 22.6, 2008: 26.3, 2010: 30.6, 2024: 50.3, 2025: 54.5 } # Pharmaceuticals $30,558M (20-F 2010); continuing operations 2024 and 2025 (confirmed)
     drugs:
       - { name: Entresto, indication: heart_failure, modality: small_molecule, approved: 2015, loe_us: 2025, revenue: { 2024: 7.82, 2025: 7.75 }, ira_year: 2026 } # confirmed; US generics mid-2025
       - { name: Cosentyx, indication: psoriasis_ibd, modality: biologic, approved: 2015, loe_us: 2029, revenue: { 2024: 6.14 } } # confirmed; LOE A
@@ -581,9 +613,9 @@ rivals:
     pipeline: [ianalumab, pelacarsen]
     source: "Novartis 20-F 2010; FY2024 and FY2025 releases"
   - company: AstraZeneca
-    revenue: { 2008: 31.6, 2010: 33.3, 2024: 54.1, 2025: 58.7 } # $33,269M (FY2010), $54,073M (20-F 2024) confirmed; 2025 est.
+    revenue: { 2000: 18.1, 2004: 21.4, 2006: 26.5, 2008: 31.6, 2010: 33.3, 2024: 54.1, 2025: 58.7 } # $33,269M (FY2010), $54,073M (20-F 2024) confirmed; 2025 est.
     drugs:
-      - { name: Crestor, indication: lipids, modality: small_molecule, approved: 2003, loe_us: 2016, revenue: { 2008: 3.6, 2010: 5.7 } } # est.
+      - { name: Crestor, indication: lipids, modality: small_molecule, approved: 2003, loe_us: 2016, revenue: { 2000: 0.0, 2003: 0.13, 2004: 0.91, 2006: 2.03, 2008: 3.6, 2010: 5.7 } } # est.
       - { name: Farxiga, indication: type2_diabetes, modality: small_molecule, approved: 2014, loe_us: 2026, revenue: { 2024: 7.66, 2025: 8.4 }, ira_year: 2026 } # 2024 confirmed, 2025 est.; LOE est.
       - { name: Tagrisso, indication: lung_cancer, modality: small_molecule, approved: 2015, loe_us: 2032, revenue: { 2024: 6.58, 2025: 7.25 } } # 2024 confirmed, 2025 est.; LOE A
       - { name: Imfinzi, indication: lung_cancer, modality: biologic, approved: 2017, loe_us: 2030, revenue: { 2024: 4.72 } } # confirmed; LOE A
@@ -591,7 +623,7 @@ rivals:
     pipeline: [camizestrant, baxdrostat]
     source: "AstraZeneca FY2010 results; 20-F 2024; 2025 (est.)"
   - company: Novo Nordisk
-    revenue: { 2008: 9.0, 2010: 10.8, 2024: 42.1, 2025: 46.7 } # DKK 60,776M, 290.4B and 309,064M (confirmed)
+    revenue: { 2000: 2.57, 2004: 4.85, 2006: 6.52, 2008: 9.0, 2010: 10.8, 2024: 42.1, 2025: 46.7 } # DKK 60,776M, 290.4B and 309,064M (confirmed)
     drugs:
       - { name: Ozempic, indication: type2_diabetes, modality: small_molecule, approved: 2017, loe_us: 2031, revenue: { 2024: 17.45, 2025: 19.21 }, ira_year: 2027 } # DKK 120.342B and 127.089B (confirmed); a peptide under an NDA; compound patent December 2031 (est.)
       - { name: Wegovy, indication: obesity, modality: small_molecule, approved: 2021, loe_us: 2031, revenue: { 2024: 8.44, 2025: 11.95 }, ira_year: 2027 } # DKK 58.2B (confirmed) and 79.1B (est.)
@@ -599,7 +631,7 @@ rivals:
     pipeline: [CagriSema, amycretin]
     source: "Novo Nordisk 20-F 2010; Annual Reports 2024 and 2025"
   - company: Eli Lilly
-    revenue: { 2008: 20.4, 2010: 23.1, 2024: 45.0, 2025: 65.2 } # $23,076.0M, $45.04B and $65,179M (confirmed)
+    revenue: { 2000: 10.86, 2004: 13.86, 2006: 15.69, 2008: 20.4, 2010: 23.1, 2024: 45.0, 2025: 65.2 } # $23,076.0M, $45.04B and $65,179M (confirmed)
     drugs:
       - { name: Trulicity, indication: type2_diabetes, modality: biologic, approved: 2014, loe_us: 2027, revenue: { 2024: 5.25 } } # confirmed; US LOE 2027
       - { name: Verzenio, indication: breast_cancer, modality: small_molecule, approved: 2017, loe_us: 2031, revenue: { 2024: 5.31, 2025: 5.72 } } # confirmed; LOE A
@@ -609,7 +641,7 @@ rivals:
     pipeline: [orforglipron, retatrutide]
     source: "Lilly FY2010 release; 10-K 2024 and 2025"
   - company: Bristol Myers Squibb
-    revenue: { 2008: 17.7, 2010: 19.5, 2024: 48.3, 2025: 48.2 } # $19.48B (confirmed), $48,300M (8-K 2024), $48.2B (2025) (confirmed)
+    revenue: { 2000: 14.8, 2004: 15.5, 2006: 13.7, 2008: 17.7, 2010: 19.5, 2024: 48.3, 2025: 48.2 } # $19.48B (confirmed), $48,300M (8-K 2024), $48.2B (2025) (confirmed)
     drugs:
       - { name: Eliquis, indication: thrombosis, modality: small_molecule, approved: 2012, loe_us: 2028, revenue: { 2024: 13.33, 2025: 14.44 }, ira_year: 2026 } # 2024 est., 2025 confirmed
       - { name: Opdivo, indication: lung_cancer, modality: biologic, approved: 2014, loe_us: 2028, revenue: { 2024: 9.30, 2025: 10.05 } } # 2024 est., 2025 confirmed
@@ -618,14 +650,14 @@ rivals:
     pipeline: [milvexian, iberdomide]
     source: "BMS FY2010 and 2024-2025 releases"
   - company: Sanofi
-    revenue: { 2008: 40.6, 2010: 40.3, 2024: 44.5, 2025: 49.2 } # EUR 30,384M (20-F 2010, pharmaceuticals and vaccines), EUR 41,081M (2024) confirmed; EUR 43.6B (2025, est.)
+    revenue: { 2000: 5.51, 2004: 18.5, 2006: 35.65, 2008: 40.6, 2010: 40.3, 2024: 44.5, 2025: 49.2 } # EUR 30,384M (20-F 2010, pharmaceuticals and vaccines), EUR 41,081M (2024) confirmed; EUR 43.6B (2025, est.)
     drugs:
       - { name: Dupixent, indication: atopic_dermatitis, modality: biologic, approved: 2017, loe_us: 2031, revenue: { 2024: 14.15, 2025: 17.74 } } # EUR 13.072B (confirmed), EUR 15.714B (est.); LOE about 2031 (est.)
     focus: [immunology, infectious_disease, rare_disease]
     pipeline: [amlitelimab, tolebrutinib]
     source: "Sanofi 20-F 2010; FY2024 release; 2025 (est.)"
   - company: GSK
-    revenue: { 2008: 37.8, 2010: 36.2, 2024: 40.1, 2025: 43.0 } # pharmaceuticals and vaccines about GBP 23.4B (est.; group GBP 28.4B confirmed); GBP 31.4B (2024) and 32,667M (2025) after Haleon's demerger (confirmed)
+    revenue: { 2000: 23.3, 2004: 32.3, 2006: 37.1, 2008: 37.8, 2010: 36.2, 2024: 40.1, 2025: 43.0 } # pharmaceuticals and vaccines about GBP 23.4B (est.; group GBP 28.4B confirmed); GBP 31.4B (2024) and 32,667M (2025) after Haleon's demerger (confirmed)
     drugs:
       - { name: Shingrix, indication: vaccines, modality: biologic, approved: 2017, loe_us: 2031, revenue: { 2024: 4.34 } } # about GBP 3.4B (est.); LOE A
     focus: [infectious_disease, immunology, oncology]
@@ -633,21 +665,21 @@ rivals:
     source: "GSK 20-F 2010; FY2024 and FY2025 results"
   - company: Teva
     generics: true
-    revenue: { 2008: 11.1, 2010: 16.1, 2024: 16.5, 2025: 17.3 } # confirmed (FY2010 release; globes 2024; FY2025 release)
+    revenue: { 2000: 1.75, 2004: 4.8, 2006: 8.41, 2008: 11.1, 2010: 16.1, 2024: 16.5, 2025: 17.3 } # confirmed (FY2010 release; globes 2024; FY2025 release)
     drugs:
-      - { name: Copaxone, indication: multiple_sclerosis, modality: small_molecule, approved: 1996, loe_us: 2015, revenue: { 2008: 2.26, 2010: 3.32 } } # in-market $3,316M (confirmed); generics June 2015
+      - { name: Copaxone, indication: multiple_sclerosis, modality: small_molecule, approved: 1996, loe_us: 2015, revenue: { 2000: 0.48, 2004: 1.18, 2006: 1.42, 2008: 2.26, 2010: 3.32 } } # in-market $3,316M (confirmed); generics June 2015
     source: "Teva FY2010, FY2024 and FY2025 releases"
   - company: Sandoz
     generics: true
-    revenue: { 2008: 7.6, 2010: 8.5, 2024: 10.4, 2025: 11.1 } # Novartis 20-F 2010 $8,518M; spun off 4 Oct 2023 (est.); 2024 and 2025 (confirmed)
+    revenue: { 2000: 1.9, 2004: 3.0, 2006: 5.96, 2008: 7.6, 2010: 8.5, 2024: 10.4, 2025: 11.1 } # Novartis 20-F 2010 $8,518M; spun off 4 Oct 2023 (est.); 2024 and 2025 (confirmed)
     source: "Novartis 20-F 2010; Sandoz FY2024 and FY2025 releases"
   - company: Viatris
     generics: true
-    revenue: { 2008: 5.14, 2010: 5.45, 2024: 14.7, 2025: 14.3 } # Mylan 2010 $5.45B; Viatris 2024 and 2025 $14,299.9M (confirmed)
+    revenue: { 2000: 0.85, 2004: 1.25, 2006: 1.61, 2008: 5.14, 2010: 5.45, 2024: 14.7, 2025: 14.3 } # Mylan 2010 $5.45B; Viatris 2024 and 2025 $14,299.9M (confirmed)
     source: "Mylan 10-K 2010; Viatris FY2024 and FY2025 releases"
   - company: Sun Pharma
     generics: true
-    revenue: { 2008: 0.98, 2010: 1.25, 2024: 6.28, 2025: 6.71 } # INR 5,721 crore (FY11), 52,578 crore (FY25) and 58,462 crore (FY26) (confirmed), at 45.65, 83.68 and 87.13
+    revenue: { 2000: 0.22, 2004: 0.38, 2006: 0.47, 2008: 0.98, 2010: 1.25, 2024: 6.28, 2025: 6.71 } # INR 5,721 crore (FY11), 52,578 crore (FY25) and 58,462 crore (FY26) (confirmed), at 45.65, 83.68 and 87.13
     source: "Sun Pharma FY11 release; Annual Report 2024-25; FY26 results"
 
 # --- Contract manufacturers (55.5) -----------------------------------------------------------------

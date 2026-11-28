@@ -15,6 +15,7 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import history_floor_turn, start_turn_of
 from tst.sim.facilities.config import Range, month_to_turn
 from tst.sim.robotics.config import _convert
 from tst.sim.vehicles.config import interp
@@ -124,10 +125,14 @@ class BankingDef(_Frozen):
 
     def limit_at(self, region: str, turn: int) -> float:
         out = 0.0
+        floor = min(history_floor_turn(turn), WORLD_2008)  # M50b: pre-2008 rows only before it
         for row in self.insured_limit.get(region, ()):
-            if _turn(row.from_) <= turn:
+            if floor <= _turn(row.from_) <= turn:
                 out = row.insured_cents
         return out
+
+
+WORLD_2008: Final = start_turn_of(2008)  # M50b: rows dated before it are the 2000 world's
 
 
 # --- payments (64.2) ----------------------------------------------------------------------------
@@ -189,8 +194,9 @@ class PaymentsDef(_Frozen):
 
     def interchange_at(self, region: str, turn: int) -> float:
         out = 0.0
+        floor = min(history_floor_turn(turn), WORLD_2008)  # M50b: pre-2008 rows only before it
         for row in self.interchange_bp.get(region, ()):
-            if _turn(row.from_) <= turn:
+            if floor <= _turn(row.from_) <= turn:
                 out = row.bp
         return out
 

@@ -13,9 +13,16 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from tst.sim.calendar import END_YEAR_2008_READ
 from tst.sim.facilities.config import Range, month_to_turn
 from tst.sim.robotics.config import _convert
-from tst.sim.vehicles.config import interp
+from tst.sim.vehicles.config import interp as _interp
+
+
+def interp(points: dict[int, float], year: float) -> float:
+    """M50b: a year-end series, floored at 2008 from January 2008's read (2007.08)."""
+    return _interp(points, year, END_YEAR_2008_READ)
+
 
 type Band = Literal["low", "mid", "high"]
 BANDS: Final[tuple[Band, ...]] = ("low", "mid", "high")

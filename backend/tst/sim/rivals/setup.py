@@ -23,6 +23,7 @@ from tst.sim.people.models import Employment
 from tst.sim.people.reveal import new_reveal_state
 from tst.sim.products.formulas import hosting_cents, sale_rate
 from tst.sim.products.models import SELLING
+from tst.sim.products.setup import launch_turn
 from tst.sim.rivals import formulas as f
 from tst.sim.rivals.models import INCUMBENT_KEY, Function, WorkforcePool, stream_key
 from tst.sim.rng import RngFactory
@@ -285,10 +286,11 @@ def setup_incumbents(
         cash = opening_cash_cents(state, company.id, data)
         if not cash and not state.company_products(company.id) and spec.products:
             # M50: every product launches after a 2008 start: runway for its key people
-            cash = round(
-                key_people_monthly_cents(state, company.id, balance)
-                * exact(rv.prelaunch_cash_months)
-            )
+            # (M50b: at least to its first launch and rv.prelaunch_after_months beyond, as a
+            # 2000 world's waits are longer; a 2008 world's are all within 36 months)
+            first = min(launch_turn(p) or state.turn for p in spec.products)
+            months = max(rv.prelaunch_cash_months, first - state.turn + rv.prelaunch_after_months)
+            cash = round(key_people_monthly_cents(state, company.id, balance) * exact(months))
         if cash:
             entries.append(
                 LedgerEntry.transfer(

@@ -20,12 +20,16 @@ from dataclasses import replace
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.geo.models import RegionalSegment
-from tst.sim.media.config import BILLION, MILLION, LineDef
+from tst.sim.media.config import (
+    BILLION,
+    MILLION,
+    LineDef,
+    interp,  # M50b: the year-end floor
+)
 from tst.sim.media.data import MONTHS, TINY, end_year_at, file, in_history
 from tst.sim.media.demand import price_index
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import GameState, with_segments
-from tst.sim.vehicles.config import interp
 
 
 def _spec_price(state: GameState, product: Product, data: GameData) -> int | None:

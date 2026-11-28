@@ -141,7 +141,17 @@ rivals:
 # M50 (ADR-0024, formulas.md 60.2), 2026-11-23: rows for 2008-2009 added before 2010-01 so a 2008 start has
 # history (A, as the rest: calm under the 2006-2009 Strategic Economic Dialogue, rising to 2010's level with
 # the October 2008 Taiwan arms package and the September 2009 tyre safeguard; dates R, the levels A).
+# M50b (formulas.md 60.4), 2026-11-28: rows from 2000-01 added the same way (dates R, levels A): tense after the
+# 1999 embassy bombing, a peak at the April 2001 Hainan incident, calm after 9/11 and WTO entry, small steps 2005-2007.
 tension_history:
+  - ["2000-01", 22] # after the Belgrade embassy bombing (7 May 1999) and before Taiwan's March 2000 election
+  - ["2000-10", 19] # permanent normal trade relations for China signed (10 Oct 2000)
+  - ["2001-04", 28] # the Hainan Island EP-3 collision (1 Apr 2001); the $4B-plus Taiwan arms package (24 Apr 2001)
+  - ["2001-08", 22] # the crew released (11 Apr) and the aircraft returned (July 2001)
+  - ["2001-10", 17] # counter-terrorism co-operation after 11 September; Bush at APEC Shanghai (Oct 2001)
+  - ["2001-12", 15] # China joins the WTO (11 Dec 2001)
+  - ["2005-08", 18] # CNOOC withdraws its Unocal bid under Congressional pressure (2 Aug 2005)
+  - ["2007-01", 19] # China's anti-satellite test (11 Jan 2007)
   - ["2008-01", 18]
   - ["2008-10", 20] # the $6.5B Taiwan arms package (3 Oct 2008); China suspends military contacts
   - ["2009-09", 21] # the Section 421 safeguard tariff on Chinese tyres (11 Sep 2009)

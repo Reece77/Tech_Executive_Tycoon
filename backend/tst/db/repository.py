@@ -72,7 +72,13 @@ from tst.sim.actions import (
     action_payload,
     apply_action,
 )
-from tst.sim.calendar import HISTORY_START_YEAR, MONTHS_PER_YEAR, TURN_ZERO, format_turn, turn_to_ym
+from tst.sim.calendar import (
+    MONTHS_PER_YEAR,
+    TURN_ZERO,
+    format_turn,
+    turn_to_ym,
+    world_year_of,
+)
 from tst.sim.data_models import DEFAULT_DIFFICULTY
 from tst.sim.decisions import Decisions
 from tst.sim.errors import (
@@ -461,7 +467,7 @@ def create_save(
     if scenario_def is None:
         raise UnknownScenarioError(f"unknown scenario {scenario!r}")
     if mode is not None:  # a Sandbox or scenario keeps its own year; before 2010, 2008's world
-        start_year = HISTORY_START_YEAR if mode.start_year < TURN_ZERO[0] else TURN_ZERO[0]
+        start_year = world_year_of(mode.start_year)  # M50b: the latest start year at or before
     state, entries = new_game(
         save_name=name,
         master_seed=seed,

@@ -14,7 +14,11 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from tst.sim.calendar import FROM_2010_READ, HISTORY_START_TURN, HISTORY_START_YEAR, from_2010
+from tst.sim.calendar import (
+    HISTORY_START_TURN,
+    from_2010,
+    history_floor_year,
+)
 from tst.sim.facilities.config import Range, month_to_turn
 
 BASE_YEAR: Final = 2010  # tunable-exempt: the game's money is in 2010 dollars
@@ -33,9 +37,10 @@ class _Frozen(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
-def interp(points: dict[int, float], year: float) -> float:
-    """Linear between year points, held at the ends; from 2010 without 2008-2009 (M50)."""
-    pts = sorted(from_2010(points, year).items())
+def interp(points: dict[int, float], year: float, boundary_2008: float | None = None) -> float:
+    """Linear between year points, held at the ends; from 2010 without 2008-2009 (M50), from
+    2008 without 2000-2007 (M50b; `boundary_2008` for a year-end reader's convention)."""
+    pts = sorted(from_2010(points, year, boundary_2008=boundary_2008).items())
     if year <= pts[0][0]:
         return pts[0][1]
     for (y0, v0), (y1, v1) in itertools.pairwise(pts):
@@ -165,7 +170,7 @@ class RivalCarsDef(_Frozen):
         first = min(points)
         # a series that begins later ramps up from 0; one there from the start holds back
         # (M50: the start is 2008 for a read before 2010, else 2010 as before)
-        start = HISTORY_START_YEAR if year < FROM_2010_READ else BASE_YEAR
+        start = history_floor_year(year)  # M50b: 2000 before 2008
         if year < first:
             ramp = max(0.0, points[first] * (1 - (first - year)))
             return ramp if first > start else points[first]

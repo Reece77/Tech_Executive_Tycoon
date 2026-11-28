@@ -21,12 +21,24 @@
 #   assets/palladium/production/mineral-pubs/<mineral>/mcs-<year>-<abbr>.pdf) or FRED's IMF
 #   series (PCOPPUSDM, PTINUSDM, PNICKUSDM: https://fred.stlouisfed.org/graph/fredgraph.csv?id=<id>),
 #   D derived (as each row says), R recalled from the named source.
+# M50b (formulas.md 60.4; 2026-11-28): 2000-2007 years added to every good the same way, and each
+#   2008 shock's points extended back to January 2000 (its 2008-2009 points unchanged, so 2008 on is
+#   unchanged) with a new 2000 tantalum spike. Sources: USGS MCS 2005-2012 (<mineral>/<abbr>mcs05.pdf,
+#   mcs-2009-<abbr>.pdf at the URL above), USGS Minerals Yearbook (lithium), FRED's IMF series.
 goods:
   # High-purity quartz (crucible grade). No public series (dossier 1.2): USGS ground HPQ
   # ranges 2021-2025, midpoint (D); flat at the 2021 level before (formulas 33.1).
   - key: quartz_hp
     unit: $/t
     years:
+      2000: [8250, D] # M50b: the 2021 level held back (33.1)
+      2001: [8250, D]
+      2002: [8250, D]
+      2003: [8250, D]
+      2004: [8250, D]
+      2005: [8250, D]
+      2006: [8250, D]
+      2007: [8250, D]
       2008: [8250, D] # M50: the 2021 level held back (33.1)
       2009: [8250, D]
       2010: [8250, D] # 2021 level held back (33.1)
@@ -55,6 +67,14 @@ goods:
   - key: silicon_metal
     unit: ¢/lb
     years:
+      2000: [54.8, V] # M50b: USGS MCS 2005 (2000-2003) and MCS 2010 (2005-2007), silicon metal
+      2001: [50.5, V]
+      2002: [53.2, V]
+      2003: [61.3, V]
+      2004: [81.9, V] # MCS 2009
+      2005: [76.2, V]
+      2006: [79.3, V]
+      2007: [113, V]
       2008: [162, V] # M50: USGS MCS 2012 silicon metal, US dealer import price
       2009: [116, V]
       2010: [140, V]
@@ -80,6 +100,14 @@ goods:
   - key: polysilicon
     unit: $/kg
     years:
+      2000: [35, R] # M50b: solar-grade/off-spec poly about $30-40/kg before the 2001 glut (Bernreuter, recalled); the months are the shock
+      2001: [32, R]
+      2002: [28, R]
+      2003: [25, R] # trough near $25/kg (recalled)
+      2004: [32, R] # solar demand turns (Germany's EEG 2004)
+      2005: [60, R] # spot tightens
+      2006: [150, R] # spot about $100-200/kg
+      2007: [300, R] # spot about $250-400/kg
       2008: [400, R] # M50: Bernreuter solar-grade spot, about $400-475/kg through 2008 (peak $475)
       2009: [110, R] # M50: spot collapsed through 2009 to about $55 by December (Bernreuter)
       2010: [60, V]
@@ -104,12 +132,24 @@ goods:
       # dual-control power curbs: about $10 to $41.65 (Oct 2021), peak $39 (Aug 2022), V
       - { label: Dual-control power curbs, source: V, points: { "2021-01": 10, "2021-10": 41.65, "2022-08": 39, "2022-12": 25 } }
       # M50: Bernreuter spot (recalled): $475/kg peak in 2008, about $55 by December 2009
-      - { label: 2008 polysilicon peak and crash, source: R, points: { "2008-01": 400, "2008-06": 475, "2008-09": 450, "2008-12": 300, "2009-03": 150, "2009-06": 90, "2009-12": 55 } }
+      # M50b: the 2000-2007 path from January 2000 (Bernreuter, recalled: the 2001-2003 glut, the 2004 solar turn, the 2005-2007 spot squeeze), joined to M50's
+      - { label: 2008 polysilicon peak and crash, source: R, points: {
+          "2000-01": 36, "2001-06": 32, "2002-06": 28, "2003-06": 25, "2004-06": 32, "2005-06": 60,
+          "2006-06": 150, "2007-06": 300,
+          "2008-01": 400, "2008-06": 475, "2008-09": 450, "2008-12": 300, "2009-03": 150, "2009-06": 90, "2009-12": 55 } }
 
   # Gallium, high-purity refined (USGS). 2010-2014 are year-end prices used as annual (33.1).
   - key: gallium
     unit: $/kg
     years:
+      2000: [640, V] # M50b: USGS MCS 2005 (2000-2003), MCS 2009 (2004), MCS 2010 (2005-2007) year-end 99.99999%
+      2001: [640, V]
+      2002: [530, V]
+      2003: [411, V]
+      2004: [550, V]
+      2005: [538, V]
+      2006: [443, V]
+      2007: [530, V]
       2008: [579, V] # M50: USGS MCS 2011-2012 year-end 99.99999%
       2009: [449, V]
       2010: [600, V]
@@ -136,6 +176,14 @@ goods:
   - key: germanium
     unit: $/kg
     years:
+      2000: [1250, V] # M50b: USGS MCS 2005 (2000-2003), MCS 2007 (2004), MCS 2010 (2005-2007) year-end zone-refined
+      2001: [890, V]
+      2002: [620, V]
+      2003: [380, V]
+      2004: [600, V]
+      2005: [660, V]
+      2006: [950, V]
+      2007: [1240, V]
       2008: [1490, V] # M50: USGS MCS 2011-2012 year-end zone-refined
       2009: [940, V]
       2010: [1200, V]
@@ -162,6 +210,14 @@ goods:
   - key: copper
     unit: ¢/lb
     years:
+      2000: [82.2, V] # M50b: USGS MCS 2005 (2000-2003) and MCS 2009 (2004-2007) LME high grade; the months are the shock below
+      2001: [71.6, V]
+      2002: [70.7, V]
+      2003: [80.7, V]
+      2004: [130.0, V]
+      2005: [166.8, V]
+      2006: [304.9, V]
+      2007: [322.8, V]
       2008: [315.5, V] # M50: USGS MCS 2012 LME high grade; the year's months are the shock below
       2009: [233.6, V]
       2010: [341.7, V]
@@ -182,12 +238,29 @@ goods:
       2025: [440, e]
     shocks:
       # M50: IMF monthly means via FRED PCOPPUSDM / 22.0462 (V): the peak in April 2008, the crash to December
-      - { label: 2008 boom and crash, source: V, points: { "2008-01": 321.1, "2008-04": 395.3, "2008-07": 381.3, "2008-09": 316.4, "2008-10": 222.0, "2008-12": 140.8, "2009-03": 171.0, "2009-06": 227.5, "2009-09": 281.0, "2009-12": 316.5 } }
+      # M50b: the IMF months from January 2000 (FRED PCOPPUSDM / 22.0462, quarterly and the May 2006 peak, V) joined to M50's
+      - { label: 2008 boom and crash, source: V, points: {
+          "2000-01": 83.6, "2000-04": 76.3, "2000-07": 81.8, "2000-10": 85.9, "2001-01": 81.1,
+          "2001-04": 75.6, "2001-07": 69.3, "2001-10": 62.5, "2002-01": 68.4, "2002-04": 72.1,
+          "2002-07": 72.0, "2002-10": 67.4, "2003-01": 74.9, "2003-04": 72.0, "2003-07": 77.7,
+          "2003-10": 87.3, "2004-01": 109.8, "2004-04": 132.8, "2004-07": 127.8, "2004-10": 136.5,
+          "2005-01": 143.7, "2005-04": 153.8, "2005-07": 163.7, "2005-10": 184.0, "2006-01": 215.2,
+          "2006-04": 290.5, "2006-05": 365.6, "2006-07": 350.5, "2006-10": 340.1, "2007-01": 258.1,
+          "2007-04": 351.7, "2007-07": 362.0, "2007-10": 363.8,
+          "2008-01": 321.1, "2008-04": 395.3, "2008-07": 381.3, "2008-09": 316.4, "2008-10": 222.0, "2008-12": 140.8, "2009-03": 171.0, "2009-06": 227.5, "2009-09": 281.0, "2009-12": 316.5 } }
 
   # Tin, IMF global price (via FRED).
   - key: tin
     unit: $/t
     years:
+      2000: [5436, V] # M50b: IMF via FRED PTINUSDM annual mean; the months are the shock below
+      2001: [4489, V]
+      2002: [4061, V]
+      2003: [4890, V]
+      2004: [8481, V]
+      2005: [7385, V]
+      2006: [8755, V]
+      2007: [14495, V]
       2008: [18467, V] # M50: IMF via FRED PTINUSDM annual mean; the months are the shock below
       2009: [13599, V]
       2010: [20367, V]
@@ -208,12 +281,29 @@ goods:
       2025: [34058, V]
     shocks:
       # M50: IMF monthly means via FRED PTINUSDM (V)
-      - { label: 2008 boom and crash, source: V, points: { "2008-01": 16311, "2008-05": 23854, "2008-07": 22956, "2008-09": 18307, "2008-10": 14423, "2008-12": 11292, "2009-03": 10689, "2009-06": 15005, "2009-12": 15589 } }
+      # M50b: the IMF months from January 2000 (FRED PTINUSDM, quarterly, V) joined to M50's
+      - { label: 2008 boom and crash, source: V, points: {
+          "2000-01": 5926, "2000-04": 5398, "2000-07": 5330, "2000-10": 5266, "2001-01": 5168,
+          "2001-04": 4950, "2001-07": 4344, "2001-10": 3749, "2002-01": 3868, "2002-04": 4026,
+          "2002-07": 4314, "2002-10": 4242, "2003-01": 4445, "2003-04": 4561, "2003-07": 4733,
+          "2003-10": 5227, "2004-01": 6432, "2004-04": 8909, "2004-07": 9022, "2004-10": 9043,
+          "2005-01": 7706, "2005-04": 8134, "2005-07": 7181, "2005-10": 6415, "2006-01": 7067,
+          "2006-04": 8860, "2006-07": 8356, "2006-10": 9810, "2007-01": 11331, "2007-04": 13953,
+          "2007-07": 14733, "2007-10": 16068,
+          "2008-01": 16311, "2008-05": 23854, "2008-07": 22956, "2008-09": 18307, "2008-10": 14423, "2008-12": 11292, "2009-03": 10689, "2009-06": 15005, "2009-12": 15589 } }
 
   # Tantalite ore (USGS: Ryan's Notes to 2013, CRU from 2014). The 2011 spike is in the annual values.
   - key: tantalum
     unit: $/kg Ta2O5
     years:
+      2000: [485, D] # M50b: USGS MCS 2005 year-end $220/lb x 2.2046 (the 2000 coltan spike); the months are the shock below
+      2001: [82, D] # year-end $37/lb x 2.2046 (MCS 2005)
+      2002: [68, D] # $31/lb (MCS 2007)
+      2003: [62, D] # $28/lb
+      2004: [68, D] # $30.80/lb
+      2005: [76, D] # $34.50/lb
+      2006: [71, D] # $32/lb (MCS 2009)
+      2007: [82, D] # $37/lb (MCS 2012, Ryan's Notes) x 2.2046
       2008: [97, D] # M50: USGS MCS 2012 (Ryan's Notes) $44/lb Ta2O5 x 2.2046
       2009: [88, D] # $40/lb x 2.2046
       2010: [120, V]
@@ -232,11 +322,24 @@ goods:
       2023: [170, V]
       2024: [167, V]
       2025: [180, V]
+    shocks:
+      # M50b: the 2000 coltan spike (PlayStation 2 and handset demand): tantalite about $35/lb in
+      # early 2000 to a $220/lb year-end (USGS MCS 2005, V), back to $37/lb by end-2001 (V); the
+      # monthly shape between is A. x 2.2046 to $/kg.
+      - { label: 2000 tantalum spike, source: A, points: { "2000-01": 77, "2000-06": 110, "2000-12": 485, "2001-03": 330, "2001-12": 82 } }
 
   # Cobalt cathode, US spot (USGS). The 2017-2018 EV-hype spike is in the annual values.
   - key: cobalt
     unit: $/lb
     years:
+      2000: [15.16, V] # M50b: USGS MCS 2005 (2000-2003) and MCS 2009 (2004-2007) spot cathode; the months are the shock below
+      2001: [10.55, V]
+      2002: [6.91, V]
+      2003: [10.6, V]
+      2004: [23.93, V]
+      2005: [15.96, V]
+      2006: [17.22, V]
+      2007: [30.55, V]
       2008: [39.01, V] # M50: USGS MCS 2012 spot cathode; the months are the shock below
       2009: [17.86, V]
       2010: [20.85, V]
@@ -259,7 +362,11 @@ goods:
       # DRC export ban, February 2025 (V): $16.77 (2024) to $21 (2025e)
       - { label: DRC cobalt export ban, source: V, points: { "2025-01": 16.77, "2025-02": 18, "2025-06": 22.5, "2025-12": 22.5 } }
       # M50: about $50/lb in March 2008 to about $13 in early 2009 (Metal Bulletin, recalled); annual means near USGS's
-      - { label: 2008 boom and crash, source: R, points: { "2008-01": 40, "2008-03": 50, "2008-06": 46, "2008-09": 40, "2008-10": 32, "2008-12": 15, "2009-02": 13, "2009-06": 17, "2009-09": 22, "2009-12": 21 } }
+      # M50b: USGS annual means (V) placed mid-year from January 2000, with the Q1 2004 spike (about $28/lb, recalled), joined to M50's
+      - { label: 2008 boom and crash, source: R, points: {
+          "2000-01": 16, "2000-07": 15.2, "2001-07": 10.6, "2002-07": 6.9, "2003-07": 10.6,
+          "2004-03": 28, "2004-07": 24, "2005-07": 16, "2006-07": 17.2, "2007-07": 30.6,
+          "2008-01": 40, "2008-03": 50, "2008-06": 46, "2008-09": 40, "2008-10": 32, "2008-12": 15, "2009-02": 13, "2009-06": 17, "2009-09": 22, "2009-12": 21 } }
     allocation:
       - { start: "2025-02", end: "2025-12", share: 0.85 } # A: the ban's months
 
@@ -267,6 +374,14 @@ goods:
   - key: lithium_carbonate
     unit: $/t
     years:
+      2000: [1450, V] # M50b: USGS Minerals Yearbook 2001, customs unit value of Chilean carbonate ($1.45/kg)
+      2001: [1440, V] # MYB 2001 ($1.44/kg)
+      2002: [1600, D] # MYB 2003: 2003's $1.55/kg was slightly lower than 2002's
+      2003: [1550, V] # MYB 2003 customs unit value
+      2004: [1720, V] # MYB 2004 customs unit value
+      2005: [2750, R] # MYB 2006 (Admiralty Resources): producers' price before 2006's rise
+      2006: [4125, D] # MYB 2006: rose from $2,750 to $5,500/t during 2006, midpoint
+      2007: [6000, R] # MYB 2007: $6,000/t (Japan's imports near $7,000 in Q1)
       2008: [6500, R] # M50: battery-grade carbonate about $6,000-7,000/t in 2008 (Industrial Minerals, recalled)
       2009: [6475, D] # M50: MCS 2011: SQM cut prices 20% for 2010, 5,180 / 0.8
       2010: [5180, V]
@@ -297,6 +412,14 @@ goods:
   - key: ndpr_oxide
     unit: $/kg
     years:
+      2000: [7, R] # M50b: Nd oxide FOB China about $6-8/kg in 2000-2004 (Metal-Pages and Lynas reports, recalled)
+      2001: [6.5, R]
+      2002: [6, R]
+      2003: [6.5, R]
+      2004: [8, R]
+      2005: [10, R]
+      2006: [15, R] # China's export quotas tighten (recalled)
+      2007: [28, R]
       2008: [30, R] # M50: Nd oxide FOB China about $30/kg before the Q4 2008 fall (Lynas and Metal-Pages reports, recalled)
       2009: [18, R] # about $14-22/kg through 2009 (recalled)
       2010: [87.5, D] # 86-89 year-end
@@ -328,6 +451,14 @@ goods:
   - key: neon
     unit: index
     years:
+      2000: [1.0, A] # M50b: the pre-2022 level held back
+      2001: [1.0, A]
+      2002: [1.0, A]
+      2003: [1.0, A]
+      2004: [1.0, A]
+      2005: [1.0, A]
+      2006: [1.0, A]
+      2007: [1.0, A]
       2008: [1.0, A] # M50: the pre-2022 level held back
       2009: [1.0, A]
       2010: [1.0, A]
@@ -359,6 +490,14 @@ goods:
   - key: nickel
     unit: $/t
     years:
+      2000: [8631, V] # M50b: IMF via FRED PNICKUSDM annual mean (USGS MCS 2005-2009 LME cash agree within 1%); the months are the shock below
+      2001: [5970, V]
+      2002: [6783, V]
+      2003: [9630, V]
+      2004: [13821, V]
+      2005: [14778, V]
+      2006: [24126, V]
+      2007: [37136, V] # the May 2007 peak, $51,783/t
       2008: [21141, V] # M50: IMF via FRED PNICKUSDM annual mean (its 2010, 21,810, is this file's); the months are the shock below
       2009: [14667, V]
       2010: [21809, V]
@@ -379,7 +518,16 @@ goods:
       2025: [15162, V]
     shocks:
       # M50: IMF monthly means via FRED PNICKUSDM (V)
-      - { label: 2008 boom and crash, source: V, points: { "2008-01": 27775, "2008-03": 31093, "2008-06": 22563, "2008-09": 17782, "2008-10": 12145, "2008-12": 9847, "2009-03": 9711, "2009-06": 14944, "2009-08": 19376, "2009-12": 17122 } }
+      # M50b: the IMF months from January 2000 (FRED PNICKUSDM, quarterly and the May 2007 peak, V) joined to M50's
+      - { label: 2008 boom and crash, source: V, points: {
+          "2000-01": 8315, "2000-04": 9746, "2000-07": 8175, "2000-10": 7651, "2001-01": 6976,
+          "2001-04": 6363, "2001-07": 5963, "2001-10": 4831, "2002-01": 6061, "2002-04": 6957,
+          "2002-07": 7138, "2002-10": 6819, "2003-01": 8033, "2003-04": 7931, "2003-07": 8832,
+          "2003-10": 11040, "2004-01": 15089, "2004-04": 12726, "2004-07": 15020, "2004-10": 14378,
+          "2005-01": 14564, "2005-04": 16138, "2005-07": 14588, "2005-10": 12431, "2006-01": 14661,
+          "2006-04": 18029, "2006-07": 26186, "2006-10": 32551, "2007-01": 36822, "2007-04": 49957,
+          "2007-05": 51783, "2007-07": 33400, "2007-10": 31156,
+          "2008-01": 27775, "2008-03": 31093, "2008-06": 22563, "2008-09": 17782, "2008-10": 12145, "2008-12": 9847, "2009-03": 9711, "2009-06": 14944, "2009-08": 19376, "2009-12": 17122 } }
   # Manganese ore, 44% Mn, CIF China, $ a dry metric ton unit (CRU via USGS Mineral Commodity
   # Summaries: 2021-2025 V from MCS 2026 as cited, 2025 the USGS estimate e; 2010-2011 and 2015-2016
   # R from earlier MCS editions; the rest A between them):
@@ -387,6 +535,14 @@ goods:
   - key: manganese
     unit: $/dmtu
     years:
+      2000: [2.08, D] # M50b: USGS MCS 2005 (2000-2003), MCS 2009 (2004) and MCS 2010-2012 (2005-2007) CIF US ports 46-48% x 8.0 / 9.18 (as M50)
+      2001: [2.13, D]
+      2002: [2.0, D]
+      2003: [2.1, D]
+      2004: [2.52, D]
+      2005: [3.83, D]
+      2006: [2.81, D]
+      2007: [2.7, D]
       2008: [10.6, D] # M50: MCS 2012 CIF US ports 46-48% (12.15, 7.95, 9.18 in 2008-2010) as ratios to this file's 2010
       2009: [6.9, D]
       2010: [8.0, R]
@@ -410,6 +566,14 @@ goods:
   - key: graphite
     unit: $/t
     years:
+      2000: [1030, D] # M50b: USGS MCS 2005 (2000-2002), 2007 (2003-2004) and 2010 (2005-2007) flake import value x 1200 / 720 (as M50)
+      2001: [870, D]
+      2002: [880, D]
+      2003: [1030, D]
+      2004: [810, D]
+      2005: [850, D]
+      2006: [880, D]
+      2007: [830, D]
       2008: [1250, D] # M50: MCS 2012 flake import value (753, 694, 720 in 2008-2010) as ratios to this file's 2010
       2009: [1160, D]
       2010: [1200, A]
@@ -434,6 +598,14 @@ goods:
   - key: battery_cells
     unit: $/kWh
     years:
+      2000: [1402.6, D] # M50b: pack_usd x cell_share from vehicles.yaml, 2010 dollars
+      2001: [1302.5, D]
+      2002: [1202.3, D]
+      2003: [1127.1, D]
+      2004: [1052.0, D]
+      2005: [976.8, D]
+      2006: [901.7, D]
+      2007: [851.6, D]
       2008: [801.5, D] # M50: vehicles.yaml battery.pack_usd x cell_share / 100 in 2010 dollars, as 2010's
       2009: [751.4, D]
       2010: [701.3, D]

@@ -21,7 +21,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import Final
 
-from tst.sim.calendar import HISTORY_START_TURN
+from tst.sim.calendar import history_floor_turn
 from tst.sim.commodities.config import SupplierGood
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import GameEvent, QueuedEvent
@@ -493,7 +493,7 @@ def rival_capacity(
     explored = {c.key for c in data.geology.commodities}
     out = []
     events: list[RegionEvent] = []
-    floor = 0 if turn >= 0 else HISTORY_START_TURN  # M50: a 2008 game's first years
+    floor = history_floor_turn(turn)  # M50: a 2008 game's first years (M50b: 2000's)
     for t in range(max(floor, turn - EVENT_YEARS * YEAR), turn + 1):
         events += region_events(rng, t, balance, data)
     paths: dict[str, tuple[float, float]] = {}  # good -> (capacity, index now): M30, once a good
@@ -524,7 +524,7 @@ def _capacity_path(
     rb = balance.mining.rivals
     # M50 (ADR-0024): from January 2010 the path starts there, as before; a 2008 game's
     # months before 2010 run their own path from January 2008
-    first = 0 if turn >= 0 else HISTORY_START_TURN
+    first = history_floor_turn(turn)  # M50b: from 2000, 2008 or 2010
     idx = [_index_at(state, good, t, data, balance) for t in range(first, turn + 1)]
     cap, last_start = 1.0, first - YEAR
     pending: list[int] = []

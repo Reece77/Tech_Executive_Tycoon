@@ -24,13 +24,17 @@ from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.media import draws
-from tst.sim.media.config import BILLION, MILLION, _year_share
+from tst.sim.media.config import (
+    BILLION,
+    MILLION,
+    _year_share,
+    interp,  # M50b: the year-end floor
+)
 from tst.sim.media.data import LAST_YEAR, MONTHS, end_year_at, file, in_history
 from tst.sim.media.models import WorldDraw
 from tst.sim.products.models import MarketSegment
 from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_all_markets
-from tst.sim.vehicles.config import interp
 
 GROWTH = "growth"  # tunable-exempt: a WorldDraw kind
 

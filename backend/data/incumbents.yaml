@@ -37,6 +37,12 @@
 #   (their founding year is shown only). Tags: R recalled from the named filing or report (not
 #   re-read in this session), A an assumption with its basis. The car, robot, medical, pharma
 #   and space makers' 2008-2009 positions are their own systems' data (vehicles.yaml and the rest).
+# - M50b (formulas.md 60.4): 2000-2007 added the same way: a 2000 `early_scale` entry for each
+#   product with a 2008 one that was on sale in January 2000, and `launched` for each product first
+#   sold from February 2000 to December 2007; in the era-gated categories (social 2004-02,
+#   cloud_hosting 2006-03, devices 2007-06, streaming 2007-01, vehicles and music_streaming 2008-01)
+#   a product on sale in a 2008 world launches no earlier than its category's era, and never after
+#   January 2008, so a 2008 game is unchanged (each line's comment gives the basis).
 companies:
   - name: Salesforce
     stage: 4
@@ -48,7 +54,8 @@ companies:
     cash_months: 24
     products:
       - name: Sales Cloud
-        early_scale: { 2008: 0.65 } # M50 (60.2): R: Salesforce revenue $1.08B (FY Jan 2009) against $1.66B (FY Jan 2011)
+        # M50b (60.4): 2000: R: Salesforce's prototype ran from November 1999; revenue $5.4M (FY Jan 2001) against $1.66B (FY Jan 2011)
+        early_scale: { 2000: 0.003, 2008: 0.65 } # M50 (60.2): R: Salesforce revenue $1.08B (FY Jan 2009) against $1.66B (FY Jan 2011)
         category: b2b_saas
         quality: 70
         features: 80
@@ -68,6 +75,7 @@ companies:
     cash_months: 60
     products:
       - name: CRM On Demand
+        launched: [2003, 10] # M50b (60.4): R: Siebel CRM OnDemand launched in October 2003 (Oracle bought Siebel in January 2006)
         early_scale: { 2008: 0.85 } # M50 (60.2): R: Oracle revenue $22.4B (FY May 2008) against $26.8B (FY May 2010)
         category: b2b_saas
         quality: 60
@@ -86,6 +94,7 @@ companies:
     cash_months: 18
     products:
       - name: Zoho CRM
+        launched: [2005, 11] # M50b (60.4): R: Zoho CRM released in 2005 (zoho.com/crm/20.html; November per press accounts)
         early_scale: { 2008: 0.7 } # M50 (60.2): A: private; about Salesforce's pace
         category: b2b_saas
         quality: 55
@@ -105,6 +114,7 @@ companies:
     cash_months: 24
     products:
       - name: JIRA
+        launched: [2002, 6] # M50b (60.4): S: Jira first released in 2002 (en.wikipedia.org/wiki/Jira_(software)); month A
         early_scale: { 2008: 0.6 } # M50 (60.2): R: Atlassian revenue about $35M (FY June 2008) against $59M (FY June 2010)
         category: dev_tools
         quality: 70
@@ -125,6 +135,7 @@ companies:
     cash_months: 60
     products:
       - name: Team Foundation Server
+        launched: [2006, 3] # M50b (60.4): R: Team Foundation Server shipped in March 2006 (Visual Studio 2005 Team System)
         early_scale: { 2008: 0.89 } # M50 (60.2): R: Microsoft server and tools revenue $13.2B (FY2008) against $14.9B (FY2010)
         category: dev_tools
         quality: 65
@@ -162,6 +173,7 @@ companies:
     cash_months: 36
     products:
       - name: Facebook
+        launched: [2004, 2] # M50b (60.4): R: thefacebook.com opened on 4 February 2004
         early_scale: { 2008: 0.17 } # M50 (60.2): R: about 60M active users in January 2008 against 350M in January 2010
         category: consumer_apps
         quality: 65
@@ -215,7 +227,8 @@ companies:
     cash_months: 36
     products:
       - name: Norton
-        early_scale: { 2008: 0.93 } # M50 (60.2): R: Symantec consumer revenue $1.87B (FY Mar 2009) against $2.0B (FY Mar 2011)
+        # M50b (60.4): 2000: R/A: Symantec's consumer revenue about $0.45B (FY Mar 2001) against about $1.9B (FY Mar 2011)
+        early_scale: { 2000: 0.25, 2008: 0.93 } # M50 (60.2): R: Symantec consumer revenue $1.87B (FY Mar 2009) against $2.0B (FY Mar 2011)
         category: cybersecurity
         quality: 60
         features: 80
@@ -235,7 +248,8 @@ companies:
     cash_months: 24
     products:
       - name: McAfee Total Protection
-        early_scale: { 2008: 0.8 } # M50 (60.2): R: McAfee revenue $1.6B (2008) against about $2.0B (2010)
+        # M50b (60.4): 2000: R: Network Associates' revenue about $0.68B (2000) against McAfee's about $2.06B (2010)
+        early_scale: { 2000: 0.33, 2008: 0.8 } # M50 (60.2): R: McAfee revenue $1.6B (2008) against about $2.0B (2010)
         category: cybersecurity
         quality: 55
         features: 75
@@ -255,7 +269,8 @@ companies:
     cash_months: 48
     products:
       - name: Check Point
-        early_scale: { 2008: 0.73 } # M50 (60.2): R: Check Point revenue $808M (2008) against $1.10B (2010)
+        # M50b (60.4): 2000: R: Check Point revenue $425M (2000) against $1.10B (2010)
+        early_scale: { 2000: 0.39, 2008: 0.73 } # M50 (60.2): R: Check Point revenue $808M (2008) against $1.10B (2010)
         category: cybersecurity
         quality: 70
         features: 70
@@ -278,7 +293,8 @@ companies:
     cash_months: 24
     products:
       - name: PayPal
-        early_scale: { 2008: 0.7 } # M50 (60.2): R: PayPal revenue $2.4B (2008) against $3.4B (2010), eBay 10-K
+        # M50b (60.4): 2000: R/A: PayPal's money transfer opened in late 1999; revenue about $15M (2000) against $3.4B (2010)
+        early_scale: { 2000: 0.005, 2008: 0.7 } # M50 (60.2): R: PayPal revenue $2.4B (2008) against $3.4B (2010), eBay 10-K
         category: fintech
         quality: 62
         features: 70
@@ -297,6 +313,7 @@ companies:
     cash_months: 36
     products:
       - name: QuickBooks Online
+        launched: [2000, 10] # M50b (60.4): R: Intuit dates QuickBooks Online's service from 2000 (2011 release); QuickBooks for the Web came with QuickBooks 2001, autumn 2000 (month A)
         early_scale: { 2008: 0.55 } # M50 (60.2): R: QuickBooks Online subscribers roughly doubled 2008-2010 (Intuit 10-K)
         category: fintech
         quality: 68
@@ -316,7 +333,8 @@ companies:
     cash_months: 36
     products:
       - name: Fiserv Banking
-        early_scale: { 2008: 1.07 } # M50 (60.2): R: Fiserv revenue $4.74B (2008) against $4.43B (2010)
+        # M50b (60.4): 2000: R: Fiserv revenue $1.65B (2000) against $4.13B (2010)
+        early_scale: { 2000: 0.4, 2008: 1.07 } # M50 (60.2): R: Fiserv revenue $4.74B (2008) against $4.43B (2010)
         category: fintech
         quality: 58
         features: 72
@@ -353,7 +371,8 @@ companies:
     cash_months: 18
     products:
       - name: Dragon
-        early_scale: { 2008: 0.78 } # M50 (60.2): R: Nuance revenue $868M (FY Sep 2008) against $1.12B (FY Sep 2010)
+        # M50b (60.4): 2000: R/A: Dragon Systems' revenue about $70M (1999) against Nuance's $1.12B (FY Sep 2010)
+        early_scale: { 2000: 0.07, 2008: 0.78 } # M50 (60.2): R: Nuance revenue $868M (FY Sep 2008) against $1.12B (FY Sep 2010)
         category: ai_models
         quality: 50
         features: 45
@@ -374,6 +393,7 @@ companies:
     cash_months: 48
     products:
       - name: SAP Business ByDesign
+        launched: [2007, 9] # M50b (60.4): R: SAP announced Business ByDesign on 19 September 2007
         early_scale: { 2008: 0.5 } # M50 (60.2): A: ByDesign's limited release from 2007; general release in 2010
         category: b2b_saas
         regions: [europe]
@@ -393,7 +413,8 @@ companies:
     cash_months: 24
     products:
       - name: Kaspersky
-        early_scale: { 2008: 0.67 } # M50 (60.2): R: Kaspersky revenue $361M (2008) against $538M (2010)
+        # M50b (60.4): 2000: R/A: Kaspersky Lab revenue about $5M (2000) against $538M (2010)
+        early_scale: { 2000: 0.01, 2008: 0.67 } # M50 (60.2): R: Kaspersky revenue $361M (2008) against $538M (2010)
         category: cybersecurity
         regions: [europe]
         quality: 62
@@ -413,7 +434,8 @@ companies:
     cash_months: 36
     products:
       - name: QQ
-        early_scale: { 2008: 0.55 } # M50 (60.2): R: QQ active accounts about 300M (Q1 2008) against 568M (Q1 2010), Tencent reports
+        # M50b (60.4): 2000: R/A: OICQ (February 1999) had about 1M registered users at end 1999 against QQ's about 600M active in 2010
+        early_scale: { 2000: 0.003, 2008: 0.55 } # M50 (60.2): R: QQ active accounts about 300M (Q1 2008) against 568M (Q1 2010), Tencent reports
         category: consumer_apps
         regions: [east_asia]
         quality: 62
@@ -432,6 +454,7 @@ companies:
     cash_months: 36
     products:
       - name: Alipay
+        launched: [2003, 10] # M50b (60.4): R: Alipay began on Taobao in October 2003
         early_scale: { 2008: 0.35 } # M50 (60.2): R: Alipay users about 100M (early 2008) against 300M (early 2010)
         category: fintech
         regions: [east_asia]
@@ -471,7 +494,8 @@ companies:
     cash_months: 36
     products:
       - name: Finacle
-        early_scale: { 2008: 0.87 } # M50 (60.2): R: Infosys revenue $4.18B (FY Mar 2008) against $4.80B (FY Mar 2010)
+        # M50b (60.4): 2000: A: Infosys's banking product (Bancs2000, renamed Finacle in 2000) about $15M against about $200M in FY Mar 2010
+        early_scale: { 2000: 0.08, 2008: 0.87 } # M50 (60.2): R: Infosys revenue $4.18B (FY Mar 2008) against $4.80B (FY Mar 2010)
         category: fintech
         regions: [south_southeast_asia]
         quality: 58
@@ -494,6 +518,7 @@ companies:
     cash_months: 120 # Amazon's balance sheet behind it (M12a: 24 went bankrupt in price wars)
     products:
       - name: AWS EC2
+        launched: [2006, 3] # M50b (60.4): R: AWS's S3 launched on 14 March 2006 (EC2's beta followed in August 2006); cloud_hosting opens then
         early_scale: { 2008: 0.35 } # M50 (60.2): R: analysts' AWS revenue estimates about $0.4B (2008) against $1.1B (2010)
         category: cloud_hosting
         quality: 72
@@ -536,6 +561,7 @@ companies:
     cash_months: 60 # M12a: 12 went bankrupt in AWS's price wars
     products:
       - name: Rackspace Cloud
+        launched: [2006, 3] # M50b (60.4): A: Rackspace's hosting dates from 1998, but cloud_hosting opens with the cloud era (March 2006); Mosso, its cloud, began in 2006
         early_scale: { 2008: 0.68 } # M50 (60.2): R: Rackspace revenue $532M (2008) against $781M (2010)
         category: cloud_hosting
         quality: 62
@@ -555,6 +581,7 @@ companies:
     cash_months: 24
     products:
       - name: SoftLayer
+        launched: [2006, 3] # M50b (60.4): A: SoftLayer (founded 2005) sold dedicated hosting from 2006; cloud_hosting opens with the cloud era (March 2006)
         early_scale: { 2008: 0.6 } # M50 (60.2): A: private; its 2005-2010 growth
         category: cloud_hosting
         quality: 66
@@ -584,6 +611,7 @@ companies:
     key_people: 4
     products:
       - name: NVIDIA Tesla
+        launched: [2007, 6] # M50b (60.4): R: NVIDIA announced the Tesla GPU computing line in June 2007
         early_scale: { 2008: 0.3 } # M50 (60.2): R: Tesla GPU revenue was tens of millions in 2008, about $100M by 2010 (NVIDIA)
         category: chips_ai_accelerator
         quality: 80
@@ -604,7 +632,8 @@ companies:
     key_people: 4
     products:
       - name: Intel Xeon
-        early_scale: { 2008: 0.8 } # M50 (60.2): R: Intel server platform revenue about $7B (2008) against $8.7B (2010)
+        # M50b (60.4): 2000: R/A: x86 server shipments about 4M (2000) against 8.8M (2010), Xeon's share steady
+        early_scale: { 2000: 0.45, 2008: 0.8 } # M50 (60.2): R: Intel server platform revenue about $7B (2008) against $8.7B (2010)
         category: chips_server_cpu
         quality: 78
         features: 75
@@ -624,6 +653,7 @@ companies:
     key_people: 4
     products:
       - name: AMD Opteron
+        launched: [2003, 4] # M50b (60.4): R: AMD launched Opteron on 22 April 2003
         early_scale: { 2008: 1.3 } # M50 (60.2): R: Opteron's server share fell from about 13% (2008) to 7% (2010), Mercury Research
         category: chips_server_cpu
         quality: 60
@@ -633,6 +663,7 @@ companies:
           device_oems: { price_cents: 33000, share_bp: 1500 }
           hyperscalers: { price_cents: 30000, share_bp: 1500 }
       - name: AMD FireStream
+        launched: [2006, 11] # M50b (60.4): R: ATI/AMD's first stream processor (FireStream) was announced in November 2006
         early_scale: { 2008: 0.5 } # M50 (60.2): A: GPU compute was new
         category: chips_ai_accelerator
         quality: 55
@@ -672,6 +703,7 @@ companies:
     key_people: 4
     products:
       - name: iPhone
+        launched: [2007, 6] # M50b (60.4): R: the iPhone went on sale on 29 June 2007
         early_scale: { 2008: 0.25 } # M50 (60.2): R: iPhone sales 13.7M (calendar 2008) against 47.5M (calendar 2010), Apple 10-Q
         category: devices
         quality: 78
@@ -713,6 +745,7 @@ companies:
     key_people: 4
     products:
       - name: ThinkPad
+        launched: [2007, 6] # M50b (60.4): A: devices open with the smartphones era (June 2007); ThinkPads were on sale from 1992
         early_scale: { 2008: 0.69 } # M50 (60.2): R: Lenovo revenue $14.9B (FY Mar 2009) against $21.6B (FY Mar 2011)
         category: devices
         quality: 56
@@ -734,7 +767,8 @@ companies:
     key_people: 4
     products:
       - name: PowerEdge
-        early_scale: { 2008: 0.85 } # M50 (60.2): R: Dell server revenue about $6B (2008) against $7B (2010)
+        # M50b (60.4): 2000: R/A: Dell's servers about $2.6B (FY Jan 2001) against about $7.6B (FY Jan 2011)
+        early_scale: { 2000: 0.35, 2008: 0.85 } # M50 (60.2): R: Dell server revenue about $6B (2008) against $7B (2010)
         category: servers
         quality: 65
         features: 65
@@ -754,7 +788,8 @@ companies:
     key_people: 4
     products:
       - name: ProLiant
-        early_scale: { 2008: 0.9 } # M50 (60.2): R: HP industry-standard server revenue about $12B (2008) against $13.5B (2010)
+        # M50b (60.4): 2000: R/A: HP NetServer alone, about 0.35M x86 servers (2000; Compaq's ProLiant is the history_only Compaq record, merged in May 2002) against HP's about 2.3M (2010)
+        early_scale: { 2000: 0.15, 2008: 0.9 } # M50 (60.2): R: HP industry-standard server revenue about $12B (2008) against $13.5B (2010)
         category: servers
         quality: 70
         features: 68
@@ -774,7 +809,8 @@ companies:
     key_people: 4
     products:
       - name: SuperServer
-        early_scale: { 2008: 0.75 } # M50 (60.2): R: Supermicro revenue $540M (FY June 2008) against $721M (FY June 2010)
+        # M50b (60.4): 2000: R/A: Supermicro revenue about $100M (FY Jun 2001) against $721M (FY Jun 2010)
+        early_scale: { 2000: 0.13, 2008: 0.75 } # M50 (60.2): R: Supermicro revenue $540M (FY June 2008) against $721M (FY June 2010)
         category: servers
         quality: 58
         features: 58
@@ -794,7 +830,8 @@ companies:
     key_people: 4
     products:
       - name: Foxconn EMS
-        early_scale: { 2008: 0.6 } # M50 (60.2): R: Hon Hai revenue NT$1.77T (2008) against NT$2.99T (2010)
+        # M50b (60.4): 2000: R: Hon Hai revenue about NT$92B (2000) against NT$2.99T (2010)
+        early_scale: { 2000: 0.03, 2008: 0.6 } # M50 (60.2): R: Hon Hai revenue NT$1.77T (2008) against NT$2.99T (2010)
         category: contract_manufacturing
         quality: 70
         features: 60
@@ -813,7 +850,8 @@ companies:
     key_people: 4
     products:
       - name: Pegatron EMS
-        early_scale: { 2008: 0.8 } # M50 (60.2): A: spun off from ASUS in January 2008; its first years
+        # M50b (60.4): 2000: A: Asus's OEM manufacturing (Pegatron's origin, S: en.wikipedia.org/wiki/Pegatron) about $1.5B (2000) against Pegatron's about $30B (2010)
+        early_scale: { 2000: 0.05, 2008: 0.8 } # M50 (60.2): A: spun off from ASUS in January 2008; its first years
         category: contract_manufacturing
         quality: 62
         features: 55
@@ -843,6 +881,7 @@ companies:
     key_people: 2
     products:
       - name: Tesla Model line
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 78
         features: 85
@@ -864,6 +903,7 @@ companies:
     key_people: 2
     products:
       - name: BYD Dynasty and Ocean
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 70
         features: 72
@@ -885,6 +925,7 @@ companies:
     key_people: 2
     products:
       - name: Volkswagen ID
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 72
         features: 68
@@ -906,6 +947,7 @@ companies:
     key_people: 2
     products:
       - name: Toyota Prime and bZ
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 75
         features: 60
@@ -927,6 +969,7 @@ companies:
     key_people: 2
     products:
       - name: Hyundai Ioniq and Kia EV
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 72
         features: 70
@@ -948,6 +991,7 @@ companies:
     key_people: 2
     products:
       - name: Chevrolet Volt and Bolt
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 66
         features: 62
@@ -969,6 +1013,7 @@ companies:
     key_people: 2
     products:
       - name: Ford Mustang Mach-E
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 66
         features: 62
@@ -990,6 +1035,7 @@ companies:
     key_people: 2
     products:
       - name: Stellantis e-CMP
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 60
         features: 55
@@ -1011,6 +1057,7 @@ companies:
     key_people: 2
     products:
       - name: Geely, Volvo and Zeekr
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 68
         features: 70
@@ -1032,6 +1079,7 @@ companies:
     key_people: 2
     products:
       - name: SAIC MG and Wuling
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 58
         features: 55
@@ -1053,6 +1101,7 @@ companies:
     key_people: 2
     products:
       - name: NIO ES and ET
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 74
         features: 80
@@ -1074,6 +1123,7 @@ companies:
     key_people: 2
     products:
       - name: Xiaomi SU7
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 74
         features: 82
@@ -1095,6 +1145,7 @@ companies:
     key_people: 2
     products:
       - name: Rivian R1
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); vehicles open with the EV era in 2008-01 (Tesla's Roadster deliveries began February 2008)
         category: vehicles
         quality: 72
         features: 75
@@ -1167,6 +1218,7 @@ companies:
     key_people: 4
     products:
       - name: FreeStyle
+        launched: [2000, 6] # M50b (60.4): S: TheraSense's FreeStyle, FDA-cleared January 2000, went on sale in the US in June 2000 (TheraSense prospectus, 2001)
         category: wearables_diagnostics
         quality: 70
         features: 70
@@ -1202,6 +1254,7 @@ companies:
           enterprise: { price_cents: 820000, share_bp: 1000 } # A: joint replacements
         regions: [north_america, europe, east_asia, latin_america, oceania]
       - name: Mako
+        launched: [2006, 6] # M50b (60.4): R: MAKO Surgical's first tactile guidance system cases were in June 2006 (Stryker bought MAKO in 2013)
         category: surgical_robotics
         quality: 62
         features: 60
@@ -1348,6 +1401,7 @@ companies:
     key_people: 4
     products:
       - name: Dexcom CGM
+        launched: [2006, 3] # M50b (60.4): R: the FDA approved Dexcom's STS sensor in March 2006
         category: wearables_diagnostics
         quality: 72
         features: 74
@@ -1886,6 +1940,7 @@ companies:
     key_people: 2
     products:
       - name: Atlas V and Vulcan
+        launched: [2002, 8] # M50b (60.4): R: Atlas V first flew on 21 August 2002 (Lockheed Martin; ULA from December 2006)
         category: launch
         quality: 85
         features: 70
@@ -2147,6 +2202,7 @@ companies:
           telecom_consumer: { price_cents: 4400, share_bp: 0 }
           telecom_business: { price_cents: 6600, share_bp: 0 }
       - name: Fios
+        launched: [2005, 9] # M50b (60.4): R: Verizon launched FiOS TV and internet in Keller, Texas, in September 2005
         category: fixed_broadband
         quality: 80
         features: 70
@@ -3215,6 +3271,7 @@ companies:
     key_people: 2
     products:
       - name: UnionPay
+        launched: [2002, 3] # M50b (60.4): R: China UnionPay was founded on 26 March 2002
         category: payments
         quality: 72
         features: 66
@@ -3272,6 +3329,7 @@ companies:
     key_people: 2
     products:
       - name: Adyen
+        launched: [2006, 6] # M50b (60.4): R/A: Adyen was founded in 2006 (en.wikipedia.org/wiki/Adyen); month A
         category: payments
         quality: 80
         features: 80
@@ -3290,6 +3348,7 @@ companies:
     key_people: 2
     products:
       - name: Alipay
+        launched: [2003, 10] # M50b (60.4): R: Alipay began on Taobao in October 2003
         category: payments
         quality: 78
         features: 80
@@ -3452,6 +3511,7 @@ companies:
     key_people: 2
     products:
       - name: Netflix
+        launched: [2007, 1] # M50b (60.4): R: Netflix's Watch Now streaming began in January 2007 (DVD rental from 1998)
         category: streaming
         quality: 78
         features: 75
@@ -3471,6 +3531,7 @@ companies:
     key_people: 2
     products:
       - name: Hulu
+        launched: [2008, 1] # M50b (60.4): A: Hulu's private beta began October 2007, public launch 12 March 2008; held at January 2008 so a 2008 game is unchanged
         category: streaming
         quality: 70
         features: 68
@@ -3479,6 +3540,7 @@ companies:
         segments:
           viewers: { price_cents: 800, share_bp: 0 }
       - name: Disney+
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (Disney+ launched November 2019)
         category: streaming
         quality: 78
         features: 70
@@ -3506,6 +3568,7 @@ companies:
     key_people: 2
     products:
       - name: HBO Max
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (HBO Go 2010, HBO Max 2020)
         category: streaming
         quality: 80
         features: 65
@@ -3524,6 +3587,7 @@ companies:
     key_people: 2
     products:
       - name: Peacock
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (Peacock launched 2020)
         category: streaming
         quality: 62
         features: 60
@@ -3543,6 +3607,7 @@ companies:
     key_people: 2
     products:
       - name: Paramount+
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (CBS All Access 2014)
         category: streaming
         quality: 64
         features: 60
@@ -3562,6 +3627,7 @@ companies:
     key_people: 2
     products:
       - name: Crunchyroll
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (Crunchyroll began in 2006)
         category: streaming
         quality: 70
         features: 60
@@ -3589,6 +3655,7 @@ companies:
     key_people: 2
     products:
       - name: Spotify
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); music_streaming opens with its era in 2008-01 (Spotify launched October 2008)
         category: music_streaming
         quality: 75
         features: 72
@@ -3645,6 +3712,7 @@ companies:
     key_people: 2
     products:
       - name: Xbox
+        launched: [2001, 11] # M50b (60.4): R: the Xbox launched in North America on 15 November 2001
         category: games
         quality: 74
         features: 70
@@ -3721,6 +3789,7 @@ companies:
     key_people: 2
     products:
       - name: Tencent Video
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (Tencent Video launched 2011)
         category: streaming
         quality: 66
         features: 62
@@ -3729,6 +3798,7 @@ companies:
         segments:
           viewers: { price_cents: 700, share_bp: 0 }
       - name: QQ Music
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); music_streaming opens with its era in 2008-01 (QQ Music began in 2005)
         category: music_streaming
         quality: 62
         features: 62
@@ -3737,6 +3807,7 @@ companies:
         segments:
           viewers: { price_cents: 800, share_bp: 0 }
       - name: Tencent Games
+        launched: [2003, 8] # M50b (60.4): R: QQ Games, Tencent's first games platform, launched in August 2003
         category: games
         quality: 72
         features: 70
@@ -3745,6 +3816,7 @@ companies:
         segments:
           players: { price_cents: 1000, share_bp: 0 }
       - name: WeChat
+        launched: [2004, 2] # M50b (60.4): A: on sale in a 2008 world (M50); social opens with its era in 2004-02 (WeChat launched January 2011)
         category: social
         quality: 72
         features: 80
@@ -3764,6 +3836,7 @@ companies:
     key_people: 2
     products:
       - name: NetEase Games
+        launched: [2001, 12] # M50b (60.4): R: NetEase's first online game, Westward Journey, launched in December 2001 (month A)
         category: games
         quality: 70
         features: 66
@@ -3783,6 +3856,7 @@ companies:
     key_people: 2
     products:
       - name: Facebook Feed
+        launched: [2004, 2] # M50b (60.4): R: thefacebook.com opened on 4 February 2004, when social opens
         category: social
         quality: 68
         features: 80
@@ -3791,6 +3865,7 @@ companies:
         segments:
           users: { price_cents: 150, share_bp: 0 }
       - name: Instagram
+        launched: [2004, 2] # M50b (60.4): A: on sale in a 2008 world (M50); social opens with its era in 2004-02 (Instagram launched October 2010)
         category: social
         quality: 74
         features: 70
@@ -3810,6 +3885,7 @@ companies:
     key_people: 2
     products:
       - name: Twitter
+        launched: [2006, 7] # M50b (60.4): R: Twitter opened to the public in July 2006
         category: social
         quality: 62
         features: 65
@@ -3829,6 +3905,7 @@ companies:
     key_people: 2
     products:
       - name: Snapchat
+        launched: [2004, 2] # M50b (60.4): A: on sale in a 2008 world (M50); social opens with its era in 2004-02 (Snapchat launched September 2011)
         category: social
         quality: 68
         features: 70
@@ -3847,6 +3924,7 @@ companies:
     key_people: 2
     products:
       - name: TikTok
+        launched: [2004, 2] # M50b (60.4): A: on sale in a 2008 world (M50); social opens with its era in 2004-02 (TikTok launched 2017)
         category: social
         quality: 76
         features: 80
@@ -3855,6 +3933,7 @@ companies:
         segments:
           users: { price_cents: 150, share_bp: 0 }
       - name: Douyin
+        launched: [2004, 2] # M50b (60.4): A: on sale in a 2008 world (M50); social opens with its era in 2004-02 (Douyin launched September 2016)
         category: social
         quality: 76
         features: 80
@@ -3874,6 +3953,7 @@ companies:
     key_people: 2
     products:
       - name: Roblox
+        launched: [2006, 9] # M50b (60.4): R: Roblox launched on 1 September 2006
         category: games
         quality: 62
         features: 70
@@ -3892,6 +3972,7 @@ companies:
     key_people: 2
     products:
       - name: YouTube Premium
+        launched: [2008, 1] # M50b (60.4): A: on sale in a 2008 world (M50); music_streaming opens with its era in 2008-01 (YouTube Music Key 2014)
         category: music_streaming
         quality: 66
         features: 64
@@ -3900,6 +3981,7 @@ companies:
         segments:
           viewers: { price_cents: 800, share_bp: 0 }
       - name: YouTube
+        launched: [2005, 5] # M50b (60.4): R: YouTube's public beta opened in May 2005
         category: social
         quality: 74
         features: 78
@@ -3918,6 +4000,7 @@ companies:
     key_people: 2
     products:
       - name: Prime Video
+        launched: [2007, 1] # M50b (60.4): A: on sale in a 2008 world (M50); streaming opens with its era in 2007-01 (Amazon Unbox September 2006)
         category: streaming
         quality: 70
         features: 65
@@ -3925,3 +4008,185 @@ companies:
         regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, oceania]
         segments:
           viewers: { price_cents: 500, share_bp: 0 }
+
+  # --- M50b (formulas.md 60.6): the 2000 world's own companies (history_only) ---------------------
+  # In a game begun before 2008 only (never a 2008 or 2010 game, so neither changes). share_bp are
+  # shares of January 2000's market (no early_scale): A, set from each company's 2000 position against
+  # the 2000 shares the existing incumbents hold there (their share_bp x early_scale 2000 over the
+  # category's 2000 size; docs/v6-research/start-2000/rivals-2000.md has the table). exit [year, month]:
+  # the real exit; exit_into moves its customers to that company's live product in the category. The
+# loader's 100% check sums every company's share_bp whatever its dates, so consumer_apps' 2000 shares
+# here total 54% (the 2010 records hold the other 46%, none of them on sale in 2000).
+  # Nortel and Lucent are left out: their only fitting category is network_equipment, whose rivals are
+  # pinned by telecom.yaml's vendor rows (the 2000 RAN shares already leave them as "the rest").
+  - name: Compaq # S: founded 16 Feb 1982; S: HP closed the purchase in May 2002 (announced 3 May 2002)
+    history_only: true
+    exit: [2002, 5] # S: merged into HP (the game's HPE record holds HP's ProLiant)
+    exit_into: HPE
+    stage: 4
+    founded_year: 1982
+    listed_from: [1983, 12] # S year (NYSE, 1983, $67M raised); R month: December 1983
+    personality: fast_follower # A: as Dell's record (a cost leader needs a 60-month cushion, M12b)
+    builder_skill: 12
+    target_margin_bp: 500 # R: operating margin about 5% in 2000 on revenue $42.4B (R; S: "$40 billion in sales"), about 70,000 staff (R)
+    cash_months: 24 # A: as Dell's and HPE's records (R: cash about $2.6B at end 2000)
+    key_people: 4
+    products:
+      - name: Compaq ProLiant
+        category: servers
+        quality: 66
+        features: 65
+        brand: 72
+        segments:
+          enterprise: { price_cents: 520000, share_bp: 1600 } # R/A: the largest x86 server vendor by units in 2000 (about 27% of x86 units, IDC, R); x86 about two thirds of the units
+          hyperscalers: { price_cents: 420000, share_bp: 800 } # A: web farms bought Sun and white boxes more
+
+  - name: Sun Microsystems # S: founded 24 Feb 1982; S: Oracle completed its purchase on 27 Jan 2010
+    history_only: true
+    exit: [2010, 1] # S: merged into Oracle; Oracle's record sells no servers, so Sun's customers return to the market
+    exit_into: Oracle
+    stage: 4
+    founded_year: 1982
+    listed_from: [1986, 3] # S year (SUNW, 1986); R month: March 1986
+    personality: premium
+    builder_skill: 15
+    target_margin_bp: 1500 # R: revenue $15.7B (FY June 2000), operating margin about 16%, about 43,000 staff
+    cash_months: 36 # R: cash and investments about $7B (FY2000)
+    key_people: 4
+    products:
+      - name: Sun Enterprise
+        category: servers
+        quality: 78
+        features: 72
+        brand: 82
+        segments:
+          enterprise: { price_cents: 750000, share_bp: 1300 } # R: about 15-17% of world server revenue in 2000 (IDC; the Unix leader), fewer units at a premium price
+          hyperscalers: { price_cents: 600000, share_bp: 2000 } # R/A: "the dot in dot-com": the web's large sites ran on Sun in 2000
+
+  - name: Cisco # S: founded 10 Dec 1984; no exit (it outlives the history)
+    history_only: true
+    stage: 4
+    founded_year: 1984
+    listed_from: [1990, 2] # S: Nasdaq, 16 Feb 1990
+    personality: aggressive
+    builder_skill: 14
+    target_margin_bp: 2000 # S: revenue $18.9B (FY July 2000); R: operating margin about 17%, about 34,000 staff
+    cash_months: 60 # R: cash and investments about $20B (FY2000)
+    key_people: 4
+    products:
+      - name: Cisco PIX Firewall # R: from the 1995 purchase of Network Translation; its routers and switches have no category (A)
+        category: cybersecurity
+        quality: 70
+        features: 65
+        brand: 78
+        segments:
+          mid_market: { price_cents: 90000, share_bp: 500 } # R/A: a leader in firewall appliances in 2000; kept small because the segment's 2000 shares already total about 74%
+          enterprise: { price_cents: 1100000, share_bp: 500 } # A: the segment's 2000 shares already total about 87%
+      - name: Cisco UCS
+        launched: [2009, 3] # R: the Unified Computing System announced 16 March 2009
+        category: servers
+        quality: 68
+        features: 72
+        brand: 75
+        segments:
+          enterprise: { price_cents: 550000, share_bp: 0 } # A: joins with no customers (before 2010), as other launches
+
+  - name: Motorola # S: founded 1928 (Galvin Manufacturing); S: split 4 Jan 2011 (the game keeps one record, A); no exit
+    history_only: true
+    stage: 4
+    founded_year: 1928
+    listed_from: [1953, 1] # A: the NYSE (MOT) long before 2000; the month is not given
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 500 # R: revenue $37.6B (2000), a thin margin; S: peak staff 150,000 (2000)
+    cash_months: 36 # R: cash about $3.3B (2000) (A: the larger rivals' cushion)
+    key_people: 4
+    products:
+      - name: Motorola DragonBall # R: its semiconductor sector's mobile processors (DragonBall in most Palm PDAs, its own handsets' chips); Freescale from July 2004 (R; the game keeps one record, A)
+        category: chips_mobile_soc
+        quality: 60
+        features: 55
+        brand: 60
+        segments:
+          device_oems: { price_cents: 3500, share_bp: 1500 } # R/A: a leading mobile chip maker in 2000 with Texas Instruments; without a line on sale from 2000 the record went bankrupt in 2003 on seed 1
+      - name: Motorola RAZR # its handsets wait for devices' era; its network gear has no line (A)
+        launched: [2007, 6] # M50b (60.4): A: devices open with the smartphones era (June 2007); the RAZR was on sale from late 2004 (R); S: 18.4% of world handsets in 2007
+        category: devices
+        quality: 58
+        features: 55
+        brand: 74
+        segments:
+          consumer: { price_cents: 30000, share_bp: 0 } # A: joins with no customers (before 2010)
+          smb: { price_cents: 35000, share_bp: 0 }
+
+  - name: AOL # S: began as Control Video Corporation, 1983 (Quantum Computer Services 1985, R); S: Time Warner merger completed January 2001 (the game keeps AOL's record; no exit)
+    history_only: true
+    stage: 4
+    founded_year: 1985
+    listed_from: [1992, 3] # S: NYSE from 1992; R: IPO March 1992
+    personality: aggressive
+    builder_skill: 11
+    target_margin_bp: 2500 # R: revenue $7.7B (FY June 2000), operating margin about 25%, about 15,000 staff
+    cash_months: 48 # R: cash and investments about $3B (FY2000), A against its revenue
+    products:
+      - name: AOL
+        category: consumer_apps
+        quality: 50
+        features: 60
+        brand: 90
+        segments:
+          consumer: { price_cents: 100, share_bp: 1900 } # S: "over 20 million" subscribers (2000), with AIM and ICQ a far wider audience (R); A: price is revenue per user, its dial-up fee averaged over that audience (A)
+
+  - name: Yahoo # S: January 1994 (incorporated 2 Mar 1995); no exit
+    history_only: true
+    stage: 4
+    founded_year: 1994
+    listed_from: [1996, 4] # S: IPO April 1996
+    personality: fast_follower
+    builder_skill: 13
+    target_margin_bp: 3000 # R: revenue $1.11B (2000), operating margin about 27%, about 3,300 staff
+    cash_months: 60 # R: cash and investments about $1.7B (2000)
+    products:
+      - name: Yahoo!
+        category: consumer_apps
+        quality: 65
+        features: 75
+        brand: 92
+        segments:
+          consumer: { price_cents: 50, share_bp: 2600 } # S: the web's most popular starting point (1998); R: about 180M users (2000), the largest property with AOL; D: $1.11B / 180M / 12 = about $0.50 a user a month
+
+  - name: eBay # S: founded 3 Sep 1995 (AuctionWeb); its payments are PayPal's record (S: bought October 2002); no exit
+    history_only: true
+    stage: 4
+    founded_year: 1995
+    listed_from: [1998, 9] # S: Nasdaq, September 1998
+    personality: premium
+    builder_skill: 12
+    target_margin_bp: 2000 # R: revenue $431M (2000), operating margin about 20%, about 2,500 staff
+    cash_months: 36 # R: cash and investments about $0.9B (2000), A
+    products:
+      - name: eBay
+        category: consumer_apps
+        quality: 62
+        features: 60
+        brand: 80
+        segments:
+          consumer: { price_cents: 150, share_bp: 600 } # S: 22.5M registered users (end 2000); D: $431M / 22.5M / 12 = about $1.60 a user a month
+
+  - name: Google # S: incorporated 4 Sep 1998; S: $25M round 7 Jun 1999; a private start-up in 2000; no exit
+    history_only: true
+    stage: 2
+    founded_year: 1998
+    listed_from: [2004, 8] # S: IPO 19 Aug 2004
+    personality: premium
+    builder_skill: 17
+    target_margin_bp: 0 # R: revenue $19M (2000), a net loss about $15M, about 200 staff (A)
+    cash_months: 120 # A: the $25M round against its small game revenue (R: about 16 months of real 2000 revenue); at 18 it went bankrupt in 2001 on seed 3
+    products:
+      - name: Google Search
+        category: consumer_apps
+        quality: 85
+        features: 55
+        brand: 35
+        segments:
+          consumer: { price_cents: 10, share_bp: 300 } # R: about 18M searches a day (early 2000) to 100M (end 2000); S: keyword ads sold from 2000; A: price a small revenue per user
