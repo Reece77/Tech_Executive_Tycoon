@@ -439,7 +439,7 @@ def public_out(
 ) -> PublicOut:
     company_id = state.player.id
     b = data.balance
-    problem = ipo.eligibility_problem(state, company_id, b)
+    problem = ipo.eligibility_problem(state, company_id, b, data.game_data)
     return PublicOut(
         stage=state.player.stage,
         eligible=problem is None,

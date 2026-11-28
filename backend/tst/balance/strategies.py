@@ -285,7 +285,7 @@ IPO_BANK = "morgan_stanley"  # M13 (25.9): the scripts' lead underwriter
 def go_public(game: Game) -> None:
     """M13 (25.9): hire the banks as soon as the company is eligible (25.1); the chain's
     events take their first choice (Continue and the critical answer in Game.turn)."""
-    if eligibility_problem(game.state, PLAYER, game.loaded.balance) is None:
+    if eligibility_problem(game.state, PLAYER, game.loaded.balance, game.loaded.game_data) is None:
         game.act(HireBanks(game.founder_id, IPO_BANK))
 
 
