@@ -21,7 +21,7 @@ from typing import Final
 from tst.balance import m30, m50
 from tst.balance.game import Game
 from tst.loader import LoadedData
-from tst.sim.calendar import format_turn, ym_to_turn
+from tst.sim.calendar import format_turn, turn_to_ym, ym_to_turn
 
 IDENTITY_SEEDS: Final = (1, 2)
 IDENTITY_STRATEGIES: Final = ("full_integrator", "research_heavy")
@@ -99,6 +99,7 @@ BUST: Final = "survive_the_bust"  # scenarios.yaml (60.6)
 BUST_IPO_FAILS: Final = 6  # 60.7 target 2: the IPO-dependent passive plan fails on >= 6 of 10
 BUST_SURVIVES: Final = 7  # ... and the sensible one survives on >= 7
 CAMPAIGN_SEEDS: Final = (1, 2, 3)  # 60.7 target 3
+CAMPAIGN_CORE: Final = 3  # people the campaign founder keeps when runway is short
 CAMPAIGN_END: Final = ym_to_turn(2029, 12)  # a 2000 campaign's standard end
 CAMPAIGN_STRATEGY: Final = "steady+cuts"  # v1's steady founder, cutting when short (60.7 T3)
 
@@ -220,9 +221,9 @@ def bust_sensible(game: Game) -> None:
     cut_when_short(game)
 
 
-def cut_when_short(game: Game) -> None:
+def cut_when_short(game: Game, core: int = BUST_CORE) -> None:
     """When runway falls under BUST_CUT_RUNWAY months, let one person go (sales and
-    marketing first, the most expensive first), down to BUST_CORE."""
+    marketing first, the most expensive first), down to `core`."""
     from tst.balance.strategies import runway
     from tst.sim.actions.hiring import Fire
     from tst.sim.errors import SimError
@@ -230,7 +231,7 @@ def cut_when_short(game: Game) -> None:
     months = runway(game)
     staff = [e for e in game.state.staff(game.state.player.id) if e.status == "active"]
     staff = [e for e in staff if e.person_id != game.founder_id]
-    if months is not None and months < BUST_CUT_RUNWAY and len(staff) > BUST_CORE:
+    if months is not None and months < BUST_CUT_RUNWAY and len(staff) > core:
         victim = max(staff, key=lambda e: (e.role not in KEEP_ROLES, e.salary_cents, -e.id))
         with contextlib.suppress(SimError):
             game.act(Fire(game.founder_id, victim.person_id))
@@ -241,7 +242,7 @@ def campaign_script(game: Game) -> None:
     from tst.balance.strategies import steady
 
     steady(game)
-    cut_when_short(game)
+    cut_when_short(game, CAMPAIGN_CORE)
 
 
 def bust_job(job: tuple[int, str]) -> tuple[int, str, str | None, bool]:
@@ -326,3 +327,52 @@ def report(seeds: Sequence[int] = SEEDS, workers: int = 4, campaign: bool = True
         more, extra = campaign_readings()
         readings += more
     return f"{m50.table(readings)}\n{extra}\n"
+
+
+# --- Sub-task 4: M28's history fingerprint for 2000-2009 ---------------------------------------
+
+HISTORY_SEEDS: Final = tuple(range(1, 11))
+HISTORY_LAST: Final = ym_to_turn(2009, 12)
+HISTORY_FILE: Final = (
+    Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "m50b_history_2000.json"
+)
+
+type Fingerprint = dict[str, dict[str, str]]  # series -> year -> sha256
+
+
+def history_fingerprint(seed: int, last_turn: int = HISTORY_LAST) -> Fingerprint:
+    """M28's fingerprint (41.8 target 1) of a do-nothing game begun in January 2000, to
+    December 2009: every commodity, power and component month, the foundry market, the rival
+    miners' capacities, every log item and every ledger entry, hashed by series and year."""
+    import hashlib
+
+    from tst.balance.m28 import SERIES, _month_lines
+
+    game = m50.start(seed, 2000)
+    hashes: dict[str, dict[int, hashlib._Hash]] = {s: {} for s in SERIES}
+    while game.state.turn <= last_turn and not game.state.ended:
+        turn = game.state.turn
+        game.turn()
+        assert game.last_result is not None
+        year = turn_to_ym(turn)[0]
+        for series, lines in _month_lines(game, game.last_result, turn).items():
+            h = hashes[series].setdefault(year, hashlib.sha256())
+            for line in lines:
+                h.update(line.encode())
+                h.update(b"\n")
+    return {s: {str(y): h.hexdigest() for y, h in sorted(ys.items())} for s, ys in hashes.items()}
+
+
+def history_all(seeds: Sequence[int] = HISTORY_SEEDS, workers: int = 4) -> dict[str, Fingerprint]:
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        return {str(s): f for s, f in zip(seeds, pool.map(history_fingerprint, seeds), strict=True)}
+
+
+def recorded_history() -> dict[str, Fingerprint]:
+    out: dict[str, Fingerprint] = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+    return out
+
+
+def write_history(fingerprints: dict[str, Fingerprint]) -> None:
+    text = json.dumps(fingerprints, indent=1, sort_keys=True) + "\n"
+    HISTORY_FILE.write_text(text, encoding="utf-8", newline="\n")
