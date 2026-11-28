@@ -90,6 +90,7 @@ def capture_score(
         values.append(sum(s[k] for k in skills) / len(skills))
     if not values:
         return 0.0
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return sum(values) / len(values) / SKILL_MAX * PCT
 
 
@@ -162,6 +163,7 @@ def rival_candidates(
         if not is_winner and u >= chance:
             continue
         merit = prime_merit + gb.rival_merit_sd * noise + (gb.history_bonus if is_winner else 0.0)
+        # money-exact: ratio: a score, share or weight, not money
         ratio = gb.rival_price.lo + (gb.rival_price.hi - gb.rival_price.lo) * price
         cid = _company_by_name(state, p.name)
         out.append(Candidate(p.name, cid, min(PCT, merit), p.past_performance, ratio))
@@ -188,6 +190,7 @@ def rival_candidates(
         if not is_winner and u >= chance:
             continue
         merit = strength + gb.rival_merit_sd * noise + (gb.history_bonus if is_winner else 0.0)
+        # money-exact: ratio: a score, share or weight, not money
         ratio = gb.rival_price.lo + (gb.rival_price.hi - gb.rival_price.lo) * price
         out.append(Candidate(c.name, cid, min(PCT, merit), c.past_performance, ratio))
     return out
@@ -211,6 +214,7 @@ def score_all(
     out = []
     for c in candidates:
         price = PCT * low / c.ratio if c.ratio > 0 else PCT
+        # money-exact: ratio: a score, share or weight, not money
         total = w.price * price + w.technical * c.merit + w.past_performance * c.pp
         out.append(replace(c, score=total + TIE * float(g.random())))
     return out
@@ -219,6 +223,7 @@ def score_all(
 def terms_of(c: Candidate, low: float, tender: Tender, balance: Balance) -> ScoreTerms:
     w = weights(tender, balance)
     price = PCT * low / c.ratio if c.ratio > 0 else PCT
+    # money-exact: ratio: a score, share or weight, not money
     total = w.price * price + w.technical * c.merit + w.past_performance * c.pp
     return ScoreTerms(price=price, technical=c.merit, past_performance=c.pp, weighted=total)
 

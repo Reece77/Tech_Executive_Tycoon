@@ -15,7 +15,14 @@ from tests.money_guard import Hit, scan
 # their merges clean; each is in the M36r audit table and handed to that lane). Keyed by the
 # line's code, so a line moving does not break the guard; a deferred line that is fixed
 # drops out (see the last test).
-DEFERRED: dict[tuple[str, str], str] = {}
+# M57r-A: lane B (M57r-B) owns tst/sim/talks/; this line's `value` is a hidden trait (a ratio,
+# not money), named by review 10's extended aliases. Lane B annotates it, then it leaves the list.
+DEFERRED: dict[tuple[str, str], str] = {
+    (
+        "talks/opening.py",
+        "out.append((move, max(lo, min(hi, 1 + weight * (value - MID_TRAIT) / TRAIT_SPAN))))",
+    ): "M57r-B: a trait's weight (ratio), not money",
+}
 
 
 def _key(h: Hit) -> tuple[str, str]:

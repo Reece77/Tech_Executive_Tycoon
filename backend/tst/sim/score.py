@@ -40,6 +40,7 @@ def score_points(
     decades = dmath.log10(max(value_dollars, sb.value_floor_dollars)) - dmath.log10(
         sb.value_floor_dollars
     )
+    # money-exact: ratio: a score, share or weight, not money
     value_part = sb.weight_value * min(max(decades / sb.value_span_decades, 0.0), 1.0)
     return (
         value_part

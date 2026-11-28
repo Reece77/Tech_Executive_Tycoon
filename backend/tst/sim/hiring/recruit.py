@@ -113,6 +113,7 @@ def skip_months(balance: Balance) -> int:
 
 def _stars(value: float, balance: Balance) -> float:
     lo, hi = balance.recruit.fit_stars
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return lo + (hi - lo) * (value - ATTR_MIN) / (ATTR_MAX - ATTR_MIN)
 
 

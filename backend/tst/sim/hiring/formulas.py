@@ -55,6 +55,7 @@ def offer_score(
     stage = min(stage, max(offer.stage_appeal))  # M13: a public company (4) hires as stage 3
     return (
         offer.w_salary * (ratio - 1)
+        # money-exact: ratio: a score, share or weight, not money
         + w_eq * equity_bp * offer.equity_value_per_bp * offer.stage_equity_mult[stage]
         + offer.w_fit * matching_interests
         + offer.stage_appeal[stage]
@@ -134,6 +135,7 @@ def runway_term(opening_cash: Cents, current_cash: Cents, morale: MoraleBalance)
     burn = opening_cash - current_cash
     if burn <= 0:
         return 0.0
+    # money-exact: ratio: a score, share or weight, not money
     runway = current_cash / burn
     if runway < morale.runway_crit_months:
         return morale.runway_crit

@@ -50,6 +50,7 @@ class Exposure:
 
     @property
     def price_factor(self) -> float:
+        # money-exact: ratio: a score, share or weight, not money
         return 1 + self.share * self.premium
 
 

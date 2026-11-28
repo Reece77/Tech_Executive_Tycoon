@@ -24,6 +24,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import SimError
 from tst.sim.ledger import CASH, account_balance
 from tst.sim.log import inbox_item
+from tst.sim.money import exact
 from tst.sim.org.formulas import decision_quality
 from tst.sim.org.models import PitchKind
 from tst.sim.products.models import SELLING
@@ -201,9 +202,9 @@ def pricing(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
             price = seg.price_cents
             anchor = anchors.get((p.id, seg.segment), price)
             if own > mean and price > reference:
-                new, why = round(price * (1 - ab.price_step)), "churn above the market's"
+                new, why = round(price * (1 - exact(ab.price_step))), "churn above the market's"
             elif seg.capacity_limited or own <= mean * (1 - ab.churn_low):
-                new, why = round(price * (1 + ab.price_step)), "demand allows it"
+                new, why = round(price * (1 + exact(ab.price_step))), "demand allows it"
             else:
                 continue
             new = max(

@@ -19,6 +19,7 @@ def below_strength(value: float, cfg: TriggerBalance) -> float | None:
     """Strength of a "below" trigger: (below - value) / span, None when it does not hold."""
     if cfg.below is None or cfg.span is None or value >= cfg.below:
         return None
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return clamp01((cfg.below - value) / cfg.span)
 
 
@@ -128,6 +129,7 @@ def size_word(effect: str, value: float, severity: Severity, events: EventsBalan
     API shows instead of numbers (16.9). Cash is described by its amount instead."""
     if effect in VALUELESS or effect in ("resign", "cash_delta", *LOAN_EFFECTS):
         return ""
+    # money-exact: ratio: `value` is a score or attribute here, not money
     share = abs(value) / events.cap(effect, severity)
     if share <= events.effect_size_bounds.lo:
         return "small"

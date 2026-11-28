@@ -87,6 +87,7 @@ def triggers(
         values = by_unit[unit_id]
         if len(values) < 2:  # tunable-exempt: a unit is at least two people
             continue
+        # money-exact: ratio: `value` is a score or attribute here, not money
         s = below_strength(sum(values) / len(values), t["unhappy_unit"])
         if s is not None:
             hits.append(TriggerHit("unhappy_unit", s, (), unit_id))
@@ -116,6 +117,7 @@ def triggers(
     clash, bond = t["team_clash"], t["team_bond"]
     for r in rels:  # team_clash: same unit
         if view.unit_of[r.a] == view.unit_of[r.b] and r.value <= float(clash.at_most or 0):
+            # money-exact: ratio: `value` is a score or attribute here, not money
             s = clamp01((float(clash.at_most or 0) - r.value) / float(clash.span or 1))
             hits.append(TriggerHit("team_clash", s, (r.a, r.b), view.unit_of[r.a]))
     for r in rels:  # team_bond
@@ -279,6 +281,7 @@ def _executive_hits(state: GameState, balance: Balance, runway: int | None) -> l
     clash = t["exec_clash"]
     for r in state.relationships:
         if r.a in holders and r.b in holders and r.value <= float(clash.at_most or 0):
+            # money-exact: ratio: `value` is a score or attribute here, not money
             s = clamp01((float(clash.at_most or 0) - r.value) / float(clash.span or 1))
             hits.append(TriggerHit("exec_clash", s, (r.a, r.b)))
     return hits

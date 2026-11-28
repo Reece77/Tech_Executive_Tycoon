@@ -237,6 +237,7 @@ def apply_choice(
             if product is not None and product.company_id == cid:
                 for seg in state.segments_of(product.id):
                     if event.segment is None or seg.segment == event.segment:
+                        # money-exact: ratio: customers or market size, not money
                         customers = max(0.0, seg.customers * (1 + value / PCT))
                         state = with_product_segment(state, replace(seg, customers=customers))
         elif t == "growth_boost" and kind in ("person", "founder") and ids and ids[0] in staff:

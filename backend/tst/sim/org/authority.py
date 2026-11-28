@@ -220,6 +220,7 @@ def _cro(seat: _Seat, data: GameData) -> None:
     company = seat.a.company_id
     anchors = {(pid, seg): cents for pid, seg, cents in seat.a.price_anchors}
     band = seat.a.number("price_band_pct") / PCT
+    # money-exact: ratio: a score, share or weight, not money
     step = b.exec_authority.price_step_pct / PCT
     for p in state.company_products(company):
         if p.status not in SELLING:
@@ -324,6 +325,7 @@ def _cfo(seat: _Seat, data: GameData) -> None:
     burn = max(projected_net_burn(state, company, b, data), 0)
     if burn > 0 and cash < seat.a.number("runway_months") * burn:
         series = next_series(state, company)
+        # money-exact: ratio: a score, share or weight, not money
         months = cash / burn
         if series is not None and series_problem(state, company, series, b) is None:
             lo, hi = (
@@ -357,6 +359,7 @@ def _cfo(seat: _Seat, data: GameData) -> None:
     if burn <= 0 or spare <= 0 or not loans:
         return
     loan = min(loans, key=lambda x: (-x.rate_bp, x.id))  # the dearest first
+    # money-exact: ratio: a score, share or weight, not money
     share = b.exec_authority.repay_share * (
         1 - (0 if seat.right else b.exec_authority.mistake_budget_off)
     )

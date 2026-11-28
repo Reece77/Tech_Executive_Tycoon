@@ -228,6 +228,7 @@ def next_meeting_turn(turn: int, bb: BoardBalance) -> int:
 def average_confidence(state: GameState, company_id: int) -> float | None:
     """The board's mood: the mean of the voting directors' confidence (common seats hold none)."""
     values = [s.confidence for s in state.board(company_id) if s.confidence is not None]
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return sum(values) / len(values) if values else None
 
 

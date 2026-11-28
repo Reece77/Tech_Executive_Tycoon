@@ -38,7 +38,7 @@ from tst.sim.media.config import KindBalance
 from tst.sim.media.data import MONTHS, TINY, end_year_at, file, selling
 from tst.sim.media.models import Title
 from tst.sim.media.titles import OPERATIONS, OWN, revenue_per_viewer_cents
-from tst.sim.money import exact, times
+from tst.sim.money import exact, round_half_even, times
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.state import GameState
 from tst.sim.vehicles.config import interp
@@ -179,6 +179,7 @@ def ad_tier_on(product: Product, state: GameState, data: GameData) -> bool:
 def paid_share(balance: Balance) -> float:
     """The share of a line's subscription revenue booked with an ad tier."""
     sb = balance.media.streaming_service
+    # money-exact: ratio: a score, share or weight, not money
     return 1.0 - sb.ad_tier_take * (1.0 - sb.ad_tier_price)
 
 
@@ -196,12 +197,21 @@ def ad_revenue_cents(state: GameState, product: Product, balance: Balance, data:
     return round(total)
 
 
+def licence_month_cents(fee_cents: int, months_in: int) -> int:
+    """A yearly licence's month `months_in` (0 first): the difference of consecutive rounded
+    cumulative entitlements, so a year books exactly the fee (M57r-A, review 10 item 8: a 7-cent
+    licence once collected 12 cents a year)."""
+    return round_half_even(fee_cents * (months_in + 1), MONTHS) - round_half_even(
+        fee_cents * months_in, MONTHS
+    )
+
+
 def licence_fees_cents(state: GameState, product_id: int) -> int:
-    total = Fraction()
+    total = 0
     for lic in state.media.licences:
         if lic.product_id == product_id and lic.from_turn <= state.turn < lic.to_turn:
-            total += Fraction(lic.fee_cents, MONTHS)
-    return round(total)
+            total += licence_month_cents(lic.fee_cents, state.turn - lic.from_turn)
+    return total
 
 
 def month(

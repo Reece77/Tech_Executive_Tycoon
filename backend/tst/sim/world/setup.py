@@ -12,6 +12,7 @@ December 2025's prices and `base_utilisation`, and equity the balance.
 from __future__ import annotations
 
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
@@ -102,7 +103,8 @@ def materialise(
                 rival_key=(CHAIN_KEY, spec.index),
             )
         )
-        revenue = cash_costs = fixed = book = 0.0
+        revenue = cash_costs = fixed = Fraction()  # M57r-A: exact dollars, rounded where posted
+        book = 0.0
         for good in goods:
             lr = wq.long_run_usd(state, good, balance, data)
             grown = pipeline.ratio(
@@ -130,13 +132,13 @@ def materialise(
                 facility_id += 1
                 facilities.append(f)
                 made = capacity * wb.base_utilisation
-                revenue += made * prices[good]
-                cash_costs += made * wq.cash_cost_usd(state, f, balance, data)
-                fixed += capacity * lr * wb.fixed_share
+                revenue += exact(made) * exact(prices[good])
+                cash_costs += exact(made) * exact(wq.cash_cost_usd(state, f, balance, data))
+                fixed += exact(capacity) * exact(lr) * exact(wb.fixed_share)
                 book += f.capex_cents
         ebitda = revenue - cash_costs - fixed
-        cash = round(exact(revenue) / MONTHS * exact(wb.open_cash_months) * wq.CENTS)
-        debt = round(exact(max(ebitda, 0.0)) * exact(wb.open_leverage) * wq.CENTS)
+        cash = round(revenue / MONTHS * exact(wb.open_cash_months) * wq.CENTS)
+        debt = round(max(ebitda, Fraction()) * exact(wb.open_leverage) * wq.CENTS)
         plant = round(book)
         equity = cash + plant - debt
         entries.append(

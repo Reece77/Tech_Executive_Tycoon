@@ -269,6 +269,7 @@ def _loan_text(state: GameState, effect: Effect, balance: Balance) -> str:
     if loan is None:
         return "the loan has closed"
     if effect.type == "loan_rate":
+        # money-exact: ratio: `value` is a score or attribute here, not money
         points = effect.value * br.rate_up_bp / PCT
         now = loan.rate_bp / PCT
         return f"the rate rises {points:g} points, to {now + points:.2f}%"

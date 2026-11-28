@@ -152,6 +152,7 @@ def quality(title: Title, state: GameState, balance: Balance, data: GameData) ->
     ratio = title.budget_cents / typical_budget_cents(kind, balance)  # money-exact: ratio
     budget = float(dmath.pow(ratio, qb.budget_exponent))
     q = (
+        # money-exact: ratio: a score, share or weight, not money
         lead_factor(lead, morale, balance)
         * team_factor(title, state, balance, data)
         * budget

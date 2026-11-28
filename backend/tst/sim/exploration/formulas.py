@@ -92,6 +92,7 @@ def npv_usd(
     early = min(fb.deck_years, life)
 
     def cash(price: float) -> float:
+        # money-exact: estimate: a float estimate compared or ranked, never posted
         return product * (price * (1 - fb.royalty) - opex_per_t)
 
     pv = cash(price_now) * annuity(r, early) if early else 0.0

@@ -33,6 +33,7 @@ def used_share(budget: int | None, remaining: int | None, default_budget: int) -
     if cap <= 0:
         return 0.0
     left = cap if remaining is None else remaining
+    # money-exact: ratio: a score, share or weight, not money
     return max(0.0, min(1.0, (cap - left) / cap))
 
 

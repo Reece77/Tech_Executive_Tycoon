@@ -42,6 +42,7 @@ def addressable_at(data: GameData, category: str, segment: str, turn: int) -> fl
     cat = data.category(category)
     value = cat.market(segment).addressable
     if not cat.growth_by_year:
+        # money-exact: ratio: customers or market size, not money
         return value * dmath.pow(monthly_growth(cat, 0), turn)
     for t in range(turn):
         value *= monthly_growth(cat, turn_to_ym(t)[0])

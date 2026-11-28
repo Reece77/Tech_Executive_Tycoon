@@ -103,6 +103,31 @@ def times(amount: int | float | Fraction, rate: float | int | Fraction, *more: f
     return round_half_even(numerator, DECIMAL_BASE**places) if places else numerator
 
 
+def times_over(amount: int, divisor: int, *rates: float | int | Fraction) -> int:
+    """amount x rates / divisor (divisor > 0) in exact rational arithmetic, rounded half to even
+    once: a yearly rate's month (divisor 12) without rounding the year first (M57r-A, review 10
+    item 8)."""
+    if divisor <= 0:
+        raise InvalidMoneyError(f"divisor must be positive, got {divisor}")
+    numerator, places = amount, 0
+    for factor in rates:
+        if type(factor) is float:
+            n, k = scaled(factor)
+            numerator *= n
+            places += k
+        elif type(factor) is int:
+            numerator *= factor
+        else:
+            return round(Fraction(amount) * _product_exact(rates) / divisor)
+    denominator: int = divisor * DECIMAL_BASE**places
+    return round_half_even(numerator, denominator)
+
+
+def ceil_div(numerator: int, denominator: int) -> int:
+    """numerator / denominator rounded up (denominator > 0), in integers."""
+    return -(-numerator // denominator)
+
+
 def exact_product(amount: int, *rates: float | int) -> Fraction:
     """amount x rates as the exact rational `times` rounds: one Fraction, built once from an
     integer numerator over a power of ten (M36p; a sum of these rounds once where posted)."""
@@ -137,6 +162,13 @@ def sum_times(rows: Iterable[tuple[int, float | int]]) -> int:
             term *= DECIMAL_BASE ** (places - k)
         total += term
     return round_half_even(total, DECIMAL_BASE**places) if places else total
+
+
+def _product_exact(rates: tuple[float | int | Fraction, ...]) -> Fraction:
+    out = Fraction(1)
+    for r in rates:
+        out *= exact(r)
+    return out
 
 
 def _product(rates: tuple[float | int, ...]) -> Fraction:

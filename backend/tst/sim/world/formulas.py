@@ -51,6 +51,7 @@ def unit_full_cost(long_run: float, cash: float, wb: WorldBalance) -> float:
 def outlook(prices: tuple[float, ...], long_run: float, wb: WorldBalance) -> float:
     """41.2's 3-year displayed price outlook before the balance factor: a year of spot (the last
     12 months' mean) and two of the long-run level, as M18's deck."""
+    # money-exact: rate: a unit price in float cents, rounded where posted
     spot = sum(prices) / len(prices) if prices else long_run
     return wb.outlook_spot_weight * spot + (1 - wb.outlook_spot_weight) * long_run
 

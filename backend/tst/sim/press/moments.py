@@ -66,6 +66,7 @@ def hiring_appeal(state: GameState, company_id: int, balance: Balance) -> float:
     record = credibility_of(state, company_id)
     if record is None:
         return 0.0
+    # money-exact: ratio: `value` is a score or attribute here, not money
     raw = pb.cred_hiring * (record.value - pb.cred_start) / (PCT - pb.cred_start)
     return max(-pb.cred_hiring_cap, min(pb.cred_hiring_cap, raw))
 

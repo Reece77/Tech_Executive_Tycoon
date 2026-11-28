@@ -40,6 +40,7 @@ from tst.sim.modes.custom_config import (
     EditorBalance,
     Range,
 )
+from tst.sim.money import times
 from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 
@@ -385,7 +386,7 @@ def apply_overrides(
             continue
         if r.cash_mult != 1:
             cash = out.get((cid, CASH), 0)
-            delta = round(cash * r.cash_mult) - cash
+            delta = times(cash, r.cash_mult) - cash  # exact, half-even once (M57r-A)
             out[(cid, CASH)] = cash + delta
             out[(cid, COMMON_EQUITY)] = out.get((cid, COMMON_EQUITY), 0) - delta
         if r.quality_delta:

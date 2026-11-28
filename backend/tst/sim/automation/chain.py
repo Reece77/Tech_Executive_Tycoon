@@ -879,6 +879,7 @@ def cash_cost_per_start(month: FabMonth) -> float:
     pay less than any contract), over the starts it ran last month."""
     run = month.own + month.sold + month.contracted
     cash = month.fixed_cents + month.materials_cents + month.power_cents + month.staff_cents
+    # money-exact: rate: a unit price in float cents, rounded where posted
     return cash / max(1.0, run)
 
 

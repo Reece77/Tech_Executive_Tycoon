@@ -24,11 +24,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities import goods
 from tst.sim.log import LogItem, inbox_item
+from tst.sim.money import exact
 from tst.sim.products.models import SELLING, Product
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -57,7 +59,19 @@ def radio_cents(
     balance: Balance,
     data: GameData,
 ) -> float:
-    """A site's radios of `generation` from `vendor` (module docstring)."""
+    """A site's radios of `generation` from `vendor` (module docstring), for display."""
+    return float(radio_exact(state, company_id, generation, vendor, balance, data))
+
+
+def radio_exact(
+    state: GameState,
+    company_id: int,
+    generation: str,
+    vendor: str,
+    balance: Balance,
+    data: GameData,
+) -> Fraction:
+    """A site's radios as the exact rational a quote multiplies (M57r-A, review 10 item 7)."""
     f = file(data)
     year = end_year_at(state.turn)
     if vendor == OWN_SUPPLIER:
@@ -65,16 +79,21 @@ def radio_cents(
 
         p = own_line(state, company_id, balance)
         assert p is not None
-        return unit_bom_cents(state, p, balance, data)
+        return exact(unit_bom_cents(state, p, balance, data))
     v = f.vendor(vendor)
     assert v is not None
     index = goods.current(state, "equipment", data).index
-    return f.generation(generation).radio_at(year) * v.price_mult * index
+    return exact(f.generation(generation).radio_at(year)) * exact(v.price_mult) * exact(index)
 
 
 def civil_cents(state: GameState, data: GameData) -> float:
+    """A new site's civil works now, for display."""
+    return float(civil_exact(state, data))
+
+
+def civil_exact(state: GameState, data: GameData) -> Fraction:
     index = goods.current(state, "equipment", data).index
-    return file(data).site_civil_at(end_year_at(state.turn)) * index
+    return exact(file(data).site_civil_at(end_year_at(state.turn))) * exact(index)
 
 
 # --- Bans ----------------------------------------------------------------------------------------

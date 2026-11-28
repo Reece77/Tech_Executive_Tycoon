@@ -42,7 +42,9 @@ def mix_index(state: GameState, mix: CommodityMix, data: GameData) -> float:
 def apply_mix(own_index: float, mix: CommodityMix, mix_value: float) -> float:
     """33.2: blend for BOMs, scale for wafers."""
     if mix.mode == "scale":
+        # money-exact: ratio: a score, share or weight, not money
         return own_index * ((1 - mix.share) + mix.share * mix_value)
+    # money-exact: ratio: a score, share or weight, not money
     return (1 - mix.share) * own_index + mix.share * mix_value
 
 

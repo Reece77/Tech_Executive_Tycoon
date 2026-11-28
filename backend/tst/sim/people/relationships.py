@@ -54,6 +54,7 @@ def relationship_morale(values: list[float], cfg: RelationshipsBalance) -> float
     """W_rel = clamp(0.1 x mean relationship with unit-mates, -5, +5); 0 with none."""
     if not values:
         return 0.0
+    # money-exact: ratio: `value` is a score or attribute here, not money
     term = cfg.morale_weight * sum(values) / len(values)
     return max(-cfg.morale_cap, min(cfg.morale_cap, term))
 

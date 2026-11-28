@@ -150,6 +150,7 @@ def market_values(
     out: dict[Key, float] = {}
     for category, segment, region, addressable in rows:
         k = (category, region)
+        # money-exact: ratio: customers or market size, not money
         out[k] = out.get(k, 0.0) + addressable * values[(category, segment, region)]
     return out
 
@@ -176,6 +177,7 @@ def factor(value: float, ceiling: float) -> float:
     """Saturation: growth x (1 - A / C), between 0 and 1 (54.1)."""
     if ceiling <= 0:
         return 0.0
+    # money-exact: ratio: `value` is a score or attribute here, not money
     return min(1.0, max(0.0, 1.0 - value / ceiling))
 
 

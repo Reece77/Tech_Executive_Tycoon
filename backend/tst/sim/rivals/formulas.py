@@ -19,6 +19,7 @@ def clamp01(value: float) -> float:
 
 def need_price_cut(drop: float, need: RivalNeedBalance) -> float:
     """Share of served customers lost over the window: drop / 0.05."""
+    # money-exact: ratio: a score, share or weight, not money
     return clamp01(drop / need.price_cut_drop)
 
 
@@ -26,6 +27,7 @@ def need_price_rise(lead: float, share_falling: bool, need: RivalNeedBalance) ->
     """Appeal lead over the next best product, share not falling: (lead - 5) / 10."""
     if share_falling:
         return 0.0
+    # money-exact: ratio: a score, share or weight, not money
     return clamp01((lead - need.price_rise_lead) / need.price_rise_span)
 
 

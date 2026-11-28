@@ -43,7 +43,7 @@ from tst.sim.finserv.models import Catastrophe, InsuranceMonth, Insurer
 from tst.sim.fx.rates import policy_rate
 from tst.sim.ledger import CASH, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import round_half_even, times
+from tst.sim.money import ceil_div, times, times_over
 from tst.sim.products.models import SELLING, Product
 from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
@@ -207,7 +207,8 @@ def insurer_month(
     paid = 0
     for line in sorted(set(reserves) | set(claims)):
         r = reserves.get(line, 0)
-        pay = round_half_even(r, max(1, f.claims_lag_months[line]))
+        # rounded up (M57r-A, review 10 item 8): a reserve clears completely once claims stop
+        pay = ceil_div(r, max(1, f.claims_lag_months[line])) if r > 0 else 0
         reserves[line] = r - pay + claims.get(line, 0)
         paid += pay
     incurred = sum(claims.values())
@@ -215,7 +216,7 @@ def insurer_month(
     invest = total_reserves - insurer.reserves_cents + paid  # cash into 1330: the new reserves
     region = next((x.region for x in insurer.licences), "north_america")
     rate = (policy_rate(state, region, balance, data) + ib.float_spread) / PCT
-    income = round_half_even(times(insurer.investments_cents, max(0.0, rate)), MONTHS)
+    income = times_over(insurer.investments_cents, MONTHS, max(0.0, rate))
     lines = [
         LedgerLine(CLAIMS, incurred),
         LedgerLine(RESERVES, -incurred),

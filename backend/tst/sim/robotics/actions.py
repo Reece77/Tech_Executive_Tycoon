@@ -156,6 +156,7 @@ def own_robot_cents(state: GameState, product_id: int, balance: Balance, data: G
     bom = balance.hardware.bom[product.category]
     run = balance.facility.kinds[balance.hardware.plant_kind].variable_cents * bom.plant_slots
     price = automation.robot_price_cents(state, data)
+    # money-exact: rate: a unit price in float cents, rounded where posted
     integration = price * (file(data).prices.system_mult - 1)
     return unit_bom_cents(state, product, balance, data) + run + integration
 
