@@ -149,6 +149,8 @@ def test_incumbents_match_formulas_table(loaded: LoadedData) -> None:
     assert sales_cloud.segments["smb"].share_bp == 1000
     totals: dict[tuple[str, str], int] = {}
     for company in companies:
+        if company.history_only:  # M50b: the 2000 world's own companies hold 2000's shares
+            continue
         for product in company.products:
             if product.regions is not None:  # M9's regional incumbents sell abroad only
                 continue
