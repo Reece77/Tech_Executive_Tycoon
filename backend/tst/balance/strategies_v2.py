@@ -21,6 +21,7 @@ from tst.balance.strategies import (
     STEADY_MARKETING_MIN,
     STEADY_RUNWAY,
     Strategy,
+    fundraise,
     last_revenue,
     runway,
     set_marketing,
@@ -40,9 +41,11 @@ from tst.sim.actions import (
 )
 from tst.sim.actions.authority import SetAuthority
 from tst.sim.actions.facilities import BuildFacility, StaffFacility
+from tst.sim.actions.finance import RaiseSafe
 from tst.sim.actions.geo import LaunchInRegion
 from tst.sim.actions.research import StartProject
 from tst.sim.facilities import compute, lifecycle
+from tst.sim.finance.fundraising import base_value, next_series
 from tst.sim.mna import deals, valuation
 from tst.sim.mna.deals import BidForCompany
 from tst.sim.mna.models import Deal
@@ -434,7 +437,7 @@ def integrator(game: Game) -> None:
     _own_compute(game, DC_KIND)
 
 
-AI_PRODUCT: Final = ("Oracle", "ai_models", ("smb", "mid_market"))
+AI_PRODUCT: Final = ("Oracle", "ai_models", ("mid_market", "enterprise"))
 GPU_KIND: Final = "data_centre_gpu"
 
 
@@ -457,9 +460,44 @@ def _ai_first(game: Game) -> None:
     game.act(AssignUnit(game.founder_id, product_id, None))
 
 
+# M57 (decision rule 2, a script fix): a founder whose product earns too slowly to reach a
+# Series A's ARR gate bridges the gap with a SAFE rather than run out of cash. No script raised
+# one, so the AI-first scripts (an AI market about 5x smaller in the era window since M43a's
+# recalibration) went bankrupt after their seed on every seed, months 27-88.
+SAFE_RUNWAY: Final = 6  # months: raise a SAFE when projected runway falls below this
+SAFE_AMOUNT: Final = 150_000_000  # $1.5M, the top of a seed's typical size
+SAFE_CAP_OF_BASE: Final = 1.0  # cap = the base valuation: "likely" to fill (14.9's hint)
+
+
+def bridge_when_short(game: Game) -> None:
+    """Before a Series B closes, a SAFE of SAFE_AMOUNT at a cap of the base valuation when
+    runway falls below SAFE_RUNWAY months and no SAFE is pending (14.4)."""
+    if "b" in {r.series for r in game.state.company_rounds(PLAYER) if r.status == "closed"}:
+        return
+    months = runway(game)
+    if months is None or months >= SAFE_RUNWAY:
+        return
+    if any(s.status == "pending" for s in game.state.company_safes(PLAYER)):
+        return
+    b, g = game.loaded.balance, game.loaded.game_data
+    cap = round(base_value(game.state, PLAYER, b, g) * SAFE_CAP_OF_BASE)
+    if cap <= SAFE_AMOUNT:
+        return
+    refill_energy(game)
+    game.act(RaiseSafe(game.founder_id, SAFE_AMOUNT, cap))
+
+
+AI_ROUNDS: Final = {"b": 1_500_000_000}  # $15M: a Series B once its gate allows (steady raises A)
+
+
 def ai_regions(game: Game) -> None:
-    """V3's AI baseline: steady_regions with an AI-models first product, no data centres."""
+    """V3's AI baseline: steady_regions with an AI-models first product, no data centres;
+    from M57 (decision rule 2) it sells to mid-market and enterprise buyers (AI_PRODUCT), bridges a
+    short runway before its Series B with a SAFE (bridge_when_short) and raises a Series B."""
     _ai_first(game)
+    bridge_when_short(game)
+    if next_series(game.state, PLAYER) == "b":
+        fundraise(game, AI_ROUNDS, pick="pre")
     steady_regions(game)
 
 
