@@ -336,7 +336,8 @@ def launch_installer(
     flags = 0
     if sys.platform == "win32":
         flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-    args = [str(path), *INSTALLER_ARGS]
+    # setup waits for this process to exit before it installs (packaging/installer.iss)
+    args = [str(path), *INSTALLER_ARGS, f"/WAITPID={os.getpid()}"]
     if log_dir is not None:
         args.append(f"/LOG={log_dir / INSTALL_LOG}")
     popen(args, creationflags=flags, close_fds=True)

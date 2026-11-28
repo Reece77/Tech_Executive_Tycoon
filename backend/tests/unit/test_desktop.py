@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import sqlite3
 from collections.abc import Iterator
 from pathlib import Path
@@ -341,6 +342,7 @@ def test_installer_runs_silently_and_detached(tmp_path: Path) -> None:
     ((cmd, kw),) = calls
     assert cmd[0].endswith("setup.exe") and "/SILENT" in cmd and "/CLOSEAPPLICATIONS" in cmd
     assert "/SUPPRESSMSGBOXES" in cmd  # M57r-B: no unseen prompt can stall the update
+    assert f"/WAITPID={os.getpid()}" in cmd  # ...and setup waits for this copy to exit
     assert kw["close_fds"] is True
     calls.clear()
     update.launch_installer(

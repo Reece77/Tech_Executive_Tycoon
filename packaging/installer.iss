@@ -10,6 +10,7 @@
 ;
 ; Command-line extras: /NOLAUNCH=1 skips starting the game after a silent install (the CI
 ; smoke test); without it a silent install (the in-game update) starts the new version.
+; /WAITPID=<pid> (the in-game update) waits for that process, the running game, to exit first.
 ;
 ; M57r-B (review 10 item 1): the uninstaller removes only what setup installed (Inno Setup's own
 ; log of tracked files) and the bundle folder `_internal`; anything else in the install folder
@@ -78,6 +79,39 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags
 Type: filesandordirs; Name: "{app}\_internal"
 
 [Code]
+const
+  SYNCHRONIZE = $00100000;
+  WAIT_FOR_GAME_MS = 120000;
+
+function OpenProcess(dwDesiredAccess: Cardinal; bInheritHandle: BOOL; dwProcessId: Cardinal): THandle;
+  external 'OpenProcess@kernel32.dll stdcall';
+function WaitForSingleObject(hHandle: THandle; dwMilliseconds: Cardinal): Cardinal;
+  external 'WaitForSingleObject@kernel32.dll stdcall';
+function CloseHandle(hObject: THandle): BOOL;
+  external 'CloseHandle@kernel32.dll stdcall';
+
+{ The in-game update (M57r-B) passes /WAITPID=<the game's process id>: setup waits for that copy
+  to exit before anything else, so no file is in use when it installs (Restart Manager cannot
+  close a game with no window, and an unattended setup must not stop on its prompt). }
+function InitializeSetup: Boolean;
+var
+  Pid: Cardinal;
+  H: THandle;
+begin
+  Result := True;
+  Pid := StrToIntDef(ExpandConstant('{param:WAITPID|0}'), 0);
+  if Pid <> 0 then
+  begin
+    H := OpenProcess(SYNCHRONIZE, False, Pid);
+    if H <> 0 then
+    begin
+      Log(Format('Waiting for the game (process %d) to close', [Pid]));
+      WaitForSingleObject(H, WAIT_FOR_GAME_MS);
+      CloseHandle(H);
+    end;
+  end;
+end;
+
 function ShouldLaunch: Boolean;
 begin
   Result := ExpandConstant('{param:NOLAUNCH|0}') <> '1';
