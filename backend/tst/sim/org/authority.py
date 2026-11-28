@@ -406,7 +406,8 @@ def _propose(
         if p.company_id != company or p.kind != kind:
             continue
         if p.status == "pending" or (
-            p.status == "declined" and (p.resolved_turn or p.turn) > state.turn - quiet
+            p.status == "declined"
+            and (p.resolved_turn if p.resolved_turn is not None else p.turn) > state.turn - quiet
         ):
             return
     pid, ids = state.next_ids.take("proposal")

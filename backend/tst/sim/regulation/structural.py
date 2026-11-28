@@ -83,7 +83,11 @@ def conditions(
     history = [
         t for t in rdata.history_rulings(state, data, company_id, reg.key, state.turn) if t > ten
     ]
-    return len([c for c in ruled if (c.ruled_turn or 0) > ten]) + len(history) >= 2
+    return (
+        len([c for c in ruled if (c.ruled_turn if c.ruled_turn is not None else 0) > ten])
+        + len(history)
+        >= 2
+    )
 
 
 def watch_of(state: GameState, company_id: int, regulator: str, market: str) -> Watch | None:
@@ -383,7 +387,7 @@ def orders_month(
             gen = draws.gen(rng, state.turn, draws.ORDER, o.id, draws.OUTCOME)
             lo, hi = sb.appeal_win
             odds = lo + (hi - lo) * float(gen.random())
-            length = o.appeal_until - (o.asked_turn or o.ordered_turn)
+            length = o.appeal_until - (o.asked_turn if o.asked_turn is not None else o.ordered_turn)
             if float(gen.random()) < odds:
                 state = with_order(state, replace(o, status="overturned", closed_turn=state.turn))
                 if o.company_id == state.player.id:

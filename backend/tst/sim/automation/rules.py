@@ -243,7 +243,10 @@ def _recently(
             continue
         if p.status == "pending":
             return True
-        if p.status in ("declined", "lapsed") and (p.resolved_turn or p.turn) > state.turn - months:
+        if (
+            p.status in ("declined", "lapsed")
+            and (p.resolved_turn if p.resolved_turn is not None else p.turn) > state.turn - months
+        ):
             return True
     return False
 

@@ -249,7 +249,11 @@ def december_orders(
             )
             next_id += 1
     cut = turn - balance.equipment.queue.history_years * MONTHS
-    orders = [o for o in orders if o.status == "open" or (o.done_turn or turn) >= cut]
+    orders = [
+        o
+        for o in orders
+        if o.status == "open" or (o.done_turn if o.done_turn is not None else turn) >= cut
+    ]
     return replace(state, tool_orders=tuple(orders))
 
 

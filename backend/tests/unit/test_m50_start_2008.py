@@ -116,6 +116,12 @@ def test_the_prompt_says_when_the_game_began() -> None:
     assert began_in(text, None) == text
     assert began_in(text, GameMode(kind="campaign", start_turn=-24)) == text.replace("2010", "2008")
     assert began_in(text, GameMode(kind="sandbox", start_turn=60)) == text
+    # M57r-A (review 10 item 30): a 2008 Sandbox or custom game began in its own month
+    sandbox = GameMode(kind="sandbox", start_turn=-24)
+    assert began_in(text, sandbox) == text.replace("2010", "2008")
+    assert began_in(text, GameMode(kind="sandbox", start_turn=-19)) == text.replace(
+        "January 2010", "June 2008"
+    )
 
 
 # --- Markets and incumbents in 2008 ----------------------------------------------------------
@@ -207,6 +213,20 @@ def test_the_coverage_check_rejects_gaps() -> None:
     ]
     assert coverage_problems({"s": {"2008-01": 1, "2010-01": 2}}, "f") == []
     assert coverage_problems({"growth_by_year": {2010: 1}}, "f") == []  # exempt
+
+
+def test_the_coverage_check_rejects_interior_gaps() -> None:
+    """M57r-A (review 10 item 28): a missing interior month or year passed."""
+    monthly = {f"2008-{m:02d}": 1 for m in range(1, 13) if m != 2}
+    monthly |= {f"2009-{m:02d}": 1 for m in range(1, 13)} | {"2010-01": 1}
+    assert coverage_problems({"s": monthly}, "f") == ["f.s has no entry for ['2008-02']"]
+    rows = [[k, v] for k, v in sorted(monthly.items())]
+    assert coverage_problems({"s": rows}, "f") == ["f.s has no entry for ['2008-02']"]
+    # an annual series without its 2011 key is still annual
+    annual = {2008: 1, 2010: 1, **{y: 1 for y in range(2012, 2021)}}
+    assert coverage_problems({"s": annual}, "f") == ["f.s has no entry for [2009]"]
+    # anchors (mostly steps of more than one) stay sparse
+    assert coverage_problems({"s": {2008: 1, 2010: 1, 2015: 2, 2020: 3}}, "f") == []
 
 
 def test_a_read_from_2010_ignores_2008_and_2009() -> None:

@@ -1097,7 +1097,10 @@ def _bid_asked(state: GameState, company: int, target_id: int, b: Balance) -> bo
         action = json.loads(str(dict(p.params).get("action", "{}")))
         if action.get("kind") != "bid_for_company" or action.get("target_id") != target_id:
             continue
-        if p.status in ("pending", "approved") or (p.resolved_turn or p.turn) > state.turn - quiet:
+        if (
+            p.status in ("pending", "approved")
+            or (p.resolved_turn if p.resolved_turn is not None else p.turn) > state.turn - quiet
+        ):
             return True
     return False
 

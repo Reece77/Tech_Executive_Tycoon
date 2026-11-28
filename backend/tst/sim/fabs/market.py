@@ -393,7 +393,8 @@ def tools_turn(
     queued = sum(
         f.tools
         for f in state.fabs
-        if f.company_id == company_id and (f.tools_turn or 0) > state.turn
+        if f.company_id == company_id
+        and (f.tools_turn if f.tools_turn is not None else 0) > state.turn
     )
     wanted = queued + tools
     first = max(state.turn, _first_euv(data))

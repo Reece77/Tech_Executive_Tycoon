@@ -88,7 +88,9 @@ def _close_venture(state: GameState, outcome: str, kept: int = 0) -> GameState:
         company_id=company.id,
         name=company.name,
         founded_turn=company.founded_turn,
-        ended_turn=state.save_meta.ended_turn or state.turn,
+        ended_turn=state.save_meta.ended_turn
+        if state.save_meta.ended_turn is not None
+        else state.turn,
         outcome=outcome,  # type: ignore[arg-type]
         buyer_id=sale.acquirer_id if sale else None,
         price_cents=sale.price_cents if sale else 0,

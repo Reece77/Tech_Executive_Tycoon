@@ -154,7 +154,8 @@ class AutoRun(DelegateRun):
                 continue
             if p.status == "pending" or (
                 p.status in ("declined", "expired")
-                and (p.resolved_turn or p.turn) > state.turn - quiet
+                and (p.resolved_turn if p.resolved_turn is not None else p.turn)
+                > state.turn - quiet
             ):
                 return
         pid, ids = state.next_ids.take("proposal")

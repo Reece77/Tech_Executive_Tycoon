@@ -55,8 +55,8 @@ def _latest[T: (Case, Order)](items: list[T]) -> list[T]:
     for, or the month after)."""
     if not items:
         return []
-    last = max(x.asked_turn or 0 for x in items)
-    return [x for x in items if (x.asked_turn or 0) == last]
+    last = max(x.asked_turn if x.asked_turn is not None else 0 for x in items)
+    return [x for x in items if (x.asked_turn if x.asked_turn is not None else 0) == last]
 
 
 def case_for(state: GameState, event: GameEvent) -> Case | None:

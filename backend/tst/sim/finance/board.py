@@ -204,7 +204,10 @@ def growth_term(state: GameState, company_id: int, balance: Balance) -> float:
     now, then = mrr_now_and_then(state, company_id, balance)
     if then <= 0:
         live = any(p.status == "live" for p in state.company_products(company_id))
-        waited = state.turn - (latest.closed_turn or 0) >= bb.no_product_after_turns
+        waited = (
+            state.turn - (latest.closed_turn if latest.closed_turn is not None else 0)
+            >= bb.no_product_after_turns
+        )
         return bb.no_product_penalty if waited and not live else 0.0
     g6 = f.growth_6(now, then, balance.finance)
     return f.growth_points(g6, bb.expected_growth[latest.series], bb)

@@ -1,6 +1,7 @@
 """The same game on every platform (M35a sub-task 1): play M30's three strategies on seeds 1-3
 for 120 months in memory (M52: and one custom scenario, the edited EV maker, for its first 24
-months: formulas.md 66.4 target 3) and record every month's full-state digest (tst.balance.m30's
+months: formulas.md 66.4 target 3; M57r-A: and the 2030 dynasty start for 24 months, whose
+draws include Generator.poisson with large means) and record every month's full-state digest (tst.balance.m30's
 canonical digest), with a digest of each top-level state field, so two platforms' records name
 the first month and the first part of the state that differ. CI
 (.github/workflows/determinism.yml) runs `run` on Linux and Windows and `compare` on the two.
@@ -78,6 +79,13 @@ def _tree(digester: Any, root: object, prefix: str) -> dict[str, str]:
 CUSTOM = "custom_ev"  # M52 (66.4 target 3): one custom scenario, its first CUSTOM_MONTHS months
 CUSTOM_SEED = 1
 CUSTOM_MONTHS = 24
+# M57r-A (review 10 item 29, ruling 7): a poisson-heavy run. Generator.poisson with a mean of 10
+# or more uses the C library's log, outside dmath's guarantee; the 2030 dynasty start's world
+# (pharma rivals' approvals and the other post-2025 draws) draws it every month.
+POISSON = "poisson_dynasty"
+POISSON_SCENARIO = "the_dynasty"
+POISSON_SEED = 1
+POISSON_MONTHS = 24
 
 
 def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
@@ -92,6 +100,12 @@ def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
         game = m52.custom_game(seed)
         script = m51.ev_sensible
         turns = game.state.turn + min(turns, CUSTOM_MONTHS)
+    elif name == POISSON:  # M57r-A: the 2030 start, poisson draws with large means
+        from tst.balance import m52
+
+        game = m52.start_historical(m30.loaded(), POISSON_SCENARIO, seed)
+        script = m30.strategy("full_integrator")
+        turns = game.state.turn + min(turns, POISSON_MONTHS)
     else:
         game = start_game(m30.loaded(), seed, SCENARIO)
         script = m30.strategy(name)
@@ -117,7 +131,8 @@ def run(out: Path, turns: int, workers: int, dumps: list[str]) -> int:
     for item in dumps:
         job, _, turn = item.partition("@")
         wanted.setdefault(job, set()).add(int(turn))
-    jobs = [*m30.jobs(), (CUSTOM, CUSTOM_SEED)]  # M52: and one custom scenario
+    # M52: and one custom scenario; M57r-A: and one poisson-heavy run
+    jobs = [*m30.jobs(), (CUSTOM, CUSTOM_SEED), (POISSON, POISSON_SEED)]
     todo = [(n, s, turns, tuple(sorted(wanted.get(m30.key(n, s), ())))) for n, s in jobs]
     started = time.perf_counter()
     with ProcessPoolExecutor(max_workers=max(1, workers)) as pool:

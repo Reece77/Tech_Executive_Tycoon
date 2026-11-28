@@ -252,7 +252,7 @@ def plants_month(
                 f = replace(f, ready_turn=turn + 1, late_turn=turn + 1)  # waiting for the grid
         if plant.live(turn):
             life = t.life_years * MONTHS
-            months = turn - (plant.live_turn or turn) + 1
+            months = turn - (plant.live_turn if plant.live_turn is not None else turn) + 1
             total = min(f.capex_paid_cents, f.capex_paid_cents * months // life)
             charge = total - f.depreciated_cents
             if charge > 0:

@@ -47,7 +47,11 @@ def closed_rounds(state: GameState, company_id: int) -> tuple[FundingRound, ...]
 def last_round(state: GameState, company_id: int) -> FundingRound | None:
     """The latest closed priced round, if any."""
     done = closed_rounds(state, company_id)
-    return max(done, key=lambda r: (r.closed_turn or 0, r.id)) if done else None
+    return (
+        max(done, key=lambda r: (r.closed_turn if r.closed_turn is not None else 0, r.id))
+        if done
+        else None
+    )
 
 
 def share_price(state: GameState, company_id: int) -> Fraction:
