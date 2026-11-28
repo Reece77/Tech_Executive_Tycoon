@@ -77,10 +77,11 @@ ads:
     2020: { north_america: [0.36, R], europe: [0.21, R], east_asia: [0.27, R], south_southeast_asia: [0.06, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
     2025: { north_america: [0.35, R], europe: [0.20, R], east_asia: [0.28, R], south_southeast_asia: [0.07, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
   # The share of a region's people on iOS (A from StatCounter's mobile OS shares around 2021, R): the users
-  # App Tracking Transparency's cut reaches
+  # App Tracking Transparency's cut reaches, used only before M31's platforms exist (iOS's share in the game after)
   ios_share: { north_america: [0.55, R], europe: [0.30, R], east_asia: [0.25, R], south_southeast_asia: [0.05, R], latin_america: [0.12, R], africa: [0.05, R], oceania: [0.55, R] }
-  # Privacy events (65.1): a cut to targeting quality from the month, in the listed regions. ATT is iOS-only
-  # (x ios_share) and spares a company that owns a platform (on its own platform's users).
+  # Privacy events (65.1): a cut to targeting quality from the month, in the listed regions, weighted by
+  # where the impressions are delivered (M57r-A): ATT x iOS users not on the company's own platform; a
+  # regional rule x the users not on the company's own platforms.
   privacy:
     - { key: gdpr, label: "GDPR", month: "2018-05", regions: [europe], cut: [0.10, A], source: "R: in force 25 May 2018 (EU); A: about a tenth of targeting lost to consent (Meta's 2018 European ARPU flat)" }
     - { key: att, label: "App Tracking Transparency", month: "2021-04", regions: [north_america, europe, east_asia, south_southeast_asia, latin_america, africa, oceania], cut: [0.30, A], ios_only: true, source: "R: iOS 14.5, April 2021; Meta put the 2022 cost at about $10B (Q4 2021 call), about 8% of revenue: a 30% cut on iOS's share (D)" }

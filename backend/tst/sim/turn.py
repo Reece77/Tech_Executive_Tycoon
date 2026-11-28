@@ -344,6 +344,8 @@ def sales_revenue_churn(ctx: TurnContext) -> TurnContext:
     ctx = replace(ctx, state=space_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M53 (62.4): telecom lines whose dated opening is this month sell from it
     ctx = replace(ctx, state=telecom_phase.open_month(ctx.state, ctx.balance, ctx.data))
+    # M54 (64.1-64.2): this month's finance demand and dated caps before its sales (M57r-A)
+    ctx = replace(ctx, state=finserv_phase.open_month(ctx.state, ctx.rng, ctx.balance, ctx.data))
     # M55 (65.1, 65.7): media lines whose dated opening is this month sell from it; ad prices
     ctx = replace(ctx, state=media_phase.open_month(ctx.state, ctx.balance, ctx.data))
     # M54 (64.4): the indexes' month, translation marks and the month's translated prices, after

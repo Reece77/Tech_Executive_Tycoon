@@ -270,10 +270,16 @@ def sell(
     if buyer is None:
         return state, [], []
     price = round(unit_revenue_cents(state, o) * exact(balance.regulation.structural.sale_multiple))
+    sold = []
     for pid in o.product_ids:
         product = state.product(pid)
         if product is not None:
+            sold.append(product)
             state = with_product(state, replace(product, company_id=buyer))
+    # M57r-A (review 10 item 17): a bank's or insurer's charter and books go with its line
+    from tst.sim.finserv.charters import on_sale
+
+    state, charter_entries = on_sale(state, o.company_id, sold, balance, data)
     state = replace(
         state,
         units=tuple(
@@ -302,6 +308,7 @@ def sell(
                 debit=GOODWILL, credit=CASH, amount=price,
             ),
         ]  # fmt: skip
+    entries += charter_entries
     state = with_order(state, replace(o, status="sold", closed_turn=state.turn))
     logs = []
     if o.company_id == state.player.id:

@@ -195,6 +195,23 @@ def _check_goal(out: list[str], spec: CustomScenario, ed: EditorBalance, data: G
         _range(out, "the deadline's years from the start", round(years, 2), ed.deadline_years)
 
 
+def _gated(balance: Balance) -> frozenset[str]:
+    """Categories that sell only behind a gate the start builder does not create: telecom
+    service lines (a network and spectrum) and banking, insurance and payments (a charter, a
+    licence or a network)."""
+    tb, fb = balance.telecom, balance.finserv
+    return frozenset(
+        {
+            tb.mobile,
+            tb.fixed,
+            tb.wholesale,
+            fb.banking_category,
+            fb.insurance_category,
+            fb.payments_category,
+        }
+    )
+
+
 def refusals(spec: CustomScenario, balance: Balance, data: GameData) -> list[str]:
     """Every reason the editor refuses `spec` (empty: valid). Ranges are `editor.*`'s."""
     ed = balance.editor
@@ -236,6 +253,13 @@ def refusals(spec: CustomScenario, balance: Balance, data: GameData) -> list[str
             _range(out, f"{p.name} ({seg}): price ($)", value.price_dollars, ed.price_dollars)
         if p.status == "in_development" and any(v.customers for v in p.segments.values()):
             out.append(f"{p.name}: a product in development has no customers")
+        if p.category in _gated(balance) and any(v.customers for v in p.segments.values()):
+            # M57r-A (review 10 item 18): a line the engine sells only with a network, a charter
+            # or a licence the start cannot build has no starting customers (66.1)
+            out.append(
+                f"{p.name}: a {cat.label} line starts without customers (it needs a "
+                "network, charter or licence first)"
+            )
         if p.contract is not None:
             makers = balance.hardware.contract.manufacturers
             if p.contract.manufacturer not in makers:

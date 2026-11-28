@@ -86,13 +86,27 @@ def digital_month_cents(state: GameState, region: str, balance: Balance, data: G
     return year * digital_share(state, balance, data) / MONTHS * balance.media.scale
 
 
-def _privacy_cut(rule: PrivacyDef, region: str, own_share: float, data: GameData) -> float:
+IOS_KEY: Final = "ios"  # platforms.yaml's iOS (ATT applies on its users)
+
+
+def _privacy_cut(rule: PrivacyDef, region: str, exposed: float) -> float:
+    """A rule's cut to a line's targeting: the rule's cut x the share of its impressions
+    delivered where the rule bites (M57r-A, review 10 item 15)."""
     if region not in rule.regions:
         return 0.0
-    if not rule.ios_only:
-        return rule.cut
-    ios = file(data).ads.ios_share.get(region, 0.0)
-    return rule.cut * max(0.0, ios - own_share)
+    return rule.cut * max(0.0, min(1.0, exposed))
+
+
+def _ios_users(state: GameState, company_id: int | None, region: str, data: GameData) -> float:
+    """The share of the region's device users on iOS not owned by the company: M31's share in the
+    game (media.yaml's fixed share before M31's platforms exist)."""
+    ios = [p for p in state.platforms if p.key == IOS_KEY]
+    if not ios:
+        return file(data).ads.ios_share.get(region, 0.0)
+    ids = {p.id for p in ios if company_id is None or p.owner_id != company_id}
+    return sum(
+        r.users for r in state.platform_regions if r.region == region and r.platform_id in ids
+    )
 
 
 def own_platform_share(state: GameState, company_id: int, region: str) -> float:
@@ -118,9 +132,16 @@ def targeting(
     base = ab.targeting_base + ab.targeting_quality_weight * quality / 100
     own = own_platform_share(state, company_id, region) if company_id is not None else 0.0
     out = base
+    ios: float | None = None
     for rule in file(data).ads.privacy:
         if state.turn >= rule.turn:
-            out *= 1.0 - _privacy_cut(rule, region, own, data)
+            if rule.ios_only:  # ATT: impressions on iOS users the company does not own
+                if ios is None:
+                    ios = _ios_users(state, company_id, region, data)
+                exposed = ios
+            else:  # a regional rule (GDPR, DSA): every impression but on its own platforms
+                exposed = 1.0 - own
+            out *= 1.0 - _privacy_cut(rule, region, exposed)
     return out
 
 
@@ -259,19 +280,34 @@ def ad_growth_month(state: GameState, rng: RngFactory, balance: Balance) -> Game
 
 
 def calibrate(state: GameState, balance: Balance, data: GameData) -> GameState:
-    """At `media.start` (once): each region's December 2025 market (module docstring)."""
-    if state.turn < balance.media.start_turn or state.media.ad_refs:
+    """From `media.start`: each region's reference market, once, at the first month anyone sells
+    ads there (module docstring). At `media.start` the reference is the December 2025 market at
+    the history's price. A region nobody sells ads in yet (a Sandbox without rivals, a custom start
+    without the social incumbents) keeps the history's price until a seller arrives, then
+    calibrates at digital spend / the impressions offered, capped at the history's price (M57r-A,
+    review 10 item 14: a reference of 1e-9 impressions priced every line at the 1-cent floor)."""
+    if state.turn < balance.media.start_turn:
         return state
-    refs = []
-    for region in data.region_keys:
+    have = {r.region for r in state.media.ad_refs}
+    missing = [r for r in data.region_keys if r not in have]
+    if not missing:
+        return state
+    refs = list(state.media.ad_refs)
+    for region in missing:
+        offered = impressions_m(state, region, balance, data)
+        if offered <= TINY:
+            continue
+        digital = digital_month_cents(state, region, balance, data)
+        cpm = _history_cpm(state, region, balance, data)
+        if state.turn > balance.media.start_turn:
+            # money-exact: rate (a price a thousand from the month's spend)
+            cpm = min(cpm, digital / (offered * THOUSAND))
         refs.append(
-            AdRef(
-                region=region,
-                impressions_m=max(impressions_m(state, region, balance, data), TINY),
-                cpm_cents=_history_cpm(state, region, balance, data),
-                digital_cents=digital_month_cents(state, region, balance, data),
-            )
+            AdRef(region=region, impressions_m=offered, cpm_cents=cpm, digital_cents=digital)
         )
+    if len(refs) == len(state.media.ad_refs):
+        return state
+    refs.sort(key=lambda r: data.region_keys.index(r.region))
     return replace(state, media=replace(state.media, ad_refs=tuple(refs)))
 
 
