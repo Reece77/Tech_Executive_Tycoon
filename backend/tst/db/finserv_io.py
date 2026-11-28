@@ -93,33 +93,58 @@ def _sync(
     session: Session,
     model: Any,
     order: tuple[str, ...],
-    before: dict[str, Any],
-    after: dict[str, Any],
+    old: dict[str, Callable[[], Any]],
+    new: dict[str, Callable[[], Any]],
+    same: Callable[[str], bool],
 ) -> None:
+    """Rewrite each kind whose encoded rows changed. M60: a kind whose state tuple is the same
+    (`same`) is not encoded at all, so a month encodes only what it changed; a kind that did
+    change is compared encoded, as before, and rewritten whole."""
     for i, kind in enumerate(order):
-        if before[kind] == after[kind]:
+        if same(kind):
+            continue
+        after = new[kind]()
+        if old[kind]() == after:
             continue
         session.execute(delete(model).where(model.kind == kind))
-        items = after[kind]
-        if items:
+        if after:
             session.execute(
                 insert(model),
-                [{"n": i * STRIDE + j, "kind": kind, "data": x} for j, x in enumerate(items)],
+                [{"n": i * STRIDE + j, "kind": kind, "data": x} for j, x in enumerate(after)],
             )
 
 
-def _finserv_rows(fs: FinservState) -> dict[str, Any]:
-    out: dict[str, Any] = {k: [encode(x) for x in getattr(fs, k)] for k in FINSERV}
-    out[WORLD] = [encode(fs.world)] if fs.world != FinservWorld() else []
+def _finserv_rows(fs: FinservState) -> dict[str, Callable[[], Any]]:
+    out: dict[str, Callable[[], Any]] = {
+        k: (lambda k=k: [encode(x) for x in getattr(fs, k)])  # type: ignore[misc]
+        for k in FINSERV
+    }
+    out[WORLD] = lambda: [encode(fs.world)] if fs.world != FinservWorld() else []
     return out
 
 
-def _fx_rows(fx: FxState) -> dict[str, Any]:
-    out: dict[str, Any] = {k: [encode(x) for x in getattr(fx, k)] for k in FX}
-    packed = [[m.product_id, m.region, m.segment, m.price_cents, m.turn] for m in fx.marks]
-    out[MARKS] = [{"v": packed}] if packed else []
-    out[WALK] = [{"region": r, "v": list(w)} for r, w in fx.walk]
+def _finserv_field(kind: str) -> str:
+    return "world" if kind == WORLD else kind
+
+
+def _fx_rows(fx: FxState) -> dict[str, Callable[[], Any]]:
+    out: dict[str, Callable[[], Any]] = {
+        k: (lambda k=k: [encode(x) for x in getattr(fx, k)])  # type: ignore[misc]
+        for k in FX
+    }
+
+    def marks() -> list[dict[str, Any]]:
+        packed = [[m.product_id, m.region, m.segment, m.price_cents, m.turn] for m in fx.marks]
+        return [{"v": packed}] if packed else []
+
+    out[MARKS] = marks
+    out[WALK] = lambda: [{"region": r, "v": list(w)} for r, w in fx.walk]
     return out
+
+
+def _same(old: object, new: object, name: str) -> bool:
+    a, b = getattr(old, name), getattr(new, name)
+    return a is b or a == b
 
 
 def load_finserv(
@@ -165,13 +190,22 @@ def sync_finserv(
 ) -> None:
     if not has_table(session, FinservRecordRow):
         return
-    if old.finserv != new.finserv:
+    of, nf, ox, nx = old.finserv, new.finserv, old.fx, new.fx
+    if of is not nf and of != nf:
         _sync(
             session,
             FinservRecordRow,
             (*FINSERV, WORLD),
-            _finserv_rows(old.finserv),
-            _finserv_rows(new.finserv),
+            _finserv_rows(of),
+            _finserv_rows(nf),
+            lambda kind: _same(of, nf, _finserv_field(kind)),
         )
-    if old.fx != new.fx:
-        _sync(session, FxRecordRow, (*FX, MARKS, WALK), _fx_rows(old.fx), _fx_rows(new.fx))
+    if ox is not nx and ox != nx:
+        _sync(
+            session,
+            FxRecordRow,
+            (*FX, MARKS, WALK),
+            _fx_rows(ox),
+            _fx_rows(nx),
+            lambda kind: _same(ox, nx, kind),
+        )
