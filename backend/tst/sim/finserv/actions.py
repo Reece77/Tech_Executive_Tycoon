@@ -295,6 +295,11 @@ def bank_capital(
     if amount == 0:
         raise FinservRuleError("choose an amount")
     if amount < 0:
+        # M57r-A (review 10 item 9): no withdrawal before the charter, nor below its capital
+        if bank.status != "chartered":
+            raise FinservRuleError("capital can come back only once the bank is chartered")
+        if bank.equity_cents + amount < balance.finserv.bank.charter_capital_cents:
+            raise FinservRuleError("a bank keeps at least its charter capital")
         need = banks.requirement(bank, state.turn, data, balance)
         excess = bank.equity_cents - times(banks.rwa_cents(bank, data), need)
         if -amount > min(excess, bank.reserves_cents):
