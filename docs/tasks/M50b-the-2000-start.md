@@ -2,7 +2,7 @@
 
 **Goal:** the player can found the company in **January 2000**, just before the dot-com peak (NASDAQ's peak, 10 March 2000), and play through the bust, the 2000s and on. A 2008 or 2010 game is unchanged. (1995, Reece's third start year, follows as M50c.)
 
-**Formulas:** §60 (extend it as §60.4–§60.7 for 2000) · **ADRs:** 0024 (start years; point 5: offered only when every system's data covers them) · **Precedent:** M50 (`docs/tasks/M50-start-years.md`), which added 2008 · **Depends on:** `m57r-a-done`, `m57r-b-done` · **Lane:** B, alongside M60 (lane A) and M57 (lane C)
+**Formulas:** §60 (extend it as §60.4–§60.7 for 2000) · **ADRs:** 0024 (start years; point 5: offered only when every system's data covers them) · **Precedent:** M50 (`docs/tasks/M50-the-2008-start.md`), which added 2008 · **Depends on:** `m57r-a-done`, `m57r-b-done` · **Lane:** B, alongside M60 (lane A) and M57 (lane C)
 
 ## Reece's decisions (2026-11-21, 2026-11-22)
 
