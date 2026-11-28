@@ -244,6 +244,11 @@ does not see a slow runner coming. A fifth shard (about 14 minutes a shard by th
 the slowest runner seen) would keep that margin; with the summary job it needs no ruleset change.
 Not done: the brief names four.
 
+### 9. The nightly on this branch (run 46072490080, f2dea81)
+
+- **Nightly tests:** `balance` and nightly shards 1, 2, 3, 5 and 6 passed. Shard 4 had one failure, M9's rival-spread guard missing `('africa', 'fixed_broadband')` on seeds 1-10. That miss has been main's since M53 (M55's merge commit, decision 21). M59 changes no game code, data, fixtures or balance keys, so by CLAUDE.md section 9 rule 3 it is not this milestone's. It belongs to M57, the next balance milestone; it is not added to `known_misses.py`.
+- **New duration jobs:** the four `durations (check N/4)` jobs (13-20 minutes) and the four `durations (e2e N/4)` jobs (23-29 minutes, every fixture save built fresh) all passed. The `durations` job uploaded the merged files (artifact `durations`, 56 KB).
+
 ## Follow-ups
 
 - A fifth `check` shard if slow runners keep shards near 30 minutes (decision 8).
