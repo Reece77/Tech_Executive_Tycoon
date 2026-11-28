@@ -235,10 +235,16 @@ class FinservWorld:
     cats: tuple[Catastrophe, ...] = ()
 
     def rate(self, year: int, region_index: int, kind: int) -> float | None:
-        return next(
-            (g for y, r, k, g in self.growth if y == year and r == region_index and k == kind),
-            None,
-        )
+        # M60: an index of the draws, built once per tuple (the first match, as a scan finds)
+        from tst.sim.state import from_inputs
+
+        def index() -> dict[tuple[int, int, int], float]:
+            out: dict[tuple[int, int, int], float] = {}
+            for y, r, k, g in self.growth:
+                out.setdefault((y, r, k), g)
+            return out
+
+        return from_inputs(self.growth, "finserv_growth", index).get((year, region_index, kind))
 
 
 @dataclass(frozen=True, slots=True)

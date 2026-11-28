@@ -173,7 +173,16 @@ class TelecomWorld:
     bans: tuple[SeededBan, ...] = ()
 
     def rate(self, year: int, region_index: int) -> float | None:
-        return next((g for y, r, g in self.growth if y == year and r == region_index), None)
+        # M60: an index of the draws, built once per tuple (the first match, as a scan finds)
+        from tst.sim.state import from_inputs
+
+        def index() -> dict[tuple[int, int], float]:
+            out: dict[tuple[int, int], float] = {}
+            for y, r, g in self.growth:
+                out.setdefault((y, r), g)
+            return out
+
+        return from_inputs(self.growth, "telecom_growth", index).get((year, region_index))
 
 
 @dataclass(frozen=True, slots=True)

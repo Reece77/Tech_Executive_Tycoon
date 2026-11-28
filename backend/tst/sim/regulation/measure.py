@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass, field, replace
-from typing import Final
+from typing import Any, Final
 
 from tst.sim.calendar import MONTHS_PER_YEAR
 from tst.sim.data_models import Balance, GameData
@@ -31,20 +31,43 @@ class View:
     region_month: dict[tuple[int, str], int] = field(default_factory=dict)
     # owner -> trailing-year revenue, cents
     world_year: dict[int, int] = field(default_factory=dict)
+    # M60: values derived from the fields above, kept on first use (never compared or shown)
+    _kept: dict[str, Any] = field(default_factory=dict, compare=False, repr=False)
 
     def max_share(self, owner: int, region: str) -> tuple[float, str | None]:
-        """The owner's largest share in the region (a category, or its platforms' users)."""
-        best = self.users.get((owner, region), 0.0)
-        market = "devices" if best > 0 else None
-        for (category, r), owners in self.category_shares.items():
-            if r == region and owners.get(owner, 0.0) > best:
-                best, market = owners[owner], category
-        return best, market
+        """The owner's largest share in the region (a category, or its platforms' users).
+        M60: every owner's and region's at once on first use, scanning the categories in the
+        same order with the same comparisons, so the same (share, market)."""
+        kept: dict[tuple[int, str], tuple[float, str | None]] | None = self._kept.get("max_share")
+        if kept is None:
+            kept = {}
+            for (category, r), owners in self.category_shares.items():
+                for o, share in owners.items():
+                    key = (o, r)
+                    top = kept.get(key)
+                    if top is None:
+                        u = self.users.get(key, 0.0)
+                        top = (u, "devices" if u > 0 else None)
+                    if share > top[0]:
+                        top = (share, category)
+                    kept[key] = top
+            self._kept["max_share"] = kept
+        hit = kept.get((owner, region))
+        if hit is not None:
+            return hit
+        users = self.users.get((owner, region), 0.0)
+        return users, "devices" if users > 0 else None
 
     def region_year(self, owner: int, region: str) -> int:
         """The owner's trailing-year revenue in the region: its revenue (`world_year`) split by
         its segments' customers x price there (the books keep no regional split)."""
-        total = sum(v for (o, _r), v in self.region_month.items() if o == owner)
+        totals: dict[int, int] | None = self._kept.get("owner_month")
+        if totals is None:  # M60: every owner's at once (integers: any order sums the same)
+            totals = {}
+            for (o, _r), v in self.region_month.items():
+                totals[o] = totals.get(o, 0) + v
+            self._kept["owner_month"] = totals
+        total = totals.get(owner, 0)
         if total <= 0:
             return 0
         return round(

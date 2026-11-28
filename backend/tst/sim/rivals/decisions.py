@@ -9,7 +9,7 @@ with source "rival" and replay recomputes it (ADR-0015 section 5).
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
@@ -82,31 +82,41 @@ def region_unserved(
         if region == home:
             market = state.market(category, seg)
             demand += market.addressable if market is not None else 0.0
-            served += sum(s.customers for _, s in _rivals_in(state, category, seg))
+            served += _served_home(state, category, seg)
         else:
             rmarket = state.regional_market(category, seg, region)
             demand += rmarket.addressable if rmarket is not None else 0.0
-            served += sum(
-                r.customers
-                for r in _regional_in(state, region, seg)
-                if (p := state.product(r.product_id)) is not None
-                and p.category == category
-                and p.status == "live"
-            )
+            served += _served_abroad(state, category, seg, region)
     return max(0.0, demand - served) / demand if demand > 0 else 0.0
 
 
-def _regional_in(state: GameState, region: str, segment: str) -> tuple[RegionalSegment, ...]:
-    """The state's regional segments in `region` and `segment`, in the state's order, from an
-    index built once per state (M45: every enter_region candidate scanned them all)."""
+def _served_home(state: GameState, category: str, segment: str) -> float:
+    """sum(customers) of `_rivals_in(state, category, segment)`, for every key at once per state
+    (M60: each rival's candidates summed them again; the same values in the same order)."""
 
-    def index() -> dict[tuple[str, str], tuple[RegionalSegment, ...]]:
-        out: dict[tuple[str, str], list[RegionalSegment]] = {}
+    def index() -> dict[tuple[str, str], float]:
+        return {
+            k: sum(s.customers for _, s in v)
+            for k, v in derived(state, "live_priced_by_segment", _live_priced(state)).items()
+        }
+
+    return derived(state, "served_home", index).get((category, segment), 0)
+
+
+def _served_abroad(state: GameState, category: str, segment: str, region: str) -> float:
+    """The customers of live products of `category` in `region`'s `segment`, summed over the
+    state's regional segments in their order, for every key at once per state (M60: enter_region
+    candidates summed them for each product and region; the same values in the same order)."""
+
+    def index() -> dict[tuple[str, str, str], float]:
+        found: dict[tuple[str, str, str], list[float]] = {}
         for r in state.regional_segments:
-            out.setdefault((r.region, r.segment), []).append(r)
-        return {k: tuple(v) for k, v in out.items()}
+            p = state.product(r.product_id)
+            if p is not None and p.status == "live":
+                found.setdefault((r.region, r.segment, p.category), []).append(r.customers)
+        return {k: sum(v) for k, v in found.items()}
 
-    return derived(state, "regional_segments_by_region", index).get((region, segment), ())
+    return derived(state, "served_abroad", index).get((region, segment, category), 0)
 
 
 def region_candidates(
@@ -237,6 +247,14 @@ def _rivals_in(
     """Live products priced in the category's segment, in the state's product order, from an
     index built once per state (M45: each rival's candidates scanned every product)."""
 
+    return derived(state, "live_priced_by_segment", _live_priced(state)).get(
+        (category, segment), ()
+    )
+
+
+def _live_priced(
+    state: GameState,
+) -> Callable[[], dict[tuple[str, str], tuple[tuple[Product, ProductSegment], ...]]]:
     def index() -> dict[tuple[str, str], tuple[tuple[Product, ProductSegment], ...]]:
         out: dict[tuple[str, str], list[tuple[Product, ProductSegment]]] = {}
         for product in state.products:
@@ -247,7 +265,7 @@ def _rivals_in(
                     out.setdefault((product.category, seg.segment), []).append((product, seg))
         return {k: tuple(v) for k, v in out.items()}
 
-    return derived(state, "live_priced_by_segment", index).get((category, segment), ())
+    return index
 
 
 def player_target(
@@ -318,7 +336,7 @@ def candidates(
             seg = own.get(seg_key)
             if seg is None or seg.price_cents is None:
                 market = state.market(product.category, seg_key)
-                served = sum(s.customers for _, s in _rivals_in(state, product.category, seg_key))
+                served = _served_home(state, product.category, seg_key)
                 unserved = 0.0
                 if market is not None and market.addressable > 0:
                     unserved = max(0.0, market.addressable - served) / market.addressable
