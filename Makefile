@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v6-strategies weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v6-strategies weekly-v6-s1-4 weekly-v6-s5-8 weekly-v6-s9-12 weekly-v6-s13-16 weekly-v6-s17-20 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -172,8 +172,21 @@ weekly-m43-t6:
 # December 2039 on seeds 1-20 (V6_SEEDS picks a shard; tools/v6_targets.py --load combines saved
 # runs), each run's company score at years 1 and 30.
 V6_SEEDS ?= 1-20
+V6_OUT ?= /tmp/tst-v6
 weekly-v6-strategies:
-	cd backend && TST_V6_SEEDS=$(V6_SEEDS) uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=$(V6_SEEDS) TST_V6_SAVE=$(V6_OUT)/v6-$(V6_SEEDS).json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+# CI: four seeds a job (19 strategies x 20 seeds is about 38 CPU-hours, past one job's limit);
+# tools/v6_targets.py --load /tmp/tst-v6/*.json judges the combined 20 seeds
+weekly-v6-s1-4:
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=1-4 TST_V6_SAVE=$(V6_OUT)/v6-1-4.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+weekly-v6-s5-8:
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=5-8 TST_V6_SAVE=$(V6_OUT)/v6-5-8.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+weekly-v6-s9-12:
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=9-12 TST_V6_SAVE=$(V6_OUT)/v6-9-12.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+weekly-v6-s13-16:
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=13-16 TST_V6_SAVE=$(V6_OUT)/v6-13-16.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
+weekly-v6-s17-20:
+	mkdir -p $(V6_OUT) && cd backend && TST_V6_SEEDS=17-20 TST_V6_SAVE=$(V6_OUT)/v6-17-20.json uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
