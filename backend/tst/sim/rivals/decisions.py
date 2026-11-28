@@ -38,6 +38,8 @@ from tst.sim.state import (
     CompanyState,
     GameState,
     derived,
+    from_all,
+    from_inputs,
     player_companies,
     with_approach,
     with_pool,
@@ -105,18 +107,31 @@ def _served_home(state: GameState, category: str, segment: str) -> float:
 
 def _served_abroad(state: GameState, category: str, segment: str, region: str) -> float:
     """The customers of live products of `category` in `region`'s `segment`, summed over the
-    state's regional segments in their order, for every key at once per state (M60: enter_region
-    candidates summed them for each product and region; the same values in the same order)."""
+    state's regional segments in their order (19.6). M60: kept per key while the regional
+    segments and products are the same tuples (a rival's move replaces the state, rarely
+    these), the segments grouped by region and segment once per tuple; the same values summed
+    in the same order."""
+    segments = state.regional_segments
 
-    def index() -> dict[tuple[str, str, str], float]:
-        found: dict[tuple[str, str, str], list[float]] = {}
-        for r in state.regional_segments:
-            p = state.product(r.product_id)
-            if p is not None and p.status == "live":
-                found.setdefault((r.region, r.segment, p.category), []).append(r.customers)
-        return {k: sum(v) for k, v in found.items()}
+    def grouped() -> dict[tuple[str, str], tuple[RegionalSegment, ...]]:
+        out: dict[tuple[str, str], list[RegionalSegment]] = {}
+        for r in segments:
+            out.setdefault((r.region, r.segment), []).append(r)
+        return {k: tuple(v) for k, v in out.items()}
 
-    return derived(state, "served_abroad", index).get((region, segment, category), 0)
+    def total() -> float:
+        rows = from_inputs(segments, "regional_segments_by_region", grouped).get(
+            (region, segment), ()
+        )
+        return sum(
+            r.customers
+            for r in rows
+            if (p := state.product(r.product_id)) is not None
+            and p.category == category
+            and p.status == "live"
+        )
+
+    return from_all((segments, state.products), ("served_abroad", category, segment, region), total)
 
 
 def region_candidates(
