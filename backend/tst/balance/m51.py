@@ -13,6 +13,7 @@ from dataclasses import dataclass, replace
 from typing import Final
 
 from tst.balance.game import PLAYER, Game
+from tst.balance.known_misses import KNOWN_MISSES
 from tst.balance.strategies import (
     accept_bridges,
     fundraise,
@@ -766,7 +767,10 @@ def target_2(
 
 # Reece's decision (2026-11-25, M51 decision 9): these rules stand as 63.2 defines them though
 # the scripted players' score does not show them; target 2 is printed and carried for them.
-TARGET2_CARRIED: Final = frozenset({"hard_rivals", "no_acquisitions", "no_automation"})
+# M57r-B (review 10 item 36): the carried rules are known misses, bounded and owned there.
+TARGET2_CARRIED: Final = frozenset(
+    k.target.removeprefix("M51.T2.") for k in KNOWN_MISSES if k.target.startswith("M51.T2.")
+)
 
 
 def report(runs: list[Run], rows: list[tuple[str, float, float, float]]) -> str:

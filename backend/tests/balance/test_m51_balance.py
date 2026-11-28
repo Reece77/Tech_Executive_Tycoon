@@ -18,4 +18,18 @@ def test_63_4_targets_1_and_2() -> None:
     runs = m51.run_table(m51.NEW, workers=jobs)
     rows = m51.target_2(workers=jobs)
     print(m51.report(runs, rows))
-    assert m51.met(runs, rows), m51.report(runs, rows)
+    from tst.balance.known_misses import Reading, known_miss, verdict
+
+    one = all(ok for *_, ok in m51.target_1([r for r in runs if r.key in m51.NEW]))
+    assert one, m51.report(runs, rows)
+    # M57r-B (review 10 item 36): each rule's drop is judged; a carried rule is a known miss
+    # within its bound, never a skip
+    readings = [
+        Reading(f"M51.T2.{rule}", drop >= m51.TARGET2_DROP, m51.TARGET2_DROP - drop)
+        for rule, _base, _hit, drop in rows
+    ]
+    failed = [r for r in readings if verdict(r) == "fail"]
+    assert not failed, (failed, m51.report(runs, rows))
+    known = [known_miss(r.target) for r in readings if verdict(r) == "known"]
+    if known:
+        pytest.xfail("; ".join(f"KNOWN MISS ({k.owner}): {k.reason}" for k in known if k))

@@ -227,6 +227,24 @@ def _hire(state: GameState, params: Params, data: GameData) -> Deal:
     return Deal("hire", params, ref, pid)
 
 
+OFFER_BAND = 0.20  # tunable-exempt: display only, a rival's offer is shown in a band this wide
+BAND_NICE = (5, 2, 1)  # tunable-exempt: the band's edges are round figures
+
+
+def offer_band(cents: int) -> tuple[int, int]:
+    """A rival's approach offer as the company is told it (M57r-B, review 10 item 4, F22;
+    ruling 2: 61.3 keeps the amount hidden): the band of round figures it falls in, a step of
+    1, 2 or 5 x a power of ten at or below OFFER_BAND of it, so the band is 8-20% wide and the
+    offer anywhere inside it. Both the retention talk's facts and the rivals API show this."""
+    raw = int(cents * OFFER_BAND)  # money-exact: a band width, then integer arithmetic
+    if raw < 1:
+        return cents, cents + 1
+    power = int("1" + "0" * (len(str(raw)) - 1))  # the power of ten at or below raw
+    step = next(n * power for n in BAND_NICE if n * power <= raw)
+    lo = cents // step * step
+    return lo, lo + step
+
+
 def _retention(state: GameState, params: Params) -> Deal:
     aid = _int(params, "approach_id")
     try:
@@ -238,6 +256,7 @@ def _retention(state: GameState, params: Params) -> Deal:
     name = _person_name(state, approach.person_id)
     rival = state.company(approach.rival_id).name
     year, _ = turn_to_ym(employment.start_turn)
+    lo, hi = offer_band(approach.offer_cents)
     ref = DealRef(
         kind="retention",
         key=(aid,),
@@ -252,7 +271,7 @@ def _retention(state: GameState, params: Params) -> Deal:
             person_id=approach.person_id,
         ),
         facts=(
-            f"{rival} offered {format_money(approach.offer_cents)} a year",
+            f"{rival} offered {format_money(lo)} to {format_money(hi)} a year",
             f"{name} earns {format_money(employment.salary_cents)} a year now",
             f"{name} has worked here since {year}",
         ),

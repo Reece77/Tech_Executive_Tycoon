@@ -54,7 +54,12 @@ def test_the_zone_wraps_todays_price_and_skip_is_the_median(loaded: LoadedData) 
         neg = opened(loaded, seed=seed)
         h = neg.hidden
         assert h.reservation[0] < BP < h.aspiration[0]  # the player wants lower
-        assert h.aspiration[0] - BP == BP - h.reservation[0]
+        # M57r-B (ruling 2): the zone is asymmetric, the reservation's distance the
+        # aspiration's x (1 +/- reservation_skew) by a draw (so 2 x price - opening is no
+        # longer the reservation)
+        d = h.aspiration[0] - BP
+        skew = b.reservation_skew
+        assert d * (1 - skew) - 1 <= BP - h.reservation[0] <= d * (1 + skew) + 1
         assert 3 <= h.patience <= 8
         assert engine.skip(neg).final == (BP,)
         lo, hi = engine.revealed(neg, b)[0]
@@ -149,6 +154,12 @@ def test_a_replay_of_the_stored_moves_is_identical(loaded: LoadedData) -> None:
 
 def test_zone_share_is_zero_at_skip_and_half_at_the_reservation(loaded: LoadedData) -> None:
     neg = opened(loaded)
+    h = neg.hidden
+    width = h.aspiration[0] - h.reservation[0]
     assert engine.zone_share(neg, (BP,)) == 0
-    assert engine.zone_share(neg, neg.hidden.reservation) == pytest.approx(0.5)
-    assert engine.zone_share(neg, neg.hidden.aspiration) == pytest.approx(-0.5)
+    # M57r-B: an asymmetric zone, so the reservation's share is its distance's, not a half
+    assert engine.zone_share(neg, h.reservation) == pytest.approx((BP - h.reservation[0]) / width)
+    assert engine.zone_share(neg, h.aspiration) == pytest.approx(-(h.aspiration[0] - BP) / width)
+    assert engine.zone_share(neg, h.reservation) - engine.zone_share(
+        neg, h.aspiration
+    ) == pytest.approx(1.0)

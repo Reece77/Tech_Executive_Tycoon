@@ -141,7 +141,7 @@ def _studio(state: GameState, data: LoadedData) -> StudioOut:
                 region=d.region(cand.person.region).label,
                 creative=MediaRangeOut(lo=c[0], hi=c[1]),
                 vision=MediaRangeOut(lo=v[0], hi=v[1]),
-                fee_cents=talent.fee_cents(cand.creative, cand.vision, 0.0, b),
+                fee_cents=talent.offer_fee_cents(cand, b),
                 upfront_share=tb.upfront_share,
                 expires=format_turn(o.turn + tb.pool_months),
             )

@@ -61,6 +61,7 @@ def load(d: dict[str, Any]) -> Negotiation:
             openness=h["openness"],
             offsets=_tuple(h["offsets"]),
             skill=h["skill"],
+            jitter=_tuple(h.get("jitter")),
         ),
         level=d["level"],
         patience_left=d["patience_left"],

@@ -202,7 +202,15 @@ def test_an_acquisitions_zone_is_its_first_counter_and_reservation(loaded: Loade
     assert aspiration >= reservation
     neg = engine.open_negotiation(deal.ref, RngFactory(1), state.turn, 1.0, (), 0, loaded.balance)
     median = engine.skip(neg).final
-    assert median == ((aspiration + reservation) // 2,)
+    # M57r-B (ruling 2): the deal's reservation stands; its first counter is moved by a
+    # hidden skew (x 1 +/- reservation_skew of its distance), so the opening no longer gives
+    # the reservation; skip is the median of that zone
+    h = neg.hidden
+    assert h.reservation == (reservation,)
+    skew = loaded.balance.negotiation.reservation_skew
+    gap = aspiration - reservation
+    assert gap * (1 - skew) - 1 <= h.aspiration[0] - reservation <= gap * (1 + skew) + 1
+    assert median == ((h.aspiration[0] + reservation) // 2,)
     assert median is not None
     after = _apply(state, deals.agreement(deal, median, _founder(state), 0.0), loaded)
     assert any(x.target_id == target.id for x in after.deals)

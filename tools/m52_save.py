@@ -14,8 +14,12 @@ import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+if TYPE_CHECKING:
+    from tst.balance.m52 import LongPlay
 
 
 def _line(r) -> str:  # type: ignore[no-untyped-def]
@@ -31,6 +35,27 @@ def _line(r) -> str:  # type: ignore[no-untyped-def]
         f" {median} ms, at most {max(late, default=0)} ms; to 2069 against M45's fixture:"
         f" {r.m45_difference or 'identical'}"
     )
+
+
+def _failures(runs: list[LongPlay]) -> list[str]:
+    """Target 4's checks on each seed (as tests/balance/test_m52_balance.py): no error, December
+    2100 reached and active, every integer within int64, the economy within its known miss."""
+    from tst.balance import m52
+    from tst.balance.known_misses import Reading, verdict
+
+    out = []
+    for r in runs:
+        if r.error is not None:
+            out.append(f"seed {r.seed}: {r.error}")
+            continue
+        if r.reached != "Dec 2100" or r.ended != "active":
+            out.append(f"seed {r.seed}: reached {r.reached}, {r.ended}")
+        if r.largest_int >= m52.INT64:
+            out.append(f"seed {r.seed}: an integer past int64 ({r.largest_int})")
+        score = r.revenue_2100 * m52.ECONOMY_MARGIN / m52.INT64
+        if verdict(Reading("M52.economy_2100", score <= 1, score)) == "fail":
+            out.append(f"seed {r.seed}: the 2100 economy at {score:.2f} is past its bound")
+    return out
 
 
 def main() -> int:
@@ -51,8 +76,16 @@ def main() -> int:
         later = pool.map(m52.sandbox_2100, others) if others else iter(())
         game, first = m52.play_2100(seeds[0])
         print(_line(first), flush=True)
+        runs = [first]
         for r in later:
             print(_line(r), flush=True)
+            runs.append(r)
+    # M57r-B (review 10 item 27): a failed run fails the job (it printed and exited 0 before)
+    bad = _failures(runs)
+    for line in bad:
+        print(f"FAIL {line}", file=sys.stderr)
+    if bad:
+        return 1
     data = m30.loaded()
     args.save_dir.mkdir(parents=True, exist_ok=True)
     from tst.balance.m37 import FAMILY_AGES

@@ -4,6 +4,10 @@ from copying save files for the first-run import and the pre-update backup.
 `/api/health` answers everywhere. The `/api/desktop` routes answer `desktop: false` (GET) or
 409 `not_desktop` outside the installed game. `POST /api/desktop/focus` (a second launch
 bringing this window forward) takes the instance token and is left out of the schema.
+
+M57r-B (review 10 item 2): every desktop write (the key, the import, Update now, Later) also
+needs the instance token in `X-TST-Instance`; the game's page reads it from `GET
+/api/desktop` (`write_token`), which only the game's own page can read (`local_guard`).
 """
 
 from __future__ import annotations
@@ -31,7 +35,11 @@ from tst.desktop.version import current_version
 
 router = APIRouter(prefix="/api", tags=["desktop"])
 
-ERRORS: dict[int | str, dict[str, object]] = {409: {"model": ErrorOut}, 422: {"model": ErrorOut}}
+ERRORS: dict[int | str, dict[str, object]] = {
+    403: {"model": ErrorOut},
+    409: {"model": ErrorOut},
+    422: {"model": ErrorOut},
+}
 UPDATING_MESSAGE = "The game is updating; it will restart in a moment."
 
 
@@ -44,6 +52,23 @@ def _refuse(code: str, message: str, status_code: int = status.HTTP_409_CONFLICT
 
 def _not_desktop() -> JSONResponse:
     return _refuse("not_desktop", "only the installed game has this")
+
+
+def _forbidden() -> JSONResponse:
+    return _refuse("forbidden", "only the game's own window can do this", status.HTTP_403_FORBIDDEN)
+
+
+def _writer(token: str | None) -> tuple[DesktopContext | None, JSONResponse | None]:
+    """The context when this write may go ahead, else the refusal to send."""
+    ctx = desktop_context.current()
+    if ctx is None:
+        return None, _not_desktop()
+    if not ctx.check_token(token):
+        return None, _forbidden()
+    return ctx, None
+
+
+_TOKEN = Header(default=None, alias=TOKEN_HEADER, include_in_schema=False)
 
 
 def _out(ctx: DesktopContext | None) -> DesktopOut:
@@ -71,6 +96,7 @@ def _out(ctx: DesktopContext | None) -> DesktopOut:
         ),
         update_message=ctx.update_message,
         backup_folder=str(ctx.backup_folder) if ctx.backup_folder else None,
+        write_token=ctx.token,
     )
 
 
@@ -90,11 +116,12 @@ def get_desktop() -> DesktopOut:
 @router.put(
     "/desktop/api-key", response_model=DesktopOut, responses=ERRORS, operation_id="setApiKey"
 )
-def set_api_key(body: ApiKeyIn) -> DesktopOut | JSONResponse:
+def set_api_key(body: ApiKeyIn, token: str | None = _TOKEN) -> DesktopOut | JSONResponse:
     """Store the Anthropic API key in app data (empty removes it). The key is never returned."""
-    ctx = desktop_context.current()
-    if ctx is None:
-        return _not_desktop()
+    ctx, refused = _writer(token)
+    if refused is not None:
+        return refused
+    assert ctx is not None
     try:
         key = clean_key(body.key) if body.key.strip() else None
     except ValueError as e:
@@ -106,11 +133,12 @@ def set_api_key(body: ApiKeyIn) -> DesktopOut | JSONResponse:
 @router.post(
     "/desktop/import", response_model=ImportOut, responses=ERRORS, operation_id="answerImport"
 )
-def answer_import(body: ImportIn) -> ImportOut | JSONResponse:
+def answer_import(body: ImportIn, token: str | None = _TOKEN) -> ImportOut | JSONResponse:
     """The first-run offer: copy the repository's saves, or never ask again."""
-    ctx = desktop_context.current()
-    if ctx is None:
-        return _not_desktop()
+    ctx, refused = _writer(token)
+    if refused is not None:
+        return refused
+    assert ctx is not None
     if not body.accept:
         ctx.skip_import()
         return ImportOut(imported=[])
@@ -120,11 +148,12 @@ def answer_import(body: ImportIn) -> ImportOut | JSONResponse:
 @router.post(
     "/desktop/update", response_model=DesktopOut, responses=ERRORS, operation_id="startUpdate"
 )
-def start_update() -> DesktopOut | JSONResponse:
+def start_update(token: str | None = _TOKEN) -> DesktopOut | JSONResponse:
     """Update now: download and verify the installer, back up the saves, install, restart."""
-    ctx = desktop_context.current()
-    if ctx is None:
-        return _not_desktop()
+    ctx, refused = _writer(token)
+    if refused is not None:
+        return refused
+    assert ctx is not None
     try:
         ctx.begin_update()
     except UpdateError as e:
@@ -135,11 +164,12 @@ def start_update() -> DesktopOut | JSONResponse:
 @router.post(
     "/desktop/update/later", response_model=DesktopOut, responses=ERRORS, operation_id="updateLater"
 )
-def update_later() -> DesktopOut | JSONResponse:
+def update_later(token: str | None = _TOKEN) -> DesktopOut | JSONResponse:
     """Later: the offer comes back at the next start."""
-    ctx = desktop_context.current()
-    if ctx is None:
-        return _not_desktop()
+    ctx, refused = _writer(token)
+    if refused is not None:
+        return refused
+    assert ctx is not None
     ctx.later()
     return _out(ctx)
 

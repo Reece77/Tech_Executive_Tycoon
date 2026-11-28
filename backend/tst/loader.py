@@ -19,7 +19,7 @@ from tst.advisor.config import ADVISOR_FILE, DEFAULT_ADVISOR, AdvisorConfig
 from tst.history_coverage import coverage_problems
 from tst.mods.overlay import canonical_hash, merge
 from tst.profile.data import ACHIEVEMENTS_FILE, AchievementDef, AchievementsFile
-from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR, TURN_ZERO
+from tst.sim.calendar import HISTORY_START_TURN, HISTORY_START_YEAR, TURN_ZERO, turn_to_ym
 from tst.sim.commodities.config import (
     CommoditiesFile,
     CommoditiesHistoryFile,
@@ -727,7 +727,7 @@ def platforms_problems(balance: Balance, data: GameData) -> list[str]:
     regions = set(data.region_keys)
     categories = {c.key: c for c in (*data.categories, *data.pseudo_categories)}
     owners = {c.name for c in data.incumbents}
-    first, last = HISTORY_START_YEAR, 2010 + pf.history_end_turn // 12  # M50: from 2008
+    first, last = HISTORY_START_YEAR, turn_to_ym(pf.history_end_turn)[0]  # M50: from 2008
     for p in pf.platforms:
         if p.owner is not None and p.owner not in owners:
             problems.append(f"platform {p.key}: owner {p.owner!r} is not in incumbents.yaml")

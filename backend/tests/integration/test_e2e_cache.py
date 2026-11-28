@@ -147,3 +147,45 @@ def test_an_edit_of_an_existing_save_is_never_cached(
     assert code == 0
     assert calls == ["x"]
     assert list(cache.iterdir()) == []
+
+
+@pytest.mark.parametrize("order", ["warm_to_empty", "empty_to_warm"])
+def test_the_key_covers_the_profiles_starting_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], order: str
+) -> None:
+    """M57r-B (review 10 item 35, Codex's reproduction): a build in a folder whose profile has
+    already earned the fixture's achievements earns nothing, so its entry restored into an
+    empty folder left no profile where a fresh build earns them. The starting state is in the
+    key: a build in the other kind of folder is a miss, and each ends as its fresh build."""
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    warm_seed = tmp_path / "seed"
+    warm_seed.mkdir()
+    assert _build(warm_seed, "seed-0") == 0  # earns the fixture's achievements: a warm profile
+    warm_profile = (warm_seed / "profiles" / "default.json").read_text()
+
+    def folder(kind: str, name: str) -> Path:
+        d = tmp_path / name
+        (d / "profiles").mkdir(parents=True)
+        if kind == "warm":
+            (d / "profiles" / "default.json").write_text(warm_profile)
+        return d
+
+    first, second = ("warm", "empty") if order == "warm_to_empty" else ("empty", "warm")
+    monkeypatch.setenv("TST_E2E_FIXTURE_CACHE", str(cache))
+    capsys.readouterr()
+    assert _build(folder(first, "a"), "one-1") == 0
+    assert "e2e_cache: stored" in capsys.readouterr().err
+    target = folder(second, "b")
+    assert _build(target, "two-2") == 0
+    assert "e2e_cache: hit" not in capsys.readouterr().err  # another starting state: a miss
+    monkeypatch.delenv("TST_E2E_FIXTURE_CACHE")
+    fresh = folder(second, "c")
+    assert _build(fresh, "two-2") == 0
+    assert _profile(target) == _profile(fresh)
+    # and the same starting state again is a hit that ends as its fresh build
+    monkeypatch.setenv("TST_E2E_FIXTURE_CACHE", str(cache))
+    again = folder(second, "d")
+    assert _build(again, "two-2") == 0
+    assert "e2e_cache: hit" in capsys.readouterr().err
+    assert _profile(again) == _profile(fresh)

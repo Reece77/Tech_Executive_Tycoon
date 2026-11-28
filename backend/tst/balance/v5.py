@@ -34,6 +34,7 @@ from tst.balance.strategies_v5 import V5, V5_ARMS
 from tst.balance.v3 import LONG_TURNS, loaded
 from tst.balance.v4 import ALL as V4_ALL
 from tst.balance.v4 import FIELD as V4_FIELD
+from tst.sim.calendar import turn_to_ym
 
 SEEDS: Final = tuple(range(1, 11))
 ALL: Final = {**V4_ALL, **V5, **V5_ARMS}
@@ -264,6 +265,6 @@ def rung_table(runs: Sequence[V5Run]) -> str:
         cells = []
         for k in keys:
             t = r.rungs.get(k)
-            cells.append(f"{'-' if t is None else f'{2010 + t // 12}-{t % 12 + 1:02d}':>12}")
+            cells.append(f"{'-' if t is None else '{}-{:02d}'.format(*turn_to_ym(t)):>12}")
         lines.append(f"{r.strategy:19} {r.seed:4}  " + "  ".join(cells))
     return "\n".join(lines)

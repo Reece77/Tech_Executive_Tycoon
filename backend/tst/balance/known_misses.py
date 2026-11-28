@@ -32,9 +32,9 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         # score: minus the margin gap (larger is worse); known while the AI integrator is no
         # more than 2 points below ai_regions (product manager, 2026-11-07)
         worse_than=0.02,
-        reason="unmeasured on M46 and main (f4642ee8): ai_regions and integrator_ai go "
-        "bankrupt on all 10 seeds (months 27-88), so the row has no margins and is skipped; "
-        "AI models' D0 x0.19 (M43a) leaves an AI-first company too few customers",
+        reason="unmeasurable on M46 and main (f4642ee8): ai_regions and integrator_ai go "
+        "bankrupt on all 10 seeds (months 27-88), so there are no margins; M57r-B: an "
+        "unmeasurable row now fails (it was skipped) and V3.ai.survival carries the cause",
     ),
     KnownMiss(
         target="V5.cells",  # 30.7 V5: >= 75% of (run, category, decade after 2020) cells
@@ -126,7 +126,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     ),
     KnownMiss(
         target="M37.2069_month",  # tests/integration/test_m37_perf.py: 500 ms runner-adjusted
-        owner="v6 performance",  # PM ruling 2026-11-21: v6's performance pass (not M46's)
+        owner=NEXT,  # PM ruling 2026-11-21: v6 performance; M57r-B: named M57, a milestone id
         # score: the adjusted median in seconds; known up to 550 ms (PM ruling 2026-11-21)
         worse_than=0.550,
         reason="535 ms adjusted on M46 (main 467 ms the same day; 172 staff against 136): "
@@ -144,7 +144,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
     # M52 (Reece, 2026-11-26): both of 66.4 target 4's misses are known misses
     KnownMiss(
         target="M52.2100_month",  # tests/integration/test_m52_perf.py: 550 ms runner-adjusted
-        owner="v6 performance",  # as M37.2069_month: the same cause
+        owner=NEXT,  # as M37.2069_month: the same cause (M57r-B: M57, a milestone id)
         # score: the adjusted median in seconds; known up to 650 ms
         worse_than=0.650,
         reason="610 ms adjusted on CI (544 ms locally) after rule 6's telecom fix (700 ms "
@@ -157,6 +157,46 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         worse_than=4.0,
         reason="2100 revenue 359-442x below int64 on seeds 1-3 (2069: 3,786x); commodity "
         "sales dominate; every value stays within int64 (59-79x below)",
+    ),
+    # M57r-B (review 10 items 24, 25 and 36; ruling 6): misses that guarded nothing until now
+    KnownMiss(
+        target="M9.spread.africa",  # formulas 19.8 target 5: a live rival in every cell, month 120
+        owner=NEXT,  # ruling 6: M57 adds a fixed-broadband rival in Africa or retires the cell
+        # score: the seeds whose Africa fixed-broadband cell is empty; known up to 10 of 10
+        worse_than=10.0,
+        reason="('africa', 'fixed_broadband') empty on seeds 1-10 since M53 (no fixed-broadband "
+        "rival in Africa; M51 decision 13, M54 decision 24, M59 decision 9); every other cell "
+        "is covered",
+    ),
+    KnownMiss(
+        target="V3.ai.survival",  # M57r-B: the AI-first scripts survive the 10 years
+        owner=NEXT,  # with V3.ai: AI models' D0 x0.19 (M43a)
+        # score: the most seeds, of 10, on which ai_regions or integrator_ai goes bankrupt;
+        # the target is at most 5 (a median margin exists); known up to 10 of 10
+        worse_than=10.0,
+        reason="ai_regions and integrator_ai go bankrupt on all 10 seeds (months 27-88) on M46 "
+        "and main: AI models' D0 x0.19 (M43a) leaves an AI-first company too few customers; "
+        "V3.ai is unmeasurable while they do",
+    ),
+    # M51 decision 9 (Reece, 2026-11-25): three of 63.4 target 2's rules carried; their
+    # readings on M51 bound them. score: 10% less the rule's drop of the median score
+    KnownMiss(
+        target="M51.T2.hard_rivals",
+        owner=NEXT,
+        worse_than=0.09,  # a 1% drop on M51 (569.5 -> 562.5, steady_regions)
+        reason="the scripted players' score barely shows harder rivals (M51 decision 9)",
+    ),
+    KnownMiss(
+        target="M51.T2.no_acquisitions",
+        owner=NEXT,
+        worse_than=0.13,  # a 3% rise on M51 (553.0 -> 569.5, acquirer)
+        reason="the acquirer script scores no lower without acquisitions (M51 decision 9)",
+    ),
+    KnownMiss(
+        target="M51.T2.no_automation",
+        owner=NEXT,
+        worse_than=0.10,  # no drop on M51 (569.5 both, ceo)
+        reason="the CEO script's score does not show its automation (M51 decision 9)",
     ),
 )
 

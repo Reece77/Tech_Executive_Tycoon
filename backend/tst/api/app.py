@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
 from tst.api.error_log import ErrorLogMiddleware
+from tst.api.local_guard import local_guard
 from tst.api.routers import (
     automation,
     campaign,
@@ -72,6 +73,9 @@ from tst.api.routers import (
 )
 from tst.api.schemas.common import ErrorOut
 from tst.config import get_settings
+from tst.conversations.common import ConversationCallError, ConversationMovedError
+from tst.db.custom_io import CustomScenarioMismatchError
+from tst.db.migrate import SaveTooNewError
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
@@ -103,12 +107,17 @@ ERROR_STATUS: dict[type[SimError], int] = {
     UpgradeNeededError: status.HTTP_409_CONFLICT,
     IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
     CustomScenarioExistsError: status.HTTP_409_CONFLICT,  # M52: save as another name
+    ConversationCallError: status.HTTP_503_SERVICE_UNAVAILABLE,  # M57r-B: nothing played
+    ConversationMovedError: status.HTTP_409_CONFLICT,  # M57r-B: nothing stored
+    CustomScenarioMismatchError: status.HTTP_409_CONFLICT,  # M57r-B: the save is not opened
+    SaveTooNewError: status.HTTP_409_CONFLICT,  # M57r-B: made by a newer version
 }
+# Raised before anything is written: safe to send again (M8r; M57r-B's conversation errors)
+RETRYABLE = frozenset({SaveBusyError.code, ConversationCallError.code, ConversationMovedError.code})
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
-    # Busy is only ever raised before a write commits (M8r): safe to send again.
-    retryable = True if code == SaveBusyError.code else None
+    retryable = True if code in RETRYABLE else None
     return JSONResponse(
         status_code=status_code,
         content=ErrorOut(code=code, message=message, retryable=retryable).model_dump(
@@ -179,6 +188,7 @@ def create_app() -> FastAPI:
     app.include_router(meta.router)
     app.include_router(desktop.router)  # M58: health and the installed game's routes
     app.middleware("http")(desktop.update_guard)  # M58: no writes once an update's backup starts
+    app.middleware("http")(local_guard)  # M57r-B: loopback Host, own Origin (outermost)
 
     @app.exception_handler(SimError)
     async def _sim_error(_request: Request, exc: SimError) -> JSONResponse:

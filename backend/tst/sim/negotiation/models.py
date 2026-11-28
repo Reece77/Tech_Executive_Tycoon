@@ -89,6 +89,8 @@ class Hidden:
     openness: float
     offsets: tuple[float, ...]
     skill: float  # the negotiator's factor from true skills (58.3)
+    # M57r-B: each round's concession factor's draw, in [-1, 1) (empty in talks opened before)
+    jitter: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

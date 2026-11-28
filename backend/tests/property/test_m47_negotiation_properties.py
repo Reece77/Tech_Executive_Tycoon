@@ -55,7 +55,8 @@ def test_no_outcome_beats_the_reservation(
         before = neg
         neg = engine.play_round(neg, (value,), tuple(ms), b)
         assert 0.0 <= neg.level <= before.level
-        assert before.level - neg.level <= b.move_step + 1e-12
+        # at most move_step, x (1 + concession_jitter) for the round's hidden draw (M57r-B)
+        assert before.level - neg.level <= b.move_step * (1 + b.concession_jitter) + 1e-12
         last = neg.rounds[-1]
         if neg.status == "walked":
             threat = any(m.kind == "threaten_walk" for m in last.moves)
@@ -69,6 +70,10 @@ def test_no_outcome_beats_the_reservation(
         neg = engine.skip(neg)
     if neg.final is not None:
         assert engine.inside(neg, neg.final)
-        assert engine.zone_share(neg, neg.final) <= 0.5 + 1e-9
+        # never past the reservation (its own share: a half no longer, the zone is skewed)
+        assert (
+            engine.zone_share(neg, neg.final)
+            <= engine.zone_share(neg, neg.hidden.reservation) + 1e-9
+        )
         if neg.status == "skipped":
             assert neg.final == (BP,)

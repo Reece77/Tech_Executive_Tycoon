@@ -35,6 +35,10 @@ class Settings(BaseSettings):
         default=None, validation_alias=AliasChoices("ANTHROPIC_API_KEY", "TST_ANTHROPIC_API_KEY")
     )
 
+    # M57r-B: host names the local API answers besides loopback ones, comma-separated (tests
+    # set "testserver", the test client's); see tst/api/local_guard.py
+    allowed_hosts: str | None = None
+
     # M35a: append each unhandled exception or 5xx response here as a JSON line (e2e sets it).
     error_log: Path | None = None
 

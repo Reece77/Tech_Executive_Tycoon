@@ -58,7 +58,8 @@ test('(b) counter a scripted approach and see the answer at Continue', async ({ 
   await panel.getByTestId('counter-approach').click();
   const dialog = page.getByTestId('raise-dialog');
   await expect(dialog).toBeVisible();
-  const offer = (await panel.textContent())?.match(/offered \$([\d,]+)/)?.[1] ?? '0';
+  // M57r-B: the offer is shown as a band; double its top
+  const offer = (await panel.textContent())?.match(/offered \$[\d,]+ to \$([\d,]+)/)?.[1] ?? '0';
   const double = String(Number(offer.replace(/,/g, '')) * 2);
   await dialog.getByTestId('raise-salary').fill(double);
   await expect(page.getByTestId('counter-band')).toContainText('likely to stay');

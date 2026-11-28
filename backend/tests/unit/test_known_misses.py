@@ -22,8 +22,9 @@ def test_the_list_after_m46() -> None:
     "v6 balance" pass's) moves to M57; M37's 2069 month stays with v6's performance pass."""
     assert [m.target for m in KNOWN_MISSES][:4] == ["V3.ai", "V5.cells", "V5.cats", "I1"]
     owners = {m.target: m.owner for m in KNOWN_MISSES}
-    assert set(owners.values()) == {"M57", "v6 performance"}
-    assert owners["M37.2069_month"] == "v6 performance"
+    # M57r-B (review 10 item 36): every owner is a milestone id ("v6 performance" was not)
+    assert set(owners.values()) == {"M57"}
+    assert owners["M37.2069_month"] == "M57"
     for closed in ("T2", "M10.T3", "V3.margin", "M10b.T1.spacing"):
         assert known_miss(closed) is None
 
@@ -119,3 +120,21 @@ def test_m43a_misses_are_known_to_m57_within_their_bounds() -> None:
     assert row("V2.wins", 5.0) == "fail"
     assert row("V3.margin", 0.001) == "fail"  # closed in M46: +0.4 pts
     assert row("V4.T1.1", 0.30) == "known" and row("V4.T1.1", 0.31) == "fail"  # 0.85x
+
+
+def test_m57r_b_rows() -> None:
+    """M57r-B (review 10 items 24, 25, 36; ruling 6): M9's Africa cell, the AI-first scripts'
+    survival and M51's carried rules are known misses, each bounded at its reading; V3.ai's
+    unmeasurable row is a failure no bound covers."""
+    from math import inf
+
+    from tst.balance.known_misses import Reading
+
+    assert verdict(Reading("M9.spread.africa", False, 10.0)) == "known"
+    assert verdict(Reading("M9.spread.africa", False, 11.0)) == "fail"
+    assert verdict(Reading("V3.ai.survival", False, 10.0)) == "known"
+    assert (
+        verdict(Row("V3.ai", "margin gap", "unmeasurable", "+3 to +10", False, score=inf)) == "fail"
+    )
+    assert verdict(Reading("M51.T2.no_acquisitions", False, 0.10 - (1 - 569.5 / 553.0))) == "known"
+    assert verdict(Reading("M51.T2.hard_rivals", False, 0.10)) == "fail"  # past a 1% drop's

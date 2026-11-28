@@ -5,6 +5,8 @@ receptiveness, the founder's factor or a draw."""
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.negotiations import NegotiationModeOut
@@ -33,7 +35,9 @@ class MeetingMoveIn(BaseModel):
 class MeetingAnswerIn(BaseModel):
     message: str | None = Field(default=None, description="The player's answer (free text)")
     moves: list[MeetingMoveIn] | None = Field(default=None, description="Template mode's moves")
-    source: str = Field(default="free", description="free | suggested | template")
+    source: Literal["free", "suggested", "template"] = Field(
+        default="free", description="free | suggested | template (M57r-B: a Literal)"
+    )
 
 
 class MeetingSpeakerOut(BaseModel):

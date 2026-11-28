@@ -1,7 +1,8 @@
 """A cache of the saves the e2e fixture tools build (M59; an e2e fixture helper, never used by the
 game). CI's e2e shards keep it with actions/cache, keyed by a hash of everything a fixture save
 is built from (backend/tst, backend/data, backend/migrations, tools/e2e_*, the lock file and the
-e2e specs). The engine is deterministic (ADR-0002), so a cached save is the save a fresh build
+e2e specs); each entry's own key adds the tool's arguments and the folder's JSON files as the
+build found them (M57r-B). The engine is deterministic (ADR-0002), so a cached save is the save a fresh build
 would make; tests/integration/test_e2e_cache.py holds a cached one's state hash to a fresh one's.
 
 Each `tools/e2e_*_save.py` ends with `sys.exit(e2e_cache.run(__file__, argv, lambda: main(...)))`.
@@ -63,13 +64,18 @@ def _target(args: list[str]) -> tuple[int, Path, str] | None:
     return None
 
 
-def key(tool: str, args: list[str]) -> str:
-    """The cache key of a build: the tool and its arguments, the folder and name left out."""
+def key(tool: str, args: list[str], start: dict[str, object] | None = None) -> str:
+    """The cache key of a build: the tool and its arguments, the folder and name left out, and
+    (M57r-B, review 10 item 35) the folder's JSON files as the build found them (the profile,
+    the results): a build's profile changes depend on them (an achievement already earned is
+    not earned again), so a build in a warm folder and one in an empty folder never share an
+    entry."""
     found = _target(args)
     assert found is not None
     i = found[0]
     parts = [Path(tool).name, *args[:i], "<dir>", "<name>", *args[i + 2 :]]
-    return hashlib.sha256(json.dumps(parts).encode()).hexdigest()[:32]
+    body = json.dumps({"parts": parts, "start": start or {}}, sort_keys=True)
+    return hashlib.sha256(body.encode()).hexdigest()[:32]
 
 
 def _snapshot(folder: Path) -> dict[str, tuple[int, int]]:
@@ -157,7 +163,8 @@ def run(tool: str, args: list[str], build: Callable[[], int | None]) -> int:
     path = folder / f"{name}{SUFFIX}"
     if path.exists():  # an edit of a save that exists
         return build() or 0
-    entry = Path(cache) / key(tool, args)
+    before_json = _json_files(folder)
+    entry = Path(cache) / key(tool, args, before_json)
     if (entry / "save.sqlite").exists():
         shutil.copyfile(entry / "save.sqlite", path)
         _restore(path, name)
@@ -168,7 +175,6 @@ def run(tool: str, args: list[str], build: Callable[[], int | None]) -> int:
         print(f"e2e_cache: hit {entry.name} for {name}", file=sys.stderr)
         return 0
     before = _snapshot(folder)
-    before_json = _json_files(folder)
     tee = _Tee(sys.stdout)
     real, sys.stdout = sys.stdout, tee
     try:

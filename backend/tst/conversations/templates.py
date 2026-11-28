@@ -15,6 +15,8 @@ LINES = {
     "walked_patience": "We've gone round long enough. We're walking away from this one.",
 }
 OPENING = "Thanks for sitting down with us. Our position is {counter}."
+# M57r-B (item 21): the reply call's fallback, a few words of tone before the engine's line
+TONE_FALLBACK = "Let me be straight with you."
 
 
 def opening_line(p: PublicNegotiation) -> str:
