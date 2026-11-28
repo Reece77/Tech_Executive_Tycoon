@@ -6,6 +6,8 @@ or a delegate's factor, a retention chance, a draw, or a rival's offer amount.""
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from tst.api.schemas.negotiations import NegotiationModeOut
@@ -33,7 +35,9 @@ class TalkMoveIn(BaseModel):
 class TalkAnswerIn(BaseModel):
     message: str | None = Field(default=None, description="The player's answer (free text)")
     moves: list[TalkMoveIn] | None = Field(default=None, description="Template mode's moves")
-    source: str = Field(default="free", description="free | suggested | template")
+    source: Literal["free", "suggested", "template"] = Field(
+        default="free", description="free | suggested | template (M57r-B: a Literal)"
+    )
 
 
 class TalkCounterpartOut(BaseModel):

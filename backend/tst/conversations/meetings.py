@@ -19,26 +19,27 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tst.conversations import classifier, meeting_prompts, meeting_store, meeting_templates
 from tst.conversations.common import (
+    ConversationMovedError,
+    ConversationWriter,
     ModeInfo,
     _ask,
     _log_calls,
     _now,
-    _spend,
     _writer,
     clean_message,
     mode_info,
+    must,
 )
 from tst.conversations.meeting_view import PublicMeeting, public, reaction_of
 from tst.db import repository
 from tst.db.models import ConversationRoundRow, ConversationRow
-from tst.events.service import Writer
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.errors import MeetingRuleError, SimError, UnknownMeetingError
@@ -52,6 +53,7 @@ from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
 PURPOSE = "meeting"  # llm_call_log.purpose
+type Source = Literal["free", "suggested", "template"]  # M57r-B (item 22): a message's source
 OPEN = "open"
 
 
@@ -281,7 +283,7 @@ def _plan(session: Session, state: GameState, params: dict[str, Any], data: Load
 
 
 def _opening(
-    writer: Writer | None, view: PublicMeeting, data: LoadedData
+    writer: ConversationWriter | None, view: PublicMeeting, data: LoadedData
 ) -> tuple[str, str, list[str], str]:
     """(the first question's line, its source, suggestions, their source)."""
     mb = data.balance.meetings
@@ -310,7 +312,7 @@ def _allowed(view: PublicMeeting, item: int | None) -> list[str]:
 
 
 def _suggest(
-    writer: Writer | None,
+    writer: ConversationWriter | None,
     view: PublicMeeting,
     item: int,
     said: list[tuple[str, str]],
@@ -352,36 +354,31 @@ def open_meeting(
     *,
     adapter: LLMAdapter | None = None,
 ) -> MeetingTalks:
-    """Open this month's meeting of `kind`, or resume it if it is open."""
+    """Open this month's meeting of `kind`, or resume it if it is open. The opening line's
+    and suggestions' calls run between a read and the write (M57r-B, review 10 item 20)."""
     mkind = as_kind(kind)
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
     repository.migrate.ensure_current(path)
+    with repository.read_session(path) as session:
+        first = _prepare_open(session, data, mkind, kind, params)
+        if isinstance(first, ConversationRow):
+            return _talks(first, _history(session, first.id), data, mode)
+    view = public(first.meeting, data.balance.meetings)
+    line, line_source, suggestions, sug_source = _opening(writer, view, data)
     with repository.write_session(path) as session:
         state = repository.load_current(session)
         _lapse(session, state.turn)
-        key = meeting_key(kind, state.turn)
-        found = session.scalars(
-            select(ConversationRow).where(
-                ConversationRow.deal_key == key, ConversationRow.status == OPEN
-            )
-        ).first()
-        if found is not None:
-            return _talks(found, _history(session, found.id), data, mode)
-        why = _why_not(session, state, mkind, data) or _energy_problem(state, mkind, data)
-        if why is not None:
-            raise MeetingRuleError(why)
-        plan = _plan(session, state, dict(params or {}), data) if mkind == "investor_day" else None
-        rng = RngFactory(state.save_meta.master_seed)
-        meeting = agenda.open_meeting(
-            state, mkind, rng, data.balance, data.game_data, _cash(session, state), plan
-        )
-        view = public(meeting, data.balance.meetings)
-        line, line_source, suggestions, sug_source = _opening(writer, view, data)
+        again = _prepare_open(session, data, mkind, kind, params)
+        if isinstance(again, ConversationRow):
+            return _talks(again, _history(session, again.id), data, mode)
+        if again != first:
+            raise ConversationMovedError("the game moved on while the meeting opened: open again")
+        meeting = first.meeting
         row = ConversationRow(
             kind=kind,
-            deal_key=key,
+            deal_key=first.key,
             counterpart_key=f"company:{state.player.id}",
             subject=meeting.subject,
             status=OPEN,
@@ -412,10 +409,42 @@ def open_meeting(
         if writer is not None:
             _log_calls(session, state.turn, writer)
         session.flush()
-        talks = _talks(row, _history(session, row.id), data, mode)
-    if writer is not None:
-        _spend(save_dir, writer)
-    return talks
+        return _talks(row, _history(session, row.id), data, mode)
+
+
+@dataclass(frozen=True, slots=True)
+class _Opening:
+    key: str
+    meeting: Meeting
+
+
+def _prepare_open(
+    session: Session,
+    data: LoadedData,
+    mkind: MeetingKind,
+    kind: str,
+    params: dict[str, Any] | None,
+) -> ConversationRow | _Opening:
+    """This month's open meeting of the kind, or the meeting to open (MeetingRuleError when it
+    may not): the same in a read and in the write after it unless the save moved on."""
+    state = repository.read_state(session)
+    key = meeting_key(kind, state.turn)
+    found = session.scalars(
+        select(ConversationRow).where(
+            ConversationRow.deal_key == key, ConversationRow.status == OPEN
+        )
+    ).first()
+    if found is not None:
+        return found
+    why = _why_not(session, state, mkind, data) or _energy_problem(state, mkind, data)
+    if why is not None:
+        raise MeetingRuleError(why)
+    plan = _plan(session, state, dict(params or {}), data) if mkind == "investor_day" else None
+    rng = RngFactory(state.save_meta.master_seed)
+    meeting = agenda.open_meeting(
+        state, mkind, rng, data.balance, data.game_data, _cash(session, state), plan
+    )
+    return _Opening(key, meeting)
 
 
 # --- Answers and the outcome ---------------------------------------------------------------------
@@ -461,15 +490,72 @@ def answer(
     *,
     message: str | None = None,
     moves: Sequence[dict[str, Any]] | None = None,
-    source: str = "free",
+    source: Source = "free",
     adapter: LLMAdapter | None = None,
 ) -> MeetingTalks:
     """One answer to the current item: the player's text (scored by the LLM) or picked moves
-    (template mode). The engine decides; the speaker's line is worded after."""
+    (template mode). The engine decides; the speaker's line is worded after.
+
+    M57r-B (review 10 items 20 and 3): the calls run between a read and the write; the write
+    re-checks the meeting has not moved on, then stores the answer and, when it ends the
+    meeting, the outcome's action and the closure in one transaction. A failed scoring call
+    plays nothing."""
     mb = data.balance.meetings
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        row = _row(session, conv_id)
+        status = _shown_status(row, state.turn)
+        if status != OPEN:
+            raise MeetingRuleError(f"this meeting is over ({status})")
+        seen, turn = row.state, state.turn
+        meeting = meeting_store.load(row.state)
+        kind = as_kind(row.kind)
+        said = _said(_history(session, conv_id))
+    item = meeting.next_item
+    if item is None:
+        raise MeetingRuleError("the agenda is finished")
+    view = public(meeting, mb)
+    text = (
+        clean_message(message, mb.max_message_chars, MeetingRuleError)
+        if message is not None
+        else ""
+    )
+    if moves:
+        claimed, moves_source = _parse_moves(moves, kind, mb.max_moves), "template"
+        source = "template" if not text else source
+    elif text and writer is not None:
+        system, user = meeting_prompts.classify_prompt(view, item.n, said, text, mb.history_items)
+        fallback = {"moves": [{"move": "neutral"}]}
+        got = must(_ask(writer, "classify", system, user, fallback, PURPOSE), writer)
+        claimed, valid = moves_from(got, kind, mb.max_moves)
+        moves_source = writer.adapter.name if valid else "invalid"
+    elif text:
+        raise MeetingRuleError("meetings are in template mode: pick moves from the buttons")
+    else:
+        raise MeetingRuleError("write an answer, or pick moves")
+    after = engine.play_item(meeting, claimed, mb)
+    view_after = public(after, mb)
+    checked = after.answers[-1].moves
+    reaction = reaction_of(raw_strength_public(after, item, checked, mb))
+    nxt = after.next_item.n if after.next_item is not None else None
+    speaker = after.items[nxt].speaker if nxt is not None else item.speaker
+    fallback_line = meeting_templates.speak_line(view_after, reaction, nxt)
+    reply, reply_source = fallback_line, "template"
+    if writer is not None:
+        system, user = meeting_prompts.speak_prompt(
+            view_after, speaker, reaction, nxt, said, text, mb.max_reply_words, mb.history_items
+        )
+        got = _ask(writer, "reply", system, user, fallback_line, PURPOSE)
+        ok = classifier.reply_ok(got, _allowed(view_after, nxt), mb.max_reply_words)
+        if ok:
+            reply, reply_source = ok, writer.adapter.name
+    sug: list[str] = []
+    sug_source = "template"
+    if nxt is not None:
+        sug, sug_source = _suggest(writer, view_after, nxt, [*said, (text, reply)], data)
     acted = False
     with repository.write_session(path) as session:
         state = repository.read_state(session)
@@ -477,48 +563,8 @@ def answer(
         row = _row(session, conv_id)
         if row.status != OPEN:
             raise MeetingRuleError(f"this meeting is over ({row.status})")
-        meeting = meeting_store.load(row.state)
-        item = meeting.next_item
-        if item is None:
-            raise MeetingRuleError("the agenda is finished")
-        kind = as_kind(row.kind)
-        said = _said(_history(session, conv_id))
-        view = public(meeting, mb)
-        text = (
-            clean_message(message, mb.max_message_chars, MeetingRuleError)
-            if message is not None
-            else ""
-        )
-        if moves:
-            claimed, moves_source = _parse_moves(moves, kind, mb.max_moves), "template"
-            source = "template" if not text else source
-        elif text and writer is not None:
-            system, user = meeting_prompts.classify_prompt(
-                view, item.n, said, text, mb.history_items
-            )
-            got = _ask(writer, "classify", system, user, {"moves": [{"move": "neutral"}]}, PURPOSE)
-            claimed, valid = moves_from(got, kind, mb.max_moves)
-            moves_source = writer.adapter.name if valid else "invalid"
-        elif text:
-            raise MeetingRuleError("meetings are in template mode: pick moves from the buttons")
-        else:
-            raise MeetingRuleError("write an answer, or pick moves")
-        after = engine.play_item(meeting, claimed, mb)
-        view_after = public(after, mb)
-        checked = after.answers[-1].moves
-        reaction = reaction_of(raw_strength_public(after, item, checked, mb))
-        nxt = after.next_item.n if after.next_item is not None else None
-        speaker = after.items[nxt].speaker if nxt is not None else item.speaker
-        fallback = meeting_templates.speak_line(view_after, reaction, nxt)
-        reply, reply_source = fallback, "template"
-        if writer is not None:
-            system, user = meeting_prompts.speak_prompt(
-                view_after, speaker, reaction, nxt, said, text, mb.max_reply_words, mb.history_items
-            )
-            got = _ask(writer, "reply", system, user, fallback, PURPOSE)
-            ok = classifier.reply_ok(got, _allowed(view_after, nxt), mb.max_reply_words)
-            if ok:
-                reply, reply_source = ok, writer.adapter.name
+        if state.turn != turn or row.state != seen:
+            raise ConversationMovedError("this meeting moved on while you wrote: send it again")
         session.add(
             ConversationRoundRow(
                 conversation_id=conv_id,
@@ -535,7 +581,6 @@ def answer(
         )
         row.state = meeting_store.dump(after)
         if nxt is not None:
-            sug, sug_source = _suggest(writer, view_after, nxt, [*said, (text, reply)], data)
             row.suggestions, row.suggestions_source = sug, sug_source
         else:
             row.suggestions = []
@@ -547,8 +592,6 @@ def answer(
             row.error = error
             row.closed_turn = state.turn
             acted = error is None
-    if writer is not None:
-        _spend(save_dir, writer)
     if acted:
         repository.after_action(path, data)
     return get(path, data, conv_id)

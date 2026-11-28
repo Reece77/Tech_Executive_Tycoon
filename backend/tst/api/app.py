@@ -73,6 +73,7 @@ from tst.api.routers import (
 )
 from tst.api.schemas.common import ErrorOut
 from tst.config import get_settings
+from tst.conversations.common import ConversationCallError, ConversationMovedError
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
@@ -104,12 +105,15 @@ ERROR_STATUS: dict[type[SimError], int] = {
     UpgradeNeededError: status.HTTP_409_CONFLICT,
     IronmanSaveError: status.HTTP_409_CONFLICT,  # M7b: no duplicate or restore
     CustomScenarioExistsError: status.HTTP_409_CONFLICT,  # M52: save as another name
+    ConversationCallError: status.HTTP_503_SERVICE_UNAVAILABLE,  # M57r-B: nothing played
+    ConversationMovedError: status.HTTP_409_CONFLICT,  # M57r-B: nothing stored
 }
+# Raised before anything is written: safe to send again (M8r; M57r-B's conversation errors)
+RETRYABLE = frozenset({SaveBusyError.code, ConversationCallError.code, ConversationMovedError.code})
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
-    # Busy is only ever raised before a write commits (M8r): safe to send again.
-    retryable = True if code == SaveBusyError.code else None
+    retryable = True if code in RETRYABLE else None
     return JSONResponse(
         status_code=status_code,
         content=ErrorOut(code=code, message=message, retryable=retryable).model_dump(

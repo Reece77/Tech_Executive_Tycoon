@@ -44,10 +44,11 @@ def kind_index(kind: DealKind) -> int:
     return DEAL_KINDS.index(kind)
 
 
-def draws(rng: RngFactory, turn: int, ref: DealRef) -> np.random.Generator:
-    """The deal's one generator (stream `negotiation`, key (kind index, *deal key); ADR-0013):
-    drawn when talks open, in that month."""
-    return rng.stream(turn, "negotiation", kind_index(ref.kind), *ref.key)
+def draws(rng: RngFactory, turn: int, ref: DealRef, attempt: int = 0) -> np.random.Generator:
+    """The deal's one generator (stream `negotiation`, key (kind index, *deal key, attempt);
+    ADR-0013): drawn when talks open, in that month. `attempt` counts the month's earlier
+    talks on the same deal (M57r-B, review 10 item 19), so a second deal draws afresh."""
+    return rng.stream(turn, "negotiation", kind_index(ref.kind), *ref.key, attempt)
 
 
 def skill_factor(skills: dict[str, float], b: NegotiationBalance) -> float:
@@ -113,10 +114,12 @@ def open_negotiation(
     persona: tuple[str, ...],
     relationship: int,
     balance: Balance,
+    attempt: int = 0,
 ) -> Negotiation:
-    """58.2: the counterpart's zone, patience, priorities and openness, drawn for this deal."""
+    """58.2: the counterpart's zone, patience, priorities and openness, drawn for this deal
+    (and this month's `attempt` at it)."""
     b = balance.negotiation
-    gen = draws(rng, turn, ref)
+    gen = draws(rng, turn, ref, attempt)
     n = len(ref.terms)
     spread_u = [float(gen.random()) for _ in range(n)]
     patience = int(gen.integers(int(b.patience.lo), int(b.patience.hi), endpoint=True))

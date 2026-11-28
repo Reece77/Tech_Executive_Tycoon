@@ -433,3 +433,15 @@ def test_paired_state_one_hidden_field_changes_nothing_shown(
     assert len(a) == len(b)
     for x, y in zip(a, b, strict=True):
         assert x == y
+
+
+def test_a_failed_scoring_call_plays_nothing(save: Path, loaded: LoadedData) -> None:
+    """M57r-B (review 10 item 20): a model that does not answer no longer scores the answer
+    `neutral` and moves the meeting on: nothing is played and the error is retryable."""
+    from tst.conversations.common import ConversationCallError
+
+    failing = Recorder({"classify": lambda _p: None})
+    t = meetings.open_meeting(save, loaded, "board", adapter=failing)
+    with pytest.raises(ConversationCallError):
+        meetings.answer(save, loaded, t.id, message="Here is the plan.", adapter=failing)
+    assert meetings.get(save, loaded, t.id).view.answers == ()

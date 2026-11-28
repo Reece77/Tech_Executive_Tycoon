@@ -20,26 +20,27 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from tst.conversations import classifier, talk_prompts, talk_store, talk_templates
 from tst.conversations.common import (
+    ConversationMovedError,
+    ConversationWriter,
     ModeInfo,
     _ask,
     _log_calls,
     _now,
-    _spend,
     _writer,
     clean_message,
     mode_info,
+    must,
 )
 from tst.conversations.talk_view import PublicTalk, public, reaction_of
 from tst.db import repository
 from tst.db.models import ConversationRoundRow, ConversationRow
-from tst.events.service import Writer
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.errors import SimError, TalkRuleError, UnknownTalkError
@@ -52,6 +53,7 @@ from tst.sim.talks.engine import strength_public
 from tst.sim.talks.models import Move, Subject, Talk
 
 PURPOSE = "talk"  # llm_call_log.purpose
+type Source = Literal["free", "suggested", "template"]  # M57r-B (item 22): a message's source
 OPEN = "open"
 
 
@@ -256,7 +258,7 @@ def _allowed(view: PublicTalk) -> list[str]:
 
 
 def _suggest(
-    writer: Writer | None,
+    writer: ConversationWriter | None,
     view: PublicTalk,
     q: int,
     said: list[tuple[str, str]],
@@ -273,7 +275,7 @@ def _suggest(
 
 
 def _opening(
-    writer: Writer | None, view: PublicTalk, data: LoadedData
+    writer: ConversationWriter | None, view: PublicTalk, data: LoadedData
 ) -> tuple[str, str, list[str], str]:
     tb = data.balance.talks
     line = talk_templates.question_line(view, 0)
@@ -367,71 +369,32 @@ def open_talk(
     delegate_id = params.get("delegate_id")
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" and not delegate_id else None
     repository.migrate.ensure_current(path)
+    # M57r-B (review 10 item 20): the opening line's and suggestions' calls run between a read
+    # and the write, never inside the save's write transaction; the write opens the same talk
+    # or refuses (ConversationMovedError) if the save moved on in between
+    with repository.read_session(path) as session:
+        first = _prepare_open(session, data, tkind, kind, params)
+        if isinstance(first, ConversationRow):
+            return _talks(first, _history(session, first.id), data, mode)
+    view = public(first.talk, data.balance.talks)
+    suggestions: list[str] = []
+    if delegate_id is not None:
+        line, line_source, sug_source = talk_templates.question_line(view, 0), "template", ""
+    else:
+        line, line_source, suggestions, sug_source = _opening(writer, view, data)
     with repository.write_session(path) as session:
         state = repository.load_current(session)
         _lapse(session, state.turn)
-        rng = RngFactory(state.save_meta.master_seed)
-        if tkind == "one_to_one":
-            pid = int(params.get("person_id", -1))
-            source, key = "person", pid
-        else:
-            source, key = str(params.get("source", "press")), int(params.get("key", -1))
-        dkey = talk_key(kind, source, key, state.turn)
-        found = session.scalars(
-            select(ConversationRow).where(ConversationRow.deal_key == dkey)
-        ).first()
-        if found is not None and found.status == OPEN:
-            return _talks(found, _history(session, found.id), data, mode)
-        if found is not None:
-            what = "a one-to-one with them" if tkind == "one_to_one" else "this talk"
-            raise TalkRuleError(f"{what} was already held this month ({found.status})")
-        if tkind == "one_to_one":
-            if delegate_id is not None:
-                _delegate_ok(state, int(delegate_id), pid)
-            else:
-                why = _energy_problem(state, tkind, data)
-                if why is not None:
-                    raise TalkRuleError(why)
-            opening.person_subject(state, pid)  # raises for someone not on the staff
-            shown, causes, interests = _morale_facts(session, state, pid, data)
-            talk = opening.open_one_to_one(
-                state,
-                pid,
-                rng,
-                data.balance,
-                data.game_data,
-                morale_shown=shown,
-                causes=causes,
-                revealed_interests=interests,
-                delegate_id=None if delegate_id is None else int(delegate_id),
-            )
-            counterpart = f"person:{pid}"
-        else:
-            subject = next(
-                (
-                    s
-                    for k, s in _subjects(state, data)
-                    if k == tkind and s.source == source and s.key == key
-                ),
-                None,
-            )
-            if subject is None:
-                raise TalkRuleError("there is no such press moment or crisis this month")
-            why = _energy_problem(state, tkind, data, subject.event_id is not None)
-            if why is not None:
-                raise TalkRuleError(why)
-            talk = opening.open_press(state, tkind, subject, rng, data.balance, data.game_data)
-            counterpart = f"press:{talk.counterpart.organisation}"
-        view = public(talk, data.balance.talks)
-        suggestions: list[str] = []
-        if delegate_id is not None:
-            line, line_source, sug_source = talk_templates.question_line(view, 0), "template", ""
-        else:
-            line, line_source, suggestions, sug_source = _opening(writer, view, data)
+        again = _prepare_open(session, data, tkind, kind, params)
+        if isinstance(again, ConversationRow):
+            return _talks(again, _history(session, again.id), data, mode)
+        if again != first:
+            raise ConversationMovedError("the game moved on while the talk opened: open it again")
+        talk = first.talk
         row = ConversationRow(
             kind=kind,
-            deal_key=dkey,
-            counterpart_key=counterpart,
+            deal_key=first.key,
+            counterpart_key=first.counterpart,
             subject=view.subject,
             status=OPEN,
             opened_turn=state.turn,
@@ -463,13 +426,76 @@ def open_talk(
         session.flush()
         conv_id = row.id
         talks = _talks(row, _history(session, row.id), data, mode)
-    if writer is not None:
-        _spend(save_dir, writer)
     if delegate_id is not None:
         for moves in engine.delegated_moves(talk):
             answer(path, data, conv_id, moves=[{"kind": m.kind} for m in moves], adapter=adapter)
         return get(path, data, conv_id)
     return talks
+
+
+@dataclass(frozen=True, slots=True)
+class _Opening:
+    key: str
+    counterpart: str
+    talk: Talk
+
+
+def _prepare_open(
+    session: Session, data: LoadedData, tkind: TalkKind, kind: str, params: dict[str, Any]
+) -> ConversationRow | _Opening:
+    """The open talk on this subject this month, or the talk to open (TalkRuleError when it
+    may not): the same in a read and in the write after it unless the save moved on."""
+    state = repository.read_state(session)
+    delegate_id = params.get("delegate_id")
+    rng = RngFactory(state.save_meta.master_seed)
+    if tkind == "one_to_one":
+        pid = int(params.get("person_id", -1))
+        source, key = "person", pid
+    else:
+        source, key = str(params.get("source", "press")), int(params.get("key", -1))
+    dkey = talk_key(kind, source, key, state.turn)
+    found = session.scalars(select(ConversationRow).where(ConversationRow.deal_key == dkey)).first()
+    if found is not None and found.status == OPEN:
+        return found
+    if found is not None:
+        what = "a one-to-one with them" if tkind == "one_to_one" else "this talk"
+        raise TalkRuleError(f"{what} was already held this month ({found.status})")
+    if tkind == "one_to_one":
+        if delegate_id is not None:
+            _delegate_ok(state, int(delegate_id), pid)
+        else:
+            why = _energy_problem(state, tkind, data)
+            if why is not None:
+                raise TalkRuleError(why)
+        opening.person_subject(state, pid)  # raises for someone not on the staff
+        shown, causes, interests = _morale_facts(session, state, pid, data)
+        talk = opening.open_one_to_one(
+            state,
+            pid,
+            rng,
+            data.balance,
+            data.game_data,
+            morale_shown=shown,
+            causes=causes,
+            revealed_interests=interests,
+            delegate_id=None if delegate_id is None else int(delegate_id),
+        )
+        return _Opening(dkey, f"person:{pid}", talk)
+    subject = next(
+        (
+            s
+            for k, s in _subjects(state, data)
+            if k == tkind and s.source == source and s.key == key
+        ),
+        None,
+    )
+    if subject is None:
+        raise TalkRuleError("there is no such press moment or crisis this month")
+    why = _energy_problem(state, tkind, data, subject.event_id is not None)
+    if why is not None:
+        raise TalkRuleError(why)
+    talk = opening.open_press(state, tkind, subject, rng, data.balance, data.game_data)
+    return _Opening(dkey, f"press:{talk.counterpart.organisation}", talk)
 
 
 # --- Answers and the outcome ---------------------------------------------------------------------
@@ -513,15 +539,60 @@ def answer(
     *,
     message: str | None = None,
     moves: Sequence[dict[str, Any]] | None = None,
-    source: str = "free",
+    source: Source = "free",
     adapter: LLMAdapter | None = None,
 ) -> TalkTalks:
     """One answer to the current question: the player's text (scored by the LLM) or picked
-    moves (template mode). The engine decides; the other side's line is worded after."""
+    moves (template mode). The engine decides; the other side's line is worded after.
+
+    M57r-B (review 10 items 20 and 3): the calls run between a read and the write; the write
+    re-checks the talk has not moved on, then stores the answer and, when it ends the talk, the
+    outcome's action and the closure in one transaction. A failed scoring call plays nothing."""
     tb = data.balance.talks
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        row = _row(session, conv_id)
+        if _shown_status(row, state.turn) != OPEN:
+            raise TalkRuleError(f"this talk is over ({_shown_status(row, state.turn)})")
+        seen, turn = row.state, state.turn
+        talk = talk_store.load(row.state)
+        kind = as_kind(row.kind)
+        said = _said(_history(session, conv_id))
+    q = talk.next_question
+    if q is None:
+        raise TalkRuleError("every question has been answered")
+    if talk.delegate_id is not None:
+        writer = None  # a delegated talk is played by the engine, never the LLM
+    view = public(talk, tb)
+    text = (
+        clean_message(message, tb.max_message_chars, TalkRuleError) if message is not None else ""
+    )
+    if moves:
+        claimed, moves_source = _parse_moves(moves, kind, tb.max_moves), "template"
+        source = "template" if not text else source
+    elif text and writer is not None:
+        system, user = talk_prompts.classify_prompt(view, q.n, said, text, tb.history_items)
+        fallback = {"moves": [{"move": "neutral"}]}
+        got = must(_ask(writer, "classify", system, user, fallback, PURPOSE), writer)
+        claimed, valid = moves_from(got, kind, tb.max_moves)
+        moves_source = writer.adapter.name if valid else "invalid"
+    elif text:
+        raise TalkRuleError("talks are in template mode: pick moves from the buttons")
+    else:
+        raise TalkRuleError("write an answer, or pick moves")
+    after = engine.play(talk, claimed, tb)
+    view_after = public(after, tb)
+    checked = after.answers[-1].moves
+    reaction = reaction_of(strength_public(after, q, checked, tb))
+    nxt = after.next_question.n if after.next_question is not None else None
+    reply, reply_source = _line(writer, view_after, reaction, nxt, said, text, data)
+    sug: list[str] = []
+    sug_source = "template"
+    if nxt is not None and talk.delegate_id is None:
+        sug, sug_source = _suggest(writer, view_after, nxt, [*said, (text, reply)], data)
     acted = False
     with repository.write_session(path) as session:
         state = repository.read_state(session)
@@ -529,47 +600,8 @@ def answer(
         row = _row(session, conv_id)
         if row.status != OPEN:
             raise TalkRuleError(f"this talk is over ({row.status})")
-        talk = talk_store.load(row.state)
-        q = talk.next_question
-        if q is None:
-            raise TalkRuleError("every question has been answered")
-        kind = as_kind(row.kind)
-        if talk.delegate_id is not None:
-            writer = None  # a delegated talk is played by the engine, never the LLM
-        said = _said(_history(session, conv_id))
-        view = public(talk, tb)
-        text = (
-            clean_message(message, tb.max_message_chars, TalkRuleError)
-            if message is not None
-            else ""
-        )
-        if moves:
-            claimed, moves_source = _parse_moves(moves, kind, tb.max_moves), "template"
-            source = "template" if not text else source
-        elif text and writer is not None:
-            system, user = talk_prompts.classify_prompt(view, q.n, said, text, tb.history_items)
-            got = _ask(writer, "classify", system, user, {"moves": [{"move": "neutral"}]}, PURPOSE)
-            claimed, valid = moves_from(got, kind, tb.max_moves)
-            moves_source = writer.adapter.name if valid else "invalid"
-        elif text:
-            raise TalkRuleError("talks are in template mode: pick moves from the buttons")
-        else:
-            raise TalkRuleError("write an answer, or pick moves")
-        after = engine.play(talk, claimed, tb)
-        view_after = public(after, tb)
-        checked = after.answers[-1].moves
-        reaction = reaction_of(strength_public(after, q, checked, tb))
-        nxt = after.next_question.n if after.next_question is not None else None
-        fallback = talk_templates.speak_line(view_after, reaction, nxt)
-        reply, reply_source = fallback, "template"
-        if writer is not None:
-            system, user = talk_prompts.speak_prompt(
-                view_after, reaction, nxt, said, text, tb.max_reply_words, tb.history_items
-            )
-            got = _ask(writer, "reply", system, user, fallback, PURPOSE)
-            ok = classifier.reply_ok(got, _allowed(view_after), tb.max_reply_words)
-            if ok:
-                reply, reply_source = ok, writer.adapter.name
+        if state.turn != turn or row.state != seen:
+            raise ConversationMovedError("this talk moved on while you wrote: send it again")
         session.add(
             ConversationRoundRow(
                 conversation_id=conv_id,
@@ -585,11 +617,9 @@ def answer(
             )
         )
         row.state = talk_store.dump(after)
-        if nxt is not None and talk.delegate_id is None:
-            sug, sug_source = _suggest(writer, view_after, nxt, [*said, (text, reply)], data)
-            row.suggestions, row.suggestions_source = sug, sug_source
-        else:
-            row.suggestions = []
+        row.suggestions = sug if nxt is not None and talk.delegate_id is None else []
+        if row.suggestions:
+            row.suggestions_source = sug_source
         if writer is not None:
             _log_calls(session, state.turn, writer)
         if after.status == "done":  # the outcome's action and the closure, in this transaction
@@ -598,11 +628,33 @@ def answer(
             row.error = error
             row.closed_turn = state.turn
             acted = error is None
-    if writer is not None:
-        _spend(save_dir, writer)
     if acted:
         repository.after_action(path, data)
     return get(path, data, conv_id)
+
+
+def _line(
+    writer: ConversationWriter | None,
+    view_after: PublicTalk,
+    reaction: str,
+    nxt: int | None,
+    said: list[tuple[str, str]],
+    text: str,
+    data: LoadedData,
+) -> tuple[str, str]:
+    """The other side's line: the template's (the next question, or the close) unless the
+    LLM's wording passes the checks (M57r-B, item 21: no number without its unit, no amount
+    in words)."""
+    tb = data.balance.talks
+    fallback = talk_templates.speak_line(view_after, reaction, nxt)
+    if writer is None:
+        return fallback, "template"
+    system, user = talk_prompts.speak_prompt(
+        view_after, reaction, nxt, said, text, tb.max_reply_words, tb.history_items
+    )
+    got = _ask(writer, "reply", system, user, fallback, PURPOSE)
+    ok = classifier.reply_ok(got, _allowed(view_after), tb.max_reply_words)
+    return (ok, writer.adapter.name) if ok else (fallback, "template")
 
 
 def _conclude(session: Session, data: LoadedData, talk: Talk) -> str | None:
