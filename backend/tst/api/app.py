@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import OperationalError
 
 from tst.api.error_log import ErrorLogMiddleware
+from tst.api.local_guard import local_guard
 from tst.api.routers import (
     automation,
     campaign,
@@ -179,6 +180,7 @@ def create_app() -> FastAPI:
     app.include_router(meta.router)
     app.include_router(desktop.router)  # M58: health and the installed game's routes
     app.middleware("http")(desktop.update_guard)  # M58: no writes once an update's backup starts
+    app.middleware("http")(local_guard)  # M57r-B: loopback Host, own Origin (outermost)
 
     @app.exception_handler(SimError)
     async def _sim_error(_request: Request, exc: SimError) -> JSONResponse:

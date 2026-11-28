@@ -144,15 +144,15 @@ def test_bundled_version_file(tmp_path: Path) -> None:
     assert current_version(tmp_path) == "6.0.2"
 
 
-def release_payload(version: str = "6.1.0", **extra: Any) -> dict[str, Any]:
+def release_payload(version: str = "6.1.0", size: int = 1234, **extra: Any) -> dict[str, Any]:
     name = f"TechStartupTycoon-Setup-{version}.exe"
-    base = "https://example.invalid/dl/"
+    base = f"https://github.com/{update.REPO}/releases/download/v{version}/"
     return {
         "tag_name": f"v{version}",
         "body": "## What's new\n- Faster turns",
-        "html_url": f"https://example.invalid/releases/v{version}",
+        "html_url": f"https://github.com/{update.REPO}/releases/tag/v{version}",
         "assets": [
-            {"name": name, "browser_download_url": base + name, "size": 1234},
+            {"name": name, "browser_download_url": base + name, "size": size},
             {"name": name + ".sha256", "browser_download_url": base + name + ".sha256"},
         ],
         **extra,
@@ -186,16 +186,19 @@ def test_releases_that_cannot_be_installed_are_ignored(payload: dict[str, Any]) 
     assert update.parse_release(payload) is None
 
 
-def _release() -> update.Release:
-    release = update.parse_release(release_payload())
+def _release(size: int = 1234) -> update.Release:
+    release = update.parse_release(release_payload(size=size))
     assert release is not None
     return release
+
+
+NAME = "TechStartupTycoon-Setup-6.1.0.exe"
 
 
 def _fakes(blob: bytes, published: str) -> tuple[update.Fetch, update.Stream]:
     def fetch(url: str, _timeout: float) -> bytes:
         assert url.endswith(".sha256")
-        return f"{published}  TechStartupTycoon-Setup-6.1.0.exe\n".encode()
+        return f"{published}  {NAME}\n".encode()
 
     def stream(_url: str, _timeout: float) -> Iterator[bytes]:
         yield blob[:3]
@@ -207,25 +210,143 @@ def _fakes(blob: bytes, published: str) -> tuple[update.Fetch, update.Stream]:
 def test_download_verifies_the_checksum(tmp_path: Path) -> None:
     blob = b"installer bytes"
     fetch, stream = _fakes(blob, hashlib.sha256(blob).hexdigest().upper())
-    path = update.download(_release(), tmp_path, fetch, stream)
-    assert path.read_bytes() == blob and path.name == "TechStartupTycoon-Setup-6.1.0.exe"
+    got = update.download(_release(len(blob)), tmp_path, fetch, stream)
+    assert got.path.read_bytes() == blob and got.path.name == NAME
+    assert got.sha256 == hashlib.sha256(blob).hexdigest()
 
 
 def test_a_tampered_download_is_refused_and_deleted(tmp_path: Path) -> None:
     fetch, stream = _fakes(b"tampered", hashlib.sha256(b"original").hexdigest())
     with pytest.raises(update.UpdateError, match="checksum"):
-        update.download(_release(), tmp_path, fetch, stream)
+        update.download(_release(len(b"tampered")), tmp_path, fetch, stream)
     assert list(tmp_path.iterdir()) == []
 
 
-def test_checksum_file_without_a_hash_is_refused() -> None:
+@pytest.mark.parametrize(
+    "text",
+    [
+        "not a hash",
+        "",
+        # one hash anywhere in the file is no longer enough: one record, for this installer
+        f"see {'a' * 64} for details",
+        f"{'a' * 64}  TechStartupTycoon-Setup-6.0.9.exe",
+        f"{'a' * 64}  {NAME}\n{'b' * 64}  {NAME}",
+        f"{'a' * 64}  {NAME}\n{'b' * 64}  other.exe",
+    ],
+)
+def test_checksum_file_must_be_one_record_for_the_installer(text: str) -> None:
     with pytest.raises(update.UpdateError):
-        update.parse_checksum("not a hash")
+        update.parse_checksum(text, NAME)
+
+
+def test_checksum_record_forms() -> None:
+    digest = "A" * 64
+    assert update.parse_checksum(f"{digest}  {NAME}", NAME) == "a" * 64
+    assert update.parse_checksum(f"{digest} *{NAME}\r\n", NAME) == "a" * 64
+
+
+def test_downloads_longer_or_shorter_than_listed_are_refused(tmp_path: Path) -> None:
+    blob = b"installer bytes"
+    fetch, stream = _fakes(blob, hashlib.sha256(blob).hexdigest())
+    with pytest.raises(update.UpdateError, match="larger"):
+        update.download(_release(len(blob) - 1), tmp_path, fetch, stream)
+    with pytest.raises(update.UpdateError, match="incomplete"):
+        update.download(_release(len(blob) + 1), tmp_path, fetch, stream)
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_older_installers_are_deleted_once_the_new_one_is_verified(tmp_path: Path) -> None:
+    (tmp_path / "TechStartupTycoon-Setup-6.0.0.exe").write_bytes(b"old")
+    (tmp_path / "keep.txt").write_text("not ours")
+    blob = b"installer bytes"
+    fetch, stream = _fakes(blob, hashlib.sha256(blob).hexdigest())
+    update.download(_release(len(blob)), tmp_path, fetch, stream)
+    assert sorted(p.name for p in tmp_path.iterdir()) == [NAME, "keep.txt"]
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://example.invalid/dl/TechStartupTycoon-Setup-6.1.0.exe",
+        "http://github.com/Reece77/Tech_Executive_Tycoon/releases/download/v6.1.0/"
+        "TechStartupTycoon-Setup-6.1.0.exe",
+        "https://github.com/someone/else/releases/download/v6.1.0/TechStartupTycoon-Setup-6.1.0.exe",
+        "https://github.com/Reece77/Tech_Executive_Tycoon/releases/download/v6.0.0/"
+        "TechStartupTycoon-Setup-6.1.0.exe",
+    ],
+)
+def test_assets_off_the_release_are_refused(url: str) -> None:
+    payload = release_payload()
+    payload["assets"][0]["browser_download_url"] = url
+    assert update.parse_release(payload) is None
+    payload = release_payload()
+    payload["assets"][1]["browser_download_url"] = url + ".sha256"
+    assert update.parse_release(payload) is None
+
+
+def test_a_release_without_a_listed_size_is_refused() -> None:
+    assert update.parse_release(release_payload(size=0)) is None
+
+
+@pytest.mark.parametrize(
+    ("url", "ok"),
+    [
+        ("https://objects.githubusercontent.com/x", True),
+        ("https://release-assets.githubusercontent.com/x", True),
+        ("https://github.com/x", True),
+        ("http://objects.githubusercontent.com/x", False),
+        ("https://evil.example/x", False),
+        ("https://objects.githubusercontent.com.evil.example/x", False),
+    ],
+)
+def test_redirects_stay_on_github_over_https(url: str, ok: bool) -> None:
+    assert update.redirect_allowed(url, update.GITHUB) is ok
+
+
+def test_the_redirect_handler_refuses_a_foreign_hop() -> None:
+    import urllib.request
+
+    handler = update._PinnedRedirects()
+    req = urllib.request.Request("https://github.com/x")
+    with pytest.raises(update.UpdateError, match="redirected"):
+        handler.redirect_request(req, None, 302, "Found", {}, "http://evil.example/x")
+    ok = handler.redirect_request(
+        req, None, 302, "Found", {}, "https://objects.githubusercontent.com/y"
+    )
+    assert ok is not None and ok.full_url == "https://objects.githubusercontent.com/y"
+
+
+def test_update_source_is_github_unless_a_loopback_fake() -> None:
+    assert update.source_from({}) is update.GITHUB
+    assert update.source_from({"TST_UPDATE_SOURCE": "https://evil.example"}) is update.GITHUB
+    assert update.source_from({"TST_UPDATE_SOURCE": "http://10.0.0.1:80"}) is update.GITHUB
+    fake = update.source_from({"TST_UPDATE_SOURCE": "http://127.0.0.1:8123/"})
+    assert fake.latest_url == f"http://127.0.0.1:8123/repos/{update.REPO}/releases/latest"
+    payload = release_payload()
+    for a in payload["assets"]:
+        a["browser_download_url"] = fake.asset_url("v6.1.0", a["name"])
+    assert update.parse_release(payload, fake) is not None
+    assert update.parse_release(payload) is None  # the fake's URLs are not GitHub's
+
+
+def _installer(tmp_path: Path, blob: bytes = b"setup") -> update.Download:
+    path = tmp_path / "setup.exe"
+    path.write_bytes(blob)
+    return update.Download(path=path, sha256=hashlib.sha256(blob).hexdigest())
 
 
 def test_installer_runs_silently_and_detached(tmp_path: Path) -> None:
     calls: list[tuple[list[str], dict[str, Any]]] = []
-    update.launch_installer(tmp_path / "setup.exe", lambda cmd, **kw: calls.append((cmd, kw)))
+    update.launch_installer(_installer(tmp_path), lambda cmd, **kw: calls.append((cmd, kw)))
     ((cmd, kw),) = calls
     assert cmd[0].endswith("setup.exe") and "/SILENT" in cmd and "/CLOSEAPPLICATIONS" in cmd
     assert kw["close_fds"] is True
+
+
+def test_installer_is_hashed_again_just_before_it_runs(tmp_path: Path) -> None:
+    calls: list[object] = []
+    installer = _installer(tmp_path)
+    installer.path.write_bytes(b"swapped during the backup")
+    with pytest.raises(update.UpdateError, match="changed"):
+        update.launch_installer(installer, lambda cmd, **kw: calls.append(cmd))
+    assert calls == [] and not installer.path.exists()

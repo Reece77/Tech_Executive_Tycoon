@@ -12186,6 +12186,11 @@ export interface components {
             update_message?: string;
             /** Backup Folder */
             backup_folder?: string | null;
+            /**
+             * Write Token
+             * @description M57r-B: sent back as X-TST-Instance on the desktop routes' writes. Only the game's own page can read it (the local API refuses foreign hosts)
+             */
+            write_token?: string | null;
         };
         /** DeviceLineOut */
         DeviceLineOut: {
@@ -56312,6 +56317,15 @@ export interface operations {
                     "application/json": components["schemas"]["DesktopOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56354,6 +56368,15 @@ export interface operations {
                     "application/json": components["schemas"]["ImportOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56392,6 +56415,15 @@ export interface operations {
                     "application/json": components["schemas"]["DesktopOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56428,6 +56460,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
             /** @description Conflict */

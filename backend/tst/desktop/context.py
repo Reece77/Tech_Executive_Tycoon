@@ -36,6 +36,7 @@ class DesktopContext:
     focus: Callable[[], None] = lambda: None
     close: Callable[[], None] = lambda: None
     check_token: Callable[[str | None], bool] = lambda _t: False
+    token: str | None = None  # the instance token, served to the game's own page (M57r-B)
     fetch: update.Fetch = update.http_get
     stream: update.Stream = update.http_stream
     popen: Callable[..., object] = update.subprocess.Popen
@@ -57,7 +58,7 @@ class DesktopContext:
         with self._lock:
             self.update_state = "checking"
         try:
-            release = update.check(self.version, self.fetch)
+            release = update.check(self.version, self.fetch, update.source_from(self.environ))
         except Exception as e:  # offline, rate-limited, GitHub down: play on
             log.warning("update check failed: %s", secrets.redact(str(e)))
             release = None

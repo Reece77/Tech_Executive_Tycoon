@@ -29,6 +29,8 @@ from tst.desktop.paths import DesktopPaths
 BACKEND = Path(__file__).resolve().parents[2]
 NEW_GAME = {"name": "practice", "seed": 7, "scenario": "garage_bootstrap", "company_name": "P"}
 BLOB = b"pretend installer"
+BASE = "http://127.0.0.1:8771"
+TOKEN = {"X-TST-Instance": "tok"}
 
 
 @pytest.fixture
@@ -40,8 +42,9 @@ def ctx(tmp_path: Path) -> Iterator[context.DesktopContext]:
 
     def fetch(url: str, _timeout: float) -> bytes:
         if url.endswith(".sha256"):
-            return hashlib.sha256(BLOB).hexdigest().encode()
-        return json.dumps(release_payload("6.1.0")).encode()
+            digest = hashlib.sha256(BLOB).hexdigest()
+            return f"{digest}  TechStartupTycoon-Setup-6.1.0.exe\n".encode()
+        return json.dumps(release_payload("6.1.0", size=len(BLOB))).encode()
 
     c = context.DesktopContext(
         paths=paths,
@@ -52,6 +55,7 @@ def ctx(tmp_path: Path) -> Iterator[context.DesktopContext]:
         sleep=lambda _s: None,
         environ={},
         check_token=lambda t: t == "tok",
+        token="tok",
     )
     c.close = lambda: closed.append(True)
     c.launched, c.closed = launched, closed  # type: ignore[attr-defined]
@@ -64,7 +68,9 @@ def ctx(tmp_path: Path) -> Iterator[context.DesktopContext]:
 def client(ctx: context.DesktopContext) -> Iterator[TestClient]:
     app = create_app()
     app.dependency_overrides[get_settings] = lambda: Settings(save_dir=ctx.paths.saves)
-    with TestClient(app) as c:
+    # The installed game's own address (M57r-B: the local API checks Host against its port),
+    # (its token goes on each desktop write below, as the game's page sends it).
+    with TestClient(app, base_url=BASE) as c:
         yield c
 
 
@@ -88,13 +94,16 @@ def test_status_and_health(client: TestClient, ctx: context.DesktopContext) -> N
 def test_api_key_is_stored_in_app_data_and_never_returned(
     client: TestClient, ctx: context.DesktopContext
 ) -> None:
-    res = client.put("/api/desktop/api-key", json={"key": KEY})
+    res = client.put("/api/desktop/api-key", json={"key": KEY}, headers=TOKEN)
     assert res.status_code == 200 and res.json()["key_saved"] is True
     assert KEY not in res.text and KEY not in client.get("/api/desktop").text
     assert KEY in ctx.paths.env_file.read_text()
     assert ctx.environ["ANTHROPIC_API_KEY"] == KEY
-    assert client.put("/api/desktop/api-key", json={"key": "a b"}).status_code == 422
-    assert client.put("/api/desktop/api-key", json={"key": ""}).json()["key_saved"] is False
+    assert client.put("/api/desktop/api-key", json={"key": "a b"}, headers=TOKEN).status_code == 422
+    assert (
+        client.put("/api/desktop/api-key", json={"key": ""}, headers=TOKEN).json()["key_saved"]
+        is False
+    )
     assert "ANTHROPIC_API_KEY" not in ctx.environ
 
 
@@ -108,7 +117,7 @@ def test_update_offered_verified_backed_up_then_installed(
     assert body["update_state"] == "available"
     assert body["update"]["version"] == "6.1.0" and "Faster turns" in body["update"]["notes"]
 
-    assert client.post("/api/desktop/update").status_code == 200
+    assert client.post("/api/desktop/update", headers=TOKEN).status_code == 200
     _wait(ctx, "installing", "failed")
     assert ctx.update_state == "installing", ctx.update_message
     (installer,) = ctx.launched  # type: ignore[attr-defined]
@@ -132,16 +141,16 @@ def test_no_update_while_a_turn_runs(client: TestClient, ctx: context.DesktopCon
     ctx.check_for_update()
     lock = repository._lock(ctx.paths.saves / "practice.tst.sqlite")
     with lock:  # what a turn holds
-        res = client.post("/api/desktop/update")
+        res = client.post("/api/desktop/update", headers=TOKEN)
     assert res.status_code == 409 and "turn" in res.json()["message"]
     assert ctx.launched == []  # type: ignore[attr-defined]
-    assert client.post("/api/desktop/update/later").json()["update_state"] == "none"
+    assert client.post("/api/desktop/update/later", headers=TOKEN).json()["update_state"] == "none"
 
 
 def test_a_bad_checksum_installs_nothing(client: TestClient, ctx: context.DesktopContext) -> None:
     ctx.check_for_update()
-    ctx.stream = lambda _u, _t: iter([b"tampered"])
-    client.post("/api/desktop/update").raise_for_status()
+    ctx.stream = lambda _u, _t: iter([b"X" * len(BLOB)])  # the listed size, other bytes
+    client.post("/api/desktop/update", headers=TOKEN).raise_for_status()
     _wait(ctx, "failed", "installing")
     body = client.get("/api/desktop").json()
     assert body["update_state"] == "failed" and "checksum" in body["update_message"]
@@ -151,13 +160,13 @@ def test_a_bad_checksum_installs_nothing(client: TestClient, ctx: context.Deskto
 
 def test_first_run_import(client: TestClient, ctx: context.DesktopContext, tmp_path: Path) -> None:
     old = tmp_path / "repo" / "saves"
-    other = TestClient(create_app())
+    other = TestClient(create_app(), base_url=BASE)
     other.app.dependency_overrides[get_settings] = lambda: Settings(save_dir=old)  # type: ignore[attr-defined]
     assert other.post("/api/saves", json=NEW_GAME).status_code == 201
     ctx.import_offer = imports.find_offer(ctx.paths.saves, [old])
     body = client.get("/api/desktop").json()
     assert body["import_offer"] == {"folder": str(old), "saves": ["practice"]}
-    assert client.post("/api/desktop/import", json={"accept": True}).json() == {
+    assert client.post("/api/desktop/import", json={"accept": True}, headers=TOKEN).json() == {
         "imported": ["practice"]
     }
     assert client.get("/api/desktop").json()["import_offer"] is None
@@ -172,6 +181,77 @@ def test_focus_needs_the_instance_token(client: TestClient, ctx: context.Desktop
     assert client.post("/api/desktop/focus", headers={"X-TST-Instance": "x"}).status_code == 403
     assert client.post("/api/desktop/focus", headers={"X-TST-Instance": "tok"}).status_code == 204
     assert focused == [True]
+
+
+def test_desktop_writes_need_the_instance_token(
+    client: TestClient, ctx: context.DesktopContext
+) -> None:
+    """M57r-B (review 10 item 2): the key, the import, Update now and Later refuse a write
+    without the instance token, which only the game's own page reads from /api/desktop."""
+    assert client.get("/api/desktop").json()["write_token"] == "tok"
+    ctx.check_for_update()
+    for method, path, body in (
+        ("PUT", "/api/desktop/api-key", {"key": KEY}),
+        ("POST", "/api/desktop/import", {"accept": False}),
+        ("POST", "/api/desktop/update", None),
+        ("POST", "/api/desktop/update/later", None),
+    ):
+        for headers in ({"X-TST-Instance": ""}, {"X-TST-Instance": "wrong"}):
+            res = client.request(method, path, json=body, headers=headers)
+            assert res.status_code == 403 and res.json()["code"] == "forbidden", path
+    assert ctx.launched == [] and not ctx.key_saved()  # type: ignore[attr-defined]
+    assert ctx.update_state == "available"
+
+
+@pytest.mark.parametrize(
+    ("headers", "method", "ok"),
+    [
+        ({"Host": "127.0.0.1:8771"}, "GET", True),
+        ({"Host": "localhost:8771"}, "GET", True),
+        ({"Host": "127.0.0.1:8771", "Origin": "http://127.0.0.1:8771"}, "POST", True),
+        ({"Host": "localhost:8771", "Origin": "http://localhost:8771"}, "POST", True),
+        # DNS rebinding: an attacker's name resolved to 127.0.0.1
+        ({"Host": "rebind.attacker.example:8771"}, "GET", False),
+        ({"Host": "rebind.attacker.example:8771"}, "POST", False),
+        ({"Host": "127.0.0.1:9999"}, "GET", False),  # another port: not this game
+        ({"Host": "127.0.0.1"}, "GET", False),
+        ({"Host": ""}, "GET", False),
+        # a cross-site form or fetch from a web page
+        ({"Host": "127.0.0.1:8771", "Origin": "https://attacker.example"}, "POST", False),
+        ({"Host": "127.0.0.1:8771", "Origin": "null"}, "POST", False),
+        ({"Host": "127.0.0.1:8771", "Origin": "http://localhost:8771"}, "POST", False),
+        ({"Host": "127.0.0.1:8771", "Origin": "http://127.0.0.1:5173"}, "POST", False),
+        # reading is not a write: a foreign Origin's GET is answered (the browser keeps the
+        # body from the page: no CORS headers are ever sent)
+        ({"Host": "127.0.0.1:8771", "Origin": "https://attacker.example"}, "GET", True),
+    ],
+)
+def test_the_local_api_answers_its_own_page_only(
+    client: TestClient, ctx: context.DesktopContext, headers: dict[str, str], method: str, ok: bool
+) -> None:
+    """M57r-B (review 10 item 2): a foreign Host is refused on every request, and a foreign
+    Origin on every write, before any route runs."""
+    ctx.check_for_update()
+    path = "/api/desktop/update/later" if method == "POST" else "/api/desktop"
+    res = client.request(method, path, headers={**TOKEN, **headers})
+    if ok:
+        assert res.status_code == 200, res.text
+    else:
+        assert res.status_code == 403 and res.json()["code"] == "foreign_request"
+
+
+def test_outside_the_desktop_build_loopback_names_on_any_port() -> None:
+    """`make dev` and the launcher: any loopback name and port (Vite's proxy forwards
+    localhost:5173), never another host, and a write's Origin must be loopback too."""
+    client = TestClient(create_app(), base_url="http://localhost:5173")
+    assert client.get("/api/health").status_code == 200
+    assert client.get("/api/health", headers={"Host": "127.0.0.1:8000"}).status_code == 200
+    assert client.get("/api/health", headers={"Host": "[::1]:8000"}).status_code == 200
+    assert client.get("/api/health", headers={"Host": "evil.example:5173"}).status_code == 403
+    good = {"Origin": "http://localhost:5173"}
+    assert client.post("/api/desktop/update", headers=good).json()["code"] == "not_desktop"
+    bad = {"Origin": "https://evil.example"}
+    assert client.post("/api/desktop/update", headers=bad).json()["code"] == "foreign_request"
 
 
 def test_outside_the_desktop_build() -> None:

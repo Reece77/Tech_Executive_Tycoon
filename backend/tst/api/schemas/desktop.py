@@ -36,6 +36,11 @@ class DesktopOut(BaseModel):
     update: UpdateOut | None = None
     update_message: str = ""
     backup_folder: str | None = None
+    write_token: str | None = Field(
+        default=None,
+        description="M57r-B: sent back as X-TST-Instance on the desktop routes' writes. Only "
+        "the game's own page can read it (the local API refuses foreign hosts)",
+    )
 
 
 class ApiKeyIn(BaseModel):

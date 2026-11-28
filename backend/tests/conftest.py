@@ -17,7 +17,12 @@ DURATIONS_FILE = Path(__file__).resolve().parent / "durations.json"
 # Never call the Anthropic API in tests (CLAUDE.md section 8): every event is written by
 # MockLLMAdapter, whatever llm_settings.json or a local .env say.
 os.environ["TST_LLM_ADAPTER"] = "mock"
-os.environ.pop("ANTHROPIC_API_KEY", None)
+# M57r-B (review 10 item 32): conversations' own adapter too, and an empty key that outranks
+# any ANTHROPIC_API_KEY in a local .env (pydantic-settings reads the environment first).
+os.environ["TST_CONVERSATION_ADAPTER"] = "mock"
+os.environ["ANTHROPIC_API_KEY"] = ""
+# M57r-B: the test client's host name, beside the loopback names (tst/api/local_guard.py).
+os.environ["TST_ALLOWED_HOSTS"] = "testserver"
 # Throwaway saves need no fsync (tst/db/session.py; M6 sub-task 0: CI disks are slow to sync).
 os.environ.setdefault("TST_SQLITE_SYNC", "OFF")
 
