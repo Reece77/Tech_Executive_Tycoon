@@ -54,6 +54,8 @@ Built on branch `m57-balance` in its own clone. Docs PR #118 (`docs-v6-round5`) 
 4. **M9.spread.africa (ruling 6).** MTN Group gains a fixed-broadband line in Africa (MTN Home Broadband: consumer 1,500 and business 2,550 cents a month in 2010, MTN's mobile price x Africa's fixed/mobile ARPU, A) with telecom.yaml subscribers 0.05 / 0.1 / 0.3 / 1.0 / 2.0M (2008 / 2010 / 2015 / 2020 / 2025, A: about 3-7% of the region's fixed lines). Every cell is covered on seeds 1-10 (local): the row is gone and any empty cell fails.
 5. **M51.T2's three rules** stay as 63.2 defines them (Reece, M51 decision 9: `hard_rivals_quality_mult` 1.2 is the spec's "quality x 1.2"), so no key is retuned; re-owned to **v7** with this pass's readings (below).
 
+6. **M51's EV maker (63.4 target 1; rule 1).** After M57r-A the sensible script sold 55,189-64,581 cars a year by August 2023 on seeds 1-10 and won none (the nightly on `main`: 0/10). The goal moves 68,500 -> **58,500** cars a year (deadline unchanged): sensible 7 of 10, passive 0 (band 3-8, at most 2). `scenarios.yaml`'s `sensible_wins` 6 -> 7; the unit test's two cases straddle the new goal.
+
 **Sub-task 1 readings (on `main`'s code after M57r: nightly 46154340570, weekly 46154343112, both at 0767452).**
 
 - `make balance` (v1, seeds 1-10): every target holds (T1 10/10; T2 most wins research_heavy 6 of <= 6; T3 9-10/10; T4a-c in band; T5 0-10%; T6 21 months, 12%, 12%; T7 179.9/180 and 49% of 104; E3 all ok). **S2** (the run's worker-minutes) reads 145.4 against < 140 on CI: a runtime guard, M60's lane (rule 6), printed only.
