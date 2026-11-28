@@ -29,6 +29,7 @@ from tst.sim.money import times
 from tst.sim.products import formulas as pf
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.research.eras import annual_growth
+from tst.sim.research.history_eras import category_open
 from tst.sim.rivals.models import ENTRANT_KEY, STARTUP_KEY, RivalMove, stream_key
 from tst.sim.rivals.setup import hire_key_people, key_people_split
 from tst.sim.rng import RngFactory
@@ -75,6 +76,13 @@ def _record(
     return with_rival_move(replace(state, next_ids=ids), move), move
 
 
+def record_move(
+    state: GameState, company: CompanyState, action: str, detail: str
+) -> tuple[GameState, RivalMove]:
+    """A market-news move for another module (M50b: an exit)."""
+    return _record(state, company, action, detail)
+
+
 def found_startups(
     state: GameState, rng: RngFactory, balance: Balance, data: GameData
 ) -> tuple[GameState, tuple[LedgerEntry, ...], tuple[RivalMove, ...]]:
@@ -99,6 +107,8 @@ def found_startups(
         if category.finance:  # M54 (64.5): banks, networks and insurers are scheduled only
             continue
         if category.media:  # M55 (65.7): media rivals are scheduled only
+            continue
+        if not category_open(state, data, category.key):  # M50b (60.5): its era is ahead
             continue
         gen = rng.stream(state.turn, "rival_spawn", index)
         growth = annual_growth(state, data, category.key)  # with era boosts (M11, 21.4)

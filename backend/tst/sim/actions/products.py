@@ -32,6 +32,7 @@ from tst.sim.products.phases import (
     release_assignments,
     shown_turn,
 )
+from tst.sim.research.history_eras import category_open, opens_label
 from tst.sim.state import GameState, with_company, with_product, with_product_segment, with_unit
 
 PRODUCT_NAME_MAX: Final = 80  # tunable-exempt: product.name column width
@@ -187,6 +188,8 @@ def launch_problems(
     if product.status != "in_development":
         problems.append(f"it is already {product.status.replace('_', ' ')}")
         return problems
+    if not category_open(state, data, product.category):  # M50b (60.5): its era is still ahead
+        problems.append(opens_label(data, product.category) or "its market to open")
     needed = max(pb.launch_min_quality, data.category(product.category).launch_quality or 0)
     if product.quality < needed:  # a category's launch_quality adds compliance (M8, 18.6)
         problems.append(f"quality {product.quality:.0f} of the {needed:.0f} needed")

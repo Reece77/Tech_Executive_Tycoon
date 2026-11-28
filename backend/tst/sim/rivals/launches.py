@@ -12,11 +12,13 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from tst.sim.calendar import ym_to_turn
 from tst.sim.data_models import Balance, GameData
+from tst.sim.finance.insolvency import fail_rival
 from tst.sim.hiring.models import INCUMBENT_PRODUCT_BLOCK, INCUMBENT_PRODUCT_IDS_FROM
 from tst.sim.products.setup import incumbent_product, launch_turn
-from tst.sim.rivals.models import INCUMBENT_KEY
-from tst.sim.state import GameState
+from tst.sim.rivals.models import INCUMBENT_KEY, RivalMove
+from tst.sim.state import GameState, with_product_segment, with_regional_segment
 
 
 def incumbent_launches(state: GameState, balance: Balance, data: GameData) -> GameState:
@@ -68,3 +70,75 @@ def incumbent_launches(state: GameState, balance: Balance, data: GameData) -> Ga
         product_regions=tuple(sorted(launches, key=lambda r: (r.product_id, r.region))),
         regional_segments=tuple(sorted(abroad, key=lambda s: (s.product_id, s.region, s.segment))),
     )
+
+
+def incumbent_exits(
+    state: GameState, balance: Balance, data: GameData
+) -> tuple[GameState, tuple[RivalMove, ...]]:
+    """M50b (60.6), month end: a 2000-world company leaves in its real exit month (Compaq into
+    HP in May 2002, Sun into Oracle in January 2010, Nortel's bankruptcy in January 2009). Its
+    customers move to `exit_into`'s live product in the same category (the one with the most
+    customers, then the lowest id), segment by segment and region by region; with no such
+    product, or no `exit_into`, they return to the market. It then closes as a failed rival
+    does (15.1), told as market news. Only history_only companies exit, so a 2008 or 2010 game
+    never reaches this. It draws nothing."""
+    leaving = state.turn + 1
+    due = [
+        (index, inc)
+        for index, inc in enumerate(data.incumbents)
+        if inc.exit is not None and ym_to_turn(*inc.exit) == leaving
+    ]
+    if not due:
+        return state, ()
+    from tst.sim.rivals.startups import record_move  # M50b: startups imports this module's peers
+
+    moves: list[RivalMove] = []
+    by_key = {c.rival_key: c for c in state.companies if c.rival_key}
+    by_name = {c.name: c for c in state.companies if c.alive}
+    for index, inc in due:
+        company = by_key.get((INCUMBENT_KEY, index))
+        if company is None or not company.alive:
+            continue
+        buyer = by_name.get(inc.exit_into) if inc.exit_into else None
+        if buyer is not None:
+            state = _move_customers(state, company.id, buyer.id)
+        state, _ = fail_rival(
+            state,
+            state.company(company.id),
+            balance.hiring.candidate_shelf_turns,
+            balance.rivals.free_agent_months,
+        )
+        why = f"merged into {buyer.name}" if buyer is not None else "closed"
+        state, move = record_move(state, state.company(company.id), "failed", why)
+        moves.append(move)
+    return state, tuple(moves)
+
+
+def _move_customers(state: GameState, seller_id: int, buyer_id: int) -> GameState:
+    """Each of the seller's live products' customers to the buyer's live product in the same
+    category with the most customers (then the lowest id), by segment and by region."""
+    buyer_products = [p for p in state.company_products(buyer_id) if p.status == "live"]
+    for product in state.company_products(seller_id):
+        if product.status != "live":
+            continue
+        same = [p for p in buyer_products if p.category == product.category]
+        if not same:
+            continue
+        target = max(same, key=lambda p: (sum(s.customers for s in state.segments_of(p.id)), -p.id))
+        theirs = {s.segment: s for s in state.segments_of(target.id)}
+        for seg in state.segments_of(product.id):
+            if seg.segment in theirs and seg.customers > 0:
+                into = theirs[seg.segment]
+                state = with_product_segment(
+                    state, replace(into, customers=into.customers + seg.customers)
+                )
+                state = with_product_segment(state, replace(seg, customers=0.0))
+        abroad = {(s.region, s.segment): s for s in state.regional_segments_of(target.id)}
+        for rs in state.regional_segments_of(product.id):
+            if (rs.region, rs.segment) in abroad and rs.customers > 0:
+                into_r = abroad[(rs.region, rs.segment)]
+                state = with_regional_segment(
+                    state, replace(into_r, customers=into_r.customers + rs.customers)
+                )
+                state = with_regional_segment(state, replace(rs, customers=0.0))
+    return state

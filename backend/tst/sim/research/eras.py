@@ -146,7 +146,13 @@ def arrive_eras(
     historical month (a future era: its seeded scheduled month, 26.4), or this month if a
     company's level reaches its threshold (21.4). In eras.yaml order, so an earlier era's +5
     counts toward a later one's level."""
-    logs: list[LogItem] = []
+    from tst.sim.research.history_eras import arrive_history_eras, still_to_come  # M50b
+
+    state, history = arrive_history_eras(state, data, balance)  # M50b (60.5): a 2000 world
+    logs: list[LogItem] = list(history)
+    if still_to_come(state, data):  # M50b: the later eras wait for every history era
+        state, reports = era_reports(state, data, balance)
+        return state, (*logs, *reports)
     for index, era in enumerate(data.eras.eras):
         if state.era_arrival(era.key) is not None:
             continue
