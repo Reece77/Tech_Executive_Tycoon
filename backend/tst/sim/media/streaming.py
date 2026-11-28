@@ -68,10 +68,20 @@ def customers(state: GameState, product: Product) -> float:
 
 
 def monthly_revenue_cents(
-    state: GameState, product: Product, balance: Balance, data: GameData
+    state: GameState,
+    product: Product,
+    balance: Balance | None = None,
+    data: GameData | None = None,
 ) -> int:
     """Customers x price this month as phase 5 books it (translated where its index moved;
-    M57r-A ruling 4), before an ad tier's share."""
+    M57r-A ruling 4), before an ad tier's share. Without balance and data (a display): at the
+    prices as set."""
+    if balance is None or data is None:
+        rows: list[ProductSegment | RegionalSegment] = [
+            *state.segments_of(product.id),
+            *state.regional_segments_of(product.id),
+        ]
+        return sum(times(s.price_cents, s.customers) for s in rows if s.price_cents is not None)
     from tst.sim.fx.translate import booked_price
 
     home = home_region_of(state, balance, data)

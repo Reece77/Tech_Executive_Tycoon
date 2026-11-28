@@ -41,7 +41,7 @@ def test_the_clock_compares_the_players_exact_limit() -> None:
     from tst.sim.telecom.spectrum import Bidder
 
     bidders = [Bidder("p", 1, 2, 110), Bidder("r", 2, 2, 109.0)]
-    rounds, price, won = clock(bidders, 2, 100, 0.10, 10)
+    _, price, won = clock(bidders, 2, 100, 0.10, 10)
     assert price == 110 and won == {0: 2}
 
 
