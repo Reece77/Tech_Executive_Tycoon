@@ -2,6 +2,16 @@
 
 All notable changes to this project are recorded here. Golden snapshot regenerations must be listed with their reason.
 
+## v6.0.1
+
+- Uninstalling removes only what setup installed, so files of yours in the game's folder stay; setup refuses an install folder that overlaps your saves.
+- Updating from inside the game works end to end: setup waits for the game to close, installs, and starts the new version with your saves backed up first.
+- Updates download only from the game's own GitHub releases, checked against one published checksum and the listed size, and old installers are cleaned up.
+- The game's local server answers only its own window: a web page can no longer start an update or change your API key.
+- Conversations survive a crash: a negotiation, meeting or talk applies its outcome exactly once, and a failed language-model call plays nothing.
+- Fairer negotiations: a counterpart's limit can no longer be worked out from its offers and the ranges shown, and a second deal in a month starts fresh.
+- A one-to-one tells you how someone took it rather than hidden numbers; a rival's offer shows as a range; a creative lead's fee follows what you can see of them.
+
 ## Unreleased
 
 - M57r-B review 10's platform fixes (lane B; migration `0071_m57rb`, data only; golden snapshots, M30's state cache and every fixture unchanged: no turn-pipeline code changed; `docs/tasks/M57r-B-review-10-platform-fixes.md`'s decisions; `docs/reviews/review-10-consolidated.md`'s lane B resolution):
