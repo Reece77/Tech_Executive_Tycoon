@@ -143,7 +143,7 @@ def test_a_fab_sells_contracted_starts_before_spot_slots() -> None:
     fab = fm.fab_of(game.state, fid)
     assert fab is not None
     slot = fm.node_price_cents(game.state, "n28", b, d) * b.fab.slot.discount
-    who = customers(d)[0]
+    who = customers(d, game.state)[0]
     _energy(game)
     too_dear = SignFoundryContract(game.founder_id, fid, who, 2_000, 12, slot * 1.5)
     assert not game.act(too_dear)
@@ -177,7 +177,7 @@ def test_foundry_contracts_raise_a_fabs_use() -> None:
     signed = m21.game_at(1, ym_to_turn(2016, 1))
     fid2 = m21.build(signed, "n28", "east_asia", 10_000)
     slot = fm.node_price_cents(signed.state, "n28", b, d) * b.fab.slot.discount
-    for who in customers(d)[:2]:
+    for who in customers(d, signed.state)[:2]:
         _energy(signed)
         assert signed.act(SignFoundryContract(signed.founder_id, fid2, who, 4_000, 24, slot))
     m21.play(plain, 2)

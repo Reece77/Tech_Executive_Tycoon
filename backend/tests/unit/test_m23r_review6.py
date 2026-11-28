@@ -138,7 +138,7 @@ def test_a_transferred_fabs_foundry_contracts_are_its_new_owners(tmp_path: Path)
     fab = fm.fab_of(game.state, fid)
     assert fab is not None
     price = foundry.slot_price_cents(game.state, fab, b, d) * 0.5
-    customer = foundry.customers(d)[0]
+    customer = foundry.customers(d, game.state)[0]
     _energy(game)
     sign = foundry.SignFoundryContract(game.founder_id, fid, customer, 3_000.0, 24, price)
     assert game.act(sign), dict(game.refused)
@@ -198,7 +198,7 @@ def _foundry_month(own: float) -> tuple[int, float, float, int]:
     fid = m21.build(game, "n28", "east_asia", 10_000)
     m21.play(game)
     _energy(game)
-    customer = foundry.customers(d)[0]
+    customer = foundry.customers(d, game.state)[0]
     assert game.act(foundry.SignFoundryContract(game.founder_id, fid, customer, 100.0, 12, 0.545))
     fab = fm.fab_of(game.state, fid)
     assert fab is not None and fab.month is not None
