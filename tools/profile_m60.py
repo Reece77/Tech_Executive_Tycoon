@@ -65,6 +65,20 @@ STEPS: tuple[tuple[str, str], ...] = (
     ("tst.db.repository", "apply_turn_result"),
     ("tst.db.repository", "publish"),
     ("tst.db.repository", "_after_commit"),
+    ("tst.db.state_io", "sync_state"),
+    ("tst.db.state_io", "_sync_geo"),
+    ("tst.db.state_io", "_sync_research"),
+    ("tst.db.state_io", "_insert_reveals"),
+    ("tst.db.state_io", "insert_entries"),
+    ("tst.db.state_io", "insert_rows"),
+    ("tst.db.world_io", "sync_world"),
+    ("tst.db.regulation_io", "sync_regulation"),
+    ("tst.db.government_io", "sync_government"),
+    ("tst.db.finserv_io", "sync_finserv"),
+    ("tst.db.media_io", "sync_media"),
+    ("tst.db.telecom_io", "sync_telecom"),
+    ("tst.db.history", "prune_candidates"),
+    ("sqlalchemy.orm.session", "Session.commit"),
 )
 
 
@@ -111,13 +125,23 @@ def install(meter: Meter) -> None:
     turn.PHASES = tuple((n, meter.wrap(n, f)) for n, f in turn.PHASES)  # type: ignore[misc]
     for mod_name, attr in STEPS:
         mod = importlib.import_module(mod_name)
-        original = getattr(mod, attr)
+        owner: Any = mod
+        name = attr
+        if "." in attr:  # a method: Class.method
+            cls, name = attr.split(".")
+            owner = getattr(mod, cls)
+        original = getattr(owner, name)
         label = f"{mod_name.removeprefix('tst.').removeprefix('sim.')}.{attr}"
         wrapped = meter.wrap(label, original)
-        setattr(mod, attr, wrapped)
-        for user in (turn, repository):
-            if getattr(user, attr, None) is original:
-                setattr(user, attr, wrapped)
+        setattr(owner, name, wrapped)
+        if owner is not mod:
+            continue
+        for user in list(sys.modules.values()):  # names imported elsewhere
+            if (
+                getattr(user, "__name__", "").startswith("tst.")
+                and getattr(user, name, None) is original
+            ):
+                setattr(user, name, wrapped)
     repository.advance_turn = meter.wrap("advance_turn", repository.advance_turn)  # type: ignore[attr-defined]
     repository.run_turn = meter.wrap("run_turn", repository.run_turn)
 
