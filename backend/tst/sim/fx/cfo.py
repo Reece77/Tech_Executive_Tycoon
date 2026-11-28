@@ -1,6 +1,7 @@
 """The CFO delegate's hedging programme (docs/formulas.md 64.4 and 40): a CFO with authority runs a
 rolling hedge of its `hedge_pct` guardrail (capped at `fx.cfo_limit_share`) of each month's net
-foreign revenue, 12 months ahead, once at least `fx.unlock_share` of the company's revenue is
+foreign revenue, as far ahead as a forward runs (`fx.term_months`' longest; 24 months from M57's
+ADR-0025 amendment), once at least `fx.unlock_share` of the company's revenue is
 foreign. It never replaces a programme the player set; a guardrail of 0 (the default) ends its own
 programme."""
 
@@ -13,7 +14,6 @@ from tst.sim.fx.actions import SetHedgeProgramme
 from tst.sim.org.models import Authority
 from tst.sim.state import GameState
 
-TERM: Final = 12  # tunable-exempt: a year ahead (64.6 target 5's rolling hedge)
 PCT: Final = 100.0  # tunable-exempt: a percent
 
 
@@ -34,6 +34,7 @@ def programme_action(
     if data.fx is None:
         return None
     company = authority.company_id
+    term = int(balance.fx.term_months.hi)  # 64.6 target 5's rolling hedge
     want = min(
         float(dict(authority.guardrails).get("hedge_pct", 0)) / PCT,  # type: ignore[arg-type]
         balance.fx.cfo_limit_share,
@@ -42,9 +43,9 @@ def programme_action(
     if existing is not None and not existing.by_cfo:
         return None
     if want <= 0:
-        return SetHedgeProgramme(holder, 0.0, TERM, by_cfo=True) if existing else None
+        return SetHedgeProgramme(holder, 0.0, term, by_cfo=True) if existing else None
     if foreign_share(state, company) < balance.fx.unlock_share:
         return None
     if existing is not None and existing.share == want:
         return None
-    return SetHedgeProgramme(holder, want, TERM, by_cfo=True)
+    return SetHedgeProgramme(holder, want, term, by_cfo=True)

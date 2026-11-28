@@ -749,9 +749,11 @@ function CurrencyBody({ saveId, f }: { saveId: string; f: Finserv }) {
             variant="default"
             disabled={programme.isPending}
             data-testid="programme-set"
-            onClick={() => programme.mutate({ share: Number(share) / 100, term_months: 12 })}
+            onClick={() =>
+              programme.mutate({ share: Number(share) / 100, term_months: c.term_range[1] })
+            }
           >
-            Set the programme (12 months ahead)
+            Set the programme ({c.term_range[1]} months ahead)
           </Button>
           <span data-testid="programme-status" className="tst-muted" style={{ fontSize: 13 }}>
             {c.programme

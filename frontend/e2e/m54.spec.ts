@@ -71,7 +71,7 @@ test("(c) hedge 80% of Europe's revenue and see the settlement", async ({ page }
   await expect(page.getByTestId('fx-unhedged-europe')).toContainText('100%');
   await page.getByTestId('programme-share').fill('80');
   await page.getByTestId('programme-set').click();
-  await expect(page.getByTestId('programme-status')).toContainText('80% hedged 12 months ahead');
+  await expect(page.getByTestId('programme-status')).toContainText('80% hedged 24 months ahead');
   tool('advance', save, '2');
   await page.goto(`/game/${save}/finance/currency`);
   await expect(page.getByTestId('hedge-row').first()).toBeVisible();
