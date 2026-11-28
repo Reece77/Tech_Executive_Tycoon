@@ -5,8 +5,8 @@ always gives the same result and a replay needs no LLM.
 
 Positions: for each term, x = 0 at the counterpart's reservation (the worst it accepts) and 1
 at its aspiration (where it opens); x < 0 is outside its zone. Its demand `level` starts at 1
-and each round falls by the round's concession, at most `move_step`, never below 0, so no
-outcome is ever worse for it than its reservation."""
+and each round falls by the round's concession, at most `move_step` (x 1 +/- the round's hidden
+jitter, M57r-B), never below 0, so no outcome is ever worse for it than its reservation."""
 
 from __future__ import annotations
 
@@ -123,6 +123,9 @@ def open_negotiation(
     weights = [float(gen.random()) + 0.5 for _ in range(n)]  # tunable-exempt: no zero weight
     openness = float(gen.random())
     offsets = tuple(float(gen.uniform(-1.0, 1.0)) for _ in range(n))
+    # M57r-B (review 10 item 4): drawn after the draws above, so those stay as they were
+    skew_u = [float(gen.random()) for _ in range(n)]
+    concession_draws = tuple(float(gen.uniform(-1.0, 1.0)) for _ in range(b.max_rounds))
     total = sum(weights)
     asp: list[int] = []
     res: list[int] = []
@@ -130,6 +133,11 @@ def open_negotiation(
     for t, term in enumerate(ref.terms):
         if ref.zones is not None:
             a, r = ref.zones[t]
+            # M57r-B: the aspiration's distance from the given reservation x (1 +/- skew) by a
+            # draw, so the opening no longer gives the reservation (a listed target's board
+            # bar was its opening / (1 + 2 x spread), review 10 F2)
+            skew = Fraction(1) + Fraction(str(b.reservation_skew)) * Fraction(2 * skew_u[t] - 1)
+            a = max(1, r + round(Fraction(a - r) * skew))
             asp.append(a)
             res.append(r)
             medians.append((a + r) // 2)
@@ -139,9 +147,12 @@ def open_negotiation(
         half = Fraction(abs(p)) * Fraction(str(b.spread[ref.kind])) * Fraction(jitter)
         floor = Fraction(abs(p) * b.min_spread_bp, BP)
         d = max(1, round(max(half, floor)))
+        # the reservation's distance is skewed from the aspiration's (an asymmetric zone)
+        skew = Fraction(1) + Fraction(str(b.reservation_skew)) * Fraction(2 * skew_u[t] - 1)
+        d_res = max(1, round(Fraction(d) * skew))
         side = 1 if term.wants == "lower" else -1
         asp.append(p + side * d)
-        res.append(max(1, p - side * d))
+        res.append(max(1, p - side * d_res))
         medians.append(p)
     hidden = Hidden(
         aspiration=tuple(asp),
@@ -152,6 +163,7 @@ def open_negotiation(
         openness=openness,
         offsets=offsets,
         skill=skill,
+        jitter=concession_draws,
     )
     neg = Negotiation(
         kind=ref.kind,
@@ -172,20 +184,35 @@ def open_negotiation(
     return replace(neg, counter=opening, opening=opening)
 
 
+def nominal_zone(neg: Negotiation, t: int, b: NegotiationBalance) -> Fraction:
+    """The width a zone of this kind has around its aspiration: 2 x the kind's spread x the
+    aspiration (the opening, which the player sees). The revealed range scales with this, not
+    the true zone, whose width would give the reservation away (M57r-B)."""
+    return 2 * Fraction(str(b.spread[neg.kind])) * abs(neg.hidden.aspiration[t])
+
+
 def revealed(neg: Negotiation, b: NegotiationBalance) -> tuple[tuple[int, int], ...]:
     """The ranges the reservation is shown in (58.2): wide at the opening, narrowing each round
     by the counterpart's openness, narrower for a better negotiator; the reservation always lies
-    inside, never at a known place in it."""
+    inside, never at a known place in it.
+
+    M57r-B (review 10 item 4, F2; ruling 2): the range's width is a share of the kind's nominal
+    zone (`nominal_zone`), and its centre is drawn once, at the opening (the reservation plus
+    the offset's share of the opening half-width); each round's range nests inside the last
+    around that centre, never narrower than the greatest possible offset (nor the floor). So
+    neither the shown range's width nor its midpoint moves toward the reservation, however many
+    rounds are played."""
     h = neg.hidden
     rounds = len(neg.rounds)
     out = []
     for t in range(len(neg.terms)):
-        zone = abs(h.aspiration[t] - h.reservation[t])
-        width = b.range.start * dmath.pow(1 - b.range.narrow * h.openness, rounds)
+        zone = nominal_zone(neg, t, b)
         # a better negotiator sees it narrower: x (lo + hi - factor) ^ power (1.2 shows 0.8^p)
-        width *= dmath.pow(b.skill.band.lo + b.skill.band.hi - h.skill, b.range.skill_power)
-        half = Fraction(max(width, b.range.floor)) * zone
-        centre = Fraction(h.reservation[t]) + Fraction(h.offsets[t] * b.range.centre) * half
+        skill = dmath.pow(b.skill.band.lo + b.skill.band.hi - h.skill, b.range.skill_power)
+        start = Fraction(b.range.start * skill) * zone
+        centre = Fraction(h.reservation[t]) + Fraction(h.offsets[t] * b.range.centre) * start
+        narrowed = start * Fraction(dmath.pow(1 - b.range.narrow * h.openness, rounds))
+        half = max(narrowed, Fraction(b.range.centre) * start, Fraction(b.range.floor) * zone)
         out.append(_outward(centre - half, centre + half, step_of(h.medians[t], b)))
     return tuple(out)
 
@@ -303,6 +330,10 @@ def play_round(
     y = utility(neg, offer)
     concession = sum(b.effects[m.kind].concession * _mult(neg, m.kind, b) for m in moves)
     step = min(b.move_step, b.move_step * concession)
+    n = len(neg.rounds) + 1
+    if neg.hidden.jitter:  # M57r-B: x (1 +/- concession_jitter) by the round's hidden draw
+        u = neg.hidden.jitter[(n - 1) % len(neg.hidden.jitter)]
+        step *= 1 + b.concession_jitter * u
     level = max(0.0, neg.level - step)
     patience_delta = 0
     for m in moves:
@@ -312,7 +343,6 @@ def play_round(
         patience_delta += p
     patience_left = neg.patience_left - 1 + _clamp(patience_delta, -1, 1)
     rel_change = _clamp(sum(b.effects[m.kind].relationship for m in moves), -REL_BOUND, REL_BOUND)
-    n = len(neg.rounds) + 1
     used = neg.used_facts + tuple(
         m.fact for m in moves if m.kind == "justify" and m.fact is not None
     )

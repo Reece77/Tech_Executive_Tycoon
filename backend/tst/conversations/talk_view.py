@@ -130,23 +130,34 @@ def reaction_of(strength: float) -> str:
     return "unconvinced" if strength < UNCONVINCED_BELOW else "noted"
 
 
+def _sign(x: float) -> float:
+    return 1.0 if x > 0 else (-1.0 if x < 0 else 0.0)
+
+
 def _effects(talk: Talk) -> tuple[PublicEffect, ...]:
+    """What the finished talk did, in words. M57r-B (review 10 item 4, C05; ruling 2): every
+    amount scaled by a hidden factor (traits, receptiveness, the founder's true skills) is
+    shown by its direction only (`change` is +1 or -1), so no exact change inverts to a hidden
+    value; amounts from the published tables alone (persona points, stress) stay exact."""
     e = talk.effects
     if e is None or talk.status != "done":
         return ()
     out: list[PublicEffect] = []
+    name = talk.counterpart.name
     if e.tone:
         out.append(PublicEffect("tone", 0.0, f"the press reads it as a {e.tone} answer"))
     if e.brand_pct:
+        word = "lifts" if e.brand_pct > 0 else "hurts"
         out.append(
             PublicEffect(
                 "brand",
-                e.brand_pct,
-                f"brand target {e.brand_pct:+.1f}% for {e.brand_months} months",
+                _sign(e.brand_pct),
+                f"it {word} the brand for {e.brand_months} months",
             )
         )
     if e.credibility:
-        out.append(PublicEffect("credibility", e.credibility, f"credibility {e.credibility:+.1f}"))
+        word = "rises" if e.credibility > 0 else "falls"
+        out.append(PublicEffect("credibility", _sign(e.credibility), f"credibility {word}"))
     if e.persona is not None:
         out.append(
             PublicEffect("persona", e.persona[1], f"{e.persona[0]} {e.persona[1]:+.1f} (persona)")
@@ -154,10 +165,11 @@ def _effects(talk: Talk) -> tuple[PublicEffect, ...]:
     if e.inspection_chance:
         out.append(PublicEffect("regulator", 0.0, "the regulator takes note of the deflection"))
     if e.morale:
-        out.append(PublicEffect("morale", e.morale, f"morale {e.morale:+.1f}"))
+        word = "lifts" if e.morale > 0 else "dents"
+        out.append(PublicEffect("morale", _sign(e.morale), f"it {word} {name}'s morale"))
     if e.loyalty:
         word = "more loyal" if e.loyalty > 0 else "less loyal"
-        out.append(PublicEffect("loyalty", e.loyalty, f"{talk.counterpart.name} feels {word}"))
+        out.append(PublicEffect("loyalty", _sign(e.loyalty), f"{name} feels {word}"))
     if e.stress:
         out.append(PublicEffect("stress", e.stress, f"stress {e.stress:+.0f}"))
     if e.retain_chance:

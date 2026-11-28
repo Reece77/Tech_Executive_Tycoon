@@ -95,6 +95,14 @@ class NegotiationBalance(_Frozen):
     shown_round: float = Field(gt=0, lt=1)  # offers are shown rounded to this x the median
     range: RangeBalance
     skill: SkillBalance
+    # M57r-B (review 10 item 4, F2; ruling 2): the reservation sits this share of the zone's
+    # half-width further or nearer than the aspiration does (a draw, +/-), so a symmetric zone
+    # no longer gives the reservation as 2 x price - opening (share). The defaults stand in for
+    # balance.yaml keys until lane A's ownership of backend/data lapses (CLAUDE.md 9 rule 8).
+    reservation_skew: float = Field(default=0.5, ge=0, lt=1)  # tunable-exempt: see above
+    # ...and each round's concession is x (1 +/- this) by a hidden draw, so a counter no longer
+    # inverts to the reservation through the published effects table (share)
+    concession_jitter: float = Field(default=0.3, ge=0, lt=1)  # tunable-exempt: see above
     relationship_walk: int = Field(le=0)  # relationship after a walk-away
     relationship_agree: int = Field(ge=0)  # ...after an agreement
     relationship_floor: int = Field(le=0)  # a counterpart's relationship stays within

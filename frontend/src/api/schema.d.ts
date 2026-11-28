@@ -8557,8 +8557,13 @@ export interface components {
             rival_id: number;
             /** Rival Name */
             rival_name: string;
-            /** Offer Cents */
-            offer_cents: number;
+            /**
+             * Offer Lo Cents
+             * @description M57r-B: the rival's offer is shown as a band of round figures it falls in (61.3 keeps the amount itself hidden)
+             */
+            offer_lo_cents: number;
+            /** Offer Hi Cents */
+            offer_hi_cents: number;
             /** Salary Cents */
             salary_cents: number;
             /** Unvested Options */
@@ -28053,7 +28058,10 @@ export interface components {
         TalkEffectOut: {
             /** What */
             what: string;
-            /** Change */
+            /**
+             * Change
+             * @description Persona points and stress exactly; any amount a hidden factor scales (brand, credibility, morale, loyalty) only by its direction, +1 or -1 (M57r-B)
+             */
             change: number;
             /** Words */
             words: string;

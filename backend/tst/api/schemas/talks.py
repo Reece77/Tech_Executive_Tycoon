@@ -75,7 +75,10 @@ class TalkAnswerOut(BaseModel):
 
 class TalkEffectOut(BaseModel):
     what: str
-    change: float
+    change: float = Field(
+        description="Persona points and stress exactly; any amount a hidden factor scales "
+        "(brand, credibility, morale, loyalty) only by its direction, +1 or -1 (M57r-B)"
+    )
     words: str
 
 

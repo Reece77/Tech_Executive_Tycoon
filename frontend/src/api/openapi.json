@@ -36692,9 +36692,14 @@
             "type": "string",
             "title": "Rival Name"
           },
-          "offer_cents": {
+          "offer_lo_cents": {
             "type": "integer",
-            "title": "Offer Cents"
+            "title": "Offer Lo Cents",
+            "description": "M57r-B: the rival's offer is shown as a band of round figures it falls in (61.3 keeps the amount itself hidden)"
+          },
+          "offer_hi_cents": {
+            "type": "integer",
+            "title": "Offer Hi Cents"
           },
           "salary_cents": {
             "type": "integer",
@@ -36726,7 +36731,8 @@
           "role_label",
           "rival_id",
           "rival_name",
-          "offer_cents",
+          "offer_lo_cents",
+          "offer_hi_cents",
           "salary_cents",
           "unvested_options",
           "band",
@@ -83753,7 +83759,8 @@
           },
           "change": {
             "type": "number",
-            "title": "Change"
+            "title": "Change",
+            "description": "Persona points and stress exactly; any amount a hidden factor scales (brand, credibility, morale, loyalty) only by its direction, +1 or -1 (M57r-B)"
           },
           "words": {
             "type": "string",
