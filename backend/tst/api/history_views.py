@@ -161,6 +161,7 @@ INBOX_CATEGORY: dict[str, str] = {
     "cm_started": "products",
     # M11: era milestones, licences and research leaks (21.4, 21.5)
     "era_arrived": "products",
+    "history_era_arrived": "products",  # M50b (60.5)
     "license_in": "products",
     "license_out": "products",
     "research_leak": "people",

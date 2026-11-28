@@ -10,9 +10,19 @@
 # scale); the engine applies the game's scale (balance.yaml economy_scale.money, formulas.md 54).
 # M50 (ADR-0024, formulas.md 60.2), 2026-11-23: 2008 (and cpi 2009) entries added so a 2008 start has history;
 # same S/D/R/A tags; sources under "M50 (2008-2009) sources". Clearance 2008 p90 holds the 2010 assumption (A).
+# M50b (formulas.md 60.4), 2026-11-28: 2000-2007 added the same way (cpi, budgets, civil IT, clearances,
+# protests, primes); same tags; sources under "M50b (2000-2007) sources".
 # History holds to 2025 (budgets, the named tenders, rules and their dates); seeded after.
 
 sources:
+  # M50b (2000-2007) sources, added 2026-11-28:
+  sipri_milex_2000: { title: "SIPRI Military Expenditure Database (SIPRI-Milex-data-1949-2024_2.xlsx, sheet Current US$), 2000-2007 columns read in this session (M50b); rest_of_eu the EU-27 sum less France and Germany", url: "https://www.sipri.org/sites/default/files/SIPRI-Milex-data-1949-2024_2.xlsx" }
+  fred_cpi_2000: { title: "FRED CPIAUCNS (BLS CPI-U, not seasonally adjusted), monthly 2000-2007 averaged (M50b, read in this session)", url: "https://fred.stlouisfed.org/series/CPIAUCNS" }
+  it_2000: { title: "OMB Analytical Perspectives FY2002, ch. 11 table: total all IT investments FY2000 $41,246M, FY2001 $44,419M, FY2002 $44,838M (read in this session, M50b)", url: "https://www.govinfo.gov/content/pkg/BUDGET-2002-PER/html/BUDGET-2002-PER-11-1.htm" }
+  it_2003: { title: "OMB Analytical Perspectives FY2004 (2003 request $53B, 2004 about $59B), FY2006 (2005 enacted $60,547M) and FY2007 (2007 portfolio about $64B, nearly 3% over FY2006) (FY2007 read in this session; FY2004 and FY2006 via search extracts, R)", url: "https://www.govinfo.gov/content/pkg/BUDGET-2007-PER/html/BUDGET-2007-PER-5-7.htm" }
+  gao_clearances_2000s: { title: "GAO on the DoD clearance backlog: GAO-01-465 (DSS backlog, 2001), GAO-04-344 and GAO-05-207 (high-risk listing, Jan 2005; OPM took over DoD investigations Feb 2005); IRTPA 2004 set 90% within 120 days by Dec 2009 (R, not re-read)", url: "https://www.gao.gov/products/gao-05-207" }
+  gao_protests_2000: { title: "GAO bid protest statistics FY1999-FY2008 (WIFCON's table of GAO's annual reports): cases filed, sustain and effectiveness rates; effectiveness first reported for FY2001 (read in this session, M50b)", url: "https://wifcon.com/protestsgaostat_1.htm" }
+  company_recall_2000: { title: "2000-2007 revenues recalled from 10-Ks and annual reports (M50b, not re-checked): Lockheed, Raytheon, Northrop (Litton from Apr 2001, TRW from Dec 2002), General Dynamics, Boeing's defence segments (IDS from 2002), L-3; BAE arms sales from SIPRI's Top 100", url: "https://www.sec.gov/" }
   # M50 (2008-2009) sources, added 2026-11-23:
   sipri_milex_2008: { title: "SIPRI Military Expenditure Database (SIPRI-Milex-data-1949-2024_2.xlsx, sheet Current US$), 2008 column read in this session (M50)", url: "https://www.sipri.org/sites/default/files/SIPRI-Milex-data-1949-2024_2.xlsx" }
   fred_cpi: { title: "FRED CPIAUCNS (BLS CPI-U, not seasonally adjusted), monthly 2008-2009 averaged (M50, read in this session)", url: "https://fred.stlouisfed.org/series/CPIAUCNS" }
@@ -52,6 +62,14 @@ sources:
   game: { title: "Game assumption (M44): a value set for play where no public figure exists; its basis is in the comment beside it", url: "" }
 
 cpi: # BLS CPI-U annual averages (R, as robotics.yaml); 2025 provisional
+  2000: [172.200, "S:fred_cpi_2000"]
+  2001: [177.067, "S:fred_cpi_2000"]
+  2002: [179.875, "S:fred_cpi_2000"]
+  2003: [183.958, "S:fred_cpi_2000"]
+  2004: [188.883, "S:fred_cpi_2000"]
+  2005: [195.292, "S:fred_cpi_2000"]
+  2006: [201.592, "S:fred_cpi_2000"]
+  2007: [207.342, "S:fred_cpi_2000"]
   2008: [215.303, "S:fred_cpi"]
   2009: [214.537, "S:fred_cpi"]
   2010: [218.056, "R:bls_cpi"]
@@ -80,82 +98,82 @@ governments:
     country: us
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [656.8, "S:sipri_milex_2008"], 2010: [738.0, "S:sipri_milex"], 2012: [725.2, "S:sipri_milex"], 2014: [647.8, "S:sipri_milex"], 2016: [639.9, "S:sipri_milex"], 2018: [682.5, "S:sipri_milex"], 2020: [778.4, "S:sipri_milex"], 2022: [860.7, "S:sipri_milex"], 2024: [997.3, "S:sipri_milex"] }
-    civil_it_usd_bn: { 2008: [68.0, "R:it_2008"], 2010: [78.0, "R:it_2010"], 2015: [80.0, "S:gao_it_2015"], 2020: [90.0, "S:gao_20_691t"], 2024: [95.0, "S:gao_24_106693"] } # IT Dashboard scope: excludes about $37B of DoD national-security IT
+    defence_usd_bn: { 2000: [320.1, "S:sipri_milex_2000"], 2001: [331.8, "S:sipri_milex_2000"], 2002: [378.5, "S:sipri_milex_2000"], 2003: [440.5, "S:sipri_milex_2000"], 2004: [493.0, "S:sipri_milex_2000"], 2005: [533.2, "S:sipri_milex_2000"], 2006: [558.3, "S:sipri_milex_2000"], 2007: [589.6, "S:sipri_milex_2000"], 2008: [656.8, "S:sipri_milex_2008"], 2010: [738.0, "S:sipri_milex"], 2012: [725.2, "S:sipri_milex"], 2014: [647.8, "S:sipri_milex"], 2016: [639.9, "S:sipri_milex"], 2018: [682.5, "S:sipri_milex"], 2020: [778.4, "S:sipri_milex"], 2022: [860.7, "S:sipri_milex"], 2024: [997.3, "S:sipri_milex"] }
+    civil_it_usd_bn: { 2000: [41.2, "S:it_2000"], 2001: [44.4, "S:it_2000"], 2002: [44.8, "S:it_2000"], 2003: [53.0, "R:it_2003"], 2004: [59.0, "R:it_2003"], 2005: [60.5, "R:it_2003"], 2006: [62.1, "D:it_2003"], 2007: [64.0, "S:it_2003"], 2008: [68.0, "R:it_2008"], 2010: [78.0, "R:it_2010"], 2015: [80.0, "S:gao_it_2015"], 2020: [90.0, "S:gao_20_691t"], 2024: [95.0, "S:gao_24_106693"] } # IT Dashboard scope: excludes about $37B of DoD national-security IT
   - key: uk
     label: United Kingdom
     country: uk
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [72.9, "S:sipri_milex_2008"], 2010: [64.0, "S:sipri_milex"], 2012: [65.5, "S:sipri_milex"], 2014: [67.0, "S:sipri_milex"], 2016: [53.3, "S:sipri_milex"], 2018: [55.8, "S:sipri_milex"], 2020: [58.3, "S:sipri_milex"], 2022: [64.1, "S:sipri_milex"], 2024: [81.8, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [39.3, "S:sipri_milex_2000"], 2001: [39.5, "S:sipri_milex_2000"], 2002: [44.2, "S:sipri_milex_2000"], 2003: [52.3, "S:sipri_milex_2000"], 2004: [60.3, "S:sipri_milex_2000"], 2005: [61.7, "S:sipri_milex_2000"], 2006: [64.2, "S:sipri_milex_2000"], 2007: [73.4, "S:sipri_milex_2000"], 2008: [72.9, "S:sipri_milex_2008"], 2010: [64.0, "S:sipri_milex"], 2012: [65.5, "S:sipri_milex"], 2014: [67.0, "S:sipri_milex"], 2016: [53.3, "S:sipri_milex"], 2018: [55.8, "S:sipri_milex"], 2020: [58.3, "S:sipri_milex"], 2022: [64.1, "S:sipri_milex"], 2024: [81.8, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"] # the US ratio of civil IT to defence (95 / 997 to 78 / 738)
   - key: france
     label: France
     country: france
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [55.4, "S:sipri_milex_2008"], 2010: [52.0, "S:sipri_milex"], 2012: [50.2, "S:sipri_milex"], 2014: [53.1, "S:sipri_milex"], 2016: [45.7, "S:sipri_milex"], 2018: [51.3, "S:sipri_milex"], 2020: [53.4, "S:sipri_milex"], 2022: [54.7, "S:sipri_milex"], 2024: [64.7, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [28.4, "S:sipri_milex_2000"], 2001: [28.0, "S:sipri_milex_2000"], 2002: [30.6, "S:sipri_milex_2000"], 2003: [38.6, "S:sipri_milex_2000"], 2004: [44.5, "S:sipri_milex_2000"], 2005: [44.4, "S:sipri_milex_2000"], 2006: [45.8, "S:sipri_milex_2000"], 2007: [50.7, "S:sipri_milex_2000"], 2008: [55.4, "S:sipri_milex_2008"], 2010: [52.0, "S:sipri_milex"], 2012: [50.2, "S:sipri_milex"], 2014: [53.1, "S:sipri_milex"], 2016: [45.7, "S:sipri_milex"], 2018: [51.3, "S:sipri_milex"], 2020: [53.4, "S:sipri_milex"], 2022: [54.7, "S:sipri_milex"], 2024: [64.7, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: germany
     label: Germany
     country: germany
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [45.1, "S:sipri_milex_2008"], 2010: [43.0, "S:sipri_milex"], 2012: [43.8, "S:sipri_milex"], 2014: [44.7, "S:sipri_milex"], 2016: [39.9, "S:sipri_milex"], 2018: [46.5, "S:sipri_milex"], 2020: [53.3, "S:sipri_milex"], 2022: [56.2, "S:sipri_milex"], 2024: [88.5, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [26.4, "S:sipri_milex_2000"], 2001: [25.7, "S:sipri_milex_2000"], 2002: [27.5, "S:sipri_milex_2000"], 2003: [32.8, "S:sipri_milex_2000"], 2004: [35.6, "S:sipri_milex_2000"], 2005: [35.7, "S:sipri_milex_2000"], 2006: [35.9, "S:sipri_milex_2000"], 2007: [40.1, "S:sipri_milex_2000"], 2008: [45.1, "S:sipri_milex_2008"], 2010: [43.0, "S:sipri_milex"], 2012: [43.8, "S:sipri_milex"], 2014: [44.7, "S:sipri_milex"], 2016: [39.9, "S:sipri_milex"], 2018: [46.5, "S:sipri_milex"], 2020: [53.3, "S:sipri_milex"], 2022: [56.2, "S:sipri_milex"], 2024: [88.5, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: rest_of_eu
     label: Other EU governments
     country: rest_of_eu
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [136.2, "D:sipri_milex_2008"], 2010: [118.7, "D:sipri_milex"], 2012: [111.7, "D:sipri_milex"], 2014: [109.5, "D:sipri_milex"], 2016: [97.0, "D:sipri_milex"], 2018: [117.5, "D:sipri_milex"], 2020: [131.0, "D:sipri_milex"], 2022: [148.1, "D:sipri_milex"], 2024: [215.3, "D:sipri_milex"] } # EU-27 sum 236.7 (2008) / 213.7 / 205.7 / 207.3 / 182.6 / 215.3 / 237.7 / 259.0 / 368.5 less France and Germany
+    defence_usd_bn: { 2000: [65.1, "D:sipri_milex_2000"], 2001: [65.2, "D:sipri_milex_2000"], 2002: [70.0, "D:sipri_milex_2000"], 2003: [85.7, "D:sipri_milex_2000"], 2004: [97.8, "D:sipri_milex_2000"], 2005: [101.7, "D:sipri_milex_2000"], 2006: [106.0, "D:sipri_milex_2000"], 2007: [120.7, "D:sipri_milex_2000"], 2008: [136.2, "D:sipri_milex_2008"], 2010: [118.7, "D:sipri_milex"], 2012: [111.7, "D:sipri_milex"], 2014: [109.5, "D:sipri_milex"], 2016: [97.0, "D:sipri_milex"], 2018: [117.5, "D:sipri_milex"], 2020: [131.0, "D:sipri_milex"], 2022: [148.1, "D:sipri_milex"], 2024: [215.3, "D:sipri_milex"] } # EU-27 sum 236.7 (2008) / 213.7 / 205.7 / 207.3 / 182.6 / 215.3 / 237.7 / 259.0 / 368.5 less France and Germany
     civil_ratio: [0.11, "A:game"]
   - key: israel
     label: Israel
     country: israel
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [13.8, "S:sipri_milex_2008"], 2010: [13.9, "S:sipri_milex"], 2012: [14.5, "S:sipri_milex"], 2014: [17.7, "S:sipri_milex"], 2016: [17.4, "S:sipri_milex"], 2018: [19.9, "S:sipri_milex"], 2020: [21.8, "S:sipri_milex"], 2022: [23.4, "S:sipri_milex"], 2024: [46.5, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [8.3, "S:sipri_milex_2000"], 2001: [8.5, "S:sipri_milex_2000"], 2002: [8.0, "S:sipri_milex_2000"], 2003: [8.2, "S:sipri_milex_2000"], 2004: [8.6, "S:sipri_milex_2000"], 2005: [8.9, "S:sipri_milex_2000"], 2006: [9.3, "S:sipri_milex_2000"], 2007: [11.4, "S:sipri_milex_2000"], 2008: [13.8, "S:sipri_milex_2008"], 2010: [13.9, "S:sipri_milex"], 2012: [14.5, "S:sipri_milex"], 2014: [17.7, "S:sipri_milex"], 2016: [17.4, "S:sipri_milex"], 2018: [19.9, "S:sipri_milex"], 2020: [21.8, "S:sipri_milex"], 2022: [23.4, "S:sipri_milex"], 2024: [46.5, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: japan
     label: Japan
     country: japan
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [46.4, "S:sipri_milex_2008"], 2010: [54.7, "S:sipri_milex"], 2012: [60.0, "S:sipri_milex"], 2014: [46.9, "S:sipri_milex"], 2016: [46.5, "S:sipri_milex"], 2018: [48.5, "S:sipri_milex"], 2020: [51.4, "S:sipri_milex"], 2022: [43.2, "S:sipri_milex"], 2024: [55.3, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [45.5, "S:sipri_milex_2000"], 2001: [40.8, "S:sipri_milex_2000"], 2002: [39.3, "S:sipri_milex_2000"], 2003: [42.5, "S:sipri_milex_2000"], 2004: [45.3, "S:sipri_milex_2000"], 2005: [44.3, "S:sipri_milex_2000"], 2006: [41.6, "S:sipri_milex_2000"], 2007: [40.5, "S:sipri_milex_2000"], 2008: [46.4, "S:sipri_milex_2008"], 2010: [54.7, "S:sipri_milex"], 2012: [60.0, "S:sipri_milex"], 2014: [46.9, "S:sipri_milex"], 2016: [46.5, "S:sipri_milex"], 2018: [48.5, "S:sipri_milex"], 2020: [51.4, "S:sipri_milex"], 2022: [43.2, "S:sipri_milex"], 2024: [55.3, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: south_korea
     label: South Korea
     country: south_korea
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [26.1, "S:sipri_milex_2008"], 2010: [28.2, "S:sipri_milex"], 2012: [32.0, "S:sipri_milex"], 2014: [37.6, "S:sipri_milex"], 2016: [36.9, "S:sipri_milex"], 2018: [43.1, "S:sipri_milex"], 2020: [46.1, "S:sipri_milex"], 2022: [46.4, "S:sipri_milex"], 2024: [47.6, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [13.8, "S:sipri_milex_2000"], 2001: [12.9, "S:sipri_milex_2000"], 2002: [14.1, "S:sipri_milex_2000"], 2003: [15.8, "S:sipri_milex_2000"], 2004: [17.8, "S:sipri_milex_2000"], 2005: [22.2, "S:sipri_milex_2000"], 2006: [25.2, "S:sipri_milex_2000"], 2007: [27.7, "S:sipri_milex_2000"], 2008: [26.1, "S:sipri_milex_2008"], 2010: [28.2, "S:sipri_milex"], 2012: [32.0, "S:sipri_milex"], 2014: [37.6, "S:sipri_milex"], 2016: [36.9, "S:sipri_milex"], 2018: [43.1, "S:sipri_milex"], 2020: [46.1, "S:sipri_milex"], 2022: [46.4, "S:sipri_milex"], 2024: [47.6, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: australia
     label: Australia
     country: australia
     open_to: [us_aligned]
     refuses: [china]
-    defence_usd_bn: { 2008: [18.6, "S:sipri_milex_2008"], 2010: [23.2, "S:sipri_milex"], 2012: [26.2, "S:sipri_milex"], 2014: [25.8, "S:sipri_milex"], 2016: [26.4, "S:sipri_milex"], 2018: [26.8, "S:sipri_milex"], 2020: [27.3, "S:sipri_milex"], 2022: [32.4, "S:sipri_milex"], 2024: [33.8, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [7.3, "S:sipri_milex_2000"], 2001: [7.0, "S:sipri_milex_2000"], 2002: [7.9, "S:sipri_milex_2000"], 2003: [9.9, "S:sipri_milex_2000"], 2004: [12.0, "S:sipri_milex_2000"], 2005: [13.2, "S:sipri_milex_2000"], 2006: [14.2, "S:sipri_milex_2000"], 2007: [17.2, "S:sipri_milex_2000"], 2008: [18.6, "S:sipri_milex_2008"], 2010: [23.2, "S:sipri_milex"], 2012: [26.2, "S:sipri_milex"], 2014: [25.8, "S:sipri_milex"], 2016: [26.4, "S:sipri_milex"], 2018: [26.8, "S:sipri_milex"], 2020: [27.3, "S:sipri_milex"], 2022: [32.4, "S:sipri_milex"], 2024: [33.8, "S:sipri_milex"] }
     civil_ratio: [0.11, "A:game"]
   - key: india
     label: India
     country: india
     open_to: [us_aligned, non_aligned]
-    defence_usd_bn: { 2008: [33.0, "S:sipri_milex_2008"], 2010: [46.1, "S:sipri_milex"], 2012: [47.2, "S:sipri_milex"], 2014: [50.9, "S:sipri_milex"], 2016: [56.6, "S:sipri_milex"], 2018: [66.3, "S:sipri_milex"], 2020: [72.9, "S:sipri_milex"], 2022: [80.0, "S:sipri_milex"], 2024: [86.1, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [14.3, "S:sipri_milex_2000"], 2001: [14.6, "S:sipri_milex_2000"], 2002: [14.7, "S:sipri_milex_2000"], 2003: [16.3, "S:sipri_milex_2000"], 2004: [20.2, "S:sipri_milex_2000"], 2005: [23.1, "S:sipri_milex_2000"], 2006: [24.0, "S:sipri_milex_2000"], 2007: [28.3, "S:sipri_milex_2000"], 2008: [33.0, "S:sipri_milex_2008"], 2010: [46.1, "S:sipri_milex"], 2012: [47.2, "S:sipri_milex"], 2014: [50.9, "S:sipri_milex"], 2016: [56.6, "S:sipri_milex"], 2018: [66.3, "S:sipri_milex"], 2020: [72.9, "S:sipri_milex"], 2022: [80.0, "S:sipri_milex"], 2024: [86.1, "S:sipri_milex"] }
     civil_ratio: [0.08, "A:game"] # below the US ratio: a lower share of IT in public spending
   - key: brazil
     label: Brazil
     country: brazil
     open_to: [us_aligned, non_aligned]
-    defence_usd_bn: { 2008: [24.5, "S:sipri_milex_2008"], 2010: [34.0, "S:sipri_milex"], 2012: [34.0, "S:sipri_milex"], 2014: [32.7, "S:sipri_milex"], 2016: [24.2, "S:sipri_milex"], 2018: [28.2, "S:sipri_milex"], 2020: [19.6, "S:sipri_milex"], 2022: [20.5, "S:sipri_milex"], 2024: [20.9, "S:sipri_milex"] }
+    defence_usd_bn: { 2000: [11.3, "S:sipri_milex_2000"], 2001: [10.9, "S:sipri_milex_2000"], 2002: [9.7, "S:sipri_milex_2000"], 2003: [8.4, "S:sipri_milex_2000"], 2004: [9.8, "S:sipri_milex_2000"], 2005: [13.6, "S:sipri_milex_2000"], 2006: [16.4, "S:sipri_milex_2000"], 2007: [20.5, "S:sipri_milex_2000"], 2008: [24.5, "S:sipri_milex_2008"], 2010: [34.0, "S:sipri_milex"], 2012: [34.0, "S:sipri_milex"], 2014: [32.7, "S:sipri_milex"], 2016: [24.2, "S:sipri_milex"], 2018: [28.2, "S:sipri_milex"], 2020: [19.6, "S:sipri_milex"], 2022: [20.5, "S:sipri_milex"], 2024: [20.9, "S:sipri_milex"] }
     civil_ratio: [0.08, "A:game"]
   - key: china
     label: China
     country: china
     open_to: [china]
     refuses: [us_aligned]
-    defence_usd_bn: { 2008: [78.8, "S:sipri_milex_2008"], 2010: [105.5, "S:sipri_milex"], 2012: [145.1, "S:sipri_milex"], 2014: [182.1, "S:sipri_milex"], 2016: [198.5, "S:sipri_milex"], 2018: [232.5, "S:sipri_milex"], 2020: [258.0, "S:sipri_milex"], 2022: [292.0, "S:sipri_milex"], 2024: [313.7, "S:sipri_milex"] } # SIPRI estimates
+    defence_usd_bn: { 2000: [22.2, "S:sipri_milex_2000"], 2001: [26.6, "S:sipri_milex_2000"], 2002: [30.3, "S:sipri_milex_2000"], 2003: [33.1, "S:sipri_milex_2000"], 2004: [37.9, "S:sipri_milex_2000"], 2005: [42.8, "S:sipri_milex_2000"], 2006: [51.5, "S:sipri_milex_2000"], 2007: [62.1, "S:sipri_milex_2000"], 2008: [78.8, "S:sipri_milex_2008"], 2010: [105.5, "S:sipri_milex"], 2012: [145.1, "S:sipri_milex"], 2014: [182.1, "S:sipri_milex"], 2016: [198.5, "S:sipri_milex"], 2018: [232.5, "S:sipri_milex"], 2020: [258.0, "S:sipri_milex"], 2022: [292.0, "S:sipri_milex"], 2024: [313.7, "S:sipri_milex"] } # SIPRI estimates
     civil_ratio: [0.11, "A:game"]
 # World (SIPRI fact sheets, for the screen's context): 1,630 (2010), 1,753 (2012), 1,686 (2016), 1,822 (2018),
 # 1,981 (2020), 2,240 (2022), 2,718 (2024) US$ billions; the US 37% of 2024's. Russia and Saudi Arabia are not
@@ -327,11 +345,11 @@ controlled_countries: [china, russia] # 22 CFR 126.1: a controlled item may not 
 # FY2014) plus discontinued cases (A: candidates who withdraw or leave before a decision).
 clearances:
   secret:
-    p90_days: { 2008: [120, "A:pac_2018"], 2010: [120, "A:pac_2018"], 2016: [200, "A:pac_2018"], 2018: [240, "S:pac_2018"], 2019: [234, "S:pac_2018"], 2024: [138, "S:pac_2024"] } # 2010: before the 2016-2018 backlog (A)
+    p90_days: { 2000: [240, "A:gao_clearances_2000s"], 2004: [240, "A:gao_clearances_2000s"], 2006: [180, "A:gao_clearances_2000s"], 2008: [120, "A:pac_2018"], 2010: [120, "A:pac_2018"], 2016: [200, "A:pac_2018"], 2018: [240, "S:pac_2018"], 2019: [234, "S:pac_2018"], 2024: [138, "S:pac_2024"] } # 2010: before the 2016-2018 backlog (A)
     never_share: [0.05, "A:odni_denials"]
     cost_usd: [433, 2024, "R:dcsa_prices"]
   top_secret:
-    p90_days: { 2008: [300, "A:pac_2018"], 2010: [300, "A:pac_2018"], 2016: [450, "A:pac_2018"], 2018: [538, "S:pac_2018"], 2019: [468, "S:pac_2018"], 2024: [249, "S:pac_2024"] }
+    p90_days: { 2000: [450, "A:gao_clearances_2000s"], 2004: [480, "A:gao_clearances_2000s"], 2006: [400, "A:gao_clearances_2000s"], 2008: [300, "A:pac_2018"], 2010: [300, "A:pac_2018"], 2016: [450, "A:pac_2018"], 2018: [538, "S:pac_2018"], 2019: [468, "S:pac_2018"], 2024: [249, "S:pac_2024"] }
     never_share: [0.08, "A:odni_denials"]
     cost_usd: [5410, 2024, "R:dcsa_prices"]
 facility_clearance_months: [[6, "A:game"], [12, "A:game"]] # a facility clearance (FCL) sponsored by a tender: about 6-12 months
@@ -340,6 +358,14 @@ facility_clearance_months: [[6, "A:game"], [12, "A:game"]] # a facility clearanc
 # GAO's statistics: cases filed, the sustain rate of merit decisions and the effectiveness rate (protesters
 # who obtained relief, corrective action included). The game's protest succeeds at the effectiveness rate.
 protests:
+  2000: { filed: [1220, "S:gao_protests_2000"], sustain_rate: [0.21, "S:gao_protests_2000"], effectiveness: [0.33, "A:gao_protests_2000"] } # FY2000 effectiveness not reported: FY2001's 33% held (A)
+  2001: { filed: [1146, "S:gao_protests_2000"], sustain_rate: [0.21, "S:gao_protests_2000"], effectiveness: [0.33, "S:gao_protests_2000"] }
+  2002: { filed: [1204, "S:gao_protests_2000"], sustain_rate: [0.16, "S:gao_protests_2000"], effectiveness: [0.33, "S:gao_protests_2000"] }
+  2003: { filed: [1352, "S:gao_protests_2000"], sustain_rate: [0.17, "S:gao_protests_2000"], effectiveness: [0.33, "S:gao_protests_2000"] }
+  2004: { filed: [1485, "S:gao_protests_2000"], sustain_rate: [0.21, "S:gao_protests_2000"], effectiveness: [0.34, "S:gao_protests_2000"] }
+  2005: { filed: [1356, "S:gao_protests_2000"], sustain_rate: [0.23, "S:gao_protests_2000"], effectiveness: [0.37, "S:gao_protests_2000"] }
+  2006: { filed: [1327, "S:gao_protests_2000"], sustain_rate: [0.29, "S:gao_protests_2000"], effectiveness: [0.39, "S:gao_protests_2000"] }
+  2007: { filed: [1411, "S:gao_protests_2000"], sustain_rate: [0.27, "S:gao_protests_2000"], effectiveness: [0.38, "S:gao_protests_2000"] }
   2008: { filed: [1652, "R:gao_protests_2008"], sustain_rate: [0.21, "R:gao_protests_2008"], effectiveness: [0.42, "R:gao_protests_2008"] }
   2010: { filed: [2299, "R:gao_protests"], sustain_rate: [0.19, "S:gao_protests"], effectiveness: [0.42, "R:gao_protests"] }
   2015: { filed: [2639, "S:gao_protests"], sustain_rate: [0.12, "S:gao_protests"], effectiveness: [0.45, "S:gao_protests"] }
@@ -357,37 +383,37 @@ primes:
     country: us
     areas: { space: [85, "A:sipri_top100"], devices: [70, "A:sipri_top100"], ai: [60, "A:game"], cyber: [65, "A:game"], chips: [30, "A:game"] }
     past_performance: [92, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [42.73, "R:company_recall_2008"], 2010: [45.67, "S:company_reports"], 2024: [71.04, "S:company_reports"] }
+    revenue_usd_bn: { 2000: [25.33, "R:company_recall_2000"], 2002: [26.58, "R:company_recall_2000"], 2004: [35.53, "R:company_recall_2000"], 2006: [39.62, "R:company_recall_2000"], 2007: [41.86, "R:company_recall_2000"], 2008: [42.73, "R:company_recall_2008"], 2010: [45.67, "S:company_reports"], 2024: [71.04, "S:company_reports"] }
   - name: RTX
     country: us
     areas: { devices: [75, "A:sipri_top100"], cyber: [70, "A:game"], space: [60, "A:game"], ai: [55, "A:game"] }
     past_performance: [90, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [23.17, "R:company_recall_2008"], 2010: [25.2, "R:company_recall"], 2024: [80.7, "R:company_recall"] } # Raytheon until the 2020 merger
+    revenue_usd_bn: { 2000: [16.9, "R:company_recall_2000"], 2002: [16.8, "R:company_recall_2000"], 2004: [20.2, "R:company_recall_2000"], 2006: [20.3, "R:company_recall_2000"], 2007: [21.3, "R:company_recall_2000"], 2008: [23.17, "R:company_recall_2008"], 2010: [25.2, "R:company_recall"], 2024: [80.7, "R:company_recall"] } # Raytheon until the 2020 merger
   - name: Northrop Grumman
     country: us
     areas: { space: [85, "A:sipri_top100"], cyber: [75, "A:game"], ai: [60, "A:game"], devices: [65, "A:game"] }
     past_performance: [90, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [33.89, "R:company_recall_2008"], 2010: [34.8, "R:company_recall"], 2024: [41.0, "R:company_recall"] }
+    revenue_usd_bn: { 2000: [7.6, "R:company_recall_2000"], 2001: [13.6, "R:company_recall_2000"], 2002: [17.2, "R:company_recall_2000"], 2003: [26.2, "R:company_recall_2000"], 2004: [29.9, "R:company_recall_2000"], 2006: [30.1, "R:company_recall_2000"], 2007: [32.0, "R:company_recall_2000"], 2008: [33.89, "R:company_recall_2008"], 2010: [34.8, "R:company_recall"], 2024: [41.0, "R:company_recall"] }
   - name: General Dynamics
     country: us
     areas: { cloud: [70, "A:game"], devices: [70, "A:sipri_top100"], cyber: [70, "A:game"] } # GDIT
     past_performance: [90, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [29.30, "R:company_recall_2008"], 2010: [32.47, "S:company_reports"], 2024: [47.7, "R:company_recall"] }
+    revenue_usd_bn: { 2000: [10.36, "R:company_recall_2000"], 2002: [13.83, "R:company_recall_2000"], 2004: [19.18, "R:company_recall_2000"], 2006: [24.06, "R:company_recall_2000"], 2007: [27.24, "R:company_recall_2000"], 2008: [29.30, "R:company_recall_2008"], 2010: [32.47, "S:company_reports"], 2024: [47.7, "R:company_recall"] }
   - name: Boeing Defense
     country: us
     areas: { space: [70, "A:sipri_top100"], devices: [55, "A:game"] }
     past_performance: [85, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [32.05, "R:company_recall_2008"], 2010: [32.0, "R:company_recall"], 2024: [23.9, "R:company_recall"] }
+    revenue_usd_bn: { 2000: [22.0, "R:company_recall_2000"], 2002: [25.0, "R:company_recall_2000"], 2004: [30.5, "R:company_recall_2000"], 2006: [32.4, "R:company_recall_2000"], 2007: [32.1, "R:company_recall_2000"], 2008: [32.05, "R:company_recall_2008"], 2010: [32.0, "R:company_recall"], 2024: [23.9, "R:company_recall"] }
   - name: L3Harris
     country: us
     areas: { space: [75, "A:sda"], devices: [75, "A:game"], cyber: [65, "A:game"] }
     past_performance: [88, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [14.90, "R:company_recall_2008"], 2010: [15.7, "R:company_recall"], 2024: [21.3, "S:company_reports"] } # L-3 alone in 2010
+    revenue_usd_bn: { 2000: [1.91, "R:company_recall_2000"], 2002: [4.01, "R:company_recall_2000"], 2004: [6.90, "R:company_recall_2000"], 2006: [12.48, "R:company_recall_2000"], 2007: [13.96, "R:company_recall_2000"], 2008: [14.90, "R:company_recall_2008"], 2010: [15.7, "R:company_recall"], 2024: [21.3, "S:company_reports"] } # L-3 alone in 2010
   - name: BAE Systems
     country: uk
     areas: { devices: [75, "A:sipri_top100"], cyber: [75, "A:game"], ai: [50, "A:game"] }
     past_performance: [90, "A:sipri_top100"]
-    revenue_usd_bn: { 2008: [32.4, "R:company_recall_2008"], 2010: [32.9, "S:sipri_top100"], 2024: [36.0, "R:company_recall"] } # 2010: SIPRI arms sales
+    revenue_usd_bn: { 2000: [14.4, "R:company_recall_2000"], 2004: [19.8, "R:company_recall_2000"], 2007: [29.9, "R:company_recall_2000"], 2008: [32.4, "R:company_recall_2008"], 2010: [32.9, "S:sipri_top100"], 2024: [36.0, "R:company_recall"] } # 2010: SIPRI arms sales
   - name: Palantir
     country: us
     areas: { ai: [80, "A:game"], cloud: [45, "A:game"] }

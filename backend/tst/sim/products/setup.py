@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from tst.sim import dmath
-from tst.sim.calendar import turn_to_ym, ym_to_turn
+from tst.sim.calendar import START_YEARS, start_turn_of, turn_to_ym, ym_to_turn
 from tst.sim.data_models import GameData, IncumbentProduct, incumbent_regions
 from tst.sim.geo.formulas import regional_d0, regional_growth, regional_price_cents
 from tst.sim.geo.models import ProductRegion, RegionalMarket, RegionalSegment
@@ -41,6 +41,14 @@ def addressable_at(data: GameData, category: str, segment: str, turn: int) -> fl
     month's year's growth for a category with growth_by_year (18.6)."""
     cat = data.category(category)
     value = cat.market(segment).addressable
+    world_2008 = start_turn_of(START_YEARS[1])
+    if not cat.growth_by_year and turn < world_2008:
+        # M50b (60.4): before 2008, the 2008 world's first month shrunk by each earlier
+        # month's growth (early_growth), so a 2008 game's demand is unchanged
+        value = addressable_at(data, category, segment, world_2008)
+        for t in range(turn, world_2008):
+            value /= monthly_growth(cat, turn_to_ym(t)[0])
+        return value
     if not cat.growth_by_year:
         # money-exact: ratio: customers or market size, not money
         return value * dmath.pow(monthly_growth(cat, 0), turn)
@@ -251,6 +259,8 @@ def initial_market(
             for inc in incumbents
             if inc.products and all(p.regions is None for p in inc.products)
         )
+    if turn >= start_turn_of(START_YEARS[1]):  # M50b (60.6): the 2000 world's own companies
+        incumbents = tuple(inc for inc in incumbents if not inc.history_only)
     for offset, inc in enumerate(incumbents):
         company_id = first_company_id + offset
         index = data.incumbents.index(inc)

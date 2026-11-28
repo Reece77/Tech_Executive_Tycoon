@@ -4287,6 +4287,34 @@ Every system's data gains 2008–2009 (research `docs/v6-research/start-2008-dos
 3. **The world arrives at 2010 sensibly:** in a 2008 start, by January 2010, category sizes and the named rivals' revenues sit within 0.7–1.3× the 2010 start's values (median, 10 seeds).
 4. **Every strategy plays:** V1's strategies started in 2008 finish 2037 within their v1 bands, or are reported.
 
+### 60.4 The calendar and history for 2000–2007 (M50b)
+
+Reece's order: **2000 second** (M50b), then 1995 (M50c).
+
+- `START_YEARS = (2000, 2008, 2010)`; January 2000 is turn −120 and `HISTORY_START_YEAR` is 2000. Every data series covers 2000–2009 without a gap (the loader's continuity check; research `docs/v6-research/start-2000-dossier.md`).
+- **A read is floored at its start year.** A history read at or after January 2008 sees nothing dated before 2008, and one at or after January 2010 nothing before 2010 (`calendar.history_floor_year`, `history_floor_turn`, `from_2010`). So a 2008 and a 2010 game read exactly what they read before M50b, and a 2000 game's series step once at each of January 2008 and January 2010 (as M50's 2008 game steps at 2010). Annual paths that start at a world's first month (a good's yearly change, rival mining capacity) restart at 2008 and 2010 in the same way.
+- Before January 2008, demand for a category with no `growth_by_year` is the 2008 world's first month divided by each earlier month's `early_growth`.
+
+### 60.5 The bust and the history eras (M50b)
+
+- **The bust is the venture climate.** macro_history's monthly climate (0.90 × each quarter's US venture dollars over 2010's quarter, capped at the climate bounds' 1.8) holds at 1.8 through the bubble to May 2001, falls to a 0.76–0.99 trough in 2002–2003 and recovers to 1.05 by January 2008. Round sizes, ARR multiples (§25.3) and IPO book demand (§25.2) read it.
+- **The IPO window shuts** from July 2000 to December 2003 (`macro_history.ipo_closed`): no bank takes a listing (eligibility, §25.1). Every window ends before 2008.
+- **History eras** (eras.yaml `history_eras`): social networks (February 2004: social), public cloud (March 2006: cloud hosting), video streaming (January 2007: streaming), smartphones (June 2007: devices and operating systems), electric cars and music streaming (January 2008, the 2008 world's first month). A category a history era opens takes no product launch, the player's or a rival startup's, until the era arrives: on its month, or earlier when a company's level in the era's domain reaches §21.4's threshold. History eras add no baseline and no boost, and are played only in a world begun before their month.
+
+### 60.6 Rivals in 2000 (M50b)
+
+- Incumbents on sale in January 2000 start at `early_scale[2000]` of their January 2010 customers; those launched later (`launched`) join in their month with no customers, never before their category opens.
+- **The 2000 world's own companies** (`history_only`: Compaq, Sun, Nortel, Lucent, AOL, Yahoo, eBay, Google, Cisco, Motorola) exist only in a world begun before 2008, with shares of the January 2000 market. Each `exit` closes the company in its real month; `exit_into`'s live product in the same category takes its customers segment by segment and region by region (Compaq into HP, May 2002; Sun into Oracle, January 2010), else they return to the market (Nortel, January 2009).
+- Entrants founded February 2000 to December 2007 (Fortinet to Zuora) are founded on their real months; a 2008 or 2010 game never reaches them.
+- **Survive the bust** (scenario, January 2000): a dot-com software company with a fresh Series A; positive operating margin and solvent by December 2003.
+
+### 60.7 Balance targets (printed; `tst/balance/m50b.py`)
+
+1. **History holds:** in a 2000 start, by January 2008 and January 2010, category sizes and the named rivals' revenues sit within 0.7–1.3× the 2008 and 2010 starts' (median, seeds 1–10).
+2. **The bust bites:** a passive script with an IPO-dependent plan fails on at least 6 of 10 seeds; a sensible one survives on at least 7.
+3. **A 2000 campaign plays:** to December 2029 on seeds 1–3 with no error; its 2039-equivalent month within M60's budget once M60 has merged.
+4. **2008 and 2010 games unchanged:** golden snapshots, M30's state cache and M50b's identity fixture (2008 and 2010 games, 120 months, seeds 1–2) identical to `main` before M50b.
+
 ## 61. Press conferences, interviews and one-to-ones (M49; v6)
 
 The last of v6's conversation milestones, on M47's engine (§58, ADR-0023): the engine decides outcomes within bounds, the LLM classifies the player's messages into moves and words the other side, and every conversation can be skipped (today's outcome) or played in template mode.

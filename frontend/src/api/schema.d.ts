@@ -11632,7 +11632,7 @@ export interface components {
             campaign_length?: "standard" | "dynasty";
             /**
              * Start Year
-             * @description M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2008 or 2010); a Sandbox or scenario keeps its own year
+             * @description M50 (ADR-0024): a campaign's first January, one of /api/meta start_years (2000, 2008 or 2010); a Sandbox or scenario keeps its own year
              * @default 2010
              */
             start_year?: number;

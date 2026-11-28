@@ -5,6 +5,11 @@ All time math in the sim goes through this module; the sim never uses `datetime`
 ADR-0024 (M50): a game may start before 2010. Earlier months are negative turns (January 2008
 is turn -24), and a save records its start turn (`start_turn_of`). Data series begin at
 `HISTORY_START_YEAR`, the earliest start year offered.
+
+M50b: January 2000 (turn -120) is the earliest. A history read is floored at the latest start
+year at or before it (`history_floor_year`, `history_floor_turn`): a read from January 2008 sees
+nothing before 2008 and one from January 2010 nothing before 2010, so a 2008 and a 2010 game read
+exactly what they read before earlier years were added; a 2000 game's series step at both.
 """
 
 from __future__ import annotations
@@ -17,7 +22,7 @@ TURN_ZERO: Final = (2010, 1)
 MONTHS_PER_YEAR: Final = 12
 # ADR-0024: the years a campaign may start in, earliest first. 2010 is turn 0; every data
 # series covers HISTORY_START_YEAR onward without a gap (the loader checks).
-START_YEARS: Final = (2008, 2010)
+START_YEARS: Final[tuple[int, ...]] = (2000, 2008, 2010)  # M50b: 2000
 HISTORY_START_YEAR: Final = START_YEARS[0]
 MONTH_ABBR: Final = (
     "Jan",
@@ -72,12 +77,54 @@ HISTORY_START_TURN: Final = (HISTORY_START_YEAR - TURN_ZERO[0]) * MONTHS_PER_YEA
 FROM_2010_READ: Final = TURN_ZERO[0] - 0.5
 
 
-def from_2010[V](points: dict[int, V], at: float, boundary: float = FROM_2010_READ) -> dict[int, V]:
+# M50b: a year-end series (telecom, media) reads January at the year before + 1/12, so the 2008
+# world's first read is 2007.08 and its floor sits between December 2007 (2007.0) and it
+END_YEAR_2008_READ: Final = 2007.04
+
+
+def history_floor_year(
+    at: float, boundary: float = FROM_2010_READ, boundary_2008: float | None = None
+) -> int:
+    """M50b: the latest start year whose boundary (`boundary`, shifted to that year, or
+    `boundary_2008` for 2008) is at or before the fractional year `at`; the earliest start
+    year before every boundary."""
+    for year in reversed(START_YEARS[1:]):
+        shifted = boundary - (TURN_ZERO[0] - year)
+        if boundary_2008 is not None and year == START_YEARS[1]:
+            shifted = boundary_2008
+        if at >= shifted:
+            return year
+    return START_YEARS[0]
+
+
+def world_year_of(year: int) -> int:
+    """M50b: the start year whose world a game begun in `year` is built on: the latest offered
+    start year at or before it (2008 for a 2008-2009 Sandbox or scenario, 2010 from 2010)."""
+    return max((y for y in START_YEARS if y <= year), default=START_YEARS[0])
+
+
+def history_floor_turn(turn: int) -> int:
+    """M50b: the first month of the latest start year at or before `turn` (0, -24 or -120)."""
+    for year in reversed(START_YEARS):
+        first = (year - TURN_ZERO[0]) * MONTHS_PER_YEAR
+        if turn >= first:
+            return first
+    return HISTORY_START_TURN
+
+
+def from_2010[V](
+    points: dict[int, V],
+    at: float,
+    boundary: float = FROM_2010_READ,
+    boundary_2008: float | None = None,
+) -> dict[int, V]:
     """ADR-0024 (M50): a year-keyed series read at `at` >= `boundary` (a month from January
     2010) without its 2008-2009 entries, so a 2010 game reads exactly what it read before they
-    were added (interpolation and "the year before" reach back). Earlier reads see them all."""
-    if at < boundary or not any(y >= TURN_ZERO[0] for y in points):
+    were added (interpolation and "the year before" reach back). M50b: likewise a read from
+    January 2008 without the 2000-2007 entries; earlier reads see them all."""
+    floor = history_floor_year(at, boundary, boundary_2008)
+    if floor == START_YEARS[0] or not any(y >= floor for y in points):
         return points
-    if all(y >= TURN_ZERO[0] for y in points):
+    if all(y >= floor for y in points):
         return points
-    return {y: v for y, v in points.items() if y >= TURN_ZERO[0]}
+    return {y: v for y, v in points.items() if y >= floor}

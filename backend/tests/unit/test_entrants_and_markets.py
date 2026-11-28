@@ -11,8 +11,9 @@ from tst.loader import LoadedData
 from tst.sim.actions.products import launch_problems
 from tst.sim.calendar import ym_to_turn
 from tst.sim.decisions import Decisions
-from tst.sim.ledger import CASH
+from tst.sim.ledger import CASH, LedgerEntry
 from tst.sim.products.phases import product_costs
+from tst.sim.rivals.models import RivalMove
 from tst.sim.rivals.startups import alive_startups, found_entrants, is_entrant
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
@@ -28,16 +29,21 @@ def test_every_entrant_is_founded_in_its_month(loaded: LoadedData, seed: int) ->
     """18.9 target 6: founding needs no draw, so every seed sees every entrant."""
     data = loaded.game_data
     state = fresh_game(loaded, seed=seed)
+    played: dict[int, tuple[GameState, tuple[LedgerEntry, ...], tuple[RivalMove, ...]]] = {}
     for entrant in data.entrants:
         month = ym_to_turn(entrant.year, entrant.month)
-        before, _, _ = found_entrants(at(state, month - 1), RngFactory(seed), loaded.balance, data)
-        assert entrant.name not in {c.name for c in before.companies}
-        state, entries, moves = found_entrants(
-            at(state, month), RngFactory(seed), loaded.balance, data
-        )
+        if month not in played:  # M50b: two entrants may share a month (MySpace and Skype)
+            before, _, _ = found_entrants(
+                at(state, month - 1), RngFactory(seed), loaded.balance, data
+            )
+            assert entrant.name not in {c.name for c in before.companies}
+            played[month] = found_entrants(at(state, month), RngFactory(seed), loaded.balance, data)
+        state, all_entries, moves = played[month]
         company = next(c for c in state.companies if c.name == entrant.name)
+        entries = [e for e in all_entries if e.company_id == company.id]
         assert company.founded_turn == month and company.is_startup and is_entrant(company, data)
-        assert [m.action for m in moves] == ["founded"]
+        # M50b: two entrants may share a month (MySpace and Skype, August 2003)
+        assert [m.action for m in moves if m.company_id == company.id] == ["founded"]
         assert entries[0].lines[0].amount == entrant.cash_cents
         staff = state.staff(company.id)
         assert len(staff) == entrant.staff

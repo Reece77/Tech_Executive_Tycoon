@@ -500,6 +500,7 @@ bankruptcy:
 # --- Rivals (formulas.md section 15, M5) -------------------------------------------------
 rivals:
   prelaunch_cash_months: 36 # months; M50 (60.2): an incumbent whose products all launch after a 2008 start opens with this many months of its key people's costs (it raised money to build them; GitHub, Evernote)
+  prelaunch_after_months: 12 # months; M50b (60.6): ... and at least to its first launch and this many months beyond (Oracle's CRM On Demand launches 45 months after January 2000; a 2008 world's longest wait is 24, so its cash is unchanged)
   act_threshold: 0.5 # utility; a rival acts only if its best action scores at least this (15.3)
   noise_sd: 0.1 # utility; sd of Normal noise added to each action's utility (15.3)
   cooldown_turns: 6 # turns; the same action on the same product and segment waits this long (15.3)
@@ -1677,7 +1678,7 @@ sandbox:
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
 
 editor: # M52 (formulas.md 66.1, ADR-0026): every field a custom scenario may set, with its range; a field outside its range is refused with the reason
-  start_years: [2008, 2030] # calendar years a custom start may begin in (M50's 2008 world to M51's latest scenario, The dynasty's 2030)
+  start_years: [2000, 2030] # calendar years a custom start may begin in (M50b: from the 2000 world, as Survive the bust opens there, to M51's latest scenario, The dynasty's 2030)
   macro_from_year: 2026 # macro and commodity starting levels are editable from this year: before it both are history (20.1, 33.1), the same on every seed
   cash_dollars: [0, 10000000000] # dollars of starting cash (up to $10bn: a funded giant, still far inside int64 cents)
   debt_dollars: [0, 5000000000] # dollars: the starting loans' summed principal
@@ -3023,7 +3024,7 @@ vehicles:
     charge_kw: [7, 400]
     usable: 0.92 # usable share of a pack (R: 90-95% buffers)
   bom:
-    drive_cents: { 2008: 330000, 2010: 300000, 2015: 220000, 2020: 160000, 2024: 130000 } # motors, inverter, onboard charger and thermal system, 2010 dollars (A: falling with volume; ICCT's 2019 cost study puts electric powertrain parts near $2,000 in 2020, R); M50: 2008 runs the 2010-2015 fall back two years (A)
+    drive_cents: { 2000: 450000, 2004: 390000, 2008: 330000, 2010: 300000, 2015: 220000, 2020: 160000, 2024: 130000 } # motors, inverter, onboard charger and thermal system, 2010 dollars (A: falling with volume; ICCT's 2019 cost study puts electric powertrain parts near $2,000 in 2020, R); M50: 2008 runs the 2010-2015 fall back two years (A); M50b: 2000 and 2004 run it back further, flattening (A: hand-built low-volume drives of the EV1 and RAV4 EV era)
   levels: # 49.4: what each autonomy level needs and gives (A unless noted)
     none: { label: None, lead: 0, ai_quality: 0, chips: { mobile_soc: 1 }, features: 0, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }
     l2: { label: L2 driver assistance, lead: 0, ai_quality: 0, chips: { mobile_soc: 2 }, features: 4, attach: 0.0, price_cents: 0, incident_rate: 0.0, approval: false }

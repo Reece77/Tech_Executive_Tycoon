@@ -34,6 +34,15 @@
 #   CPI   US BLS CPI-U annual averages (R; 2025 A, preliminary), as telecom.yaml
 
 cpi: # R (CPI), as telecom.yaml
+  # M50b (formulas.md 60.4): 2000-2007 added the same way (BLS CPI-U annual averages, R)
+  2000: 172.192
+  2001: 177.042
+  2002: 179.867
+  2003: 183.960
+  2004: 188.883
+  2005: 195.267
+  2006: 201.558
+  2007: 207.342
   2008: 215.303
   2009: 214.537
   2010: 218.056
@@ -56,7 +65,18 @@ cpi: # R (CPI), as telecom.yaml
 # --- 65.1 advertising ------------------------------------------------------------------------------------
 ads:
   # Global ad revenue ($B, nominal): GM. 2008-2009 R (GroupM: about $480B in 2008, down to about $445B in 2009)
+  # M50b (formulas.md 60.4): 2000-2007 added the same way; sources in docs/v6-research/start-2000/media.md.
+  # 2000 R (about $450B at the dot-com peak; Zenith, GroupM), 2001 R (the ad recession, about -8%),
+  # 2002-2007 A (the recovery at about 3-4% a year to 2008's level)
   spend_usd:
+    2000: [450, 2000, R]
+    2001: [415, 2001, R]
+    2002: [418, 2002, A]
+    2003: [432, 2003, A]
+    2004: [455, 2004, A]
+    2005: [468, 2005, A]
+    2006: [486, 2006, A]
+    2007: [500, 2007, A]
     2008: [480, 2008, R]
     2009: [445, 2009, R]
     2010: [490, 2010, R]
@@ -65,6 +85,15 @@ ads:
     2024: [1040, 2024, S] # GM: "$1.04 trillion", up 9.5%
     2025: [1100, 2025, S] # GM forecast
   digital_share: # GM
+    # M50b: internet about 3% of ad spend in 2000 and about 10% by 2007 (R, GM and IAB); between A
+    2000: [0.03, R]
+    2001: [0.03, A]
+    2002: [0.03, A]
+    2003: [0.04, A]
+    2004: [0.05, A]
+    2005: [0.06, A]
+    2006: [0.08, A]
+    2007: [0.10, R]
     2008: [0.11, R]
     2010: [0.16, R]
     2015: [0.30, R]
@@ -73,6 +102,9 @@ ads:
     2025: [0.729, S]
   # Regional shares of global ad spend (GM by region, R; Asia-Pacific split by D as above). Each year sums to 1.
   region_share:
+    # M50b: 2000 and 2004 A from GM's and Zenith's regional rows (R): North America's and Japan's larger shares
+    2000: { north_america: [0.44, A], europe: [0.27, A], east_asia: [0.18, A], south_southeast_asia: [0.03, A], latin_america: [0.05, A], africa: [0.01, A], oceania: [0.02, A] }
+    2004: { north_america: [0.41, A], europe: [0.28, A], east_asia: [0.19, A], south_southeast_asia: [0.03, A], latin_america: [0.05, A], africa: [0.02, A], oceania: [0.02, A] }
     2008: { north_america: [0.38, R], europe: [0.27, R], east_asia: [0.19, R], south_southeast_asia: [0.04, R], latin_america: [0.07, R], africa: [0.02, R], oceania: [0.03, R] }
     2020: { north_america: [0.36, R], europe: [0.21, R], east_asia: [0.27, R], south_southeast_asia: [0.06, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
     2025: { north_america: [0.35, R], europe: [0.20, R], east_asia: [0.28, R], south_southeast_asia: [0.07, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.03, R] }
@@ -89,27 +121,30 @@ ads:
 
 # --- 65.5 social networks: internet users and multi-homing ----------------------------------------------
 internet_users: # millions (ITU, R; regions summed from ITU's regional rows, D)
-  north_america: { 2008: [270, R], 2010: [290, R], 2015: [330, R], 2020: [360, R], 2024: [380, R], 2025: [384, D] }
-  europe: { 2008: [400, R], 2010: [470, R], 2015: [600, R], 2020: [700, R], 2024: [745, R], 2025: [750, D] }
-  east_asia: { 2008: [360, R], 2010: [520, R], 2015: [830, R], 2020: [1150, R], 2024: [1260, R], 2025: [1275, D] }
-  south_southeast_asia: { 2008: [130, R], 2010: [200, R], 2015: [500, R], 2020: [1150, R], 2024: [1550, R], 2025: [1600, D] }
-  latin_america: { 2008: [130, R], 2010: [180, R], 2015: [300, R], 2020: [440, R], 2024: [500, R], 2025: [510, D] }
-  africa: { 2008: [50, R], 2010: [90, R], 2015: [250, R], 2020: [450, R], 2024: [600, R], 2025: [630, D] }
-  oceania: { 2008: [20, R], 2010: [22, R], 2015: [27, R], 2020: [32, R], 2024: [36, R], 2025: [37, D] }
+  # M50b: 2000 and 2004 R from ITU's country counts (about 400M worldwide in 2000, 900M in 2004)
+  north_america: { 2000: [140, R], 2004: [220, R], 2008: [270, R], 2010: [290, R], 2015: [330, R], 2020: [360, R], 2024: [380, R], 2025: [384, D] }
+  europe: { 2000: [105, R], 2004: [250, R], 2008: [400, R], 2010: [470, R], 2015: [600, R], 2020: [700, R], 2024: [745, R], 2025: [750, D] }
+  east_asia: { 2000: [95, R], 2004: [220, R], 2008: [360, R], 2010: [520, R], 2015: [830, R], 2020: [1150, R], 2024: [1260, R], 2025: [1275, D] }
+  south_southeast_asia: { 2000: [15, R], 2004: [55, R], 2008: [130, R], 2010: [200, R], 2015: [500, R], 2020: [1150, R], 2024: [1550, R], 2025: [1600, D] }
+  latin_america: { 2000: [13, R], 2004: [55, R], 2008: [130, R], 2010: [180, R], 2015: [300, R], 2020: [440, R], 2024: [500, R], 2025: [510, D] }
+  africa: { 2000: [5, R], 2004: [15, R], 2008: [50, R], 2010: [90, R], 2015: [250, R], 2020: [450, R], 2024: [600, R], 2025: [630, D] }
+  oceania: { 2000: [8, R], 2004: [14, R], 2008: [20, R], 2010: [22, R], 2015: [27, R], 2020: [32, R], 2024: [36, R], 2025: [37, D] }
 # networks a user is on and counted (A: GWI's 6-7 platforms a user by 2024 include messaging; counted
 # networks here are the large ad-funded ones): the social market is internet users x this
-multi_home: { 2008: [1.0, A], 2010: [1.3, A], 2015: [1.8, A], 2020: [2.3, A], 2024: [2.6, A], 2025: [2.6, A] }
+# M50b: networks tiny before Friendster and MySpace (2003) and Facebook (2004): A, held above zero
+multi_home: { 2000: [0.05, A], 2003: [0.1, A], 2004: [0.2, A], 2006: [0.6, A], 2007: [0.8, A], 2008: [1.0, A], 2010: [1.3, A], 2015: [1.8, A], 2020: [2.3, A], 2024: [2.6, A], 2025: [2.6, A] }
 # The social market's ad revenue a user a year by region (META's ARPU, R; 2008-2009 R from the S-1): the
 # history's price of a social line (x the line's arpu_mult), and the impression price behind it (D: ARPU over
 # hours x ad load x impressions an hour, balance.yaml media.social)
+# M50b: arpu 2000 and 2004 A (portals' and early networks' ad revenue a user, under 2008's)
 arpu_usd:
-  north_america: { 2008: [3.5, 2008, R], 2010: [18, 2010, R], 2015: [46, 2015, R], 2020: [160, 2020, R], 2024: [228, 2024, R], 2025: [240, 2025, A] }
-  europe: { 2008: [1.5, 2008, R], 2010: [6, 2010, R], 2015: [15, 2015, R], 2020: [51, 2020, R], 2024: [75, 2024, R], 2025: [78, 2025, A] }
-  east_asia: { 2008: [0.5, 2008, R], 2010: [2, 2010, R], 2015: [4, 2015, R], 2020: [13, 2020, R], 2024: [19, 2024, R], 2025: [20, 2025, A] }
-  south_southeast_asia: { 2008: [0.3, 2008, R], 2010: [1.2, 2010, R], 2015: [2.5, 2015, R], 2020: [7, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
-  latin_america: { 2008: [0.4, 2008, R], 2010: [1.5, 2010, R], 2015: [3, 2015, R], 2020: [9, 2020, R], 2024: [15, 2024, R], 2025: [16, 2025, A] }
-  africa: { 2008: [0.3, 2008, R], 2010: [1.0, 2010, R], 2015: [2, 2015, R], 2020: [6, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
-  oceania: { 2008: [2.0, 2008, R], 2010: [8, 2010, R], 2015: [20, 2015, R], 2020: [70, 2020, R], 2024: [100, 2024, R], 2025: [105, 2025, A] }
+  north_america: { 2000: [0.5, 2000, A], 2004: [1.0, 2004, A], 2008: [3.5, 2008, R], 2010: [18, 2010, R], 2015: [46, 2015, R], 2020: [160, 2020, R], 2024: [228, 2024, R], 2025: [240, 2025, A] }
+  europe: { 2000: [0.2, 2000, A], 2004: [0.4, 2004, A], 2008: [1.5, 2008, R], 2010: [6, 2010, R], 2015: [15, 2015, R], 2020: [51, 2020, R], 2024: [75, 2024, R], 2025: [78, 2025, A] }
+  east_asia: { 2000: [0.1, 2000, A], 2004: [0.2, 2004, A], 2008: [0.5, 2008, R], 2010: [2, 2010, R], 2015: [4, 2015, R], 2020: [13, 2020, R], 2024: [19, 2024, R], 2025: [20, 2025, A] }
+  south_southeast_asia: { 2000: [0.05, 2000, A], 2004: [0.1, 2004, A], 2008: [0.3, 2008, R], 2010: [1.2, 2010, R], 2015: [2.5, 2015, R], 2020: [7, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
+  latin_america: { 2000: [0.05, 2000, A], 2004: [0.1, 2004, A], 2008: [0.4, 2008, R], 2010: [1.5, 2010, R], 2015: [3, 2015, R], 2020: [9, 2020, R], 2024: [15, 2024, R], 2025: [16, 2025, A] }
+  africa: { 2000: [0.05, 2000, A], 2004: [0.08, 2004, A], 2008: [0.3, 2008, R], 2010: [1.0, 2010, R], 2015: [2, 2015, R], 2020: [6, 2020, R], 2024: [10, 2024, R], 2025: [10.5, 2025, A] }
+  oceania: { 2000: [0.3, 2000, A], 2004: [0.6, 2004, A], 2008: [2.0, 2008, R], 2010: [8, 2010, R], 2015: [20, 2015, R], 2020: [70, 2020, R], 2024: [100, 2024, R], 2025: [105, 2025, A] }
 
 # Format eras (65.5): a new format draws users from the incumbents on older ones. Dated to 2025; seeded
 # after (balance.yaml media.social.format_every, stream media (3, 0, year)).
@@ -127,36 +162,45 @@ divest_laws:
 # --- 65.3 streaming ---------------------------------------------------------------------------------------
 # Paid video streaming subscriptions a region can hold (millions; D: DTVR's SVOD subscriptions, R, over a
 # served share of about 0.8, A): the streaming market
+# M50b: before Netflix's streaming (16 January 2007) the market is subscription rental by mail, as 2008's
+# values count (North America D: Netflix's and Blockbuster Online's subscribers, R, over 0.8; elsewhere A, tiny)
 streaming_market:
-  north_america: { 2008: [12, D], 2010: [25, D], 2015: [110, D], 2020: [330, D], 2024: [420, D], 2025: [430, D] }
-  europe: { 2008: [1, D], 2010: [3, D], 2015: [35, D], 2020: [210, D], 2024: [330, D], 2025: [345, D] }
-  east_asia: { 2008: [1, D], 2010: [2, D], 2015: [40, D], 2020: [300, D], 2024: [380, D], 2025: [390, D] }
-  south_southeast_asia: { 2008: [0.2, D], 2010: [0.5, D], 2015: [5, D], 2020: [90, D], 2024: [190, D], 2025: [205, D] }
-  latin_america: { 2008: [0.3, D], 2010: [0.6, D], 2015: [20, D], 2020: [80, D], 2024: [130, D], 2025: [135, D] }
-  africa: { 2008: [0.05, D], 2010: [0.1, D], 2015: [1, D], 2020: [8, D], 2024: [16, D], 2025: [17, D] }
-  oceania: { 2008: [0.2, D], 2010: [0.4, D], 2015: [4, D], 2020: [18, D], 2024: [24, D], 2025: [25, D] }
+  north_america: { 2000: [0.4, D], 2002: [1.1, D], 2004: [3.8, D], 2005: [6, D], 2006: [9.5, D], 2007: [11, D], 2008: [12, D], 2010: [25, D], 2015: [110, D], 2020: [330, D], 2024: [420, D], 2025: [430, D] }
+  europe: { 2000: [0.01, A], 2004: [0.2, A], 2007: [0.8, A], 2008: [1, D], 2010: [3, D], 2015: [35, D], 2020: [210, D], 2024: [330, D], 2025: [345, D] }
+  east_asia: { 2000: [0.05, A], 2004: [0.3, A], 2008: [1, D], 2010: [2, D], 2015: [40, D], 2020: [300, D], 2024: [380, D], 2025: [390, D] }
+  south_southeast_asia: { 2000: [0.01, A], 2004: [0.05, A], 2008: [0.2, D], 2010: [0.5, D], 2015: [5, D], 2020: [90, D], 2024: [190, D], 2025: [205, D] }
+  latin_america: { 2000: [0.02, A], 2004: [0.1, A], 2008: [0.3, D], 2010: [0.6, D], 2015: [20, D], 2020: [80, D], 2024: [130, D], 2025: [135, D] }
+  africa: { 2000: [0.005, A], 2004: [0.01, A], 2008: [0.05, D], 2010: [0.1, D], 2015: [1, D], 2020: [8, D], 2024: [16, D], 2025: [17, D] }
+  oceania: { 2000: [0.01, A], 2004: [0.05, A], 2008: [0.2, D], 2010: [0.4, D], 2015: [4, D], 2020: [18, D], 2024: [24, D], 2025: [25, D] }
 # Paid music streaming subscriptions a region can hold (millions; D: IFPI's paid subscription accounts, R,
 # about 40M in 2010 to 750M in 2024, over 0.8, A)
+# M50b: before Spotify (October 2008) the market is paid subscription music: Rhapsody (December 2001),
+# Napster's (2003), Japan's and Korea's mobile music subscriptions (A; downloads are not counted)
 music_market:
-  north_america: { 2008: [2, D], 2010: [4, D], 2015: [30, D], 2020: [120, D], 2024: [170, D], 2025: [175, D] }
-  europe: { 2008: [2, D], 2010: [6, D], 2015: [35, D], 2020: [130, D], 2024: [210, D], 2025: [220, D] }
-  east_asia: { 2008: [10, D], 2010: [25, D], 2015: [35, D], 2020: [120, D], 2024: [260, D], 2025: [270, D] }
-  south_southeast_asia: { 2008: [0.5, D], 2010: [1, D], 2015: [5, D], 2020: [40, D], 2024: [100, D], 2025: [110, D] }
-  latin_america: { 2008: [0.5, D], 2010: [1, D], 2015: [10, D], 2020: [55, D], 2024: [110, D], 2025: [115, D] }
-  africa: { 2008: [0.1, D], 2010: [0.2, D], 2015: [1, D], 2020: [6, D], 2024: [15, D], 2025: [16, D] }
-  oceania: { 2008: [0.3, D], 2010: [0.5, D], 2015: [3, D], 2020: [12, D], 2024: [18, D], 2025: [19, D] }
+  north_america: { 2000: [0.01, A], 2002: [0.1, A], 2004: [0.5, A], 2006: [1.5, A], 2007: [1.8, A], 2008: [2, D], 2010: [4, D], 2015: [30, D], 2020: [120, D], 2024: [170, D], 2025: [175, D] }
+  europe: { 2000: [0.01, A], 2004: [0.2, A], 2006: [0.8, A], 2007: [1.5, A], 2008: [2, D], 2010: [6, D], 2015: [35, D], 2020: [130, D], 2024: [210, D], 2025: [220, D] }
+  east_asia: { 2000: [1, A], 2004: [4, A], 2006: [7, A], 2008: [10, D], 2010: [25, D], 2015: [35, D], 2020: [120, D], 2024: [260, D], 2025: [270, D] }
+  south_southeast_asia: { 2000: [0.01, A], 2004: [0.1, A], 2008: [0.5, D], 2010: [1, D], 2015: [5, D], 2020: [40, D], 2024: [100, D], 2025: [110, D] }
+  latin_america: { 2000: [0.01, A], 2004: [0.1, A], 2008: [0.5, D], 2010: [1, D], 2015: [10, D], 2020: [55, D], 2024: [110, D], 2025: [115, D] }
+  africa: { 2000: [0.002, A], 2004: [0.02, A], 2008: [0.1, D], 2010: [0.2, D], 2015: [1, D], 2020: [6, D], 2024: [15, D], 2025: [16, D] }
+  oceania: { 2000: [0.005, A], 2004: [0.05, A], 2008: [0.3, D], 2010: [0.5, D], 2015: [3, D], 2020: [12, D], 2024: [18, D], 2025: [19, D] }
 # Ad tiers (65.3): a service may run one from this month (R: Netflix's Basic with Ads, 3 November 2022; Hulu's
 # limited-commercials plan from 2010 is an ad-supported service, not a tier of an ad-free one)
 ad_tier_from: "2022-11" # R
 # The share of a video service's catalogue value licensed titles keep (65.3): the 2019-2020 pull-back of
 # licences to the studios' own services (R: Disney's titles left Netflix from 2019, WarnerMedia's Friends
 # and Comcast's The Office from 2020, NFLX; A: values)
-licence_availability: { 2008: [1.0, A], 2018: [1.0, A], 2019: [0.85, A], 2020: [0.7, A], 2021: [0.6, A], 2025: [0.6, A] }
+licence_availability: { 2000: [1.0, A], 2008: [1.0, A], 2018: [1.0, A], 2019: [0.85, A], 2020: [0.7, A], 2021: [0.6, A], 2025: [0.6, A] }
 
 # --- 65.4 games ------------------------------------------------------------------------------------------
 # Global games revenue ($B): NZ (2024 S; others R); split by region (NZ's regional shares, R)
-games_market_usd: { 2008: [55, 2008, R], 2010: [67, 2010, R], 2015: [92, 2015, R], 2020: [178, 2020, R], 2024: [182.7, 2024, S], 2025: [189, 2025, A] }
+# M50b: 2000 and 2007 R (DFC Intelligence, PwC: game software about $20-25B around 2000, about $45B in 2007);
+# A between (the PS2, Xbox and GameCube of 2000-2001, World of Warcraft November 2004, the Wii and DS)
+games_market_usd: { 2000: [22, 2000, R], 2001: [25, 2001, A], 2002: [28, 2002, A], 2003: [28, 2003, A], 2004: [30, 2004, A], 2005: [32, 2005, A], 2006: [37, 2006, A], 2007: [47, 2007, R], 2008: [55, 2008, R], 2010: [67, 2010, R], 2015: [92, 2015, R], 2020: [178, 2020, R], 2024: [182.7, 2024, S], 2025: [189, 2025, A] }
+# M50b: region shares 2000 and 2004 A (Japan's consoles, Korea's PC online games; NZ's later rows)
 games_region_share:
+  2000: { north_america: [0.35, A], europe: [0.30, A], east_asia: [0.28, A], south_southeast_asia: [0.02, A], latin_america: [0.02, A], africa: [0.01, A], oceania: [0.02, A] }
+  2004: { north_america: [0.33, A], europe: [0.29, A], east_asia: [0.29, A], south_southeast_asia: [0.03, A], latin_america: [0.03, A], africa: [0.01, A], oceania: [0.02, A] }
   2008: { north_america: [0.30, R], europe: [0.28, R], east_asia: [0.30, R], south_southeast_asia: [0.04, R], latin_america: [0.04, R], africa: [0.01, R], oceania: [0.03, R] }
   2020: { north_america: [0.25, R], europe: [0.18, R], east_asia: [0.40, R], south_southeast_asia: [0.08, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.02, R] }
   2025: { north_america: [0.27, R], europe: [0.18, R], east_asia: [0.37, R], south_southeast_asia: [0.09, R], latin_america: [0.05, R], africa: [0.02, R], oceania: [0.02, R] }
@@ -190,11 +234,13 @@ strikes:
 # to customers x 10^6 x media.scale x split (at most the market not held by others).
 lines:
   # video streaming (customers: paid subscriptions)
+  # M50b: 2000-2007 per line below (R from the filings, A before a line's launch: zero, the split held)
   - company: Netflix
     line: Netflix
     category: streaming
-    customers: { 2008: [9.4, R], 2010: [20.0, R], 2015: [74.8, R], 2020: [203.7, R], 2024: [301.6, R], 2025: [320, A] } # NFLX (2010 mostly US, DVD and streaming)
+    customers: { 2000: [0.29, R], 2001: [0.46, R], 2002: [0.86, R], 2003: [1.49, R], 2004: [2.61, R], 2005: [4.18, R], 2006: [6.32, R], 2007: [7.48, R], 2008: [9.4, R], 2010: [20.0, R], 2015: [74.8, R], 2020: [203.7, R], 2024: [301.6, R], 2025: [320, A] } # NFLX (2010 mostly US, DVD and streaming)
     split:
+      2000: { north_america: [1.0, R] }
       2008: { north_america: [1.0, R] }
       2015: { north_america: [0.60, R], europe: [0.20, R], latin_america: [0.12, R], east_asia: [0.03, D], south_southeast_asia: [0.02, D], oceania: [0.03, D] }
       2020: { north_america: [0.37, R], europe: [0.33, R], latin_america: [0.18, R], east_asia: [0.06, D], south_southeast_asia: [0.04, D], oceania: [0.02, D] }
@@ -203,8 +249,8 @@ lines:
   - company: Disney
     line: Hulu
     category: streaming
-    customers: { 2008: [0.1, A], 2010: [0.5, R], 2015: [12, R], 2020: [39, R], 2024: [52, R], 2025: [54, A] } # DIS (Hulu Plus from November 2010; Disney's majority from March 2019, A: on Disney throughout)
-    split: { 2008: { north_america: [1.0, R] } }
+    customers: { 2000: [0, A], 2007: [0, A], 2008: [0.1, A], 2010: [0.5, R], 2015: [12, R], 2020: [39, R], 2024: [52, R], 2025: [54, A] } # DIS (Hulu Plus from November 2010; Disney's majority from March 2019, A: on Disney throughout)
+    split: { 2000: { north_america: [1.0, A] }, 2008: { north_america: [1.0, R] } }
   - company: Disney
     line: Disney+
     category: streaming
@@ -259,8 +305,9 @@ lines:
   - company: Spotify
     line: Spotify
     category: music_streaming
-    customers: { 2008: [0.1, R], 2010: [1, R], 2015: [28, R], 2020: [155, R], 2024: [263, R], 2025: [281, A] } # SPOT premium subscribers
+    customers: { 2000: [0, A], 2007: [0, A], 2008: [0.1, R], 2010: [1, R], 2015: [28, R], 2020: [155, R], 2024: [263, R], 2025: [281, A] } # SPOT premium subscribers
     split:
+      2000: { europe: [1.0, A] }
       2008: { europe: [1.0, R] }
       2015: { europe: [0.45, R], north_america: [0.33, R], latin_america: [0.18, R], oceania: [0.04, R] }
       2024: { europe: [0.38, R], north_america: [0.26, R], latin_america: [0.22, R], south_southeast_asia: [0.10, R], oceania: [0.04, R] }
@@ -273,14 +320,16 @@ lines:
   - company: Tencent Media
     line: QQ Music
     category: music_streaming
-    customers: { 2008: [3, A], 2010: [5, A], 2016: [15, R], 2020: [56, R], 2024: [121, R], 2025: [124, A] } # TME paying users (Tencent Music)
-    split: { 2008: { east_asia: [1.0, R] } }
+    customers: { 2000: [0, A], 2004: [0, A], 2005: [0.5, A], 2006: [1, A], 2007: [2, A], 2008: [3, A], 2010: [5, A], 2016: [15, R], 2020: [56, R], 2024: [121, R], 2025: [124, A] } # TME paying users (Tencent Music)
+    split: { 2000: { east_asia: [1.0, A] }, 2008: { east_asia: [1.0, R] } }
   # social networks (customers: monthly users)
   - company: Meta Platforms
     line: Facebook Feed
     category: social
-    customers: { 2008: [140, R], 2010: [608, R], 2015: [1591, R], 2020: [2797, R], 2024: [3070, R], 2025: [3100, A] } # META monthly users (December)
+    customers: { 2000: [0, A], 2003: [0, A], 2004: [1, R], 2005: [5.5, R], 2006: [12, R], 2007: [58, R], 2008: [140, R], 2010: [608, R], 2015: [1591, R], 2020: [2797, R], 2024: [3070, R], 2025: [3100, A] } # META monthly users (December)
     split:
+      2000: { north_america: [1.0, A] }
+      2006: { north_america: [0.80, A], europe: [0.12, A], oceania: [0.03, A], latin_america: [0.02, A], south_southeast_asia: [0.02, A], east_asia: [0.01, A] }
       2008: { north_america: [0.30, R], europe: [0.30, R], south_southeast_asia: [0.14, D], latin_america: [0.15, D], africa: [0.04, D], oceania: [0.02, D], east_asia: [0.05, D] }
       2020: { north_america: [0.09, R], europe: [0.15, R], south_southeast_asia: [0.40, D], latin_america: [0.16, D], africa: [0.12, D], oceania: [0.01, D], east_asia: [0.07, D] }
       2024: { north_america: [0.09, R], europe: [0.13, R], south_southeast_asia: [0.42, D], latin_america: [0.15, D], africa: [0.14, D], oceania: [0.01, D], east_asia: [0.06, D] }
@@ -300,8 +349,9 @@ lines:
     line: Twitter
     category: social
     first: "2008-01" # R: (founded 2006; R)
-    customers: { 2008: [10, R], 2010: [50, R], 2015: [305, R], 2020: [330, R], 2022: [368, R], 2024: [400, A], 2025: [390, A] } # TWTR monthly users; X's after 2022 (A)
+    customers: { 2000: [0, A], 2006: [0, A], 2007: [1, A], 2008: [10, R], 2010: [50, R], 2015: [305, R], 2020: [330, R], 2022: [368, R], 2024: [400, A], 2025: [390, A] } # TWTR monthly users; X's after 2022 (A)
     split:
+      2000: { north_america: [1.0, A] }
       2008: { north_america: [0.50, R], europe: [0.20, R], east_asia: [0.10, R], latin_america: [0.10, R], south_southeast_asia: [0.08, R], oceania: [0.02, R] }
       2020: { north_america: [0.22, R], europe: [0.22, R], east_asia: [0.16, R], latin_america: [0.12, R], south_southeast_asia: [0.20, R], africa: [0.06, R], oceania: [0.02, R] }
     arpu_mult: [0.35, A] # A: Twitter's 2020 ad revenue $3.2B over 330M users ($10) against Meta's $32 (R)
@@ -345,70 +395,74 @@ lines:
   - company: YouTube
     line: YouTube
     category: social
-    customers: { 2008: [300, A], 2010: [800, A], 2013: [1000, R], 2019: [2000, R], 2024: [2500, R], 2025: [2550, A] } # GOOG: "over 1 billion" monthly users (2013), 2 billion (2019), 2.5 billion (2024)
+    customers: { 2000: [0, A], 2004: [0, A], 2005: [20, A], 2006: [120, A], 2007: [250, A], 2008: [300, A], 2010: [800, A], 2013: [1000, R], 2019: [2000, R], 2024: [2500, R], 2025: [2550, A] } # GOOG: "over 1 billion" monthly users (2013), 2 billion (2019), 2.5 billion (2024)
     split:
+      2000: { north_america: [0.45, A], europe: [0.30, A], latin_america: [0.08, A], south_southeast_asia: [0.07, A], east_asia: [0.05, A], africa: [0.02, A], oceania: [0.03, A] }
       2008: { north_america: [0.25, A], europe: [0.30, A], south_southeast_asia: [0.18, A], latin_america: [0.14, A], east_asia: [0.06, A], africa: [0.04, A], oceania: [0.03, A] }
       2024: { north_america: [0.12, A], europe: [0.18, A], south_southeast_asia: [0.40, A], latin_america: [0.14, A], east_asia: [0.06, A], africa: [0.08, A], oceania: [0.02, A] }
     arpu_mult: [0.45, A] # A: YouTube's ads $36B (2024, R) over 2.5B (about $14) against Meta's $49 a user; (2010 $1.3B over 800M)
     format: short_video # A: Shorts from 2020 (the line's current format)
   # games (revenue $B a year, R from each publisher's reports; customers are revenue / (12 x price))
+  # M50b: 2000-2007 each publisher's fiscal year as its 2008 row maps it (sources in the dossier); splits
+  # held at 2008's from 2000 (A)
   - company: Electronic Arts
     line: EA Games
     category: games
-    revenue_usd: { 2008: [4.0, 2008, R], 2010: [3.6, 2010, R], 2015: [4.5, 2015, R], 2020: [5.6, 2020, R], 2024: [7.5, 2024, R], 2025: [7.4, 2025, A] }
-    split: { 2008: { north_america: [0.50, R], europe: [0.40, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+    revenue_usd: { 2000: [1.3, 2000, R], 2001: [1.7, 2001, R], 2002: [2.5, 2002, R], 2003: [3.0, 2003, R], 2004: [3.1, 2004, R], 2005: [3.0, 2005, R], 2006: [3.1, 2006, R], 2007: [3.7, 2007, R], 2008: [4.0, 2008, R], 2010: [3.6, 2010, R], 2015: [4.5, 2015, R], 2020: [5.6, 2020, R], 2024: [7.5, 2024, R], 2025: [7.4, 2025, A] }
+    split: { 2000: { north_america: [0.50, A], europe: [0.40, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] }, 2008: { north_america: [0.50, R], europe: [0.40, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
   - company: Activision Blizzard
     line: Activision Blizzard
     category: games
     last: "2023-10" # R: Microsoft's purchase closed 13 October 2023 ($68.7B, after the UK CMA's review)
-    revenue_usd: { 2008: [3.0, 2008, R], 2010: [4.4, 2010, R], 2015: [4.7, 2015, R], 2020: [8.1, 2020, R], 2022: [7.5, 2022, R], 2023: [8.0, 2023, A] }
-    split: { 2008: { north_america: [0.50, R], europe: [0.35, R], east_asia: [0.08, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+    revenue_usd: { 2000: [0.62, 2000, R], 2001: [0.79, 2001, R], 2002: [0.86, 2002, R], 2003: [0.95, 2003, R], 2004: [1.41, 2004, R], 2005: [1.47, 2005, R], 2006: [1.51, 2006, R], 2007: [2.90, 2007, R], 2008: [3.0, 2008, R], 2010: [4.4, 2010, R], 2015: [4.7, 2015, R], 2020: [8.1, 2020, R], 2022: [7.5, 2022, R], 2023: [8.0, 2023, A] }
+    split: { 2000: { north_america: [0.50, A], europe: [0.35, A], east_asia: [0.08, A], latin_america: [0.03, A], oceania: [0.04, A] }, 2008: { north_america: [0.50, R], europe: [0.35, R], east_asia: [0.08, A], latin_america: [0.03, A], oceania: [0.04, A] } }
   - company: Microsoft Gaming
     line: Xbox
     category: games
-    revenue_usd: { 2008: [2.5, 2008, A], 2010: [3.0, 2010, A], 2015: [5.0, 2015, R], 2020: [11.0, 2020, R], 2023: [15.0, 2023, R], 2024: [21.0, 2024, D], 2025: [22.0, 2025, A] } # MSFT Xbox content and services (2024 with Activision Blizzard, D)
-    split: { 2008: { north_america: [0.55, A], europe: [0.35, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+    revenue_usd: { 2000: [0.4, 2000, A], 2001: [0.6, 2001, A], 2002: [0.9, 2002, A], 2003: [1.0, 2003, A], 2004: [1.2, 2004, A], 2005: [1.3, 2005, A], 2006: [1.7, 2006, A], 2007: [2.3, 2007, A], 2008: [2.5, 2008, A], 2010: [3.0, 2010, A], 2015: [5.0, 2015, R], 2020: [11.0, 2020, R], 2023: [15.0, 2023, R], 2024: [21.0, 2024, D], 2025: [22.0, 2025, A] } # MSFT Xbox content and services (2024 with Activision Blizzard, D)
+    split: { 2000: { north_america: [0.55, A], europe: [0.35, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] }, 2008: { north_america: [0.55, A], europe: [0.35, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
   - company: Take-Two
     line: Take-Two
     category: games
-    revenue_usd: { 2008: [1.5, 2008, R], 2010: [1.2, 2010, R], 2015: [1.4, 2015, R], 2020: [3.1, 2020, R], 2022: [3.5, 2022, R], 2024: [5.3, 2024, R], 2025: [5.6, 2025, A] } # TTWO (with Zynga from May 2022, $12.7B)
-    split: { 2008: { north_america: [0.55, R], europe: [0.35, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
+    revenue_usd: { 2000: [0.39, 2000, R], 2001: [0.45, 2001, R], 2002: [0.79, 2002, R], 2003: [1.03, 2003, R], 2004: [1.13, 2004, R], 2005: [1.20, 2005, R], 2006: [1.04, 2006, R], 2007: [0.98, 2007, R], 2008: [1.5, 2008, R], 2010: [1.2, 2010, R], 2015: [1.4, 2015, R], 2020: [3.1, 2020, R], 2022: [3.5, 2022, R], 2024: [5.3, 2024, R], 2025: [5.6, 2025, A] } # TTWO (with Zynga from May 2022, $12.7B)
+    split: { 2000: { north_america: [0.55, A], europe: [0.35, A], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] }, 2008: { north_america: [0.55, R], europe: [0.35, R], east_asia: [0.03, A], latin_america: [0.03, A], oceania: [0.04, A] } }
   - company: Ubisoft
     line: Ubisoft
     category: games
-    revenue_usd: { 2008: [1.5, 2008, R], 2010: [1.4, 2010, R], 2015: [1.6, 2015, R], 2020: [2.5, 2020, R], 2024: [2.0, 2024, R], 2025: [1.9, 2025, A] }
-    split: { 2008: { europe: [0.45, R], north_america: [0.45, R], east_asia: [0.04, A], latin_america: [0.03, A], oceania: [0.03, A] } }
+    revenue_usd: { 2000: [0.33, 2000, R], 2001: [0.35, 2001, R], 2002: [0.48, 2002, R], 2003: [0.60, 2003, R], 2004: [0.70, 2004, R], 2005: [0.67, 2005, R], 2006: [0.88, 2006, R], 2007: [1.35, 2007, R], 2008: [1.5, 2008, R], 2010: [1.4, 2010, R], 2015: [1.6, 2015, R], 2020: [2.5, 2020, R], 2024: [2.0, 2024, R], 2025: [1.9, 2025, A] }
+    split: { 2000: { europe: [0.45, A], north_america: [0.45, A], east_asia: [0.04, A], latin_america: [0.03, A], oceania: [0.03, A] }, 2008: { europe: [0.45, R], north_america: [0.45, R], east_asia: [0.04, A], latin_america: [0.03, A], oceania: [0.03, A] } }
   - company: Nintendo
     line: Nintendo
     category: games
-    revenue_usd: { 2008: [7.0, 2008, D], 2010: [6.0, 2010, D], 2015: [2.5, 2015, D], 2020: [8.0, 2020, D], 2024: [7.0, 2024, D], 2025: [7.5, 2025, A] } # D: NTDO's software and digital sales, about 45% of revenue
-    split: { 2008: { north_america: [0.40, R], europe: [0.30, R], east_asia: [0.25, R], oceania: [0.03, R], latin_america: [0.02, R] } }
+    revenue_usd: { 2000: [2.1, 2000, D], 2001: [1.8, 2001, D], 2002: [1.9, 2002, D], 2003: [1.9, 2003, D], 2004: [2.2, 2004, D], 2005: [2.2, 2005, D], 2006: [2.0, 2006, D], 2007: [3.7, 2007, D], 2008: [7.0, 2008, D], 2010: [6.0, 2010, D], 2015: [2.5, 2015, D], 2020: [8.0, 2020, D], 2024: [7.0, 2024, D], 2025: [7.5, 2025, A] } # D: NTDO's software and digital sales, about 45% of revenue
+    split: { 2000: { north_america: [0.40, A], europe: [0.30, A], east_asia: [0.25, A], oceania: [0.03, A], latin_america: [0.02, A] }, 2008: { north_america: [0.40, R], europe: [0.30, R], east_asia: [0.25, R], oceania: [0.03, R], latin_america: [0.02, R] } }
   - company: Sony
     line: PlayStation Studios
     category: games
-    revenue_usd: { 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2020: [15.0, 2020, D], 2024: [20.0, 2024, D], 2025: [21.0, 2025, A] } # D: SONY's G&NS software, network services and add-ons, about 60% of the segment
-    split: { 2008: { north_america: [0.35, R], europe: [0.33, R], east_asia: [0.22, R], latin_america: [0.04, A], africa: [0.02, A], oceania: [0.04, A] } }
+    revenue_usd: { 2000: [1.9, 2000, D], 2001: [2.6, 2001, D], 2002: [2.6, 2002, D], 2003: [2.3, 2003, D], 2004: [2.2, 2004, D], 2005: [2.7, 2005, D], 2006: [2.8, 2006, D], 2007: [3.7, 2007, D], 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2020: [15.0, 2020, D], 2024: [20.0, 2024, D], 2025: [21.0, 2025, A] } # D: SONY's G&NS software, network services and add-ons, about 60% of the segment
+    split: { 2000: { north_america: [0.35, A], europe: [0.33, A], east_asia: [0.22, A], latin_america: [0.04, A], africa: [0.02, A], oceania: [0.04, A] }, 2008: { north_america: [0.35, R], europe: [0.33, R], east_asia: [0.22, R], latin_america: [0.04, A], africa: [0.02, A], oceania: [0.04, A] } }
   - company: Tencent Media
     line: Tencent Games
     category: games
-    revenue_usd: { 2008: [1.0, 2008, R], 2010: [2.8, 2010, R], 2015: [9.5, 2015, R], 2020: [30.0, 2020, R], 2024: [27.0, 2024, R], 2025: [28.0, 2025, A] } # TME online games (domestic and international)
-    split: { 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.75, R], north_america: [0.08, A], europe: [0.08, A], south_southeast_asia: [0.07, A], latin_america: [0.02, A] } }
+    revenue_usd: { 2000: [0, 2000, A], 2002: [0, 2002, A], 2003: [0.01, 2003, A], 2004: [0.03, 2004, A], 2005: [0.06, 2005, A], 2006: [0.1, 2006, R], 2007: [0.2, 2007, R], 2008: [1.0, 2008, R], 2010: [2.8, 2010, R], 2015: [9.5, 2015, R], 2020: [30.0, 2020, R], 2024: [27.0, 2024, R], 2025: [28.0, 2025, A] } # TME online games (domestic and international)
+    split: { 2000: { east_asia: [1.0, A] }, 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.75, R], north_america: [0.08, A], europe: [0.08, A], south_southeast_asia: [0.07, A], latin_america: [0.02, A] } }
   - company: NetEase
     line: NetEase Games
     category: games
-    revenue_usd: { 2008: [0.4, 2008, R], 2010: [0.8, 2010, R], 2015: [2.6, 2015, R], 2020: [8.5, 2020, R], 2024: [11.5, 2024, R], 2025: [12.0, 2025, A] }
-    split: { 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.90, R], north_america: [0.04, A], europe: [0.03, A], south_southeast_asia: [0.03, A] } }
+    revenue_usd: { 2000: [0, 2000, A], 2001: [0.005, 2001, A], 2002: [0.02, 2002, R], 2003: [0.06, 2003, R], 2004: [0.10, 2004, R], 2005: [0.17, 2005, R], 2006: [0.20, 2006, R], 2007: [0.30, 2007, R], 2008: [0.4, 2008, R], 2010: [0.8, 2010, R], 2015: [2.6, 2015, R], 2020: [8.5, 2020, R], 2024: [11.5, 2024, R], 2025: [12.0, 2025, A] }
+    split: { 2000: { east_asia: [1.0, A] }, 2008: { east_asia: [1.0, R] }, 2020: { east_asia: [0.90, R], north_america: [0.04, A], europe: [0.03, A], south_southeast_asia: [0.03, A] } }
   - company: Roblox
     line: Roblox
     category: games
-    revenue_usd: { 2008: [0.005, 2008, A], 2010: [0.01, 2010, A], 2015: [0.06, 2015, A], 2018: [0.33, 2018, R], 2020: [0.92, 2020, R], 2024: [3.6, 2024, R], 2025: [4.2, 2025, A] } # RBLX (listed 10 March 2021)
-    split: { 2008: { north_america: [0.80, A], europe: [0.15, A], oceania: [0.05, A] }, 2024: { north_america: [0.62, R], europe: [0.18, R], south_southeast_asia: [0.08, A], latin_america: [0.07, A], oceania: [0.05, A] } }
+    revenue_usd: { 2000: [0, 2000, A], 2005: [0, 2005, A], 2006: [0.001, 2006, A], 2007: [0.002, 2007, A], 2008: [0.005, 2008, A], 2010: [0.01, 2010, A], 2015: [0.06, 2015, A], 2018: [0.33, 2018, R], 2020: [0.92, 2020, R], 2024: [3.6, 2024, R], 2025: [4.2, 2025, A] } # RBLX (listed 10 March 2021)
+    split: { 2000: { north_america: [0.80, A], europe: [0.15, A], oceania: [0.05, A] }, 2008: { north_america: [0.80, A], europe: [0.15, A], oceania: [0.05, A] }, 2024: { north_america: [0.62, R], europe: [0.18, R], south_southeast_asia: [0.08, A], latin_america: [0.07, A], oceania: [0.05, A] } }
   - company: Disney
     line: Disney Interactive
     category: games
     last: "2016-05" # R: Disney closed its games publishing (Disney Infinity) in May 2016 and licenses since
-    revenue_usd: { 2008: [0.7, 2008, R], 2010: [0.8, 2010, R], 2014: [1.3, 2014, R], 2016: [1.0, 2016, A] } # DIS Interactive segment
-    split: { 2008: { north_america: [0.6, A], europe: [0.3, A], east_asia: [0.05, A], latin_america: [0.05, A] } }
+    revenue_usd: { 2000: [0.3, 2000, A], 2004: [0.3, 2004, A], 2007: [0.6, 2007, A], 2008: [0.7, 2008, R], 2010: [0.8, 2010, R], 2014: [1.3, 2014, R], 2016: [1.0, 2016, A] } # DIS Interactive segment
+    split: { 2000: { north_america: [0.6, A], europe: [0.3, A], east_asia: [0.05, A], latin_america: [0.05, A] }, 2008: { north_america: [0.6, A], europe: [0.3, A], east_asia: [0.05, A], latin_america: [0.05, A] } }
 
 # Box office (65.2: a film's first revenue window; shown, and a film title's base revenue a viewer follows it)
-box_office_usd: { 2008: [27.7, 2008, R], 2010: [31.8, 2010, R], 2015: [38.3, 2015, R], 2019: [42.5, 2019, R], 2020: [12.0, 2020, R], 2022: [26.0, 2022, R], 2024: [30.0, 2024, R], 2025: [33.0, 2025, A] } # MPA, Gower Street
+# M50b: 2002-2007 R (MPA THEME: $19.8B, $20.3B, $25.2B, $23.1B, $25.8B, $26.7B); 2000-2001 A (MPA's US-led growth)
+box_office_usd: { 2000: [16.5, 2000, A], 2001: [17.5, 2001, A], 2002: [19.8, 2002, R], 2003: [20.3, 2003, R], 2004: [25.2, 2004, R], 2005: [23.1, 2005, R], 2006: [25.8, 2006, R], 2007: [26.7, 2007, R], 2008: [27.7, 2008, R], 2010: [31.8, 2010, R], 2015: [38.3, 2015, R], 2019: [42.5, 2019, R], 2020: [12.0, 2020, R], 2022: [26.0, 2022, R], 2024: [30.0, 2024, R], 2025: [33.0, 2025, A] } # MPA, Gower Street

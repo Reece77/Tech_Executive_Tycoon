@@ -11,6 +11,8 @@
 # M50 (ADR-0024, formulas.md 60.2), 2026-11-23: each strictness path gained a 2008 key (and 2009 where a
 # real step fell in 2009) so a 2008 start has history; tagged A like the rest, the basis in the row's comment
 # after "M50:". Most hold the 2010 level (a step path read from the listed year, so 2010 on is unchanged).
+# M50b (formulas.md 60.4), 2026-11-28: 2000-2007 added the same way (A, a 2000 key and the real steps to
+# 2007), the basis on a "# M50b:" line above each path. GDPR does not exist yet (the 1995 Directive applies).
 
 history_end: "2025-12"
 
@@ -26,42 +28,48 @@ regulators:
     region: europe
     part: eu # the EU-27 (platforms.yaml region_parts, WB)
     structural: true # Regulation 1/2003 Art. 7 (structural remedies) and DMA Art. 18 (systematic non-compliance): https://eur-lex.europa.eu/EN/legal-content/summary/digital-markets-act.html
-    strictness: { 2008: 0.7, 2010: 0.7, 2017: 0.85, 2023: 1.0 } # A: rising with the Google decisions (2017-2019) and the DMA (2023); M50: 2008 as 2010 (Microsoft's EUR 899M penalty Feb 2008, Intel's EUR 1.06B fine May 2009)
+    # M50b: 2000=0.6, 2004=0.7 (A): Monti's DG Competition (GE/Honeywell blocked 3 Jul 2001), 0.7 from the Microsoft decision (24 Mar 2004, EUR 497M fine, WMP unbundling and interoperability remedies)
+    strictness: { 2000: 0.6, 2004: 0.7, 2008: 0.7, 2010: 0.7, 2017: 0.85, 2023: 1.0 } # A: rising with the Google decisions (2017-2019) and the DMA (2023); M50: 2008 as 2010 (Microsoft's EUR 899M penalty Feb 2008, Intel's EUR 1.06B fine May 2009)
     source: "https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en"
   - key: uk_cma
     name: Competition and Markets Authority
     region: europe
     part: rest # A: the UK sits in Europe's non-EU part (platforms.yaml region_parts)
     structural: true # A: market investigations can order divestiture (Enterprise Act 2002); SMS conduct duties from 2025
-    strictness: { 2008: 0.6, 2010: 0.6, 2020: 0.8, 2025: 0.9 } # A: the Activision block (April 2023) and the DMCC regime (2025); M50: 2008 as 2010 (the OFT, before the CMA's 2014 merger with the Competition Commission)
+    # M50b: 2000=0.5, 2003=0.6 (A): the OFT under the Competition Act 1998; 0.6 from the Enterprise Act 2002 in force 20 Jun 2003 (market investigations, criminal cartel offence)
+    strictness: { 2000: 0.5, 2003: 0.6, 2008: 0.6, 2010: 0.6, 2020: 0.8, 2025: 0.9 } # A: the Activision block (April 2023) and the DMCC regime (2025); M50: 2008 as 2010 (the OFT, before the CMA's 2014 merger with the Competition Commission)
     source: "https://www.gov.uk/government/news/cma-confirms-apple-and-google-have-strategic-market-status-in-mobile-platforms"
   - key: us_doj_ftc
     name: US Department of Justice and Federal Trade Commission
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
     structural: true # Sherman Act divestiture: the AT&T break-up (1984) and the 2000 Microsoft order (precedents below)
-    strictness: { 2008: 0.4, 2009: 0.5, 2010: 0.5, 2020: 0.8 } # A: the 2020 cases against Google and Meta; M50: 2008 lower (DOJ's Section 2 report, Sep 2008), 2009 the 2010 level from the report's withdrawal (11 May 2009): https://www.justice.gov/archive/opa/pr/2009/May/09-at-459.html
+    # M50b: 2000=0.8, 2001=0.6, 2002=0.4 (A): Judge Jackson's break-up order (7 Jun 2000, the microsoft_2000 precedent); 2001 the order reversed (28 Jun 2001) and the conduct settlement (2 Nov 2001); 2002-2007 the Bush-era DOJ, no Section 2 monopolisation case (the 2008 level)
+    strictness: { 2000: 0.8, 2001: 0.6, 2002: 0.4, 2008: 0.4, 2009: 0.5, 2010: 0.5, 2020: 0.8 } # A: the 2020 cases against Google and Meta; M50: 2008 lower (DOJ's Section 2 report, Sep 2008), 2009 the 2010 level from the report's withdrawal (11 May 2009): https://www.justice.gov/archive/opa/pr/2009/May/09-at-459.html
     source: "https://www.hugheshubbard.com/news/court-issues-remedies-ruling-in-united-states-v-google-search-case"
   - key: jftc
     name: Japan Fair Trade Commission
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
     structural: false # A: the MSCA brings conduct duties, not structural powers
-    strictness: { 2008: 0.4, 2010: 0.4, 2024: 0.7 } # A: the Mobile Software Competition Act (enacted 2024); M50: 2008 as 2010
+    # M50b: 2000=0.3, 2006=0.4 (A): the 2005 AMA amendment raised surcharges and added leniency from 4 Jan 2006
+    strictness: { 2000: 0.3, 2006: 0.4, 2008: 0.4, 2010: 0.4, 2024: 0.7 } # A: the Mobile Software Competition Act (enacted 2024); M50: 2008 as 2010
     source: "https://www.jftc.go.jp/en/policy_enforcement/digital/index.html"
   - key: kftc
     name: Korea Fair Trade Commission and Korea Communications Commission
     region: east_asia
     part: south_korea # platforms.yaml region_parts (WB)
     structural: false # A
-    strictness: { 2008: 0.5, 2010: 0.5, 2021: 0.8 } # A (M50: 2008 as 2010): the app payment law (in force 14 Sep 2021, platforms.yaml rules)
+    # M50b: 2000=0.4, 2005=0.5 (A): the KFTC's Windows Media/Messenger tying decision against Microsoft (7 Dec 2005, KRW 33B)
+    strictness: { 2000: 0.4, 2005: 0.5, 2008: 0.5, 2010: 0.5, 2021: 0.8 } # A (M50: 2008 as 2010): the app payment law (in force 14 Sep 2021, platforms.yaml rules)
     source: "https://keia.org/the-peninsula/the-implications-of-south-koreas-anti-google-law/"
   - key: samr
     name: State Administration for Market Regulation
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
     structural: false # A
-    strictness: { 2008: 0.3, 2009: 0.4, 2010: 0.4, 2021: 0.8 } # A: the platform campaign of 2021 (no figure used); M50: 2008 lower (the Anti-Monopoly Law in force only from 1 Aug 2008, enforced by MOFCOM, NDRC and SAIC before SAMR's 2018 merger), 2009 the 2010 level (MOFCOM blocked Coca-Cola/Huiyuan, 18 Mar 2009)
+    # M50b: 2000=0.3 (A): as 2008: no Anti-Monopoly Law before 1 Aug 2008 (SAIC and MOFTEC/MOFCOM only)
+    strictness: { 2000: 0.3, 2008: 0.3, 2009: 0.4, 2010: 0.4, 2021: 0.8 } # A: the platform campaign of 2021 (no figure used); M50: 2008 lower (the Anti-Monopoly Law in force only from 1 Aug 2008, enforced by MOFCOM, NDRC and SAIC before SAMR's 2018 merger), 2009 the 2010 level (MOFCOM blocked Coca-Cola/Huiyuan, 18 Mar 2009)
     source: "A"
 
 # --- Designation regimes (48.1) ---------------------------------------------------------------
@@ -399,28 +407,32 @@ health_regulators:
     name: US Food and Drug Administration (CDRH)
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
-    strictness: { 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): biennial inspections (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): biennial inspections (510(h)), risk-based since FDARA 2017: https://natlawreview.com/article/fda-reauthorization-act-requires-changes-to-medical-device-inspections-alert
     source: "https://www.fda.gov/about-fda/cdrh-reports/cdrh-2024-annual-report"
   - key: eu_notified_bodies
     kind: health
     name: EU notified bodies and national competent authorities
     region: europe
     part: eu # the EU-27 (platforms.yaml region_parts, WB)
-    strictness: { 2008: 0.7, 2010: 0.7, 2021: 0.9 } # A (M50: 2008 as 2010, under the MDD 93/42/EEC): unannounced audits and the MDR from 26 May 2021; 51 MDR notified bodies by Dec 2025: https://ppri.goeg.at/system/files/inline-files/2025-10_18NBSurvey_MD_IVD_MDAvailabilityStudy.pdf
+    # M50b: 2000=0.7 (A): as 2008, under the MDD 93/42/EEC
+    strictness: { 2000: 0.7, 2008: 0.7, 2010: 0.7, 2021: 0.9 } # A (M50: 2008 as 2010, under the MDD 93/42/EEC): unannounced audits and the MDR from 26 May 2021; 51 MDR notified bodies by Dec 2025: https://ppri.goeg.at/system/files/inline-files/2025-10_18NBSurvey_MD_IVD_MDAvailabilityStudy.pdf
     source: "https://bsigroup.com/de-DE/medical-devices/News/Enews/2023-news/mdr-transition-timelines-extended/"
   - key: pmda
     kind: health
     name: Pharmaceuticals and Medical Devices Agency
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
-    strictness: { 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
+    # M50b: 2000=0.8 (A): as 2008 (the PMDA formed 1 Apr 2004 from PMDEC and KIKO; the revised Pharmaceutical Affairs Law from 1 Apr 2005)
+    strictness: { 2000: 0.8, 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
     source: "https://rapath.github.io/jp/pre-market/approval-shonin/pmda-review-process/"
   - key: nmpa
     kind: health
     name: National Medical Products Administration
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
-    strictness: { 2008: 0.7, 2010: 0.7, 2021: 0.85 } # A (M50: 2008 as 2010, the SFDA's 2007 registration rules): the revised device regulation (State Council Order 739) from 1 Jun 2021
+    # M50b: 2000=0.6, 2007=0.7 (A): the SDA's 2000 device regulation (State Council Order 276, in force 1 Apr 2000), the 2007 level from the SFDA's 2007 reforms after the Zheng Xiaoyu case
+    strictness: { 2000: 0.6, 2007: 0.7, 2008: 0.7, 2010: 0.7, 2021: 0.85 } # A (M50: 2008 as 2010, the SFDA's 2007 registration rules): the revised device regulation (State Council Order 739) from 1 Jun 2021
     source: "https://www.rvo.nl/sites/default/files/2022-06/Regulatory%20Roadmap%20-%20Dutch%20Medical%20Devices%20Products%20to%20the%20Chinese%20Market.pdf"
 
 # M42 (formulas.md 55.3): medicines regulators, M34's records with the `drugs` kind. They approve
@@ -433,28 +445,32 @@ drug_regulators:
     name: US Food and Drug Administration (CDER and CBER)
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
-    strictness: { 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): surveillance inspections risk-based, about every 2-3 years (FDA's site selection model)
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0, 2010: 1.0 } # A (M50: 2008 as 2010): surveillance inspections risk-based, about every 2-3 years (FDA's site selection model)
     source: "https://fda.gov/media/184967/download"
   - key: ema
     kind: drugs
     name: European Medicines Agency
     region: europe
     part: eu # platforms.yaml region_parts (WB)
-    strictness: { 2008: 0.9, 2010: 0.9 } # A (M50: 2008 as 2010): GMP inspections by national authorities under the EMA's coordination
+    # M50b: 2000=0.9 (A): as 2008 (the EMEA until 2004)
+    strictness: { 2000: 0.9, 2008: 0.9, 2010: 0.9 } # A (M50: 2008 as 2010): GMP inspections by national authorities under the EMA's coordination
     source: "https://www.ema.europa.eu/assets/en/annual-report/2023/human-medicines.html"
   - key: pmda_drugs
     kind: drugs
     name: Pharmaceuticals and Medical Devices Agency (drugs)
     region: east_asia
     part: japan # platforms.yaml region_parts (WB)
-    strictness: { 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
+    # M50b: 2000=0.8 (A): as 2008
+    strictness: { 2000: 0.8, 2008: 0.8, 2010: 0.8 } # A (M50: 2008 as 2010)
     source: "https://www.pmda.go.jp/english/"
   - key: nmpa_drugs
     kind: drugs
     name: National Medical Products Administration (drugs)
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
-    strictness: { 2008: 0.6, 2010: 0.6, 2017: 0.8 } # A (M50: 2008 as 2010, after the SFDA's 2007 Provisions for Drug Registration): the 2015-2017 drug review reforms and ICH membership (June 2017)
+    # M50b: 2000=0.5, 2007=0.6 (A): the SDA and (from 2003) SFDA before the Provisions for Drug Registration of Oct 2007
+    strictness: { 2000: 0.5, 2007: 0.6, 2008: 0.6, 2010: 0.6, 2017: 0.8 } # A (M50: 2008 as 2010, after the SFDA's 2007 Provisions for Drug Registration): the 2015-2017 drug review reforms and ICH membership (June 2017)
     source: "https://english.nmpa.gov.cn/"
 
 # M53 (formulas.md 62.4): telecom regulators, M34's records with the `telecom` kind. They set licence
@@ -471,7 +487,8 @@ telecom_regulators:
     region: north_america
     part: united_states # platforms.yaml region_parts (WB)
     formed: "1934-06" # Federal Communications Commission: 19 Jun 1934 (S)
-    strictness: { 2008: 0.9, 2009: 0.9, 2010: 0.9, 2011: 1.0, 2017: 0.85, 2021: 1.0 } # A: AT&T and T-Mobile abandoned (Dec 2011), Sprint and T-Mobile cleared with conditions (Nov 2019), telecom.yaml
+    # M50b: 2000=1.0, 2001-2007=0.85 (A): WorldCom and Sprint abandoned (13 Jul 2000) after DOJ and EC opposition; 0.85 under Chairman Powell from 2001 (SBC/AT&T and AT&T/BellSouth cleared 2005-2006)
+    strictness: { 2000: 1.0, 2001: 0.85, 2002: 0.85, 2003: 0.85, 2004: 0.85, 2005: 0.85, 2006: 0.85, 2007: 0.85, 2008: 0.9, 2009: 0.9, 2010: 0.9, 2011: 1.0, 2017: 0.85, 2021: 1.0 } # A: AT&T and T-Mobile abandoned (Dec 2011), Sprint and T-Mobile cleared with conditions (Nov 2019), telecom.yaml
     source: "https://en.wikipedia.org/wiki/Federal_Communications_Commission"
   - key: berec
     kind: telecom
@@ -479,7 +496,8 @@ telecom_regulators:
     region: europe
     part: eu # platforms.yaml region_parts (WB)
     formed: "2009-11" # BEREC: Regulation 1211/2009 of 25 Nov 2009 (Net Neutrality Regulation 2015, S)
-    strictness: { 2008: 1.0, 2010: 1.0, 2016: 1.2, 2024: 1.1 } # A: Three and O2 blocked on 11 May 2016 (O2 (UK), S); MasOrange cleared with remedies (2024, R)
+    # M50b: 2000=1.0 (A): as 2008 (the Commission and national regulators; the 2002 framework and the ERG from 2002)
+    strictness: { 2000: 1.0, 2008: 1.0, 2010: 1.0, 2016: 1.2, 2024: 1.1 } # A: Three and O2 blocked on 11 May 2016 (O2 (UK), S); MasOrange cleared with remedies (2024, R)
     source: "https://en.wikipedia.org/wiki/Body_of_European_Regulators_for_Electronic_Communications"
   - key: miit
     kind: telecom
@@ -487,7 +505,8 @@ telecom_regulators:
     region: east_asia
     part: china # platforms.yaml region_parts (WB)
     formed: "2008-03" # Ministry of Industry and Information Technology: March 2008 (S)
-    strictness: { 2008: 1.2, 2010: 1.2 } # A: spectrum assigned administratively to the state operators (5G licences 6 Jun 2019, R)
+    # M50b: 2000=1.2 (A): as 2008 (the Ministry of Information Industry from 1998)
+    strictness: { 2000: 1.2, 2008: 1.2, 2010: 1.2 } # A: spectrum assigned administratively to the state operators (5G licences 6 Jun 2019, R)
     source: "https://en.wikipedia.org/wiki/Ministry_of_Industry_and_Information_Technology"
   - key: trai
     kind: telecom
@@ -495,28 +514,32 @@ telecom_regulators:
     region: south_southeast_asia
     part: india # platforms.yaml region_parts (WB)
     formed: "1997-02" # Telecom Regulatory Authority of India: 20 Feb 1997 (S)
-    strictness: { 2008: 0.9, 2010: 0.9, 2016: 1.1 } # A: discriminatory tariffs banned 8 Feb 2016 (Net neutrality in India, S)
+    # M50b: 2000=0.9 (A): as 2008
+    strictness: { 2000: 0.9, 2008: 0.9, 2010: 0.9, 2016: 1.1 } # A: discriminatory tariffs banned 8 Feb 2016 (Net neutrality in India, S)
     source: "https://en.wikipedia.org/wiki/Telecom_Regulatory_Authority_of_India"
   - key: anatel
     kind: telecom
     name: Anatel
     region: latin_america
     formed: "1997-07" # National Telecommunications Agency (Brazil): 16 Jul 1997 (S)
-    strictness: { 2008: 0.9, 2010: 0.9, 2021: 1.0 } # A: the 2021 auction's coverage obligations (R)
+    # M50b: 2000=0.9 (A): as 2008
+    strictness: { 2000: 0.9, 2008: 0.9, 2010: 0.9, 2021: 1.0 } # A: the 2021 auction's coverage obligations (R)
     source: "https://en.wikipedia.org/wiki/National_Telecommunications_Agency_(Brazil)"
   - key: icasa
     kind: telecom
     name: Independent Communications Authority of South Africa
     region: africa
     formed: "2000-06" # Independent Communications Authority of South Africa: 1 Jun 2000 (S)
-    strictness: { 2008: 0.7, 2010: 0.7 } # A
+    # M50b: 2000=0.7 (A): as 2008
+    strictness: { 2000: 0.7, 2008: 0.7, 2010: 0.7 } # A
     source: "https://en.wikipedia.org/wiki/Independent_Communications_Authority_of_South_Africa"
   - key: acma
     kind: telecom
     name: Australian Communications and Media Authority
     region: oceania
     formed: "2005-07" # Australian Communications and Media Authority: 1 Jul 2005 (S)
-    strictness: { 2008: 0.9, 2010: 0.9 } # A
+    # M50b: 2000=0.9 (A): as 2008 (the ACA before July 2005)
+    strictness: { 2000: 0.9, 2008: 0.9, 2010: 0.9 } # A
     source: "https://en.wikipedia.org/wiki/Australian_Communications_and_Media_Authority"
 
 # M54 (docs/formulas.md 64.5): bank and insurance regulators, M34's records with the `bank` and
@@ -534,96 +557,110 @@ finance_regulators:
     name: "Federal Reserve, OCC and FDIC"
     region: north_america
     formed: "1913-12" # Federal Reserve Act, 23 Dec 1913 (R)
-    strictness: { 2008: 1.0, 2010: 1.15, 2018: 0.95, 2023: 1.15 } # A (R dates above)
+    # M50b: 2000=0.95 (A): below 2008 after the Gramm-Leach-Bliley Act (Nov 1999): light-touch supervision before the crisis
+    strictness: { 2000: 0.95, 2008: 1.0, 2010: 1.15, 2018: 0.95, 2023: 1.15 } # A (R dates above)
     source: "https://en.wikipedia.org/wiki/Federal_Reserve"
   - key: ecb_ssm
     kind: bank
     name: ECB Single Supervisory Mechanism
     region: europe
     formed: "2014-11" # SSM: 4 Nov 2014 (R)
-    strictness: { 2008: 1.0, 2014: 1.15 } # A
+    # M50b: 2000=1.0 (A): as 2008 (national supervisors)
+    strictness: { 2000: 1.0, 2008: 1.0, 2014: 1.15 } # A
     source: "https://en.wikipedia.org/wiki/Single_Supervisory_Mechanism"
   - key: pboc_nfra
     kind: bank
     name: PBoC and NFRA
     region: east_asia
     formed: "2023-05" # NFRA: May 2023, after the CBIRC (R)
-    strictness: { 2008: 1.1, 2020: 1.3 } # A: fintech rectification from November 2020 (R)
+    # M50b: 2000=1.1 (A): as 2008 (the PBoC, then the CBRC from Apr 2003)
+    strictness: { 2000: 1.1, 2008: 1.1, 2020: 1.3 } # A: fintech rectification from November 2020 (R)
     source: "https://en.wikipedia.org/wiki/National_Financial_Regulatory_Administration"
   - key: rbi
     kind: bank
     name: Reserve Bank of India
     region: south_southeast_asia
     formed: "1935-04" # RBI: 1 Apr 1935 (R)
-    strictness: { 2008: 1.1 } # A: India licenses few new banks (R: small-finance and payments banks from 2015)
+    # M50b: 2000=1.1 (A): as 2008 (new private-bank licences only in 2001-2004: Kotak, Yes Bank)
+    strictness: { 2000: 1.1, 2008: 1.1 } # A: India licenses few new banks (R: small-finance and payments banks from 2015)
     source: "https://en.wikipedia.org/wiki/Reserve_Bank_of_India"
   - key: bcb
     kind: bank
     name: Banco Central do Brasil
     region: latin_america
     formed: "1964-12" # R
-    strictness: { 2008: 1.0, 2017: 0.9 } # A: Brazil's opening to digital banks from 2017 (R: Nubank's licence)
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0, 2017: 0.9 } # A: Brazil's opening to digital banks from 2017 (R: Nubank's licence)
     source: "https://en.wikipedia.org/wiki/Central_Bank_of_Brazil"
   - key: sarb
     kind: bank
     name: South African Reserve Bank
     region: africa
     formed: "1921-06" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/South_African_Reserve_Bank"
   - key: apra_bank
     kind: bank
     name: APRA
     region: oceania
     formed: "1998-07" # Australian Prudential Regulation Authority: 1 Jul 1998 (R)
-    strictness: { 2008: 1.0, 2018: 0.9 } # A: restricted licences for new banks from 2018 (R)
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0, 2018: 0.9 } # A: restricted licences for new banks from 2018 (R)
     source: "https://en.wikipedia.org/wiki/Australian_Prudential_Regulation_Authority"
   - key: naic
     kind: insurance
     name: "State insurance regulators (NAIC)"
     region: north_america
     formed: "1871-01" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/National_Association_of_Insurance_Commissioners"
   - key: eiopa
     kind: insurance
     name: EIOPA and national supervisors
     region: europe
     formed: "2011-01" # EIOPA: 1 Jan 2011 (R)
-    strictness: { 2008: 1.0, 2016: 1.1 } # A: Solvency II from 1 Jan 2016 (R)
+    # M50b: 2000=1.0 (A): as 2008 (national supervisors; CEIOPS from 2003)
+    strictness: { 2000: 1.0, 2008: 1.0, 2016: 1.1 } # A: Solvency II from 1 Jan 2016 (R)
     source: "https://en.wikipedia.org/wiki/European_Insurance_and_Occupational_Pensions_Authority"
   - key: nfra_ins
     kind: insurance
     name: NFRA
     region: east_asia
     formed: "2023-05" # R
-    strictness: { 2008: 1.1 } # A
+    # M50b: 2000=1.1 (A): as 2008 (the CIRC from 1998)
+    strictness: { 2000: 1.1, 2008: 1.1 } # A
     source: "https://en.wikipedia.org/wiki/National_Financial_Regulatory_Administration"
   - key: irdai
     kind: insurance
     name: IRDAI
     region: south_southeast_asia
     formed: "2000-04" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008 (formed Apr 2000)
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/Insurance_Regulatory_and_Development_Authority"
   - key: susep
     kind: insurance
     name: SUSEP
     region: latin_america
     formed: "1966-11" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/Superintendence_of_Private_Insurance"
   - key: sa_pa
     kind: insurance
     name: Prudential Authority
     region: africa
     formed: "2018-04" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008 (the Registrar of Banks and FSB before 2018)
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/Prudential_Authority"
   - key: apra_ins
     kind: insurance
     name: APRA
     region: oceania
     formed: "1998-07" # R
-    strictness: { 2008: 1.0 } # A
+    # M50b: 2000=1.0 (A): as 2008
+    strictness: { 2000: 1.0, 2008: 1.0 } # A
     source: "https://en.wikipedia.org/wiki/Australian_Prudential_Regulation_Authority"

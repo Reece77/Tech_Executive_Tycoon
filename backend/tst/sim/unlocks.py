@@ -653,8 +653,32 @@ def _done(state: GameState, key: str, balance: Balance, data: GameData) -> bool:
 
 
 def getting_started(state: GameState, balance: Balance, data: GameData) -> tuple[Step, ...]:
-    """The checklist's steps in order, each ticked from state alone (42.2). Read-only."""
+    """The checklist's steps in order, each ticked from state alone (42.2). Read-only.
+    M50b (60.5): in a world with history eras still to come (a 2000 game), the launch step
+    names the markets that do not exist yet."""
+    from tst.sim.calendar import format_turn
+    from tst.sim.research.history_eras import category_open, opening_era
+    from tst.sim.research.levels import historical_turn
+
+    closed = [
+        f"{c.label} ({format_turn(historical_turn(era))})"
+        for c in data.categories
+        if (era := opening_era(data, c.key)) is not None and not category_open(state, data, c.key)
+    ]
+    extra = (
+        " Not every market exists yet: "
+        + ", ".join(closed)
+        + " open when their eras arrive, or sooner if your research gets there first."
+        if closed
+        else ""
+    )
     return tuple(
-        Step(key, label, note, screen, _done(state, key, balance, data))
+        Step(
+            key,
+            label,
+            note + (extra if key == "launch" else ""),
+            screen,
+            _done(state, key, balance, data),
+        )
         for key, label, note, screen in STEP_TEXT
     )

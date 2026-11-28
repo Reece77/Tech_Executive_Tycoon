@@ -32,3 +32,33 @@ entrants:
   - { name: WhatsApp, year: 2009, month: 2, personality: cost_leader, cash_cents: 25000000, staff: 2, category: consumer_apps, segments: [consumer] }
   - { name: Uber, year: 2009, month: 3, personality: aggressive, cash_cents: 20000000, staff: 3, category: consumer_apps, segments: [consumer], listed_from: [2019, 5] }
   - { name: Tiny Speck, year: 2009, month: 6, personality: premium, cash_cents: 150000000, staff: 4, category: consumer_apps, segments: [consumer] }
+  # M50b (ADR-0024, formulas.md 60.4): companies founded February 2000 - December 2007, entering
+  # only a game begun before them (a 2008 or 2010 game never reaches their months, so it is
+  # unchanged). Months R (en.wikipedia.org, read 2026-11-28) unless marked A: Fortinet 2000 (year
+  # only; October A), LinkedIn December 2002, MySpace August 2003, Skype August
+  # 2003, Splunk October 2003, Yelp October 2004, Palo Alto Networks March 2005, Workday March 2005,
+  # Box 2005 (year only; April A), Etsy June 2005, Reddit June 2005, Mint 2006 (year only; September
+  # A), Shopify June 2006, Tumblr February 2007, Dropbox (Evenflow) May 2007, Zendesk 2007
+  # (Copenhagen; year only, October A), Zuora 2007 (year only, October A). listed_from R from the
+  # same pages (Zendesk May 2014 A: the page gives the year). First money and staff A, on M50's
+  # scale (a founding team; enterprise founders with a first venture round). Social networks
+  # (MySpace, Reddit, Tumblr) are consumer_apps: social is a media category, scheduled rivals only
+  # (data_models.Category.media), as M50 placed WhatsApp. Twitter, Spotify, Hulu and YouTube are
+  # incumbents and are not repeated; Palantir (May 2003) is a government.yaml prime, so not an entrant.
+  - { name: Fortinet, year: 2000, month: 10, personality: premium, cash_cents: 1000000000, staff: 8, category: cybersecurity, segments: [smb, mid_market, enterprise], listed_from: [2009, 11] }
+  - { name: LinkedIn, year: 2002, month: 12, personality: fast_follower, cash_cents: 470000000, staff: 6, category: consumer_apps, segments: [consumer], listed_from: [2011, 5] }
+  - { name: MySpace, year: 2003, month: 8, personality: aggressive, cash_cents: 100000000, staff: 5, category: consumer_apps, segments: [consumer] }
+  - { name: Skype, year: 2003, month: 8, personality: cost_leader, cash_cents: 25000000, staff: 4, category: consumer_apps, segments: [consumer], region: europe }
+  - { name: Splunk, year: 2003, month: 10, personality: fast_follower, cash_cents: 500000000, staff: 5, category: dev_tools, segments: [mid_market, enterprise], listed_from: [2012, 4] }
+  - { name: Yelp, year: 2004, month: 10, personality: fast_follower, cash_cents: 100000000, staff: 3, category: consumer_apps, segments: [consumer], listed_from: [2012, 3] }
+  - { name: Palo Alto Networks, year: 2005, month: 3, personality: premium, cash_cents: 900000000, staff: 6, category: cybersecurity, segments: [mid_market, enterprise], listed_from: [2012, 7] }
+  - { name: Workday, year: 2005, month: 3, personality: premium, cash_cents: 1500000000, staff: 8, category: b2b_saas, segments: [mid_market, enterprise], listed_from: [2012, 10] }
+  - { name: Box, year: 2005, month: 4, personality: aggressive, cash_cents: 35000000, staff: 2, category: b2b_saas, segments: [smb, mid_market], listed_from: [2015, 1] }
+  - { name: Etsy, year: 2005, month: 6, personality: cost_leader, cash_cents: 31500000, staff: 3, category: consumer_apps, segments: [consumer], listed_from: [2015, 4] }
+  - { name: Reddit, year: 2005, month: 6, personality: cost_leader, cash_cents: 1200000, staff: 2, category: consumer_apps, segments: [consumer], listed_from: [2024, 3] }
+  - { name: Shopify, year: 2006, month: 6, personality: fast_follower, cash_cents: 20000000, staff: 3, category: b2b_saas, segments: [smb], listed_from: [2015, 5] }
+  - { name: Mint, year: 2006, month: 9, personality: aggressive, cash_cents: 75000000, staff: 3, category: fintech, segments: [consumer] }
+  - { name: Tumblr, year: 2007, month: 2, personality: cost_leader, cash_cents: 75000000, staff: 2, category: consumer_apps, segments: [consumer] }
+  - { name: Dropbox, year: 2007, month: 5, personality: aggressive, cash_cents: 1500000, staff: 2, category: consumer_apps, segments: [consumer], listed_from: [2018, 3] }
+  - { name: Zendesk, year: 2007, month: 10, personality: fast_follower, cash_cents: 50000000, staff: 3, category: b2b_saas, segments: [smb, mid_market], region: europe, listed_from: [2014, 5] }
+  - { name: Zuora, year: 2007, month: 10, personality: fast_follower, cash_cents: 650000000, staff: 5, category: b2b_saas, segments: [mid_market, enterprise], listed_from: [2018, 4] }

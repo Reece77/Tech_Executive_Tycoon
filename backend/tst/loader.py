@@ -1039,6 +1039,27 @@ def research_problems(balance: Balance, data: GameData) -> list[str]:
                 problems.append(f"era {era.key!r}: {b.category} has no segments {bad}")
     if bad := sorted(set(data.eras.base_growth) - categories):
         problems.append(f"base_growth: unknown categories {bad}")
+    opened: list[str] = []
+    for era in data.eras.history_eras:  # M50b (60.5)
+        if era.domain not in domains:
+            problems.append(f"history era {era.key!r}: unknown domain {era.domain!r}")
+        if bad := sorted(set(era.opens) - categories):
+            problems.append(f"history era {era.key!r}: unknown categories {bad}")
+        opened += era.opens
+    if twice := sorted({c for c in opened if opened.count(c) > 1}):
+        problems.append(f"history eras: categories opened twice {twice}")
+    opening = {c: e for e in data.eras.history_eras for c in e.opens}
+    for inc in data.incumbents:  # M50b: no product on sale before its category opens
+        for p in inc.products:
+            opener = opening.get(p.category)
+            if opener and opener.historical and (p.launched or (0, 0)) < opener.historical:
+                problems.append(
+                    f"{inc.name} {p.name}: launched before {opener.key} opens {p.category}"
+                )
+    names = {c.name for c in data.incumbents}
+    for inc in data.incumbents:  # M50b (60.6): an exit merges into a named company
+        if inc.exit_into is not None and inc.exit_into not in names:
+            problems.append(f"{inc.name}: exit_into {inc.exit_into!r} is not an incumbent")
     if bad := sorted(set(balance.rivals.weights) - set(balance.rnd.rival.weights)):
         problems.append(f"rnd.rival.weights: no weight for {bad}")
     return problems

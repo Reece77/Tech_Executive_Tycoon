@@ -149,6 +149,23 @@ def test_entrants(loaded: LoadedData) -> None:
         ("WhatsApp", 2009, 2),
         ("Uber", 2009, 3),
         ("Tiny Speck", 2009, 6),
+        ("Fortinet", 2000, 10),  # M50b (60.6): founded on their dates in a 2000 game
+        ("LinkedIn", 2002, 12),
+        ("MySpace", 2003, 8),
+        ("Skype", 2003, 8),
+        ("Splunk", 2003, 10),
+        ("Yelp", 2004, 10),
+        ("Palo Alto Networks", 2005, 3),
+        ("Workday", 2005, 3),
+        ("Box", 2005, 4),
+        ("Etsy", 2005, 6),
+        ("Reddit", 2005, 6),
+        ("Shopify", 2006, 6),
+        ("Mint", 2006, 9),
+        ("Tumblr", 2007, 2),
+        ("Dropbox", 2007, 5),
+        ("Zendesk", 2007, 10),
+        ("Zuora", 2007, 10),
     ]
     assert turn_to_ym(ym_to_turn(2011, 9)) == (2011, 9)
     assert STREAM_IDS["entrants"] == 20

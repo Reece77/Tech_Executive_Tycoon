@@ -23,9 +23,28 @@
 # quarter's dollars invested against 2010's average quarter ($5.45B) and held near 2007's level
 # until September 2008, the collapse after Lehman's failure (15 September 2008) and the
 # recovery from mid-2009 (D from MT; the months inside a quarter are interpolated, A).
-first_year: 2008
+# M50b (formulas.md 60.4): 2000-2007 added the same way; first_year moves to 2000 (every row
+# from 2008 is unchanged). base_rate and confidence: FRED FEDFUNDS and UMCSENT, fetched
+# 2026-11-28 (their 2008-2009 rows equal this file's), V. climate: 0.90 x each quarter's US
+# venture dollars / $5.45B (MT, R, later Thomson Reuters vintage, about +/-10%): 2000 $28.0B,
+# $27.6B, $26.9B, $22.2B ($104.7B, the all-time peak); 2001 $14.0B, $11.0B, $7.8B, $7.8B;
+# 2002 $6.0B, $5.6B, $5.1B, $5.2B; 2003 $4.6B, $4.9B, $4.9B, $5.3B; then by year (the quarters
+# not recalled): 2004 $22.5B, 2005 $23.0B, 2006 $26.8B, 2007 $30.9B (D). Linear between
+# mid-quarter (from 2004 mid-year) points, A, and from mid-2007's 1.28 to M50's 1.05 in
+# January 2008 (A: the join). Uncapped, 2000 runs 4.62 to 3.21 and January-May 2001 2.76 to 1.82;
+# capped at 1.8, the top of balance.yaml macro.climate.bounds (the AR(1)'s range after 2025),
+# so the bubble is the hottest climate the game knows and no ARR multiple is 4x.
+first_year: 2000
 confidence_base_years: [2010, 2019] # inclusive: the years whose average confidence is 100
 climate:
+  2000: [1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80, 1.80] # D (MT), capped
+  2001: [1.80, 1.80, 1.80, 1.80, 1.80, 1.64, 1.46, 1.29, 1.29, 1.29, 1.29, 1.19] # D (MT), capped
+  2002: [1.09, 0.99, 0.97, 0.95, 0.92, 0.90, 0.87, 0.84, 0.85, 0.85, 0.86, 0.83] # D (MT)
+  2003: [0.79, 0.76, 0.78, 0.79, 0.81, 0.81, 0.81, 0.81, 0.83, 0.85, 0.88, 0.88] # D (MT)
+  2004: [0.89, 0.90, 0.90, 0.91, 0.92, 0.92, 0.93, 0.93, 0.93, 0.93, 0.94, 0.94] # D (MT)
+  2005: [0.94, 0.94, 0.94, 0.94, 0.95, 0.95, 0.95, 0.96, 0.98, 0.99, 1.00, 1.01] # D (MT)
+  2006: [1.03, 1.04, 1.05, 1.07, 1.08, 1.09, 1.11, 1.12, 1.13, 1.15, 1.16, 1.18] # D (MT)
+  2007: [1.19, 1.21, 1.22, 1.23, 1.25, 1.26, 1.28, 1.24, 1.20, 1.16, 1.13, 1.09] # D (MT)
   2008: [1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 0.95, 0.72, 0.58, 0.52] # D (MT)
   2009: [0.48, 0.46, 0.46, 0.50, 0.54, 0.58, 0.66, 0.70, 0.74, 0.80, 0.84, 0.88] # D (MT)
   2010: 0.90
@@ -45,6 +64,14 @@ climate:
   2024: 0.90
   2025: 1.00
 base_rate:
+  2000: [5.45, 5.73, 5.85, 6.02, 6.27, 6.53, 6.54, 6.50, 6.52, 6.51, 6.51, 6.40] # V (FRED)
+  2001: [5.98, 5.49, 5.31, 4.80, 4.21, 3.97, 3.77, 3.65, 3.07, 2.49, 2.09, 1.82] # V (FRED)
+  2002: [1.73, 1.74, 1.73, 1.75, 1.75, 1.75, 1.73, 1.74, 1.75, 1.75, 1.34, 1.24] # V (FRED)
+  2003: [1.24, 1.26, 1.25, 1.26, 1.26, 1.22, 1.01, 1.03, 1.01, 1.01, 1.00, 0.98] # V (FRED)
+  2004: [1.00, 1.01, 1.00, 1.00, 1.00, 1.03, 1.26, 1.43, 1.61, 1.76, 1.93, 2.16] # V (FRED)
+  2005: [2.28, 2.50, 2.63, 2.79, 3.00, 3.04, 3.26, 3.50, 3.62, 3.78, 4.00, 4.16] # V (FRED)
+  2006: [4.29, 4.49, 4.59, 4.79, 4.94, 4.99, 5.24, 5.25, 5.25, 5.25, 5.25, 5.24] # V (FRED)
+  2007: [5.25, 5.26, 5.26, 5.25, 5.25, 5.25, 5.26, 5.02, 4.94, 4.76, 4.49, 4.24] # V (FRED)
   2008: [3.94, 2.98, 2.61, 2.28, 1.98, 2.00, 2.01, 2.00, 1.81, 0.97, 0.39, 0.16] # V (FRED)
   2009: [0.15, 0.22, 0.18, 0.15, 0.18, 0.21, 0.16, 0.16, 0.15, 0.12, 0.12, 0.12] # V (FRED)
   2010: [0.11, 0.13, 0.16, 0.20, 0.20, 0.18, 0.18, 0.19, 0.19, 0.19, 0.19, 0.18]
@@ -64,6 +91,14 @@ base_rate:
   2024: [5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.33, 5.13, 4.83, 4.64, 4.48]
   2025: [4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.33, 4.22, 4.09, 3.88, 3.72]
 confidence:
+  2000: [112.0, 111.3, 107.1, 109.2, 110.7, 106.4, 108.3, 107.3, 106.8, 105.8, 107.6, 98.4] # V (FRED)
+  2001: [94.7, 90.6, 91.5, 88.4, 92.0, 92.6, 92.4, 91.5, 81.8, 82.7, 83.9, 88.8] # V (FRED)
+  2002: [93.0, 90.7, 95.7, 93.0, 96.9, 92.4, 88.1, 87.6, 86.1, 80.6, 84.2, 86.7] # V (FRED)
+  2003: [82.4, 79.9, 77.6, 86.0, 92.1, 89.7, 90.9, 89.3, 87.7, 89.6, 93.7, 92.6] # V (FRED)
+  2004: [103.8, 94.4, 95.8, 94.2, 90.2, 95.6, 96.7, 95.9, 94.2, 91.7, 92.8, 97.1] # V (FRED)
+  2005: [95.5, 94.1, 92.6, 87.7, 86.9, 96.0, 96.5, 89.1, 76.9, 74.2, 81.6, 91.5] # V (FRED)
+  2006: [91.2, 86.7, 88.9, 87.4, 79.1, 84.9, 84.7, 82.0, 85.4, 93.6, 92.1, 91.7] # V (FRED)
+  2007: [96.9, 91.3, 88.4, 87.1, 88.3, 85.3, 90.4, 83.4, 83.4, 80.9, 76.1, 75.5] # V (FRED)
   2008: [78.4, 70.8, 69.5, 62.6, 59.8, 56.4, 61.2, 63.0, 70.3, 57.6, 55.3, 60.1] # V (FRED)
   2009: [61.2, 56.3, 57.3, 65.1, 68.7, 70.8, 66.0, 65.7, 73.5, 70.6, 67.4, 72.5] # V (FRED)
   2010: [74.4, 73.6, 73.6, 72.2, 73.6, 76.0, 67.8, 68.9, 68.2, 67.7, 71.6, 74.5]
@@ -97,11 +132,26 @@ confidence:
 # the rest 0.3; Brazil 1.7 and the rest of Latin America 1.5; Africa 1.7; Australia 1.05 and
 # New Zealand 0.13): about $63T against a world $64T. Months between 2008 and 2010
 # interpolate, as later years do.
+# M50b: 2000 and 2004 the same way (IMF WEO, recalled and summed by country, R, about +/-5-10%;
+# 2004 shows the dollar's 2002-2007 fall). 2000: US 10.25, Canada 0.74, Mexico 0.71; the EU
+# with the UK 9.8, Russia 0.26, Turkey 0.27, the rest 0.6; China 1.21, Japan 4.97, South Korea
+# 0.58, Taiwan 0.33; India 0.47, ASEAN 0.62, the rest 0.15; Brazil 0.66, the rest 0.8; Africa
+# 0.6; Australia 0.42, New Zealand 0.05: about $33.5T against a world $34T. 2004: US 12.2,
+# Canada 1.02, Mexico 0.78; Europe 15.8 (the EU with the UK 13.8); China 1.96, Japan 4.89,
+# Korea 0.76, Taiwan 0.35; India 0.71, ASEAN 0.84, the rest 0.18; Brazil 0.67, the rest 0.76;
+# Africa 0.95; Australia 0.61, New Zealand 0.10: about $42.6T against a world $44T.
 gdp:
-  north_america: { 2008: 17.5, 2010: 17.7, 2015: 20.9, 2020: 24.1, 2025: 34.4 }
-  europe: { 2008: 22.3, 2010: 21.2, 2015: 20.3, 2020: 22.0, 2025: 29.0 }
-  east_asia: { 2008: 11.1, 2010: 13.4, 2015: 17.5, 2020: 22.1, 2025: 26.2 }
-  south_southeast_asia: { 2008: 3.0, 2010: 4.0, 2015: 5.2, 2020: 6.5, 2025: 9.2 }
-  latin_america: { 2008: 3.2, 2010: 4.1, 2015: 3.9, 2020: 3.1, 2025: 4.7 }
-  africa: { 2008: 1.7, 2010: 2.0, 2015: 2.3, 2020: 2.4, 2025: 2.9 }
-  oceania: { 2008: 1.18, 2010: 1.33, 2015: 1.55, 2020: 1.56, 2025: 2.08 }
+  north_america: { 2000: 11.7, 2004: 14.0, 2008: 17.5, 2010: 17.7, 2015: 20.9, 2020: 24.1, 2025: 34.4 }
+  europe: { 2000: 10.9, 2004: 15.8, 2008: 22.3, 2010: 21.2, 2015: 20.3, 2020: 22.0, 2025: 29.0 }
+  east_asia: { 2000: 7.1, 2004: 8.0, 2008: 11.1, 2010: 13.4, 2015: 17.5, 2020: 22.1, 2025: 26.2 }
+  south_southeast_asia: { 2000: 1.24, 2004: 1.73, 2008: 3.0, 2010: 4.0, 2015: 5.2, 2020: 6.5, 2025: 9.2 }
+  latin_america: { 2000: 1.46, 2004: 1.43, 2008: 3.2, 2010: 4.1, 2015: 3.9, 2020: 3.1, 2025: 4.7 }
+  africa: { 2000: 0.6, 2004: 0.95, 2008: 1.7, 2010: 2.0, 2015: 2.3, 2020: 2.4, 2025: 2.9 }
+  oceania: { 2000: 0.47, 2004: 0.71, 2008: 1.18, 2010: 1.33, 2015: 1.55, 2020: 1.56, 2025: 2.08 }
+
+# M50b (formulas.md 60.5): months the IPO window was shut, [first, last] inclusive. US IPOs
+# fell from about 406 in 2000 (most before the summer) to about 80 in 2001, 66 in 2002 and 63
+# in 2003, then 173 in 2004 (R: Jay Ritter, IPO statistics, University of Florida). The brief's
+# default: closed from mid-2000 to the end of 2003. No bank takes a listing in those months.
+ipo_closed:
+  - ["2000-07", "2003-12"]

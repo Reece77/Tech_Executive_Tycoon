@@ -53,6 +53,8 @@
 #   2008 start has history, with the same V/D/R/A tags. The crisis shows: ASML's immersion units fell from
 #   56 (2008) to 36 (2009) before 2010's 95. `models` still start in 2010 (list order unchanged: a 2008
 #   start has no listed DUV model before the NXT:1950i; see the M50 follow-ups).
+# M50b (formulas.md 60.4), 2026-11-28: 2000-2007 added the same way (immersion from its first tools in
+#   2004-2006; EUV none). Dry ArF and KrF scanners, the 2000-2005 tools, are not generations here.
 #
 # Units: prices are US dollar cents (the game's money, ADR-0003); a euro price is converted at
 # the year's ECB average. Shipments are systems ASML recognised as sales in the year (its 20-F
@@ -101,8 +103,9 @@ generations:
       - { model: NXT:2000i, year: 2018, wph: 275, tag: R } # R: TH roadmap
       - { model: NXT:2050i, year: 2020, wph: 295, tag: R } # R: TH roadmap
       - { model: NXT:2100i, year: 2022, wph: 295, tag: R } # R: TH roadmap
-    uptime: { 2008: 0.95, 2010: 0.95 } # A: a mature tool's availability (no public figure); M50: 2008 as 2010 (A)
+    uptime: { 2000: 0.95, 2008: 0.95, 2010: 0.95 } # A: a mature tool's availability (no public figure); M50: 2008 as 2010 (A); M50b: 2000 the same (A)
     price_cents: # ArFi ASP = ArFi sales / ArFi units (20-F) x ECB
+      2000: 4000000000 # A (M50b): 2008's price held back (no immersion tool on sale before 2004-2006; dry ArF tools sold for about $15-20M, R)
       2008: 4000000000 # A (M50): $40M: about EUR 27M an XT:1900i-class immersion tool x 1.4708 (ECB 2008), above ASML's new-system ASP of EUR 20.4M in 2008 (20-F 2009, V)
       2010: 4500000000 # A: $45M (ASML's new-system ASP across all types was EUR 24.1M in 2010, 20-F 2012, V; immersion above it)
       2019: 6430000000 # D: EUR 4,707.7M / 82 = EUR 57.4M x 1.1195 (20-F 2019, ECB)
@@ -111,6 +114,14 @@ generations:
       2022: 6810000000 # D: EUR 5,236.5M / 81 = EUR 64.6M x 1.0530 (20-F 2022)
       2025: 8540000000 # D: about EUR 10,050M / 133 = EUR 75.6M x 1.13 (SA 2025, R)
     shipments: # ASML ArFi units recognised (20-F; "immersion systems recognized" before 2019)
+      2000: 0 # A (M50b): no immersion lithography before 2004 (dry ArF and KrF scanners only)
+      2001: 0 # A (M50b): as 2000
+      2002: 0 # A (M50b): as 2000
+      2003: 0 # A (M50b): as 2000
+      2004: 3 # A (M50b): ASML's first immersion tools (XT:1250i) for development
+      2005: 10 # D (M50b): 13 immersion tools delivered to date by end-2005 (ASML annual report 2005, via search, R) less 2004's 3
+      2006: 23 # R (M50b): ASML's 2006 results release, 23 immersion systems to 17 customers (via search)
+      2007: 38 # V (M50b): 20-F 2009 KPI table (immersion systems shipped)
       2008: 56 # V: 20-F 2009 KPI table (immersion systems shipped)
       2009: 36 # V: 20-F 2009 KPI table (the crisis trough: 70 systems of all types)
       2010: 95 # V: 20-F 2012 KPI table
@@ -130,7 +141,7 @@ generations:
       2024: 129 # V: 20-F 2024 tables; ASML Q4 2024
       2025: 133 # R: SA 2025 (TH 2026 says 131 shipped)
     rival_shipments: # Nikon's ArFi
-      nikon: { 2008: 12, 2010: 12, 2022: 12, 2023: 9, 2024: 4, 2025: 4 } # R 2023-2024: 36Kr 2025; A before (a dozen a year, no series found; M50: 2008 the same, A); A 2025
+      nikon: { 2000: 0, 2005: 0, 2006: 3, 2007: 8, 2008: 12, 2010: 12, 2022: 12, 2023: 9, 2024: 4, 2025: 4 } # R 2023-2024: 36Kr 2025; A before (a dozen a year, no series found; M50: 2008 the same, A); A 2025; M50b: A, none before Nikon's first immersion NSR-S609B (2006, R), ramping in 2006-2007
     buyers: { china: 0.30, other: 0.70 } # R: China was 26-49% of ASML's system sales in 2023-2024 (ASML Q4 2023 / Q4 2024 regional splits); A for the split's use
   - key: euv_low
     label: Low-NA EUV (NXE)
@@ -149,6 +160,7 @@ generations:
       - { model: NXE:3800E, year: 2024, wph: 195, tag: R } # R: ASML NXE / TH roadmap: over 195 wph at first
       - { model: NXE:3800E, year: 2025, wph: 220, tag: R } # R: ASML NXE: 220 wph with the full upgrade, shipped 2025
     uptime:
+      2000: 0.30 # A (M50b): 2008's level held back (no EUV tool before the 2006 alpha demo tools; the loader needs uptime above 0)
       2008: 0.30 # A (M50): the alpha demo tools at IMEC and Albany (2006, R), before the NXE:3100
       2010: 0.40 # A: a pre-production tool
       2014: 0.55 # A
@@ -168,6 +180,14 @@ generations:
       2024: 19590000000 # D: (EUR 8.3B - 2 EXE x EUR 350M) / 42 NXE = EUR 181.0M x 1.0824 (ASML Q4 2024; the EXE price R)
       2025: 23680000000 # D: (about EUR 10.9B - 3 x EUR 350M) / 47 = EUR 209.6M x 1.13 (SA 2025, R)
     shipments: # EUV systems recognised (NXE)
+      2000: 0 # A (M50b): EUV was research only (EUV LLC 1997-2003, R); no NXE system before 2010 (20-F 2009, V)
+      2001: 0 # A (M50b): as the year before
+      2002: 0 # A (M50b): as the year before
+      2003: 0 # A (M50b): as the year before
+      2004: 0 # A (M50b): as the year before
+      2005: 0 # A (M50b): as the year before
+      2006: 0 # A (M50b): the two alpha demo tools (IMEC, Albany) were research tools, not sales
+      2007: 0 # A (M50b): as the year before
       2008: 0 # V: 20-F 2009 (no NXE system before 2010; the 2006 alpha demo tools were research tools)
       2009: 0 # V: 20-F 2009 (first NXE:3100 assembly in the new EUV cleanroom, May 2009)
       2010: 0 # V: 20-F 2012 (one NXE:3100 shipped, none recognised)

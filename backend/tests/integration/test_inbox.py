@@ -320,6 +320,7 @@ def test_every_emitted_template_renders(loaded: LoadedData) -> None:
     items += _m12a_items(loaded)
     items += _m11_items(loaded)
     items += _m14b_items(loaded)
+    items += _m50b_items(loaded)
     for item in items:
         if item.template is None:
             continue
@@ -625,3 +626,14 @@ def test_upgrade_to_0012_keeps_items_unarchived(tmp_path: Path, loaded: LoadedDa
         items = list_inbox(session, 1, archived=False)
         assert items and not any(m.archived for m in items)
         assert list_inbox(session, 1, archived=True) == []
+
+
+def _m50b_items(loaded: LoadedData) -> list[LogItem]:
+    """M50b (60.5): a history era arrives in a 2000 game (social networks, February 2004)."""
+    from tst.balance import m50
+    from tst.sim.calendar import ym_to_turn
+    from tst.sim.research.history_eras import arrive_history_eras
+
+    state = replace(m50.start(1, 2000).state, turn=ym_to_turn(2004, 2))
+    _, logs = arrive_history_eras(state, loaded.game_data, loaded.balance)
+    return list(logs)

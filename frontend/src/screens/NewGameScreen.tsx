@@ -362,10 +362,10 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         {mode.kind === 'campaign' && (meta.start_years ?? []).length > 1 && (
           <NativeSelect
             label="Start year"
-            description="January 2010, or January 2008: the financial crisis hits in your first year, then the App Store and Android arrive."
+            description="January 2010; January 2008, when the financial crisis hits in your first year; or January 2000, the dot-com peak, with the bust ahead and no cloud, social networks or smartphones yet."
             data={(meta.start_years ?? []).map((y) => ({
               value: String(y),
-              label: `January ${y}`,
+              label: y === 2000 ? 'January 2000: Dot-com 2000' : `January ${y}`,
             }))}
             value={String(startYear)}
             onChange={(e) => setStartYear(Number(e.currentTarget.value))}
@@ -375,7 +375,7 @@ function SetupForm({ meta, scenarios }: { meta: NewGameMeta; scenarios: Scenario
         {mode.kind === 'campaign' && (
           <NativeSelect
             label="Campaign length"
-            description="Standard runs 30 years and ends with a summary (December 2039, or December 2037 from a 2008 start). Dynasty plays on to December 2069, with new eras and a second generation."
+            description="Standard runs 30 years and ends with a summary (December 2039, or December 2037 from a 2008 start and December 2029 from 2000). Dynasty plays on to December 2069, with new eras and a second generation."
             data={[
               { value: 'standard', label: 'Standard: 30 years' },
               { value: 'dynasty', label: 'Dynasty: to December 2069 (60 years)' },

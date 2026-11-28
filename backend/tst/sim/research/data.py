@@ -6,7 +6,7 @@ reads the files. Domains and eras are data, so v3 can add domains without code (
 from __future__ import annotations
 
 import bisect
-from typing import Literal
+from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -192,6 +192,8 @@ class EraDef(_Frozen):
     window: tuple[tuple[int, int], tuple[int, int]] | None = None
     yield_cap: float | None = Field(default=None, gt=0, le=1)  # M12b: chips' yield cap
     boosts: tuple[EraBoost, ...] = ()
+    # M50b (60.5): a history era's categories, which open for sale when it arrives
+    opens: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def _check(self) -> EraDef:
@@ -231,6 +233,8 @@ class EraDef(_Frozen):
         return tuple(dict.fromkeys(b.category for b in self.boosts))
 
 
+# M50b: a history era arrives by January 2008, so the 2008 world (and 2010's) has it from the start
+HISTORY_ERA_LAST: Final = (2008, 1)  # tunable-exempt: the 2008 world's first month
 BEYOND_FIRST, BEYOND_LAST = 2070, 2120  # tunable-exempt: 66.3's window years for the third wave
 
 
@@ -240,10 +244,14 @@ class ErasFile(_Frozen):
     # M52 (66.3): the third wave, windows 2070-2120 (sandbox past 2069); the loader appends it
     # to `eras` after every other era, so no earlier era's index (its stream key) moves
     beyond_2069: tuple[EraDef, ...] = ()
+    # M50b (60.5): eras before the 2008 world (public cloud, social networks, ...), each opening
+    # categories. Played only in a world begun before an era's month (a 2000 game); kept apart
+    # from `eras`, so no era index, baseline, boost or estimate of a 2008 or 2010 game moves.
+    history_eras: tuple[EraDef, ...] = ()
 
     @model_validator(mode="after")
     def _check(self) -> ErasFile:
-        keys = [e.key for e in (*self.eras, *self.beyond_2069)]
+        keys = [e.key for e in (*self.eras, *self.beyond_2069, *self.history_eras)]
         if len(set(keys)) != len(keys):
             raise ValueError("eras.yaml: era keys listed twice")
         for e in self.beyond_2069:
@@ -252,6 +260,16 @@ class ErasFile(_Frozen):
                     f"eras.yaml beyond_2069: {e.key!r} needs a window within"
                     f" {BEYOND_FIRST}-{BEYOND_LAST}"
                 )
+        for e in self.history_eras:
+            if e.historical is None or e.historical > HISTORY_ERA_LAST or not e.opens or e.boosts:
+                raise ValueError(
+                    f"eras.yaml history_eras: {e.key!r} needs an arrival by "
+                    f"{HISTORY_ERA_LAST[0]}-{HISTORY_ERA_LAST[1]:02d}, categories it opens and "
+                    "no boosts"
+                )
+        for e in (*self.eras, *self.beyond_2069):
+            if e.opens:
+                raise ValueError(f"eras.yaml: {e.key!r}: only a history era opens categories")
         for category, table in self.base_growth.items():
             if not table or any(g < 0 for g in table.values()):
                 raise ValueError(f"base_growth.{category}: needs entries, each >= 0")

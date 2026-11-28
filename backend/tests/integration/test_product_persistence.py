@@ -42,7 +42,8 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
     with open_session(_save(tmp_path, loaded)) as session:
         state = load_state(session)
     names = [c.name for c in state.companies if not c.is_player]
-    assert names == [c.name for c in loaded.game_data.incumbents]
+    # M50b: the 2000 world's own companies (history_only) are not in a 2010 game
+    assert names == [c.name for c in loaded.game_data.incumbents if not c.history_only]
     assert [c.id for c in state.companies] == list(
         range(
             1,
@@ -57,7 +58,9 @@ def test_new_game_has_every_market_and_incumbent(tmp_path: Path, loaded: LoadedD
             + 2,
         )
     )
-    incumbent_products = sum(len(c.products) for c in loaded.game_data.incumbents)
+    incumbent_products = sum(  # M50b: the 2000 world's own companies are not in a 2010 game
+        len(c.products) for c in loaded.game_data.incumbents if not c.history_only
+    )
     assert len(state.products) == incumbent_products and all(
         p.status == "live" for p in state.products
     )

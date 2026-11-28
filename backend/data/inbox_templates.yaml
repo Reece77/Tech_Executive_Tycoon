@@ -456,6 +456,9 @@ templates:
   era_arrived: # M11 (formulas.md 21.4): an era milestone arrived
     title: "{era} has arrived"
     body: "{era} arrived {when}. It accelerates {markets}.{note}"
+  history_era_arrived: # M50b (formulas.md 60.5): a history era opened its categories
+    title: "{era} has arrived"
+    body: "The {era} era arrived{early}. Products can now launch in {categories}."
   license_in: # M11 (21.5)
     title: "Licensed {domain} from {rival}"
     body: "You licensed {points} points of {rival}'s {domain} know-how for {price_cents}, paid once."

@@ -66,7 +66,7 @@ def starts(loaded: LoadedData) -> dict[str, tuple[GameState, dict[tuple[int, str
 
 def test_the_new_scenarios_follow_the_five(loaded: LoadedData) -> None:
     keys = tuple(h.key for h in loaded.game_data.historical)
-    assert keys[5:] == NEW
+    assert keys[5:] == (*NEW, "survive_the_bust")  # M50b's (60.6) after M51's
 
 
 @pytest.mark.parametrize("key", NEW)

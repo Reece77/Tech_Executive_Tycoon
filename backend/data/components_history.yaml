@@ -11,6 +11,8 @@
 # M50 (ADR-0024, formulas.md 60.2; 2026-11-23): a 2008-01 anchor added to every good (and a few
 # real 2008-2009 anchors) before 2010-01, so the path from January 2010 is unchanged. Tags as the
 # comments above: D the good's own trend held back two years, A an assumption with its basis, R recalled.
+# M50b (formulas.md 60.4; 2026-11-28): a 2000-01 anchor added to every good the same way (the trend held
+# back ten years) and a few 2000-2004 bends (the 2001 slump, the 2004 metals boom), tagged as above.
 goods:
   # Server components (general data centres): -8% a year to the chip shortage, +30% from
   # Q2 2021 to Q2 2022, back on the -8% trend by January 2023, then -8% a year.
@@ -18,6 +20,9 @@ goods:
     label: Server components
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 2.3021 # M50b D: the -8% trend held back, 1 / 0.92 ^ 10
+      "2001-10": 1.6911 # M50b A: the 2001 DRAM collapse (DRAM spot fell about 80% in 2001, R), about 15% under the trend
+      "2003-01": 1.7926 # M50b A: back on the trend, 1 / 0.92 ^ 7
       "2008-01": 1.1815 # M50 D: the -8% trend held back, 1 / 0.92 ^ 2 (DRAM and HDD prices kept falling through 2008-2009)
       "2010-01": 1.0
       "2021-04": 0.3914 # 0.92 ^ (135 / 12)
@@ -33,6 +38,7 @@ goods:
     label: GPUs
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 2.8680 # M50b D: the -10% trend held back, 1 / 0.9 ^ 10
       "2008-01": 1.2346 # M50 D: the -10% trend held back, 1 / 0.9 ^ 2
       "2010-01": 1.0
       "2017-01": 0.4783 # 0.9 ^ 7
@@ -50,6 +56,7 @@ goods:
     label: Device components
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 1.5041 # M50b D: the -4% trend held back, 1 / 0.96 ^ 10
       "2008-01": 1.0851 # M50 D: the -4% trend held back, 1 / 0.96 ^ 2
       "2010-01": 1.0
       "2021-01": 0.6382 # 0.96 ^ 11
@@ -64,6 +71,7 @@ goods:
     label: Server components
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 1.6702 # M50b D: the -5% trend held back, 1 / 0.95 ^ 10
       "2008-01": 1.1080 # M50 D: the -5% trend held back, 1 / 0.95 ^ 2
       "2010-01": 1.0
       "2021-01": 0.5688 # 0.95 ^ 11
@@ -78,6 +86,7 @@ goods:
     label: Assembly equipment
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 1.2239 # M50b D: the -2% trend held back, 1 / 0.98 ^ 10
       "2008-01": 1.0412 # M50 D: the -2% trend held back, 1 / 0.98 ^ 2
       "2010-01": 1.0
       "2025-12": 0.7250 # 0.98 ^ (191 / 12)
@@ -88,6 +97,10 @@ goods:
     label: Foundry wafers
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 0.7441 # M50b D: the +3% trend held back, 1 / 1.03 ^ 10
+      "2000-09": 0.8348 # M50b A: the 2000 capacity crunch (foundries sold out, prices raised, R), about 10% over the trend
+      "2001-12": 0.6693 # M50b A: the 2001 slump (TSMC utilisation near 40% in 2001, R; wafer prices cut), about 15% under the trend
+      "2003-01": 0.8131 # M50b A: back on the trend, 1 / 1.03 ^ 7
       "2008-01": 0.9426 # M50 D: the +3% trend held back, 1 / 1.03 ^ 2
       "2009-03": 0.8900 # M50 A: the 2009 slump (foundry utilisation near 40% in Q1 2009, TSMC, R), about 7% under the trend
       "2010-01": 1.0
@@ -107,6 +120,7 @@ goods:
     label: EUV tools
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 1.0 # M50b A: flat before 2010 (EUV LLC research only, 1997-2003, R; no tools sold)
       "2008-01": 1.0 # M50 A: flat before 2010 (EUV pre-production tools only; NXE:3100 shipped 2010, R)
       "2010-01": 1.0
       "2020-06": 1.0 # $120M a tool (dossier 3.4, V)
@@ -124,6 +138,9 @@ goods:
     label: Vehicle components
     unit: index (January 2010 = 1.0)
     points:
+      "2000-01": 1.0782 # M50b D: the -0.75% trend held back, 1 / 0.9925 ^ 10
+      "2003-06": 1.0508 # M50b D: on the trend before the metals boom
+      "2004-09": 1.0722 # M50b A: steel prices about doubled in 2004 (hot-rolled coil, R), about +3% on the BOM
       "2008-01": 1.0152 # M50 D: the -0.75% trend held back, 1 / 0.9925 ^ 2
       "2008-08": 1.0500 # M50 A: steel and metals peak of mid-2008 (hot-rolled coil about doubled, R), about +3% on the BOM
       "2009-06": 0.9950 # M50 A: back under the trend after the crash

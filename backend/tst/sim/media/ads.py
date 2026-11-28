@@ -30,7 +30,7 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim import dmath
-from tst.sim.calendar import turn_to_ym
+from tst.sim.calendar import END_YEAR_2008_READ, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finance.macro import confidence_factor, now
@@ -42,7 +42,13 @@ from tst.sim.media.models import AdMonth, AdRef, WorldDraw
 from tst.sim.products.models import Product, ProductSegment
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState, with_segments
-from tst.sim.vehicles.config import interp
+from tst.sim.vehicles.config import interp as _interp
+
+
+def interp(points: dict[int, float], year: float) -> float:
+    """M50b: a year-end series, floored at 2008 from January 2008's read (2007.08)."""
+    return _interp(points, year, END_YEAR_2008_READ)
+
 
 THOUSAND: Final = 1000  # tunable-exempt: a price a thousand impressions
 MILLION_F: Final = 1e6  # tunable-exempt: impressions shown in millions

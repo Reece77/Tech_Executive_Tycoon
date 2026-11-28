@@ -250,3 +250,40 @@ base_growth:
   consumer_apps: { 2010: 0.2568, 2020: 0.30 } # mobile-first's +15 points for 2011-2013
   dev_tools: { 2010: 0.1457, 2020: 0.1650 } # M43a (54.2) x0.66 from 0.2208 / 0.25: main's 2025 served revenue was 3.7x the published $25B; cloud-native's +10 points from June 2014
   fintech: { 2010: 0.2235, 2021: 0.25 } # open banking's +10 points from January 2018
+
+# M50b (formulas.md 60.5): history eras, the world before 2008. Each opens its categories for
+# sale on its historical month, or earlier in the month a company's level in its domain reaches
+# the era's threshold (21.4's rule); they add no baseline and no boost. Played only in a world
+# begun before the month (a 2000 game): each arrives by January 2008, so a 2008 or 2010 game
+# has every category open from its first month. Sources: docs/v6-research/start-2000-dossier.md.
+history_eras:
+  - key: social_networks
+    label: Social networks
+    domain: software_platform
+    arrival: [2004, 2] # S: Facebook launched 4 February 2004 (Friendster 2002 and MySpace 2003 were smaller)
+    opens: [social]
+  - key: public_cloud
+    label: Public cloud
+    domain: infrastructure
+    arrival: [2006, 3] # S: Amazon S3 launched 14 March 2006 (EC2 beta August 2006)
+    opens: [cloud_hosting]
+  - key: video_streaming
+    label: Video streaming
+    domain: software_platform
+    arrival: [2007, 1] # S: Netflix's "Watch Now" streaming, 16 January 2007 (YouTube from 2005 was free video)
+    opens: [streaming]
+  - key: smartphones
+    label: Smartphones
+    domain: devices
+    arrival: [2007, 6] # S: the iPhone went on sale 29 June 2007 (operating systems sell through devices)
+    opens: [devices]
+  - key: electric_cars
+    label: Electric cars
+    domain: devices
+    arrival: [2008, 1] # A: Tesla's Roadster entered production in March 2008; held to January 2008, the 2008 world's first month, which has the market
+    opens: [vehicles]
+  - key: music_streaming
+    label: Music streaming
+    domain: software_platform
+    arrival: [2008, 1] # A: Spotify launched 7 October 2008; held to January 2008, the 2008 world's first month, which has the market
+    opens: [music_streaming]

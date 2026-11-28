@@ -877,6 +877,7 @@ class PoachBalance(_Frozen):
 
 class RivalsBalance(_Frozen):
     prelaunch_cash_months: float = Field(ge=0)  # M50 (60.2)
+    prelaunch_after_months: float = Field(ge=0)  # M50b (60.6): runway past the first launch
     act_threshold: float
     noise_sd: float = Field(ge=0)
     cooldown_turns: int = Field(ge=0)
@@ -1908,6 +1909,22 @@ class IncumbentCompany(_Frozen):
     key_people: int | None = Field(default=None, ge=1)
     # M14 (28.1): (year, month) the company is listed from, following history; None = private
     listed_from: tuple[int, int] | None = None
+    # M50b (60.6): a company of the 2000 world only (Compaq, Sun, Nortel, ...): in a world begun
+    # before 2008, never in a 2008 or 2010 game. Its products' share_bp are shares of the
+    # world's first-month market (no early_scale).
+    history_only: bool = False
+    # M50b (60.6): its real exit, (year, month): merged into `exit_into` (its customers move to
+    # that company's product in the same category and segment), or closed when None
+    exit: tuple[int, int] | None = None
+    exit_into: str | None = None
+
+    @model_validator(mode="after")
+    def _check_history(self) -> IncumbentCompany:
+        if (self.exit is not None or self.exit_into is not None) and not self.history_only:
+            raise ValueError(f"{self.name!r}: only a history_only company has an exit")
+        if self.exit_into is not None and self.exit is None:
+            raise ValueError(f"{self.name!r}: exit_into needs an exit month")
+        return self
 
 
 DEFAULT_INCUMBENT_REGIONS = ("north_america", "europe")  # 19.5: v1 incumbents' regions
@@ -1989,9 +2006,19 @@ class MacroHistory(_Frozen):
     confidence: dict[int, tuple[float, ...]]
     # M43a (54.1): region -> listed year -> nominal GDP, trillions of dollars
     gdp: dict[str, dict[int, float]] = Field(default_factory=dict)
+    # M50b (60.5): months the IPO window was shut, ("YYYY-MM", "YYYY-MM") inclusive; each ends
+    # before 2008 (the loader's check), so a 2008 or 2010 game never meets one
+    ipo_closed: tuple[tuple[str, str], ...] = ()
+
+    def ipo_closed_at(self, year: int, month: int) -> tuple[str, str] | None:
+        """The shut window holding this month, if any (M50b)."""
+        key = f"{year:04d}-{month:02d}"
+        return next((w for w in self.ipo_closed if w[0] <= key <= w[1]), None)
 
     @model_validator(mode="after")
     def _check(self) -> MacroHistory:
+        if any(not a <= b < "2008-01" for a, b in self.ipo_closed):
+            raise ValueError("ipo_closed windows run forwards and end before 2008-01")
         if any(v <= 0 for t in self.gdp.values() for v in t.values()) or any(
             not t for t in self.gdp.values()
         ):
@@ -2186,6 +2213,7 @@ INBOX_TEMPLATE_KEYS = (
     "cloud_started",
     "outage_hit",
     "era_arrived",  # M11 (21.4, 21.5)
+    "history_era_arrived",  # M50b (60.5): a history era opened its categories
     "license_in",
     "license_out",
     "research_leak",

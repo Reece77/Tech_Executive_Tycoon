@@ -123,7 +123,7 @@ def apply_public(
     turn = state.turn
     match action:
         case HireBanks():
-            problem = ipo.eligibility_problem(state, company, balance)
+            problem = ipo.eligibility_problem(state, company, balance, data)
             if problem:
                 raise FinanceRuleError(problem)
             try:

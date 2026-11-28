@@ -13,7 +13,7 @@ from dataclasses import replace
 
 import numpy as np
 
-from tst.sim.calendar import format_turn
+from tst.sim.calendar import format_turn, turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.events.models import QueuedEvent
 from tst.sim.finance.board import _add_seat, average_confidence
@@ -65,7 +65,9 @@ def min_arr_cents(balance: Balance) -> int:
     return times(balance.ipo.min_arr_cents, balance.economy_scale.money)
 
 
-def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> str | None:
+def eligibility_problem(
+    state: GameState, company_id: int, balance: Balance, data: GameData | None = None
+) -> str | None:
     """Why the company cannot hire banks now, or None (25.1)."""
     ib = balance.ipo
     company = state.company(company_id)
@@ -84,6 +86,10 @@ def eligibility_problem(state: GameState, company_id: int, balance: Balance) -> 
         )
     if company.stage < ib.min_stage:
         return f"an IPO needs stage {ib.min_stage} (scale-up)"
+    if data is not None and data.macro_history is not None and state.turn < 0:
+        shut = data.macro_history.ipo_closed_at(*turn_to_ym(state.turn))  # M50b (60.5)
+        if shut is not None:
+            return f"the IPO window is shut (the dot-com bust, to {shut[1]}): no bank will list"
     mrr = company.mrr_history[-1] if company.mrr_history else 0
     floor = min_arr_cents(balance)
     if mrr * MONTHS_A_YEAR < floor:

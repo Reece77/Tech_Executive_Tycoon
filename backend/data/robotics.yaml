@@ -69,8 +69,28 @@
 #           Germany $46.5, Japan $27.8, Korea $17.0, Brazil $8.1, Mexico $5.5; China $1.36 in 2008), R
 #   UR08    Universal Robots: the UR5 launched in 2008, first units sold to Danish customers (Wikipedia,
 #           Universal Robots), R
+# M50b (formulas.md 60.4), 2026-11-28: 2000-2007 added the same way; values from 2008 on are unchanged.
+# M50b (2000-2007) sources:
+#   WIR00   Wikipedia, Industrial robot, opened 2026-11-28 (IFR's world annual supply, S): 99,000 (2000),
+#           78,000, 69,000, 81,000, 97,000, 120,000, 112,000, 114,000 (2007)
+#   IFR00   IFR World Robotics 2001-2008 editions (R, not re-read): Japan about 47k (2000), 28k, 25k,
+#           32k, 37k, 51k, 37k, 36k (2007); Korea 4-14k; China under 1k in 2000 to about 6.6k in 2007;
+#           the Americas 10-21k (2005's record); Europe 23-31k (Germany 10-14k)
+#   FRED00  FRED annual averages, opened 2026-11-28: CPIAUCNS 172.200 (2000) to 207.342 (2007);
+#           EXUSEU 0.9234 (2000) to 1.3709 (2007) dollars a euro
+#   BLS00   BLS International Labor Comparisons, hourly compensation in manufacturing 2000-2007 (US
+#           about $25-31, Brazil about $3-7 with the real's 2002-2003 fall, Australia $13-30 with the
+#           Australian dollar), R
 
 cpi: # R (CPI), as vehicles.yaml
+  2000: 172.200 # M50b S (FRED00 CPIAUCNS)
+  2001: 177.067
+  2002: 179.875
+  2003: 183.958
+  2004: 188.883
+  2005: 195.292
+  2006: 201.592
+  2007: 207.342
   2008: 215.303 # M50 R (CPI)
   2009: 214.537 # M50 R (CPI): 2009's deflation
   2010: 218.056
@@ -119,41 +139,49 @@ cpi: # R (CPI), as vehicles.yaml
 #   4.0 x China's 2008/2010 ratio, Japan and Korea (the won fell in 2008) held; latin_america R (Brazil
 #   $8.1, the real strong before the crash); the rest A, about 5% below 2010 nominal. density 2008
 #   (IFR09D, R): US about 125, Germany about 253, Korea about 305 (Japan's 295-310); SSEA A.
+# M50b 2000-2007: installations R (north_america, europe) and D (east_asia = Japan + Korea + China +
+#   Taiwan) from IFR00, the rest A, each year's regions summing to WIR00's world total (S) within 1%:
+#   the 2001-2002 fall and 2005's peak (Japan's and Korea's car and LCD plants). labour_usd (anchors
+#   at 2000, 2002, 2004 and 2006) D from 2008's value run back with BLS00 (R): north_america and oceania about 3% a year nominal (oceania
+#   with the Australian dollar), europe in euros (about 2.5% a year) x FRED00's EXUSEU, east_asia and
+#   south_southeast_asia A (China's pay rising about 12% a year), latin_america with the real, africa
+#   with the rand (A). density A: the leaders' counts rising to 2008's (US about 85 in 2000, Germany
+#   about 155, Japan about 280, the world's highest until Korea passed it, R).
 regions:
   north_america:
-    installations: { 2008: [16.5, R], 2009: [8.5, R], 2010: [16.0, R], 2015: [38.0, D], 2018: [55.0, D], 2021: [46.0, D], 2022: [52.0, D], 2023: [50.0, D], 2024: [46.0, D], 2025: [49.0, D] }
+    installations: { 2000: [13.0, R], 2001: [10.8, R], 2002: [9.2, R], 2003: [12.6, R], 2004: [14.7, R], 2005: [19.5, R], 2006: [17.5, R], 2007: [18.0, R], 2008: [16.5, R], 2009: [8.5, R], 2010: [16.0, R], 2015: [38.0, D], 2018: [55.0, D], 2021: [46.0, D], 2022: [52.0, D], 2023: [50.0, D], 2024: [46.0, D], 2025: [49.0, D] }
     segments: { automotive: [0.50, A], electronics: [0.12, A], general_industry: [0.38, A] }
-    labour_usd: { 2008: [28.5, 2008, D], 2010: [30.0, 2010, D], 2012: [31.0, 2012, D], 2023: [39.0, 2023, D] }
-    density: { 2008: [125, R], 2010: [135, R], 2015: [176, R], 2023: [295, S] }
+    labour_usd: { 2000: [22.6, 2000, D], 2002: [24.0, 2002, D], 2004: [25.5, 2004, D], 2006: [26.9, 2006, D], 2008: [28.5, 2008, D], 2010: [30.0, 2010, D], 2012: [31.0, 2012, D], 2023: [39.0, 2023, D] }
+    density: { 2000: [85, A], 2004: [100, A], 2008: [125, R], 2010: [135, R], 2015: [176, R], 2023: [295, S] }
   europe:
-    installations: { 2008: [35.1, R], 2009: [20.5, R], 2010: [31.0, R], 2015: [50.1, R], 2018: [75.5, R], 2021: [84.3, R], 2022: [84.0, R], 2023: [92.4, R], 2024: [85.0, D], 2025: [76.0, D] }
+    installations: { 2000: [27.5, R], 2001: [28.0, R], 2002: [23.5, R], 2003: [23.0, R], 2004: [27.5, R], 2005: [26.0, R], 2006: [30.0, R], 2007: [31.0, R], 2008: [35.1, R], 2009: [20.5, R], 2010: [31.0, R], 2015: [50.1, R], 2018: [75.5, R], 2021: [84.3, R], 2022: [84.0, R], 2023: [92.4, R], 2024: [85.0, D], 2025: [76.0, D] }
     segments: { automotive: [0.35, A], electronics: [0.08, A], general_industry: [0.57, A] }
-    labour_usd: { 2008: [38.0, 2008, R], 2010: [36.0, 2010, R], 2012: [37.0, 2012, R], 2023: [41.0, 2023, D] }
-    density: { 2008: [253, R], 2010: [261, R], 2015: [301, R], 2023: [429, S] }
+    labour_usd: { 2000: [19.6, 2000, D], 2002: [21.0, 2002, D], 2004: [29.0, 2004, D], 2006: [30.8, 2006, D], 2008: [38.0, 2008, R], 2010: [36.0, 2010, R], 2012: [37.0, 2012, R], 2023: [41.0, 2023, D] }
+    density: { 2000: [155, A], 2004: [200, A], 2008: [253, R], 2010: [261, R], 2015: [301, R], 2023: [429, S] }
   east_asia:
-    installations: { 2008: [57.0, D], 2009: [27.6, D], 2010: [67.3, D], 2015: [149.1, D], 2018: [257.9, D], 2021: [356.1, D], 2022: [380.0, D], 2023: [361.8, D], 2024: [377.1, D], 2025: [427.4, D] }
+    installations: { 2000: [55.0, D], 2001: [35.4, D], 2002: [33.9, D], 2003: [41.5, D], 2004: [49.1, D], 2005: [69.6, D], 2006: [58.4, D], 2007: [58.5, D], 2008: [57.0, D], 2009: [27.6, D], 2010: [67.3, D], 2015: [149.1, D], 2018: [257.9, D], 2021: [356.1, D], 2022: [380.0, D], 2023: [361.8, D], 2024: [377.1, D], 2025: [427.4, D] }
     segments: { automotive: [0.22, A], electronics: [0.33, A], general_industry: [0.45, A] }
-    labour_usd: { 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2023: [9.0, 2023, D] }
-    density: { 2008: [305, R], 2010: [347, R], 2015: [531, R], 2023: [1012, S] }
+    labour_usd: { 2000: [2.2, 2000, A], 2002: [2.3, 2002, A], 2004: [2.6, 2004, A], 2006: [3.0, 2006, A], 2008: [3.5, 2008, D], 2010: [4.0, 2010, D], 2015: [6.0, 2015, D], 2023: [9.0, 2023, D] }
+    density: { 2000: [280, A], 2004: [290, A], 2008: [305, R], 2010: [347, R], 2015: [531, R], 2023: [1012, S] }
   south_southeast_asia:
-    installations: { 2008: [5.0, A], 2009: [2.5, A], 2010: [6.0, A], 2015: [10.0, A], 2018: [14.5, A], 2021: [16.0, A], 2022: [18.5, A], 2023: [19.0, A], 2024: [21.0, D], 2025: [24.0, A] }
+    installations: { 2000: [2.5, A], 2001: [2.5, A], 2002: [1.8, A], 2003: [2.8, A], 2004: [4.0, A], 2005: [3.4, A], 2006: [4.5, A], 2007: [4.5, A], 2008: [5.0, A], 2009: [2.5, A], 2010: [6.0, A], 2015: [10.0, A], 2018: [14.5, A], 2021: [16.0, A], 2022: [18.5, A], 2023: [19.0, A], 2024: [21.0, D], 2025: [24.0, A] }
     segments: { automotive: [0.30, A], electronics: [0.25, A], general_industry: [0.45, A] }
-    labour_usd: { 2008: [1.4, 2008, A], 2010: [1.5, 2010, A], 2023: [3.0, 2023, D] }
-    density: { 2008: [18, A], 2010: [20, A], 2015: [398, R], 2023: [770, S] }
+    labour_usd: { 2000: [1.0, 2000, A], 2002: [1.05, 2002, A], 2004: [1.15, 2004, A], 2006: [1.3, 2006, A], 2008: [1.4, 2008, A], 2010: [1.5, 2010, A], 2023: [3.0, 2023, D] }
+    density: { 2000: [10, A], 2004: [14, A], 2008: [18, A], 2010: [20, A], 2015: [398, R], 2023: [770, S] }
   latin_america:
-    installations: { 2008: [1.2, R], 2009: [0.8, R], 2010: [1.5, R], 2015: [1.9, R], 2018: [2.5, R], 2021: [2.2, R], 2022: [2.5, R], 2023: [2.6, R], 2024: [2.5, A], 2025: [2.6, A] }
+    installations: { 2000: [0.4, A], 2001: [0.5, A], 2002: [0.4, A], 2003: [0.6, A], 2004: [0.8, A], 2005: [0.8, A], 2006: [0.9, A], 2007: [1.1, A], 2008: [1.2, R], 2009: [0.8, R], 2010: [1.5, R], 2015: [1.9, R], 2018: [2.5, R], 2021: [2.2, R], 2022: [2.5, R], 2023: [2.6, R], 2024: [2.5, A], 2025: [2.6, A] }
     segments: { automotive: [0.55, A], electronics: [0.10, A], general_industry: [0.35, A] }
-    labour_usd: { 2008: [8.5, 2008, R], 2010: [10.0, 2010, R], 2012: [11.2, 2012, R], 2023: [8.0, 2023, A] }
+    labour_usd: { 2000: [4.6, 2000, R], 2002: [3.3, 2002, R], 2004: [3.8, 2004, R], 2006: [5.9, 2006, R], 2008: [8.5, 2008, R], 2010: [10.0, 2010, R], 2012: [11.2, 2012, R], 2023: [8.0, 2023, A] }
     density: { 2023: [20, A] }
   africa:
-    installations: { 2008: [0.4, A], 2009: [0.3, A], 2010: [0.5, A], 2018: [0.9, A], 2024: [1.0, A], 2025: [1.0, A] }
+    installations: { 2000: [0.2, A], 2001: [0.2, A], 2002: [0.2, A], 2003: [0.2, A], 2004: [0.3, A], 2005: [0.3, A], 2006: [0.3, A], 2007: [0.4, A], 2008: [0.4, A], 2009: [0.3, A], 2010: [0.5, A], 2018: [0.9, A], 2024: [1.0, A], 2025: [1.0, A] }
     segments: { automotive: [0.50, A], electronics: [0.05, A], general_industry: [0.45, A] }
-    labour_usd: { 2008: [1.9, 2008, A], 2010: [2.0, 2010, A], 2023: [2.5, 2023, A] }
+    labour_usd: { 2000: [1.5, 2000, A], 2002: [1.2, 2002, A], 2004: [1.7, 2004, A], 2006: [1.8, 2006, A], 2008: [1.9, 2008, A], 2010: [2.0, 2010, A], 2023: [2.5, 2023, A] }
     density: { 2023: [10, A] }
   oceania:
-    installations: { 2008: [0.7, A], 2009: [0.4, A], 2010: [0.6, A], 2018: [0.9, A], 2024: [0.8, A], 2025: [0.8, A] }
+    installations: { 2000: [0.4, A], 2001: [0.3, A], 2002: [0.3, A], 2003: [0.4, A], 2004: [0.5, A], 2005: [0.4, A], 2006: [0.5, A], 2007: [0.5, A], 2008: [0.7, A], 2009: [0.4, A], 2010: [0.6, A], 2018: [0.9, A], 2024: [0.8, A], 2025: [0.8, A] }
     segments: { automotive: [0.15, A], electronics: [0.05, A], general_industry: [0.80, A] }
-    labour_usd: { 2008: [28.0, 2008, A], 2010: [30.0, 2010, A], 2023: [34.0, 2023, A] }
+    labour_usd: { 2000: [14.5, 2000, A], 2002: [15.0, 2002, A], 2004: [22.5, 2004, A], 2006: [25.0, 2006, A], 2008: [28.0, 2008, A], 2010: [30.0, 2010, A], 2023: [34.0, 2023, A] }
     density: { 2023: [170, A] }
 
 # --- Prices (53.1) --------------------------------------------------------------------------------------
@@ -183,60 +211,64 @@ prices:
 # M50 2008 (A): each maker's 2010 share, a point more for the Japanese makers in East Asia (Japan was
 # 58% of the region's 2008 installations, IFR09 R) and for ABB and KUKA in Europe (Germany's car plants);
 # Universal Robots sold its first UR5s in Denmark in late 2008 (UR08, R); the Chinese makers smaller.
+# M50b 2000 (A): the Japanese makers' share in East Asia higher still (Japan about 85% of the region's
+# 2000 installations, IFR00 R), FANUC and Yaskawa (Motoman) a little higher in North America's car
+# plants; Universal Robots not founded (2005) and no Chinese maker of note (Estun's first robots
+# about 2005, R).
 makers:
   - company: FANUC
     origin: japan
     shares:
-      north_america: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.24, A] }
-      europe: { 2008: [0.12, A], 2010: [0.12, A], 2025: [0.13, A] }
-      east_asia: { 2008: [0.19, A], 2010: [0.18, A], 2018: [0.15, A], 2024: [0.10, D], 2025: [0.10, A] }
-      south_southeast_asia: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.18, A] }
-      latin_america: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
-      africa: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
-      oceania: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
+      north_america: { 2000: [0.26, A], 2008: [0.25, A], 2010: [0.25, A], 2025: [0.24, A] }
+      europe: { 2000: [0.12, A], 2008: [0.12, A], 2010: [0.12, A], 2025: [0.13, A] }
+      east_asia: { 2000: [0.22, A], 2004: [0.21, A], 2008: [0.19, A], 2010: [0.18, A], 2018: [0.15, A], 2024: [0.10, D], 2025: [0.10, A] }
+      south_southeast_asia: { 2000: [0.20, A], 2008: [0.20, A], 2010: [0.20, A], 2025: [0.18, A] }
+      latin_america: { 2000: [0.20, A], 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
+      africa: { 2000: [0.15, A], 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
+      oceania: { 2000: [0.20, A], 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
   - company: ABB Robotics
     origin: rest_of_eu
     owner: ABB (SoftBank agreed to buy it in October 2025)
     shares:
-      north_america: { 2008: [0.12, A], 2010: [0.12, A], 2025: [0.11, A] }
-      europe: { 2008: [0.21, A], 2010: [0.20, A], 2025: [0.18, A] }
-      east_asia: { 2008: [0.10, A], 2010: [0.10, A], 2018: [0.09, A], 2025: [0.06, A] }
-      south_southeast_asia: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.14, A] }
-      latin_america: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
-      africa: { 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
-      oceania: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
+      north_america: { 2000: [0.12, A], 2008: [0.12, A], 2010: [0.12, A], 2025: [0.11, A] }
+      europe: { 2000: [0.21, A], 2008: [0.21, A], 2010: [0.20, A], 2025: [0.18, A] }
+      east_asia: { 2000: [0.08, A], 2004: [0.09, A], 2008: [0.10, A], 2010: [0.10, A], 2018: [0.09, A], 2025: [0.06, A] }
+      south_southeast_asia: { 2000: [0.15, A], 2008: [0.15, A], 2010: [0.15, A], 2025: [0.14, A] }
+      latin_america: { 2000: [0.15, A], 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
+      africa: { 2000: [0.20, A], 2008: [0.20, A], 2010: [0.20, A], 2025: [0.20, A] }
+      oceania: { 2000: [0.15, A], 2008: [0.15, A], 2010: [0.15, A], 2025: [0.15, A] }
   - company: Yaskawa
     origin: japan
     shares:
-      north_america: { 2008: [0.15, A], 2010: [0.15, A], 2025: [0.13, A] }
-      europe: { 2008: [0.08, A], 2010: [0.08, A], 2025: [0.08, A] }
-      east_asia: { 2008: [0.16, A], 2010: [0.15, A], 2018: [0.12, A], 2025: [0.08, A] }
-      south_southeast_asia: { 2008: [0.12, A], 2010: [0.12, A], 2025: [0.11, A] }
-      latin_america: { 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
-      oceania: { 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
+      north_america: { 2000: [0.16, A], 2008: [0.15, A], 2010: [0.15, A], 2025: [0.13, A] }
+      europe: { 2000: [0.08, A], 2008: [0.08, A], 2010: [0.08, A], 2025: [0.08, A] }
+      east_asia: { 2000: [0.18, A], 2004: [0.17, A], 2008: [0.16, A], 2010: [0.15, A], 2018: [0.12, A], 2025: [0.08, A] }
+      south_southeast_asia: { 2000: [0.12, A], 2008: [0.12, A], 2010: [0.12, A], 2025: [0.11, A] }
+      latin_america: { 2000: [0.10, A], 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
+      oceania: { 2000: [0.10, A], 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
   - company: KUKA
     origin: germany
     owner: Midea (from January 2017)
     shares:
-      north_america: { 2008: [0.12, A], 2010: [0.12, A], 2025: [0.10, A] }
-      europe: { 2008: [0.26, A], 2010: [0.25, A], 2025: [0.22, A] }
-      east_asia: { 2008: [0.05, A], 2010: [0.06, A], 2017: [0.06, A], 2021: [0.08, A], 2025: [0.07, A] }
-      south_southeast_asia: { 2008: [0.05, A], 2010: [0.05, A], 2025: [0.06, A] }
-      latin_america: { 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
-      africa: { 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
+      north_america: { 2000: [0.10, A], 2008: [0.12, A], 2010: [0.12, A], 2025: [0.10, A] }
+      europe: { 2000: [0.26, A], 2008: [0.26, A], 2010: [0.25, A], 2025: [0.22, A] }
+      east_asia: { 2000: [0.03, A], 2004: [0.04, A], 2008: [0.05, A], 2010: [0.06, A], 2017: [0.06, A], 2021: [0.08, A], 2025: [0.07, A] }
+      south_southeast_asia: { 2000: [0.04, A], 2008: [0.05, A], 2010: [0.05, A], 2025: [0.06, A] }
+      latin_america: { 2000: [0.10, A], 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
+      africa: { 2000: [0.10, A], 2008: [0.10, A], 2010: [0.10, A], 2025: [0.10, A] }
   - company: Universal Robots
     origin: rest_of_eu
     owner: Teradyne (from 2015)
     shares: # cobots: ~12% of 2024's installations, >64,500 (S (search)); UR the largest cobot maker (R)
-      north_america: { 2008: [0.0, A], 2010: [0.002, A], 2015: [0.02, A], 2020: [0.04, A], 2025: [0.05, A] }
-      europe: { 2008: [0.001, A], 2010: [0.004, A], 2015: [0.03, A], 2020: [0.05, A], 2025: [0.06, A] }
+      north_america: { 2000: [0.0, A], 2008: [0.0, A], 2010: [0.002, A], 2015: [0.02, A], 2020: [0.04, A], 2025: [0.05, A] }
+      europe: { 2000: [0.0, A], 2007: [0.0, A], 2008: [0.001, A], 2010: [0.004, A], 2015: [0.03, A], 2020: [0.05, A], 2025: [0.06, A] }
       east_asia: { 2012: [0.002, A], 2018: [0.015, A], 2025: [0.02, A] }
       south_southeast_asia: { 2014: [0.005, A], 2025: [0.03, A] }
       oceania: { 2014: [0.01, A], 2025: [0.05, A] }
   - company: Estun
     origin: china
     shares: # the Chinese makers' share of East Asia: about 28% of China's 2015-2020 installations x China's share of the region, rising to 57% x 78% (D, IFR S (search)) less the foreign-brand Chinese plants (A)
-      east_asia: { 2008: [0.015, A], 2010: [0.02, A], 2015: [0.10, D], 2018: [0.13, D], 2021: [0.18, D], 2023: [0.22, D], 2024: [0.30, D], 2025: [0.32, D] }
+      east_asia: { 2000: [0.0, A], 2004: [0.0, A], 2008: [0.015, A], 2010: [0.02, A], 2015: [0.10, D], 2018: [0.13, D], 2021: [0.18, D], 2023: [0.22, D], 2024: [0.30, D], 2025: [0.32, D] }
       south_southeast_asia: { 2018: [0.01, A], 2025: [0.05, A] }
       latin_america: { 2020: [0.01, A], 2025: [0.03, A] }
       africa: { 2020: [0.02, A], 2025: [0.05, A] }

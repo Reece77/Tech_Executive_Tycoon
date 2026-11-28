@@ -57,7 +57,8 @@ def test_keys_and_id_blocks(loaded: LoadedData) -> None:
     game = start_game(loaded, 3)
     state = game.state
     incumbents = [c for c in state.companies if c.rival_key[:1] == (INCUMBENT_KEY,)]
-    assert [c.rival_key[1] for c in incumbents] == list(range(len(loaded.game_data.incumbents)))
+    in_2010 = [i for i, c in enumerate(loaded.game_data.incumbents) if not c.history_only]
+    assert [c.rival_key[1] for c in incumbents] == in_2010  # M50b: 2000's own come last
     assert state.player.rival_key == ()
     for c in incumbents:  # products in the incumbent's block, by data position
         for p in state.company_products(c.id):

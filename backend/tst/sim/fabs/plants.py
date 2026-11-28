@@ -337,13 +337,16 @@ def _power_cents(
     )
 
 
-def _customers(data: GameData, starts: float) -> tuple[tuple[str, float], ...]:
+def _customers(data: GameData, starts: float, state: GameState) -> tuple[tuple[str, float], ...]:
     """The rival fabless designers buying the slots (38.2), in incumbents.yaml order: the chip
-    incumbents, equally (the screen's list; their own costs are abstract)."""
+    incumbents, equally (the screen's list; their own costs are abstract). M50b: a 2000-world
+    company (history_only) only in a world that has it."""
+    present = {c.name for c in state.companies}
     names = [
         c.name
         for c in data.incumbents
         if any(data.category(p.category).chip_type is not None for p in c.products)
+        and (not c.history_only or c.name in present)
     ]
     if not names or starts <= 0:
         return ()
@@ -452,7 +455,7 @@ def settle_fabs(
             slot_price_cents=slot,
             market_cents=market,
             cost_per_start_cents=per_start,
-            customers=(*signed, *_customers(data, spot)),
+            customers=(*signed, *_customers(data, spot, state)),
             contracted=contracted,
             group=group,
         )

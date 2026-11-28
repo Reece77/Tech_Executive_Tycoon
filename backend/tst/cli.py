@@ -153,7 +153,10 @@ def new_game(
         str, typer.Option(help="Campaign length (M37, 52.1): standard (to 2039) | dynasty (2069)")
     ] = "standard",
     start_year: Annotated[
-        int, typer.Option(help="M50 (ADR-0024): the campaign's first January, 2008 or 2010")
+        int,
+        typer.Option(
+            help="M50 (ADR-0024): the campaign's first January, 2000 (M50b), 2008 or 2010"
+        ),
     ] = 2010,
     challenges: Annotated[
         str | None,
@@ -2625,7 +2628,7 @@ def ipo_cmd(
         typer.echo(f"Hired {data.game_data.bank(bank).name}; {_energy(state, data)}")
     out = ipo_out(state, state.player.id, data)
     if out is None:
-        problem = eligibility_problem(state, state.player.id, data.balance)
+        problem = eligibility_problem(state, state.player.id, data.balance, data.game_data)
         typer.echo("Eligible for an IPO." if problem is None else f"Not eligible: {problem}.")
         for b in data.game_data.banks:
             typer.echo(f"  {b.key:<16}{b.name:<16}fee {b.fee:.1%}")

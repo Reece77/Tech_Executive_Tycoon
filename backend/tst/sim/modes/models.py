@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Final, Literal
 
-from tst.sim.calendar import HISTORY_START_TURN, turn_to_ym
+from tst.sim.calendar import history_floor_turn, turn_to_ym
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,7 +86,7 @@ def world_start_turn(mode: GameMode | None) -> int:
     begun before 2010 (a 2008 campaign, or a Sandbox in 2008-2009 built on the 2008 world), else
     turn 0 (a 2010 campaign, and a later start, whose world is played from 2010)."""
     if mode is not None and mode.start_turn < 0:
-        return HISTORY_START_TURN
+        return history_floor_turn(mode.start_turn)  # M50b: January 2000 for a 2000 game
     return 0
 
 

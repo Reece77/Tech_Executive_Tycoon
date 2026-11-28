@@ -31,7 +31,8 @@ MONTH_KEY: Final = re.compile(r"^(19|20)\d\d-\d\d$")
 YEAR_RANGE: Final = (1900, 2200)  # tunable-exempt: what counts as a calendar-year key
 ZERO_YEAR: Final = TURN_ZERO[0]
 # path suffixes read only from 2010 (see the module docstring)
-EXEMPT: Final = (".growth_by_year", "eras.yaml.base_growth")
+# M50b: incumbents' `early_scale` is keyed by start year and `ipo_closed` lists windows: not series
+EXEMPT: Final = (".growth_by_year", "eras.yaml.base_growth", ".early_scale", ".ipo_closed")
 
 
 def _year_keys(node: dict[Any, Any]) -> list[int]:

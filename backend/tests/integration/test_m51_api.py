@@ -47,9 +47,9 @@ def test_meta_lists_the_rules_and_the_scenarios(client: TestClient) -> None:
         "bootstrapped", "hardware_only", "no_acquisitions", "one_region", "hard_rivals",
         "no_automation",
     ]  # fmt: skip
-    assert len(meta["historical"]) == 11
+    assert len(meta["historical"]) == 12  # M50b: Survive the bust
     cards = client.get("/api/scenarios").json()["scenarios"]
-    assert len(cards) == 11 and all(c["best"] is None for c in cards)
+    assert len(cards) == 12 and all(c["best"] is None for c in cards)
 
 
 def test_a_bootstrapped_campaign_refuses_a_round(client: TestClient, save_dir: Path) -> None:

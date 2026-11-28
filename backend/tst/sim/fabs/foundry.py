@@ -57,12 +57,16 @@ class SignFoundryContract:
 ACTION_TYPES: Final[dict[str, type]] = {"sign_foundry_contract": SignFoundryContract}
 
 
-def customers(data: GameData) -> list[str]:
-    """The rival designers a fab can sign: the chip incumbents (38.2's slot buyers)."""
+def customers(data: GameData, state: GameState) -> list[str]:
+    """The rival designers a fab can sign: the chip incumbents (38.2's slot buyers). M50b: a
+    2000-world company (history_only) only in a world that has it, so a 2008 or 2010 game's
+    list is unchanged."""
+    present = {c.name for c in state.companies}
     return [
         c.name
         for c in data.incumbents
         if any(data.category(p.category).chip_type is not None for p in c.products)
+        and (not c.history_only or c.name in present)
     ]
 
 
@@ -90,8 +94,8 @@ def sign(
     if facility.status == "closed":
         raise FabRuleError("that fab is closed")
     fb = balance.contracts.foundry
-    if action.customer not in customers(data):
-        raise FabRuleError(f"the designers are {', '.join(customers(data))}")
+    if action.customer not in customers(data, state):
+        raise FabRuleError(f"the designers are {', '.join(customers(data, state))}")
     if not fb.months.lo <= action.months <= fb.months.hi:
         raise FabRuleError(f"a foundry contract runs {fb.months.lo:g}-{fb.months.hi:g} months")
     if action.monthly_starts <= 0 or action.price_cents <= 0:

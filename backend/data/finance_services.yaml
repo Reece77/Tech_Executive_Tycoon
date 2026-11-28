@@ -9,6 +9,14 @@
 #   A  an assumption for gameplay where no public series was used (the basis is given).
 # M50 convention (ADR-0024): a series that starts in 2010 lists 2008 as its 2010 value (A), so a 2008 game
 # reads 2010's level; finance markets in a 2008 game are those of 2010 (a follow-up: 2008-2009's crisis).
+# M50b (formulas.md 60.4): 2000-2007 added the same way (docs/v6-research/start-2000/finance.md). S rows
+# are FRED's CSVs fetched 2026-11-28 (CPIAUCNS, USNIM, DPSACBW027SBOG, TOTLL and the charge-off series
+# above; yearly means; corporate = business x 0.8, D). Swiss Re sigma premiums (R; property = non-life
+# x 0.65, D), the US P&C combined ratios and catastrophe losses (R, recalled; 2001 excludes 11 September,
+# a man-made loss the combined ratio holds), card volumes and every share at 2000 and 2004 (A, from the
+# companies' recalled deposits, premiums and volumes, R, over the markets at the date). Real dates held:
+# UnionPay from March 2002, Alipay (Ant Group) from December 2004, Adyen from 2006 (share 0 before, A);
+# Itau Unibanco is Itau alone before November 2008 and Wells Fargo before Wachovia (end 2008).
 # Money is [value, dollar year, tag] under keys ending _usd, converted to the game's 2010 cents with `cpi`
 # at load (telecom.yaml's convention); rates and ratios are % a year unless named _share or _bp.
 #
@@ -22,6 +30,14 @@
 # 0.65% (2024), within the dossier's figures except 2015 (0.5 there). Card charge-offs (CORCCACBS) were
 # 9.4% in 2010 and 2.1-4.6% from 2013, wider than the dossier's 3-5%.
 cpi: # R (CPI-U, BLS), as telecom.yaml
+  2000: 172.200
+  2001: 177.067
+  2002: 179.875
+  2003: 183.958
+  2004: 188.883
+  2005: 195.292
+  2006: 201.592
+  2007: 207.342
   2008: 215.303
   2009: 214.537
   2010: 218.056
@@ -46,6 +62,14 @@ banking:
   # US banks' net interest margin, % (S: FRED USNIM, FDIC, quarterly; 2021-2025 R: FDIC Quarterly Banking
   # Profile, the dossier's 2.5 (2021 low), 3.3 (2023), 3.2 (2024)). Rivals' net interest income reads it.
   nim:
+    2000: [3.93, S]
+    2001: [3.85, S]
+    2002: [4.07, S]
+    2003: [3.75, S]
+    2004: [3.62, S]
+    2005: [3.56, S]
+    2006: [3.45, S]
+    2007: [3.35, S]
     2008: [3.27, S]
     2009: [3.35, S]
     2010: [3.76, S]
@@ -67,9 +91,9 @@ banking:
   # US commercial banks' deposits and loans, $ trillion, yearly means (S: FRED DPSACBW027SBOG and TOTLL,
   # weekly, Federal Reserve H.8). A deposit account's average balance grows with deposits / accounts.
   deposits_trn:
-    { 2008: [6.924, S], 2009: [7.474, S], 2010: [7.751, S], 2011: [8.204, S], 2012: [8.798, S], 2013: [9.482, S], 2014: [10.172, S], 2015: [10.771, S], 2016: [11.247, S], 2017: [11.763, S], 2018: [12.173, S], 2019: [12.790, S], 2020: [15.011, S], 2021: [17.151, S], 2022: [17.972, S], 2023: [17.386, S], 2024: [17.633, S], 2025: [18.240, S] }
+    { 2000: [3.602, S], 2001: [3.903, S], 2002: [4.217, S], 2003: [4.527, S], 2004: [4.934, S], 2005: [5.390, S], 2006: [5.852, S], 2007: [6.366, S], 2008: [6.924, S], 2009: [7.474, S], 2010: [7.751, S], 2011: [8.204, S], 2012: [8.798, S], 2013: [9.482, S], 2014: [10.172, S], 2015: [10.771, S], 2016: [11.247, S], 2017: [11.763, S], 2018: [12.173, S], 2019: [12.790, S], 2020: [15.011, S], 2021: [17.151, S], 2022: [17.972, S], 2023: [17.386, S], 2024: [17.633, S], 2025: [18.240, S] }
   loans_trn:
-    { 2008: [6.702, S], 2009: [6.705, S], 2010: [6.548, S], 2011: [6.528, S], 2012: [6.779, S], 2013: [7.004, S], 2014: [7.371, S], 2015: [7.951, S], 2016: [8.567, S], 2017: [8.925, S], 2018: [9.346, S], 2019: [9.822, S], 2020: [10.468, S], 2021: [10.430, S], 2022: [11.384, S], 2023: [12.152, S], 2024: [12.432, S], 2025: [12.948, S] }
+    { 2000: [3.562, S], 2001: [3.744, S], 2002: [3.813, S], 2003: [4.088, S], 2004: [4.412, S], 2005: [4.942, S], 2006: [5.523, S], 2007: [6.106, S], 2008: [6.702, S], 2009: [6.705, S], 2010: [6.548, S], 2011: [6.528, S], 2012: [6.779, S], 2013: [7.004, S], 2014: [7.371, S], 2015: [7.951, S], 2016: [8.567, S], 2017: [8.925, S], 2018: [9.346, S], 2019: [9.822, S], 2020: [10.468, S], 2021: [10.430, S], 2022: [11.384, S], 2023: [12.152, S], 2024: [12.432, S], 2025: [12.948, S] }
   # Adults with an account, millions, by game region (D: World Bank Global Findex account ownership, % of
   # adults, 2011 and 2021 (R), x UN adult population (R); between and after the points interpolated and
   # held). north_america is the US (88% -> 95%), Canada (96% -> 99%) and Mexico (27% -> 49%); east_asia
@@ -102,10 +126,14 @@ banking:
   # 2009/14/EC, harmonised by 2014/49/EU; Japan JPY 10M; China CNY 500,000 from May 2015; India INR 100,000,
   # INR 500,000 from February 2020; Brazil's FGC BRL 250,000; Australia AUD 250,000 from February 2012;
   # South Africa ZAR 100,000 from April 2024). Shown on the Bank screen.
+  # M50b (60.4): rows from 2000-01 are read only before January 2008 (a 2000 game; a 2008 game reads
+  # what it read before): the US $100,000 FDIC limit (R: raised to $250,000 in October 2008), the EU
+  # Directive 94/19/EC minimum of EUR 20,000 (R, at EUR/USD 0.92), Japan's JPY 10M (R, at about 108 yen);
+  # other regions as in 2008 (no 2000 row: before 2008 they read as the 2008 world's first month does).
   insured_limit:
-    north_america: [{ from: "2008-10", limit_usd: [250000, 2010, R] }]
-    europe: [{ from: "2008-01", limit_usd: [70000, 2010, R] }, { from: "2010-12", limit_usd: [133000, 2010, R] }]
-    east_asia: [{ from: "2008-01", limit_usd: [114000, 2010, R] }]
+    north_america: [{ from: "2000-01", limit_usd: [100000, 2000, R] }, { from: "2008-10", limit_usd: [250000, 2010, R] }]
+    europe: [{ from: "2000-01", limit_usd: [18400, 2000, R] }, { from: "2008-01", limit_usd: [70000, 2010, R] }, { from: "2010-12", limit_usd: [133000, 2010, R] }]
+    east_asia: [{ from: "2000-01", limit_usd: [93000, 2000, R] }, { from: "2008-01", limit_usd: [114000, 2010, R] }]
     south_southeast_asia: [{ from: "2008-01", limit_usd: [2200, 2010, R] }, { from: "2020-02", limit_usd: [7000, 2020, R] }]
     latin_america: [{ from: "2008-01", limit_usd: [40000, 2010, R] }, { from: "2013-05", limit_usd: [125000, 2013, R] }]
     africa: [{ from: "2024-04", limit_usd: [5500, 2024, R] }]
@@ -123,31 +151,31 @@ banking:
       fixed: true # R: US mortgages are mostly 30-year fixed; a book's yield is the rates it was written at (the others float, A)
       risk_weight: [0.35, R]
       term_months: [300, A]
-      losses: { 2008: [1.37, S], 2009: [2.33, S], 2010: [2.11, S], 2011: [1.57, S], 2012: [1.35, S], 2013: [0.65, S], 2014: [0.29, S], 2015: [0.21, S], 2016: [0.10, S], 2017: [0.04, S], 2018: [0.0, S], 2019: [0.0, S], 2020: [0.0, S], 2021: [0.0, S], 2022: [0.0, S], 2023: [0.0, S], 2024: [0.0, S], 2025: [0.0, S] }
+      losses: { 2000: [0.12, S], 2001: [0.24, S], 2002: [0.16, S], 2003: [0.19, S], 2004: [0.10, S], 2005: [0.08, S], 2006: [0.10, S], 2007: [0.26, S], 2008: [1.37, S], 2009: [2.33, S], 2010: [2.11, S], 2011: [1.57, S], 2012: [1.35, S], 2013: [0.65, S], 2014: [0.29, S], 2015: [0.21, S], 2016: [0.10, S], 2017: [0.04, S], 2018: [0.0, S], 2019: [0.0, S], 2020: [0.0, S], 2021: [0.0, S], 2022: [0.0, S], 2023: [0.0, S], 2024: [0.0, S], 2025: [0.0, S] }
     - key: consumer
       label: Consumer loans
       spread: [5.0, A] # auto and personal loans about 5-9% (G.19, R)
       risk_weight: [0.75, R]
       term_months: [48, A]
-      losses: { 2008: [3.55, S], 2009: [5.50, S], 2010: [5.89, S], 2011: [3.62, S], 2012: [2.53, S], 2013: [2.17, S], 2014: [1.93, S], 2015: [1.75, S], 2016: [1.91, S], 2017: [2.18, S], 2018: [2.25, S], 2019: [2.29, S], 2020: [2.00, S], 2021: [1.16, S], 2022: [1.26, S], 2023: [2.21, S], 2024: [2.92, S], 2025: [2.89, S] }
+      losses: { 2000: [2.31, S], 2001: [2.72, S], 2002: [3.16, S], 2003: [2.88, S], 2004: [2.66, S], 2005: [2.74, S], 2006: [2.01, S], 2007: [2.48, S], 2008: [3.55, S], 2009: [5.50, S], 2010: [5.89, S], 2011: [3.62, S], 2012: [2.53, S], 2013: [2.17, S], 2014: [1.93, S], 2015: [1.75, S], 2016: [1.91, S], 2017: [2.18, S], 2018: [2.25, S], 2019: [2.29, S], 2020: [2.00, S], 2021: [1.16, S], 2022: [1.26, S], 2023: [2.21, S], 2024: [2.92, S], 2025: [2.89, S] }
     - key: card
       label: Credit cards
       spread: [11.0, R] # card APRs about 13-21% (G.19, R)
       risk_weight: [0.75, R]
       term_months: [18, A] # revolving balances' average life
-      losses: { 2008: [5.58, S], 2009: [9.44, S], 2010: [9.41, S], 2011: [5.68, S], 2012: [3.99, S], 2013: [3.48, S], 2014: [3.16, S], 2015: [2.94, S], 2016: [3.15, S], 2017: [3.56, S], 2018: [3.65, S], 2019: [3.71, S], 2020: [3.45, S], 2021: [2.16, S], 2022: [2.05, S], 2023: [3.51, S], 2024: [4.55, S], 2025: [4.22, S] }
+      losses: { 2000: [4.31, S], 2001: [5.42, S], 2002: [6.40, S], 2003: [5.82, S], 2004: [4.96, S], 2005: [4.84, S], 2006: [3.54, S], 2007: [3.99, S], 2008: [5.58, S], 2009: [9.44, S], 2010: [9.41, S], 2011: [5.68, S], 2012: [3.99, S], 2013: [3.48, S], 2014: [3.16, S], 2015: [2.94, S], 2016: [3.15, S], 2017: [3.56, S], 2018: [3.65, S], 2019: [3.71, S], 2020: [3.45, S], 2021: [2.16, S], 2022: [2.05, S], 2023: [3.51, S], 2024: [4.55, S], 2025: [4.22, S] }
     - key: small_business
       label: Small business loans
       spread: [3.5, A]
       risk_weight: [1.0, R]
       term_months: [60, A]
-      losses: { 2008: [0.96, S], 2009: [2.30, S], 2010: [1.74, S], 2011: [0.86, S], 2012: [0.49, S], 2013: [0.30, S], 2014: [0.22, S], 2015: [0.24, S], 2016: [0.43, S], 2017: [0.35, S], 2018: [0.28, S], 2019: [0.35, S], 2020: [0.52, S], 2021: [0.20, S], 2022: [0.16, S], 2023: [0.35, S], 2024: [0.50, S], 2025: [0.56, S] }
+      losses: { 2000: [0.74, S], 2001: [1.38, S], 2002: [1.80, S], 2003: [1.30, S], 2004: [0.56, S], 2005: [0.26, S], 2006: [0.28, S], 2007: [0.48, S], 2008: [0.96, S], 2009: [2.30, S], 2010: [1.74, S], 2011: [0.86, S], 2012: [0.49, S], 2013: [0.30, S], 2014: [0.22, S], 2015: [0.24, S], 2016: [0.43, S], 2017: [0.35, S], 2018: [0.28, S], 2019: [0.35, S], 2020: [0.52, S], 2021: [0.20, S], 2022: [0.16, S], 2023: [0.35, S], 2024: [0.50, S], 2025: [0.56, S] }
     - key: corporate
       label: Corporate loans
       spread: [1.8, A]
       risk_weight: [1.0, R]
       term_months: [48, A]
-      losses: { 2008: [0.77, D], 2009: [1.84, D], 2010: [1.39, D], 2011: [0.69, D], 2012: [0.39, D], 2013: [0.24, D], 2014: [0.18, D], 2015: [0.19, D], 2016: [0.34, D], 2017: [0.28, D], 2018: [0.22, D], 2019: [0.28, D], 2020: [0.42, D], 2021: [0.16, D], 2022: [0.13, D], 2023: [0.28, D], 2024: [0.40, D], 2025: [0.45, D] }
+      losses: { 2000: [0.59, D], 2001: [1.10, D], 2002: [1.44, D], 2003: [1.04, D], 2004: [0.44, D], 2005: [0.20, D], 2006: [0.22, D], 2007: [0.38, D], 2008: [0.77, D], 2009: [1.84, D], 2010: [1.39, D], 2011: [0.69, D], 2012: [0.39, D], 2013: [0.24, D], 2014: [0.18, D], 2015: [0.19, D], 2016: [0.34, D], 2017: [0.28, D], 2018: [0.22, D], 2019: [0.28, D], 2020: [0.42, D], 2021: [0.16, D], 2022: [0.13, D], 2023: [0.28, D], 2024: [0.40, D], 2025: [0.45, D] }
   # Capital rules (64.1; R: BIS Basel III, 2010, revised 2017): the CET1 minimum phased in 2013-2015
   # (3.5%, 4.0%, 4.5%), the capital conservation buffer 2016-2019 (0.625% a year to 2.5%), G-SIB
   # surcharges from 2016 (1.0-3.5%; the game's size surcharge is one step, balance finserv.bank.capital).
@@ -186,52 +214,55 @@ payments:
   # $11T: China's bank-card consumption payments in the PBoC's payment reports, recalled loosely, without
   # transfers). Regional splits of each network's volume: A (Visa about half in the US, R: Visa 10-K).
   volume_bn:
-    north_america: { 2008: [3100, A], 2010: [3100, D], 2015: [4650, D], 2020: [6650, D], 2024: [9700, D] }
-    europe: { 2008: [1680, A], 2010: [1680, D], 2015: [2720, D], 2020: [4100, D], 2024: [6380, D] }
-    east_asia: { 2008: [2160, A], 2010: [2160, D], 2015: [6200, D], 2020: [11700, D], 2024: [13350, D] }
-    south_southeast_asia: { 2008: [250, A], 2010: [250, D], 2015: [650, D], 2020: [1300, D], 2024: [2200, D] }
-    latin_america: { 2008: [450, A], 2010: [450, D], 2015: [800, D], 2020: [1300, D], 2024: [2200, D] }
-    africa: { 2008: [60, A], 2010: [60, D], 2015: [130, D], 2020: [200, D], 2024: [300, D] }
-    oceania: { 2008: [190, A], 2010: [190, D], 2015: [330, D], 2020: [530, D], 2024: [740, D] }
+    north_america: { 2000: [1650, A], 2004: [2300, A], 2008: [3100, A], 2010: [3100, D], 2015: [4650, D], 2020: [6650, D], 2024: [9700, D] }
+    europe: { 2000: [700, A], 2004: [1150, A], 2008: [1680, A], 2010: [1680, D], 2015: [2720, D], 2020: [4100, D], 2024: [6380, D] }
+    east_asia: { 2000: [450, A], 2004: [800, A], 2008: [2160, A], 2010: [2160, D], 2015: [6200, D], 2020: [11700, D], 2024: [13350, D] }
+    south_southeast_asia: { 2000: [60, A], 2004: [110, A], 2008: [250, A], 2010: [250, D], 2015: [650, D], 2020: [1300, D], 2024: [2200, D] }
+    latin_america: { 2000: [130, A], 2004: [200, A], 2008: [450, A], 2010: [450, D], 2015: [800, D], 2020: [1300, D], 2024: [2200, D] }
+    africa: { 2000: [15, A], 2004: [28, A], 2008: [60, A], 2010: [60, D], 2015: [130, D], 2020: [200, D], 2024: [300, D] }
+    oceania: { 2000: [75, A], 2004: [130, A], 2008: [190, A], 2010: [190, D], 2015: [330, D], 2020: [530, D], 2024: [740, D] }
   # Each network's share of its regions' card volume (D from the same rows; A for the splits). Shares not
   # held by a listed network are local schemes (Interac, Cartes Bancaires, JCB, RuPay, Elo) and stay with
   # the market.
   networks:
     - name: Visa
       shares:
-        north_america: { 2008: [0.52, A], 2010: [0.52, D], 2015: [0.49, D], 2020: [0.59, D], 2024: [0.58, D] }
-        europe: { 2008: [0.48, A], 2010: [0.48, D], 2015: [0.44, D], 2020: [0.51, D], 2024: [0.50, D] }
-        east_asia: { 2008: [0.14, A], 2010: [0.14, D], 2015: [0.08, D], 2020: [0.07, D], 2024: [0.08, D] }
-        south_southeast_asia: { 2008: [0.60, A], 2010: [0.60, D], 2015: [0.54, D], 2020: [0.62, D], 2024: [0.59, D] }
-        latin_america: { 2008: [0.56, A], 2010: [0.56, D], 2015: [0.50, D], 2020: [0.54, D], 2024: [0.55, D] }
-        africa: { 2008: [0.50, A], 2010: [0.50, D], 2015: [0.54, D], 2020: [0.50, D], 2024: [0.50, D] }
-        oceania: { 2008: [0.53, A], 2010: [0.53, D], 2015: [0.55, D], 2020: [0.57, D], 2024: [0.54, D] }
+        north_america: { 2000: [0.50, A], 2004: [0.51, A], 2008: [0.52, A], 2010: [0.52, D], 2015: [0.49, D], 2020: [0.59, D], 2024: [0.58, D] }
+        europe: { 2000: [0.50, A], 2004: [0.49, A], 2008: [0.48, A], 2010: [0.48, D], 2015: [0.44, D], 2020: [0.51, D], 2024: [0.50, D] }
+        east_asia: { 2000: [0.25, A], 2004: [0.20, A], 2008: [0.14, A], 2010: [0.14, D], 2015: [0.08, D], 2020: [0.07, D], 2024: [0.08, D] }
+        south_southeast_asia: { 2000: [0.62, A], 2004: [0.61, A], 2008: [0.60, A], 2010: [0.60, D], 2015: [0.54, D], 2020: [0.62, D], 2024: [0.59, D] }
+        latin_america: { 2000: [0.58, A], 2004: [0.57, A], 2008: [0.56, A], 2010: [0.56, D], 2015: [0.50, D], 2020: [0.54, D], 2024: [0.55, D] }
+        africa: { 2000: [0.50, A], 2008: [0.50, A], 2010: [0.50, D], 2015: [0.54, D], 2020: [0.50, D], 2024: [0.50, D] }
+        oceania: { 2000: [0.52, A], 2004: [0.53, A], 2008: [0.53, A], 2010: [0.53, D], 2015: [0.55, D], 2020: [0.57, D], 2024: [0.54, D] }
     - name: Mastercard
       shares:
-        north_america: { 2008: [0.32, A], 2010: [0.32, D], 2015: [0.34, D], 2020: [0.30, D], 2024: [0.31, D] }
-        europe: { 2008: [0.48, A], 2010: [0.48, D], 2015: [0.51, D], 2020: [0.46, D], 2024: [0.47, D] }
-        east_asia: { 2008: [0.14, A], 2010: [0.14, D], 2015: [0.10, D], 2020: [0.07, D], 2024: [0.08, D] }
-        south_southeast_asia: { 2008: [0.40, A], 2010: [0.40, D], 2015: [0.46, D], 2020: [0.38, D], 2024: [0.41, D] }
-        latin_america: { 2008: [0.44, A], 2010: [0.44, D], 2015: [0.50, D], 2020: [0.46, D], 2024: [0.45, D] }
-        africa: { 2008: [0.50, A], 2010: [0.50, D], 2015: [0.46, D], 2020: [0.50, D], 2024: [0.50, D] }
-        oceania: { 2008: [0.37, A], 2010: [0.37, D], 2015: [0.36, D], 2020: [0.38, D], 2024: [0.41, D] }
+        north_america: { 2000: [0.28, A], 2004: [0.30, A], 2008: [0.32, A], 2010: [0.32, D], 2015: [0.34, D], 2020: [0.30, D], 2024: [0.31, D] }
+        europe: { 2000: [0.42, A], 2004: [0.46, A], 2008: [0.48, A], 2010: [0.48, D], 2015: [0.51, D], 2020: [0.46, D], 2024: [0.47, D] }
+        east_asia: { 2000: [0.20, A], 2004: [0.17, A], 2008: [0.14, A], 2010: [0.14, D], 2015: [0.10, D], 2020: [0.07, D], 2024: [0.08, D] }
+        south_southeast_asia: { 2000: [0.38, A], 2004: [0.39, A], 2008: [0.40, A], 2010: [0.40, D], 2015: [0.46, D], 2020: [0.38, D], 2024: [0.41, D] }
+        latin_america: { 2000: [0.42, A], 2004: [0.43, A], 2008: [0.44, A], 2010: [0.44, D], 2015: [0.50, D], 2020: [0.46, D], 2024: [0.45, D] }
+        africa: { 2000: [0.50, A], 2008: [0.50, A], 2010: [0.50, D], 2015: [0.46, D], 2020: [0.50, D], 2024: [0.50, D] }
+        oceania: { 2000: [0.33, A], 2004: [0.35, A], 2008: [0.37, A], 2010: [0.37, D], 2015: [0.36, D], 2020: [0.38, D], 2024: [0.41, D] }
     - name: American Express
       shares:
-        north_america: { 2008: [0.16, A], 2010: [0.16, D], 2015: [0.16, D], 2020: [0.11, D], 2024: [0.11, D] }
-        europe: { 2008: [0.05, A], 2010: [0.05, D], 2015: [0.04, D], 2020: [0.03, D], 2024: [0.03, D] }
-        east_asia: { 2008: [0.03, A], 2010: [0.03, D], 2015: [0.02, D], 2020: [0.01, D], 2024: [0.01, D] }
-        oceania: { 2008: [0.10, A], 2010: [0.10, D], 2015: [0.09, D], 2020: [0.06, D], 2024: [0.05, D] }
+        north_america: { 2000: [0.17, A], 2004: [0.16, A], 2008: [0.16, A], 2010: [0.16, D], 2015: [0.16, D], 2020: [0.11, D], 2024: [0.11, D] }
+        europe: { 2000: [0.06, A], 2004: [0.05, A], 2008: [0.05, A], 2010: [0.05, D], 2015: [0.04, D], 2020: [0.03, D], 2024: [0.03, D] }
+        east_asia: { 2000: [0.05, A], 2004: [0.04, A], 2008: [0.03, A], 2010: [0.03, D], 2015: [0.02, D], 2020: [0.01, D], 2024: [0.01, D] }
+        oceania: { 2000: [0.12, A], 2004: [0.11, A], 2008: [0.10, A], 2010: [0.10, D], 2015: [0.09, D], 2020: [0.06, D], 2024: [0.05, D] }
     - name: UnionPay
       shares:
-        east_asia: { 2008: [0.69, A], 2010: [0.69, D], 2015: [0.80, D], 2020: [0.85, D], 2024: [0.82, D] }
+        east_asia: { 2000: [0.0, A], 2002: [0.0, A], 2004: [0.15, A], 2008: [0.69, A], 2010: [0.69, D], 2015: [0.80, D], 2020: [0.85, D], 2024: [0.82, D] }
   # Interchange paid to the card issuer, bp of volume, by date (R: US credit about 1.8-2.2%; US regulated
   # debit capped at 21 cents + 0.05% + 1 cent from October 2011, Durbin amendment / Regulation II, about
   # 60 bp on a $40 ticket (D); EU 0.2% debit and 0.3% credit from December 2015, Regulation 2015/751
   # (IFR); before it about 0.8% credit and 0.4% debit, R. Blends: US 60% credit, 40% debit; EU 40% credit,
   # 60% debit (A, by card mix). Australia's RBA caps from 2003 about 0.5% (R). Elsewhere A.)
+  # M50b (60.4): 2000-01 rows, read only before January 2008: US credit interchange about 1.7% (R:
+  # Federal Reserve and GAO-10-45 report the 2000s average near 1.7-1.8%), Europe's before the 2007
+  # MasterCard decision about 0.7% (A); other regions as in 2008.
   interchange_bp:
-    north_america: [{ from: "2008-01", bp: [156, D] }, { from: "2011-10", bp: [132, D] }]
-    europe: [{ from: "2008-01", bp: [56, D] }, { from: "2015-12", bp: [24, D] }]
+    north_america: [{ from: "2000-01", bp: [170, R] }, { from: "2008-01", bp: [156, D] }, { from: "2011-10", bp: [132, D] }]
+    europe: [{ from: "2000-01", bp: [70, A] }, { from: "2008-01", bp: [56, D] }, { from: "2015-12", bp: [24, D] }]
     east_asia: [{ from: "2008-01", bp: [50, A] }]
     south_southeast_asia: [{ from: "2008-01", bp: [60, A] }]
     latin_america: [{ from: "2008-01", bp: [150, A] }]
@@ -266,8 +297,8 @@ insurance:
   # non-life premiums, R: Swiss Re). Region shares A (R: Swiss Re's regional tables, North America and
   # Europe about a third each, Japan and China most of Asia's).
   premiums_bn:
-    property: { 2008: [1180, A], 2010: [1180, D], 2015: [1320, D], 2020: [2270, D], 2024: [2730, D] }
-    life: { 2008: [2520, A], 2010: [2520, R], 2015: [2530, R], 2020: [2800, R], 2024: [3000, R] }
+    property: { 2000: [600, D], 2004: [907, D], 2007: [1084, D], 2008: [1180, A], 2010: [1180, D], 2015: [1320, D], 2020: [2270, D], 2024: [2730, D] }
+    life: { 2000: [1521, R], 2004: [1848, R], 2007: [2393, R], 2008: [2520, A], 2010: [2520, R], 2015: [2530, R], 2020: [2800, R], 2024: [3000, R] }
   region_share:
     { north_america: [0.33, A], europe: [0.32, A], east_asia: [0.21, A], south_southeast_asia: [0.04, A], latin_america: [0.04, A], africa: [0.02, A], oceania: [0.02, A] }
   # A policy's average monthly premium (A: US homeowners and auto about $2,400 a year a household, R:
@@ -276,13 +307,13 @@ insurance:
   # P&C combined ratio, % (R: US P&C industry, AM Best and the NAIC, recalled); life's benefits and
   # expenses over premiums (A: about 103%, life insurers earn on their float).
   combined_ratio:
-    property: { 2008: [105.1, R], 2009: [101.0, R], 2010: [102.5, R], 2011: [108.1, R], 2012: [103.2, R], 2013: [96.4, R], 2014: [97.0, R], 2015: [97.8, R], 2016: [100.8, R], 2017: [103.8, R], 2018: [99.1, R], 2019: [99.0, R], 2020: [98.7, R], 2021: [99.6, R], 2022: [102.4, R], 2023: [101.7, R], 2024: [96.6, R], 2025: [98.5, A] }
-    life: { 2008: [103.0, A], 2010: [103.0, A], 2025: [103.0, A] }
+    property: { 2000: [110.4, R], 2001: [115.8, R], 2002: [107.2, R], 2003: [100.1, R], 2004: [98.7, R], 2005: [100.7, R], 2006: [92.4, R], 2007: [95.5, R], 2008: [105.1, R], 2009: [101.0, R], 2010: [102.5, R], 2011: [108.1, R], 2012: [103.2, R], 2013: [96.4, R], 2014: [97.0, R], 2015: [97.8, R], 2016: [100.8, R], 2017: [103.8, R], 2018: [99.1, R], 2019: [99.0, R], 2020: [98.7, R], 2021: [99.6, R], 2022: [102.4, R], 2023: [101.7, R], 2024: [96.6, R], 2025: [98.5, A] }
+    life: { 2000: [103.0, A], 2008: [103.0, A], 2010: [103.0, A], 2025: [103.0, A] }
   expense_share: { property: [0.27, R], life: [0.15, A] } # of premiums (R: P&C expense ratio about 26-28%, AM Best)
   claims_lag_months: { property: [9, A], life: [180, A] } # claims paid this long after the premium on average: the float
   # Insured natural catastrophe losses, $ billion (R: Swiss Re sigma natural catastrophes); the year's
   # combined ratio already holds them (the rows above). Shown in the Insurance screen's history.
-  cat_losses_bn: { 2008: [50, R], 2009: [26, R], 2010: [48, R], 2011: [132, R], 2012: [81, R], 2013: [45, R], 2014: [39, R], 2015: [37, R], 2016: [54, R], 2017: [150, R], 2018: [93, R], 2019: [60, R], 2020: [89, R], 2021: [119, R], 2022: [132, R], 2023: [108, R], 2024: [137, R] }
+  cat_losses_bn: { 2000: [11, R], 2001: [13, R], 2002: [12, R], 2003: [18, R], 2004: [49, R], 2005: [83, R], 2006: [16, R], 2007: [28, R], 2008: [50, R], 2009: [26, R], 2010: [48, R], 2011: [132, R], 2012: [81, R], 2013: [45, R], 2014: [39, R], 2015: [37, R], 2016: [54, R], 2017: [150, R], 2018: [93, R], 2019: [60, R], 2020: [89, R], 2021: [119, R], 2022: [132, R], 2023: [108, R], 2024: [137, R] }
   # A region's share of the year's insured catastrophe losses (A: Swiss Re, the US about 60-75% of insured
   # losses most years).
   cat_region_share:
@@ -310,27 +341,27 @@ insurance:
 # Hathaway's insurance premiums earned $30.7B -> $86B (R); MetLife $27B -> $45B (R); Chubb (ACE before
 # January 2016) $13B -> $50B (R).
 rivals:
-  - { name: JPMorgan Chase, kind: bank, region: north_america, shares: { 2008: [0.12, A], 2010: [0.12, D], 2018: [0.11, D], 2024: [0.13, D] } }
-  - { name: Bank of America, kind: bank, region: north_america, shares: { 2008: [0.13, A], 2010: [0.13, D], 2018: [0.11, D], 2024: [0.11, D] } }
-  - { name: Wells Fargo, kind: bank, region: north_america, shares: { 2008: [0.11, A], 2010: [0.11, D], 2018: [0.10, D], 2024: [0.075, D] } }
-  - { name: Citigroup, kind: bank, region: north_america, shares: { 2008: [0.04, A], 2010: [0.04, D], 2024: [0.04, D] } }
-  - { name: Silicon Valley Bank, kind: bank, region: north_america, segments: [bank_business], shares: { 2008: [0.003, A], 2010: [0.003, D], 2019: [0.005, D], 2021: [0.010, D], 2022: [0.010, D] }, last: "2023-03" }
-  - { name: HSBC, kind: bank, region: europe, shares: { 2008: [0.07, A], 2010: [0.07, D], 2024: [0.06, D] } }
-  - { name: BNP Paribas, kind: bank, region: europe, shares: { 2008: [0.05, A], 2010: [0.05, D], 2024: [0.06, D] } }
-  - { name: ICBC, kind: bank, region: east_asia, shares: { 2008: [0.12, A], 2010: [0.12, D], 2024: [0.14, D] } }
-  - { name: HDFC Bank, kind: bank, region: south_southeast_asia, shares: { 2008: [0.03, A], 2010: [0.03, D], 2023: [0.09, D], 2024: [0.10, D] } }
-  - { name: Itau Unibanco, kind: bank, region: latin_america, shares: { 2008: [0.12, A], 2010: [0.12, D], 2024: [0.12, D] } }
-  - { name: First Data, kind: acquirer, region: north_america, shares: { 2008: [0.40, A], 2010: [0.40, A], 2024: [0.33, A] } } # merged into Fiserv July 2019 (R), kept as its own line (A: Fiserv is already a fintech incumbent); A: about a third to two fifths of US merchant acquiring
-  - { name: Worldpay, kind: acquirer, region: europe, shares: { 2008: [0.25, A], 2010: [0.25, A], 2024: [0.18, A] } }
-  - { name: Adyen, kind: acquirer, region: europe, shares: { 2008: [0.002, A], 2010: [0.002, A], 2015: [0.03, A], 2020: [0.07, A], 2024: [0.10, A] } } # listed June 2018 (R)
-  - { name: Ant Group, kind: acquirer, region: east_asia, shares: { 2008: [0.10, A], 2010: [0.10, A], 2015: [0.30, A], 2020: [0.45, A], 2024: [0.40, A] } } # Alipay; IPO halted November 2020 (R)
-  - { name: Allianz, kind: insurer, region: europe, shares: { 2008: [0.07, A], 2010: [0.07, D], 2024: [0.07, D] } }
-  - { name: AXA, kind: insurer, region: europe, shares: { 2008: [0.09, A], 2010: [0.09, D], 2024: [0.07, D] } }
-  - { name: Generali, kind: insurer, region: europe, shares: { 2008: [0.07, A], 2010: [0.07, D], 2024: [0.06, D] } }
-  - { name: Ping An, kind: insurer, region: east_asia, shares: { 2008: [0.07, A], 2010: [0.07, D], 2024: [0.09, D] } }
-  - { name: Berkshire Hathaway, kind: insurer, region: north_america, segments: [ins_property], shares: { 2008: [0.05, A], 2010: [0.05, D], 2024: [0.07, D] } }
-  - { name: MetLife, kind: insurer, region: north_america, segments: [ins_life], shares: { 2008: [0.05, A], 2010: [0.05, D], 2024: [0.05, D] } }
-  - { name: Chubb, kind: insurer, region: north_america, segments: [ins_property], shares: { 2008: [0.02, A], 2010: [0.02, D], 2016: [0.04, D], 2024: [0.05, D] } }
+  - { name: JPMorgan Chase, kind: bank, region: north_america, shares: { 2000: [0.07, A], 2004: [0.10, A], 2008: [0.12, A], 2010: [0.12, D], 2018: [0.11, D], 2024: [0.13, D] } }
+  - { name: Bank of America, kind: bank, region: north_america, shares: { 2000: [0.10, A], 2004: [0.125, A], 2008: [0.13, A], 2010: [0.13, D], 2018: [0.11, D], 2024: [0.11, D] } }
+  - { name: Wells Fargo, kind: bank, region: north_america, shares: { 2000: [0.047, A], 2004: [0.056, A], 2007: [0.054, A], 2008: [0.11, A], 2010: [0.11, D], 2018: [0.10, D], 2024: [0.075, D] } }
+  - { name: Citigroup, kind: bank, region: north_america, shares: { 2000: [0.03, A], 2004: [0.035, A], 2008: [0.04, A], 2010: [0.04, D], 2024: [0.04, D] } }
+  - { name: Silicon Valley Bank, kind: bank, region: north_america, segments: [bank_business], shares: { 2000: [0.0014, A], 2004: [0.0009, A], 2007: [0.0008, A], 2008: [0.003, A], 2010: [0.003, D], 2019: [0.005, D], 2021: [0.010, D], 2022: [0.010, D] }, last: "2023-03" }
+  - { name: HSBC, kind: bank, region: europe, shares: { 2000: [0.045, A], 2004: [0.05, A], 2008: [0.07, A], 2010: [0.07, D], 2024: [0.06, D] } }
+  - { name: BNP Paribas, kind: bank, region: europe, shares: { 2000: [0.035, A], 2004: [0.04, A], 2008: [0.05, A], 2010: [0.05, D], 2024: [0.06, D] } }
+  - { name: ICBC, kind: bank, region: east_asia, shares: { 2000: [0.05, A], 2004: [0.065, A], 2008: [0.12, A], 2010: [0.12, D], 2024: [0.14, D] } }
+  - { name: HDFC Bank, kind: bank, region: south_southeast_asia, shares: { 2000: [0.008, A], 2004: [0.015, A], 2008: [0.03, A], 2010: [0.03, D], 2023: [0.09, D], 2024: [0.10, D] } }
+  - { name: Itau Unibanco, kind: bank, region: latin_america, shares: { 2000: [0.05, A], 2004: [0.06, A], 2008: [0.12, A], 2010: [0.12, D], 2024: [0.12, D] } }
+  - { name: First Data, kind: acquirer, region: north_america, shares: { 2000: [0.40, A], 2008: [0.40, A], 2010: [0.40, A], 2024: [0.33, A] } } # merged into Fiserv July 2019 (R), kept as its own line (A: Fiserv is already a fintech incumbent); A: about a third to two fifths of US merchant acquiring
+  - { name: Worldpay, kind: acquirer, region: europe, shares: { 2000: [0.20, A], 2004: [0.22, A], 2008: [0.25, A], 2010: [0.25, A], 2024: [0.18, A] } }
+  - { name: Adyen, kind: acquirer, region: europe, shares: { 2000: [0.0, A], 2006: [0.0, A], 2008: [0.002, A], 2010: [0.002, A], 2015: [0.03, A], 2020: [0.07, A], 2024: [0.10, A] } } # listed June 2018 (R)
+  - { name: Ant Group, kind: acquirer, region: east_asia, shares: { 2000: [0.0, A], 2004: [0.0, A], 2008: [0.10, A], 2010: [0.10, A], 2015: [0.30, A], 2020: [0.45, A], 2024: [0.40, A] } } # Alipay; IPO halted November 2020 (R)
+  - { name: Allianz, kind: insurer, region: europe, shares: { 2000: [0.06, A], 2004: [0.065, A], 2008: [0.07, A], 2010: [0.07, D], 2024: [0.07, D] } }
+  - { name: AXA, kind: insurer, region: europe, shares: { 2000: [0.07, A], 2004: [0.08, A], 2008: [0.09, A], 2010: [0.09, D], 2024: [0.07, D] } }
+  - { name: Generali, kind: insurer, region: europe, shares: { 2000: [0.05, A], 2004: [0.06, A], 2008: [0.07, A], 2010: [0.07, D], 2024: [0.06, D] } }
+  - { name: Ping An, kind: insurer, region: east_asia, shares: { 2000: [0.01, A], 2004: [0.015, A], 2008: [0.07, A], 2010: [0.07, D], 2024: [0.09, D] } }
+  - { name: Berkshire Hathaway, kind: insurer, region: north_america, segments: [ins_property], shares: { 2000: [0.05, A], 2008: [0.05, A], 2010: [0.05, D], 2024: [0.07, D] } }
+  - { name: MetLife, kind: insurer, region: north_america, segments: [ins_life], shares: { 2000: [0.03, A], 2004: [0.035, A], 2008: [0.05, A], 2010: [0.05, D], 2024: [0.05, D] } }
+  - { name: Chubb, kind: insurer, region: north_america, segments: [ins_property], shares: { 2000: [0.012, A], 2004: [0.018, A], 2008: [0.02, A], 2010: [0.02, D], 2016: [0.04, D], 2024: [0.05, D] } }
 
 # --- 64.5 Regulators ------------------------------------------------------------------------------------
 # Bank and insurance regulators by region (R: the dossier's section 5; the Fed, OCC and FDIC as one US

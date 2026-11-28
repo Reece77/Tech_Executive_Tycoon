@@ -13,7 +13,7 @@ from typing import Final
 
 import numpy as np
 
-from tst.sim.calendar import HISTORY_START_YEAR, TURN_ZERO, ym_to_turn
+from tst.sim.calendar import world_year_of, ym_to_turn
 from tst.sim.data_models import Balance, GameData
 from tst.sim.errors import InvalidModeError
 from tst.sim.fabs.models import Fab
@@ -75,8 +75,9 @@ def scenario_spec(key: str, data: GameData) -> ModeSpec:
 
 
 def world_year(h: HistoricalScenario) -> int:
-    """The year the scenario's world is played from (M50): 2008 for a start before 2010."""
-    return HISTORY_START_YEAR if h.year < TURN_ZERO[0] else TURN_ZERO[0]
+    """The year the scenario's world is played from (M50): 2008 for a start before 2010
+    (M50b: the latest start year at or before its year)."""
+    return world_year_of(h.year)
 
 
 def founder_spec(h: HistoricalScenario, chosen: FounderSpec) -> FounderSpec:
