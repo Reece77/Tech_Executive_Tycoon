@@ -18326,10 +18326,11 @@ export interface components {
             moves?: components["schemas"]["MeetingMoveIn"][] | null;
             /**
              * Source
-             * @description free | suggested | template
+             * @description free | suggested | template (M57r-B: a Literal)
              * @default free
+             * @enum {string}
              */
-            source?: string;
+            source?: "free" | "suggested" | "template";
         };
         /** MeetingAnswerOut */
         MeetingAnswerOut: {
@@ -27990,10 +27991,11 @@ export interface components {
             moves?: components["schemas"]["TalkMoveIn"][] | null;
             /**
              * Source
-             * @description free | suggested | template
+             * @description free | suggested | template (M57r-B: a Literal)
              * @default free
+             * @enum {string}
              */
-            source?: string;
+            source?: "free" | "suggested" | "template";
         };
         /** TalkAnswerOut */
         TalkAnswerOut: {

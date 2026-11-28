@@ -60232,8 +60232,13 @@
           },
           "source": {
             "type": "string",
+            "enum": [
+              "free",
+              "suggested",
+              "template"
+            ],
             "title": "Source",
-            "description": "free | suggested | template",
+            "description": "free | suggested | template (M57r-B: a Literal)",
             "default": "free"
           }
         },
@@ -83580,8 +83585,13 @@
           },
           "source": {
             "type": "string",
+            "enum": [
+              "free",
+              "suggested",
+              "template"
+            ],
             "title": "Source",
-            "description": "free | suggested | template",
+            "description": "free | suggested | template (M57r-B: a Literal)",
             "default": "free"
           }
         },
