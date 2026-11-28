@@ -12,7 +12,7 @@ from fractions import Fraction
 
 import numpy as np
 
-from tst.sim.calendar import turn_to_ym
+from tst.sim.calendar import START_YEARS, start_turn_of, turn_to_ym
 from tst.sim.data_models import FUNCTIONS, LEVELS, Balance, GameData
 from tst.sim.hiring.formulas import benefits_cents, market_mid_cents, monthly_salary_cents
 from tst.sim.hiring.models import INCUMBENT_PEOPLE_BLOCK, INCUMBENT_PEOPLE_IDS_FROM, PersonState
@@ -291,6 +291,14 @@ def setup_incumbents(
             first = min(launch_turn(p) or state.turn for p in spec.products)
             months = max(rv.prelaunch_cash_months, first - state.turn + rv.prelaunch_after_months)
             cash = round(key_people_monthly_cents(state, company.id, balance) * exact(months))
+        if state.turn < start_turn_of(START_YEARS[1]) and spec.products:
+            # M50b (60.6): a 2000 world's incumbents were far smaller than in 2010, and many
+            # ran on venture money: at least the runway prelaunch_cash_months gives
+            floor = round(
+                key_people_monthly_cents(state, company.id, balance)
+                * exact(rv.prelaunch_cash_months)
+            )
+            cash = max(cash, floor)
         if cash:
             entries.append(
                 LedgerEntry.transfer(

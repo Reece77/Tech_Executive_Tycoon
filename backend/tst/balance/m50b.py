@@ -100,7 +100,7 @@ BUST_IPO_FAILS: Final = 6  # 60.7 target 2: the IPO-dependent passive plan fails
 BUST_SURVIVES: Final = 7  # ... and the sensible one survives on >= 7
 CAMPAIGN_SEEDS: Final = (1, 2, 3)  # 60.7 target 3
 CAMPAIGN_END: Final = ym_to_turn(2029, 12)  # a 2000 campaign's standard end
-CAMPAIGN_STRATEGY: Final = "steady"  # v1's steady founder (tst.balance.strategies)
+CAMPAIGN_STRATEGY: Final = "steady+cuts"  # v1's steady founder, cutting when short (60.7 T3)
 
 
 @dataclass(slots=True)
@@ -210,16 +210,23 @@ def bust_sensible(game: Game) -> None:
         fundraise,
         last_revenue,
         launch_ready,
-        runway,
         set_marketing,
     )
-    from tst.sim.actions.hiring import Fire
-    from tst.sim.errors import SimError
 
     accept_bridges(game)
     fundraise(game, STEADY_ROUNDS, pick="pre")
     launch_ready(game)
     set_marketing(game, round(0.1 * last_revenue(game)))
+    cut_when_short(game)
+
+
+def cut_when_short(game: Game) -> None:
+    """When runway falls under BUST_CUT_RUNWAY months, let one person go (sales and
+    marketing first, the most expensive first), down to BUST_CORE."""
+    from tst.balance.strategies import runway
+    from tst.sim.actions.hiring import Fire
+    from tst.sim.errors import SimError
+
     months = runway(game)
     staff = [e for e in game.state.staff(game.state.player.id) if e.status == "active"]
     staff = [e for e in staff if e.person_id != game.founder_id]
@@ -227,6 +234,14 @@ def bust_sensible(game: Game) -> None:
         victim = max(staff, key=lambda e: (e.role not in KEEP_ROLES, e.salary_cents, -e.id))
         with contextlib.suppress(SimError):
             game.act(Fire(game.founder_id, victim.person_id))
+
+
+def campaign_script(game: Game) -> None:
+    """60.7 target 3's founder: v1's steady, cutting staff when runway is short (the bust)."""
+    from tst.balance.strategies import steady
+
+    steady(game)
+    cut_when_short(game)
 
 
 def bust_job(job: tuple[int, str]) -> tuple[int, str, str | None, bool]:
@@ -276,10 +291,8 @@ def bust_readings(seeds: Sequence[int] = SEEDS, workers: int = 4) -> list[m50.Re
 
 def campaign_job(seed: int) -> tuple[int, int, str]:
     """(seed, last month played, game state) of a 2000 campaign to December 2029."""
-    from tst.balance.strategies import STRATEGIES as V1
-
     game = m50.start(seed, 2000)
-    script = V1[CAMPAIGN_STRATEGY]
+    script = campaign_script
     while game.state.turn <= CAMPAIGN_END and not game.state.ended:
         script(game)
         game.turn()

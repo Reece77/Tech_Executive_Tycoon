@@ -1051,10 +1051,10 @@ def research_problems(balance: Balance, data: GameData) -> list[str]:
     opening = {c: e for e in data.eras.history_eras for c in e.opens}
     for inc in data.incumbents:  # M50b: no product on sale before its category opens
         for p in inc.products:
-            era = opening.get(p.category)
-            if era is not None and era.historical and (p.launched or (0, 0)) < era.historical:
+            opener = opening.get(p.category)
+            if opener and opener.historical and (p.launched or (0, 0)) < opener.historical:
                 problems.append(
-                    f"{inc.name} {p.name}: launched before {era.key} opens {p.category}"
+                    f"{inc.name} {p.name}: launched before {opener.key} opens {p.category}"
                 )
     names = {c.name for c in data.incumbents}
     for inc in data.incumbents:  # M50b (60.6): an exit merges into a named company
