@@ -1,7 +1,7 @@
 """The same game on every platform (M35a sub-task 1): play M30's three strategies on seeds 1-3
 for 120 months in memory (M52: and one custom scenario, the edited EV maker, for its first 24
-months: formulas.md 66.4 target 3; M57r-A: and the 2030 dynasty start for 24 months, whose
-draws include Generator.poisson with large means) and record every month's full-state digest (tst.balance.m30's
+months: formulas.md 66.4 target 3; M57r-A: and a probe of Generator.poisson at large means on
+the engine's streams) and record every month's full-state digest (tst.balance.m30's
 canonical digest), with a digest of each top-level state field, so two platforms' records name
 the first month and the first part of the state that differ. CI
 (.github/workflows/determinism.yml) runs `run` on Linux and Windows and `compare` on the two.
@@ -79,13 +79,16 @@ def _tree(digester: Any, root: object, prefix: str) -> dict[str, str]:
 CUSTOM = "custom_ev"  # M52 (66.4 target 3): one custom scenario, its first CUSTOM_MONTHS months
 CUSTOM_SEED = 1
 CUSTOM_MONTHS = 24
-# M57r-A (review 10 item 29, ruling 7): a poisson-heavy run. Generator.poisson with a mean of 10
-# or more uses the C library's log, outside dmath's guarantee; the 2030 dynasty start's world
-# (pharma rivals' approvals and the other post-2025 draws) draws it every month.
-POISSON = "poisson_dynasty"
-POISSON_SCENARIO = "the_dynasty"
-POISSON_SEED = 1
-POISSON_MONTHS = 24
+# M57r-A (review 10 item 29, ruling 7): a poisson-heavy seed. Generator.poisson with a mean of 10
+# or more uses the C library's log (numpy's PTRS sampler), outside dmath's guarantee. No seeded
+# game draws such a mean in its first years (the 2030 dynasty start's largest in 13 months is
+# 3.5: robotaxi, autonomy and pharma-rival means grow with the player's fleets and pipelines), so
+# this job draws them directly: each "month" t, on the engine's own derivation, POISSON_DRAWS
+# draws at each mean in POISSON_MEANS, digested as a game month is.
+POISSON = "poisson"
+POISSON_SEED = 42
+POISSON_MEANS = (10.0, 10.5, 13.7, 25.0, 100.0, 1_234.5, 1e5, 3.3e7)
+POISSON_DRAWS = 16
 
 
 def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
@@ -100,12 +103,8 @@ def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
         game = m52.custom_game(seed)
         script = m51.ev_sensible
         turns = game.state.turn + min(turns, CUSTOM_MONTHS)
-    elif name == POISSON:  # M57r-A: the 2030 start, poisson draws with large means
-        from tst.balance import m52
-
-        game = m52.start_historical(m30.loaded(), POISSON_SCENARIO, seed)
-        script = m30.strategy("full_integrator")
-        turns = game.state.turn + min(turns, POISSON_MONTHS)
+    elif name == POISSON:  # M57r-A: large-mean poisson draws on the engine's streams
+        return _poisson_job(seed, turns)
     else:
         game = start_game(m30.loaded(), seed, SCENARIO)
         script = m30.strategy(name)
@@ -122,6 +121,22 @@ def run_job(job: tuple[str, int, int, tuple[int, ...]]) -> dict[str, Any]:
         if played in dumps:
             dumped[str(played)] = dict(leaves(game.state))
     return {"months": months, "dumps": dumped}
+
+
+def _poisson_job(seed: int, turns: int) -> dict[str, Any]:
+    from tst.sim.rng import RngFactory
+
+    rng = RngFactory(seed)
+    months: list[dict[str, Any]] = []
+    for t in range(turns):
+        tree: dict[str, str] = {}
+        for i, mean in enumerate(POISSON_MEANS):
+            g = rng.stream(t, "misc", 57, i)  # misc (99): a probe key no engine site uses
+            values = [int(x) for x in g.poisson(mean, POISSON_DRAWS)]
+            tree[f"poisson[{mean!r}]"] = hashlib.sha256(repr(values).encode()).hexdigest()[:SHORT]
+        digest = hashlib.sha256(repr(sorted(tree.items())).encode()).hexdigest()
+        months.append({"digest": digest, "tree": tree})
+    return {"months": months, "dumps": {}}
 
 
 def run(out: Path, turns: int, workers: int, dumps: list[str]) -> int:
