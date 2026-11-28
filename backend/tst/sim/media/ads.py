@@ -31,6 +31,7 @@ from typing import Final
 
 from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
+from tst.sim.compound import compounded
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finance.macro import confidence_factor, now
@@ -58,14 +59,15 @@ def spend_year_cents(state: GameState, region: str, balance: Balance, data: Game
     f = file(data).ads
     if in_history(state.turn, balance):
         return f.spend_at(end_year_at(state.turn), region)
-    out = f.spend_at(float(LAST_YEAR), region)
     start = balance.media.start_turn
-    for turn in range(start, state.turn + 1):
-        year = turn_to_ym(turn)[0]
-        rate = state.media.draw(AD_GROWTH, year)
-        if rate is None:
-            rate = balance.media.ads.growth_after.lo
-        out *= float(dmath.pow(1.0 + rate, 1.0 / MONTHS))
+    fallback = balance.media.ads.growth_after.lo
+
+    def rate(year: int) -> float:
+        drawn = state.media.draw(AD_GROWTH, year)
+        return fallback if drawn is None else drawn
+
+    # M60: the same float as compounding month by month, in time proportional to the years
+    out = compounded(f.spend_at(float(LAST_YEAR), region), start, state.turn, rate, "media.ads")
     conf = confidence_factor(now(state, data).confidence, balance.media.ads.confidence_exponent)
     return out * conf
 

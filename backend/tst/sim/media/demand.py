@@ -19,8 +19,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from tst.sim import dmath
 from tst.sim.calendar import turn_to_ym
+from tst.sim.compound import compounded
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.media import draws
@@ -43,19 +43,19 @@ def growth_factor(
     state: GameState, category: str, region: str, balance: Balance, data: GameData
 ) -> float:
     """The market now over December 2025's: 1 before `media.start`, then the drawn yearly rates
-    compounded month by month."""
+    compounded month by month (M60: `compound.compounded`, the same float in time proportional
+    to the years)."""
     start = balance.media.start_turn
     if state.turn < start:
         return 1.0
     key = growth_key(category, region)
-    out = 1.0
-    for turn in range(start, state.turn + 1):
-        year = turn_to_ym(turn)[0]
-        rate = state.media.draw(GROWTH, year, key)
-        if rate is None:
-            rate = balance.media.growth_after[category].lo
-        out *= float(dmath.pow(1.0 + rate, 1.0 / MONTHS))
-    return out
+    fallback = balance.media.growth_after[category].lo
+
+    def rate(year: int) -> float:
+        drawn = state.media.draw(GROWTH, year, key)
+        return fallback if drawn is None else drawn
+
+    return compounded(1.0, start, state.turn, rate, ("media.growth", key))
 
 
 def price_index(category: str, region: str, data: GameData) -> float:

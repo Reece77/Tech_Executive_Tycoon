@@ -245,10 +245,16 @@ class MediaState:
         return next((s for s in self.settings if s.product_id == product_id), None)
 
     def draw(self, kind: str, year: int, key: str = "") -> float | None:
-        return next(
-            (d.value for d in self.draws if d.kind == kind and d.year == year and d.key == key),
-            None,
-        )
+        # M60: an index of the draws, built once per tuple (the first match, as a scan finds)
+        from tst.sim.state import from_inputs
+
+        def index() -> dict[tuple[str, int, str], float]:
+            out: dict[tuple[str, int, str], float] = {}
+            for d in self.draws:
+                out.setdefault((d.kind, d.year, d.key), d.value)
+            return out
+
+        return from_inputs(self.draws, "media_draws", index).get((kind, year, key))
 
     def next_title_id(self) -> int:
         return max((t.id for t in self.titles), default=0) + 1
