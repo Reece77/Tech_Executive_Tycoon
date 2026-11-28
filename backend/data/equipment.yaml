@@ -115,9 +115,9 @@ generations:
       2025: 8540000000 # D: about EUR 10,050M / 133 = EUR 75.6M x 1.13 (SA 2025, R)
     shipments: # ASML ArFi units recognised (20-F; "immersion systems recognized" before 2019)
       2000: 0 # A (M50b): no immersion lithography before 2004 (dry ArF and KrF scanners only)
-      2001: 0
-      2002: 0
-      2003: 0
+      2001: 0 # A (M50b): as 2000
+      2002: 0 # A (M50b): as 2000
+      2003: 0 # A (M50b): as 2000
       2004: 3 # A (M50b): ASML's first immersion tools (XT:1250i) for development
       2005: 10 # D (M50b): 13 immersion tools delivered to date by end-2005 (ASML annual report 2005, via search, R) less 2004's 3
       2006: 23 # R (M50b): ASML's 2006 results release, 23 immersion systems to 17 customers (via search)
@@ -181,13 +181,13 @@ generations:
       2025: 23680000000 # D: (about EUR 10.9B - 3 x EUR 350M) / 47 = EUR 209.6M x 1.13 (SA 2025, R)
     shipments: # EUV systems recognised (NXE)
       2000: 0 # A (M50b): EUV was research only (EUV LLC 1997-2003, R); no NXE system before 2010 (20-F 2009, V)
-      2001: 0
-      2002: 0
-      2003: 0
-      2004: 0
-      2005: 0
-      2006: 0 # the two alpha demo tools (IMEC, Albany) were research tools, not sales
-      2007: 0
+      2001: 0 # A (M50b): as the year before
+      2002: 0 # A (M50b): as the year before
+      2003: 0 # A (M50b): as the year before
+      2004: 0 # A (M50b): as the year before
+      2005: 0 # A (M50b): as the year before
+      2006: 0 # A (M50b): the two alpha demo tools (IMEC, Albany) were research tools, not sales
+      2007: 0 # A (M50b): as the year before
       2008: 0 # V: 20-F 2009 (no NXE system before 2010; the 2006 alpha demo tools were research tools)
       2009: 0 # V: 20-F 2009 (first NXE:3100 assembly in the new EUV cleanroom, May 2009)
       2010: 0 # V: 20-F 2012 (one NXE:3100 shipped, none recognised)

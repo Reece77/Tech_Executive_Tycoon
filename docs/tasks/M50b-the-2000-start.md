@@ -83,7 +83,7 @@
 
 13. **Target 1's rivals at January 2008 are carried** (1.32x against 1.3x). Category sizes match exactly; the named rivals' median ratio sits on a wide spread (per rival on seeds 1-3: Fiserv 357x, IBM 136x, Intuit 42x and Oracle 4.7x ahead of a 2008 world's January 2008 positions, SAP 0.09x and NVIDIA 0.11x behind, Nuance and Baidu failed), which is eight years of share dynamics from 2000's positions, not one key; the January 2010 reading (1.13x) is in band. Tuning each rival's 2000 position is a follow-up for the next balance pass (M57 owns the rivals' balance keys).
 14. **Target 3 is reported.** No run errored. Two of seeds 1-3 go bankrupt in the bust with a scripted founder, which is target 2's point; seeds 4-6 all reach December 2029 (`m50b.campaign_readings(seeds=(4, 5, 6))`).
-15. **Not changed:** the sandbox (still 2008-2025) and the editor's blank starts (2008, 2010); M51's scenario scripts (`tst/balance/m51.py`, M57's lane: the bust's scripts live in `m50b.py`).
+15. **The editor** (66.1) takes custom starts from 2000 (`editor.start_years` [2000, 2030], from [2008, 2030]), as a scenario opened from Survive the bust begins in 2000 and M52's round-trip property drew it; a start in 2000-2007 builds on the 2000 world. **Not changed:** the sandbox (still 2008-2025) and the editor's blank starts (2008, 2010); M51's scenario scripts (`tst/balance/m51.py`, M57's lane: the bust's scripts live in `m50b.py`).
 
 ## Follow-ups
 

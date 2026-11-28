@@ -15,7 +15,7 @@ from typing import Any, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from tst.sim.calendar import history_floor_turn, start_turn_of
+from tst.sim.calendar import START_YEARS, history_floor_turn, start_turn_of
 from tst.sim.facilities.config import Range, month_to_turn
 from tst.sim.robotics.config import _convert
 from tst.sim.vehicles.config import interp
@@ -132,7 +132,7 @@ class BankingDef(_Frozen):
         return out
 
 
-WORLD_2008: Final = start_turn_of(2008)  # M50b: rows dated before it are the 2000 world's
+WORLD_2008: Final = start_turn_of(START_YEARS[1])  # M50b: rows dated before it are the 2000 world's
 
 
 # --- payments (64.2) ----------------------------------------------------------------------------

@@ -56,6 +56,7 @@ def test_incumbent_table(loaded: LoadedData) -> None:
     rows = {
         c.name: (c.personality, c.builder_skill, c.target_margin_bp, c.cash_months)
         for c in loaded.game_data.incumbents
+        if not c.history_only  # M50b: the 2000 world's own companies (rivals-2000.md)
     }
     assert rows["Salesforce"] == ("premium", 14, 1500, 24)
     assert rows["Zoho"] == ("cost_leader", 11, 1500, 18)

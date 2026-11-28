@@ -1678,7 +1678,7 @@ sandbox:
   era_spread_months: 24 # months; with eras "all seeded", a later historical era arrives in its month +- this, drawn (M15b decision for 30.2)
 
 editor: # M52 (formulas.md 66.1, ADR-0026): every field a custom scenario may set, with its range; a field outside its range is refused with the reason
-  start_years: [2008, 2030] # calendar years a custom start may begin in (M50's 2008 world to M51's latest scenario, The dynasty's 2030)
+  start_years: [2000, 2030] # calendar years a custom start may begin in (M50b: from the 2000 world, as Survive the bust opens there, to M51's latest scenario, The dynasty's 2030)
   macro_from_year: 2026 # macro and commodity starting levels are editable from this year: before it both are history (20.1, 33.1), the same on every seed
   cash_dollars: [0, 10000000000] # dollars of starting cash (up to $10bn: a funded giant, still far inside int64 cents)
   debt_dollars: [0, 5000000000] # dollars: the starting loans' summed principal

@@ -234,7 +234,7 @@ class EraDef(_Frozen):
 
 
 # M50b: a history era arrives by January 2008, so the 2008 world (and 2010's) has it from the start
-HISTORY_ERA_LAST: Final = (2008, 1)
+HISTORY_ERA_LAST: Final = (2008, 1)  # tunable-exempt: the 2008 world's first month
 BEYOND_FIRST, BEYOND_LAST = 2070, 2120  # tunable-exempt: 66.3's window years for the third wave
 
 
