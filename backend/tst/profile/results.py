@@ -67,11 +67,30 @@ def _write(path: Path, name: str, results: dict[str, dict[str, dict[str, Any]]])
         raise
 
 
+def result_key(scenario: str, sha256: str | None) -> str:
+    """The key a scenario's records are kept under: M51's scenario key, or (M57r-B, review 10
+    item 33) a custom scenario's key and its file's hash, so a win on an edited (say, trivial)
+    version never shows as the best of another."""
+    return f"{scenario}@{sha256}" if sha256 else scenario
+
+
+def _rekeyed(results: dict[str, dict[str, dict[str, Any]]]) -> dict[str, dict[str, dict[str, Any]]]:
+    """Custom records written before M57r-B (keyed by scenario alone) under their hash's key."""
+    out: dict[str, dict[str, dict[str, Any]]] = {}
+    for key, records in results.items():
+        for save, entry in records.items():
+            sha = entry.get("sha256") if isinstance(entry, dict) else None
+            k = key if "@" in key or not sha else result_key(key, str(sha))
+            out.setdefault(k, {})[save] = entry
+    return out
+
+
 def load(
     save_dir: Path, name: str | None = None, *, custom: bool = False
 ) -> dict[str, dict[str, dict[str, Any]]]:
     with _LOCK:
-        return _read(results_path(save_dir, name, custom=custom))
+        found = _read(results_path(save_dir, name, custom=custom))
+    return _rekeyed(found) if custom else found
 
 
 def record_of(state: GameState, slug: str, balance: Balance) -> dict[str, Any] | None:
@@ -137,8 +156,9 @@ def record(save_path: Path, data: LoadedData) -> bool:
     custom = state.mode is not None and state.mode.custom  # M52: kept apart (66.2)
     path = results_path(save_path.parent, custom=custom)
     with _LOCK:
-        results = _read(path)
-        mine = results.setdefault(str(entry["scenario"]), {})
+        results = _rekeyed(_read(path)) if custom else _read(path)
+        sha = state.mode.scenario_sha256 if custom and state.mode is not None else None
+        mine = results.setdefault(result_key(str(entry["scenario"]), sha), {})
         key = f"{slug}:{state.save_meta.master_seed}"  # a later save of the same name is another
         if key in mine:
             return False

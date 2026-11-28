@@ -74,6 +74,8 @@ from tst.api.routers import (
 from tst.api.schemas.common import ErrorOut
 from tst.config import get_settings
 from tst.conversations.common import ConversationCallError, ConversationMovedError
+from tst.db.custom_io import CustomScenarioMismatchError
+from tst.db.migrate import SaveTooNewError
 from tst.db.repository import BUSY_MESSAGE, is_locked_error
 from tst.db.saves import IronmanSaveError
 from tst.sim.errors import (
@@ -107,6 +109,8 @@ ERROR_STATUS: dict[type[SimError], int] = {
     CustomScenarioExistsError: status.HTTP_409_CONFLICT,  # M52: save as another name
     ConversationCallError: status.HTTP_503_SERVICE_UNAVAILABLE,  # M57r-B: nothing played
     ConversationMovedError: status.HTTP_409_CONFLICT,  # M57r-B: nothing stored
+    CustomScenarioMismatchError: status.HTTP_409_CONFLICT,  # M57r-B: the save is not opened
+    SaveTooNewError: status.HTTP_409_CONFLICT,  # M57r-B: made by a newer version
 }
 # Raised before anything is written: safe to send again (M8r; M57r-B's conversation errors)
 RETRYABLE = frozenset({SaveBusyError.code, ConversationCallError.code, ConversationMovedError.code})

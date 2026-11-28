@@ -159,6 +159,8 @@ def existing_save_path(save_dir: Path, slug: str) -> Path:
         raise SaveBusyError(BUSY_MESSAGE)
     try:
         migrate.ensure_current(path)
+    except migrate.SaveTooNewError:
+        raise  # M57r-B: a newer build's save, left untouched: its own message
     except Exception as exc:
         log.warning("Save %s needs an upgrade that failed: %s", slug, exc)
         raise UpgradeNeededError(

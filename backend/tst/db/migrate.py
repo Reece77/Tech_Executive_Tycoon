@@ -17,6 +17,7 @@ from sqlalchemy import text
 from tst.config import BACKEND_DIR
 from tst.db.backup import pre_migration_backup
 from tst.db.session import make_engine
+from tst.sim.errors import SimError
 
 log = logging.getLogger(__name__)
 
@@ -67,6 +68,20 @@ def _forget(save_path: Path) -> None:
 def forget(save_path: Path) -> None:
     """Forget a save seen at head (it is being deleted; M7b)."""
     _forget(save_path)
+
+
+class SaveTooNewError(SimError):
+    """M57r-B (review 10 item 34): the save was written by a newer build of the game (its
+    schema revision is not one this build knows): it is left untouched, never half-migrated."""
+
+    code = "save_too_new"
+
+
+def _known(revision: str) -> bool:
+    try:
+        return ScriptDirectory.from_config(_config()).get_revision(revision) is not None
+    except Exception:  # alembic's unknown or ambiguous revision errors
+        return False
 
 
 def current_revision(save_path: Path) -> str | None:
@@ -141,6 +156,11 @@ def ensure_current(save_path: Path) -> Path | None:
     if current == head_revision():
         _AT_HEAD.add(_key(save_path))
         return None
+    if current is not None and not _known(current):
+        raise SaveTooNewError(
+            f"{save_path.name.split('.')[0]} was made by a newer version of the game: "
+            "update the game to open it"
+        )
     backup = pre_migration_backup(save_path, _current_turn(save_path), current)
     log.info("Upgrading %s from %s to head (backup %s)", save_path.name, current, backup.name)
     _run(save_path, "head")

@@ -147,7 +147,7 @@ def check_custom(body: CustomScenario, data: DataDep) -> CustomCheckOut:
 def card(spec: CustomScenario, stored: dict[str, dict[str, dict[str, object]]]) -> CustomCardOut:
     from tst.api.routers.scenarios import result_out
 
-    records = stored.get(custom.custom_key(spec.key), {})
+    records = stored.get(kept.result_key(custom.custom_key(spec.key), sf.sha256(spec)), {})
     return CustomCardOut(
         slug=spec.key,
         label=spec.label,
