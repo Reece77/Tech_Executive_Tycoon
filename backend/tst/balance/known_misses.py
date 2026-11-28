@@ -158,16 +158,7 @@ KNOWN_MISSES: Final[tuple[KnownMiss, ...]] = (
         reason="2100 revenue 359-442x below int64 on seeds 1-3 (2069: 3,786x); commodity "
         "sales dominate; every value stays within int64 (59-79x below)",
     ),
-    # M57r-B (review 10 items 24, 25 and 36; ruling 6): misses that guarded nothing until now
-    KnownMiss(
-        target="M9.spread.africa",  # formulas 19.8 target 5: a live rival in every cell, month 120
-        owner=NEXT,  # ruling 6: M57 adds a fixed-broadband rival in Africa or retires the cell
-        # score: the seeds whose Africa fixed-broadband cell is empty; known up to 10 of 10
-        worse_than=10.0,
-        reason="('africa', 'fixed_broadband') empty on seeds 1-10 since M53 (no fixed-broadband "
-        "rival in Africa; M51 decision 13, M54 decision 24, M59 decision 9); every other cell "
-        "is covered",
-    ),
+    # M57r-B (review 10 items 25 and 36): misses that guarded nothing until now
     KnownMiss(
         target="V3.ai.survival",  # M57r-B: the AI-first scripts survive the 10 years
         owner=NEXT,  # with V3.ai: AI models' D0 x0.19 (M43a)

@@ -130,8 +130,7 @@ def test_m57r_b_rows() -> None:
 
     from tst.balance.known_misses import Reading
 
-    assert verdict(Reading("M9.spread.africa", False, 10.0)) == "known"
-    assert verdict(Reading("M9.spread.africa", False, 11.0)) == "fail"
+    assert verdict(Reading("M9.spread.africa", False, 1.0)) == "fail"  # M57: closed (MTN's line)
     assert verdict(Reading("V3.ai.survival", False, 10.0)) == "known"
     assert (
         verdict(Row("V3.ai", "margin gap", "unmeasurable", "+3 to +10", False, score=inf)) == "fail"

@@ -2798,6 +2798,19 @@ companies:
         regions: [africa]
         segments:
           carriers: { price_cents: 70000, share_bp: 0 }
+      # M57 (review 10 ruling 6, M9.spread.africa): MTN's fixed business (fibre to the home and fixed
+      # wireless, MTN South Africa and MTN Nigeria, R), Africa's first fixed-broadband rival. Priced as
+      # MTN's mobile line x Africa's fixed / mobile ARPU (telecom.yaml: $30 / $7 in 2010, A), business 1.7x
+      # as Claro Internet's; quality, features and brand A, below its mobile line's.
+      - name: MTN Home Broadband
+        category: fixed_broadband
+        quality: 62
+        features: 58
+        brand: 70
+        regions: [africa]
+        segments:
+          telecom_consumer: { price_cents: 1500, share_bp: 0 }
+          telecom_business: { price_cents: 2550, share_bp: 0 }
 
   - name: Telstra
     stage: 4

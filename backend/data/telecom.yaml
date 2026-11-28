@@ -477,6 +477,7 @@ operators:
   - company: MTN Group
     region: africa
     mobile: { 2008: [90, R], 2010: [140, R], 2015: [230, R], 2020: [280, R], 2025: [245, D] } # MTN: over 300M customers (Oct 2025, S) less Iran's 55.1M (S)
+    fixed: { 2008: [0.05, A], 2010: [0.1, A], 2015: [0.3, A], 2020: [1.0, A], 2025: [2.0, A] } # M57: MTN's home broadband (fixed wireless and fibre, South Africa and Nigeria, R: MTN results); A, about 3-7% of the region's fixed lines
     wholesale: { 2008: [0.25, A], 2010: [0.25, A], 2025: [0.25, A] }
     supplier: huawei
   - company: Telstra

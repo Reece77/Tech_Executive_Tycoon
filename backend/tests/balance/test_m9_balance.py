@@ -35,26 +35,12 @@ def test_target_2_expansion_lifts_the_ceiling() -> None:
     assert value >= EXPANSION_NEEDED
 
 
-AFRICA_BROADBAND = ("africa", "fixed_broadband")  # M57r-B: M9.spread.africa, a known miss
-
-
 @pytest.mark.nightly
 def test_target_5_rivals_spread() -> None:
     """Every (region, category) cell has a live rival product at month 120 on every seed.
-    M57r-B (ruling 6): Africa's fixed broadband, empty since M53 (no fixed-broadband rival
-    there), is the known miss M9.spread.africa (owner M57, bound 10/10 seeds); any other empty
-    cell, on any seed, still fails."""
-    from tst.balance.known_misses import Reading, known_miss, verdict
-
+    M57 (review 10 ruling 6): Africa's fixed broadband, empty from M53 to M57r-B, has MTN's
+    fixed line, so the known miss M9.spread.africa is gone and any empty cell fails."""
     spreads = m9.run_spread(m9.SEEDS, _jobs())
     missing = {s.seed: s.missing for s in spreads if s.missing}
     print(f"19.8 target 5: {len(spreads) - len(missing)}/{len(spreads)} seeds fully covered")
-    others = {seed: [c for c in cells if c != AFRICA_BROADBAND] for seed, cells in missing.items()}
-    assert {seed: cells for seed, cells in others.items() if cells} == {}
-    africa = sum(AFRICA_BROADBAND in cells for cells in missing.values())
-    reading = Reading("M9.spread.africa", africa == 0, float(africa), f"{africa}/{len(spreads)}")
-    assert verdict(reading) != "fail", reading
-    if verdict(reading) == "known":
-        known = known_miss(reading.target)
-        assert known is not None
-        pytest.xfail(f"KNOWN MISS ({known.owner}): {known.reason}")
+    assert missing == {}
