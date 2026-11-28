@@ -56,6 +56,8 @@ Built on branch `m57-balance` in its own clone. Docs PR #118 (`docs-v6-round5`) 
 
 6. **M51's EV maker (63.4 target 1; rule 1).** After M57r-A the sensible script sold 55,189-64,581 cars a year by August 2023 on seeds 1-10 and won none (the nightly on `main`: 0/10). The goal moves 68,500 -> **58,500** cars a year (deadline unchanged): sensible 7 of 10, passive 0 (band 3-8, at most 2). `scenarios.yaml`'s `sensible_wins` 6 -> 7; the unit test's two cases straddle the new goal.
 
+7. **M50's 60.3 target 2 (rules 3 and 4).** On seeds 11-40 `main` (worktree at d665597) and this branch read the same: rounds closed per attempt 3/70 against 44/214 (**79% fewer, met**: the seeds 1-10 miss, 5/26 against 12/67, is seed variance), seed term sheets 42% fewer, V_base 36% cheaper, and short-runway failures 3/50 against 5/23 (**0.28x against >= 2x: missed on `main` too**; seeds 1-10 print "-"). Neither is this branch's: recorded for v7's balance pass. CLAUDE.md §9 rule 3 forbids adding them to `known_misses.py` here, so `test_m50_balance.py` stays red in the nightly (it gates no merge); reported for the product manager.
+
 **Sub-task 1 readings (on `main`'s code after M57r: nightly 46154340570, weekly 46154343112, both at 0767452).**
 
 - `make balance` (v1, seeds 1-10): every target holds (T1 10/10; T2 most wins research_heavy 6 of <= 6; T3 9-10/10; T4a-c in band; T5 0-10%; T6 21 months, 12%, 12%; T7 179.9/180 and 49% of 104; E3 all ok). **S2** (the run's worker-minutes) reads 145.4 against < 140 on CI: a runtime guard, M60's lane (rule 6), printed only.
