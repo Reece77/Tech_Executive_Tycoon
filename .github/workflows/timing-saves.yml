@@ -8,9 +8,7 @@ name: timing-saves
 
 on:
   push:
-    # TEMPORARY (M60, removed before merging): m60-perf, on a commit whose message says
-    # [timing-saves], builds the branch's own saves
-    branches: [main, m60-perf]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,12 +16,11 @@ permissions:
 
 concurrency:
   group: timing-saves-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref == 'refs/heads/main' }}
+  cancel-in-progress: true
 
 jobs:
   build:
     name: timing save (${{ matrix.save }})
-    if: github.ref == 'refs/heads/main' || contains(github.event.head_commit.message, '[timing-saves]')
     runs-on: ubuntu-latest
     timeout-minutes: 180
     strategy:

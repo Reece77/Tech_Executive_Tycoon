@@ -81,7 +81,7 @@ weekly-v5:
 	uv run --project backend python tools/v2_targets.py --long --runs
 weekly-v6:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), restored by M45; the 1,000 ms raw budget stays
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M60: every month under 1,000 ms runner-adjusted (Reece's rule)
 
 # M23b's v3 targets (tst.balance.v3; CI: weekly.yml): the chain's shocks, 20 years of the v2
 # and v3 founder-played strategies (integration pays), the v3 scripts to December 2039, and V6
@@ -96,7 +96,7 @@ weekly-m27b:
 	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_m27b_balance.py
 weekly-v6-integrator:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) v6i --strategy full_integrator
-	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite TST_M30_MEDIAN_MS=400 uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M30: 400 ms on this save's runner-adjusted median (M35a's ratio), reached in M45; the 1,000 ms raw budget stays
+	cd backend && TST_V6_SAVE=$(V6_SAVE_DIR)/v6i.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_v6_perf.py tests/integration/test_m30_perf.py  # M60: every month under 1,000 ms runner-adjusted (Reece's rule)
 
 # M46: re-record a long state fixture on CI and print it to the log (tools/record_state_fixtures.py;
 # FIXTURE m30, m32, m37 or m45). Dispatch weekly.yml with parts ["record-fixture FIXTURE=m30", ...].
@@ -116,14 +116,14 @@ weekly-m45:
 	cd backend && uv run pytest -q -n 3 -s -m weekly tests/balance/test_m45_state_cache.py
 
 # M37 (52.5 target 5): a full_integrator dynasty save with a family to January 2069 (708
-# months), then its 2069 months against a 500 ms runner-adjusted median (M45) and the save under 400 MB.
+# months), then its 2069 months under 1,000 ms runner-adjusted each (M60) and the save under 400 MB.
 weekly-m37:
 	uv run --project backend python tools/v6_save.py $(V6_SAVE_DIR) m37 --strategy full_integrator --turns 708 --length dynasty --children 2,5
 	cd backend && TST_M37_SAVE=$(V6_SAVE_DIR)/m37.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m37_perf.py
 
 # M52 (66.4 target 4): M45's dynasty game continued in sandbox to December 2100 on seeds 1-3 (no
 # error, every integer within int64, the 2100 economy 1,000x below it), then seed 1's save's 2101
-# months against the 550 ms runner-adjusted dynasty guard.
+# months under 1,000 ms runner-adjusted each (M60).
 # M57r-B (review 10 item 27): the tool exits 1 on an error, an integer past int64 or a miss
 # beyond its known-miss bound, and weekly-m52-2100 asserts target 4 itself (pytest).
 weekly-m52:

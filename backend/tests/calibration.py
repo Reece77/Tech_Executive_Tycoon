@@ -10,6 +10,17 @@ import statistics
 import time
 from fractions import Fraction
 
+# Reece's rule (PM ruling 2026-11-28, M60): every month, from 2010 to 2100, takes under 1,000 ms
+# runner-adjusted (its wall time over the runner's ratio, measured alone). It replaces the
+# 400 / 500 / 550 ms medians of M30, M45, M37 and M52.
+MONTH_S = 1.0
+
+
+def adjusted(seconds: float, workload_s: float) -> float:
+    """`seconds` on the reference container: divided by the runner's ratio."""
+    return seconds / (workload_s / REFERENCE_S)
+
+
 # The workload's median on the M35a container (4 CPUs, Linux, Python 3.12), in seconds: a
 # runner's ratio to it says how much faster or slower that runner is.
 REFERENCE_S = 0.070

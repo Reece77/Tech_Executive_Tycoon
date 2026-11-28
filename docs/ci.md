@@ -45,7 +45,7 @@ save a new argument asks for is built (and not stored until the key changes).
 
 `check (timing)` times a January 2069 month of M37's dynasty game whose player also runs the v6
 industries, and a December 2100 month of M52's sandbox continuation
-(`backend/tests/integration/test_m60_perf.py`: 500 and 550 ms, runner-adjusted). Each save takes
+(`backend/tests/integration/test_m60_perf.py`: the median and the worst month under 1,000 ms runner-adjusted, Reece's rule since M60). Each save takes
 about an hour to build, longer than the job's limit, so the job never builds them:
 
 - `timing-saves.yml` builds them (`make timing-save-2069`, `make timing-save-2100`) after every

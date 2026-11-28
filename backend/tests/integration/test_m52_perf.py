@@ -1,8 +1,7 @@
 """M52's 66.4 target 4 on the CI runner: from M45's dynasty game continued in sandbox to December
-2100 (tools/m52_save.py), a late month within the dynasty guard: the median of ten months
-runner-adjusted (tests/calibration.py, as M37's and M30's guards) within 550 ms, or within its
-known-miss bound (Reece, 2026-11-26). Runs only where TST_M52_SAVE names the save; it copies the
-save and never changes it."""
+2100 (tools/m52_save.py), Reece's rule since M60 (tests/calibration.py MONTH_S): the median and
+the worst of ten months under 1,000 ms runner-adjusted. Runs only where TST_M52_SAVE names the
+save; it copies the save and never changes it."""
 
 from __future__ import annotations
 
@@ -15,10 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.calibration import REFERENCE_S, calibrate, runner_note
+from tests.calibration import MONTH_S, adjusted, calibrate, runner_note
 from tests.helpers import answer_critical
 from tests.integration.test_product_perf import TurnTime
-from tst.balance.known_misses import Reading, known_miss, verdict
 from tst.db import migrate
 from tst.db.repository import load_state, open_session, run_turn
 from tst.loader import LoadedData
@@ -32,8 +30,6 @@ pytestmark = [
     ),
 ]
 
-MEDIAN_S = 0.55  # 66.4 target 4: the dynasty guard, runner-adjusted
-TIMING = "M52.2100_month"  # its known-miss target (tst/balance/known_misses.py)
 WARM_UP = 2
 MONTHS = 10
 
@@ -58,19 +54,15 @@ def test_a_2100_month(tmp_path: Path, loaded: LoadedData) -> None:
         months.append(time.perf_counter() - start)
     median, worst = statistics.median(months), max(months)
     workload = calibrate()
-    ratio = workload / REFERENCE_S
-    adjusted = median / ratio
+    mid, top = adjusted(median, workload), adjusted(worst, workload)
     report = (
         f"M52: from {state.turn} ({len(state.companies)} companies) a 2101 month "
         f"{median * 1000:.0f} ms median, {worst * 1000:.0f} ms at most "
         f"({[round(m * 1000) for m in months]}); {runner_note(median, workload)}; guard: "
-        f"adjusted median {adjusted * 1000:.0f} ms against {MEDIAN_S * 1000:.0f} ms"
+        f"adjusted median {mid * 1000:.0f} ms and worst {top * 1000:.0f} ms against "
+        f"{MONTH_S * 1000:.0f} ms"
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
-    # Reece (2026-11-26): a known miss owned by v6 performance within its bound, as M37's 2069
-    # month; the raw 1.0 s worst-month check is not applied at 2100
-    reading = Reading(TIMING, adjusted <= MEDIAN_S, adjusted, report)
-    assert verdict(reading) != "fail", report
-    if verdict(reading) == "known":
-        pytest.xfail(f"KNOWN MISS ({known_miss(TIMING).owner}): {report}")  # type: ignore[union-attr]
+    assert mid < MONTH_S, report
+    assert top < MONTH_S, report

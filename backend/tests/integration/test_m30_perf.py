@@ -1,8 +1,9 @@
-"""M30's targets on the CI runner (docs/tasks/M30-performance-at-scale.md sub-tasks 2-3): from a
-2039 save, a month at most 400 ms at the median and none over 1.0 s (test_product_perf's
-budget), and 12 months of Holiday in at most 6 s. The save is V6's (tools/v6_save.py, built by
-the weekly workflow's V6 jobs: research_heavy, and full_integrator in weekly-v6-integrator), so
-this runs only where TST_V6_SAVE names it; it copies the save and never changes it."""
+"""M30's guard on the CI runner (docs/tasks/M30-performance-at-scale.md sub-tasks 2-3), under
+Reece's rule since M60 (tests/calibration.py MONTH_S): from a 2039 save, the median month and
+the worst month under 1,000 ms runner-adjusted, and 12 months of Holiday within 12 x 1,000 ms
+adjusted. The save is V6's (tools/v6_save.py, built by the weekly workflow's V6 jobs:
+research_heavy, and full_integrator in weekly-v6-integrator), so this runs only where
+TST_V6_SAVE names it; it copies the save and never changes it."""
 
 from __future__ import annotations
 
@@ -15,9 +16,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.calibration import REFERENCE_S, calibrate, runner_note
+from tests.calibration import MONTH_S, REFERENCE_S, adjusted, calibrate, runner_note
 from tests.helpers import answer_critical, continue_at_end
-from tests.integration.test_product_perf import LIMIT_S, TurnTime
+from tests.integration.test_product_perf import TurnTime
 from tst import holiday
 from tst.db import migrate
 from tst.db.repository import load_state, open_session, run_turn
@@ -31,16 +32,7 @@ pytestmark = [
     ),
 ]
 
-MEDIAN_S = 0.4  # the brief's 2039 median (M45: both V6 saves set 400 ms, runner-adjusted)
-# The full_integrator save (weekly-v6-integrator) missed it on CI at 439 ms; the PM's ruling
-# (2026-11-15) hands the 400 ms to M35 and guards that save at 500 ms meanwhile, so the
-# Makefile sets TST_M30_MEDIAN_MS=500 for it. M38 (2026-11-17) set the same for the plain V6
-# save. That guard reads the runner-adjusted median: the raw median divided by M35a's runner
-# ratio (tests/calibration.py), so a slow runner does not fail it (product manager,
-# 2026-11-17). Without the variable a save keeps the raw 400 ms; the 1.0 s worst month and
-# test_v6_perf's 1,000 ms stay raw.
-MEDIAN_ENV = "TST_M30_MEDIAN_MS"
-HOLIDAY_S = 6.0  # the brief's 12 months of Holiday
+HOLIDAY_MONTHS = 12  # a Holiday year, each month within MONTH_S (M60)
 WARM_UP = 2
 MONTHS = 12
 
@@ -103,13 +95,7 @@ def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> 
     median, worst = statistics.median(months), max(months)
     workload = calibrate()
     ratio = workload / REFERENCE_S
-    guard_ms = os.environ.get(MEDIAN_ENV)
-    if guard_ms:
-        measured, limit = median / ratio, float(guard_ms) / 1000
-        guard = f"adjusted median {measured * 1000:.0f} ms against {guard_ms} ms"
-    else:
-        measured, limit = median, MEDIAN_S
-        guard = f"raw median {median * 1000:.0f} ms against {MEDIAN_S * 1000:.0f} ms"
+    measured, top = adjusted(median, workload), adjusted(worst, workload)
 
     path = _copy(tmp_path, "holiday")
     continue_at_end(path, loaded)
@@ -124,10 +110,12 @@ def test_a_2039_month_and_a_holiday_year(tmp_path: Path, loaded: LoadedData) -> 
         f"M30: from {state.turn} ({len(state.staff(1))} staff) a month {median * 1000:.0f} ms "
         f"median, {worst * 1000:.0f} ms at most ({[round(m * 1000) for m in months]}); "
         f"12 months of Holiday {spent:.1f} s; {runner_note(median, workload)}; "
-        f"guard: {guard} (raw {median * 1000:.0f} ms / runner x{ratio:.2f})"
+        f"guard: adjusted median {measured * 1000:.0f} ms and worst {top * 1000:.0f} ms against "
+        f"{MONTH_S * 1000:.0f} ms, Holiday {adjusted(spent, workload):.1f} s adjusted against "
+        f"{HOLIDAY_MONTHS * MONTH_S:.0f} s (runner x{ratio:.2f})"
     )
     print(report)
     warnings.warn(TurnTime(report), stacklevel=1)
-    assert measured <= limit, report
-    assert worst < LIMIT_S, report
-    assert spent <= HOLIDAY_S, report
+    assert measured < MONTH_S, report
+    assert top < MONTH_S, report
+    assert adjusted(spent, workload) <= HOLIDAY_MONTHS * MONTH_S, report
