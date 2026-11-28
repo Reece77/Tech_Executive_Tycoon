@@ -102,7 +102,7 @@ class NegotiationBalance(_Frozen):
     reservation_skew: float = Field(default=0.5, ge=0, lt=1)  # tunable-exempt: see above
     # ...and each round's concession is x (1 +/- this) by a hidden draw, so a counter no longer
     # inverts to the reservation through the published effects table (share)
-    concession_jitter: float = Field(default=0.3, ge=0, lt=1)  # tunable-exempt: see above
+    concession_jitter: float = Field(default=0.2, ge=0, lt=1)  # tunable-exempt: see above
     relationship_walk: int = Field(le=0)  # relationship after a walk-away
     relationship_agree: int = Field(ge=0)  # ...after an agreement
     relationship_floor: int = Field(le=0)  # a counterpart's relationship stays within
