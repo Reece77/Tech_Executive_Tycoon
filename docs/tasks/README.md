@@ -90,6 +90,8 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M55-media-and-entertainment.md](M55-media-and-entertainment.md) | Media and entertainment (v6, lane B; done 2026-11-26): advertising, content as an asset with hits drawn at release, streaming, games, social networks, creative talent with egos (formulas §65) | M53 |
 | [M52-editor-and-sandbox.md](M52-editor-and-sandbox.md) | The editor and sandbox (v6, lane C; done 2026-11-26): custom scenarios as validated files, shared by export and import; sandbox play past 2069 (formulas §66, ADR-0026) | M50, M51 |
 | [M59-ci-at-scale.md](M59-ci-at-scale.md) | CI at scale (engineering, single lane): `e2e` in four shards and `check` in four plus timing alone, fixture saves cached, shards that warn before they outgrow their limits; the same tests, about 30 minutes to a verdict | M55 |
+| [M57r-A-review-10-engine-fixes.md](M57r-A-review-10-engine-fixes.md) | Review 10's engine fixes (lane A): stable RNG keys, exact money, bank liquidity, currencies against engine prices, finance and media timing (consolidated items 5–18, 28–30) | M59 |
+| [M57r-B-review-10-platform-fixes.md](M57r-B-review-10-platform-fixes.md) | Review 10's platform fixes and v6.0.1 (lane B): installer, updater and local API; crash-safe conversations; hidden values with paired-state tests; LLM handling; guards that can fail (items 1–4, 19–27, 31–37) | M59 |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
