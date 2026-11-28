@@ -313,6 +313,16 @@ def set_prices(state: GameState, balance: Balance, data: GameData) -> GameState:
     return with_segments(state, rows, regional)
 
 
+def engine_priced(state: GameState, product: Product, balance: Balance) -> bool:
+    """A line whose price the engine sets each month in US cents from the ad market (a social
+    line, an ad-priced app): translation never applies to it (M57r-A, review 10 item 10)."""
+    mb = balance.media
+    if product.category == mb.social:
+        return True
+    s = state.media.setting(product.id)
+    return product.category == mb.consumer_apps and s is not None and s.ad_pricing
+
+
 def market_month(state: GameState, balance: Balance, data: GameData) -> GameState:
     """Phase 9: each region's ad market this month (shown, kept `history_months`)."""
     out = []

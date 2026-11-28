@@ -67,16 +67,25 @@ def customers(state: GameState, product: Product) -> float:
     )
 
 
-def monthly_revenue_cents(state: GameState, product: Product) -> int:
-    """Customers x price this month (as phase 5 books it, before an ad tier's share)."""
+def monthly_revenue_cents(
+    state: GameState, product: Product, balance: Balance, data: GameData
+) -> int:
+    """Customers x price this month as phase 5 books it (translated where its index moved;
+    M57r-A ruling 4), before an ad tier's share."""
+    from tst.sim.fx.translate import booked_price
+
+    home = home_region_of(state, balance, data)
     total = 0
-    rows: list[ProductSegment | RegionalSegment] = [
-        *state.segments_of(product.id),
-        *state.regional_segments_of(product.id),
-    ]
-    for s in rows:
+    for s in state.segments_of(product.id):
         if s.price_cents is not None:
-            total += times(s.price_cents, s.customers)
+            price = booked_price(state, product.id, home, s.segment, s.price_cents, balance, data)
+            total += times(price, s.customers)
+    for r in state.regional_segments_of(product.id):
+        if r.price_cents is not None:
+            price = booked_price(
+                state, product.id, r.region, r.segment, r.price_cents, balance, data
+            )
+            total += times(price, r.customers)
     return total
 
 
@@ -114,7 +123,7 @@ def catalogue_value(state: GameState, product: Product, balance: Balance, data: 
     company = state.company(product.company_id)
     value = 0.0
     if company is not None and not company.is_player:
-        yearly = monthly_revenue_cents(state, product) * MONTHS
+        yearly = monthly_revenue_cents(state, product, balance, data) * MONTHS
         # money-exact: ratio (a multiplier, not money)
         share = sb.rival_content_share * balance.media.kind("series").revenue_mult
         value += yearly * share * sb.recency_months / MONTHS  # money-exact: estimate
@@ -227,7 +236,9 @@ def month(
         if p.company_id not in ledger or not selling(p):
             continue
         if p.category == mb.music:
-            payout = times(monthly_revenue_cents(state, p), mb.streaming_service.music_payout)
+            payout = times(
+                monthly_revenue_cents(state, p, balance, data), mb.streaming_service.music_payout
+            )
             if payout:
                 out[p.id] = (0, 0, payout)
                 entries.append(
@@ -287,7 +298,7 @@ def attribute_revenue(state: GameState, balance: Balance, data: GameData) -> Gam
         total = sum(values.values())
         if total <= 0:
             continue
-        revenue = monthly_revenue_cents(state, p)
+        revenue = monthly_revenue_cents(state, p, balance, data)
         for i, t in enumerate(titles):
             if t.id in values:
                 share = times(revenue, values[t.id] / total)  # money-exact: ratio

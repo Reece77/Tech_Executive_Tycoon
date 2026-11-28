@@ -13,16 +13,14 @@ A company that sells and spends only in North America books exactly as before (6
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.facilities.compute import home_region_of
 from tst.sim.fx import hedges, rates, translate
 from tst.sim.fx.models import FxMonth
 from tst.sim.ledger import LedgerEntry
-from tst.sim.money import times
 from tst.sim.platforms.phase import NO_EFFECTS, Effects
-from tst.sim.products.models import SELLING
 from tst.sim.rng import RngFactory
 from tst.sim.state import GameState
 
@@ -43,38 +41,33 @@ def with_effects(base: Effects | None, prices: dict[tuple[int, str, str], int]) 
     return replace(base if base is not None else NO_EFFECTS, fx_price=prices)
 
 
-def _foreign_months(state: GameState, balance: Balance, data: GameData) -> GameState:
-    """Each player company's foreign revenue and local costs by region this month (FxMonth)."""
+def _foreign_months(
+    state: GameState,
+    balance: Balance,
+    data: GameData,
+    booked: Mapping[tuple[int, str], tuple[int, int]],
+    settled: Mapping[tuple[int, str], int],
+) -> GameState:
+    """Each player company's foreign revenue and local costs by region this month (FxMonth).
+    M57r-A (review 10 items 11-12): revenue is what phase 5 booked there (units sold for a
+    unit-sale line, the ad tier's paid share), and the hedge column every forward that settled
+    in the region this month, summed; a region with settlements alone has a row too."""
     xb = balance.fx
-    home = home_region_of(state, balance, data)
-    prices = translate.fx_prices(state, balance, data)
     months: list[FxMonth] = []
-    settled = {
-        (h.company_id, h.region): h.settled_cents
-        for h in state.fx.hedges
-        if h.status == "settled" and h.settle_turn == state.turn
-    }
     for company in state.companies:
         if not company.is_player:
             continue
-        rev: dict[str, tuple[int, int]] = {}
-        for p in state.company_products(company.id):
-            if p.status not in SELLING:
-                continue
-            rows = [(home, s.segment, s.price_cents, s.customers) for s in state.segments_of(p.id)]
-            rows += [
-                (r.region, r.segment, r.price_cents, r.customers)
-                for r in state.regional_segments_of(p.id)
-            ]
-            for region, seg, price, customers in rows:
-                if region == xb.home or price is None or customers <= 0:
-                    continue
-                booked = prices.get((p.id, region, seg), price)
-                a, b = rev.get(region, (0, 0))
-                rev[region] = (a + times(booked, customers), b + times(price, customers))
+        rev = {
+            region: amounts
+            for (cid, region), amounts in booked.items()
+            if cid == company.id and region != xb.home and amounts != (0, 0)
+        }
         costs = translate.local_costs(state, company.id, balance, data)
+        hedged = {r: v for (cid, r), v in settled.items() if cid == company.id}
         for region in data.region_keys:
-            if region == xb.home or (region not in rev and region not in costs):
+            if region == xb.home or (
+                region not in rev and region not in costs and region not in hedged
+            ):
                 continue
             r_now, r_set = rev.get(region, (0, 0))
             c = costs.get(region, translate.LocalCosts())
@@ -87,7 +80,7 @@ def _foreign_months(state: GameState, balance: Balance, data: GameData) -> GameS
                     cost_cents=c.base_cents + c.delta_cents,
                     untranslated_revenue_cents=r_set,
                     untranslated_cost_cents=c.base_cents,
-                    hedge_cents=settled.get((company.id, region), 0),
+                    hedge_cents=hedged.get(region, 0),
                 )
             )
     if not months and not state.fx.months:
@@ -98,12 +91,16 @@ def _foreign_months(state: GameState, balance: Balance, data: GameData) -> GameS
 
 
 def after_sales(
-    state: GameState, balance: Balance, data: GameData
+    state: GameState,
+    balance: Balance,
+    data: GameData,
+    booked: Mapping[tuple[int, str], tuple[int, int]] | None = None,
 ) -> tuple[GameState, list[LedgerEntry]]:
+    """`booked`: phase 5's revenue by (company, region), booked and as set (MarketOutcome)."""
     if not rates.enabled(data):
         return state, []
-    state, entries, _ = hedges.mark_and_settle(state, balance, data)
-    state = _foreign_months(state, balance, data)
+    state, entries, settled = hedges.mark_and_settle(state, balance, data)
+    state = _foreign_months(state, balance, data, booked or {}, settled)
     if state.fx.programmes:
         state = hedges.programme_month(state, balance, data)
     if state.fx.hedges:

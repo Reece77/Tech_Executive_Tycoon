@@ -144,8 +144,20 @@ def _lines(
     return out
 
 
+def _booked(
+    state: GameState, p: Product, seg: str, region: str, price: int, b: Balance, d: GameData
+) -> int:
+    """A policy's premium as phase 5 books it (translated; M57r-A ruling 4)."""
+    from tst.sim.fx.translate import booked_price
+
+    return booked_price(state, p.id, region, seg, price, b, d)
+
+
 def premiums_cents(state: GameState, company_id: int, balance: Balance, data: GameData) -> int:
-    return sum(times(price, n) for _, _, _, price, n in _lines(state, company_id, balance, data))
+    return sum(
+        times(_booked(state, p, seg, region, price, balance, data), n)
+        for p, seg, region, price, n in _lines(state, company_id, balance, data)
+    )
 
 
 def required_cents(state: GameState, insurer: Insurer, balance: Balance, data: GameData) -> int:
@@ -196,7 +208,7 @@ def insurer_month(
     premiums = 0
     cat_hit = False
     for p, seg, region, price, n in _lines(state, insurer.company_id, balance, data):
-        prem = times(price, n)
+        prem = times(_booked(state, p, seg, region, price, balance, data), n)
         premiums += prem
         skill = team_skill(state, p, SKILLS, balance, data)
         ratio = claims_ratio(state, p, seg, region, price, balance, data, skill)
