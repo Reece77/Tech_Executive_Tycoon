@@ -10,6 +10,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
@@ -159,3 +160,61 @@ def test_prompts_never_read_media_hidden_values() -> None:
             for name in ("media.leads", "talent.candidate", "draw_audience", "media.draws",
                          "tst.sim.media.draws", "creative_off", ".grievance"):  # fmt: skip
                 assert name not in code, (source, name)
+
+
+def test_paired_state_a_leads_true_values_change_nothing_shown(
+    tmp_path: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M57r-B (review 10 item 4, F3; ruling 2): two leads on offer with the same shown ranges
+    and other true creative and vision (and ego and loyalty) give byte-identical media JSON,
+    fee included: the fee is priced from the shown ranges' centres (it inverted to the true
+    creative + vision to six decimals)."""
+    from tst.sim.media import talent
+
+    saves = tmp_path / "saves"
+    path, _pid = _save(saves, loaded)
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(save_dir=saves)
+    real = talent.candidate
+    bodies = []
+    with TestClient(app) as c:
+        api = Client(c)
+        base = f"/api/saves/{path.name.removesuffix('.tst.sqlite')}"
+        answer_events(path, loaded)
+        api.post(f"{base}/advance")
+        for delta in (0.0, 0.4):
+
+            def shifted(*args: object, _d: float = delta, **kwargs: object) -> talent.Candidate:
+                c0 = real(*args, **kwargs)  # type: ignore[arg-type]
+                hw = loaded.balance.media.talent.reveal_hw
+                # the true value moves by _d and the offset back by _d / hw: the same centre
+                return replace(
+                    c0,
+                    creative=c0.creative + _d,
+                    vision=c0.vision + _d,
+                    creative_off=c0.creative_off - _d / hw,
+                    vision_off=c0.vision_off - _d / hw,
+                    ego=c0.ego + 3 * _d,
+                    loyalty=c0.loyalty - 3 * _d,
+                )
+
+            monkeypatch.setattr(talent, "candidate", shifted)
+            bodies.append(json.dumps(api.get(f"{base}/media"), sort_keys=True))
+    assert json.loads(bodies[0])["studio"]["offers"], "leads on offer"
+    assert bodies[0] == bodies[1]
+
+
+def test_a_leads_fee_is_a_round_figure_from_the_shown_centres(loaded: LoadedData) -> None:
+    from tst.sim.media import talent
+
+    b = loaded.balance
+    person = None  # the fee reads no person
+    for creative, vision, c_off, v_off in ((12.3, 15.1, 0.2, -0.4), (9.0, 18.0, -0.9, 0.9)):
+        c = talent.Candidate(person, creative, vision, 10.0, 10.0, c_off, v_off)  # type: ignore[arg-type]
+        lo_c, hi_c = talent.shown_range(creative, c_off, 0, b)
+        lo_v, hi_v = talent.shown_range(vision, v_off, 0, b)
+        exact = talent.fee_cents((lo_c + hi_c) / 2, (lo_v + hi_v) / 2, 0.0, b)
+        fee = talent.offer_fee_cents(c, b)
+        assert abs(fee - exact) <= exact * talent.FEE_STEP
+        digits = str(fee).rstrip("0")
+        assert len(digits) <= 2 or digits[-1] in "125"  # 1, 2 or 5 x a power of ten steps

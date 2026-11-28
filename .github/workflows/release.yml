@@ -7,6 +7,10 @@
 #   release with the installer, its .sha256 and notes from CHANGELOG.md (the "What's new" the
 #   game shows). A manual run creates the tag on the commit it built.
 # - A pull request touching the packaging builds and smoke-tests without publishing.
+# - M57r-B (review 10 item 24): a release (tag or manual run) is built only from a commit on
+#   `main` whose `check` and `e2e` summary jobs succeeded (the `gate` job), and the smoke test
+#   also runs the in-game update end to end against a fake release of the next patch version
+#   (built from the same bundle; never published).
 name: release
 
 on:
@@ -34,7 +38,40 @@ permissions:
   contents: read
 
 jobs:
+  gate:
+    # Releases come only from main, and only from a commit main's checks passed.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: The commit is on main, with green check and e2e
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::$SHA is not on main: releases are made from main only"; exit 1
+          fi
+          for name in check e2e; do
+            result=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/check-runs?check_name=$name&per_page=100" \
+              --jq '[.check_runs[] | select(.name == "'"$name"'")] | sort_by(.completed_at) | last | .conclusion // "missing"')
+            echo "$name: $result"
+            if [ "$result" != "success" ]; then
+              echo "::error::$name is $result on $SHA: release only a commit main's checks passed"; exit 1
+            fi
+          done
+
   build:
+    needs: gate
+    # A pull request skips the gate (nothing is published) and still builds and smoke-tests.
+    if: always() && (needs.gate.result == 'success' || needs.gate.result == 'skipped')
     runs-on: windows-latest
     timeout-minutes: 60
     outputs:
@@ -109,9 +146,27 @@ jobs:
           "$hash  $(Split-Path $exe -Leaf)" | Set-Content -Path "$exe.sha256" -NoNewline -Encoding ascii
           Get-ChildItem packaging/out | Format-Table Name, Length
 
+      - name: A fake next version for the in-game update (never published)
+        id: next
+        shell: pwsh
+        run: |
+          $v = '${{ steps.version.outputs.version }}'.Split('.')
+          $next = "$($v[0]).$($v[1]).$([int]$v[2] + 1)"
+          New-Item -ItemType Directory -Force -Path packaging/dist-next | Out-Null
+          Copy-Item -Recurse 'packaging/dist/Tech Startup Tycoon' 'packaging/dist-next/'
+          $file = @(Get-ChildItem 'packaging/dist-next/Tech Startup Tycoon' -Recurse -Filter version.txt)
+          if ($file.Count -ne 1) { throw "expected one bundled version.txt, found $($file.Count)" }
+          Set-Content -Path $file[0].FullName -Value $next -NoNewline
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc "/DAppVersion=$next" "/DDistDir=dist-next\Tech Startup Tycoon" "/DOutputName=next-TechStartupTycoon-Setup-$next" "/O$PWD\packaging\next-out" packaging/installer.iss
+          if ($LASTEXITCODE -ne 0) { throw "iscc exited $LASTEXITCODE" }
+          "version=$next" >> $env:GITHUB_OUTPUT
+          "installer=packaging/next-out/next-TechStartupTycoon-Setup-$next.exe" >> $env:GITHUB_OUTPUT
+
       - name: Smoke test on this clean machine
         shell: pwsh
-        run: pwsh packaging/smoke.ps1 -Installer "packaging/out/TechStartupTycoon-Setup-${{ steps.version.outputs.version }}.exe" -Version "${{ steps.version.outputs.version }}"
+        run: pwsh packaging/smoke.ps1 -Installer "packaging/out/TechStartupTycoon-Setup-${{ steps.version.outputs.version }}.exe" -Version "${{ steps.version.outputs.version }}" -NextInstaller "${{ steps.next.outputs.installer }}" -NextVersion "${{ steps.next.outputs.version }}"
 
       - name: Logs
         if: always()
@@ -144,8 +199,8 @@ jobs:
           retention-days: 14
 
   publish:
-    needs: build
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [gate, build]
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.gate.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

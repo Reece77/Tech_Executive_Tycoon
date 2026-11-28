@@ -61,3 +61,30 @@ Fixes go to **M57r-A** (engine) and **M57r-B** (platform, conversations and test
 5. **#16:** route game store fees through `platforms.data.fee_for`, posting to the store's owner (internal on the player's own store).
 6. **#24, M9's Africa miss:** M57r-B adds a bounded known-miss row (`M9.spread.africa`, owner M57, bound 10/10 seeds), with M57 to add a fixed-broadband rival in Africa or retire the cell. Releases require a commit on `main` with green `check` and `e2e`.
 7. **#29:** add a poisson-heavy seed to the `determinism` job's Windows and Linux digests; if they differ, draw through a `dmath`-based sampler.
+
+## Resolution, lane B (M57r-B, 2026-11-28)
+
+A section of its own rather than a column in the table above, so lane A's resolution never conflicts with it. Details in `docs/tasks/M57r-B-review-10-platform-fixes.md`, "Decisions made".
+
+| # | Resolution | Test |
+| --- | --- | --- |
+| 1 | The uninstaller removes only its tracked files and `_internal`; setup refuses a folder overlapping the saves or app data (wizard and silent) | smoke: sentinel survives uninstall; overlap refused; `test_release_workflow.py` |
+| 2 | Loopback `Host` (the game's own port when installed), own `Origin` on writes, instance token on desktop writes | `test_api_desktop.py` (14 Host/Origin cases, token refusals) |
+| 3 | Last round, outcome action and closure in one transaction (`repository.apply_in_session`) | M47/M48/M49: injected failures at the action and the closure, after the commit, two simultaneous Accepts and Skips |
+| 4 | Negotiation ranges from the nominal zone, centred once and nested; asymmetric zones; concession jitter; talk effects by direction; fees from shown centres; the rival's offer as a band (ruling 2) | paired-state tests (talks, meetings, media, a negotiation's range); 400-seed estimator test |
+| 19 | Attempt ordinal in the negotiation key; refused closes cool off | `test_a_second_deal_this_month_draws_afresh_and_a_failed_close_cools_off` |
+| 20 | Failed scoring call: retryable, nothing played; calls outside the write lock; moved conversations refused | M47/M48 failure, lock and moved-round tests |
+| 21 | Engine-template outcome after the LLM's tone; unit-aware number, amount-word and outcome-claim checks | `test_m57r_b_llm.py`, `test_wording_that_contradicts_the_decision_is_replaced` |
+| 22 | Atomic per-folder, per-month reservation of each call's bound; spend in a `finally`; `source` a `Literal` | `test_m57r_b_llm.py` (race of 20), M47 spend and nearly-spent tests |
+| 23 | Updater pins hosts, scheme and paths, one checksum record, size cap, re-hash, old installers deleted; setup waits for the game (`/WAITPID`), `/SUPPRESSMSGBOXES`, `/LOG` | `test_desktop.py`; smoke: in-game update to a fake next version reaches its health check |
+| 24 | Releases gated on `main` with green `check` and `e2e`; `M9.spread.africa` a known miss (ruling 6) | `test_release_workflow.py`, `test_m9_balance.py` |
+| 25 | An unmeasurable V3 row fails; `V3.ai.survival` its own owned target | `test_known_misses.py` |
+| 26 | M48's and M49's word tests in M47's form, planted before the opening, system prompt checked, percent and 2-decimal forms | `test_no_hidden_value_reaches_a_prompt_or_the_api` (M48, M49) |
+| 27 | `weekly-m52-2100`; the tool exits 1 on a failure; every weekly file in a scheduled target; nightly M53 and M50 tests | `test_weekly_targets.py`, `test_m53_balance.py`, `test_m50_balance.py` |
+| 31 | Constant conversation system prompts; names as JSON context | `test_conversation_system_prompts_hold_no_name` |
+| 32 | conftest pins `TST_CONVERSATION_ADAPTER=mock` and an empty key | `test_tests_use_the_mock_for_conversations_and_no_key` |
+| 33 | Stored copy checked against its hash at load; results keyed by slug and hash | `test_m57r_b_saves.py` |
+| 34 | `0071_m57rb` (`start_turn = created_turn`); `SaveTooNewError` for a newer build's save | `test_m57r_b_saves.py` |
+| 35 | The e2e cache key covers the folder's starting JSON files | `test_the_key_covers_the_profiles_starting_state` (both orders) |
+| 36 | M51's carried rules as bounded known misses; family check in the call-site guard; owners named M57; purity bans every `tst.*` outside `tst.sim`. The V4 rows' readings: M57 (decision 18) | `test_rng_call_sites.py`, `test_sim_purity.py`, `test_known_misses.py` |
+| 37 | CLAUDE.md §5's `--company-name`; `turn_to_ym` at five sites. ADR-0013's two corrections wait for lane A's merge (its file) | — |

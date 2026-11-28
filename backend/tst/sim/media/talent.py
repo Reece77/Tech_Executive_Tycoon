@@ -8,7 +8,10 @@ person's shown ego and loyalty traits + N(0, `trait_sd`), all clamped to 1-20. N
 but the offer's (year, n) until the lead is signed, so no other person's draws change.
 
 **Overall deals.** Signing employs the lead for a term at a fee a year: `base_fee_cents` x scale x
-((creative + vision) / 20) ** `fee_exponent` x (1 + `reputation_fee` x reputation); `upfront_share`
+((creative + vision) / 20) ** `fee_exponent` x (1 + `reputation_fee` x reputation), where (M57r-B,
+review 10 item 4, F3) creative and vision are the centres of the ranges the studio is shown, and
+the fee is rounded to `FEE_STEP` of itself (a round figure), so the fee says nothing the ranges
+don't; `upfront_share`
 of the deal's total is paid at signing (6000) and the rest is the lead's salary (payroll). During
 the deal the studio has first look: only its signed leads lead its titles. At the term's end the
 employment ends.
@@ -100,6 +103,31 @@ def fee_cents(creative: float, vision: float, reputation: float, balance: Balanc
     return times(tb.base_fee_cents, balance.media.scale, mult, rep)
 
 
+FEE_STEP = 0.05  # tunable-exempt: display rounding (as negotiation's NICE steps), 5% of the fee
+NICE_FEE = (5, 2, 1)  # tunable-exempt: a fee is a round figure, 1, 2 or 5 x a power of ten
+
+
+def _round_fee(fee: int) -> int:
+    """`fee` to the nearest round step (1, 2 or 5 x a power of ten at or below FEE_STEP of
+    it), at least 1 cent."""
+    raw = int(fee * FEE_STEP)  # money-exact: a step size, then integer arithmetic
+    if raw < 1:
+        return max(1, fee)
+    power = int("1" + "0" * (len(str(raw)) - 1))  # the power of ten at or below raw
+    step = next(n * power for n in NICE_FEE if n * power <= raw)
+    rounded: int = (fee + step // 2) // step * step
+    return max(step, rounded)
+
+
+def offer_fee_cents(c: Candidate, balance: Balance) -> int:
+    """The fee a year a lead on offer is signed at: priced from the shown ranges' centres, not
+    the true creative and vision (M57r-B), rounded to a round figure."""
+    lo_c, hi_c = shown_range(c.creative, c.creative_off, 0, balance)
+    lo_v, hi_v = shown_range(c.vision, c.vision_off, 0, balance)
+    centres = (lo_c + hi_c) / 2, (lo_v + hi_v) / 2
+    return _round_fee(fee_cents(centres[0], centres[1], 0.0, balance))
+
+
 def pool_month(state: GameState, balance: Balance) -> GameState:
     """Each January: this year's leads come on offer; offers past `pool_months` expire."""
     tb = balance.media.talent
@@ -131,7 +159,7 @@ def sign(
     emp_id, ids = ids.take("employment")
     state = replace(state, next_ids=ids)
     c = candidate(offer, rng, balance, data, person_id=person_id)
-    fee = fee_cents(c.creative, c.vision, 0.0, balance)
+    fee = offer_fee_cents(c, balance)
     tb = balance.media.talent
     upfront = times(fee, years, tb.upfront_share)
     salary = fee - times(fee, tb.upfront_share)

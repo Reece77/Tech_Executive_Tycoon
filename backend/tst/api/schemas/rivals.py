@@ -134,7 +134,11 @@ class ApproachOut(BaseModel):
     role_label: str
     rival_id: int
     rival_name: str
-    offer_cents: int
+    offer_lo_cents: int = Field(
+        description="M57r-B: the rival's offer is shown as a band of round figures it falls "
+        "in (61.3 keeps the amount itself hidden)"
+    )
+    offer_hi_cents: int
     salary_cents: int
     unvested_options: int
     band: str = Field(description="likely to stay | might go | likely to go")

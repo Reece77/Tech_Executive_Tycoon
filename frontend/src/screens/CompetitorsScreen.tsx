@@ -234,8 +234,8 @@ export function ApproachPanel({ saveId, approach: a }: { saveId: string; approac
         {a.rival_name} is trying to hire {a.name}
       </strong>
       <span style={{ fontSize: 13 }}>
-        {a.role_label}: offered {formatMoneyWhole(a.offer_cents)} a year against{' '}
-        {formatMoneyWhole(a.salary_cents)} now
+        {a.role_label}: offered {formatMoneyWhole(a.offer_lo_cents)} to{' '}
+        {formatMoneyWhole(a.offer_hi_cents)} a year against {formatMoneyWhole(a.salary_cents)} now
         {a.unvested_options > 0 ? `, with ${formatWhole(a.unvested_options)} unvested options` : ''}
         . They decide when you press Continue ({a.answer_date_label}).
       </span>
@@ -255,7 +255,7 @@ export function ApproachPanel({ saveId, approach: a }: { saveId: string; approac
           saveId={saveId}
           p={person.data}
           meta={meta.data}
-          initialCents={a.offer_cents}
+          initialCents={a.offer_hi_cents}
           approachId={a.approach_id}
           onClose={() => setCounter(false)}
         />

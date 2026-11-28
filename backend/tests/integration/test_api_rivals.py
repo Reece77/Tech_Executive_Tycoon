@@ -98,11 +98,16 @@ def test_an_approach_shows_a_band_and_a_counter_preview(tmp_path: Path, loaded: 
                 approach(state, rival, staff[0]["person_id"], loaded.balance, loaded.game_data),
             )
         (open_one,) = api.get(f"{BASE}/approaches")
-        assert open_one["rival_name"] == "Zoho" and open_one["offer_cents"] > 0
+        assert open_one["rival_name"] == "Zoho" and open_one["offer_lo_cents"] > 0
+        # M57r-B (ruling 2): a band holding the hidden offer, never the offer itself
+        with repository.open_session(path) as session:
+            offer = load_state(session).approaches[-1].offer_cents
+        assert open_one["offer_lo_cents"] <= offer < open_one["offer_hi_cents"]
+        assert "offer_cents" not in open_one
         assert open_one["band"] in ("likely to stay", "might go", "likely to go")
         preview = api.post(
             f"{BASE}/approaches/{open_one['approach_id']}/counter-preview",
-            {"salary_cents": open_one["offer_cents"] * 2},
+            {"salary_cents": open_one["offer_hi_cents"] * 2},
         )
         assert preview["band_now"] == open_one["band"]
         assert preview["band_after"] == "likely to stay"

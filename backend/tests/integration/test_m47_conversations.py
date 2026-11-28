@@ -18,7 +18,7 @@ from tests.helpers import fund_save
 from tests.integration.test_api_hiring import Client
 from tst.api.app import create_app
 from tst.config import Settings, get_settings
-from tst.conversations import service, store
+from tst.conversations import service, store, templates
 from tst.db.models import ConversationRow
 from tst.db.repository import create_save, load_state, open_session
 from tst.llm.base import ConversationPrompt
@@ -269,29 +269,328 @@ def test_the_cli_opens_plays_and_skips(save: Path, monkeypatch: pytest.MonkeyPat
     assert "1 skipped" in run.invoke(cli_app, ["negotiate", "--save", SAVE]).output
 
 
-def test_an_agreement_waits_out_a_busy_save(
+def _deals(path: Path) -> int:
+    with open_session(path) as session:
+        return len(load_state(session).commodity_deals)
+
+
+def _status(path: Path, conv_id: int) -> str:
+    with open_session(path) as session:
+        row = session.get(ConversationRow, conv_id)
+        assert row is not None
+        return row.status
+
+
+class Crash(Exception):
+    """A process dying mid-request, as far as the save can tell."""
+
+
+@pytest.mark.parametrize("boundary", ["after_the_action", "at_the_closure"])
+@pytest.mark.parametrize("how", ["skip", "accept", "last_round"])
+def test_a_crash_inside_the_finish_leaves_the_talks_open_and_nothing_signed(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch, boundary: str, how: str
+) -> None:
+    """M57r-B (review 10 item 3, reproduced: commodity_deals 1 -> 2): the last round, the deal's
+    action and the closure commit in one transaction. A failure at either point inside it
+    leaves the talks open with nothing applied; finishing again signs exactly once."""
+    from tst.db import repository
+
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    before = _deals(save)
+    real_apply, real_close = repository.apply_in_session, service._close
+
+    def apply_then_crash(*args: Any, **kwargs: Any) -> Any:
+        real_apply(*args, **kwargs)
+        raise Crash
+
+    def crash_at_close(*args: Any, **kwargs: Any) -> None:
+        real_close(*args, **kwargs)
+        raise Crash
+
+    if boundary == "after_the_action":
+        monkeypatch.setattr(repository, "apply_in_session", apply_then_crash)
+    else:
+        monkeypatch.setattr(service, "_close", crash_at_close)
+
+    def finish() -> Any:
+        if how == "skip":
+            return service.skip(save, loaded, t.id)
+        if how == "accept":
+            return service.accept(save, loaded, t.id)
+        return service.play(  # a walk-away ends the talks in the round itself
+            save, loaded, t.id, [1], moves=[{"kind": "threaten_walk"}], adapter=TemplateAdapter()
+        )
+
+    with pytest.raises(Crash):
+        finish()
+    assert _status(save, t.id) == "open" and _deals(save) == before
+    monkeypatch.setattr(repository, "apply_in_session", real_apply)
+    monkeypatch.setattr(service, "_close", real_close)
+    done = finish()
+    assert done.status in ("skipped", "agreed", "walked")
+    assert _deals(save) == before + (0 if done.status == "walked" else 1)
+    with pytest.raises(NegotiationRuleError, match="over"):  # a retry finds them closed
+        service.skip(save, loaded, t.id)
+    assert _deals(save) == before + (0 if done.status == "walked" else 1)
+
+
+def test_a_crash_after_the_commit_signs_once_and_a_retry_is_refused(
     save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Another write holding the save (a screen's mark-read) when the deal closes: the outcome
-    waits for it rather than leaving the talks ended and the deal unsigned."""
+    """After the one commit only the profile's bookkeeping runs: a crash there has already
+    signed the deal and closed the talks, so pressing Skip again changes nothing."""
     from tst.db import repository
+
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    before = _deals(save)
+
+    def crash(*_args: Any, **_kwargs: Any) -> None:
+        raise Crash
+
+    monkeypatch.setattr(repository, "after_action", crash)
+    with pytest.raises(Crash):
+        service.skip(save, loaded, t.id)
+    assert _status(save, t.id) == "skipped" and _deals(save) == before + 1
+    monkeypatch.undo()
+    with pytest.raises(NegotiationRuleError, match="over"):
+        service.skip(save, loaded, t.id)
+    assert _deals(save) == before + 1
+
+
+@pytest.mark.parametrize("how", ["accept", "skip"])
+def test_two_simultaneous_finishes_sign_exactly_once(
+    save: Path, loaded: LoadedData, how: str
+) -> None:
+    """Two tabs (or a retry beside the first request) pressing Accept together: one signs,
+    the other is refused busy or finds the talks over, and the deal exists once."""
+    import threading
+
     from tst.sim.errors import SaveBusyError
 
-    real = repository.run_action
-    calls = {"n": 0}
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    before = _deals(save)
+    start = threading.Barrier(2)
+    results: list[str] = []
 
-    def busy_once(*args: object, **kwargs: object) -> object:
-        calls["n"] += 1
-        if calls["n"] == 1:
-            raise SaveBusyError("busy")
-        return real(*args, **kwargs)  # type: ignore[arg-type]
+    def press() -> None:
+        start.wait()
+        try:
+            getattr(service, how)(save, loaded, t.id)
+            results.append("signed")
+        except SaveBusyError:
+            results.append("busy")
+        except NegotiationRuleError:
+            results.append("over")
 
+    threads = [threading.Thread(target=press) for _ in range(2)]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join(60)
+    assert sorted(results) in (["busy", "signed"], ["over", "signed"]), results
+    assert _deals(save) == before + 1
+    # the busy one, sent again, finds the talks over
+    with pytest.raises(NegotiationRuleError, match="over"):
+        getattr(service, how)(save, loaded, t.id)
+    assert _deals(save) == before + 1
+
+
+# --- M57r-B sub-task 4 (review 10 items 19, 20, 22) -------------------------------------------
+
+
+def _rounds(path: Path, conv_id: int) -> int:
+    from sqlalchemy import func, select
+
+    from tst.db.models import ConversationRoundRow
+
+    with open_session(path) as session:
+        return (
+            session.scalar(
+                select(func.count())
+                .select_from(ConversationRoundRow)
+                .where(ConversationRoundRow.conversation_id == conv_id)
+            )
+            or 0
+        )
+
+
+def budget_tokens() -> int:
+    from tst.conversations import budget
+
+    return budget.MAX_OUTPUT_TOKENS
+
+
+def _priced(**kw: Any) -> LLMSettings:
+    """Settings that price the mock's tokens (a cent a token), so calls cost something."""
+    from tst.llm.settings import ModelPrice
+
+    prices = {"mock": ModelPrice(input=1_000_000, output=1_000_000)}
+    return LLMSettings(price_per_mtok_cents=prices, **kw)
+
+
+def test_a_failed_scoring_call_plays_nothing_and_is_retryable(
+    save: Path, loaded: LoadedData
+) -> None:
+    """Item 20: an unreachable model (or a refusal) no longer scores the message `neutral`
+    and plays the round: nothing is played, the error is retryable, and the call's spend is
+    still recorded."""
+    from tst.conversations.common import ConversationCallError
+    from tst.llm.settings import month_spend
+
+    failing = Recorder({"classify": lambda _p: None})  # the mock's error completion
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=failing)
+    before = month_spend(save.parent).conversation_calls
+    with open_session(save) as session:
+        row = session.get(ConversationRow, t.id)
+        assert row is not None
+        state_before = row.state
+    with pytest.raises(ConversationCallError):
+        service.play(save, loaded, t.id, [9000], message="Can you do better?", adapter=failing)
+    assert _rounds(save, t.id) == 0
+    with open_session(save) as session:
+        row = session.get(ConversationRow, t.id)
+        assert row is not None and row.state == state_before and row.status == "open"
+    assert month_spend(save.parent).conversation_calls == before + 1
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(save_dir=save.parent)
     from tst.conversations import common
 
-    monkeypatch.setattr(common, "BUSY_WAIT_S", 0.0)  # M48: the busy wait moved to common
-    monkeypatch.setattr(repository, "run_action", busy_once)
-    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
-    done = service.skip(save, loaded, t.id)
-    assert done.status == "skipped" and calls["n"] == 2
-    with open_session(save) as session:
-        assert load_state(session).commodity_deals
+    with TestClient(app) as client:
+        import unittest.mock
+
+        with unittest.mock.patch.object(common, "conversation_adapter", lambda _d: failing):
+            res = client.post(
+                f"/api/saves/{SAVE}/negotiations/{t.id}/rounds",
+                json={"offer": [9000], "message": "Can you do better?"},
+            )
+    assert res.status_code == 503 and res.json()["retryable"] is True, res.text
+
+
+def test_calls_run_outside_the_write_lock_and_a_moved_round_is_refused(
+    save: Path, loaded: LoadedData
+) -> None:
+    """Item 20: while the model scores the message the save takes other writes (the lock is
+    not held for the call); when one of them played this negotiation's round meanwhile, the
+    slow round is refused (retryable) instead of overwriting it."""
+    from tst.conversations.common import ConversationMovedError
+    from tst.db import repository
+
+    seen: list[str] = []
+
+    def classify(prompt: ConversationPrompt) -> dict[str, Any]:
+        with repository.write_session(save):  # SaveBusyError if the round held the lock
+            seen.append("free")
+        if len(seen) == 1:  # meanwhile, another tab plays a round by the buttons
+            service.play(save, loaded, conv_id[0], [9100], moves=[{"kind": "appeal"}], adapter=mock)
+        return {"moves": [{"move": "anchor"}]}
+
+    mock = Recorder({"classify": classify})
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=mock)
+    conv_id = [t.id]
+    with pytest.raises(ConversationMovedError):
+        service.play(save, loaded, t.id, [9000], message="Our number is lower.", adapter=mock)
+    assert seen == ["free"] and _rounds(save, t.id) == 1  # the other tab's round only
+    again = service.play(save, loaded, t.id, [9000], message="Our number is lower.", adapter=mock)
+    assert len(again.messages) == 2
+
+
+def test_spend_is_recorded_even_when_the_round_fails_to_commit(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Item 22: each call's cost is recorded in a `finally` as it returns, so a failure in the
+    save's transaction afterwards no longer loses it."""
+    from tst.llm.settings import month_spend
+
+    save_settings(save.parent, _priced(conversation_budget_cents=10_000_000))
+    mock = Recorder({"classify": {"moves": [{"move": "anchor"}]}})
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=mock)
+    before = month_spend(save.parent)
+
+    def broken(*_a: object, **_k: object) -> None:
+        raise RuntimeError("disk full")
+
+    monkeypatch.setattr(service, "_log_calls", broken)
+    with pytest.raises(RuntimeError, match="disk full"):
+        service.play(save, loaded, t.id, [9000], message="Lower, please.", adapter=mock)
+    after = month_spend(save.parent)
+    assert after.conversation_calls >= before.conversation_calls + 2  # classify, reply, ...
+    assert after.conversation_cents > before.conversation_cents
+    assert _rounds(save, t.id) == 0
+
+
+def test_a_nearly_spent_month_refuses_the_call_it_cannot_cover(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Item 22: a call is reserved at its bounded cost before it runs: with less left than
+    that, the scoring call is refused (retryable, nothing played) and the cap is never passed."""
+    from tst.conversations.common import ConversationCallError
+    from tst.llm.settings import month_spend
+
+    cap = 100_000  # cents: the opening's suggestions fit, then the month is nearly spent
+    save_settings(save.parent, _priced(conversation_budget_cents=cap))
+    mock = Recorder({"classify": {"moves": [{"move": "anchor"}]}})
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=mock)
+    spent = month_spend(save.parent).conversation_cents
+    add_spend(save.parent, 0.0, conversation_cents=cap - spent - 0.0001)
+    assert t.mode.mode == "llm"
+    # the screen now shows template mode: what's left can't cover a typical call
+    assert service.mode_info(save.parent, loaded, mock).reason == "budget"
+    with pytest.raises(NegotiationRuleError, match="template mode"):
+        service.play(save, loaded, t.id, [9000], message="Lower, please.", adapter=mock)
+    # and should the screen still offer free text (a typical call's bound made tiny), the
+    # call's own reservation refuses it: retryable, nothing played
+    from tst.conversations import common
+
+    monkeypatch.setattr(common, "TYPICAL_PROMPT_CHARS", -budget_tokens())
+    with pytest.raises(ConversationCallError, match="budget"):
+        service.play(save, loaded, t.id, [9000], message="Lower, please.", adapter=mock)
+    assert month_spend(save.parent).conversation_cents <= cap
+    assert _rounds(save, t.id) == 0
+
+
+def test_a_second_deal_this_month_draws_afresh_and_a_failed_close_cools_off(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Item 19: after a supplier deal is agreed, a second on the same terms this month has its
+    own zone and draws (an attempt ordinal keys them); a close the rules refuse cools off like
+    a walk-away."""
+    from tst.sim.errors import SimError
+    from tst.sim.negotiation import deals
+
+    t1 = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    service.skip(save, loaded, t1.id)
+    t2 = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    assert t2.id != t1.id
+    first, second = (service.replayed(save, loaded, t).hidden for t in (t1.id, t2.id))
+    assert first != second
+    assert first.patience != second.patience or first.reservation != second.reservation
+
+    def refused(*_a: object, **_k: object) -> object:
+        raise SimError("the counterparty's credit line is full")
+
+    monkeypatch.setattr(deals, "agreement", refused)
+    done = service.skip(save, loaded, t2.id)
+    assert done.status == "failed" and done.cooldown_until is not None
+    with pytest.raises(NegotiationRuleError, match="won't talk"):
+        service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+
+
+def test_wording_that_contradicts_the_decision_is_replaced(save: Path, loaded: LoadedData) -> None:
+    """Item 21 (C15): a reply claiming a deal on a round the counterpart countered, with no
+    digit in it, is refused; the stored line is the engine's template, which states the
+    decided outcome."""
+    mock = Recorder(
+        {"classify": {"moves": [{"move": "anchor"}]}, "reply": "We have a deal, my friend."}
+    )
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=mock)
+    after = service.play(save, loaded, t.id, [9000], message="Lower, please.", adapter=mock)
+    assert after.view.rounds[-1].outcome != "agreed"
+    assert after.messages[-1][4] == "template" and "We have a deal" not in after.messages[-1][3]
+    fine = Recorder(
+        {"classify": {"moves": [{"move": "anchor"}]}, "reply": "You drive a hard bargain."}
+    )
+    t2 = service.open_talks(save, loaded, "supplier", {**DEAL, "good": "cobalt"}, adapter=fine)
+    got = service.play(save, loaded, t2.id, [9000], message="Lower, please.", adapter=fine)
+    line = got.messages[-1][3]
+    assert got.messages[-1][4] == "mock" and line.startswith("You drive a hard bargain. ")
+    assert line.endswith(templates.reply_line(got.view))  # the engine's outcome, after it

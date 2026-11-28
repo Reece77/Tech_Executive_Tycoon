@@ -25,20 +25,20 @@ from sqlalchemy.orm import Session
 
 from tst.conversations import classifier, prompts, store, templates
 from tst.conversations.common import (
+    ConversationMovedError,
+    ConversationWriter,
     ModeInfo,
     _ask,
     _log_calls,
     _now,
-    _run,
-    _spend,
     _writer,
     clean_message,
     mode_info,
+    must,
 )
 from tst.conversations.view import PublicNegotiation, public
 from tst.db import repository
 from tst.db.models import ConversationRoundRow, ConversationRow
-from tst.events.service import Writer
 from tst.llm.base import LLMAdapter
 from tst.loader import LoadedData
 from tst.sim.errors import (
@@ -52,6 +52,7 @@ from tst.sim.negotiation.models import Move, Negotiation
 from tst.sim.rng import RngFactory
 
 PURPOSE = "negotiation"  # llm_call_log.purpose
+type Source = Literal["free", "suggested", "template"]  # M57r-B (item 22): a player message's
 OPEN = "open"
 
 
@@ -119,7 +120,10 @@ def _said(rows: Sequence[ConversationRoundRow]) -> list[tuple[str, str]]:
 
 
 def _suggest(
-    writer: Writer | None, view: PublicNegotiation, said: list[tuple[str, str]], data: LoadedData
+    writer: ConversationWriter | None,
+    view: PublicNegotiation,
+    said: list[tuple[str, str]],
+    data: LoadedData,
 ) -> tuple[list[str], str]:
     b = data.balance.negotiation
     fallback = templates.suggestions(view, b.suggestions)
@@ -217,6 +221,73 @@ def replayed(path: Path, data: LoadedData, conv_id: int) -> Negotiation:
 # --- Opening -------------------------------------------------------------------------------
 
 
+@dataclass(frozen=True, slots=True)
+class _Opening:
+    key: str
+    counterpart_key: str
+    subject: str
+    neg: Negotiation
+
+
+def _prepare_open(
+    session: Session, data: LoadedData, kind: str, params: dict[str, Any]
+) -> ConversationRow | _Opening:
+    """The open talks on this deal this month, or the talks to open: the same in a read and
+    in the write after it unless the save moved in between."""
+    deal_kind = as_kind(kind)
+    b = data.balance.negotiation
+    state = repository.read_state(session)
+    balances = repository.current_balances(session, state.turn)
+    rng = RngFactory(state.save_meta.master_seed)
+    deal = deals.deal_for(state, deal_kind, params, rng, balances, data.balance, data.game_data)
+    key = deal_key(kind, deal.ref.key)
+    found = session.scalars(
+        select(ConversationRow).where(
+            ConversationRow.deal_key == key,
+            ConversationRow.status == OPEN,
+            ConversationRow.opened_turn == state.turn,
+        )
+    ).first()
+    if found is not None:
+        return found
+    cooled = session.scalars(
+        select(ConversationRow).where(
+            ConversationRow.kind == kind,
+            ConversationRow.counterpart_key == deal.ref.counterpart.key,
+            ConversationRow.cooldown_until > state.turn,
+        )
+    ).first()
+    if cooled is not None and cooled.cooldown_until is not None:
+        months = cooled.cooldown_until - state.turn
+        raise NegotiationRuleError(
+            f"{deal.ref.counterpart.organisation or deal.ref.counterpart.name} won't talk "
+            f"about this for {months} more months"
+        )
+    # M57r-B (review 10 item 19): the month's earlier talks on this deal (agreed, skipped,
+    # failed) key a fresh draw, so a second deal no longer replays the first one's zone
+    attempt = len(
+        list(
+            session.scalars(
+                select(ConversationRow.id).where(
+                    ConversationRow.deal_key == key, ConversationRow.opened_turn == state.turn
+                )
+            )
+        )
+    )
+    skills, persona = deals.negotiator(state, data.balance)
+    neg = engine.open_negotiation(
+        deal.ref,
+        rng,
+        state.turn,
+        engine.skill_factor(skills, b),
+        persona,
+        _relationship(session, deal.ref.counterpart.key, data),
+        data.balance,
+        attempt=attempt,
+    )
+    return _Opening(key, deal.ref.counterpart.key, deal.ref.subject, neg)
+
+
 def open_talks(
     path: Path,
     data: LoadedData,
@@ -225,61 +296,35 @@ def open_talks(
     *,
     adapter: LLMAdapter | None = None,
 ) -> Talks:
-    """Open talks on a deal, or resume the open talks on it this month."""
-    deal_kind = as_kind(kind)
+    """Open talks on a deal, or resume the open talks on it this month. The suggested
+    replies' call runs outside the save's write transaction (M57r-B, review 10 item 20)."""
     b = data.balance.negotiation
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
     repository.migrate.ensure_current(path)
+    with repository.read_session(path) as session:
+        first = _prepare_open(session, data, kind, params)
+        if isinstance(first, ConversationRow):
+            return _talks(first, _history(session, first.id), data, mode)
+    suggestions, source = _suggest(writer, public(first.neg, b), [], data)
     with repository.write_session(path) as session:
         state = repository.load_current(session)
         _lapse(session, state.turn)
-        balances = repository.current_balances(session, state.turn)
-        rng = RngFactory(state.save_meta.master_seed)
-        deal = deals.deal_for(state, deal_kind, params, rng, balances, data.balance, data.game_data)
-        key = deal_key(kind, deal.ref.key)
-        found = session.scalars(
-            select(ConversationRow).where(
-                ConversationRow.deal_key == key, ConversationRow.status == OPEN
-            )
-        ).first()
-        if found is not None:
-            return _talks(found, _history(session, found.id), data, mode)
-        cooled = session.scalars(
-            select(ConversationRow).where(
-                ConversationRow.kind == kind,
-                ConversationRow.counterpart_key == deal.ref.counterpart.key,
-                ConversationRow.cooldown_until > state.turn,
-            )
-        ).first()
-        if cooled is not None and cooled.cooldown_until is not None:
-            months = cooled.cooldown_until - state.turn
-            raise NegotiationRuleError(
-                f"{deal.ref.counterpart.organisation or deal.ref.counterpart.name} won't talk "
-                f"about this for {months} more months"
-            )
-        skills, persona = deals.negotiator(state, data.balance)
-        neg = engine.open_negotiation(
-            deal.ref,
-            rng,
-            state.turn,
-            engine.skill_factor(skills, b),
-            persona,
-            _relationship(session, deal.ref.counterpart.key, data),
-            data.balance,
-        )
-        view = public(neg, b)
-        suggestions, source = _suggest(writer, view, [], data)
+        again = _prepare_open(session, data, kind, params)
+        if isinstance(again, ConversationRow):
+            return _talks(again, _history(session, again.id), data, mode)
+        if again != first:
+            raise ConversationMovedError("the game moved on while the talks opened: open again")
         row = ConversationRow(
             kind=kind,
-            deal_key=key,
-            counterpart_key=deal.ref.counterpart.key,
-            subject=deal.ref.subject,
+            deal_key=first.key,
+            counterpart_key=first.counterpart_key,
+            subject=first.subject,
             status=OPEN,
             opened_turn=state.turn,
             params=dict(params),
-            state=store.dump(neg),
+            state=store.dump(first.neg),
             suggestions=suggestions,
             suggestions_source=source,
             relationship_change=0,
@@ -289,10 +334,7 @@ def open_talks(
         if writer is not None:
             _log_calls(session, state.turn, writer)
         session.flush()
-        talks = _talks(row, [], data, mode)
-    if writer is not None:
-        _spend(save_dir, writer)
-    return talks
+        return _talks(row, [], data, mode)
 
 
 # --- Rounds and outcomes (58.3-58.4) --------------------------------------------------------
@@ -328,56 +370,32 @@ def _load_open(session: Session, conv_id: int, turn: int) -> tuple[ConversationR
     return row, store.load(row.state)
 
 
-def _deal(path: Path, data: LoadedData, row: ConversationRow) -> deals.Deal:
-    with repository.read_session(path) as session:
-        state = repository.read_state(session)
-        balances = repository.current_balances(session, state.turn)
-        rng = RngFactory(state.save_meta.master_seed)
-        return deals.deal_for(
-            state,
-            as_kind(row.kind),
-            row.params,
-            rng,
-            balances,
-            data.balance,
-            data.game_data,
-        )
-
-
-def _actor(path: Path) -> int:
-    with repository.read_session(path) as session:
-        state = repository.read_state(session)
+def _conclude(
+    session: Session, data: LoadedData, row: ConversationRow, neg: Negotiation
+) -> tuple[str | None, int | None]:
+    """Run the outcome's action (the agreement, or the walk-away) in the caller's write
+    transaction, so the last round, the action and the closure commit together or not at all
+    (M57r-B, review 10 item 3). (error, cooldown_until); a refused action writes nothing."""
+    b = data.balance.negotiation
+    state = repository.load_current(session)
     founder = state.founder_of(state.player.id)
     if founder is None:
-        raise NegotiationRuleError("the founder negotiates; there is none")
-    return founder.id
-
-
-def _conclude(
-    path: Path, data: LoadedData, row_id: int, neg: Negotiation
-) -> tuple[str | None, int | None]:
-    """Run the outcome's action: the agreement, or the walk-away. (error, cooldown_until)."""
-    b = data.balance.negotiation
-    actor = _actor(path)
-    with repository.open_session(path) as session:
-        row = session.get(ConversationRow, row_id)
-        assert row is not None
-        params_row = row
-        session.expunge(row)
-    deal = _deal(path, data, params_row) if neg.status != "walked" else None
+        return "the founder negotiates; there is none", None
     try:
         if neg.status == "walked":
-            stub = deals.Deal(
-                neg.kind, params_row.params, _ref_stub(neg), _deal_id(neg.kind, params_row.params)
+            stub = deals.Deal(neg.kind, row.params, _ref_stub(neg), _deal_id(neg.kind, row.params))
+            repository.apply_in_session(
+                session, data, deals.walk_away(stub, founder.id, data.balance)
             )
-            action: Any = deals.walk_away(stub, actor, data.balance)
-            _run(path, data, action)
-            with repository.read_session(path) as session:
-                turn = repository.read_state(session).turn
-            return None, turn + b.cooldown_months
-        assert deal is not None and neg.final is not None
-        action = deals.agreement(deal, neg.final, actor, deal.ref.terms[0].base)
-        _run(path, data, action)
+            return None, state.turn + b.cooldown_months
+        assert neg.final is not None
+        balances = repository.current_balances(session, state.turn)
+        rng = RngFactory(state.save_meta.master_seed)
+        deal = deals.deal_for(
+            state, as_kind(row.kind), row.params, rng, balances, data.balance, data.game_data
+        )
+        action = deals.agreement(deal, neg.final, founder.id, deal.ref.terms[0].base)
+        repository.apply_in_session(session, data, action)
     except SimError as exc:
         return exc.message, None
     return None, None
@@ -415,6 +433,9 @@ def _close(
     if error is not None:
         row.status = "failed"
         row.error = error
+        # M57r-B (review 10 item 19): a close the rules refused cools off like a walk-away,
+        # so the same zone can't be drawn and replayed this month
+        cooldown = turn + b.cooldown_months
     else:
         row.status = neg.status
     row.closed_turn = turn
@@ -437,56 +458,64 @@ def play(
     *,
     message: str | None = None,
     moves: Sequence[dict[str, Any]] | None = None,
-    source: str = "free",
+    source: Source = "free",
     adapter: LLMAdapter | None = None,
 ) -> Talks:
     """One round: the player's message (scored by the LLM) or picked moves (template mode),
-    and an offer. The engine decides; the reply is worded after."""
+    and an offer. The engine decides; the reply is worded after.
+
+    M57r-B (review 10 items 20 and 3): the LLM calls run between a read and the write, never
+    inside the save's write transaction; the write re-checks that the talks have not moved on
+    (ConversationMovedError otherwise), then stores the round and, when it ends the talks, the
+    outcome's action and the closure, all in one transaction. A failed scoring call plays
+    nothing (ConversationCallError, retryable)."""
     b = data.balance.negotiation
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
     offer_t = tuple(int(v) for v in offer)
+    with repository.read_session(path) as session:
+        state = repository.read_state(session)
+        row = session.get(ConversationRow, conv_id)
+        if row is None or row.kind not in DEAL_KINDS:
+            raise UnknownNegotiationError(f"no negotiation {conv_id}")
+        shown = _shown_status(row, state.turn)
+        if shown != OPEN:
+            raise NegotiationRuleError(f"these talks are over ({shown})")
+        seen, turn = row.state, state.turn
+        neg = store.load(row.state)
+        said = _said(_history(session, conv_id))
+    engine.check_offer(neg, offer_t)
+    view = public(neg, b)
+    text = clean_message(message, b.max_message_chars) if message is not None else ""
+    if moves:
+        claimed, moves_source = _parse_moves(moves, b.max_moves), "template"
+        source = "template" if not text else source
+    elif text and writer is not None:
+        offer_shown = [view_value(neg, t, v) for t, v in enumerate(offer_t)]
+        system, user = prompts.classify_prompt(view, said, text, offer_shown, b.history_rounds)
+        got = must(_ask(writer, "classify", system, user, {"moves": [{"move": "neutral"}]}), writer)
+        claimed, valid = classifier.moves_from(got, b.max_moves)
+        moves_source = writer.adapter.name if valid else "invalid"
+    elif text:
+        raise NegotiationRuleError(
+            "conversations are in template mode: pick moves from the buttons"
+        )
+    else:
+        raise NegotiationRuleError("write a message, or pick moves")
+    after = engine.play_round(neg, offer_t, claimed, b)
+    view_after = public(after, b)
+    reply, reply_source = _reply(writer, view_after, said, text, data)
+    suggestions: list[str] = []
+    sug_source = "template"
+    if after.status == OPEN:
+        suggestions, sug_source = _suggest(writer, view_after, [*said, (text, reply)], data)
+    acted = False
     with repository.write_session(path) as session:
         state = repository.read_state(session)
-        row, neg = _load_open(session, conv_id, state.turn)
-        engine.check_offer(neg, offer_t)
-        said = _said(_history(session, conv_id))
-        view = public(neg, b)
-        text = clean_message(message, b.max_message_chars) if message is not None else ""
-        if moves:
-            claimed, moves_source = _parse_moves(moves, b.max_moves), "template"
-            source = "template" if not text else source
-        elif text and writer is not None:
-            offer_shown = [view_value(neg, t, v) for t, v in enumerate(offer_t)]
-            system, user = prompts.classify_prompt(view, said, text, offer_shown, b.history_rounds)
-            got = _ask(writer, "classify", system, user, {"moves": [{"move": "neutral"}]})
-            claimed, valid = classifier.moves_from(got, b.max_moves)
-            moves_source = writer.adapter.name if valid else "invalid"
-        elif text:
-            raise NegotiationRuleError(
-                "conversations are in template mode: pick moves from the buttons"
-            )
-        else:
-            raise NegotiationRuleError("write a message, or pick moves")
-        after = engine.play_round(neg, offer_t, claimed, b)
-        view_after = public(after, b)
-        fallback = templates.reply_line(view_after)
-        reply, reply_source = fallback, "template"
-        if writer is not None:
-            system, user = prompts.reply_prompt(
-                view_after, said, text, b.max_reply_words, b.history_rounds
-            )
-            got = _ask(writer, "reply", system, user, fallback)
-            allowed = [
-                *view_after.rounds[-1].counter_shown,
-                *view_after.rounds[-1].offer_shown,
-                *view_after.facts,
-                *view_after.opening_shown,
-            ]
-            ok = classifier.reply_ok(got, allowed, b.max_reply_words)
-            if ok:
-                reply, reply_source = ok, writer.adapter.name
+        row, _current = _load_open(session, conv_id, state.turn)
+        if state.turn != turn or row.state != seen:
+            raise ConversationMovedError("these talks moved on while you wrote: send it again")
         session.add(
             ConversationRoundRow(
                 conversation_id=conv_id,
@@ -503,21 +532,45 @@ def play(
         )
         row.state = store.dump(after)
         if after.status == OPEN:
-            suggestions, sug_source = _suggest(writer, view_after, [*said, (text, reply)], data)
             row.suggestions = suggestions
             row.suggestions_source = sug_source
         if writer is not None:
             _log_calls(session, state.turn, writer)
-        turn = state.turn
-    if writer is not None:
-        _spend(save_dir, writer)
-    if after.status != OPEN:
-        error, cooldown = _conclude(path, data, conv_id, after)
-        with repository.write_session(path) as session:
-            closing = session.get(ConversationRow, conv_id)
-            assert closing is not None
-            _close(closing, after, data, turn, error, cooldown)
+        if after.status != OPEN:  # the outcome's action and the closure, in this transaction
+            error, cooldown = _conclude(session, data, row, after)
+            _close(row, after, data, state.turn, error, cooldown)
+            acted = error is None
+    if acted:
+        repository.after_action(path, data)
     return get(path, data, conv_id)
+
+
+def _reply(
+    writer: ConversationWriter | None,
+    view_after: PublicNegotiation,
+    said: list[tuple[str, str]],
+    text: str,
+    data: LoadedData,
+) -> tuple[str, str]:
+    """The counterpart's line: the engine's outcome from its template, after the LLM's few
+    words of tone when they pass the checks (M57r-B, review 10 item 21: the wording can no
+    longer state another outcome, nor a number without its unit)."""
+    b = data.balance.negotiation
+    decided = templates.reply_line(view_after)
+    if writer is None:
+        return decided, "template"
+    last = view_after.rounds[-1]
+    system, user = prompts.reply_prompt(view_after, said, text, b.max_reply_words, b.history_rounds)
+    got = _ask(writer, "reply", system, user, templates.TONE_FALLBACK)
+    allowed = [*last.counter_shown, *last.offer_shown, *view_after.facts, *view_after.opening_shown]
+    ok = classifier.reply_ok(got, allowed, b.max_reply_words, outcome=_outcome_class(last.outcome))
+    if not ok:
+        return decided, "template"
+    return f"{ok} {decided}", writer.adapter.name
+
+
+def _outcome_class(outcome: str) -> classifier.OutcomeClass:
+    return "agreed" if outcome == "agreed" else ("walked" if outcome == "walked" else "open")
 
 
 def view_value(neg: Negotiation, t: int, v: int) -> str:
@@ -535,18 +588,19 @@ def _move_json(m: Move) -> dict[str, Any]:
 
 
 def _finish(path: Path, data: LoadedData, conv_id: int, how: Literal["accept", "skip"]) -> Talks:
+    """Accept or Skip: the outcome, its action and the closure in one write transaction
+    (M57r-B, review 10 item 3): a crash leaves the talks open with nothing applied, and a
+    second request (another tab, a retry) finds them closed. A refused Accept rolls back."""
     with repository.write_session(path) as session:
         state = repository.read_state(session)
-        _row, neg = _load_open(session, conv_id, state.turn)
-        turn = state.turn
-    done = engine.accept_counter(neg) if how == "accept" else engine.skip(neg)
-    error, cooldown = _conclude(path, data, conv_id, done)
-    with repository.write_session(path) as session:
-        closing = session.get(ConversationRow, conv_id)
-        assert closing is not None
+        row, neg = _load_open(session, conv_id, state.turn)
+        done = engine.accept_counter(neg) if how == "accept" else engine.skip(neg)
+        error, cooldown = _conclude(session, data, row, done)
         if error is not None and how == "accept":
             raise NegotiationRuleError(f"the deal could not close: {error}")
-        _close(closing, done, data, turn, error, cooldown)
+        _close(row, done, data, state.turn, error, cooldown)
+    if error is None:
+        repository.after_action(path, data)
     return get(path, data, conv_id)
 
 

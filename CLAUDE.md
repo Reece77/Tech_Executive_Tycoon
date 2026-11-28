@@ -73,7 +73,7 @@ uv run pytest tests/golden -q                 # determinism and golden seeds
 uv run pytest tests/balance/test_m30_state_cache.py --update-state-cache   # re-record M30's state cache (see §6)
 uv run ruff check . && uv run ruff format --check .
 uv run mypy tst
-uv run tst new-game --seed 42 --name dev      # create a save (runs migrations on the new file)
+uv run tst new-game --seed 42 --name dev --company-name "Dev Co"   # create a save (runs migrations)
 uv run tst advance --save dev --turns 12      # advance headless
 uv run tst inspect --save dev                 # print company summary
 uv run uvicorn tst.api.app:app --reload       # API on :8000

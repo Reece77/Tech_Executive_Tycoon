@@ -8557,8 +8557,13 @@ export interface components {
             rival_id: number;
             /** Rival Name */
             rival_name: string;
-            /** Offer Cents */
-            offer_cents: number;
+            /**
+             * Offer Lo Cents
+             * @description M57r-B: the rival's offer is shown as a band of round figures it falls in (61.3 keeps the amount itself hidden)
+             */
+            offer_lo_cents: number;
+            /** Offer Hi Cents */
+            offer_hi_cents: number;
             /** Salary Cents */
             salary_cents: number;
             /** Unvested Options */
@@ -12186,6 +12191,11 @@ export interface components {
             update_message?: string;
             /** Backup Folder */
             backup_folder?: string | null;
+            /**
+             * Write Token
+             * @description M57r-B: sent back as X-TST-Instance on the desktop routes' writes. Only the game's own page can read it (the local API refuses foreign hosts)
+             */
+            write_token?: string | null;
         };
         /** DeviceLineOut */
         DeviceLineOut: {
@@ -18316,10 +18326,11 @@ export interface components {
             moves?: components["schemas"]["MeetingMoveIn"][] | null;
             /**
              * Source
-             * @description free | suggested | template
+             * @description free | suggested | template (M57r-B: a Literal)
              * @default free
+             * @enum {string}
              */
-            source?: string;
+            source?: "free" | "suggested" | "template";
         };
         /** MeetingAnswerOut */
         MeetingAnswerOut: {
@@ -27980,10 +27991,11 @@ export interface components {
             moves?: components["schemas"]["TalkMoveIn"][] | null;
             /**
              * Source
-             * @description free | suggested | template
+             * @description free | suggested | template (M57r-B: a Literal)
              * @default free
+             * @enum {string}
              */
-            source?: string;
+            source?: "free" | "suggested" | "template";
         };
         /** TalkAnswerOut */
         TalkAnswerOut: {
@@ -28048,7 +28060,10 @@ export interface components {
         TalkEffectOut: {
             /** What */
             what: string;
-            /** Change */
+            /**
+             * Change
+             * @description Persona points and stress exactly; any amount a hidden factor scales (brand, credibility, morale, loyalty) only by its direction, +1 or -1 (M57r-B)
+             */
             change: number;
             /** Words */
             words: string;
@@ -56312,6 +56327,15 @@ export interface operations {
                     "application/json": components["schemas"]["DesktopOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56354,6 +56378,15 @@ export interface operations {
                     "application/json": components["schemas"]["ImportOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56392,6 +56425,15 @@ export interface operations {
                     "application/json": components["schemas"]["DesktopOut"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
             /** @description Conflict */
             409: {
                 headers: {
@@ -56428,6 +56470,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DesktopOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
                 };
             };
             /** @description Conflict */

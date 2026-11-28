@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -107,9 +107,13 @@ weekly-m37:
 # M52 (66.4 target 4): M45's dynasty game continued in sandbox to December 2100 on seeds 1-3 (no
 # error, every integer within int64, the 2100 economy 1,000x below it), then seed 1's save's 2101
 # months against the 550 ms runner-adjusted dynasty guard.
+# M57r-B (review 10 item 27): the tool exits 1 on an error, an integer past int64 or a miss
+# beyond its known-miss bound, and weekly-m52-2100 asserts target 4 itself (pytest).
 weekly-m52:
 	uv run --project backend python tools/m52_save.py $(V6_SAVE_DIR) m52
 	cd backend && TST_M52_SAVE=$(V6_SAVE_DIR)/m52.tst.sqlite uv run pytest -q -n 0 -s -m weekly tests/integration/test_m52_perf.py
+weekly-m52-2100:
+	cd backend && uv run pytest -q -n 0 -s -m weekly tests/balance/test_m52_balance.py::test_66_4_target_4_sandbox_to_2100
 
 # M35b's v4 targets (tst.balance.v4; CI: weekly.yml): the four v4 scripts and every comparison
 # played to December 2039, in three seed shards (each saves its runs: tools/v4_targets.py --load

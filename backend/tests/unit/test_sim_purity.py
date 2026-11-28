@@ -45,7 +45,16 @@ NP_RANDOM_ALLOWED = ("Generator",)
 
 
 def _is_banned(module: str) -> bool:
+    # M57r-B (review 10 item 36 d): every tst package but tst.sim itself, by default (the list
+    # above named five; tst.conversations, tst.events, tst.desktop, tst.balance and the rest
+    # were missing)
+    if module.startswith("tst.") and not _in_sim(module):
+        return True
     return any(module == banned or module.startswith(banned + ".") for banned in BANNED_MODULES)
+
+
+def _in_sim(module: str) -> bool:
+    return module == "tst.sim" or module.startswith("tst.sim.")
 
 
 def _module_name(path: Path, root: Path) -> list[str]:
@@ -156,6 +165,12 @@ def fake_sim(tmp_path: Path) -> Path:
         ("from tst import api\n", "imports tst.api"),
         ("from .. import llm\n", "imports tst.llm"),
         ("from tst.loader import load_all\n", "imports tst.loader"),
+        # M57r-B: every tst package outside tst.sim, not a list of five
+        ("from tst.conversations import service\n", "imports tst.conversations"),
+        ("import tst.events.service\n", "imports tst.events"),
+        ("from tst.desktop.update import check\n", "imports tst.desktop"),
+        ("from tst.balance import m9\n", "imports tst.balance"),
+        ("from tst.scenario_files import parse\n", "imports tst.scenario_files"),
         ("import sqlalchemy\n", "imports sqlalchemy"),
         ("from fastapi import FastAPI\n", "imports fastapi"),
         ("import anthropic\n", "imports anthropic"),

@@ -208,7 +208,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     from tst.config import get_settings
 
     get_settings.cache_clear()
-    ctx = context.DesktopContext(paths=paths, version=version, check_token=instance.check_token)
+    ctx = context.DesktopContext(
+        paths=paths, version=version, check_token=instance.check_token, token=instance.token
+    )
     ctx.import_offer = _import_offer(paths)
     context.install(ctx)
     server: Server | None = None

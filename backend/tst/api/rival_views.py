@@ -28,6 +28,7 @@ from tst.sim.calendar import format_turn
 from tst.sim.hiring.formulas import energy_cost
 from tst.sim.ledger import AccountCode
 from tst.sim.money import Cents
+from tst.sim.negotiation.deals import offer_band
 from tst.sim.people.formulas import potential_phrase
 from tst.sim.people.models import PA_KEY
 from tst.sim.people.reveal import revealed_range
@@ -377,7 +378,8 @@ def approach_out(state: GameState, approach: PoachApproach, data: LoadedData) ->
         role_label=role_label(employment.role if employment else person.role, data) or "",
         rival_id=approach.rival_id,
         rival_name=state.company(approach.rival_id).name,
-        offer_cents=approach.offer_cents,
+        offer_lo_cents=offer_band(approach.offer_cents)[0],
+        offer_hi_cents=offer_band(approach.offer_cents)[1],
         salary_cents=employment.salary_cents if employment else 0,
         unvested_options=grant.unvested if grant else 0,
         band=band(state, approach, data),

@@ -15,6 +15,7 @@ nightly (V1-V4, tests/balance/test_v2_balance.py) and weekly (V1's 30 seeds, V5,
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
@@ -97,6 +98,28 @@ def _x(value: float | None) -> str:
     return "-" if value is None else f"{value:.2f}x"
 
 
+AI_FIRST: Final = ("ai_regions", "integrator_ai")  # V3's AI arms
+AI_SURVIVAL: Final = 5  # of 10 seeds: the most an AI-first script may go bankrupt on (M57r-B)
+
+
+def ai_survival_row(results: Sequence[RunResult]) -> Row:
+    """M57r-B (review 10 item 25): the AI-first scripts' bankruptcies as their own target (so
+    V3.ai's margins exist): neither goes bankrupt on more than AI_SURVIVAL of 10 seeds."""
+    counts = {}
+    for s in AI_FIRST:
+        runs = _runs(results, s)
+        counts[s] = (sum(r.bankrupt for r in runs) * 10 / len(runs)) if runs else 10.0
+    worst = max(counts.values())
+    return Row(
+        "V3.ai.survival",
+        "AI-first scripts bankrupt (of 10 seeds)",
+        ", ".join(f"{s} {n:g}" for s, n in counts.items()),
+        f"<= {AI_SURVIVAL} each",
+        worst <= AI_SURVIVAL,
+        score=worst,
+    )
+
+
 def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
     """V1 (10 seeds), V2, V3 and V4 over the runner's results."""
     rows: list[Row] = []
@@ -145,7 +168,21 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
         ("integrator_ai", "ai_regions", V3_POINTS),
     ):
         mi, mb = _median_margin(results, arm), _median_margin(results, base)
+        target = "V3.margin" if arm == "integrator" else "V3.ai"
         if mi is None or mb is None:
+            # M57r-B (review 10 item 25): no margin to compare (a strategy bankrupt on every
+            # seed) is a failure past any known-miss bound, never a skipped row
+            gone = [s for s in (arm, base) if s is not None and _median_margin(results, s) is None]
+            rows.append(
+                Row(
+                    target,
+                    f"{arm} - {base} operating margin",
+                    f"unmeasurable: no margin for {', '.join(gone)}",
+                    "a margin for both",
+                    False,
+                    score=math.inf,
+                )
+            )
             continue
         gap = mi - mb
         shown = (
@@ -155,7 +192,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
         )
         rows.append(
             Row(
-                "V3.margin" if arm == "integrator" else "V3.ai",
+                target,
                 f"{arm} - {base} operating margin",
                 f"{gap * 100:+.1f} pts ({mi:.1%} vs {mb:.1%})",
                 shown,
@@ -163,6 +200,7 @@ def ten_year_rows(results: Sequence[RunResult]) -> list[Row]:
                 score=-gap,  # a known miss's bound reads larger as worse
             )
         )
+    rows.append(ai_survival_row(results))
     ratio3 = _ratio(results, "integrator")
     rows.append(
         Row(
