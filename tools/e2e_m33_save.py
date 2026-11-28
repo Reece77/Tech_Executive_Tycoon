@@ -146,4 +146,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    import e2e_cache  # M59: CI keeps the saves it builds (tools/e2e_cache.py)
+
+    sys.exit(e2e_cache.run(__file__, sys.argv[1:], lambda: main(sys.argv)))

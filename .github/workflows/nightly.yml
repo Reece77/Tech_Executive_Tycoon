@@ -1,6 +1,8 @@
 # The long balance runs (M7a, Reece's D4a): `make balance` prints the docs/balance-targets.md table,
 # then `make nightly` runs every test marked `nightly` (on CI: three matrix jobs, M10d) (the balance targets in full and the
 # statistical tests that PR CI skips). Every night, and on demand from the Actions tab.
+# M59: it also measures every `check` test and every Playwright file on CI and uploads fresh
+# duration files as the `durations` artifact (no pull request; docs/ci.md).
 name: nightly
 
 on:
@@ -62,4 +64,144 @@ jobs:
         run: uv sync --project backend --locked
 
       - name: make ${{ matrix.part }}
+        env:
+          DURATIONS_OUT: ${{ github.workspace }}/durations/nightly-${{ strategy.job-index }}.json
         run: make ${{ matrix.part }}
+
+      - name: Upload measured durations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: durations-backend-nightly-${{ strategy.job-index }}
+          path: durations/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # M59: the `check` tests measured on CI, as CI's four shards split them.
+  check-durations:
+    needs: changed
+    if: needs.changed.outputs.run == 'true'
+    name: durations (check ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: make check-durations-ci SHARD=${{ matrix.shard }}
+        run: make check-durations-ci SHARD=${{ matrix.shard }} DURATIONS_OUT=${{ github.workspace }}/durations/check-${{ matrix.shard }}.json
+
+      - name: Upload measured durations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: durations-backend-check-${{ matrix.shard }}
+          path: durations/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # M59: every Playwright file measured on CI, as e2e.yml's four shards split them, building
+  # every fixture save (no cache: the slower case).
+  e2e-durations:
+    needs: changed
+    if: needs.changed.outputs.run == 'true'
+    name: durations (e2e ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright's Chromium
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: make e2e-shard SHARD=${{ matrix.shard }}
+        env:
+          TST_E2E_DURATIONS_OUT: ${{ github.workspace }}/durations/e2e-${{ matrix.shard }}.json
+        run: make e2e-shard SHARD=${{ matrix.shard }}
+
+      - name: Upload measured file times
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: durations-e2e-${{ matrix.shard }}
+          path: durations/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # M59: the fresh duration files (backend/tests/durations.json and frontend/e2e/durations.json)
+  # as one artifact, from whatever was measured (a failed shard's tests keep their old times).
+  durations:
+    needs: [changed, nightly, check-durations, e2e-durations]
+    if: always() && needs.changed.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: durations-*
+          path: measured
+          merge-multiple: true
+
+      - name: Merge the measurements
+        run: |
+          ls measured
+          python tools/ci_durations.py backend fresh/backend/tests/durations.json measured/nightly-*.json measured/check-*.json
+          python tools/ci_durations.py e2e fresh/frontend/e2e/durations.json measured/e2e-*.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: durations
+          path: fresh/
+          retention-days: 30

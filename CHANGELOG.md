@@ -4,6 +4,14 @@ All notable changes to this project are recorded here. Golden snapshot regenerat
 
 ## Unreleased
 
+- M59 CI at scale (engineering, single lane; no game code, fixture, golden snapshot or state cache changed; `docs/tasks/M59-ci-at-scale.md`'s decisions; `docs/ci.md`):
+  - **`e2e`** runs as four `e2e (shard N/4)` jobs, 45 minutes each (150 for the one job before), behind a summary job named `e2e`. `frontend/e2e/shard-reporter.ts` splits `--shard=N/4` by measured file time (`frontend/e2e/durations.json`): 1.00x the mean on main's times, against 1.99x for Playwright's split by test count. `make e2e-shard SHARD=N`; per-shard traces on failure.
+  - **Fixture saves cached:** the `tools/e2e_*_save.py` tools run through `tools/e2e_cache.py`, and CI keeps one cache a shard with `actions/cache`. A cached save equals a fresh build: same state digest and ledger (`tests/integration/test_e2e_cache.py`).
+  - **`check`** runs as four `check (shard N/4)` jobs (`make check-ci-1..4`), 30 minutes each (60 for each of two before), plus `check (timing)` alone on its own runner, behind a summary job named `check`. The "Main protection" ruleset now requires `check`, not the two shard names.
+  - **Self-balancing:**
+    - The nightly measures every `check` test and Playwright file on CI and uploads fresh duration files as the `durations` artifact (`tools/ci_durations.py`; pytest `--durations-out`).
+    - `tests/unit/test_ci_shards.py` warns in the job summary when a predicted shard passes 70% of its limit and fails past 90%.
+  - The same tests run: backend `check` 3,027 + M59's 13 new = 3,040, `nightly` 121, `timing` 7, `weekly` 18, Playwright 202 in 60 files. `backend/tests/durations.json` gains the 77 `check` tests it lacked.
 - M55 media and entertainment (v6, lane B; migration `0070_m55`; golden snapshots unchanged; fixtures re-recorded, below; `docs/tasks/M55-media-and-entertainment.md`'s decisions):
   - **Media** (formulas.md 65): four categories in family `media` (video streaming, music streaming, games, social networks) with segments `viewers`, `players` and `users`; demand set each month from `backend/data/media.yaml` (every value tagged S/D/R/A with its source) at `media.scale` 0.085, grown by seeded rates from 2026; each with its own regional `price_index`.
   - **Advertising** (65.1): spend and digital's share by region to 2025, seeded after; impressions, targeting with GDPR, ATT (iOS only) and the DSA; the price a thousand from Meta's ARPU before 2026 and from spend over impressions after (calibrated once). Social lines are priced at their ad revenue a user; video ad tiers from November 2022; consumer apps may opt into ad pricing from 2026 only (identical to `main` before: `tests/balance/test_m55_consumer_apps.py`).

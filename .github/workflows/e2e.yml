@@ -1,6 +1,11 @@
 # The Playwright flows (`make e2e`) on every pull request into main and every push to main, so main
 # can't merge with broken browser flows (product manager, 2026-11-08, after M15a merged with
 # failing e2e flows). Free now that the repository is public. Also on demand from the Actions tab.
+#
+# M59: four shards in parallel (`playwright test --shard=N/4`, split by measured file time:
+# frontend/e2e/shard-reporter.ts and e2e/durations.json), each with its own API, launcher, Vite
+# server and save folder, as `make e2e` has on one machine. The summary job `e2e` is the check
+# the "Main" ruleset requires: it fails unless all four shards succeeded. docs/ci.md.
 name: e2e
 
 on:
@@ -18,13 +23,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  e2e:
-    name: e2e
+  shard:
+    name: e2e (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    # M53: main ran 85 of 90 minutes; 28 telecom rivals and three flows pushed it past (decision 17).
-    # M55: 120 -> 150; after the v6 merge (M52, M54 and M55's flows, 47 more rivals) 202 tests ran
-    # 108 minutes on one runner and 179 of them filled 120 on another; none failed (decision 21)
-    timeout-minutes: 150
+    # M59: 45 minutes a shard (the brief; 150 for the single job before). The guard in
+    # backend/tests/unit/test_ci_shards.py warns at 70% of it and fails at 90%.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
@@ -58,13 +66,49 @@ jobs:
         working-directory: frontend
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: make e2e
-        run: make e2e
+      # M59 sub-task 3: the saves tools/e2e_*_save.py build (tools/e2e_cache.py), a cache a
+      # shard, keyed by everything a fixture save is built from and by the file split
+      # (e2e/durations.json). A hit restores them; on a miss each is built and stored. The
+      # engine is deterministic (ADR-0002): tests/integration/test_e2e_cache.py.
+      - name: Fixture saves cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/e2e-fixtures
+          key: e2e-fixtures-${{ matrix.shard }}-${{ hashFiles('backend/tst/**', 'backend/data/**', 'backend/migrations/**', 'tools/e2e_*', 'backend/uv.lock', 'frontend/e2e/durations.json') }}
+
+      - name: make e2e-shard SHARD=${{ matrix.shard }}
+        env:
+          TST_E2E_FIXTURE_CACHE: ${{ runner.temp }}/e2e-fixtures
+          TST_E2E_DURATIONS_OUT: ${{ github.workspace }}/e2e-durations/shard-${{ matrix.shard }}.json
+        run: make e2e-shard SHARD=${{ matrix.shard }}
+
+      - name: Upload file times
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-durations-${{ matrix.shard }}
+          path: e2e-durations/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload traces on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.shard }}
           path: frontend/test-results/
           retention-days: 7
+
+  e2e:
+    name: e2e
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every shard passed
+        env:
+          RESULT: ${{ needs.shard.result }}
+        run: |
+          echo "e2e shards: $RESULT"
+          test "$RESULT" = success

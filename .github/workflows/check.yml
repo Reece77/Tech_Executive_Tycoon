@@ -1,8 +1,10 @@
-# Runs `make check` (backend lint, types, tests; API client sync; frontend lint, types,
-# tests) on every push and pull request, as two matrix jobs on 2-core runners: `make check-ci-1`
-# (backend lint, types, test shard 1) and `make check-ci-2` (API sync, frontend, test shard 2).
-# Shards are balanced by tests/durations.json. The Playwright smoke test (`make e2e`) stays local.
-# Shard 1 then runs the turn-time budgets alone (`make check-timing`).
+# Runs `make check` (backend lint, types, tests; API client sync; frontend lint, types, tests;
+# the turn-time budgets) on every push and pull request. M59: four matrix jobs on 2-core runners,
+# `check (shard N/4)` running `make check-ci-N` (backend tests split by tests/durations.json;
+# lint and types in shard 1, the API sync in 2, the front end in 3), and `check (timing)` running
+# `make check-timing` alone on its own runner. The summary job `check` is the check the "Main
+# protection" ruleset requires: it fails unless all five succeeded. The Playwright flows are
+# e2e.yml. docs/ci.md.
 name: check
 
 on:
@@ -20,18 +22,16 @@ permissions:
   contents: read
 
 jobs:
-  check:
-    name: check (shard ${{ matrix.shard }}/2)
+  shard:
+    name: check (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    # M43: 40 -> 50; shard 1's tests ran 25-36 minutes on the combined code (listed companies
-    # from 2015 under the real-listings IPO floor), leaving the 6-minute timing step too little.
-    # M55: 50 -> 60; after the v6 merge (M52, M54, M55) shard 1's tests ran 35-41 minutes and the
-    # limit cut off check-timing again; no test failed (decision 21)
-    timeout-minutes: 60
+    # M59: 30 minutes a shard (the brief; 60 for each of two shards before). The guard in
+    # backend/tests/unit/test_ci_shards.py warns at 70% of it and fails at 90%.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
@@ -64,8 +64,42 @@ jobs:
       - name: make check-ci-${{ matrix.shard }}
         run: make check-ci-${{ matrix.shard }}
 
-      # The turn-time budgets (1.0 s a turn), alone and without xdist once the parallel suite is
-      # done, so they measure on an otherwise idle runner (M14, product manager 2026-11-06).
+  # The turn-time budgets (1.0 s a turn), without xdist and alone on their runner, so they
+  # measure on an otherwise idle machine (M14, product manager 2026-11-06). No `needs:`: a job
+  # has its runner to itself either way (M59).
+  timing:
+    name: check (timing)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install backend dependencies
+        run: uv sync --project backend --locked
+
       - name: make check-timing
-        if: matrix.shard == 1
         run: make check-timing
+
+  check:
+    name: check
+    needs: [shard, timing]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every shard and the timing job passed
+        env:
+          SHARDS: ${{ needs.shard.result }}
+          TIMING: ${{ needs.timing.result }}
+        run: |
+          echo "check shards: $SHARDS, timing: $TIMING"
+          test "$SHARDS" = success && test "$TIMING" = success
