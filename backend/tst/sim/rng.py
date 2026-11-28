@@ -7,6 +7,7 @@ never changes the draws of an existing one.
 
 from __future__ import annotations
 
+import hashlib
 from types import MappingProxyType
 from typing import Final
 
@@ -156,18 +157,18 @@ STREAM_IDS: Final = MappingProxyType(
         # month the talk opens; (kind index, subject id, turn, 1) a rival approach's retention
         # draw when a one-to-one ends
         "talks": 72,
-        # M53 (formulas.md 62): (0, 0, year, region_index) a region's subscription growth after
-        # 2025; (0, 1) 6G's first month; (0, 2, area, n, ...) an area's seeded auctions; (0, 3,
-        # area) a seeded ban; (1, auction_id) an auction's rivals' values when it runs (never
-        # stored)
+        # M53 (formulas.md 62): (0, 0, year, region key) a region's subscription growth after
+        # 2025; (0, 1) 6G's first month; (0, 2, area key, n, ...) an area's seeded auctions; (0, 3,
+        # area) a seeded ban; (1, auction key, year) an auction's rivals' values when it runs
+        # (never stored); keys are text_key()s of data keys (M57r-A)
         "telecom": 73,
-        # M54 (formulas.md 64.1-64.3; ADR-0013's table): (0, bank id, month) a bank's run chance
-        # and its withdrawn share; (1, region index, year) a region's catastrophe year and its
-        # losses; (2, bank id, year) a stress test's shock; (3, company id, month) a payments line's
-        # fraud noise; (4, region index, year) a region's seeded growth after 2025 (never stored
-        # before they happen)
+        # M54 (formulas.md 64.1-64.3; ADR-0013's table): (0, *bank key, month) a bank's run
+        # chance and its withdrawn share; (1, region key, year, month) a region's catastrophe and
+        # its losses; (2, *bank key, year) a stress test's shock; (3, ...) reserved (never drawn);
+        # (4, region key, year) a region's seeded growth after 2025 (never stored before they
+        # happen); a bank key is (*owner's stable key, region key, ordinal) (M57r-A)
         "finserv": 74,
-        # M54 (formulas.md 64.4, ADR-0025): (region index, month) a region's rate index step from
+        # M54 (formulas.md 64.4, ADR-0025): (region key, month) a region's rate index step from
         # fx.applies_from (the walk's shock and its jump)
         "fx": 75,
         # M55 (formulas.md 65): (0, title id) a title's audience at release (never stored before
@@ -186,6 +187,17 @@ MAX_SEED: Final = 2**64 - 1
 # NEGATIVE_TURN_BASE + |turn|. Turns from 0 enter as themselves, so a 2010 game's draws are
 # unchanged, and no reachable turn (a dynasty game ends at 719) can meet a negative one.
 NEGATIVE_TURN_BASE: Final = 2**32  # tunable-exempt: derivation constant, never change it
+
+
+TEXT_KEY_BYTES: Final = 6  # tunable-exempt: derivation constant (48 bits), never change it
+
+
+def text_key(text: str) -> int:
+    """A stable integer key part for a data key (a region's, a category's, a market's), for
+    draws that belong to that entity (ADR-0013 amendment, M57r-A): the first 48 bits of the
+    text's BLAKE2b digest, so it never depends on a file's order or a list position."""
+    digest = hashlib.blake2b(text.encode("utf-8"), digest_size=TEXT_KEY_BYTES).digest()
+    return int.from_bytes(digest, "big")
 
 
 def turn_key(turn: int) -> int:

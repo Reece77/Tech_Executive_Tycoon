@@ -61,7 +61,8 @@ from tst.sim.ledger import CASH, DISPOSAL, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import BP_DENOMINATOR, round_half_even, times
 from tst.sim.products.models import SELLING, ProductSegment
-from tst.sim.rng import RngFactory
+from tst.sim.rivals.models import stream_key
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_segments
 
 RESERVES: Final = "1060_bank_reserves"
@@ -75,8 +76,8 @@ DEPOSIT_INTEREST: Final = "5500_deposit_interest"
 LOAN_LOSSES: Final = "6800_loan_losses"
 CONSUMER: Final = "bank_consumer"
 BUSINESS: Final = "bank_business"
-RUN_KEY: Final = 0  # ADR-0013: finserv (0, bank id, month)
-STRESS_KEY: Final = 2  # finserv (2, bank id, year)
+RUN_KEY: Final = 0  # ADR-0013: finserv (0, *bank key, month)
+STRESS_KEY: Final = 2  # finserv (2, *bank key, year)
 CONFIDENCE_MID: Final = 100.0  # tunable-exempt: the confidence index's 2010-2019 mean
 LIVE: Final = ("chartered", "partner")
 
@@ -441,6 +442,20 @@ def _dividend(state: GameState, bank: Bank, balance: Balance, data: GameData) ->
     )
 
 
+def bank_key(state: GameState, bank: Bank) -> tuple[int, ...]:
+    """A bank's stream key (ADR-0013, M57r-A ruling 3): its owner's stable key, its region's key
+    and its ordinal among that owner's banks in the region (by id), never its storage id, which
+    an unrelated payments network or insurer opened first would shift."""
+    owner = next((c for c in state.companies if c.id == bank.company_id), None)
+    who = stream_key(bank.company_id, owner.rival_key if owner is not None else ())
+    ordinal = sum(
+        1
+        for b in state.finserv.banks
+        if b.company_id == bank.company_id and b.region == bank.region and b.id < bank.id
+    )
+    return (*who, text_key(bank.region), ordinal)
+
+
 def _stress(
     state: GameState, bank: Bank, rng: RngFactory, r_pct: float, balance: Balance, data: GameData
 ) -> tuple[Bank, list[LogItem]]:
@@ -450,7 +465,7 @@ def _stress(
     first = file(data).banking.stress_from[bank.region]
     if month != sb.month or year < first or bank.assets_cents <= sb.size_cents:
         return bank, []
-    g = draws.gen(rng, state.turn, STRESS_KEY, bank.id, year)
+    g = draws.gen(rng, state.turn, STRESS_KEY, *bank_key(state, bank), year)
     shock = sb.rate_shock.lo + (sb.rate_shock.hi - sb.rate_shock.lo) * float(g.random())
     mult = sb.loss_mult.lo + (sb.loss_mult.hi - sb.loss_mult.lo) * float(g.random())
     outflow = sb.deposit_outflow.lo + (sb.deposit_outflow.hi - sb.deposit_outflow.lo) * float(
@@ -511,7 +526,7 @@ def _run(
     if chance <= 0:
         return bank, [], []
     rb = balance.finserv.bank.run
-    g = draws.gen(rng, state.turn, RUN_KEY, bank.id, state.turn)
+    g = draws.gen(rng, state.turn, RUN_KEY, *bank_key(state, bank), state.turn)
     if float(g.random()) >= chance:
         return bank, [], []
     share = rb.withdraw.lo + (rb.withdraw.hi - rb.withdraw.lo) * float(g.random())

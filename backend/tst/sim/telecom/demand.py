@@ -23,7 +23,7 @@ from tst.sim.calendar import turn_to_ym
 from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.products.models import MarketSegment
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_all_markets
 from tst.sim.telecom import draws
 from tst.sim.telecom.data import (
@@ -132,7 +132,7 @@ def set_demand(state: GameState, balance: Balance, data: GameData) -> GameState:
 
 def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameData) -> GameState:
     """Each January from `telecom.start`: every region's subscription growth for the year
-    (stream telecom (0, 0, year, region index); hidden)."""
+    (stream telecom (0, 0, year, region key); hidden)."""
     tb = balance.telecom
     year, month = turn_to_ym(state.turn)
     if state.turn < tb.start_turn or month != 1:
@@ -144,7 +144,7 @@ def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameD
         if world.rate(year, ri) is not None:
             continue
         band = tb.growth_after[region]
-        g = draws.gen(rng, state.turn, draws.WORLD, draws.GROWTH, year, ri)
+        g = draws.gen(rng, state.turn, draws.WORLD, draws.GROWTH, year, text_key(region))
         rows.append((year, ri, float(band.lo + (band.hi - band.lo) * g.random())))
     world = replace(world, growth=tuple(rows))
     return replace(state, telecom=replace(state.telecom, world=world))

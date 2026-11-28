@@ -3,8 +3,8 @@
 Keys (families): `(0, title id)` a title's audience at release (never stored before it); `(1,
 person id, title id, n)` a creative lead's reaction to a title's n-th overrule, cut or move; `(2,
 region index, year)` a region's seeded strike and divest-or-ban law after 2025; `(3, 0, year)` a
-format era's arrival, `(3, 1, year)` a console generation's, `(3, 2, year, category index, region
-index)` a market's yearly growth, `(3, 3, year)` ad spend's; `(4, year, n)` the n-th creative lead
+format era's arrival, `(3, 1, year)` a console generation's, `(3, 2, year, category key, region
+key)` a market's yearly growth (`text_key`s, M57r-A), `(3, 3, year)` ad spend's; `(4, year, n)` the n-th creative lead
 on offer that year; `(5, product id, year)` a rival social line's move to a new format."""
 
 from __future__ import annotations

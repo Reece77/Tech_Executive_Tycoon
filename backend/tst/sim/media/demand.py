@@ -25,10 +25,10 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.media import draws
 from tst.sim.media.config import BILLION, MILLION, _year_share
-from tst.sim.media.data import LAST_YEAR, MONTHS, end_year_at, file, in_history, region_index
+from tst.sim.media.data import LAST_YEAR, MONTHS, end_year_at, file, in_history
 from tst.sim.media.models import WorldDraw
 from tst.sim.products.models import MarketSegment
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState, with_all_markets
 from tst.sim.vehicles.config import interp
 
@@ -133,14 +133,21 @@ def draw_growth(state: GameState, rng: RngFactory, balance: Balance, data: GameD
     if state.turn < mb.start_turn or month != 1:
         return state
     rows = list(state.media.draws)
-    for ci, category in enumerate(mb.categories):
+    for category in mb.categories:
         band = mb.growth_after[category]
         for region in data.region_keys:
             key = growth_key(category, region)
             if state.media.draw(GROWTH, year, key) is not None:
                 continue
-            ri = region_index(region, data)
-            g = draws.gen(rng, state.turn, draws.WORLD, draws.GROWTH, year, ci, ri)
+            g = draws.gen(
+                rng,
+                state.turn,
+                draws.WORLD,
+                draws.GROWTH,
+                year,
+                text_key(category),
+                text_key(region),
+            )
             rows.append(
                 WorldDraw(GROWTH, year, key, float(band.lo + (band.hi - band.lo) * g.random()))
             )

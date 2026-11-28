@@ -17,7 +17,7 @@ from dataclasses import replace
 from typing import Final
 
 from tst.sim.data_models import Balance, GameData
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 from tst.sim.world import draws
 from tst.sim.world import formulas as wf
@@ -47,9 +47,9 @@ def cycles_month(
         news.append(Item("cycle", f"A global shock: demand falls {-depth:.0%} in every region"))
     out: list[RegionCycle] = []
     by_region = {c.region: c for c in state.region_cycles}
-    for i, region in enumerate(data.regions):
+    for region in data.regions:
         c = by_region.get(region.key, RegionCycle(region=region.key, turn=turn - 1))
-        gen = draws.gen(rng, turn, draws.CYCLE, i)
+        gen = draws.gen(rng, turn, draws.CYCLE, text_key(region.key))
         z = float(gen.standard_normal())
         start, kind, depth_u, months_u = (float(x) for x in gen.random(REGION_DRAWS))
         level = wf.ar1_level(c.level, cb.phi, cb.sd, z)

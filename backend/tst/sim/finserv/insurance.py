@@ -38,14 +38,14 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.facilities.compute import home_region_of
 from tst.sim.finserv import draws
 from tst.sim.finserv.config import series_at
-from tst.sim.finserv.data import MONTHS, PCT, file, region_index, team_skill, year_at
+from tst.sim.finserv.data import MONTHS, PCT, file, team_skill, year_at
 from tst.sim.finserv.models import Catastrophe, InsuranceMonth, Insurer
 from tst.sim.fx.rates import policy_rate
 from tst.sim.ledger import CASH, LedgerEntry, LedgerLine
 from tst.sim.log import LogItem, inbox_item
 from tst.sim.money import round_half_even, times
 from tst.sim.products.models import SELLING, Product
-from tst.sim.rng import RngFactory
+from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 
 INVESTMENTS: Final = "1330_insurer_investments"
@@ -91,8 +91,7 @@ def draw_cats(state: GameState, rng: RngFactory, balance: Balance, data: GameDat
     shares = file(data).insurance.cat_region_share
     cats = list(state.finserv.world.cats)
     for region in data.region_keys:
-        ri = region_index(region, data)
-        g = draws.gen(rng, state.turn, CAT_KEY, ri, year, state.turn)
+        g = draws.gen(rng, state.turn, CAT_KEY, text_key(region), year, state.turn)
         if float(g.random()) >= chance * shares[region] * len(shares):
             continue
         extra = cb.extra.lo + (cb.extra.hi - cb.extra.lo) * float(g.random())

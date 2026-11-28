@@ -11,7 +11,9 @@ never returns them, and incident and approval draws are never stored."""
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Final
 
+from tst.sim.rng import turn_key
 from tst.sim.robotics.config import ZoneSize
 
 
@@ -129,6 +131,15 @@ class RoboIncident:
     serious: bool
     cost_cents: int
     suspended_until: int | None = None
+
+
+INCIDENT_TURN_SPAN: Final = 2**33  # tunable-exempt: key encoding, above every turn_key
+
+
+def incident_key(inc: RoboIncident) -> int:
+    """An incident's stable id (ADR-0013, M57r-A ruling 3): its zone and month (one draw a zone a
+    month), never its position in `robo_incidents`, which pruning old incidents shifts."""
+    return inc.zone_id * INCIDENT_TURN_SPAN + turn_key(inc.turn)
 
 
 @dataclass(frozen=True, slots=True)

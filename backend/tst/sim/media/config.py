@@ -37,7 +37,7 @@ def _year_share(table: dict[int, dict[str, float]], year: float, region: str) ->
     not list the region holds 0 there), normalised so the regions sum to 1."""
     regions = {r for row in table.values() for r in row}
     values = {r: interp({y: row.get(r, 0.0) for y, row in table.items()}, year) for r in regions}
-    total = sum(values.values())
+    total = sum(values[r] for r in sorted(values))  # M57r-A: a fixed order, not the set's
     return values.get(region, 0.0) / total if total > 0 else 0.0
 
 
