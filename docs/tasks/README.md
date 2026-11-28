@@ -92,6 +92,9 @@ Each brief is a self-contained prompt for a coding agent. Hand one brief to Clau
 | [M59-ci-at-scale.md](M59-ci-at-scale.md) | CI at scale (engineering, single lane): `e2e` in four shards and `check` in four plus timing alone, fixture saves cached, shards that warn before they outgrow their limits; the same tests, about 30 minutes to a verdict | M55 |
 | [M57r-A-review-10-engine-fixes.md](M57r-A-review-10-engine-fixes.md) | Review 10's engine fixes (lane A): stable RNG keys, exact money, bank liquidity, currencies against engine prices, finance and media timing (consolidated items 5–18, 28–30) | M59 |
 | [M57r-B-review-10-platform-fixes.md](M57r-B-review-10-platform-fixes.md) | Review 10's platform fixes and v6.0.1 (lane B): installer, updater and local API; crash-safe conversations; hidden values with paired-state tests; LLM handling; guards that can fail (items 1–4, 19–27, 31–37) | M59 |
+| [M60-v6-performance.md](M60-v6-performance.md) | v6 performance (lane A): 2039 ≤ 400 ms, 2069 ≤ 500 ms, 2100 ≤ 550 ms a month with identical results; closes M37's and M52's timing misses | M57r |
+| [M50b-the-2000-start.md](M50b-the-2000-start.md) | The 2000 start (lane B): the dot-com peak and bust, 2000's rivals and categories, every series back to 2000; 2008 and 2010 games unchanged | M57r |
+| [M57-v6-balance-and-polish.md](M57-v6-balance-and-polish.md) | v6 balance and polish (lane C, merges last): every known miss closed or owned by v7, the three v6 strategies, polish, then v6.1.0 | M57r |
 
 Briefs for M2 onward are written after the previous milestone's retrospective, so they reflect what was actually built.
 
