@@ -30,7 +30,6 @@ from tst.conversations.common import (
     _ask,
     _log_calls,
     _now,
-    _run,
     _spend,
     _writer,
     clean_message,
@@ -471,6 +470,7 @@ def answer(
     save_dir = path.parent
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
+    acted = False
     with repository.write_session(path) as session:
         state = repository.read_state(session)
         _lapse(session, state.turn)
@@ -541,16 +541,16 @@ def answer(
             row.suggestions = []
         if writer is not None:
             _log_calls(session, state.turn, writer)
-        turn = state.turn
+        if after.status == "done":  # the outcome's action and the closure, in this transaction
+            error = _conclude(session, data, after)
+            row.status = "failed" if error else "done"
+            row.error = error
+            row.closed_turn = state.turn
+            acted = error is None
     if writer is not None:
         _spend(save_dir, writer)
-    if after.status == "done":
-        error = _conclude(path, data, after)
-        with repository.write_session(path) as session:
-            closing = _row(session, conv_id)
-            closing.status = "failed" if error else "done"
-            closing.error = error
-            closing.closed_turn = turn
+    if acted:
+        repository.after_action(path, data)
     return get(path, data, conv_id)
 
 
@@ -561,15 +561,16 @@ def _move_json(m: Move) -> dict[str, Any]:
     return out
 
 
-def _conclude(path: Path, data: LoadedData, meeting: Meeting) -> str | None:
-    """Run the outcome's action; the error's message if the rules refused it."""
-    with repository.read_session(path) as session:
-        state = repository.read_state(session)
+def _conclude(session: Session, data: LoadedData, meeting: Meeting) -> str | None:
+    """Run the outcome's action in the caller's write transaction (M57r-B, review 10 item 3:
+    the last answer, the action and the closure commit together); the error's message if the
+    rules refused it (nothing is applied then)."""
+    state = repository.load_current(session)
     founder = state.founder_of(state.player.id)
     if founder is None:
         return "the founder attends the company's meetings; there is none"
     try:
-        _run(path, data, outcome_action(meeting, founder.id))
+        repository.apply_in_session(session, data, outcome_action(meeting, founder.id))
     except SimError as exc:
         return exc.message
     return None

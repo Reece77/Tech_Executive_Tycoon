@@ -299,3 +299,36 @@ def test_the_api_flow(api: Client, save: Path) -> None:
     after = api.get(base)
     assert any(c["kind"] == "guidance" and c["status"] == "open" for c in after["commitments"])
     assert after["items"][0]["status"] == "done"
+
+
+def test_a_crash_inside_the_last_answer_leaves_the_meeting_open_and_nothing_applied(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M57r-B (review 10 item 3): the last answer, the outcome's action and the closure commit
+    in one transaction. A failure after the action, inside it, keeps the meeting open with its
+    last item unanswered and nothing applied; answering again applies the outcome once."""
+    from tst.db import repository
+
+    real = repository.apply_in_session
+
+    def apply_then_crash(*args: Any, **kwargs: Any) -> Any:
+        real(*args, **kwargs)
+        raise RuntimeError("crash")
+
+    t = meetings.open_meeting(save, loaded, "board", adapter=TemplateAdapter())
+    moves = [{"kind": "commit"}, {"kind": "explain", "fact": 0}]
+    while len(t.view.items) - len(t.view.answers) > 1:
+        t = meetings.answer(save, loaded, t.id, moves=moves, adapter=TemplateAdapter())
+    before, answered = _rows(save), len(t.view.answers)
+    monkeypatch.setattr(repository, "apply_in_session", apply_then_crash)
+    with pytest.raises(RuntimeError, match="crash"):
+        meetings.answer(save, loaded, t.id, moves=moves, adapter=TemplateAdapter())
+    again = meetings.get(save, loaded, t.id)
+    assert again.status == "open" and len(again.view.answers) == answered
+    assert _rows(save) == before
+    monkeypatch.setattr(repository, "apply_in_session", real)
+    done = meetings.answer(save, loaded, t.id, moves=moves, adapter=TemplateAdapter())
+    assert done.status == "done" and _rows(save) == before + 1
+    with pytest.raises(MeetingRuleError, match="over"):
+        meetings.answer(save, loaded, t.id, moves=moves, adapter=TemplateAdapter())
+    assert _rows(save) == before + 1

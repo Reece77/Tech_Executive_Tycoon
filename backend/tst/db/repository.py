@@ -1109,55 +1109,69 @@ def run_action(save_path: Path, data: LoadedData, action: Action) -> ActionResul
     """Apply one player action in its own short transaction and log it to decision_log."""
     migrate.ensure_current(save_path)
     with write_session(save_path) as session:
-        state = load_current(session)
-        # M23r (Codex review 6 finding 4): the server's read-only boundary, before anything runs
-        answers = answered_event(action)
-        check_read_only(state, action.kind, answers)
-        balances = current_balances(session, state.turn)
-        seq = next_action_seq(session, state.turn)
-        result = apply_action(
-            state,
-            action,
-            RngFactory(state.save_meta.master_seed),
-            data.balance,
-            data.game_data,
-            balances,
+        result = apply_in_session(session, data, action)
+    after_action(save_path, data)
+    return result
+
+
+def apply_in_session(session: Session, data: LoadedData, action: Action) -> ActionResult:
+    """Apply one player action inside the caller's write transaction (`write_session`) and log
+    it to decision_log: run_action's body. M57r-B: a conversation's last round, its outcome's
+    action and its closure commit together through this. A SimError leaves the session as it
+    was (the rules refuse before anything is written). Call `after_action` once committed."""
+    state = load_current(session)
+    # M23r (Codex review 6 finding 4): the server's read-only boundary, before anything runs
+    answers = answered_event(action)
+    check_read_only(state, action.kind, answers)
+    balances = current_balances(session, state.turn)
+    seq = next_action_seq(session, state.turn)
+    result = apply_action(
+        state,
+        action,
+        RngFactory(state.save_meta.master_seed),
+        data.balance,
+        data.game_data,
+        balances,
+        seq=seq,
+    )
+    sync_state(session, state, result.new_state)
+    insert_entries(session, result.ledger_entries)
+    session.add_all(log_item_to_row(i) for i in result.log_items)
+    session.add_all(  # the new state's player: founding again changes it (M15b)
+        inbox_rows(
+            result.log_items,
+            result.new_state.player.id,
+            data.game_data.inbox_templates,
+            frozenset(h.company_id for h in result.new_state.holdings),  # M16
+        )
+    )
+    employment = state.employment_of(action.actor_id)
+    company_id = employment.company_id if employment else state.player.id
+    session.add(
+        DecisionLogRow(
+            turn=state.turn,
+            company_id=company_id,
+            kind=action.kind,
+            payload=action_payload(action),
             seq=seq,
+            source=PLAYER_SOURCE,
+            actor_id=action.actor_id,
         )
-        sync_state(session, state, result.new_state)
-        insert_entries(session, result.ledger_entries)
-        session.add_all(log_item_to_row(i) for i in result.log_items)
-        session.add_all(  # the new state's player: founding again changes it (M15b)
-            inbox_rows(
-                result.log_items,
-                result.new_state.player.id,
-                data.game_data.inbox_templates,
-                frozenset(h.company_id for h in result.new_state.holdings),  # M16
-            )
-        )
-        employment = state.employment_of(action.actor_id)
-        company_id = employment.company_id if employment else state.player.id
-        session.add(
-            DecisionLogRow(
-                turn=state.turn,
-                company_id=company_id,
-                kind=action.kind,
-                payload=action_payload(action),
-                seq=seq,
-                source=PLAYER_SOURCE,
-                actor_id=action.actor_id,
-            )
-        )
-        _tidy_inbox(session, state, result.new_state, data)
-        unlocks_db.announce(session, state, result.new_state, data)  # M29 (42.1)
-        publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
+    )
+    _tidy_inbox(session, state, result.new_state, data)
+    unlocks_db.announce(session, state, result.new_state, data)  # M29 (42.1)
+    publish(session, result.new_state, apply_entries(balances, result.ledger_entries))
+    return result
+
+
+def after_action(save_path: Path, data: LoadedData) -> None:
+    """What follows a committed action outside the save: achievements and scenario results."""
     from tst.profile.check import check_quietly  # M25: achievements, outside the game
 
     check_quietly(save_path, data)
     from tst.profile.results import record_quietly  # M51 (63.3): scenario results, app-wide
 
     record_quietly(save_path, data)
-    return result
 
 
 def new_game_payload(

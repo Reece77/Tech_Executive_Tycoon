@@ -347,3 +347,37 @@ def test_the_api_flow(api: Client, approached: list[int]) -> None:
     assert after["promises"] and after["promises"][0]["status"] == "open"
     assert after["people"][0]["held"] == "done"
     assert after["items"][0]["status"] == "done"
+
+
+def test_a_crash_inside_the_last_answer_leaves_the_talk_open_and_nothing_applied(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """M57r-B (review 10 item 3): the last answer, the outcome's action and the closure commit
+    in one transaction. A failure after the action, inside it, keeps the talk open with nothing
+    applied; answering again applies the outcome once."""
+    from tst.db import repository
+
+    real = repository.apply_in_session
+
+    def apply_then_crash(*args: Any, **kwargs: Any) -> Any:
+        real(*args, **kwargs)
+        raise RuntimeError("crash")
+
+    T = TemplateAdapter()
+    t = talks.open_talk(save, loaded, "interview", {"source": "press", "key": 1}, adapter=T)
+    moves = [{"kind": "bold_claim"}]
+    while len(t.view.questions) - len(t.view.answers) > 1:
+        t = talks.answer(save, loaded, t.id, moves=moves, adapter=T)
+    before, answered = _rows(save), len(t.view.answers)
+    monkeypatch.setattr(repository, "apply_in_session", apply_then_crash)
+    with pytest.raises(RuntimeError, match="crash"):
+        talks.answer(save, loaded, t.id, moves=moves, adapter=T)
+    again = talks.get(save, loaded, t.id)
+    assert again.status == "open" and len(again.view.answers) == answered
+    assert _rows(save) == before
+    monkeypatch.setattr(repository, "apply_in_session", real)
+    done = talks.answer(save, loaded, t.id, moves=moves, adapter=T)
+    assert done.status == "done" and _rows(save) == before + 1
+    with pytest.raises(TalkRuleError, match="over"):
+        talks.answer(save, loaded, t.id, moves=moves, adapter=T)
+    assert _rows(save) == before + 1

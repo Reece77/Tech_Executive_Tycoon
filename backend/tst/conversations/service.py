@@ -29,7 +29,6 @@ from tst.conversations.common import (
     _ask,
     _log_calls,
     _now,
-    _run,
     _spend,
     _writer,
     clean_message,
@@ -328,56 +327,32 @@ def _load_open(session: Session, conv_id: int, turn: int) -> tuple[ConversationR
     return row, store.load(row.state)
 
 
-def _deal(path: Path, data: LoadedData, row: ConversationRow) -> deals.Deal:
-    with repository.read_session(path) as session:
-        state = repository.read_state(session)
-        balances = repository.current_balances(session, state.turn)
-        rng = RngFactory(state.save_meta.master_seed)
-        return deals.deal_for(
-            state,
-            as_kind(row.kind),
-            row.params,
-            rng,
-            balances,
-            data.balance,
-            data.game_data,
-        )
-
-
-def _actor(path: Path) -> int:
-    with repository.read_session(path) as session:
-        state = repository.read_state(session)
+def _conclude(
+    session: Session, data: LoadedData, row: ConversationRow, neg: Negotiation
+) -> tuple[str | None, int | None]:
+    """Run the outcome's action (the agreement, or the walk-away) in the caller's write
+    transaction, so the last round, the action and the closure commit together or not at all
+    (M57r-B, review 10 item 3). (error, cooldown_until); a refused action writes nothing."""
+    b = data.balance.negotiation
+    state = repository.load_current(session)
     founder = state.founder_of(state.player.id)
     if founder is None:
-        raise NegotiationRuleError("the founder negotiates; there is none")
-    return founder.id
-
-
-def _conclude(
-    path: Path, data: LoadedData, row_id: int, neg: Negotiation
-) -> tuple[str | None, int | None]:
-    """Run the outcome's action: the agreement, or the walk-away. (error, cooldown_until)."""
-    b = data.balance.negotiation
-    actor = _actor(path)
-    with repository.open_session(path) as session:
-        row = session.get(ConversationRow, row_id)
-        assert row is not None
-        params_row = row
-        session.expunge(row)
-    deal = _deal(path, data, params_row) if neg.status != "walked" else None
+        return "the founder negotiates; there is none", None
     try:
         if neg.status == "walked":
-            stub = deals.Deal(
-                neg.kind, params_row.params, _ref_stub(neg), _deal_id(neg.kind, params_row.params)
+            stub = deals.Deal(neg.kind, row.params, _ref_stub(neg), _deal_id(neg.kind, row.params))
+            repository.apply_in_session(
+                session, data, deals.walk_away(stub, founder.id, data.balance)
             )
-            action: Any = deals.walk_away(stub, actor, data.balance)
-            _run(path, data, action)
-            with repository.read_session(path) as session:
-                turn = repository.read_state(session).turn
-            return None, turn + b.cooldown_months
-        assert deal is not None and neg.final is not None
-        action = deals.agreement(deal, neg.final, actor, deal.ref.terms[0].base)
-        _run(path, data, action)
+            return None, state.turn + b.cooldown_months
+        assert neg.final is not None
+        balances = repository.current_balances(session, state.turn)
+        rng = RngFactory(state.save_meta.master_seed)
+        deal = deals.deal_for(
+            state, as_kind(row.kind), row.params, rng, balances, data.balance, data.game_data
+        )
+        action = deals.agreement(deal, neg.final, founder.id, deal.ref.terms[0].base)
+        repository.apply_in_session(session, data, action)
     except SimError as exc:
         return exc.message, None
     return None, None
@@ -447,6 +422,7 @@ def play(
     mode = mode_info(save_dir, data, adapter)
     writer = _writer(save_dir, data, adapter) if mode.mode == "llm" else None
     offer_t = tuple(int(v) for v in offer)
+    acted = False
     with repository.write_session(path) as session:
         state = repository.read_state(session)
         row, neg = _load_open(session, conv_id, state.turn)
@@ -508,15 +484,14 @@ def play(
             row.suggestions_source = sug_source
         if writer is not None:
             _log_calls(session, state.turn, writer)
-        turn = state.turn
+        if after.status != OPEN:  # the outcome's action and the closure, in this transaction
+            error, cooldown = _conclude(session, data, row, after)
+            _close(row, after, data, state.turn, error, cooldown)
+            acted = error is None
     if writer is not None:
         _spend(save_dir, writer)
-    if after.status != OPEN:
-        error, cooldown = _conclude(path, data, conv_id, after)
-        with repository.write_session(path) as session:
-            closing = session.get(ConversationRow, conv_id)
-            assert closing is not None
-            _close(closing, after, data, turn, error, cooldown)
+    if acted:
+        repository.after_action(path, data)
     return get(path, data, conv_id)
 
 
@@ -535,18 +510,19 @@ def _move_json(m: Move) -> dict[str, Any]:
 
 
 def _finish(path: Path, data: LoadedData, conv_id: int, how: Literal["accept", "skip"]) -> Talks:
+    """Accept or Skip: the outcome, its action and the closure in one write transaction
+    (M57r-B, review 10 item 3): a crash leaves the talks open with nothing applied, and a
+    second request (another tab, a retry) finds them closed. A refused Accept rolls back."""
     with repository.write_session(path) as session:
         state = repository.read_state(session)
-        _row, neg = _load_open(session, conv_id, state.turn)
-        turn = state.turn
-    done = engine.accept_counter(neg) if how == "accept" else engine.skip(neg)
-    error, cooldown = _conclude(path, data, conv_id, done)
-    with repository.write_session(path) as session:
-        closing = session.get(ConversationRow, conv_id)
-        assert closing is not None
+        row, neg = _load_open(session, conv_id, state.turn)
+        done = engine.accept_counter(neg) if how == "accept" else engine.skip(neg)
+        error, cooldown = _conclude(session, data, row, done)
         if error is not None and how == "accept":
             raise NegotiationRuleError(f"the deal could not close: {error}")
-        _close(closing, done, data, turn, error, cooldown)
+        _close(row, done, data, state.turn, error, cooldown)
+    if error is None:
+        repository.after_action(path, data)
     return get(path, data, conv_id)
 
 

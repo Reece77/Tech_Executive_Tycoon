@@ -14,14 +14,13 @@ from typing import Any, Literal
 
 from sqlalchemy.orm import Session
 
-from tst.db import repository
 from tst.db.events import default_adapter
 from tst.db.models import LLMCallLogRow
 from tst.events.service import Writer
 from tst.llm.base import ConversationPrompt, LLMAdapter
 from tst.llm.settings import LLMSettings, add_spend, load_settings, month_spend
 from tst.loader import LoadedData
-from tst.sim.errors import NegotiationRuleError, SaveBusyError, SimError
+from tst.sim.errors import NegotiationRuleError, SimError
 
 type Mode = Literal["llm", "template"]
 type ModeReason = Literal["", "setting", "offline", "budget"]
@@ -139,22 +138,3 @@ def _ask(
     outcome = "ok" if completion.content is not None and completion.error is None else "error"
     writer.record(purpose, system + "\n" + user, completion, outcome)
     return completion.content if outcome == "ok" else None
-
-
-BUSY_TRIES = 40  # tunable-exempt: about 10 s of a save busy with another write
-BUSY_WAIT_S = 0.25  # tunable-exempt: the front end's own busy retry delay
-
-
-def _run(path: Path, data: LoadedData, action: Any) -> None:
-    """The outcome's action, waiting while another write holds the save (a screen's mark-read,
-    say): the talks have ended, so the outcome must not be lost to a busy save."""
-    import time
-
-    for attempt in range(BUSY_TRIES):
-        try:
-            repository.run_action(path, data, action)
-            return
-        except SaveBusyError:
-            if attempt == BUSY_TRIES - 1:
-                raise
-            time.sleep(BUSY_WAIT_S)

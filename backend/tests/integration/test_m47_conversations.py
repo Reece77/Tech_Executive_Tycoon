@@ -269,29 +269,127 @@ def test_the_cli_opens_plays_and_skips(save: Path, monkeypatch: pytest.MonkeyPat
     assert "1 skipped" in run.invoke(cli_app, ["negotiate", "--save", SAVE]).output
 
 
-def test_an_agreement_waits_out_a_busy_save(
+def _deals(path: Path) -> int:
+    with open_session(path) as session:
+        return len(load_state(session).commodity_deals)
+
+
+def _status(path: Path, conv_id: int) -> str:
+    with open_session(path) as session:
+        row = session.get(ConversationRow, conv_id)
+        assert row is not None
+        return row.status
+
+
+class Crash(Exception):
+    """A process dying mid-request, as far as the save can tell."""
+
+
+@pytest.mark.parametrize("boundary", ["after_the_action", "at_the_closure"])
+@pytest.mark.parametrize("how", ["skip", "accept", "last_round"])
+def test_a_crash_inside_the_finish_leaves_the_talks_open_and_nothing_signed(
+    save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch, boundary: str, how: str
+) -> None:
+    """M57r-B (review 10 item 3, reproduced: commodity_deals 1 -> 2): the last round, the deal's
+    action and the closure commit in one transaction. A failure at either point inside it
+    leaves the talks open with nothing applied; finishing again signs exactly once."""
+    from tst.db import repository
+
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    before = _deals(save)
+    real_apply, real_close = repository.apply_in_session, service._close
+
+    def apply_then_crash(*args: Any, **kwargs: Any) -> Any:
+        real_apply(*args, **kwargs)
+        raise Crash
+
+    def crash_at_close(*args: Any, **kwargs: Any) -> None:
+        real_close(*args, **kwargs)
+        raise Crash
+
+    if boundary == "after_the_action":
+        monkeypatch.setattr(repository, "apply_in_session", apply_then_crash)
+    else:
+        monkeypatch.setattr(service, "_close", crash_at_close)
+
+    def finish() -> Any:
+        if how == "skip":
+            return service.skip(save, loaded, t.id)
+        if how == "accept":
+            return service.accept(save, loaded, t.id)
+        return service.play(  # a walk-away ends the talks in the round itself
+            save, loaded, t.id, [1], moves=[{"kind": "threaten_walk"}], adapter=TemplateAdapter()
+        )
+
+    with pytest.raises(Crash):
+        finish()
+    assert _status(save, t.id) == "open" and _deals(save) == before
+    monkeypatch.setattr(repository, "apply_in_session", real_apply)
+    monkeypatch.setattr(service, "_close", real_close)
+    done = finish()
+    assert done.status in ("skipped", "agreed", "walked")
+    assert _deals(save) == before + (0 if done.status == "walked" else 1)
+    with pytest.raises(NegotiationRuleError, match="over"):  # a retry finds them closed
+        service.skip(save, loaded, t.id)
+    assert _deals(save) == before + (0 if done.status == "walked" else 1)
+
+
+def test_a_crash_after_the_commit_signs_once_and_a_retry_is_refused(
     save: Path, loaded: LoadedData, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Another write holding the save (a screen's mark-read) when the deal closes: the outcome
-    waits for it rather than leaving the talks ended and the deal unsigned."""
+    """After the one commit only the profile's bookkeeping runs: a crash there has already
+    signed the deal and closed the talks, so pressing Skip again changes nothing."""
     from tst.db import repository
+
+    t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
+    before = _deals(save)
+
+    def crash(*_args: Any, **_kwargs: Any) -> None:
+        raise Crash
+
+    monkeypatch.setattr(repository, "after_action", crash)
+    with pytest.raises(Crash):
+        service.skip(save, loaded, t.id)
+    assert _status(save, t.id) == "skipped" and _deals(save) == before + 1
+    monkeypatch.undo()
+    with pytest.raises(NegotiationRuleError, match="over"):
+        service.skip(save, loaded, t.id)
+    assert _deals(save) == before + 1
+
+
+@pytest.mark.parametrize("how", ["accept", "skip"])
+def test_two_simultaneous_finishes_sign_exactly_once(
+    save: Path, loaded: LoadedData, how: str
+) -> None:
+    """Two tabs (or a retry beside the first request) pressing Accept together: one signs,
+    the other is refused busy or finds the talks over, and the deal exists once."""
+    import threading
+
     from tst.sim.errors import SaveBusyError
 
-    real = repository.run_action
-    calls = {"n": 0}
-
-    def busy_once(*args: object, **kwargs: object) -> object:
-        calls["n"] += 1
-        if calls["n"] == 1:
-            raise SaveBusyError("busy")
-        return real(*args, **kwargs)  # type: ignore[arg-type]
-
-    from tst.conversations import common
-
-    monkeypatch.setattr(common, "BUSY_WAIT_S", 0.0)  # M48: the busy wait moved to common
-    monkeypatch.setattr(repository, "run_action", busy_once)
     t = service.open_talks(save, loaded, "supplier", DEAL, adapter=TemplateAdapter())
-    done = service.skip(save, loaded, t.id)
-    assert done.status == "skipped" and calls["n"] == 2
-    with open_session(save) as session:
-        assert load_state(session).commodity_deals
+    before = _deals(save)
+    start = threading.Barrier(2)
+    results: list[str] = []
+
+    def press() -> None:
+        start.wait()
+        try:
+            getattr(service, how)(save, loaded, t.id)
+            results.append("signed")
+        except SaveBusyError:
+            results.append("busy")
+        except NegotiationRuleError:
+            results.append("over")
+
+    threads = [threading.Thread(target=press) for _ in range(2)]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join(60)
+    assert sorted(results) in (["busy", "signed"], ["over", "signed"]), results
+    assert _deals(save) == before + 1
+    # the busy one, sent again, finds the talks over
+    with pytest.raises(NegotiationRuleError, match="over"):
+        getattr(service, how)(save, loaded, t.id)
+    assert _deals(save) == before + 1
