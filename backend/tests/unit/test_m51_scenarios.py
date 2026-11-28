@@ -177,9 +177,9 @@ def _cars(state: GameState, per_month: float) -> GameState:
 
 def test_the_ev_maker_wins_on_cars_a_year(loaded: LoadedData, starts) -> None:  # type: ignore[no-untyped-def]
     state, balances = starts["ev_maker"]
-    assert sc.cars_a_year(_cars(state, 5_000), state.player.id) == 60_000
-    assert _judge(_cars(state, 5_000), balances, loaded, final=False) is None
-    assert _judge(_cars(state, 6_000), balances, loaded, final=False) == "success"
+    assert sc.cars_a_year(_cars(state, 4_800), state.player.id) == 57_600  # goal 58,500 (M57)
+    assert _judge(_cars(state, 4_800), balances, loaded, final=False) is None
+    assert _judge(_cars(state, 4_900), balances, loaded, final=False) == "success"
     assert _judge(state, balances, loaded, final=True) == "failure"
 
 
