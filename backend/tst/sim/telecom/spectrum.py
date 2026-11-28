@@ -27,6 +27,7 @@ obligation is checked by the region's telecom regulator (tst.sim.telecom.regulat
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 from typing import Final
 
 from tst.sim.calendar import format_turn, turn_to_ym
@@ -34,7 +35,7 @@ from tst.sim.data_models import Balance, GameData
 from tst.sim.ledger import CASH, SPECTRUM, LedgerEntry
 from tst.sim.ledger import SPECTRUM_AMORTIZATION as AMORTIZATION
 from tst.sim.log import LogItem, inbox_item
-from tst.sim.money import DECIMAL_BASE, exact, scaled, times
+from tst.sim.money import exact, times
 from tst.sim.rng import RngFactory, text_key
 from tst.sim.state import GameState
 from tst.sim.telecom import draws
@@ -58,10 +59,8 @@ class Bidder:
 def next_price(price: int, increment: float) -> int:
     """The clock's next price a block: price x (1 + increment) rounded up, in integer arithmetic
     (M57r-A, review 10 item 7: a 10% step from 100 is 110, never the float's 111)."""
-    n, k = scaled(increment)
-    scale: int = DECIMAL_BASE**k
-    # money-exact: Fraction: integer cents x integer units
-    return max(1, -(-(price * (scale + n)) // scale))
+    step = Fraction(price) * (1 + exact(increment))
+    return max(1, -(-step.numerator // step.denominator))
 
 
 def clock(
