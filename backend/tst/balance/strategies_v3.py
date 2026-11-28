@@ -652,7 +652,7 @@ def sign_foundry_contracts(game: Game) -> None:
         if fab is None:
             continue
         cap = float(facility.capacity)
-        for customer in foundry_contracts.customers(g):
+        for customer in foundry_contracts.customers(g, game.state):
             running = foundry_contracts.running(game.state, fab.facility_id)
             total = sum(c.monthly_starts for c in running)
             own = sum(c.monthly_starts for c in running if c.customer == customer)

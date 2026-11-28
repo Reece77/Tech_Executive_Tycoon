@@ -365,7 +365,7 @@ def _foundry(state: GameState, params: Params, balance: Balance, data: GameData)
 
     fab_id = _int(params, "fab_id")
     customer = _str(params, "customer")
-    names = customers(data)
+    names = customers(data, state)
     if customer not in names:
         raise NegotiationRuleError(f"the designers are {', '.join(names)}")
     months = _int(params, "months")

@@ -839,7 +839,7 @@ def fabs(run: AutoRun, owner: AreaOwner, data: GameData) -> None:
         cap = float(facility.capacity)
         own = fab.month.own
         cost = cash_cost_per_start(fab.month)
-        for customer in fc.customers(data):
+        for customer in fc.customers(data, state):
             state = run.state
             running = fc.running(state, facility.id)
             total = sum(c.monthly_starts for c in running)
