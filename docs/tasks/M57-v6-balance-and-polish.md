@@ -46,7 +46,13 @@
 
 ## Decisions made
 
-(filled in by the session)
+Built on branch `m57-balance` in its own clone. Docs PR #118 (`docs-v6-round5`) merged first (rule 9).
+
+1. **AI-first scripts (V3.ai.survival; rule 2, a script fix).** On `main` `ai_regions` and `integrator_ai` went bankrupt on all 10 seeds, months 27-88 (local, seeds 1-10, 120 months): AI models' 2010 market (M43a's D0 x0.19, pinned by 21.8 target 1's 2024/2010 ratio and 54.4 target 2's 2025 band, so the D0 lever is closed) gave about 40 mid-market customers in four years, ARR $0.3-0.9M, short of a Series A's $1M gate, and no script ever raised a SAFE. The AI arms now (a) sell to mid-market and enterprise (the PM's ruling fixed only "an AI-models first product"), (b) raise a $1.5M SAFE at a cap of the base valuation when runway falls below 6 months before a Series B (`bridge_when_short`), and (c) raise a $15M Series B once its gate allows. Result: each arm bankrupt on 3 of 10 seeds (target at most 5): **met**.
+2. **V3.ai.** Now measurable: integrator_ai's year-10 margin equals ai_regions' (47.2% each, +0.0 pts; target +3 to +10). Own GPU capacity costs about spot at full use (per CU 42-49k cents against spot 37-46k, 2016-2020, seed 1), so `_own_compute` builds no GPU centre, and compute is about 10% of an AI company's year-10 revenue. Re-owned to **v7** at its bound (gap at least -2 pts): closing it is a facilities question (GPU centre capex against spot), not this pass's.
+3. **M54.T5 (ruling 13's choice).** Forwards run to 24 months (ADR-0025 amendment; `fx.term_months` [1, 24]); the target's script layers 24 months ahead, and the Currency screen's programme and the CFO delegate hedge as far ahead as a forward runs. Median cut: 3.3% (12-month, seeds 1-10, M57r-A's reading reproduced) -> **14.3%** on seeds 1-10 (0.0-33%) and **17.8%** on seeds 11-40. Re-owned to **v7** at a 1-point shortfall (reading 0.7): seeds 11-40 meet the band.
+4. **M9.spread.africa (ruling 6).** MTN Group gains a fixed-broadband line in Africa (MTN Home Broadband: consumer 1,500 and business 2,550 cents a month in 2010, MTN's mobile price x Africa's fixed/mobile ARPU, A) with telecom.yaml subscribers 0.05 / 0.1 / 0.3 / 1.0 / 2.0M (2008 / 2010 / 2015 / 2020 / 2025, A: about 3-7% of the region's fixed lines). Every cell is covered on seeds 1-10 (local): the row is gone and any empty cell fails.
+5. **M51.T2's three rules** stay as 63.2 defines them (Reece, M51 decision 9: `hard_rivals_quality_mult` 1.2 is the spec's "quality x 1.2"), so no key is retuned; re-owned to **v7** with this pass's readings (below).
 
 ## Follow-ups
 
