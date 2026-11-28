@@ -340,7 +340,13 @@ def test_installer_runs_silently_and_detached(tmp_path: Path) -> None:
     update.launch_installer(_installer(tmp_path), lambda cmd, **kw: calls.append((cmd, kw)))
     ((cmd, kw),) = calls
     assert cmd[0].endswith("setup.exe") and "/SILENT" in cmd and "/CLOSEAPPLICATIONS" in cmd
+    assert "/SUPPRESSMSGBOXES" in cmd  # M57r-B: no unseen prompt can stall the update
     assert kw["close_fds"] is True
+    calls.clear()
+    update.launch_installer(
+        _installer(tmp_path), lambda cmd, **kw: calls.append((cmd, kw)), tmp_path / "logs"
+    )
+    assert calls[0][0][-1] == f"/LOG={tmp_path / 'logs' / update.INSTALL_LOG}"
 
 
 def test_installer_is_hashed_again_just_before_it_runs(tmp_path: Path) -> None:

@@ -61,7 +61,17 @@ CHECK_TIMEOUT_S = 10.0
 DOWNLOAD_TIMEOUT_S = 60.0
 CHUNK = 1 << 20
 MAX_NOTES = 20_000  # characters of release notes shown
-INSTALLER_ARGS = ("/SILENT", "/SP-", "/NOCANCEL", "/CLOSEAPPLICATIONS", "/NORESTART")
+# M57r-B: /SUPPRESSMSGBOXES, so no prompt nobody sees can stall an unattended update (the
+# smoke test's in-game update hung on one), and /LOG for a record of what setup did
+INSTALLER_ARGS = (
+    "/SILENT",
+    "/SP-",
+    "/NOCANCEL",
+    "/SUPPRESSMSGBOXES",
+    "/CLOSEAPPLICATIONS",
+    "/NORESTART",
+)
+INSTALL_LOG = "update-install.log"
 _RECORD = re.compile(r"^([0-9a-fA-F]{64}) [ *](\S.*)$")  # sha256sum: hash, space, mode, name
 
 
@@ -308,7 +318,11 @@ def backup_saves(saves: Path, backups: Path, version: str, stamp: str) -> Path:
     return folder
 
 
-def launch_installer(installer: Download, popen: Callable[..., object] = subprocess.Popen) -> None:
+def launch_installer(
+    installer: Download,
+    popen: Callable[..., object] = subprocess.Popen,
+    log_dir: Path | None = None,
+) -> None:
     """Hash the installer again (it sat in app data through the backup), then start it
     detached from this process, which then closes."""
     path = installer.path
@@ -322,4 +336,7 @@ def launch_installer(installer: Download, popen: Callable[..., object] = subproc
     flags = 0
     if sys.platform == "win32":
         flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-    popen([str(path), *INSTALLER_ARGS], creationflags=flags, close_fds=True)
+    args = [str(path), *INSTALLER_ARGS]
+    if log_dir is not None:
+        args.append(f"/LOG={log_dir / INSTALL_LOG}")
+    popen(args, creationflags=flags, close_fds=True)

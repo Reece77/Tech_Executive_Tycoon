@@ -33,6 +33,8 @@ function Step($text) { Write-Host "::group::$text" }
 function EndStep { Write-Host '::endgroup::' }
 function Fail($text) {
   if (Test-Path $Log) { Get-Content $Log -Tail 80 | Write-Host }
+  $setupLog = Join-Path $env:APPDATA 'Tech Startup Tycoon\logs\update-install.log'
+  if (Test-Path $setupLog) { Write-Host '== the in-game update''s setup log'; Get-Content $setupLog -Tail 120 | Write-Host }
   throw $text
 }
 

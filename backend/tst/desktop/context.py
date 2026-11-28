@@ -105,7 +105,7 @@ class DesktopContext:
             )
             with self._lock:
                 self.update_state = "installing"
-            update.launch_installer(installer, self.popen)
+            update.launch_installer(installer, self.popen, self.paths.logs)
         except Exception as e:
             from tst.sim.errors import SaveBusyError
 
