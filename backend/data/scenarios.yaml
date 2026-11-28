@@ -343,3 +343,30 @@ historical:
     # heir ready early, else 2036-2038 by 72), so the heir must be in charge by the end of 2035
     deadline: [2035, 12]
     sensible_wins: 4 # M51 (63.3): the sensible script's wins on seeds 1-10 (tst/balance/m51.py)
+
+  - key: survive_the_bust
+    label: Survive the bust
+    description: >-
+      January 2000, two months before the NASDAQ peaks. A dot-com software company with a
+      fresh Series A, a team hired for the boom and a market about to stop buying.
+    year: 2000
+    background: funded_spinout
+    cash_dollars: 3000000 # M50b (60.6): tuned with M51's method (tst/balance/m50b.py)
+    stage: 2
+    staff:
+      - { role: software_engineer, level: mid, count: 12 }
+      - { role: software_engineer, level: senior, count: 4 }
+      - { role: product_manager, level: mid, count: 2 }
+      - { role: sales_representative, level: mid, count: 8 }
+      - { role: account_executive, level: senior, count: 2 }
+      - { role: marketer, level: mid, count: 6 }
+    products:
+      - name: Portalia
+        category: b2b_saas
+        quality: 45
+        features: 60
+        brand: 15
+        segments: { smb: { price_dollars: 150, customers: 60 }, mid_market: { price_dollars: 1500, customers: 3 } }
+    goal: { kind: solvent_margin, text: "Positive cash flow by the end of 2003, without going bankrupt" }
+    deadline: [2003, 12]
+    sensible_wins: 10 # M50b: the sensible script's wins on seeds 1-10 (tst/balance/m50b.py; above M51's 3-8, a recorded decision)
