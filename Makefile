@@ -1,6 +1,6 @@
 # Root tasks. Recipes avoid shell-specific syntax so they run under sh and cmd.exe.
 
-.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
+.PHONY: weekly-v4-a weekly-v4-b weekly-v4-c weekly-v4-systems weekly-m43-a1 weekly-m43-a2 weekly-m43-b1 weekly-m43-b2 weekly-m43-c1 weekly-m43-c2 weekly-m43-d1 weekly-m43-d2 weekly-m43-d3 weekly-m43-d4 weekly-m43-t6 weekly-v6-strategies weekly-v1 weekly-v5 weekly-v6 weekly-v3-shocks weekly-v3-integration weekly-v3-long weekly-v6-integrator weekly-m37 weekly-m45 weekly-m52 weekly-m52-2100 weekly-m27b check-timing check check-fast playtest quickstart-saves check-ci-1 check-ci-2 check-ci-3 check-ci-4 balance nightly nightly-ci check-durations-ci test-durations check-backend check-backend-fast check-frontend check-api dev gen-api golden fmt e2e e2e-shard record-fixture weekly-v2-table m46-lift m46-board-trace
 
 check: check-backend check-api check-frontend check-timing
 
@@ -167,6 +167,13 @@ weekly-m43-t3-m36:  # reads Settings().data_dir, relative to backend/
 	cd backend && uv run python ../tools/m36_targets.py
 weekly-m43-t6:
 	uv run --project backend python tools/m43a_targets.py
+
+# M57's v6 strategy targets (tst.balance.v6; CI: weekly.yml): the v6 strategies and v5's field to
+# December 2039 on seeds 1-20 (V6_SEEDS picks a shard; tools/v6_targets.py --load combines saved
+# runs), each run's company score at years 1 and 30.
+V6_SEEDS ?= 1-20
+weekly-v6-strategies:
+	cd backend && TST_V6_SEEDS=$(V6_SEEDS) uv run pytest -q -n 0 -s -m weekly tests/balance/test_v6_balance.py
 
 test-durations:
 	cd backend && uv run pytest -q -n auto --store-durations --durations=20
