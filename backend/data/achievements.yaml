@@ -60,6 +60,7 @@ achievements:
   - { key: won_chip_startup, title: "The chip startup", description: "Win the chip startup scenario.", kind: scenario_won, param: chip_startup }
   - { key: won_turnaround, title: "Turnaround", description: "Win the turnaround scenario.", kind: scenario_won, param: turnaround }
   - { key: won_the_crash, title: "Through the crash", description: "Win the crash scenario.", kind: scenario_won, param: the_crash } # M51 (63.1)
+  - { key: won_survive_the_bust, title: "Through the bust", description: "Win the Survive the bust scenario.", kind: scenario_won, param: survive_the_bust } # M50b (60.6)
   - { key: won_platform_war, title: "Platform builder", description: "Win the platform war scenario.", kind: scenario_won, param: platform_war } # M51
   - { key: won_ev_maker, title: "Volume maker", description: "Win the EV maker scenario.", kind: scenario_won, param: ev_maker } # M51
   - { key: won_failing_chipmaker, title: "Back on the node", description: "Win the failing chipmaker scenario.", kind: scenario_won, param: failing_chipmaker } # M51
